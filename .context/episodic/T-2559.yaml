@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2559: arc-014 Spike-2: cross-validate T-2552 typed-event + gateway detectors against 832's real fixtures (typed-events, boundary-events)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T20:45:13Z
+# ============================================================================
+
+task_id: T-2559
+task_name: "arc-014 Spike-2: cross-validate T-2552 typed-event + gateway detectors against 832's real fixtures (typed-events, boundary-events)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T20:37:17Z
+completed: 2026-07-19T20:45:01Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Both fixtures decoded from the rail payloads verify byte-exact against 832''s pinned SHA256 (typed-events: 5467071b…ca5ff, 4556 bytes; boundary-events: 37eec1b0…06f1a, 5509 bytes) and are pinned into `tests/fixtures/aef-bpmn/` (mirrors 832''s path) unmodified'
+  - '`fw bpmn compile` on typed-events.bpmn exits 0 and emits exactly 3 Pass-3 typed-event WARNs (ev_err error/status:issues, ev_tmr timer/cron, ev_msg message/bus:designer-events) — no silent drop'
+  - '`fw bpmn compile` on boundary-events.bpmn exits 0; the offset-85 claim (detector iterates ALL nodes) is tested against both boundaryEvent nodes and the actual result — BOTH FIRE, claim holds; recorded in the compile log report and in regression tests; the one honest limit (attachment semantics absent from WARN text) filed as T-2560'
+  - 'Regression tests pinning both fixtures'' detector behavior added to tests/unit/test_bpmn_to_tasks.py; full suite green (40/40)'
+  - 'Verdict (including the T-2560 WARN-completeness limit flagged as WARN-first buffer case per 832''s offset-89 note) relayed to 832 on the rail (offset 90) and the report `docs/reports/T-2559-spike2-fixture-cross-validation.md` captures verbatim compile output'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:designer-corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2559-arc-014-spike-2-cross-validate-t-2552-ty.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_boundary-events"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- T-204 Slice 2 round-trip fixture: typed events in their BOUNDARY form. A
+       host <bpmn:serviceTask> carries two boundary events via native
+       <bpmn:boundaryEvent attachedToRef=… cancelActivity=…> — an interrupting error
+       (cancelActivity="true") and a non-interrupting timer (cancelActivity="false").
+       The kind still rides <aef:eventDef> (IW-1: NO native bpmn:*EventDefinition);
+       the presentational perimeter fraction rides <aef:boundaryPos>. The editor
+       stores the attachment as aef.hostRef (the host uid, resolved from attachedToRef
+       on import). This fixture is the subject of the editor round-trip harness
+       (tools/_roundtrip-serialization-cdp.mjs): parse → build → parse → build must be
+       a semantic fixed point on the host attachment (hostRef) AND the interrupting
+       flag, as well as node.type + eventDef binding. -->
+
+  <bpmn:collaboration id="Collaboration_boundary-events">
+    <bpmn:participant id="Pool_boundary_events" name="boundary-events" processRef="Process_boundary-events"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_boundary-events" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="boundary-events" version="1" schemaVersion="2" title="typed boundary events (round-trip)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="240"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_host</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>bnd_err</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>bnd_tmr</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>err_end</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>tmr_end</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_start" name="begin">
+      <bpmn:extensionElements>
+        <aef:uid value="n_start"/>
+        <aef:position x="140.0" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="task_host" name="do the work">
+      <bpmn:extensionElements>
+        <aef:uid value="n_host"/>
+        <aef:position x="320.0" y="100.0"/>
+        <aef:meta workflowType="build" horizon="now"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="bnd_err" name="on error" attachedToRef="task_host" cancelActivity="true">
+      <bpmn:extensionElements>
+        <aef:uid value="n_berr"/>
+        <aef:position x="360.0" y="160.0"/>
+        <aef:eventDef kind="error" binding="status:issues"/>
+        <aef:boundaryPos value="0.75"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:boundaryEvent>
+
+    <bpmn:boundaryEvent id="bnd_tmr" name="timeout" attachedToRef="task_host" cancelActivity="false">
+      <bpmn:extensionElements>
+        <aef:uid value="n_btmr"/>
+        <aef:position x="420.0" y="160.0"/>
+        <aef:eventDef kind="timer" binding="0 0 * * *"/>
+        <aef:boundaryPos value="0.25"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:boundaryEvent>
+
+    <bpmn:endEvent id="agt_end" name="done">
+      <bpmn:extensionElements>
+        <aef:uid value="n_end"/>
+        <aef:position x="560.0" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="err_end" name="handle issue">
+      <bpmn:extensionElements>
+        <aef:uid value="n_errend"/>
+        <aef:position x="360.0" y="260.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="tmr_end" name="handle timeout">
+      <bpmn:extensionElements>
+        <aef:uid value="n_tmrend"/>
+        <aef:position x="480.0" y="260.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_start" targetRef="task_host">
+      <bpmn:extensionElements><aef:uid value="e_1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="task_host" targetRef="agt_end">
+      <bpmn:extensionElements><aef:uid value="e_2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="bnd_err" targetRef="err_end">
+      <bpmn:extensionElements><aef:uid value="e_3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_4" sourceRef="bnd_tmr" targetRef="tmr_end">
+      <bpmn:extensionElements><aef:uid value="e_4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

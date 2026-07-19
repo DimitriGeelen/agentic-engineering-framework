@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_typed-events"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- T-204 Slice 1 round-trip fixture: the three typed intermediate events
+       (error / timer / message) encoded via the aef:-extension shape (IW-1) — a
+       neutral <bpmn:intermediateCatchEvent> tag whose specific kind rides
+       <aef:eventDef kind=… binding=…/>, exactly as link events ride <aef:link>.
+       NO native bpmn:*EventDefinition. This fixture is the subject of the
+       editor round-trip harness (tools/_roundtrip-serialization-cdp.mjs): parse
+       → build → parse → build must be a semantic fixed point on both node.type
+       (the tag-collision disambiguation) AND the eventDef binding. -->
+
+  <bpmn:collaboration id="Collaboration_typed-events">
+    <bpmn:participant id="Pool_typed_events" name="typed-events" processRef="Process_typed-events"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_typed-events" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="typed-events" version="1" schemaVersion="2" title="typed intermediate events (round-trip)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ev_err</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ev_tmr</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ev_msg</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_start" name="begin">
+      <bpmn:extensionElements>
+        <aef:uid value="n_start"/>
+        <aef:position x="140.0" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:intermediateCatchEvent id="ev_err" name="on error">
+      <bpmn:extensionElements>
+        <aef:uid value="n_err"/>
+        <aef:position x="300.0" y="120.0"/>
+        <aef:eventDef kind="error" binding="status:issues"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="ev_tmr" name="wait">
+      <bpmn:extensionElements>
+        <aef:uid value="n_tmr"/>
+        <aef:position x="460.0" y="120.0"/>
+        <aef:eventDef kind="timer" binding="0 9 * * *"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="ev_msg" name="on message">
+      <bpmn:extensionElements>
+        <aef:uid value="n_msg"/>
+        <aef:position x="620.0" y="120.0"/>
+        <aef:eventDef kind="message" binding="bus:designer-events"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:endEvent id="agt_end" name="done">
+      <bpmn:extensionElements>
+        <aef:uid value="n_end"/>
+        <aef:position x="780.0" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_start" targetRef="ev_err">
+      <bpmn:extensionElements><aef:uid value="e_1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="ev_err" targetRef="ev_tmr">
+      <bpmn:extensionElements><aef:uid value="e_2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="ev_tmr" targetRef="ev_msg">
+      <bpmn:extensionElements><aef:uid value="e_3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_4" sourceRef="ev_msg" targetRef="agt_end">
+      <bpmn:extensionElements><aef:uid value="e_4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

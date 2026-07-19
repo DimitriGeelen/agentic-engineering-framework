@@ -503,3 +503,60 @@ def test_lifecycle_corpus_diagram_compiles_clean_with_loop():
         s["owner"] == "agent" for s in skeletons if s["uid"] != "tl_human_review"
     )
     assert set(by_uid["tl_work"]["related_tasks"]) == {"tl_start", "tl_heal"}
+
+
+# ------------------------------------------- 832 real-fixture cross-validation (T-2559)
+# Spike-2 of arc-014: 832 delivered their T-204 round-trip fixtures byte-exact over the
+# DM rail (offsets 88/89, pinned at 832 master 2bff553). These tests cross-validate the
+# T-2552 Pass-3 detector against the PEER's real encoding (L-501), including the
+# boundary-event form that directly tests the "detector iterates ALL nodes" claim.
+
+FIXTURE_832_TYPED = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "aef-bpmn", "typed-events.bpmn"
+)
+FIXTURE_832_BOUNDARY = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "aef-bpmn", "boundary-events.bpmn"
+)
+SHA_832_TYPED = "5467071b3a3909629b224ed6357abb5fc8a57c12e18e402106307dd91d2ca5ff"
+SHA_832_BOUNDARY = "37eec1b0f10ad02aa5622e28e0e9977ae8bfa9308f59fd36d91048da6d106f1a"
+
+
+def test_832_fixtures_byte_exact():
+    """Both vendored 832 fixtures match their rail-pinned sha256 — the byte-exact
+    contract. If this fails the fixture was mutated locally: re-fetch from the rail."""
+    import hashlib
+
+    for path, pin in ((FIXTURE_832_TYPED, SHA_832_TYPED), (FIXTURE_832_BOUNDARY, SHA_832_BOUNDARY)):
+        with open(path, "rb") as fh:
+            assert hashlib.sha256(fh.read()).hexdigest() == pin, f"mutated: {path}"
+
+
+def test_832_typed_events_fixture_three_warns_no_skeletons():
+    """832's real typed-events.bpmn: exactly 3 typed-event WARNs (error/timer/message,
+    each naming node id + binding), zero task skeletons (no TASK_TAGS nodes), no drop."""
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_TYPED)
+    assert skeletons == []
+    typed = [w for w in warnings if "typed-event annotation" in w]
+    assert len(typed) == 3, f"expected 3, got {len(typed)}: {typed}"
+    joined = "\n".join(typed)
+    assert "ev_err" in joined and "kind=error" in joined and "status:issues" in joined
+    assert "ev_tmr" in joined and "kind=timer" in joined and "0 9 * * *" in joined
+    assert "ev_msg" in joined and "kind=message" in joined and "bus:designer-events" in joined
+
+
+def test_832_boundary_events_detector_fires_on_boundary_nodes():
+    """The offset-85 claim, proven against 832's counter-example fixture: the Pass-3
+    detector iterates ALL nodes, so both <bpmn:boundaryEvent> variants (interrupting
+    error, non-interrupting timer) fire a typed-event WARN. The host serviceTask still
+    emits one agent/build skeleton. KNOWN LIMIT (recorded, T-2560): the WARN carries
+    kind+binding only — attachedToRef / cancelActivity / boundaryPos are not mentioned."""
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_BOUNDARY)
+    assert len(skeletons) == 1
+    assert skeletons[0]["uid"] == "n_host"
+    assert skeletons[0]["owner"] == "agent"
+    assert skeletons[0]["workflow_type"] == "build"
+    typed = [w for w in warnings if "typed-event annotation" in w]
+    assert len(typed) == 2, f"expected 2, got {len(typed)}: {typed}"
+    joined = "\n".join(typed)
+    assert "bnd_err" in joined and "kind=error" in joined
+    assert "bnd_tmr" in joined and "kind=timer" in joined and "0 0 * * *" in joined
