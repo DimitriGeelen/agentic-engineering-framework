@@ -84,3 +84,25 @@ with 832's real `aef:` namespace URI when the vendored corpus lands.
   materialization appends an audit line to `.context/working/.bpmn-promote-audit.jsonl` (no silent
   `.tasks/` writes). `changed`→**propose-not-clobber**: a changed proposal is never auto-written,
   flagged for human review regardless of captured/touched (supersedes T-2542's changed+captured→refresh).
+- **E2E forward-bridge test (T-2545, done):** `tests/unit/bpmn_promote_e2e.bats` exercises the WHOLE
+  chain against the REAL `create-task.sh` gate in a hermetic temp PROJECT_ROOT (the unit tests
+  `test_bpmn_promote.py` mock `create_via_gate`; this one doesn't). Pins: created tasks are
+  owner:human+captured with an `aef_provenance` block; owner is FORCED human even for Agent-lane nodes
+  (G2); each `--write` appends an audit line; a promote-origin `create --owner agent` is REFUSED (no
+  file); a stale `source_bpmn_sha`→PROPOSE-not-clobber (materialized content intact).
+- **Canonical joint fixture + seam-slice (T-2548, done):** adopted 832's `two-lane-joint.bpmn`
+  (`tests/fixtures/bpmn/two-lane-joint.bpmn`, sha `efb53839`, owner-bearing task in BOTH lanes:
+  `n_inception` sovereignty→owner:human/inception + `n_plan` initiative→owner:agent/build) as the
+  canonical joint fixture. `bpmn_promote_e2e.bats` seam-slice drives compile→promote→REAL gate off it,
+  proving the **initiative→agent** owner derivation (n_plan is owner:agent in the manifest, G2-forced to
+  owner:human at the gate) — the leg the single-node `inception-gonogo` and `two-lane-sample` fixtures
+  can't reach. 832's producer contract is `tests/test_promote_contract.py` (their side); this is the
+  consumer half.
+- **Inception-node materialization (T-2549, done — surfaced by T-2548's joint fixture):** `fw bpmn
+  promote` previously RAISED on any diagram with a `workflow_type: inception` node — `create_via_gate`
+  delegated to `fw task create --type inception` with no `--recommendation`/`--rationale`, so the T-2204
+  recommendation-completeness gate (fires under `CLAUDECODE=1`) refused it. Latent since T-2542 (prior
+  e2e had no inception node; units mock the gate). Fix: `create_via_gate` injects
+  `--recommendation DEFER --rationale "…human go/no-go pending"` for `inception` nodes ONLY (the honest
+  awaiting-decision state, matching the T-2208 cron backstop's DEFER stub); build/test nodes unchanged.
+  The materialized inception task carries a `## Recommendation: DEFER` block. Captured as L-504.

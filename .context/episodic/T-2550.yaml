@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2550: document promote seam (T-2545 E2E / T-2548 joint fixture / T-2549 inception-materialization) in bpmn AGENT.md + vendored copy
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T15:49:36Z
+# ============================================================================
+
+task_id: T-2550
+task_name: "document promote seam (T-2545 E2E / T-2548 joint fixture / T-2549 inception-materialization) in bpmn AGENT.md + vendored copy"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T15:47:14Z
+completed: 2026-07-19T15:49:26Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/bpmn/AGENT.md` gains accurate roadmap entries for T-2545 (E2E forward-bridge), T-2548 (canonical joint fixture + seam-slice), T-2549 (inception-node DEFER materialization past T-2204) — cross-checked against `tools/bpmn_promote.py` + tests'
+  - 'Vendored copy `.agentic-framework/agents/bpmn/AGENT.md` kept in parity (same roadmap entries — `diff -q` identical)'
+  - 'Both files still parse as valid markdown / contain the new `T-2549` reference (grep-verifiable)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2550-document-promote-seam-t-2545-e2e--t-2548.md
+generated_by: context-agent-hybrid
