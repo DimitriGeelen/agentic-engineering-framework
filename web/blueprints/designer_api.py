@@ -37,6 +37,7 @@ import json
 import re
 import shutil
 import time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from flask import Blueprint, Response, jsonify, request
@@ -108,6 +109,15 @@ def save():
         return _err('invalid id (must match ^[a-z0-9][a-z0-9_-]*$)')
     if not isinstance(bpmn, str) or not bpmn.strip():
         return _err("missing bpmn")
+    # T-2564: well-formedness gate at the store boundary. Origin: D4 v1 (T-2563) —
+    # a payload with a raw `<dispatch_id>` in an attribute was ACCEPTED here and only
+    # `fw bpmn compile` caught it downstream. The str(ParseError) carries line/column
+    # ("not well-formed (invalid token): line 62, column 75") — surfaced to the client
+    # so the designer can point at the defect. Nothing is written on reject.
+    try:
+        ET.fromstring(bpmn)
+    except ET.ParseError as e:
+        return _err(f"malformed XML: {e}")
     png = data.get("png") or ""
     note = data.get("note") or ""
 

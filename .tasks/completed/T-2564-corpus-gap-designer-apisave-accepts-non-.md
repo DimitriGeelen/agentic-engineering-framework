@@ -10,10 +10,10 @@ description: >
   fast with an actionable error to the designer UI instead of storing a broken version.
   Reliability D2: no silent failures.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:58:54Z
-last_update: '2026-07-19T21:00:09Z'
-date_finished:
+last_update: 2026-07-19T21:59:22Z
+date_finished: 2026-07-19T21:59:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,8 +80,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `POST /api/save` runs an XML well-formedness parse on the `bpmn` payload and rejects malformed input with HTTP 400 + a line/column-bearing error message (no version written to the store)
-- [ ] Well-formed saves are byte-identical in behavior to today (version increment, meta.json update, atomic replace); regression tests cover both paths; suite green
+- [x] `POST /api/save` runs an XML well-formedness parse on the `bpmn` payload and rejects malformed input with HTTP 400 + a line/column-bearing error message (no version written to the store)
+- [x] Well-formed saves are byte-identical in behavior to today (version increment, meta.json update, atomic replace); regression tests cover both paths (`tests/web/test_designer_api_save_gate.py`, 2/2); LIVE-verified on http://192.168.10.107:3001 post-restart — malformed probe → 400 "malformed XML: not well-formed (invalid token): line 1, column 34" + zero store residue; well-formed probe → {ok:true,v:1}; probe cleaned via /api/delete
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,8 +146,18 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_designer_api_save_gate.py -q > /tmp/.t2564-pytest.out 2>&1 && grep -q "2 passed" /tmp/.t2564-pytest.out
+out=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$(bin/fw watchtower url)/api/save" -H 'Content-Type: application/json' -d '{"id":"t2564-gate-probe","bpmn":"<a note=\"x <y> z\"/>"}'); test "$out" = "400"
 
 ## RCA
+
+**Symptom:** D4 v1 (T-2563) — a BPMN payload with a raw `<dispatch_id>` inside an attribute value was accepted by `POST /api/save` and stored as v1; the defect only surfaced downstream when `fw bpmn compile` hit ParseError line 62 col 75.
+
+**Root cause:** `save()` validated the id and non-emptiness of `bpmn` but never parsed it — the store boundary trusted the client to send well-formed XML, and 832's designer client does its own serialization so the trust normally holds; hand-authored API payloads (the corpus pipeline) broke it.
+
+**Why structurally allowed:** the endpoint was recovered from 832's reference gallery-serve.py contract (T-2529/T-2530), which also stores without parsing — the contract fidelity goal carried the gap along.
+
+**Prevention:** `ET.fromstring` gate at the boundary (reject → 400 with line/column, nothing written) + both-path regression tests + this class already had an author-side discipline (D5 pre-save check) that now becomes redundant-in-depth.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -187,6 +197,11 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-19 — gate is redundant-in-depth with the D5 author discipline, deliberately
+- **What changed:** since filing, the author-side pre-save `ET.parse` check (D5 lesson) already prevented recurrence in practice — but that is discipline, not structure. The store-side gate makes the invariant hold for ANY client, including 832's designer and future automation.
+- **Plan impact:** none; note that 832's reference gallery-serve.py stores without parsing — flagged to them as an FYI when relaying (their server, their call).
+- **Triggered:** nothing new.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -217,3 +232,19 @@ bvp_scores_proposed:
 
 ### 2026-07-19T20:59:08Z — status-update [task-update-agent]
 - **Change:** tags: +arc:designer-corpus
+
+### 2026-07-19T21:52:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fd4f2b33
+- **Timestamp:** 2026-07-19T21:59:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-19T21:59:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
