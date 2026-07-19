@@ -726,3 +726,27 @@ def test_distinct_node_backedges_unregressed_by_t2562():
     skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
     by_uid = {s["uid"]: s for s in skeletons}
     assert set(by_uid["n_2b3c4d5e"]["related_tasks"]) == {"n_25364758", "n_58697081"}
+
+
+# ------------------------------- boundary-attachment WARN context (T-2560)
+
+def test_boundary_typed_event_warns_carry_attachment_context():
+    """T-2560: boundaryEvent carriers append [boundary: …] context — host,
+    interrupting flag (BPMN default true), and aef:boundaryPos. 832 sanctioned
+    consuming attachedToRef/cancelActivity/boundaryPos for WARN context."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_BOUNDARY)
+    err = next(w for w in warnings if "'bnd_err'" in w)
+    assert "[boundary: attached to 'task_host', interrupting, boundaryPos=0.75]" in err
+    tmr = next(w for w in warnings if "'bnd_tmr'" in w)
+    assert (
+        "[boundary: attached to 'task_host', non-interrupting, boundaryPos=0.25]" in tmr
+    )
+
+
+def test_non_boundary_typed_event_warns_unchanged_by_t2560():
+    """Additive-only: intermediate/start carriers never grow a [boundary: …] clause."""
+    for fixture in (FIXTURE_832_TYPED, FIXTURE_832_HANDOVER):
+        _, warnings = bpmn_to_tasks.parse_bpmn(fixture)
+        for w in warnings:
+            if "typed-event annotation" in w:
+                assert "[boundary:" not in w

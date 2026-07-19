@@ -488,10 +488,29 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
             if bindings
             else ""
         )
+        # T-2560: when the carrier is a boundaryEvent, the attachment IS the
+        # semantics — which host it guards, whether it interrupts (cancelActivity,
+        # BPMN default true when absent), and the perimeter position. 832 sanctioned
+        # consuming attachedToRef/cancelActivity/aef:boundaryPos for WARN context
+        # (rail, Spike-2 follow-up). Non-boundary carriers keep the exact prior text.
+        boundary_str = ""
+        if _local(node.tag) == "boundaryEvent":
+            host = node.get("attachedToRef") or "<unattached>"
+            interrupting = node.get("cancelActivity", "true")
+            bpos = None
+            for desc in node.iter():
+                if _local(desc.tag) == "boundaryPos" and desc.get("value"):
+                    bpos = desc.get("value")
+            boundary_str = (
+                f" [boundary: attached to {host!r}, "
+                f"{'interrupting' if interrupting != 'false' else 'non-interrupting'}"
+                + (f", boundaryPos={bpos}" if bpos else "")
+                + "]"
+            )
         warnings.append(
             f"node {node_id!r} carries a typed-event annotation (aef:eventDef "
-            f"kind={kind}){bind_str} — AEF does not consume typed events yet (T-2551); "
-            f"surfaced here, not applied"
+            f"kind={kind}){bind_str}{boundary_str} — AEF does not consume typed events "
+            f"yet (T-2551); surfaced here, not applied"
         )
 
     # Pass 4: surface gateway decision semantics (T-2557, arc-014 D1 finding). Pass 2's

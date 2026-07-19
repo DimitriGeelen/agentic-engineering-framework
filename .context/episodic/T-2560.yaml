@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2560: corpus gap: boundary-event attachment semantics (attachedToRef, cancelActivity,
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T22:02:17Z
+# ============================================================================
+
+task_id: T-2560
+task_name: "corpus gap: boundary-event attachment semantics (attachedToRef, cancelActivity,"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T20:43:03Z
+completed: 2026-07-19T22:02:06Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Pass-3 typed-event WARN, when the carrying node is a `boundaryEvent`, appends attachment context: host (`attachedToRef`), interrupting flag (`cancelActivity`, BPMN default true when absent), and `aef:boundaryPos` when present'
+  - 'Non-boundary typed-event WARNs are byte-identical to today (additive-only); all 50 pre-existing tests unregressed + explicit no-[boundary:]-clause guard on typed-events/session-handover fixtures'
+  - 'Regression test on 832''s pinned `tests/fixtures/aef-bpmn/boundary-events.bpmn` asserts both enriched WARNs verbatim (interrupting 0.75 / non-interrupting 0.25); suite 52/52 green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 79 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:designer-corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 79
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2560-corpus-gap-boundary-event-attachment-sem.md
+generated_by: context-agent-hybrid

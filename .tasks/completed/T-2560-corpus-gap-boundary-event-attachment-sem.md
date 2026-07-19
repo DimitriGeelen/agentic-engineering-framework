@@ -9,10 +9,10 @@ description: >
   drop silently. Sibling of the T-2557 gateway class. Fix: extend the Pass-3 WARN
   to append attachment context when the carrying node is a boundaryEvent.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:43:03Z
-last_update: '2026-07-19T20:45:10Z'
-date_finished:
+last_update: 2026-07-19T22:02:06Z
+date_finished: 2026-07-19T22:02:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -79,9 +79,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Pass-3 typed-event WARN, when the carrying node is a `boundaryEvent`, appends attachment context: host (`attachedToRef`), interrupting flag (`cancelActivity`), and `aef:boundaryPos` when present
-- [ ] Non-boundary typed-event WARNs are byte-identical to today (additive-only); existing tests unregressed
-- [ ] Regression test on 832's pinned `tests/fixtures/aef-bpmn/boundary-events.bpmn` asserts the enriched WARN text; full suite green
+- [x] Pass-3 typed-event WARN, when the carrying node is a `boundaryEvent`, appends attachment context: host (`attachedToRef`), interrupting flag (`cancelActivity`, BPMN default true when absent), and `aef:boundaryPos` when present
+- [x] Non-boundary typed-event WARNs are byte-identical to today (additive-only); all 50 pre-existing tests unregressed + explicit no-[boundary:]-clause guard on typed-events/session-handover fixtures
+- [x] Regression test on 832's pinned `tests/fixtures/aef-bpmn/boundary-events.bpmn` asserts both enriched WARNs verbatim (interrupting 0.75 / non-interrupting 0.25); suite 52/52 green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,6 +146,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/.t2560-pytest.out 2>&1 && grep -q "passed" /tmp/.t2560-pytest.out
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/boundary-events.bpmn 2>&1); echo "$out" | grep -q "\[boundary: attached to 'task_host', interrupting, boundaryPos=0.75\]" 
 
 ## RCA
 
@@ -187,6 +189,11 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-20 — cancelActivity default matters
+- **What changed:** BPMN's `cancelActivity` defaults to TRUE when absent — an unadorned boundaryEvent is interrupting. The WARN context reads the attribute with that default rather than requiring it, so 832 diagrams that omit the attribute still report correctly.
+- **Plan impact:** none; additive as filed.
+- **Triggered:** nothing new.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -217,3 +224,19 @@ bvp_scores_proposed:
 
 ### 2026-07-19T20:43:13Z — status-update [task-update-agent]
 - **Change:** tags: +arc:designer-corpus
+
+### 2026-07-19T21:59:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-eea367d9
+- **Timestamp:** 2026-07-19T22:02:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-19T22:02:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
