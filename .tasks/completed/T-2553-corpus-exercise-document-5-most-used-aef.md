@@ -4,17 +4,17 @@ name: "Corpus exercise: document 5 most-used AEF processes in the workflow desig
 description: >
   Inception: Corpus exercise: document 5 most-used AEF processes in the workflow designer
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 arc_id: designer-corpus
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-19T19:37:24Z
-last_update: 2026-07-19T19:38:03Z
-date_finished:
+last_update: 2026-07-19T20:00:35Z
+date_finished: 2026-07-19T20:00:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -39,6 +39,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-19T19:45:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -160,13 +170,13 @@ as arc constituents).
 <!-- @auto-tick-on-decide -->
 - [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
 - [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -228,7 +238,23 @@ Grill with operator (2026-07-19) settled scope: 1c both docs+pipeline-dogfood, 2
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Grill with operator (2026-07-19) settled scope: 1c both docs+pipeline-dogfood, 2d pair-draft with operator UI review, arc-accumulator model, vocabulary extension authorized with 832 owning the development process. Forward pipeline is closed and joint-tested; the one gap fixtures cannot close is zero real-world corpus. Telemetry selects the 5 processes.
+
+Evidence:
+
+- Pipeline closed end-to-end: `fw bpmn compile`/`promote` shipped+hardened (T-2531/T-2542/T-2543), joint test `bpmn_promote_e2e.bats` ratified both sides (rail offsets 80/81); `/designer` + gallery API live-verified (T-2525/T-2529/T-2530).
+- Corpus gap is real and previously flagged: rendered-corpus work was deferred precisely for "no corpus = no substrate".
+- Telemetry selection (this session): build-task lifecycle 1599 completed + 230 active; handovers 1387; inceptions 408 completed / 295 decided; dispatches 992 (+1240 outcomes); audit cron 748 runs. Healing dropped (26 events).
+- Grill dialogue (2026-07-19) settled IW-1..IW-5, IW-7; full log in `docs/reports/T-2553-designer-corpus-inception.md`.
+- Arc `designer-corpus` (arc-014) registered, anchored here, status draft — `fw arc start` on GO.
+
+**Date**: 2026-07-19T20:00:34Z
 
 ## Updates
 
@@ -237,3 +263,59 @@ Grill with operator (2026-07-19) settled scope: 1c both docs+pipeline-dogfood, 2
 
 ### 2026-07-19T19:38:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-19T20:00:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Grill with operator (2026-07-19) settled scope: 1c both docs+pipeline-dogfood, 2d pair-draft with operator UI review, arc-accumulator model, vocabulary extension authorized with 832 owning the development process. Forward pipeline is closed and joint-tested; the one gap fixtures cannot close is zero real-world corpus. Telemetry selects the 5 processes.
+
+Evidence:
+
+- Pipeline closed end-to-end: `fw bpmn compile`/`promote` shipped+hardened (T-2531/T-2542/T-2543), joint test `bpmn_promote_e2e.bats` ratified both sides (rail offsets 80/81); `/designer` + gallery API live-verified (T-2525/T-2529/T-2530).
+- Corpus gap is real and previously flagged: rendered-corpus work was deferred precisely for "no corpus = no substrate".
+- Telemetry selection (this session): build-task lifecycle 1599 completed + 230 active; handovers 1387; inceptions 408 completed / 295 decided; dispatches 992 (+1240 outcomes); audit cron 748 runs. Healing dropped (26 events).
+- Grill dialogue (2026-07-19) settled IW-1..IW-5, IW-7; full log in `docs/reports/T-2553-designer-corpus-inception.md`.
+- Arc `designer-corpus` (arc-014) registered, anchored here, status draft — `fw arc start` on GO.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1f0e7aa8
+- **Timestamp:** 2026-07-19T20:00:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-7
+     - evidence: `IW-7 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-3f504cfb
+- **Timestamp:** 2026-07-19T20:00:36Z
+- **Overall:** CONFIRMED
+- **Claims:** 7
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2553-designer-corpus-inception.md` | file | ✓ pass |
+| `T-2531` | task | ✓ pass |
+| `T-2542` | task | ✓ pass |
+| `T-2543` | task | ✓ pass |
+| `T-2525` | task | ✓ pass |
+| `T-2529` | task | ✓ pass |
+| `T-2530` | task | ✓ pass |
+
+### 2026-07-19T20:00:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
