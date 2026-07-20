@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-20T20:49:13Z
-last_update: 2026-07-20T20:50:00Z
+last_update: '2026-07-20T21:00:05Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,6 +40,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-20T21:00:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -72,25 +82,25 @@ Off-page connectors in designer diagrams are name-only visuals — nothing links
 -->
 
 - **IW-1: What is the workflow identity model — immutable uuid in meta.json (slug as display) or slug-only pins?**
-  confidence: 1
-  disposition:
-  rationale: leaning uuid-canonical per T-1848 arc D-Immutability precedent; operator steer pending
+  confidence: 3
+  disposition: answered
+  rationale: operator steer 2026-07-20 dialogue — uuid-canonical as recommended (T-1848 precedent)
 - **IW-2: How are forward references captured — pending-ref registry file, ghost store entries, or hybrid (registry + gallery ghost rendering)?**
-  confidence: 1
-  disposition:
-  rationale: leaning registry + rendered ghosts; operator steer pending
+  confidence: 3
+  disposition: answered
+  rationale: operator steer 2026-07-20 — ghosts, WITH back-reference visual markers (which workflows/nodes reference it + needs-mapping state); registry is the data source, gallery renders ghosts from it
 - **IW-3: When is the documentation task for a referenced-but-uncreated workflow minted — at save-time through the FW_TASK_ORIGIN gate, or batch-proposed at a governed verb (refs/promote/compile)?**
-  confidence: 1
-  disposition:
-  rationale: both governance-clean via T-2543 gate-level enforcement; UX choice is operator's
+  confidence: 2
+  disposition: answered
+  rationale: operator delegated ("most reliable") — save-time gate minting (capture-at-source, idempotent per uuid) + compile WARN + audit sweep backstop; two-layer pattern per T-2204 precedent
 - **IW-4: How does a newly created workflow claim a pending uuid — designer UI picker (832-side), CLI claim verb, or name-match heuristic?**
   confidence: 1
   disposition:
-  rationale: leaning UI picker + CLI fallback; name-match risky
+  rationale: operator asked for elaboration (2026-07-20); agent proposal = UI picker + CLI claim fallback, no silent name-match; awaiting operator confirm after elaboration
 - **IW-5: What is the AEF/832 seam split, and does 832 accept the vocabulary extension (workflowRef on aef:link)?**
-  confidence: 0
+  confidence: 1
   disposition:
-  rationale: 832 owns the development process (arc-014 scope rule 4); rail seam proposal not yet sent
+  rationale: operator said run in parallel — seam proposal posted to 832 at rail offset 107 (Q1 attr shape, Q2 draw-time uuid mint, Q3 claim UX + GET /api/workflows contract); awaiting 832 reply
 
 ## Exploration Plan
 

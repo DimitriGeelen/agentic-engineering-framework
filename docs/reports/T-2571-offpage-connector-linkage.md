@@ -19,6 +19,7 @@
 - **B1 — pending-ref registry:** single atomic file (e.g. `.context/designer/registry.yaml`) holding `{uuid, display_name, referenced_by: [project/node], first_seen, task_id?}` for refs whose target doesn't exist yet. Creation of the real workflow *claims* the uuid → all referrers resolve without edit.
 - **B2 — ghost store entries:** stub project dirs with `status: referenced-not-created` meta. Heavier; makes ghosts visible in the /designer gallery natively.
 - Lean: B1 registry + gallery renders ghosts *from* the registry (B2's visibility without store pollution).
+- **DECIDED (operator, round 1): ghosts, with bidirectional reference markers.** Ghost card design: dashed/badged "ghost — needs mapping" card in the /designer gallery showing (a) display name + short uuid, (b) **referenced-by list**: every referring workflow AND the specific connector node, each a clickable link into that diagram, (c) the linked documentation task chip (T-XXXX), (d) a "create this workflow" affordance (claims the uuid). Reverse direction: the *referring* workflow's card shows an "N unmapped references" marker, and compile WARNs name both ends (`workflow X node 'y' references unmapped workflow '<name>' (uuid …)`) — so the debt is visible from whichever side you approach it.
 
 ### C. Task minting for the referenced-but-undocumented workflow
 - Precedent: `fw bpmn promote` create-via-gate (T-2542/T-2543) — FW_TASK_ORIGIN gate enforces `owner: human`, `status: captured` at GATE level, caller-irrelevant; DEFER-injection for inception type (T-2548, L-504).
@@ -40,6 +41,8 @@
 
 - **2026-07-20 (operator, opening):** off-page connectors not linked to referenced workflows; forward-ref case (target not created yet) needs capture — sketch: uuid entry minted at reference time, claimed at creation; parallel task to document the workflow. Asked for reflection + discussion.
 - **2026-07-20 (agent):** grounded in corpus (findings above); framed axes A–E; put identity model, ghost visibility, minting timing, and seam first-mover to the operator as numbered choices (IW-1..IW-5 on the task). Awaiting operator steer.
+- **2026-07-20 (operator, steer round 1):** (1) uuid-canonical as recommended → IW-1 answered. (2) Ghosts YES, but must carry a **visual marker of which workflow(s) reference them** and that they still need to be mapped — "something that makes sense of it and gives reference"; asked agent to reflect. (3) Task-minting timing delegated: "whatever is most reliable and gives the best result, reflect." (4) Claim moment: did not understand — asked for elaboration. (5) Seam to 832: run in parallel.
+- **2026-07-20 (agent, execution + reflection):** IW-1/IW-2/IW-3 disposed answered (IW-2 with the back-reference-marker requirement; IW-3 resolved to save-time gate minting + compile WARN + audit sweep — capture-at-source with two-layer backstop, T-2204 pattern). IW-4 held open pending operator confirm after plain-language elaboration. IW-5: seam proposal posted to 832 at **rail offset 107** (Q1 attr shape `workflowRef` on `aef:link`, Q2 draw-time uuid minting in their editor, Q3 claim-UX feasibility + GET /api/workflows contract offer). Ghost-marker design reflection recorded under §B below.
 
 ## Recommendation
 
