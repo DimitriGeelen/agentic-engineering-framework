@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2577: S4 save-time ghost documentation-task minting via FW_TASK_ORIGIN gate (T-2571)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-20T22:47:37Z
+# ============================================================================
+
+task_id: T-2577
+task_name: "S4 save-time ghost documentation-task minting via FW_TASK_ORIGIN gate (T-2571)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-20T22:38:47Z
+completed: 2026-07-20T22:47:24Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Saving a diagram that creates a NEW ghost mints exactly one documentation task via create-task.sh with `FW_TASK_ORIGIN=designer-ghost`; the task lands `owner: human`, `status: captured`, `horizon: later`, and its body names the ghost (display name + uuid) and every referrer — LIVE-VERIFIED on :3001 (probe minted T-2578 with exact shape; probe artifacts cleaned)'
+  - 'The ghost''s registry entry stores the minted `task:` T-ID; re-saving the same diagram (or another referrer hitting the same ghost) does NOT mint a second task (idempotent per uuid) — live re-save produced no second task'
+  - 'create-task.sh gate enforces the shape for `designer-ghost` origin at GATE level: an owner:agent or --start create under `FW_TASK_ORIGIN=designer-ghost` is refused by create-task.sh itself (T-2543 pattern, caller-irrelevant) — designer_ghost_gate.bats 3/3'
+  - 'Minting failure is non-fatal to the save: /api/save still returns 200 and the registry entry persists with `task: null` (WARN logged) — the audit sweep catches it later'
+  - 'Audit sweep (both directions): a check flags (a) ghosts with `task: null` older than a grace period and (b) ghost `task:` T-IDs that resolve to no existing task file — both WARN legs verified against doctored registry; clean PASS on live registry'
+  - 'Unit tests cover mint-on-first-sighting, idempotency, gate refusal shapes, and non-fatal failure; existing designer + compiler suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2577-s4-save-time-ghost-documentation-task-mi.md
+generated_by: context-agent-hybrid

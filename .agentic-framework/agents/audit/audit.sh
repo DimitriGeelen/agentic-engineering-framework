@@ -1744,6 +1744,74 @@ check_self_vendor_drift() {
 }
 check_self_vendor_drift
 
+# T-2577 (T-2571 S4): designer ghost↔task drift sweep, both directions.
+# The save-time mint is non-fatal by contract (a failed mint must never break
+# /api/save), so this sweep is the backstop that keeps the failure visible:
+#   A: ghost with task:null older than the grace window — the mint failed (or
+#      was skipped, e.g. no fw shim) and the documentation debt is invisible.
+#   B: ghost task: T-ID resolving to no task file — the task was deleted or
+#      renamed out from under the registry (dangling uuid↔task join).
+# Silent when no registry exists (project has no designer store yet).
+check_designer_ghost_drift() {
+    local _reg="$PROJECT_ROOT/.context/designer/registry.yaml"
+    [ -f "$_reg" ] || return 0
+    local _out
+    _out=$(python3 - "$_reg" "$PROJECT_ROOT" "${FW_GHOST_TASK_GRACE_HOURS:-24}" <<'PYEOF'
+import glob, os, sys, time
+import yaml
+reg_p, root, grace_h = sys.argv[1], sys.argv[2], float(sys.argv[3])
+try:
+    reg = yaml.safe_load(open(reg_p)) or {}
+except Exception:
+    print("parse-error|||")
+    raise SystemExit(0)
+ghosts = reg.get("ghosts") or []
+task_ids = set()
+for f in glob.glob(os.path.join(root, ".tasks", "active", "T-*.md")) + glob.glob(
+    os.path.join(root, ".tasks", "completed", "T-*.md")
+):
+    parts = os.path.basename(f).split("-")
+    if len(parts) >= 2:
+        task_ids.add(parts[0] + "-" + parts[1])
+now = time.time()
+unminted = [
+    g.get("uuid", "?")
+    for g in ghosts
+    if not g.get("task") and (now - (g.get("first_seen") or 0)) > grace_h * 3600
+]
+dangling = [
+    f"{g['task']}({g.get('uuid', '?')[:8]})"
+    for g in ghosts
+    if g.get("task") and g["task"] not in task_ids
+]
+print(f"{len(unminted)}|{' '.join(unminted[:5])}|{len(dangling)}|{' '.join(dangling[:5])}")
+PYEOF
+    )
+    if [ "${_out%%|*}" = "parse-error" ]; then
+        warn "Designer ghost registry unparseable: $_reg" \
+             "yaml.safe_load failed — registry writes are atomic, so this suggests manual edit damage" \
+             "Inspect the file; registry regenerates entries on next designer save"
+        return 0
+    fi
+    local _unminted _unminted_list _dangling _dangling_list
+    IFS='|' read -r _unminted _unminted_list _dangling _dangling_list <<< "$_out"
+    if [ "${_unminted:-0}" -eq 0 ] && [ "${_dangling:-0}" -eq 0 ]; then
+        pass "Designer ghost registry: ghost↔task joins clean"
+        return 0
+    fi
+    if [ "${_unminted:-0}" -gt 0 ]; then
+        warn "Designer ghosts without documentation task: $_unminted past grace window (T-2577)" \
+             "uuids:$_unminted_list — save-time mint failed or was skipped; debt is invisible until minted" \
+             "Re-save the referring diagram (re-triggers minting) or check the Watchtower stderr log for mint failures. Grace window: FW_GHOST_TASK_GRACE_HOURS (default 24)."
+    fi
+    if [ "${_dangling:-0}" -gt 0 ]; then
+        warn "Designer ghost task joins dangling: $_dangling T-ID(s) resolve to no task file (T-2577)" \
+             "entries:$_dangling_list — task deleted/renamed out from under the registry" \
+             "Restore the task or clear the ghost's task: field so the next save re-mints"
+    fi
+}
+check_designer_ghost_drift
+
 echo ""
 fi # end structure
 

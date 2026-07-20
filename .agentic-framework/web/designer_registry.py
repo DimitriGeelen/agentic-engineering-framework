@@ -24,6 +24,9 @@ os.replace, L-493); timestamps are epoch ints (never ISO — L-495/OBS-085 class
 
 from __future__ import annotations
 
+import os
+import re
+import sys
 import time
 import uuid as _uuid
 import xml.etree.ElementTree as ET
@@ -148,6 +151,101 @@ def sync_project_refs(store: Path, project_id: str, bpmn: str) -> dict:
     reg["ghosts"] = [g for g in reg["ghosts"] if g["referenced_by"] or g.get("task")]
     save_registry(store, reg)
     return reg
+
+
+def _fw_bin(store: Path) -> Path | None:
+    """fw shim for the project owning this store. FW_BIN override, else derived
+    from the store path: framework repo ``bin/fw``, consumer
+    ``.agentic-framework/bin/fw``. None when neither exists (minting skipped)."""
+    env = os.environ.get("FW_BIN")
+    if env:
+        return Path(env)
+    root = registry_path(store).parents[2]  # <root>/.context/designer/registry.yaml
+    for cand in (root / "bin" / "fw", root / ".agentic-framework" / "bin" / "fw"):
+        if cand.is_file():
+            return cand
+    return None
+
+
+def mint_ghost_tasks(store: Path, runner=None) -> list[dict]:
+    """Mint a documentation task for every ghost lacking one (T-2577, T-2571 S4).
+
+    The operator's original sketch: "in parallel create a task to document the
+    workflow" — this is that parallel leg, fired at save-time so the task exists
+    the moment the forward-reference is drawn. Shape is enforced by the GATE,
+    not this caller (T-2543 pattern): the create runs through ``fw task create``
+    with ``FW_TASK_ORIGIN=designer-ghost``, which create-task.sh refuses unless
+    owner:human + captured. horizon:later so a mint never steals focus
+    (T-100146 class). Idempotent per uuid: ``ghost["task"]`` records the T-ID
+    and minted ghosts are skipped forever after.
+
+    Non-fatal by contract: a failed mint leaves ``task: null`` (stderr WARN) and
+    the caller's save proceeds — the audit sweep flags stale unminted ghosts.
+    ``runner`` is injectable for tests: ``runner(args) -> (rc, output)``.
+    """
+    reg = load_registry(store)
+    pending = [g for g in reg["ghosts"] if not g.get("task")]
+    if not pending:
+        return []
+    if runner is None:
+        fw = _fw_bin(store)
+        if fw is None:
+            print(
+                "designer-registry: no fw shim found for store — "
+                "ghost task minting skipped (audit sweep will flag)",
+                file=sys.stderr,
+            )
+            return []
+
+        def runner(args):
+            import subprocess
+
+            env = dict(os.environ, FW_TASK_ORIGIN="designer-ghost")
+            p = subprocess.run(
+                [str(fw), *args], capture_output=True, text=True, env=env
+            )
+            return p.returncode, p.stdout + p.stderr
+
+    minted = []
+    for g in pending:
+        refs = ", ".join(
+            f"{r['id']}:{r['node']}" for r in g["referenced_by"]
+        ) or "(none yet)"
+        name = g["name"] or g["uuid"][:8]
+        rc, out = runner([
+            "task", "create",
+            "--name", f"Document workflow '{name}' (referenced, not yet created)",
+            "--description",
+            (
+                f"Off-page connector(s) reference a workflow that does not exist "
+                f"yet (T-2571 ghost). uuid: {g['uuid']}. Referenced by: {refs}. "
+                f"Create/document the workflow in the designer, then bind the "
+                f"identity: fw bpmn claim {g['uuid']} <project>"
+            ),
+            "--type", "build",
+            "--owner", "human",
+            "--horizon", "later",
+        ])
+        if rc != 0:
+            print(
+                f"designer-registry: ghost task mint failed for {g['uuid']} "
+                f"(rc={rc}): {out.strip()[:300]}",
+                file=sys.stderr,
+            )
+            continue
+        m = re.search(r"^ID:\s*(\S+)", out, re.MULTILINE)
+        if not m:
+            print(
+                f"designer-registry: could not parse task id from create output "
+                f"for {g['uuid']} — leaving task: null",
+                file=sys.stderr,
+            )
+            continue
+        g["task"] = m.group(1)
+        minted.append({"uuid": g["uuid"], "task": g["task"]})
+    if minted:
+        save_registry(store, reg)
+    return minted
 
 
 class ClaimError(ValueError):

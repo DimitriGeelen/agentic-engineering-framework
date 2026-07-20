@@ -94,20 +94,25 @@ fi
 # owner:human + captured. This closes the hole a future promote-caller bug could open:
 # an owner:agent or --start promote-origin create is refused HERE, never silently
 # written. Non-promote-origin creates are wholly unaffected (keyed off the marker).
-if [ "${FW_TASK_ORIGIN:-}" = "bpmn-promote" ]; then
+# T-2577 extends the same gate to designer-ghost origin (T-2571 S4): save-time
+# documentation-task minting for off-page ghost refs must land owner:human +
+# captured — enforced HERE, caller-irrelevant, exactly like promote-origin.
+case "${FW_TASK_ORIGIN:-}" in
+  bpmn-promote|designer-ghost)
     if [ "$OWNER" != "human" ]; then
-        echo -e "${RED}BLOCKED: promote-origin create must be owner:human (got '${OWNER:-<empty>}').${NC}" >&2
-        echo "  fw bpmn promote materializes BPMN proposals as human-owned; the gate refuses otherwise." >&2
-        echo "  Policy: T-2543 gate-level enforcement (Dimitri sovereignty bar, rail offset 60)." >&2
+        echo -e "${RED}BLOCKED: ${FW_TASK_ORIGIN}-origin create must be owner:human (got '${OWNER:-<empty>}').${NC}" >&2
+        echo "  Gated writers (fw bpmn promote / designer ghost minting) materialize human-owned tasks; the gate refuses otherwise." >&2
+        echo "  Policy: T-2543 gate-level enforcement (Dimitri sovereignty bar, rail offset 60); T-2577 designer-ghost leg." >&2
         exit 1
     fi
     if [ "$START_WORK" = true ]; then
-        echo -e "${RED}BLOCKED: promote-origin create must be captured (no --start).${NC}" >&2
-        echo "  Promoted proposals land captured for human review before work-start (G-020)." >&2
-        echo "  Policy: T-2543 gate-level enforcement (Dimitri sovereignty bar, rail offset 60)." >&2
+        echo -e "${RED}BLOCKED: ${FW_TASK_ORIGIN}-origin create must be captured (no --start).${NC}" >&2
+        echo "  Gated-writer creates land captured for human review before work-start (G-020)." >&2
+        echo "  Policy: T-2543 gate-level enforcement (Dimitri sovereignty bar, rail offset 60); T-2577 designer-ghost leg." >&2
         exit 1
     fi
-fi
+    ;;
+esac
 
 # Interactive mode if required fields missing.
 # T-100160 (OBS-086): prompt ONLY when stdin is a tty. In no-tty contexts

@@ -36,6 +36,7 @@ gracefully when it is absent, so saved maps work without it.
 import json
 import re
 import shutil
+import sys
 import time
 import uuid as _uuid
 import xml.etree.ElementTree as ET
@@ -43,7 +44,12 @@ from pathlib import Path
 
 from flask import Blueprint, Response, jsonify, request
 
-from web.designer_registry import load_registry, remove_project_refs, sync_project_refs
+from web.designer_registry import (
+    load_registry,
+    mint_ghost_tasks,
+    remove_project_refs,
+    sync_project_refs,
+)
 from web.shared import PROJECT_ROOT
 
 bp = Blueprint("designer_api", __name__)
@@ -143,6 +149,15 @@ def save():
     # registry — capture-at-source, so a dangling workflowRef becomes a ghost the
     # moment it is saved, not when someone later runs a verb.
     sync_project_refs(_STORE, i, bpmn)
+    # T-2577 (T-2571 S4): mint the parallel documentation task for any NEW ghost
+    # through the gated writer (FW_TASK_ORIGIN=designer-ghost — gate enforces
+    # owner:human + captured; horizon:later so it never steals focus). Non-fatal
+    # by contract: the save must succeed even when minting cannot — the ghost
+    # persists with task:null and the audit sweep flags it.
+    try:
+        mint_ghost_tasks(_STORE)
+    except Exception as e:
+        print(f"designer-api: ghost task minting failed: {e}", file=sys.stderr)
     return _ok(v=v)
 
 
