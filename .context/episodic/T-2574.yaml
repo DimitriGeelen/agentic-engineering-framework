@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2574: pending-ref registry: aef:link parse at save, ghost capture, /api/list ghosts[]
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-20T22:05:37Z
+# ============================================================================
+
+task_id: T-2574
+task_name: "pending-ref registry: aef:link parse at save, ghost capture, /api/list ghosts[]"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-20T21:59:03Z
+completed: 2026-07-20T22:05:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-21T00:05:06+02:00
+last_commit: 2026-07-21T00:05:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S2 pending-ref registry — aef:link parse at save (workflowRef/targetWorkflow resolution, ghost merge, name dedup), /api/list ghosts[] partitioned per contract v0, delete strips back-refs; 14/14, live-verified probe cycle on :3001
+
+# Key outcomes
+outcomes:
+  - '`web/designer_registry.py` (stdlib+yaml, no flask; moved from tools/ so `fw vendor self` ships it with the blueprint that imports it): load/save registry (atomic temp+replace), `extract_links()` (aef:link under any node, ns `http://anchorpoint.framework/aef/extensions`, reads workflowRef + legacy targetWorkflow + name, records host node id/name), `sync_project_refs()` (resolution per contract: workflowRef→uuid match, targetWorkflow/name→slug match; unresolved → ghost merge; store-minted uuid for workflowRef-less ghosts, deduped by name)'
+  - 'Rescan semantics: each save replaces the saving project''s `referenced_by` entries; ghosts with empty referenced_by and no task are dropped; ghosts with a task survive (both pinned by test)'
+  - '`/api/save` calls sync (well-formed saves only); `/api/list` emits `ghosts: [{uuid,name,referenced_by:[{id,node,nodeName}],task,first_seen}]` per contract v0 — partitioned, never inside maps[]; BONUS: `/api/delete scope=map` strips the deleted project''s back-references (drift gap found by the live probe, closed same-slice with `remove_project_refs` + test)'
+  - 'Tests green: 8 in tests/web/test_designer_registry_ghosts.py + uuid/save-gate suites unregressed (14/14)'
+  - 'Live surface on :3001 (post vendor-self + restart): probe save with dangling targetWorkflow → registry.yaml ghost with store-minted uuid + referenced_by {t2574-probe, n_probe, ''jump to missing''}; /api/list ghosts[] carried it, probe stayed out of ghosts and in maps; /api/delete cleanup → `ghosts: []` live'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/designer_api.py'
+  - '.agentic-framework/web/designer_registry.py'
+  - '.context/designer/registry.yaml'
+  - '.fabric/components/tests-web-test_designer_registry_ghosts.yaml'
+  - '.fabric/components/web-designer_registry.yaml'
+  - '.tasks/active/T-2574-pending-ref-registry-aeflink-parse-at-sa.md'
+  - 'tests/web/test_designer_registry_ghosts.py'
+  - 'web/blueprints/designer_api.py'
+  - 'web/designer_registry.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-21T00:05:06"
+    action: "T-2574: S2 pending-ref registry — aef:link parse at save (workflowRef/targetWorkflow resolution, ghost merge, name dedup), /api/list ghosts[] partitioned per contract v0, delete strips back-refs; 14/14, live-verified probe cycle on :3001"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 9
+  lines_added: 767
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2574-pending-ref-registry-aeflink-parse-at-sa.md
+generated_by: context-agent-hybrid

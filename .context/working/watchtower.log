@@ -19,3 +19,4 @@ Press CTRL+C to quit
 192.168.10.107 - - [21/Jul/2026 00:11:13] "POST /api/delete HTTP/1.1" 200 -
 192.168.10.107 - - [21/Jul/2026 00:11:13] "POST /api/delete HTTP/1.1" 200 -
 192.168.10.107 - - [21/Jul/2026 00:11:13] "GET /api/list HTTP/1.1" 200 -
+192.168.10.25 - - [21/Jul/2026 00:11:53] "GET /approvals/content HTTP/1.1" 200 -

@@ -767,3 +767,10 @@ observations:
   tags: [coordination]
   status: pending
   promoted_to: null
+- id: OBS-094
+  text: "tests/web full-dir run has 8 order-dependent failures (all inception decide/verdict/rationale tests) — each passes in isolation; reproduced WITHOUT the T-2574/T-2575 new test files, so pre-existing state leak (likely shared web.app config/monkeypatch bleed between files). Fix = isolate the leaking fixture, not the failing tests."
+  captured: 2026-07-20T22:10:23Z
+  context_task: T-2575
+  tags: [bug]
+  status: pending
+  promoted_to: null

@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2575: fw bpmn claim: bind ghost uuid to live project (T-2571 S6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-20T22:12:12Z
+# ============================================================================
+
+task_id: T-2575
+task_name: "fw bpmn claim: bind ghost uuid to live project (T-2571 S6)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-20T22:05:47Z
+completed: 2026-07-20T22:12:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-21T00:11:50+02:00
+last_commit: 2026-07-21T00:11:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S6 fw bpmn claim — claim_ghost (bind-never-remint, 3 refusal paths, claims audit w/ via), CLI wired in bpmn.sh; 4 tests, live claim cycle verified on :3001; obs filed for pre-existing tests/web order flake
+
+# Key outcomes
+outcomes:
+  - '`claim_ghost()` in web/designer_registry.py: refuses unknown ghost uuid (lists pending), refuses nonexistent project, refuses a project that already owns a DIFFERENT uuid (immutability — binds, never re-mints, per rail 110/111 pin); on success atomically writes uuid to project meta.json, removes ghost, appends `claims: [{uuid, project, ts, via}]`'
+  - '`fw bpmn claim <uuid> <project>` wired into agents/bpmn/bpmn.sh with actionable errors and a success line naming how many referrers resolved'
+  - 'Tests green: 4 in tests/web/test_designer_registry_claim.py (claim happy-path incl. maps[].uuid flip, 3 refusal paths w/ no-mutation assert); designer suites 18/18. NOTE: tests/web FULL-DIR run has 8 pre-existing order-dependent inception-render failures — reproduced WITHOUT this session''s test files, registered as observation (fw note, tagged T-2575), each passes in isolation'
+  - 'Live on :3001: seeded ghost 4444…4444 via probe save → `bin/fw bpmn claim` → "1 referring connector(s) now resolve", /api/list target uuid == claimed uuid, ghosts[] empty, claims audit row w/ via:cli; probes deleted, registry clean (7 maps, 0 ghosts)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/designer_registry.py'
+  - 'agents/bpmn/bpmn.sh'
+  - '.context/designer/registry.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - '.fabric/components/tests-web-test_designer_registry_claim.yaml'
+  - '.tasks/active/T-2575-fw-bpmn-claim-bind-ghost-uuid-to-live-pr.md'
+  - '.tasks/completed/T-2574-pending-ref-registry-aeflink-parse-at-sa.md'
+  - 'tests/web/test_designer_registry_claim.py'
+  - 'web/designer_registry.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-21T00:11:50"
+    action: "T-2575: S6 fw bpmn claim — claim_ghost (bind-never-remint, 3 refusal paths, claims audit w/ via), CLI wired in bpmn.sh; 4 tests, live claim cycle verified on :3001; obs filed for pre-existing tests/web order flake"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 17
+  lines_added: 478
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2575-fw-bpmn-claim-bind-ghost-uuid-to-live-pr.md
+generated_by: context-agent-hybrid

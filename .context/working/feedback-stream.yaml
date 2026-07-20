@@ -21840,3 +21840,21 @@ scan_id: R-f2cddf2f
 task_id: T-2574
 payload:
   task_file: .tasks/active/T-2574-pending-ref-registry-aeflink-parse-at-sa.md
+---
+kind: scan_emitted
+timestamp: '2026-07-20T22:12:04Z'
+scan_id: R-7ebb6e55
+task_id: T-2575
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-20T22:12:04Z'
+scan_id: R-7ebb6e55
+task_id: T-2575
+payload:
+  task_file: .tasks/active/T-2575-fw-bpmn-claim-bind-ghost-uuid-to-live-pr.md
