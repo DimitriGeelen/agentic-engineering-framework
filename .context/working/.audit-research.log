@@ -1,0 +1,101 @@
+=== AUDIT REPORT ===
+Timestamp: 2026-07-07T20:16:11+02:00
+Project: /opt/999-Agentic-Engineering-Framework
+Sections: research
+
+=== INCEPTION RESEARCH CHECKS ===
+[WARN] Inception task T-1372 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1372-*.md
+[WARN] Inception task T-1376 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1376-*.md
+[WARN] Inception task T-1444 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1444-*.md
+[WARN] Inception task T-1506 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1506-*.md
+[WARN] Inception task T-1507 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1507-*.md
+[WARN] Inception task T-1616 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1616-*.md
+[WARN] Inception task T-1617 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1617-*.md
+[WARN] Inception task T-1621 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1621-*.md
+[WARN] Inception task T-1710 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1710-*.md
+[WARN] Inception task T-1713 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1713-*.md
+[WARN] Inception task T-1732 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1732-*.md
+[WARN] Inception task T-1829 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1829-*.md
+[WARN] Inception task T-1831 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1831-*.md
+[WARN] Inception task T-1833 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1833-*.md
+[WARN] Inception task T-1958 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1958-*.md
+[WARN] Inception task T-1959 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1959-*.md
+[WARN] Inception task T-1981 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-1981-*.md
+[WARN] Inception task T-2000 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2000-*.md
+[WARN] Inception task T-2159 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2159-*.md
+[WARN] Inception task T-2203 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2203-*.md
+[WARN] Inception task T-2252 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2252-*.md
+[WARN] Inception task T-2324 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2324-*.md
+[WARN] Inception task T-2416 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2416-*.md
+
+=== SUMMARY ===
+Pass: 0
+Warn: 23
+Fail: 0
+
+=== PRIORITY ACTIONS ===
+     1	Save research findings: docs/reports/T-1372-*.md
+     2	Save research findings: docs/reports/T-1376-*.md
+     3	Save research findings: docs/reports/T-1444-*.md
+     4	Save research findings: docs/reports/T-1506-*.md
+     5	Save research findings: docs/reports/T-1507-*.md
+
+=== TREND ANALYSIS ===
+Repeated issues detected in last 14 days (candidates for practice):
+  -      3 free driver F-ORCH: retire_when condition appears met (T-1643 completed cleanly OR G-064 closed) — review whether to retire (3 times)
+  -      3 Fabric drift: 1 source file(s) have no fabric card (3 times)
+
+Consider creating a practice to address these recurring issues.
+Run: fw context add-learning "description" --task T-XXX
+
+Audit history: 3 audit(s) in last 14 days + today
+
+Audit saved to: /opt/999-Agentic-Engineering-Framework/.context/audits/2026-07-07.yaml
+
+=== END AUDIT ===

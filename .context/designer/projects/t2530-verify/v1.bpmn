@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_t2530-verify"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_t2530-verify">
+    <bpmn:participant id="Pool_t2530-verify" name="t2530-verify" processRef="Process_t2530-verify"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_t2530-verify" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="t2530-verify" version="1" schemaVersion="2" title="Investigate" description="Decompose a question, gather context across code/history/related tasks, synthesize findings, and route to human review." source="agents/dispatch/investigate.md" tier_default="2"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_human</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_ready</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>frw_1_investigation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_2_load</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_3_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_4_abandoned</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="320"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_decompose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_fan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_search</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_search-2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_search-3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_join</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_synthesize</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_8_sufficient</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="frw_1_investigation" name="Investigation requested">
+      <bpmn:extensionElements>
+        <aef:uid value="n_d9473f8b"/>
+        <aef:position x="120.0" y="239.0"/>
+        <aef:meta triggeredBy="fw dispatch investigate ${task_id}"/>
+        <aef:contextReads paths=".tasks/active/${task_id}.md"/>
+        <aef:io>
+          <aef:output name="task_id" type="task_id"/>
+          <aef:output name="run_id" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:scriptTask id="frw_2_load" name="Load context bundle">
+      <bpmn:extensionElements>
+        <aef:uid value="n_e58ff283"/>
+        <aef:position x="200.0" y="225.0"/>
+        <aef:meta tier="2"/>
+        <aef:endpoint>fw context build --task ${task_id} --depth 2</aef:endpoint>
+        <aef:contextReads paths=".context/project/, .context/episodic/, policy/anti-patterns.yaml"/>
+        <aef:artifactsWrites paths=".context/working/investigate-${run_id}/bundle.yaml"/>
+        <aef:io>
+          <aef:input name="task_id" type="task_id" required="true"/>
+          <aef:input name="run_id" type="string" required="true"/>
+          <aef:output name="bundle" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:serviceTask id="agt_1_decompose" name="Decompose problem">
+      <bpmn:extensionElements>
+        <aef:uid value="n_f7a2158a"/>
+        <aef:position x="350.0" y="450.0"/>
+        <aef:meta tier="2" agentType="primary"/>
+        <aef:endpoint>agents/dispatch/skills/decompose.md</aef:endpoint>
+        <aef:contextReads paths=".context/working/investigate-${run_id}/bundle.yaml"/>
+        <aef:artifactsWrites paths=".context/working/investigate-${run_id}/sub-questions.yaml"/>
+        <aef:io>
+          <aef:input name="bundle" type="ref" required="true"/>
+          <aef:output name="sub_questions" type="list"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:incoming>flow_13</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:parallelGateway id="agt_2_fan" name="Fan out">
+      <bpmn:extensionElements>
+        <aef:uid value="n_9f59cdee"/>
+        <aef:position x="500.0" y="458.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <bpmn:serviceTask id="agt_5_search" name="Search codebase">
+      <bpmn:extensionElements>
+        <aef:uid value="n_ed725689"/>
+        <aef:position x="600.0" y="372.0"/>
+        <aef:meta tier="2" agentType="termlink-worker"/>
+        <aef:endpoint>fw recall ${sub_questions} --scope code</aef:endpoint>
+        <aef:contextReads paths=".fabric/, src/"/>
+        <aef:artifactsWrites paths=".context/working/investigate-${run_id}/evidence-code.yaml"/>
+        <aef:io>
+          <aef:input name="sub_questions" type="list" required="true"/>
+          <aef:output name="evidence_code" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_4_search-2" name="Search episodes">
+      <bpmn:extensionElements>
+        <aef:uid value="n_9a2ef769"/>
+        <aef:position x="600.0" y="450.0"/>
+        <aef:meta tier="2" agentType="termlink-worker"/>
+        <aef:endpoint>fw recall ${sub_questions} --scope episodic</aef:endpoint>
+        <aef:contextReads paths=".context/episodic/, .context/handovers/"/>
+        <aef:artifactsWrites paths=".context/working/investigate-${run_id}/evidence-history.yaml"/>
+        <aef:io>
+          <aef:input name="sub_questions" type="list" required="true"/>
+          <aef:output name="evidence_history" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_3_search-3" name="Search tasks &amp; arcs">
+      <bpmn:extensionElements>
+        <aef:uid value="n_3f400020"/>
+        <aef:position x="600.0" y="528.0"/>
+        <aef:meta tier="2" agentType="termlink-worker"/>
+        <aef:endpoint>fw recall ${sub_questions} --scope tasks,arcs</aef:endpoint>
+        <aef:contextReads paths=".tasks/, .context/arcs/"/>
+        <aef:artifactsWrites paths=".context/working/investigate-${run_id}/evidence-related.yaml"/>
+        <aef:io>
+          <aef:input name="sub_questions" type="list" required="true"/>
+          <aef:output name="evidence_related" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:parallelGateway id="agt_6_join" name="Join">
+      <bpmn:extensionElements>
+        <aef:uid value="n_77ad5acc"/>
+        <aef:position x="750.0" y="458.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <bpmn:serviceTask id="agt_7_synthesize" name="Synthesize findings">
+      <bpmn:extensionElements>
+        <aef:uid value="n_9c4ba45e"/>
+        <aef:position x="850.0" y="450.0"/>
+        <aef:meta tier="2" agentType="primary"/>
+        <aef:endpoint>agents/dispatch/skills/synthesize.md</aef:endpoint>
+        <aef:contextReads paths=".context/working/investigate-${run_id}/evidence-*.yaml"/>
+        <aef:artifactsWrites paths=".context/working/investigate-${run_id}/findings.yaml"/>
+        <aef:io>
+          <aef:input name="evidence_code" type="ref" required="true"/>
+          <aef:input name="evidence_history" type="ref" required="true"/>
+          <aef:input name="evidence_related" type="ref" required="true"/>
+          <aef:output name="findings" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="agt_8_sufficient" name="Sufficient?">
+      <bpmn:extensionElements>
+        <aef:uid value="n_d4e31066"/>
+        <aef:position x="1010.0" y="458.0"/>
+        <aef:meta decisionOwner="agent"/>
+        <aef:decisionInput>${findings.confidence}</aef:decisionInput>
+        <aef:io>
+          <aef:input name="findings" type="ref" required="true"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:scriptTask id="frw_3_write" name="Write report">
+      <bpmn:extensionElements>
+        <aef:uid value="n_bd860379"/>
+        <aef:position x="1110.0" y="225.0"/>
+        <aef:meta tier="2"/>
+        <aef:endpoint>fw report write investigate --run ${run_id}</aef:endpoint>
+        <aef:contextReads paths=".context/working/investigate-${run_id}/findings.yaml"/>
+        <aef:artifactsWrites paths="docs/reports/investigate-${run_id}.md, .context/audits/investigate-runs.jsonl"/>
+        <aef:io>
+          <aef:input name="findings" type="ref" required="true"/>
+          <aef:input name="run_id" type="string" required="true"/>
+          <aef:output name="report_path" type="path"/>
+          <aef:output name="audit_entry" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:userTask id="hum_1_human" name="Human review &amp; route">
+      <bpmn:extensionElements>
+        <aef:uid value="n_6075382e"/>
+        <aef:position x="1260.0" y="95.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>watchtower:/investigate/runs/${run_id}</aef:endpoint>
+        <aef:decisionOutputs>dispatch, abandon, reinvestigate</aef:decisionOutputs>
+        <aef:io>
+          <aef:input name="report_path" type="path" required="true"/>
+          <aef:output name="route" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_14</bpmn:incoming>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="hum_2_ready" name="Ready">
+      <bpmn:extensionElements>
+        <aef:uid value="n_d31c57b5"/>
+        <aef:position x="1410.0" y="109.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_15</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="frw_4_abandoned" name="Abandoned">
+      <bpmn:extensionElements>
+        <aef:uid value="n_f4b89e10"/>
+        <aef:position x="1410.0" y="239.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_16</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="frw_1_investigation" targetRef="frw_2_load">
+      <bpmn:extensionElements>
+        <aef:uid value="e_dea60dd6"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="frw_2_load" targetRef="agt_1_decompose">
+      <bpmn:extensionElements>
+        <aef:uid value="e_e2f47dc7"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_1_decompose" targetRef="agt_2_fan">
+      <bpmn:extensionElements>
+        <aef:uid value="e_a54c43f0"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_2_fan" targetRef="agt_5_search">
+      <bpmn:extensionElements>
+        <aef:uid value="e_44f7d7d0"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" sourceRef="agt_2_fan" targetRef="agt_4_search-2">
+      <bpmn:extensionElements>
+        <aef:uid value="e_e87265bc"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_2_fan" targetRef="agt_3_search-3">
+      <bpmn:extensionElements>
+        <aef:uid value="e_820ef33d"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_5_search" targetRef="agt_6_join">
+      <bpmn:extensionElements>
+        <aef:uid value="e_da20021f"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" sourceRef="agt_4_search-2" targetRef="agt_6_join">
+      <bpmn:extensionElements>
+        <aef:uid value="e_2b6d1e17"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" sourceRef="agt_3_search-3" targetRef="agt_6_join">
+      <bpmn:extensionElements>
+        <aef:uid value="e_ba7263ee"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" sourceRef="agt_6_join" targetRef="agt_7_synthesize">
+      <bpmn:extensionElements>
+        <aef:uid value="e_2953e828"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_7_synthesize" targetRef="agt_8_sufficient">
+      <bpmn:extensionElements>
+        <aef:uid value="e_f126cd4b"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_12" name="sufficient" sourceRef="agt_8_sufficient" targetRef="frw_3_write">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${findings.confidence &gt;= 0.7}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_96710884"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_13" name="insufficient · loop" sourceRef="agt_8_sufficient" targetRef="agt_1_decompose">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${findings.confidence &lt; 0.7}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_e80d2b98"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_14" sourceRef="frw_3_write" targetRef="hum_1_human">
+      <bpmn:extensionElements>
+        <aef:uid value="e_b8696299"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_15" name="dispatch" sourceRef="hum_1_human" targetRef="hum_2_ready">
+      <bpmn:extensionElements>
+        <aef:uid value="e_01188066"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_16" name="abandon" sourceRef="hum_1_human" targetRef="frw_4_abandoned">
+      <bpmn:extensionElements>
+        <aef:uid value="e_8074788e"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
+</bpmn:definitions>

@@ -2221,3 +2221,31 @@ decisions:
     date: 2026-07-11
     task: T-2529
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-320
+    decision: "`promote` calls `fw task create` (gated write, forces owner:human + captured), then"
+    scope: project
+    date: 2026-07-18
+    task: T-2542
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-321
+    decision: "`new→create` and `unchanged(sha)→NO-OP` are one indivisible slice; `changed→refuse-clobber`"
+    scope: project
+    date: 2026-07-18
+    task: T-2542
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-322
+    decision: "place the `owner == 'human'` skip BEFORE the `bvp_scores` check in the candidate loop, and prove exclusion via a `--dry-run` bats test with two probes differing only in `owner`."
+    scope: project
+    date: 2026-07-18
+    task: T-2544
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-323
+    decision: "keep the existing name-heuristic/type-default fold (→ agent for 832's Framework nodes) and surface ONE aggregated WARN per lane listing uid→owner pairs."
+    scope: project
+    date: 2026-07-19
+    task: T-2567
+    rationale: "Auto-captured from task file on completion"

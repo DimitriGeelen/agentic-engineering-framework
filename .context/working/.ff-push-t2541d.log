@@ -1,0 +1,75 @@
+VERSION stamped: 1.6.473
+
+=== Pre-Push Audit Check ===
+
+=== AUDIT REPORT ===
+Timestamp: 2026-07-18T10:49:46+02:00
+Project: /opt/999-Agentic-Engineering-Framework
+Sections: structure
+
+=== STRUCTURE CHECKS ===
+[PASS] Tasks directory exists
+[PASS] Tasks/active directory exists
+[PASS] Tasks/completed directory exists
+[PASS] Tasks/templates directory exists
+[PASS] Task template exists
+[PASS] No duplicate task IDs across active/ and completed/
+[PASS] All 24 project YAML files parse correctly
+[PASS] All 12 arc anchor_task references resolve to existing tasks
+[WARN] Arc 'arc-grooming' has no task commits in the last 30 days (39 task(s) in arc)
+       Evidence: Arc is in-progress but its constituent tasks show no recent git activity — may have stalled
+       Mitigation: Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30).
+[WARN] Arc 'dispatch-safety' has no task commits in the last 30 days (11 task(s) in arc)
+       Evidence: Arc is in-progress but its constituent tasks show no recent git activity — may have stalled
+       Mitigation: Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30).
+[WARN] Arc 'watchtower-redesign' has no task commits in the last 30 days (70 task(s) in arc)
+       Evidence: Arc is in-progress but its constituent tasks show no recent git activity — may have stalled
+       Mitigation: Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30).
+[INFO] free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F3: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F1: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F2: retire_when text present, no recognition heuristic — manual review
+[PASS] No inline arc:<slug> tag-only scans outside canonical lib (T-1881)
+[PASS] No stale-slice-references (L-417)
+[PASS] No GO-scope-not-propagated inception(s) (sibling to L-417)
+[PASS] Fabric: 882 registered, 0 unregistered
+[WARN] Fabric: 16/796 cards have no edges
+       Evidence: Graph coverage below target
+       Mitigation: Run: fw fabric enrich
+[PASS] Fabric drift: All watched source files registered (882 cards)
+[PASS] Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+[PASS] Hook threshold: no hooks failing over threshold
+[PASS] Secret scan: tracked tree clean
+[PASS] Large-file gate: tracked tree clean
+[PASS] Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)
+
+=== SUMMARY ===
+Pass: 22
+Warn: 4
+Fail: 0
+
+=== PRIORITY ACTIONS ===
+     1	Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30).
+     2	Run: fw fabric enrich
+
+=== TREND ANALYSIS ===
+Repeated issues detected in last 14 days (candidates for practice):
+  -      3 Fabric: 16/796 cards have no edges (3 times)
+  -      3 Arc 'watchtower-redesign' has no task commits in the last 30 days (70 task(s) in arc) (3 times)
+  -      3 Arc 'dispatch-safety' has no task commits in the last 30 days (11 task(s) in arc) (3 times)
+  -      3 Arc 'arc-grooming' has no task commits in the last 30 days (39 task(s) in arc) (3 times)
+
+Consider creating a practice to address these recurring issues.
+Run: fw context add-learning "description" --task T-XXX
+
+Audit history: 7 audit(s) in last 14 days + today
+
+Audit saved to: /opt/999-Agentic-Engineering-Framework/.context/audits/2026-07-18.yaml
+
+=== END AUDIT ===
+
+WARNING: Audit has warnings (push allowed)
+Consider addressing the issues above.
+
+To https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git
+   8c4032978..1032ad19a  t2539-staging -> master

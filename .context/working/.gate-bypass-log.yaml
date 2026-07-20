@@ -4120,3 +4120,615 @@ git commit -q -m "T-25'
   command: 'bin/fw task update T-2513 --horizon later --switch-focus 2>&1 | tail -3
 echo "--- remaining pending obs ---"
 python3 -c "import yaml; d=yaml.safe_load(open(.context/inbox.yaml)); print(pending:, ['
+- timestamp: '2026-07-07T17:52:26Z'
+  task: 'T-2512'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2514'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -q -m "$(cat <<EOF
+T-2514: fix audit stale/urgent-obs false-positive (regex block-split → YAML parse'
+- timestamp: '2026-07-07T18:22:34Z'
+  task: 'T-2515'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2121'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -q -m "$(cat <<EOF
+T-2515 T-2121: backfill 25 inception research artifacts (C-001 debt cleared)
+
+The 2'
+- timestamp: '2026-07-07T18:23:43Z'
+  task: 'T-2512'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2515'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/completed/T-2515-*.md .context/episodic/T-2515.yaml .context/working/focus.yaml
+git rm -q --cached --ignore-unmatch .tasks/active/T-2515-backfi'
+- timestamp: '2026-07-08T01:49:25Z'
+  task: 'T-2512'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-100201'
+  command: 'FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-100201: land session handovers S-2026-0707-{0930,2026,2052} (governance state)
+
+PreCompact handover auto-commit was blocked by T-2394 master'
+- timestamp: '2026-07-08T06:39:17Z'
+  task: 'T-2121'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2512'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2512: mark complete — fabric enrich detectors verified, no-edge WARN cleared
+
+Verification confirmed the six enrich detectors landed in the prior ses'
+- timestamp: '2026-07-08T06:39:39Z'
+  task: 'T-2121'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2512'
+  command: 'FW_ALLOW_MASTER_COMMIT=1 FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2512: mark complete — fabric enrich detectors verified, no-edge WARN cleared
+
+Verification confirmed the six enrich detector'
+- timestamp: '2026-07-08T06:40:34Z'
+  task: 'T-2121'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2512'
+  command: 'FW_ALLOW_MASTER_COMMIT=1 FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2512: mark complete — fabric enrich detectors verified, no-edge WARN cleared
+
+Verification confirmed the six enrich detector'
+- timestamp: '2026-07-08T06:41:02Z'
+  task: 'T-2121'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2512'
+  command: 'FW_ALLOW_MASTER_COMMIT=1 FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2512: mark complete — fabric enrich detectors verified, no-edge WARN cleared
+
+Verification confirmed the six enrich detector'
+- timestamp: '2026-07-08T07:04:18Z'
+  task: 'T-2121'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-08T07:20:02Z'
+  task: 'T-2121'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-09T22:57:10Z'
+  task: 'T-2516'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2121'
+  command: 'git add .tasks/active/T-2516-*.md .tasks/active/T-2517-*.md && FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2121: write real ACs for GO prong build tasks T-2516 (doctor untracked) + T-2'
+- timestamp: '2026-07-09T22:58:03Z'
+  task: 'T-2516'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2517'
+  command: 'FW_SWITCH_FOCUS=1 FW_SAFE_MODE=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2516 T-2517: write real ACs for the two T-2121 GO prong build tasks
+
+Replaces template placeholder ACs with well-formed, test'
+- timestamp: '2026-07-09T22:58:30Z'
+  task: 'T-2516'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2517'
+  command: 'bin/fw work-on T-2516 >/dev/null 2>&1; FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2516 T-2517: write real ACs for the two T-2121 GO prong build tasks
+
+Replaces template placeholder AC'
+- timestamp: '2026-07-09T22:59:00Z'
+  task: 'T-2516'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2517'
+  command: 'FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2516 T-2517: write real ACs for the two T-2121 GO prong build tasks
+
+Replaces template placeholder ACs with well-formed, testable criteria s'
+- timestamp: '2026-07-09T23:01:39Z'
+  task: 'T-2516'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2517'
+  command: 'git add .tasks/active/T-2516-*.md .tasks/active/T-2517-*.md && FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2516 T-2517: write real ACs for the two T-2121 GO prong build tasks
+
+Replaces'
+- timestamp: '2026-07-09T23:29:17Z'
+  task: 'T-2517'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2516'
+  command: 'bin/fw task update T-2516 --status work-completed --switch-focus 2>&1 | tail -20'
+- timestamp: '2026-07-09T23:32:44Z'
+  task: 'T-2517'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2516'
+  command: 'FW_SWITCH_FOCUS=1 FW_SAFE_MODE=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2516: fw doctor surfaces untracked .tasks/ files (T-2121 prong 3)
+
+Adds fw_untracked_tasks() to lib/branch-hygiene.sh + a doc'
+- timestamp: '2026-07-10T00:20:46Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2518'
+  command: 'FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2518: complete — move active->completed + episodic
+
+Fabric drift SIGPIPE flake fixed and verified (15/15 drift runs report
+unregistered: 0'
+- timestamp: '2026-07-10T11:15:28Z'
+  task: 'T-2520'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2519'
+  command: 'bin/fw task update T-2519 --status work-completed --switch-focus 2>&1 | tail -25'
+- timestamp: '2026-07-10T11:23:01Z'
+  task: 'T-2520'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2521'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2520 T-2521: AEF answers to T-175 program (IW-8) + file gated fw designer task
+
+Answers 832s thre'
+- timestamp: '2026-07-10T11:28:25Z'
+  task: 'T-2520'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-10T11:30:38Z'
+  task: 'T-2521'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2520'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+# unstage the unrelated handover files; commit only the T-2520 GO decision
+git restore --staged .context/handovers/LATEST.md .context/handovers/S-2026-0710-13'
+- timestamp: '2026-07-10T11:30:59Z'
+  task: 'T-2521'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2520'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2520: record inception GO decision
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>" .task'
+- timestamp: '2026-07-10T11:31:20Z'
+  task: 'T-2521'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2520'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2520: record inception GO decision (integration-surface approach approved)
+
+GO authorizes phase-1 '
+- timestamp: '2026-07-10T14:14:24Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2521'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/active/T-2521-fw-designer-vendorserve-pinned-workflow-.md .context/working/.reviewed-T-2521 2>/dev/null
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMI'
+- timestamp: '2026-07-10T14:48:37Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2521'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 bin/fw task update T-2521 --status work-completed 2>&1 | tail -8
+echo "=== where is T-2521 now? ===" && ls .tasks/a'
+- timestamp: '2026-07-10T14:48:52Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2521'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add -A .tasks/active/T-2521-fw-designer-vendorserve-pinned-workflow-.md .tasks/completed/T-2521-fw-designer-vendorserve-pinned-workflow-.md .context/episo'
+- timestamp: '2026-07-10T14:49:05Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2521'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .context/episodic/T-2521.yaml
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2521: episodic record
+
+Co-Authored-By: Claude Opus 4.8 <nore'
+- timestamp: '2026-07-10T17:05:46Z'
+  task: 'T-2522'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-10T18:49:30Z'
+  task: 'T-2524'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2523: confirm IW-1..IW-5 delivery to 832 (thread T-175, offset 6835); capture 832s live-PTY hold state
+
+AC-1 was already satisfied by a prior pass (du'
+- timestamp: '2026-07-10T18:49:48Z'
+  task: 'T-2524'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'git switch -c t2523-mapping-contract-convergence && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2523: confirm IW-1..IW-5 delivery to 832 (thread T-175, offset 6835); capture 832s live-PTY hold s'
+- timestamp: '2026-07-10T18:50:00Z'
+  task: 'T-2524'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2523: confirm IW-1..IW-5 delivery to 832 (thread T-175, offset 6835); capture 832s live-PTY hold state
+
+AC-1 was already satisfied by a prior pass (du'
+- timestamp: '2026-07-10T18:50:36Z'
+  task: 'T-2524'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2521'
+  command: 'git switch -c t2521-vendor-sync && git add .agentic-framework/bin/fw && FW_SWITCH_FOCUS=1 git commit -m "T-2521: self-vendor sync — refresh .agentic-framework/bin/fw (pre-existing drift, T-2240 gate'
+- timestamp: '2026-07-10T19:22:48Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2524'
+  command: 'FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2524: complete — move to completed/, episodic, fabric card; land compact handover S-2026-0710-2117
+
+Co-Authored-By: Claude Opus 4.8 <norep'
+- timestamp: '2026-07-10T19:58:46Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2525'
+  command: 'git add .tasks/active/T-2525-watchtower-nav-link-to-designer-workflow.md .context/working/.reviewed-T-2525
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2525: partial-complete — Agent '
+- timestamp: '2026-07-10T21:40:32Z'
+  task: 'T-2526'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2527'
+  command: 'git add .tasks/active/T-2527-aef-agent-identity-split-heartbeat-vs-session.md
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2527: capture AEF identity-split delivery gap (heartbeat vs se'
+- timestamp: '2026-07-10T21:46:38Z'
+  task: 'T-2526'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2527'
+  command: 'git add .tasks/active/T-2527-aef-agent-identity-split-heartbeat-vs-session.md
+FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "T-2527: bvp estimator fields (auto)
+
+Co-Authored-By: Claude Opus'
+- timestamp: '2026-07-10T22:01:40Z'
+  task: 'T-2528'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-11T00:10:47Z'
+  task: 'T-2529'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2526'
+  command: 'bin/fw task update T-2526 --status work-completed --switch-focus 2>&1'
+- timestamp: '2026-07-11T01:12:33Z'
+  task: 'T-2529'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2523: checkpoint — no new 832 reply on thread T-175, 832 session now idle at picker
+
+Polled past offset 6870 (own last post); 6871-6887 are presence '
+- timestamp: '2026-07-11T01:12:41Z'
+  task: 'T-2529'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "$(cat <<EOF
+T-2523: checkpoint — no new 832 reply on thread T-175, 832 session now idle at picker
+
+Polled past offset 6870 (own last post)'
+- timestamp: '2026-07-11T02:42:39Z'
+  task: 'T-2529'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'FW_ALLOW_MASTER_COMMIT=1 FW_SWITCH_FOCUS=1 git commit -m "T-2523: checkpoint — no new 832 reply, PTY still idle at picker; flag 10 concurrent worker dispatches for cleanup"'
+- timestamp: '2026-07-11T03:43:48Z'
+  task: 'T-2529'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2523-t-175-mapping-contract-convergence-with-.md .context/project/concerns.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2523: checkpoint — no ne'
+- timestamp: '2026-07-11T03:44:00Z'
+  task: 'T-2529'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2523'
+  command: 'FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "$(cat <<EOF
+T-2523: checkpoint — no new 832 reply; cleaned up 10 stale worker sessions, registered OBS-091
+
+832s PTY still idle at picker'
+- timestamp: '2026-07-11T03:44:56Z'
+  task: 'T-2529'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2525'
+  command: 'git add .agentic-framework/web/ && FW_SWITCH_FOCUS=1 FW_ALLOW_MASTER_COMMIT=1 git commit -m "$(cat <<EOF
+T-2525: refresh vendored web/ copies (self-vendor drift from T-2521/T-2525)
+
+fw vendor self w'
+- timestamp: '2026-07-11T05:35:25Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2529'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add ".tasks/active/T-2529-designer-gallery-server-api-implement-ap.md" .context/project/decisions.yaml .context/working/focus.yaml 2>/dev/null
+FW_ALLOW_MA'
+- timestamp: '2026-07-11T13:54:19Z'
+  task: 'T-2527'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-11T17:05:13Z'
+  task: 'T-2523'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2530'
+  command: 'FW_ALLOW_MASTER_COMMIT=1 bin/fw task update T-2530 --status work-completed --switch-focus 2>&1 | tail -30'
+- timestamp: '2026-07-11T21:53:33Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2531'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .context/episodic/T-2531.yaml
+echo "=== staged ==="; git diff --cached --name-status
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2531: com'
+- timestamp: '2026-07-12T13:11:41Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2532'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .context/episodic/T-2532.yaml
+echo "=== staged ==="; git diff --cached --name-status
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2532: com'
+- timestamp: '2026-07-12T13:18:57Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2533'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 bin/fw context add-learning "New agent .sh wrappers execd by bin/fw must be committed mode 100755, but core.fileMode=false (this repo) make'
+- timestamp: '2026-07-12T13:19:13Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2533'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2533-child-2-slice-3a-wire-forward-compiler-i.md .context/episodic/T-2533.yaml .context/project/learnings.yaml
+FW'
+- timestamp: '2026-07-12T13:19:24Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2533'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git branch --show-current
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2533-child-2-slice-3a-wire-forward-compiler-i.md .context/episodic/T-2533.yaml .context'
+- timestamp: '2026-07-12T13:21:55Z'
+  task: 'T-2523'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2533'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git checkout -b t2533-vendor 2>&1 | tail -1
+FW_SWITCH_FOCUS=1 git add .agentic-framework/bin/fw .agentic-framework/agents/bpmn/
+echo "=== staged ==="; git dif'
+- timestamp: '2026-07-12T17:11:59Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2534'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .context/episodic/T-2534.yaml
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2534: add episodic summary (was untracked after completion move)
+
+Co-Authored-By: '
+- timestamp: '2026-07-12T17:12:25Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2534'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+echo "=== diff of the completed file ===" && git diff --stat .tasks/completed/T-2534-child-2-slice-3-bpmn-inception-subproces.md
+git add .tasks/completed/T-25'
+- timestamp: '2026-07-12T17:14:19Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2534'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git update-index --chmod=+x .agentic-framework/agents/bpmn/bpmn.sh
+echo "=== fixed mode ===" && git ls-files -s .agentic-framework/agents/bpmn/bpmn.sh
+git che'
+- timestamp: '2026-07-12T17:21:49Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2534'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git checkout -b handover-land 2>&1 | tail -1
+git add .context/handovers/LATEST.md .context/handovers/S-2026-07*.md
+echo "=== staged ===" && git diff --cached '
+- timestamp: '2026-07-12T19:32:22Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2536'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/completed/T-2536-fix-bpmn-finduid-misses-aefuid-value-att.md .context/episodic/T-2536.yaml 2>&1 | tail -1
+FW_SWITCH_FOCUS=1 git commit -q -m "T'
+- timestamp: '2026-07-12T19:50:19Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-012'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+# Branch off, carry the already-staged handover files, commit there, FF to master.
+git checkout -b handover-0712-2145 2>&1 | tail -2
+echo "---staged set---"
+g'
+- timestamp: '2026-07-12T19:50:26Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-012'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git rev-parse --abbrev-ref HEAD
+git diff --cached --name-only
+FW_SWITCH_FOCUS=1 git commit -m "T-012: Session handover S-2026-0712-2145
+
+Co-Authored-By: Claud'
+- timestamp: '2026-07-12T19:50:40Z'
+  task: 'T-2535'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-012'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "T-012: Session handover S-2026-0712-2145
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>" 2>&1 | tail -6'
+- timestamp: '2026-07-12T21:13:05Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2537'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "T-2537: complete (move to completed/ + episodic) — O-3 fail-fast, 24/24 green
+
+Co-Authored-By: Claude Opus 4.8 <noreply@ant'
+- timestamp: '2026-07-12T21:13:14Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2537'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .context/episodic/T-2537.yaml .tasks/completed/T-2537-harden-child-2-compiler-fail-fast-on-mis.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2537: episodic + '
+- timestamp: '2026-07-13T07:54:37Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2537'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add docs/generated/components/tools-bpmn_to_tasks.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2537: regen fabric card for bpmn_to_tasks (post-completion)
+
+Co-Au'
+- timestamp: '2026-07-16T05:21:57Z'
+  task: 'T-2538'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-17T10:57:49Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2539'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add docs/generated/components/agents-bpmn-bpmn.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2539: fabric card for bpmn agent (bpmn.sh --write arg forwarding)
+
+Co'
+- timestamp: '2026-07-18T09:12:43Z'
+  task: 'T-2541'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-18T10:44:16Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2543'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/completed/ .context/episodic/T-2543.yaml 2>/dev/null
+git status --short | grep -iE "2543"
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2543: complete (move to completed/ + ep'
+- timestamp: '2026-07-18T14:39:54Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2544'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/active/T-2544-pl-037-bvp-auto-promote-excludes-owner-h.md .tasks/completed/T-2544-pl-037-bvp-auto-promote-excludes-owner-h.md .context/episodic'
+- timestamp: '2026-07-18T14:40:14Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2544'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .context/episodic/T-2544.yaml .tasks/completed/T-2544-pl-037-bvp-auto-promote-excludes-owner-h.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2544: episodic + '
+- timestamp: '2026-07-18T14:44:47Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2544'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .agentic-framework/lib/bvp.sh
+FW_SWITCH_FOCUS=1 git commit -m "T-2544: refresh vendored .agentic-framework/lib/bvp.sh (self-vendor parity)
+
+Co-Authore'
+- timestamp: '2026-07-19T20:00:35Z'
+  task: 'T-2553'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-19T20:47:08Z'
+  task: 'T-2561'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2559'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2559: Spike-2 — 832s real T-204 fixtures byte-exact, detector full parity (3/3 intermediate + 2/2 boundary, offset-85 claim holds); WARN-completeness limit filed '
+- timestamp: '2026-07-19T21:03:12Z'
+  task: 'T-2565'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2563'
+  command: 'grep -o data-verdict="[^"]*" /tmp/.r2563.html | head -1; git add .tasks/active/T-2563-designer-corpus-d4-dispatch-orchestratio.md .tasks/active/T-2564*.md .tasks/active/T-2565-designer-corpus-d5-aud'
+- timestamp: '2026-07-19T21:08:28Z'
+  task: 'T-2551'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2565'
+  command: 'git add .tasks/active/T-2565-designer-corpus-d5-audit-cron-process-di.md docs/reports/T-2565-d5-compile-log.md .context/designer/projects/aef-audit-cron/ && FW_SWITCH_FOCUS=1 git commit -m "T-2565: D5'
+- timestamp: '2026-07-19T22:00:43Z'
+  task: 'T-2560'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2564'
+  command: 'bin/fw vendor self 2>&1 | tail -3 && git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -m "T-2564: refresh vendored web/ (designer_api save gate) — self-vendor parity" 2>&1 | tail -1'
+- timestamp: '2026-07-19T22:14:15Z'
+  task: 'T-2551'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2570'
+  command: 'python3 - <<EOF
+import glob
+p=glob.glob(.tasks/active/T-2570*.md)[0]
+s=open(p).read()
+s=s.replace(tags: [],tags: [arc:designer-corpus],1)
+open(p,w).write(s)
+EOF
+git add .tasks/active/T-2570-'

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2520: AEF-side integration surface for Workflow Designer (T-173 collab with 832)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-10T11:28:34Z
+# ============================================================================
+
+task_id: T-2520
+task_name: "AEF-side integration surface for Workflow Designer (T-173 collab with 832)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-10T09:19:41Z
+completed: 2026-07-10T11:28:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-10T11:24:15+02:00
+last_commit: 2026-07-10T13:24:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  AEF-side integration-surface analysis for Workflow Designer (T-173 collab). correct IW-4 overclaim — no *code* coupling (not zero reference)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2520-aef-integration-surface.md'
+  - '.tasks/active/T-2520-aef-side-integration-surface-for-workflo.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-10T11:24:15"
+    action: "T-2520: AEF-side integration-surface analysis for Workflow Designer (T-173 collab)"
+  - time: "2026-07-10T13:24:19"
+    action: "T-2520: correct IW-4 overclaim — no *code* coupling (not zero reference)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 128 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 128
+  commits: 2
+  files_changed: 2
+  lines_added: 327
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2520-aef-side-integration-surface-for-workflo.md
+generated_by: context-agent-hybrid

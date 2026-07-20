@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2517: PreToolUse hook: block manual write creating completed/T-X while active/T-X
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-09T23:43:36Z
+# ============================================================================
+
+task_id: T-2517
+task_name: "PreToolUse hook: block manual write creating completed/T-X while active/T-X"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-08T07:06:14Z
+completed: 2026-07-09T23:38:55Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-07-10T01:41:04+02:00
+last_commit: 2026-07-10T01:41:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write-time active/completed duplicate guard (T-2121 prong 1)
+
+# Key outcomes
+outcomes:
+  - 'A PreToolUse hook on Write|Edit refuses creating `.tasks/completed/T-NNNN-*.md` while `.tasks/active/T-NNNN-*.md` exists for the same id (and vice-versa), with an actionable block message.'
+  - 'The legitimate `fw task update --status work-completed` git-mv path is NOT blocked (the transition removes the active/ copy as it writes completed/, so both never co-exist mid-transition) — verified by an end-to-end completion in the test.'
+  - 'The hook is registered in `.claude/settings.json` and `bin/fw enforcement baseline` refreshed; a bats test asserts (a) manual same-id duplicate write is blocked, (b) `fw task update --status work-completed` completes cleanly.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-completed-dup.py'
+  - '.agentic-framework/agents/context/check-active-completed-dup.sh'
+  - 'agents/context/check-active-completed-dup.py'
+  - 'agents/context/check-active-completed-dup.sh'
+  - '.claude/settings.json'
+  - '.context/project/enforcement-baseline.sha256'
+  - '.fabric/components/agents-context-check-active-completed-dup.yaml'
+  - '.tasks/active/T-2517-pretooluse-hook-block-manual-write-creat.md'
+  - 'tests/unit/active_completed_dup_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-10T01:41:04"
+    action: "T-2517: write-time active/completed duplicate guard (T-2121 prong 1)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2432 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2432
+  commits: 2
+  files_changed: 10
+  lines_added: 783
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2517-pretooluse-hook-block-manual-write-creat.md
+generated_by: context-agent-hybrid

@@ -1,27 +1,11 @@
-timestamp: 2026-06-18T22:26:49Z
+timestamp: 2026-07-20T21:00:01Z
 findings:
-  - id: D1
-    level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2158)"
-  - id: D2
-    level: FAIL
-    check: "D2: Human review queue — 25 task(s) waiting >30d: T-1701(23d) T-1702(18d) T-1707(22d) T-1718(22d) T-1773(36d) T-1774(36d) T-1775(36d) T-1776(18d) T-1792(37d) T-1794(37d) T-1795(37d) T-1796(37d) T-1797(37d) T-1799(37d) T-1801(36d) T-1802(36d) T-1803(36d) T-1805(36d) T-1806(36d) T-1807(36d) T-1808(36d) T-1810(36d) T-1811(36d) T-1818(36d) T-1827(27d) T-1834(34d) T-1842(27d) T-1843(27d) T-1844(27d) T-1891(31d) T-1909(29d) T-1910(29d) T-1911(29d) T-1928(30d) T-1929(30d) T-1930(30d) T-1933(30d) T-1934(29d) T-1935(29d) T-1936(29d) T-1939(29d) T-1947(29d) T-1951(27d) T-1954(29d) T-1955(29d) T-1957(29d) T-1960(28d) T-1961(28d) T-1963(28d) T-1964(29d) T-1965(29d) T-1968(29d) T-1969(28d) T-1970(28d) T-1971(28d) T-1976(27d) T-1977(28d) T-1978(27d) T-1980(27d) T-1982(28d) T-1984(27d) T-1985(27d) T-1988(27d) T-1989(24d) T-1990(23d) T-1991(27d) T-1992(24d) T-1993(24d) T-1994(23d) T-1999(26d) T-2002(23d) T-2003(23d) T-2004(23d) T-2006(23d) T-2008(23d) T-2009(23d) T-2010(23d) T-2011(23d) T-2012(23d) T-2013(23d) T-2015(23d) T-2016(23d) T-2017(23d) T-2018(23d) T-2019(23d) T-2020(23d) T-2021(23d) T-2022(23d) T-2023(23d) T-2024(23d) T-2025(23d) T-2026(23d) T-2027(23d) T-2028(23d) T-2029(23d) T-2031(23d) T-2033(23d) T-2034(23d) T-2038(23d) T-2039(23d) T-2040(23d) T-2041(23d) T-2043(23d) T-2044(23d) T-2045(23d) T-2046(23d) T-2047(23d) T-2049(23d) T-2051(23d) T-2054(23d) T-2062(21d) T-2063(21d) T-2064(21d) T-2065(21d) T-2066(21d) T-2075(20d) T-2077(20d) T-2080(21d) T-2082(21d) T-2084(20d) T-2085(20d) T-2086(20d) T-2087(20d) T-2088(20d) T-2089(20d) T-2102(19d) T-2103(19d) T-2106(19d) T-2110(19d) T-2111(19d) T-2112(19d) T-2114(19d) T-2116(19d) T-2117(19d) T-2136(18d) T-2160(17d) T-2167(17d) T-2174(16d) T-2175(16d) T-2179(16d) T-2185(14d) T-2192(15d)"
-    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
-  - id: D8
-    level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
-  - id: D10
-    level: PASS
-    check: "D10: Decision-without-dialogue — none detected"
-  - id: D11
-    level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
   - id: D4
     level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
     level: WARN
-    check: "D5: Task lifecycle — 24 anomaly(s): T-1820(35d-active) T-544(89d-active) T-2202(14d-active) T-801(76d-active) T-2205(14d-active) T-2219(13d-active) T-1542(52d-active) T-332(105d-active) T-464(98d-active) T-2200(14d-active) (+14 more)"
+    check: "D5: Task lifecycle — 23 anomaly(s): T-1542(84d-active) T-1624(81d-active) T-1687(79d-active) T-1820(67d-active) T-2170(48d-active) T-2171(48d-active) T-2268(41d-active) T-2353(38d-active) T-2354(38d-active) T-2410(35d-active) (+13 more)"
     mitigation: "Review flagged tasks for process issues"
   - id: D13
     level: WARN
@@ -29,19 +13,19 @@ findings:
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=0 avg=50 ratio=0.0x)"
+    check: "D3: Commit velocity — normal (PASS today=8 avg=22 ratio=0.4x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — none (PASS 28_commits_24h_no_bunching)"
+    check: "D7: Commit bunching — none (PASS 17_commits_24h_no_bunching)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=5.0 earlier=15.1)"
+    check: "D6: Completion velocity — normal (PASS recent=8.0 earlier=1.6)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
   - id: D9
     level: PASS
-    check: "D9: Control drift — normal (PASS insufficient_audits)"
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
   - id: D14
     level: PASS
     check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
@@ -50,7 +34,7 @@ findings:
     check: "D15: Inception limbo state — none (PASS no_limbo)"
 
 summary:
-  pass: 12
+  pass: 8
   warn: 2
-  fail: 1
-  total: 15
+  fail: 0
+  total: 10

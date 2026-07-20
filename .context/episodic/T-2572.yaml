@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2572: drafting-instincts diff: 832 dispatch-loop vs AEF D4 (operator-pass companion doc)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-20T21:41:44Z
+# ============================================================================
+
+task_id: T-2572
+task_name: "drafting-instincts diff: 832 dispatch-loop vs AEF D4 (operator-pass companion doc)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-20T21:38:46Z
+completed: 2026-07-20T21:41:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-20T23:41:33+02:00
+last_commit: 2026-07-20T23:41:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  drafting-instincts diff doc (832 protocol-level vs D4 substrate-level; 4 instincts, operator steer surfaced) + cross-links into T-2563 review surface and T-2568 report
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/T-2572-drafting-instincts-diff.md` exists, comparing the two drafts along at least: lane/authority structure, governance-node placement, loop/termination shape, gateway usage — each with concrete node ids from both diagrams'
+  - 'Doc contains no unverified claims about 832''s intent — every 832-side statement traces to diagram content or a cited rail offset (self-check: instincts 1-4 cite node ids/labels; the one behavioral claim, T-2567 live firing, cites T-2568 report §Bonus)'
+  - 'D4 review linkage: doc referenced from the T-2563 review surface context (T-2563 Evidence bullet renders on /review/T-2563) + doc cross-link in T-2568 report'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2568-pairdraft2-compile.md'
+  - 'docs/reports/T-2572-drafting-instincts-diff.md'
+  - '.tasks/active/T-2563-designer-corpus-d4-dispatch-orchestratio.md'
+  - '.tasks/active/T-2572-drafting-instincts-diff-832-dispatch-loo.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-20T23:41:33"
+    action: "T-2572: drafting-instincts diff doc (832 protocol-level vs D4 substrate-level; 4 instincts, operator steer surfaced) + cross-links into T-2563 review surface and T-2568 report"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 229
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2572-drafting-instincts-diff-832-dispatch-loo.md
+generated_by: context-agent-hybrid
