@@ -43,6 +43,7 @@ from pathlib import Path
 
 from flask import Blueprint, Response, jsonify, request
 
+from web.designer_registry import load_registry, remove_project_refs, sync_project_refs
 from web.shared import PROJECT_ROOT
 
 bp = Blueprint("designer_api", __name__)
@@ -138,6 +139,10 @@ def save():
     meta["updated"] = int(time.time())
     meta.setdefault("versions", []).append({"v": v, "note": note, "ts": meta["updated"]})
     _write_meta(i, meta)
+    # T-2574 (T-2571 S2): rescan this project's off-page refs into the pending-ref
+    # registry — capture-at-source, so a dangling workflowRef becomes a ghost the
+    # moment it is saved, not when someone later runs a verb.
+    sync_project_refs(_STORE, i, bpmn)
     return _ok(v=v)
 
 
@@ -177,7 +182,20 @@ def list_maps():
                 "latest": {"v": latest_v, "ts": latest_ts, "count": len(vlist)},
                 "openTarget": {"kind": "version", "v": latest_v},
             })
-    return jsonify({"maps": maps})
+    # T-2574: ghosts partitioned as a SEPARATE array (contract v0, offset 109) —
+    # never folded into maps[], where a pre-contract picker would try to open one
+    # (no versions on disk → openTarget contract breaks).
+    ghosts = [
+        {
+            "uuid": g["uuid"],
+            "name": g["name"],
+            "referenced_by": g["referenced_by"],
+            "task": g.get("task"),
+            "first_seen": g.get("first_seen"),
+        }
+        for g in load_registry(_STORE)["ghosts"]
+    ]
+    return jsonify({"maps": maps, "ghosts": ghosts})
 
 
 @bp.route("/api/thumb")
@@ -254,6 +272,9 @@ def delete():
 
     if scope == "map":
         shutil.rmtree(_map_dir(i), ignore_errors=True)
+        # T-2574: a deleted project can no longer reference anything — strip its
+        # ghost back-references or the registry drifts against the store.
+        remove_project_refs(_STORE, i)
         return _ok()
 
     # version scope (client sends scope:'version')
