@@ -21822,3 +21822,21 @@ scan_id: R-8202cd75
 task_id: T-2573
 payload:
   task_file: .tasks/active/T-2573-designer-store-uuid-identity-mint-on-cre.md
+---
+kind: scan_emitted
+timestamp: '2026-07-20T22:05:28Z'
+scan_id: R-f2cddf2f
+task_id: T-2574
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-20T22:05:28Z'
+scan_id: R-f2cddf2f
+task_id: T-2574
+payload:
+  task_file: .tasks/active/T-2574-pending-ref-registry-aeflink-parse-at-sa.md

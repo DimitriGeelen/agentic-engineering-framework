@@ -11,20 +11,11 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3001
  * Running on http://192.168.10.107:3001
 Press CTRL+C to quit
-192.168.10.25 - - [20/Jul/2026 23:57:23] "GET /approvals/content HTTP/1.1" 200 -
-127.0.0.1 - - [20/Jul/2026 23:57:29] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [20/Jul/2026 23:57:29] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [20/Jul/2026 23:57:31] "GET /api/health HTTP/1.1" 200 -
-192.168.10.107 - - [20/Jul/2026 23:57:37] "GET /api/list HTTP/1.1" 200 -
-192.168.10.107 - - [20/Jul/2026 23:57:37] "GET /designer/ HTTP/1.1" 404 -
-192.168.10.107 - - [20/Jul/2026 23:57:40] "GET /designer HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:57:41] "GET /approvals/content HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:57:47] "GET /approvals/content HTTP/1.1" 200 -
-192.168.10.107 - - [20/Jul/2026 23:58:23] "GET /api/list HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:58:40] "GET /approvals/content HTTP/1.1" 200 -
-192.168.10.107 - - [20/Jul/2026 23:58:45] "GET /api/list HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:58:45] "GET /approvals/content HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:58:51] "GET /approvals/content HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:59:10] "GET /approvals/content HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:59:16] "GET /approvals/content HTTP/1.1" 200 -
-192.168.10.25 - - [20/Jul/2026 23:59:22] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [21/Jul/2026 00:11:02] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Jul/2026 00:11:02] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [21/Jul/2026 00:11:04] "POST /api/save HTTP/1.1" 200 -
+192.168.10.107 - - [21/Jul/2026 00:11:05] "POST /api/save HTTP/1.1" 200 -
+192.168.10.107 - - [21/Jul/2026 00:11:05] "GET /api/list HTTP/1.1" 200 -
+192.168.10.107 - - [21/Jul/2026 00:11:13] "POST /api/delete HTTP/1.1" 200 -
+192.168.10.107 - - [21/Jul/2026 00:11:13] "POST /api/delete HTTP/1.1" 200 -
+192.168.10.107 - - [21/Jul/2026 00:11:13] "GET /api/list HTTP/1.1" 200 -

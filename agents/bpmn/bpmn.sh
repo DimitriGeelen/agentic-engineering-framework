@@ -19,6 +19,9 @@ Usage:
   fw bpmn promote <uid|all>            Promote staged proposals to real .tasks/ files via the
                                        gated writer (owner:human + captured). DRY-RUN default.
   fw bpmn promote <uid|all> --write    Execute the promotion (delegates to fw task create; T-2542)
+  fw bpmn claim <uuid> <project>       Bind a pending ghost uuid to a live designer-store project
+                                       (T-2575: uuid → meta.json, ghost → claims[] audit; every
+                                       referring workflowRef connector resolves with zero edits)
   fw bpmn help                  Show this help
 
 The compiler extracts task nodes + aef:uid (IW-1 keystone), maps lane→owner
@@ -60,6 +63,33 @@ case "$cmd" in
     fi
     # Forward all args (uid|all, --write, --stage-dir) — the promoter parses them.
     exec python3 "$PROMOTER" "$@"
+    ;;
+  claim)
+    shift
+    if [ "$#" -lt 2 ]; then
+      echo "error: 'claim' needs <uuid> <project> arguments" >&2
+      usage
+      exit 2
+    fi
+    # Explicit-claim-only contract (T-2571 IW-4, rail offsets 110/111): binds an
+    # existing ghost uuid — never re-mints, never name-matches. Store resolved
+    # from the project root so claim works from any cwd.
+    exec python3 - "$1" "$2" <<PYEOF
+import sys
+sys.path.insert(0, "$FW_ROOT")
+from pathlib import Path
+from web.designer_registry import ClaimError, claim_ghost
+
+try:
+    r = claim_ghost(Path("$FW_ROOT/.context/designer/projects"), sys.argv[1], sys.argv[2])
+except ClaimError as e:
+    print(f"error: {e}", file=sys.stderr)
+    sys.exit(1)
+print(
+    f"claimed: {r['uuid']} -> {r['project']} "
+    f"({r['resolved_referrers']} referring connector(s) now resolve)"
+)
+PYEOF
     ;;
   help|-h|--help|"")
     usage

@@ -1,2 +1,6 @@
 ghosts: []
-claims: []
+claims:
+- uuid: 44444444-4444-4444-8444-444444444444
+  project: t2575-target
+  ts: 1784585465
+  via: cli

@@ -150,6 +150,56 @@ def sync_project_refs(store: Path, project_id: str, bpmn: str) -> dict:
     return reg
 
 
+class ClaimError(ValueError):
+    """Refused claim — message is operator-actionable."""
+
+
+def claim_ghost(store: Path, ghost_uuid: str, project_id: str, via: str = "cli") -> dict:
+    """Bind a pending ghost uuid to a live project (T-2575, T-2571 S6).
+
+    The claim moment: the project adopts the uuid every referring connector
+    already pins, so all referrers resolve with zero diagram edits. Refusals
+    keep the single-uuid-namespace invariant (rail offset 110/111): a project
+    that already owns a DIFFERENT uuid can never be re-bound.
+
+    Returns {"uuid", "project", "resolved_referrers": N}.
+    """
+    import json
+
+    reg = load_registry(store)
+    ghost = next((g for g in reg["ghosts"] if g["uuid"] == ghost_uuid), None)
+    if ghost is None:
+        known = ", ".join(g["uuid"] for g in reg["ghosts"]) or "(registry has no ghosts)"
+        raise ClaimError(f"unknown ghost uuid {ghost_uuid!r} — pending: {known}")
+    meta_p = store / project_id / "meta.json"
+    if not meta_p.is_file():
+        raise ClaimError(f"project {project_id!r} not found in store {store}")
+    meta = json.loads(meta_p.read_text())
+    if meta.get("uuid") and meta["uuid"] != ghost_uuid:
+        raise ClaimError(
+            f"project {project_id!r} already owns uuid {meta['uuid']} — "
+            f"uuids are immutable; a claim binds, never re-mints"
+        )
+    meta["uuid"] = ghost_uuid
+    tmp = meta_p.with_name("meta.json.tmp")
+    tmp.write_text(json.dumps(meta, indent=2))
+    tmp.replace(meta_p)
+
+    reg["ghosts"] = [g for g in reg["ghosts"] if g["uuid"] != ghost_uuid]
+    reg["claims"].append({
+        "uuid": ghost_uuid,
+        "project": project_id,
+        "ts": int(time.time()),
+        "via": via,
+    })
+    save_registry(store, reg)
+    return {
+        "uuid": ghost_uuid,
+        "project": project_id,
+        "resolved_referrers": len(ghost["referenced_by"]),
+    }
+
+
 def remove_project_refs(store: Path, project_id: str) -> dict:
     """Strip a deleted project's referrer entries (delete has no save to rescan).
 
