@@ -37,6 +37,7 @@ import json
 import re
 import shutil
 import time
+import uuid as _uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -122,6 +123,11 @@ def save():
     note = data.get("note") or ""
 
     meta = _read_meta(i) or {"id": i, "title": i, "versions": []}
+    # T-2573 (T-2571 S1): immutable workflow identity. Minted once — on project
+    # creation or the first save of a pre-uuid legacy meta — and never rewritten;
+    # off-page workflowRef connectors pin this, so a changed uuid would orphan
+    # every referring diagram (contract v0, rail offsets 108/109).
+    meta.setdefault("uuid", str(_uuid.uuid4()))
     v = int(meta.get("latest") or 0) + 1
     d = _map_dir(i)
     d.mkdir(parents=True, exist_ok=True)
@@ -164,6 +170,9 @@ def list_maps():
             maps.append({
                 "id": m["id"],
                 "title": m.get("title", m["id"]),
+                # T-2573: additive identity field (contract v0, offset 109) —
+                # 0.3.0 pickers ignore it; workflowRef-aware pickers key on it.
+                "uuid": m.get("uuid"),
                 "sources": ["saved"],
                 "latest": {"v": latest_v, "ts": latest_ts, "count": len(vlist)},
                 "openTarget": {"kind": "version", "v": latest_v},
