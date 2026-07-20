@@ -101,9 +101,9 @@ Registered in `.context/project/assumptions.yaml` (fw assumption list --task T-2
   disposition: answered
   rationale: plain-language elaboration given 2026-07-20 (walkthrough in artifact §D); operator then delegated via broad continue directive — design locked as ghost-card "create this workflow" button (claims uuid at birth) + `fw bpmn claim <uuid> <project>` CLI fallback; name-match may only SUGGEST, never bind silently
 - **IW-5: What is the AEF/832 seam split, and does 832 accept the vocabulary extension (workflowRef on aef:link)?**
-  confidence: 1
-  disposition: deferred
-  rationale: seam proposal posted to 832 at rail offset 107 (Q1 attr shape, Q2 draw-time uuid mint, Q3 claim UX + GET /api/workflows contract); blocks only serialization-dependent slices (S3-S5), not the 832-independent substrate (S1/S2/S6) — reply processed when it lands
+  confidence: 3
+  disposition: answered
+  rationale: 832 offset 108 (operator-confirmed positions) — ACCEPTED: extend aef:link (workflowRef+name+linkId, orthogonal axes), targetWorkflow→workflowRef rename w/ import alias, draw-time uuid minting, claim picker feasible; contract v0 ratified at offset 109 (/api/list extended, ghosts as separate top-level array, registry in store). 832 build is design-dialogue-gated by THEIR operator — no blocker on AEF substrate (their words: "your DECIDED half proceeds independently")
 
 ## Exploration Plan
 
@@ -169,18 +169,19 @@ Completed (all corpus-read spikes, no build artifacts):
 
 ## Recommendation
 
-**Recommendation:** GO — substrate slices S1/S2/S6 now; S3-S5 start when 832 answers Q1 (offset 107)
+**Recommendation:** GO — all six slices S1-S6 (seam fully ratified with 832 at offsets 108/109)
 
 **Rationale:**
 
-All four AEF-side design axes are operator-decided (dialogue rounds 1-2, artifact Dialogue Log): uuid-canonical identity, registry-backed ghosts with bidirectional reference markers, save-time gate minting with compile-WARN + audit-sweep backstop, and explicit claim (ghost button + CLI, no silent name-match). The only open item is 832's half (IW-5, deferred) — and it gates only the serialization-dependent slices, not the substrate. S1 (uuid in meta.json + backfill), S2 (pending-ref registry), and S6 (`fw bpmn claim`) are 832-independent, additive, and reversible. Waiting for 832 before starting them would serialize work the operator asked to run in parallel.
+Every design axis is now decided. IW-1..IW-4 by operator dialogue (uuid-canonical identity; registry-backed ghosts with bidirectional reference markers; save-time gate minting with compile-WARN + audit-sweep backstop; explicit claim — ghost button + CLI, no silent name-match). IW-5 by 832's operator-confirmed positions (offset 108): extend `aef:link` with `workflowRef` (import alias for legacy `targetWorkflow`), `linkId` kept as an orthogonal intra-diagram axis, draw-time uuid minting accepted, claim picker feasible on their 0.3.0 line. Contract v0 ratified at offset 109 (extended /api/list, ghosts partitioned as a separate array so old pickers never open one, registry lives in the store, claims audit trail). 832's own build waits on THEIR operator's go/no-go, but they explicitly unblocked our half. All slices additive and reversible.
 
 **Evidence:**
 
-- Corpus scan: zero machine-linked `aef:link` instances across 7 stored projects + fixtures; slug-only identity; no resolution surface in `/api/save` or `fw bpmn compile` (artifact §Evidence 1-3).
+- Corpus scan: zero machine-linked `aef:link` instances in our store; 832 offset 108 correction — their editor DOES serialize `targetWorkflow`+`linkId`, the gap is slug-based identity (rename-fragile, forward-ref-blind), which is exactly the operator's observation with a sharper mechanism.
 - meta.json shape `{id, title, versions, latest, updated}` — uuid additive (aef-dispatch-loop/meta.json read).
-- Operator steers captured verbatim in artifact Dialogue Log (rounds 1-2); IW-1..IW-4 disposed answered.
-- Seam proposal live at rail offset 107 (dm:0e7ee6ca…:6a646ce8…), Q1-Q3 pending; IW-5 disposed deferred.
+- Operator steers captured verbatim in artifact Dialogue Log (rounds 1-2); IW-1..IW-5 all disposed answered.
+- 832 positions operator-confirmed at rail offset 108; contract v0 posted/ratified at offset 109 (dm:0e7ee6ca…:6a646ce8…).
+- A-044 (draw-time minting) and A-045 (workflowRef shape) validated on offset-108 evidence; A-046 (backfill additive to 0.3.0 client) verified live in S1 before dependent slices land.
 - Governance precedent for save-time minting already shipped and tested: FW_TASK_ORIGIN gate (T-2542/T-2543), DEFER-injection (T-2548/L-504).
 
 ## Decisions

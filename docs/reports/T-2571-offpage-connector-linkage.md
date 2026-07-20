@@ -6,6 +6,7 @@
 ## Evidence — current state of the corpus
 
 1. **Vocabulary exists, linkage does not.** 832's IW-1 extension shape defines `<aef:link>` riding a neutral intermediate throw/catch event (same pattern as `<aef:eventDef kind=…>`). Referenced in `tests/fixtures/aef-bpmn/dispatch-loop.bpmn` header comments. **Zero stored diagrams carry an `aef:link` instance with a machine-readable target** — off-page connectors today are name-only visuals in 832's editor.
+   *CORRECTED by 832 offset 108:* their editor **does** serialize `<aef:link targetWorkflow="…" linkId="…"/>` (none of it has reached our store yet, which is why the scan found zero). The real gap is **identity**: `targetWorkflow` carries a slug/name, 832's whole identity model is slug-as-primary-key — exactly the rename-fragile, forward-ref-blind problem the operator observed. The finding stands; the mechanism is sharper.
 2. **No workflow identity.** Store identity is the directory slug (`.context/designer/projects/<slug>/` + `meta.json`). No immutable id; a rename breaks any name-based reference.
 3. **No resolution surface.** Neither `/api/save` (web/blueprints/designer_api.py) nor `fw bpmn compile` (tools/bpmn_to_tasks.py) knows about cross-workflow references. A dangling ref is silently invisible — the exact "silent drop" class the corpus WARN work (T-2552, T-2560, T-2567, T-2570) has been eliminating node-by-node.
 
@@ -45,6 +46,8 @@
 - **2026-07-20 (agent, execution + reflection):** IW-1/IW-2/IW-3 disposed answered (IW-2 with the back-reference-marker requirement; IW-3 resolved to save-time gate minting + compile WARN + audit sweep — capture-at-source with two-layer backstop, T-2204 pattern). IW-4 held open pending operator confirm after plain-language elaboration. IW-5: seam proposal posted to 832 at **rail offset 107** (Q1 attr shape `workflowRef` on `aef:link`, Q2 draw-time uuid minting in their editor, Q3 claim-UX feasibility + GET /api/workflows contract offer). Ghost-marker design reflection recorded under §B below.
 
 - **2026-07-20 (operator, round 2):** broad continue directive post-elaboration — IW-4 design delegated and locked (explicit claim: ghost button + CLI, suggest-only name-match). Agent drove inception to review-readiness: assumptions registered, scope fenced (S1-S6 slices, 832 half OUT), recommendation refined DEFER → GO (substrate S1/S2/S6 now, S3-S5 on 832's Q1 answer). Handed off via `fw task review T-2571`.
+- **2026-07-20 (832, offset 108 — operator-confirmed positions):** EVIDENCE CORRECTION absorbed: 832's editor *already* serializes `<aef:link targetWorkflow="…" linkId="…"/>` with a workflowPicker consuming /api/list and a jumpToWorkflow resolver — the gap is identity (slug-as-primary-key, nextId counters, no uuid), not missing serialization. 832 is on 0.3.0 (not 0.2.x as assumed). Q1: extend aef:link, `workflowRef` + keep `linkId` as ORTHOGONAL axis (cross-workflow vs intra-diagram throw/catch pairing), rename w/ back-compat import alias. Q2: draw-time minting ACCEPTED (crypto.randomUUID()); uuid-as-primary-key threading flagged as their largest piece, gated by their operator. Q3: claim picker feasible; want ONE server per store — extend /api/list, no endpoint fork. Their build is design-dialogue-only until the contract firms + their operator go/no-go; AEF substrate explicitly unblocked. Pair-draft #3 reframed: off-page-connector exemplar (resolved + ghost ref) as the shared byte-fixture, parallel-smells shelved as fallback.
+- **2026-07-20 (agent, offset 109 — contract v0 ratified):** registry lives in the STORE (`.context/designer/registry.yaml`, sibling of `projects/`); whichever server fronts a store serves it (their gallery-serve.py locally, our designer_api live) — one contract, two implementations, the existing /api/list pattern. Contract: maps[] entries gain `uuid`; NEW top-level `ghosts:[{uuid, name, referenced_by:[{id,node,nodeName}], task, first_seen}]` — partitioned, not status-flagged, so a 0.3.0 picker never tries to open a ghost (openTarget contract would break). Registry file: `ghosts:[…]` + `claims:[{uuid, project, ts, via}]` audit trail. Legacy-ref nuance: `targetWorkflow` slug w/o `workflowRef` → resolve-by-name + migrate-WARN if live, store-minted ghost uuid (registry-only, no XML write-back) if not. A-044/A-045 validated on offset-108 evidence.
 
 ## Slice plan (on GO)
 
@@ -52,11 +55,11 @@
 |-------|------|-----------------|
 | S1 | uuid identity in meta.json + backfill 7 projects | No |
 | S2 | pending-ref registry (`.context/designer/registry.yaml`, atomic) + lib | No |
-| S3 | compile WARN per dangling ref (both ends named) | Q1 (serialization shape) |
-| S4 | save-time gate minting (FW_TASK_ORIGIN, idempotent per uuid) | Q1 |
-| S5 | gallery ghost cards + back-ref markers + "N unmapped" on referrers | Q1 (back-ref data via S3 parse) |
+| S3 | compile WARN per dangling ref (both ends named) | ~~Q1~~ shape RATIFIED offset 108/109 — buildable |
+| S4 | save-time gate minting (FW_TASK_ORIGIN, idempotent per uuid) | ~~Q1~~ ratified — buildable |
+| S5 | gallery ghost cards + back-ref markers + "N unmapped" on referrers | ~~Q1~~ ratified — buildable |
 | S6 | `fw bpmn claim <uuid> <project>` CLI | No |
 
 ## Recommendation
 
-GO — substrate slices S1/S2/S6 now; S3-S5 start when 832 answers Q1 (rail offset 107). All four AEF-side axes operator-decided; IW-5 deferred (gates only serialization-dependent slices). NO-GO trigger remains: 832 rejecting the seam outright, or uuid backfill breaking their 0.2.x client.
+GO — **all six slices** on the AEF side. Every design axis is decided: IW-1..IW-4 by operator dialogue, IW-5 by 832's operator-confirmed positions (offset 108) + contract v0 ratified (offset 109: `workflowRef` on `aef:link` with import alias, ghosts partitioned in extended /api/list, registry in store, claims audit trail). 832's own build waits on their operator's go/no-go — but that gates nothing on our side ("your DECIDED half proceeds independently", offset 108). Remaining NO-GO trigger: uuid backfill breaking 832's 0.3.0 client (A-046, verified live in S1 before the rest lands).
