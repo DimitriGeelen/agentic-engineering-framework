@@ -1,0 +1,164 @@
+<style>
+    .ghost-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .ghost-card {
+        border: 2px dashed var(--pico-muted-border-color);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        background: var(--pico-card-background-color);
+    }
+    .ghost-card h4 {
+        margin: 0 0 0.25rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .ghost-badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        background: #b26a00;
+        color: #fff;
+        white-space: nowrap;
+    }
+    .ghost-uuid {
+        font-family: var(--pico-font-family-monospace, monospace);
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+    }
+    .ghost-refs { margin: 0.5rem 0; padding-left: 1.1rem; }
+    .ghost-refs li { font-size: 0.85rem; margin-bottom: 0.15rem; }
+    .ghost-refs .node-id {
+        font-family: var(--pico-font-family-monospace, monospace);
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+    }
+    .task-chip {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.1rem 0.5rem;
+        border-radius: 10px;
+        border: 1px solid #2e7d32;
+        color: #2e7d32;
+        text-decoration: none;
+    }
+    .task-chip.missing { border-color: #c62828; color: #c62828; }
+    .ghost-claim {
+        margin-top: 0.6rem;
+        font-size: 0.75rem;
+    }
+    .ghost-claim code {
+        display: block;
+        margin-top: 0.25rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .ghost-meta { font-size: 0.7rem; color: var(--pico-muted-color); margin-top: 0.5rem; }
+    .unmapped-count {
+        font-weight: 700;
+        color: #b26a00;
+    }
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: var(--pico-muted-color);
+        border: 1px dashed var(--pico-muted-border-color);
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<p style="margin-bottom:1.5rem">
+    Off-page connectors referencing workflows that do not exist yet
+    (<a href="/designer">open the designer</a>). Each ghost holds the uuid every
+    referring connector already pins — creating the workflow and claiming the
+    uuid resolves all referrers with zero diagram edits.
+</p>
+
+{% if ghosts %}
+<div class="ghost-grid">
+    {% for g in ghosts %}
+    <article class="ghost-card">
+        <h4>
+            {{ g.name or '(unnamed)' }}
+            <span class="ghost-badge">ghost — needs mapping</span>
+        </h4>
+        <div class="ghost-uuid" title="{{ g.uuid }}">uuid {{ g.short_uuid }}…</div>
+
+        <div style="margin-top:0.6rem;font-size:0.8rem">Referenced by:</div>
+        <ul class="ghost-refs">
+            {% for r in g.referenced_by %}
+            <li>
+                <a href="/designer" title="open the designer">{{ r.id }}</a>
+                — <span class="node-id">{{ r.node }}</span>
+                {% if r.nodeName %}({{ r.nodeName }}){% endif %}
+            </li>
+            {% else %}
+            <li><em>no live referrers (kept: documentation task open)</em></li>
+            {% endfor %}
+        </ul>
+
+        {% if g.task %}
+        <a class="task-chip" href="/tasks/{{ g.task }}">{{ g.task }} — document this workflow</a>
+        {% else %}
+        <span class="task-chip missing">no documentation task yet</span>
+        {% endif %}
+
+        <div class="ghost-claim">
+            Created the workflow? Bind its identity:
+            <code>cd {{ project_root | default('/opt/999-Agentic-Engineering-Framework') }} &amp;&amp; bin/fw bpmn claim {{ g.uuid }} &lt;project&gt;</code>
+        </div>
+        <div class="ghost-meta">first seen {{ g.first_seen_h }}</div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <strong>No pending references.</strong><br>
+    Every off-page connector in the designer store resolves to a live workflow.
+</div>
+{% endif %}
+
+{% if referrers %}
+<h3>Referring workflows</h3>
+<table>
+    <thead><tr><th>Workflow</th><th>Unmapped references</th></tr></thead>
+    <tbody>
+        {% for rid, count in referrers %}
+        <tr>
+            <td><a href="/designer">{{ rid }}</a></td>
+            <td><span class="unmapped-count">{{ count }} unmapped reference{{ 's' if count != 1 }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if claims %}
+<h3>Recent claims</h3>
+<table>
+    <thead><tr><th>uuid</th><th>Claimed by</th><th>When</th><th>Via</th></tr></thead>
+    <tbody>
+        {% for c in claims %}
+        <tr>
+            <td class="ghost-uuid">{{ c.uuid[:8] }}…</td>
+            <td>{{ c.project }}</td>
+            <td>{{ c.ts_h }}</td>
+            <td>{{ c.via }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}

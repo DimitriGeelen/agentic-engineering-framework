@@ -8,12 +8,13 @@ Read-only: this blueprint never writes the vendored artifact. Improvements route
 upstream to 832 per docs/aef-designer-integration-protocol.md (832 side).
 """
 
+import time
 from pathlib import Path
 
 import yaml
 from flask import Blueprint, Response
 
-from web.shared import PROJECT_ROOT
+from web.shared import PROJECT_ROOT, render_page
 
 bp = Blueprint("designer", __name__)
 
@@ -50,6 +51,45 @@ build, run:</p>
 </body></html>""",
         status=200,
         mimetype="text/html",
+    )
+
+
+@bp.route("/designer/ghosts")
+def designer_ghosts():
+    """T-2578 (T-2571 S5): AEF-side ghost visibility with bidirectional markers.
+
+    The /designer gallery itself is 832's pinned bundle (read-only here), so the
+    operator-required reference markers render on THIS page, from the same
+    registry the /api/list contract serves: ghost cards (who references it, that
+    it needs mapping, the minted documentation task, the claim affordance) and
+    the reverse per-referrer unmapped-reference counts.
+    """
+    from web.blueprints.designer_api import _STORE
+    from web.designer_registry import load_registry
+
+    reg = load_registry(_STORE)
+    ghosts = []
+    referrers: dict[str, int] = {}
+    for g in reg.get("ghosts") or []:
+        refs = g.get("referenced_by") or []
+        for r in refs:
+            referrers[r["id"]] = referrers.get(r["id"], 0) + 1
+        ghosts.append({
+            **g,
+            "short_uuid": (g.get("uuid") or "")[:8],
+            "first_seen_h": time.strftime(
+                "%Y-%m-%d %H:%M", time.localtime(g.get("first_seen") or 0)
+            ),
+        })
+    claims = list(reversed(reg.get("claims") or []))[:10]
+    for c in claims:
+        c["ts_h"] = time.strftime("%Y-%m-%d %H:%M", time.localtime(c.get("ts") or 0))
+    return render_page(
+        "designer_ghosts.html",
+        page_title="Designer — Pending References",
+        ghosts=ghosts,
+        referrers=sorted(referrers.items()),
+        claims=claims,
     )
 
 
