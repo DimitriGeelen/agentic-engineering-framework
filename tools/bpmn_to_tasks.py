@@ -337,6 +337,50 @@ def _nearest_task_preds(node_id: str, rev, task_ids) -> list[str]:
     return result
 
 
+def _designer_store() -> str | None:
+    """Designer store root: FW_DESIGNER_STORE override, else cwd-relative default.
+
+    Same resolution convention as _stage_dir. Returns None when the directory
+    does not exist — off-page-ref resolution is then undecidable and Pass 5
+    emits ONE aggregate note instead of per-ref WARNs (T-2570 FP discipline:
+    a compile outside any project must not spray unverifiable dangling-WARNs).
+    """
+    p = os.environ.get("FW_DESIGNER_STORE") or os.path.join(
+        ".context", "designer", "projects"
+    )
+    return p if os.path.isdir(p) else None
+
+
+def _store_identities(store: str) -> tuple[dict[str, str], set[str]]:
+    """(uuid -> project slug, {slug}) from every meta.json in the designer store.
+
+    Stdlib-only twin of web.designer_registry._known — the compiler stays
+    dependency-free (no yaml, no web import path) and a consumer running the
+    vendored CLI gets identical resolution semantics.
+    """
+    import json
+
+    uuids: dict[str, str] = {}
+    slugs: set[str] = set()
+    try:
+        entries = sorted(os.listdir(store))
+    except OSError:
+        return uuids, slugs
+    for d in entries:
+        mp = os.path.join(store, d, "meta.json")
+        if not os.path.isfile(mp):
+            continue
+        try:
+            with open(mp) as f:
+                m = json.load(f)
+        except (OSError, ValueError):
+            continue
+        slugs.add(d)
+        if m.get("uuid"):
+            uuids[m["uuid"]] = d
+    return uuids, slugs
+
+
 def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     """Parse a .bpmn file into a list of task-skeleton dicts and a list of warnings."""
     tree = ET.parse(path)
@@ -602,6 +646,74 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                 f"{joins} parallel join(s) with no parallel fork — nothing forked "
                 f"to reconverge (T-2570)"
             )
+
+    # Pass 5: off-page connector refs (T-2576, T-2571 S3). <aef:link> carries a
+    # cross-workflow reference (contract v0, rail offsets 107-111): workflowRef=
+    # <uuid> is the stable identity; legacy targetWorkflow=<slug> resolves by name
+    # only. Neither is representable in task skeletons, so the compile-time
+    # contract is WARN-per-defect resolved against the designer store — and
+    # SILENT on cleanly resolved refs (T-2570 taxonomy discipline: a resolved
+    # workflowRef round-trips faithfully; WARNing on it would be an FP). Matched
+    # by local name like every other pass. WARN-only — skeleton output unchanged.
+    links = [
+        el
+        for el in root.iter()
+        if _local(el.tag) == "link"
+        and (el.get("workflowRef") or el.get("targetWorkflow") or el.get("name"))
+    ]
+    if links:
+        store = _designer_store()
+        if store is None:
+            warnings.append(
+                f"{len(links)} off-page workflow ref(s) (aef:link) present but no "
+                f"designer store found — resolution not checked (set "
+                f"FW_DESIGNER_STORE or run from the project root) (T-2576)"
+            )
+        else:
+            uuids, slugs = _store_identities(store)
+            parent_of = {c: p for p in root.iter() for c in p}
+            for link in links:
+                host, cur = None, link
+                while cur is not None:
+                    cur = parent_of.get(cur)
+                    if cur is not None and cur.get("id"):
+                        host = cur
+                        break
+                hid = host.get("id") if host is not None else "<anon>"
+                hname = (host.get("name") or "") if host is not None else ""
+                href = f"node {hid!r}" + (f" ({hname!r})" if hname else "")
+                wref = link.get("workflowRef")
+                target = link.get("targetWorkflow") or link.get("name") or ""
+                display = link.get("name") or target or "<unnamed>"
+                if wref:
+                    if wref in uuids:
+                        continue  # resolved by uuid — clean, silent
+                    warnings.append(
+                        f"{href} references off-page workflow {display!r} via "
+                        f"workflowRef {wref} — no live workflow owns that uuid "
+                        f"(pending ghost) — create the workflow, then bind: "
+                        f"fw bpmn claim {wref} <project> (T-2576)"
+                    )
+                elif target in slugs:
+                    tuuid = next((u for u, s in uuids.items() if s == target), None)
+                    hint = (
+                        f'migrate the connector to workflowRef="{tuuid}" for '
+                        f"stable identity"
+                        if tuuid
+                        else "target has no uuid yet — open+save it in the "
+                        "designer to mint one, then migrate to workflowRef"
+                    )
+                    warnings.append(
+                        f"{href} references off-page workflow {target!r} by legacy "
+                        f"targetWorkflow slug — resolves by name today; {hint} "
+                        f"(T-2576)"
+                    )
+                else:
+                    warnings.append(
+                        f"{href} references off-page workflow {display!r} by name "
+                        f"only — no live workflow matches (pending ghost); see the "
+                        f"gallery's unmapped-references markers (T-2576)"
+                    )
 
     return skeletons, warnings
 
