@@ -6,16 +6,16 @@ description: >
   Inception: off-page connector linkage to referenced workflows (uuid registry + forward-ref
   capture)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-20T20:49:13Z
-last_update: '2026-07-20T21:00:05Z'
-date_finished:
+last_update: 2026-07-20T21:53:57Z
+date_finished: 2026-07-20T21:53:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -129,15 +129,15 @@ Completed (all corpus-read spikes, no build artifacts):
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -203,7 +203,24 @@ Every design axis is now decided. IW-1..IW-4 by operator dialogue (uuid-canonica
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — all six slices S1-S6 (seam fully ratified with 832 at offsets 108/109)
+
+Rationale:
+
+Every design axis is now decided. IW-1..IW-4 by operator dialogue (uuid-canonical identity; registry-backed ghosts with bidirectional reference markers; save-time gate minting with compile-WARN + audit-sweep backstop; explicit claim — ghost button + CLI, no silent name-match). IW-5 by 832's operator-confirmed positions (offset 108): extend `aef:link` with `workflowRef` (import alias for legacy `targetWorkflow`), `linkId` kept as an orthogonal intra-diagram axis, draw-time uuid minting accepted, claim picker feasible on their 0.3.0 line. Contract v0 ratified at offset 109 (extended /api/list, ghosts partitioned as a separate array so old pickers never open one, registry lives in the store, claims audit trail). 832's own build waits on THEIR operator's go/no-go, but they explicitly unblocked our half. All slices additive and reversible.
+
+Evidence:
+
+- Corpus scan: zero machine-linked `aef:link` instances in our store; 832 offset 108 correction — their editor DOES serialize `targetWorkflow`+`linkId`, the gap is slug-based identity (rename-fragile, forward-ref-blind), which is exactly the operator's observation with a sharper mechanism.
+- meta.json shape `{id, title, versions, latest, updated}` — uuid additive (aef-dispatch-loop/meta.json read).
+- Operator steers captured verbatim in artifact Dialogue Log (rounds 1-2); IW-1..IW-5 all disposed answered.
+- 832 positions operator-confirmed at rail offset 108; contract v0 posted/ratified at offset 109 (dm:0e7ee6ca…:6a646ce8…).
+- A-044 (draw-time minting) and A-045 (workflowRef shape) validated on offset-108 evidence; A-046 (backfill additive to 0.3.0 client) verified live in S1 before dependent slices land.
+- Governance precedent for save-time minting already shipped and tested: FW_TASK_ORIGIN gate (T-2542/T-2543), DEFER-injection (T-2548/L-504).
+
+**Date**: 2026-07-20T21:53:57Z
 
 ## Updates
 
@@ -212,3 +229,56 @@ Every design axis is now decided. IW-1..IW-4 by operator dialogue (uuid-canonica
 
 ### 2026-07-20T20:50:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-20T21:53:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — all six slices S1-S6 (seam fully ratified with 832 at offsets 108/109)
+
+Rationale:
+
+Every design axis is now decided. IW-1..IW-4 by operator dialogue (uuid-canonical identity; registry-backed ghosts with bidirectional reference markers; save-time gate minting with compile-WARN + audit-sweep backstop; explicit claim — ghost button + CLI, no silent name-match). IW-5 by 832's operator-confirmed positions (offset 108): extend `aef:link` with `workflowRef` (import alias for legacy `targetWorkflow`), `linkId` kept as an orthogonal intra-diagram axis, draw-time uuid minting accepted, claim picker feasible on their 0.3.0 line. Contract v0 ratified at offset 109 (extended /api/list, ghosts partitioned as a separate array so old pickers never open one, registry lives in the store, claims audit trail). 832's own build waits on THEIR operator's go/no-go, but they explicitly unblocked our half. All slices additive and reversible.
+
+Evidence:
+
+- Corpus scan: zero machine-linked `aef:link` instances in our store; 832 offset 108 correction — their editor DOES serialize `targetWorkflow`+`linkId`, the gap is slug-based identity (rename-fragile, forward-ref-blind), which is exactly the operator's observation with a sharper mechanism.
+- meta.json shape `{id, title, versions, latest, updated}` — uuid additive (aef-dispatch-loop/meta.json read).
+- Operator steers captured verbatim in artifact Dialogue Log (rounds 1-2); IW-1..IW-5 all disposed answered.
+- 832 positions operator-confirmed at rail offset 108; contract v0 posted/ratified at offset 109 (dm:0e7ee6ca…:6a646ce8…).
+- A-044 (draw-time minting) and A-045 (workflowRef shape) validated on offset-108 evidence; A-046 (backfill additive to 0.3.0 client) verified live in S1 before dependent slices land.
+- Governance precedent for save-time minting already shipped and tested: FW_TASK_ORIGIN gate (T-2542/T-2543), DEFER-injection (T-2548/L-504).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-75e094b3
+- **Timestamp:** 2026-07-20T21:53:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-79ecaf74
+- **Timestamp:** 2026-07-20T21:53:58Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2542` | task | ✓ pass |
+| `T-2543` | task | ✓ pass |
+| `T-2548` | task | ✓ pass |
+
+### 2026-07-20T21:53:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

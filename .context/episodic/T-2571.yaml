@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2571: off-page connector linkage to referenced workflows (uuid registry + forward-ref
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-20T21:54:07Z
+# ============================================================================
+
+task_id: T-2571
+task_name: "off-page connector linkage to referenced workflows (uuid registry + forward-ref"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-20T20:49:13Z
+completed: 2026-07-20T21:53:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-20T22:51:12+02:00
+last_commit: 2026-07-20T23:33:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  open off-page-connector-linkage inception — corpus evidence + design axes A-E, IW-1..IW-5 filed, dialogue log started. operator steer round 1 — IW-1/2/3 answered (uuid-canonical, ghosts w/ back-ref markers, save-time gate minting + sweep backstop); seam posted to 832 offset 107. review-ready — IW-4 answered (explicit claim), IW-5 deferred (832 Q1-Q3 @107), assumptions+scope+slices S1-S6, rec DEFER→GO (substrate now, serialization slices on 832 reply). seam RATIFIED — 832 offset-108 positions (workflowRef on aef:link w/ alias, draw-time mint, linkId orthogonal) + contract v0 @109; IW-5 answered, A-044/045 validated, rec GO all six slices
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-20 — task-minting timing (IW-3, operator-delegated on reliability)'
+    chose: 'save-time capture through the FW_TASK_ORIGIN gate (idempotent per uuid) + compile WARN + audit drift sweep as backstop.'
+    rationale: 'capture-at-source never depends on someone running a verb later; two-layer producer-gate+sweep is the proven T-2204 pattern.'
+    alternatives_rejected: ['batch-only proposal verb — "wired but not deployed" drift class: reliable only if invoked.']
+  - decision: '2026-07-20 — claim binding (IW-4)'
+    chose: 'explicit claim only — ghost-card "create this workflow" (uuid inherited at birth) + `fw bpmn claim <uuid> <project>` fallback.'
+    rationale: 'a wrong bind silently corrupts every referring diagram; explicitness keeps the failure loud.'
+    alternatives_rejected: ['automatic name-matching — may only ever SUGGEST a claim, never execute one.']
+  - decision: '2026-07-20 — uuid mint point (proposed to 832, Q2)'
+    rationale: 'store-side minting requires writing back into 832''s diagram XML — crosses the content-ownership seam.'
+    alternatives_rejected: ['store-side mint + write-back channel (fallback only if 832 refuses draw-time).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/assumptions.yaml'
+  - 'docs/reports/T-2571-offpage-connector-linkage.md'
+  - '.tasks/active/T-2571-off-page-connector-linkage-to-referenced.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-20T22:51:12"
+    action: "T-2571: open off-page-connector-linkage inception — corpus evidence + design axes A-E, IW-1..IW-5 filed, dialogue log started"
+  - time: "2026-07-20T23:11:59"
+    action: "T-2571: operator steer round 1 — IW-1/2/3 answered (uuid-canonical, ghosts w/ back-ref markers, save-time gate minting + sweep backstop); seam posted to 832 offset 107"
+  - time: "2026-07-20T23:24:20"
+    action: "T-2571: review-ready — IW-4 answered (explicit claim), IW-5 deferred (832 Q1-Q3 @107), assumptions+scope+slices S1-S6, rec DEFER→GO (substrate now, serialization slices on 832 reply)"
+  - time: "2026-07-20T23:33:55"
+    action: "T-2571: seam RATIFIED — 832 offset-108 positions (workflowRef on aef:link w/ alias, draw-time mint, linkId orthogonal) + contract v0 @109; IW-5 answered, A-044/045 validated, rec GO all six slices"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 64
+  commits: 4
+  files_changed: 3
+  lines_added: 377
+  lines_removed: 63
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2571-off-page-connector-linkage-to-referenced.md
+generated_by: context-agent-hybrid
