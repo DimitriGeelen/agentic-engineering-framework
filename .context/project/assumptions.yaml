@@ -412,3 +412,32 @@ assumptions:
   linked_task: T-2541
   created: '2026-07-18'
   resolved_date: null
+- id: A-044
+  statement: 832 will accept draw-time uuid minting in their editor (Q2, offset 107)
+    — if they insist on store-side minting, a write-back channel is needed and the
+    seam design changes
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2571
+  created: '2026-07-20'
+  resolved_date: null
+- id: A-045
+  statement: The proposed serialization shape (workflowRef attr on aef:link) survives
+    832 review (Q1) — connector-parsing slices are built against it and adjust only
+    on objection
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2571
+  created: '2026-07-20'
+  resolved_date: null
+- id: A-046
+  statement: Existing 7 store projects can be uuid-backfilled without breaking 832's
+    0.2.x client (meta.json is additive — client ignores unknown fields)
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2571
+  created: '2026-07-20'
+  resolved_date: null

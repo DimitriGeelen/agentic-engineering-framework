@@ -61,7 +61,10 @@ Off-page connectors in designer diagrams are name-only visuals — nothing links
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Registered in `.context/project/assumptions.yaml` (fw assumption list --task T-2571):
+1. 832 accepts draw-time uuid minting in their editor (Q2, offset 107) — else a store-side write-back channel is needed.
+2. Proposed serialization (`workflowRef` on `aef:link`) survives 832 review (Q1) — parsing slices adjust only on objection.
+3. uuid backfill of the 7 existing store projects is additive to meta.json — 832's 0.2.x client ignores unknown fields.
 
 ## Open Questions
 
@@ -94,29 +97,33 @@ Off-page connectors in designer diagrams are name-only visuals — nothing links
   disposition: answered
   rationale: operator delegated ("most reliable") — save-time gate minting (capture-at-source, idempotent per uuid) + compile WARN + audit sweep backstop; two-layer pattern per T-2204 precedent
 - **IW-4: How does a newly created workflow claim a pending uuid — designer UI picker (832-side), CLI claim verb, or name-match heuristic?**
-  confidence: 1
-  disposition:
-  rationale: operator asked for elaboration (2026-07-20); agent proposal = UI picker + CLI claim fallback, no silent name-match; awaiting operator confirm after elaboration
+  confidence: 2
+  disposition: answered
+  rationale: plain-language elaboration given 2026-07-20 (walkthrough in artifact §D); operator then delegated via broad continue directive — design locked as ghost-card "create this workflow" button (claims uuid at birth) + `fw bpmn claim <uuid> <project>` CLI fallback; name-match may only SUGGEST, never bind silently
 - **IW-5: What is the AEF/832 seam split, and does 832 accept the vocabulary extension (workflowRef on aef:link)?**
   confidence: 1
-  disposition:
-  rationale: operator said run in parallel — seam proposal posted to 832 at rail offset 107 (Q1 attr shape, Q2 draw-time uuid mint, Q3 claim UX + GET /api/workflows contract); awaiting 832 reply
+  disposition: deferred
+  rationale: seam proposal posted to 832 at rail offset 107 (Q1 attr shape, Q2 draw-time uuid mint, Q3 claim UX + GET /api/workflows contract); blocks only serialization-dependent slices (S3-S5), not the 832-independent substrate (S1/S2/S6) — reply processed when it lands
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+Completed (all corpus-read spikes, no build artifacts):
+1. **Corpus scan** — confirmed zero `aef:link` instances with machine targets in all 7 stored projects + fixtures; identity is slug-only; no resolution surface in `/api/save` or compile. (Evidence §1-3 of artifact.)
+2. **meta.json shape check** — `{id, title, versions, latest, updated}`; immutable `uuid` field is additive (assumption 3).
+3. **Operator design dialogue** — 2 rounds, all four AEF-side axes decided (IW-1..IW-4).
+4. **832 seam** — proposal posted offset 107 (Q1-Q3); reply pending (IW-5 deferred).
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Registry writes must be atomic (temp+os.replace, L-491/L-495 corpus discipline) — the registry becomes a shared surface between `/api/save`, compile, claim, and audit.
+- Task minting from `/api/save` MUST route through the FW_TASK_ORIGIN create-via-gate (T-2543): owner:human, captured, horizon later, idempotent per uuid — never a raw create path.
+- uuid must be minted editor-side (832) at draw time; store-side minting would require writing back into 832's diagram XML (rejected — crosses the content-ownership seam).
+- 832's 0.2.x client consumes `/api/*` (T-2529 set); GET /api/workflows must be additive and CSRF-exempt like siblings.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN (on GO):** uuid identity in meta.json + backfill (S1); pending-ref registry + lib (S2); `fw bpmn claim` CLI (S6); then, once 832 answers Q1: compile dangling-ref WARN (S3), save-time gate minting (S4), gallery ghost cards + back-ref markers + N-unmapped marker (S5).
+**OUT:** 832's editor half (connector palette/serialization, draw-time uuid mint, claim picker UI) — theirs per arc-014 scope rule 4; name-match auto-binding (suggest-only if ever); cross-host workflow references (single-store only for v1).
 
 ## Acceptance Criteria
 
@@ -140,14 +147,14 @@ Off-page connectors in designer diagrams are name-only visuals — nothing links
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- All four AEF-side design axes (identity, ghost capture, minting timing, claim moment) are operator-decided with bounded slices
+- At least the substrate slices (S1 identity, S2 registry, S6 claim CLI) are buildable without waiting on 832
+- Each slice is reversible (additive meta.json field, new registry file, new CLI verb — no destructive migration)
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- 832 rejects the seam outright (no serialization carrier for the uuid → linkage impossible end-to-end)
+- Identity backfill would break 832's 0.2.x client (assumption 3 fails)
 
 ## Verification
 
@@ -162,28 +169,36 @@ Off-page connectors in designer diagrams are name-only visuals — nothing links
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — substrate slices S1/S2/S6 now; S3-S5 start when 832 answers Q1 (offset 107)
 
 **Rationale:**
 
-Evidence gap: operator design dialogue in progress (identity model, ghost visibility, task-minting timing undecided) and 832 seam position not yet requested — DEFER until dialogue converges
+All four AEF-side design axes are operator-decided (dialogue rounds 1-2, artifact Dialogue Log): uuid-canonical identity, registry-backed ghosts with bidirectional reference markers, save-time gate minting with compile-WARN + audit-sweep backstop, and explicit claim (ghost button + CLI, no silent name-match). The only open item is 832's half (IW-5, deferred) — and it gates only the serialization-dependent slices, not the substrate. S1 (uuid in meta.json + backfill), S2 (pending-ref registry), and S6 (`fw bpmn claim`) are 832-independent, additive, and reversible. Waiting for 832 before starting them would serialize work the operator asked to run in parallel.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Corpus scan: zero machine-linked `aef:link` instances across 7 stored projects + fixtures; slug-only identity; no resolution surface in `/api/save` or `fw bpmn compile` (artifact §Evidence 1-3).
+- meta.json shape `{id, title, versions, latest, updated}` — uuid additive (aef-dispatch-loop/meta.json read).
+- Operator steers captured verbatim in artifact Dialogue Log (rounds 1-2); IW-1..IW-4 disposed answered.
+- Seam proposal live at rail offset 107 (dm:0e7ee6ca…:6a646ce8…), Q1-Q3 pending; IW-5 disposed deferred.
+- Governance precedent for save-time minting already shipped and tested: FW_TASK_ORIGIN gate (T-2542/T-2543), DEFER-injection (T-2548/L-504).
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-07-20 — task-minting timing (IW-3, operator-delegated on reliability)
+- **Chose:** save-time capture through the FW_TASK_ORIGIN gate (idempotent per uuid) + compile WARN + audit drift sweep as backstop.
+- **Why:** capture-at-source never depends on someone running a verb later; two-layer producer-gate+sweep is the proven T-2204 pattern.
+- **Rejected:** batch-only proposal verb — "wired but not deployed" drift class: reliable only if invoked.
+
+### 2026-07-20 — claim binding (IW-4)
+- **Chose:** explicit claim only — ghost-card "create this workflow" (uuid inherited at birth) + `fw bpmn claim <uuid> <project>` fallback.
+- **Why:** a wrong bind silently corrupts every referring diagram; explicitness keeps the failure loud.
+- **Rejected:** automatic name-matching — may only ever SUGGEST a claim, never execute one.
+
+### 2026-07-20 — uuid mint point (proposed to 832, Q2)
+- **Chose (proposal):** editor mints at draw time; store only registers.
+- **Why:** store-side minting requires writing back into 832's diagram XML — crosses the content-ownership seam.
+- **Rejected:** store-side mint + write-back channel (fallback only if 832 refuses draw-time).
 
 ## Decision
 

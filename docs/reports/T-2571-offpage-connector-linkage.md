@@ -44,6 +44,19 @@
 - **2026-07-20 (operator, steer round 1):** (1) uuid-canonical as recommended → IW-1 answered. (2) Ghosts YES, but must carry a **visual marker of which workflow(s) reference them** and that they still need to be mapped — "something that makes sense of it and gives reference"; asked agent to reflect. (3) Task-minting timing delegated: "whatever is most reliable and gives the best result, reflect." (4) Claim moment: did not understand — asked for elaboration. (5) Seam to 832: run in parallel.
 - **2026-07-20 (agent, execution + reflection):** IW-1/IW-2/IW-3 disposed answered (IW-2 with the back-reference-marker requirement; IW-3 resolved to save-time gate minting + compile WARN + audit sweep — capture-at-source with two-layer backstop, T-2204 pattern). IW-4 held open pending operator confirm after plain-language elaboration. IW-5: seam proposal posted to 832 at **rail offset 107** (Q1 attr shape `workflowRef` on `aef:link`, Q2 draw-time uuid minting in their editor, Q3 claim-UX feasibility + GET /api/workflows contract offer). Ghost-marker design reflection recorded under §B below.
 
+- **2026-07-20 (operator, round 2):** broad continue directive post-elaboration — IW-4 design delegated and locked (explicit claim: ghost button + CLI, suggest-only name-match). Agent drove inception to review-readiness: assumptions registered, scope fenced (S1-S6 slices, 832 half OUT), recommendation refined DEFER → GO (substrate S1/S2/S6 now, S3-S5 on 832's Q1 answer). Handed off via `fw task review T-2571`.
+
+## Slice plan (on GO)
+
+| Slice | What | Depends on 832? |
+|-------|------|-----------------|
+| S1 | uuid identity in meta.json + backfill 7 projects | No |
+| S2 | pending-ref registry (`.context/designer/registry.yaml`, atomic) + lib | No |
+| S3 | compile WARN per dangling ref (both ends named) | Q1 (serialization shape) |
+| S4 | save-time gate minting (FW_TASK_ORIGIN, idempotent per uuid) | Q1 |
+| S5 | gallery ghost cards + back-ref markers + "N unmapped" on referrers | Q1 (back-ref data via S3 parse) |
+| S6 | `fw bpmn claim <uuid> <project>` CLI | No |
+
 ## Recommendation
 
-DEFER — evidence gap: operator design dialogue in progress; 832 seam position not yet requested. Will be refined to GO (scoped slices) or NO-GO as the dialogue converges.
+GO — substrate slices S1/S2/S6 now; S3-S5 start when 832 answers Q1 (rail offset 107). All four AEF-side axes operator-decided; IW-5 deferred (gates only serialization-dependent slices). NO-GO trigger remains: 832 rejecting the seam outright, or uuid backfill breaking their 0.2.x client.
