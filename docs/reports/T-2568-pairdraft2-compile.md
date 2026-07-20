@@ -37,6 +37,10 @@ Landed between your offsets 95 and 99 (with your ratification recorded in the ta
 
 New gap classes this diagram: **1** (T-2569, parallelGateway WARN classification). Repeat validations: T-2557 exclusive×2, T-2567 live×1, T-2562 no-self-ref under multi-loop convergence, owner derivation (userTask→human via sovereignty lane). Open accumulator: T-2556 (blocked on 832), T-2560, T-2562, T-2564, T-2569.
 
+## Companion doc
+
+Drafting-instincts comparison (832's protocol-level draft vs AEF's substrate-level D4, T-2563): `docs/reports/T-2572-drafting-instincts-diff.md` — written for the operator's D4 review pass.
+
 ## Regression pins
 
 Tests appended (suite green): sha byte-guard, fork/join sibling+fan-in structure, multi-back-edge related_tasks, WARN-set pin (2 exclusive + 2 parallel + 1 authority-lane — the parallel wording assertion moves when T-2569 lands).

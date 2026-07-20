@@ -1,16 +1,14 @@
 ---
-id: T-2563
-name: "designer-corpus D4: dispatch-orchestration loop process diagram (resolver dispatch
-  → worker → outcome backprop)"
+id: T-2572
+name: "drafting-instincts diff: 832 dispatch-loop vs AEF D4 (operator-pass companion doc)"
 description: >
-  designer-corpus D4: dispatch-orchestration loop process diagram (resolver dispatch
-  → worker → outcome backprop)
+  drafting-instincts diff: 832 dispatch-loop vs AEF D4 (operator-pass companion doc)
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
-tags: [arc:designer-corpus]
+tags: []
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-19T20:53:32Z
-last_update: 2026-07-19T21:00:25Z
-date_finished: 2026-07-19T21:00:25Z
+created: 2026-07-20T21:38:46Z
+last_update: 2026-07-20T21:38:46Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,67 +34,53 @@ date_finished: 2026-07-19T21:00:25Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-19T21:00:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-19T21:00:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=2 
-      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
-      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0
-      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2563: designer-corpus D4: dispatch-orchestration loop process diagram (resolver dispatch → worker → outcome backprop)
+# T-2572: drafting-instincts diff: 832 dispatch-loop vs AEF D4 (operator-pass companion doc)
 
 ## Context
 
-arc-014 corpus diagram D4 of 5 (T-2553 GO, telemetry pick #4: dispatch 992/1240 events). The v1 dispatch-orchestration loop as actually operated: `fw resolver dispatch` (workflow → assemble envelope → telemetry to dispatches.jsonl) → TermLink worker executes → `fw outcome evaluate/backprop` (outcome rows joined to dispatch rows) — plus the paused-dispatch chain (worker pause_requested → operator `fw pause resolve` → retry envelope linked via retry_of_dispatch_id). Message flavor: worker↔orchestrator coupling via bus/inbox is the honest `kind=message` typed event. Same D1-D3 pattern: canonical dialect, live POST /api/save, compile, verbatim log, gaps to arc-014.
+Owed companion doc for the D1-D5 operator review pass (promised in the T-2568 pair-draft #2 narrative): a structured comparison of how 832 drafted the dispatch-orchestration loop (`tests/fixtures/aef-bpmn/dispatch-loop.bpmn`, pair-draft #2) versus how AEF drafted the same process independently (D4, `.context/designer/projects/aef-dispatch-loop/v2.bpmn`, T-2563) — surfacing the two agents' modeling instincts (governance-as-lane vs governance-folded, human check-in loop vs outcome-eval termination) so the operator reviews D4 with the contrast in hand.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Diagram `aef-dispatch-loop` drafted in 832's canonical dialect covering resolver dispatch → worker execution → outcome evaluate/backprop, including the paused-dispatch sovereignty step (operator `fw pause resolve`) and the honest `kind=message` typed event (worker result on bus, binding=bus:task-channel)
-- [x] Saved through the LIVE designer gallery API (`POST /api/save`, id=aef-dispatch-loop) — meta.json + v2.bpmn exist under `.context/designer/projects/aef-dispatch-loop/` (v1 was malformed — see Evolution + T-2564)
-- [x] `fw bpmn compile` on the saved v2.bpmn exits 0; every expected WARN class accounted for (1× message T-2551, 1× gateway T-2557) in the verbatim compile log at `docs/reports/T-2563-d4-compile-log.md`; the NEW gap class (save accepts malformed XML) filed as T-2564, not fixed mid-flight
-- [x] Owner derivation correct: sovereignty-lane userTask dl_pause_resolve → owner human; all initiative-lane serviceTasks → owner agent
+- [x] `docs/reports/T-2572-drafting-instincts-diff.md` exists, comparing the two drafts along at least: lane/authority structure, governance-node placement, loop/termination shape, gateway usage — each with concrete node ids from both diagrams
+- [x] Doc contains no unverified claims about 832's intent — every 832-side statement traces to diagram content or a cited rail offset (self-check: instincts 1-4 cite node ids/labels; the one behavioral claim, T-2567 live firing, cites T-2568 report §Bonus)
+- [x] D4 review linkage: doc referenced from the T-2563 review surface context (T-2563 Evidence bullet renders on /review/T-2563) + doc cross-link in T-2568 report
 
 ### Human
-- [ ] [REVIEW] D4 dispatch-loop diagram reads as a faithful picture of the v1 orchestration substrate
-  **Steps:**
-  1. Open http://192.168.10.107:3001/designer and load project `aef-dispatch-loop` (v2)
-  2. Check the flow: dispatch selected → resolver envelope → spawn worker → message event (result on bus) → "worker paused?" → your `fw pause resolve` step → retry envelope loops back to spawn; completed path → outcome evaluate/backprop → end
-  3. Correct anything directly in the designer UI (pair-draft: your edits become v3)
-  **Expected:** The pause chain's sovereignty placement and the retry loop match how dispatch-safety slice 5 actually behaves
-  **If not:** Edit in the designer or note the correction — the diff drives the next corpus iteration
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+     Remove this section if all criteria are agent-verifiable.
+     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+
+     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
+     If your Expected clause is grep-able / file-exists / structural (a deterministic
+     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
+     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+     verification genuinely needs human taste (tone, feel, layout rhythm).
+     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+
+     [REVIEW] example (genuine human judgment):
+       - [ ] [REVIEW] Dashboard renders correctly
+         **Steps:**
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
+
+     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
+         **Steps:**
+         1. Run `bin/fw reviewer T-XXX`
+         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
+         **If not:** Inspect hook block-message string and add missing mechanism
+       Conversion: this AC should be moved to ### Agent and
+       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
+-->
 
 ## Verification
-
-test -f .context/designer/projects/aef-dispatch-loop/v2.bpmn
-test -f .context/designer/projects/aef-dispatch-loop/meta.json
-out=$(bin/fw bpmn compile .context/designer/projects/aef-dispatch-loop/v2.bpmn 2>&1); test "$(echo "$out" | grep -c "typed-event annotation")" = "1" && test "$(echo "$out" | grep -c "T-2557")" = "1"
-out=$(bin/fw bpmn compile .context/designer/projects/aef-dispatch-loop/v2.bpmn 2>&1); echo "$out" | grep -q "id: dl_pause_resolve" && echo "$out" | grep -A2 "id: dl_pause_resolve" | grep -q "owner: human"
-test -f docs/reports/T-2563-d4-compile-log.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -114,6 +98,11 @@ test -f docs/reports/T-2563-d4-compile-log.md
 #     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
 # Or:
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
+test -s docs/reports/T-2572-drafting-instincts-diff.md
+grep -q "frw_3_headroom" docs/reports/T-2572-drafting-instincts-diff.md
+grep -q "agt_5_outcome" docs/reports/T-2572-drafting-instincts-diff.md
+grep -q "T-2572-drafting-instincts-diff" .tasks/active/T-2563-designer-corpus-d4-dispatch-orchestratio.md
+grep -q "T-2572-drafting-instincts-diff" docs/reports/T-2568-pairdraft2-compile.md
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
 #
 # Single pipe only — no intermediate tail/awk/sed stages between capture and grep
@@ -147,11 +136,6 @@ test -f docs/reports/T-2563-d4-compile-log.md
 
 ## Evolution
 
-### 2026-07-19 — the corpus stresses the SAVE surface, not just the compiler
-- **What changed:** v1 shipped a raw angle-bracket token inside an attribute (authoring slip) — and the gallery API happily persisted the malformed XML ({"ok":true,"v":1}); only fw bpmn compile caught it (ParseError line/col, exit 1). Until D4, every corpus finding was compiler-side; this is the first store-side gap: /api/save has no well-formedness check, so a broken save surfaces at the WRONG layer (compile-time or designer-load-time instead of save-time).
-- **Plan impact:** none for D5 drafting; escape discipline noted for meta notes containing CLI placeholder syntax.
-- **Triggered:** T-2564 (save-side XML parse → HTTP 400 with line/column; captured/later, arc-014).
-
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -173,16 +157,6 @@ test -f docs/reports/T-2563-d4-compile-log.md
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-## Recommendation
-
-**Recommendation:** GO — accept D4 into the corpus
-**Rationale:** Fourth corpus diagram through the full pipeline; first kind=message validation, pause-chain sovereignty step derives owner:human correctly, distinct-node retry loop confirms T-2562 is specific to self-loops — and the v1 authoring slip surfaced the first store-side gap (T-2564), exactly the accumulator behavior the grill scoped.
-**Evidence:**
-- `.context/designer/projects/aef-dispatch-loop/v2.bpmn` saved via live API ({"ok":true,"v":2})
-- Compile exit 0: 5 skeletons, dl_pause_resolve owner:human, 1 message WARN + 1 gateway WARN (verbatim in docs/reports/T-2563-d4-compile-log.md)
-- T-2564 filed with real ACs (captured/later, arc:designer-corpus)
-- Review companion: `docs/reports/T-2572-drafting-instincts-diff.md` — D4 (substrate-level) vs 832's pair-draft #2 (protocol-level) side-by-side; the open steer it surfaces: Framework-lane governance nodes vs hook-delegation convention for corpus diagrams
 
 ## Decisions
 
@@ -207,22 +181,7 @@ test -f docs/reports/T-2563-d4-compile-log.md
 
 ## Updates
 
-### 2026-07-19T20:53:32Z — task-created [task-create-agent]
+### 2026-07-20T21:38:46Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2563-designer-corpus-d4-dispatch-orchestratio.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2572-drafting-instincts-diff-832-dispatch-loo.md
 - **Context:** Initial task creation
-
-### 2026-07-19T20:54:52Z — status-update [task-update-agent]
-- **Change:** tags: +arc:designer-corpus
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-19c06556
-- **Timestamp:** 2026-07-19T21:00:27Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-07-19T21:00:25Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
