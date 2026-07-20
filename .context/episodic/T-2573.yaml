@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2573: designer store uuid identity: mint on create, backfill 7 projects, expose in /api/list (T-2571 S1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-20T21:58:54Z
+# ============================================================================
+
+task_id: T-2573
+task_name: "designer store uuid identity: mint on create, backfill 7 projects, expose in /api/list (T-2571 S1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-20T21:54:58Z
+completed: 2026-07-20T21:58:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-20T23:58:09+02:00
+last_commit: 2026-07-20T23:58:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S1 uuid identity — mint-on-create + lazy legacy backfill in /api/save (immutable via setdefault), 7 projects backfilled, /api/list carries uuid additively; 6/6 tests, live-verified 7/7 on :3001
+
+# Key outcomes
+outcomes:
+  - '`/api/save` mints `uuid` (uuid4) into meta.json on project creation AND lazily backfills a legacy meta on next save; repeat saves NEVER change an existing uuid (immutability pinned by test — `meta.setdefault`, designer_api.py)'
+  - 'All 7 existing store projects backfilled with uuid in meta.json (idempotent — re-run skips present uuids; atomic temp+replace writes)'
+  - '`/api/list` map entries carry `"uuid"` (additive; contract v0 offset 109); shape pinned by test: exactly the T-2523/T-2530 authoritative keys + uuid'
+  - 'Tests green: 4 new in tests/web/test_designer_api_uuid_identity.py + save-gate suite unregressed (6/6)'
+  - 'Live surface verified post-restart: /api/list on :3001 → 7 maps, 7 uuids, 0 missing; /api/health ok:true; /designer 200 (A-046 holds — additive field tolerated)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/designer_api.py'
+  - '.context/designer/projects/aef-audit-cron/meta.json'
+  - '.context/designer/projects/aef-dispatch-loop/meta.json'
+  - '.context/designer/projects/aef-inception-flow/meta.json'
+  - '.context/designer/projects/aef-session-lifecycle/meta.json'
+  - '.context/designer/projects/aef-task-lifecycle/meta.json'
+  - '.context/designer/projects/t2529-verify/meta.json'
+  - '.context/designer/projects/t2530-verify/meta.json'
+  - '.tasks/active/T-2573-designer-store-uuid-identity-mint-on-cre.md'
+  - 'tests/web/test_designer_api_uuid_identity.py'
+  - 'web/blueprints/designer_api.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-20T23:58:09"
+    action: "T-2573: S1 uuid identity — mint-on-create + lazy legacy backfill in /api/save (immutable via setdefault), 7 projects backfilled, /api/list carries uuid additively; 6/6 tests, live-verified 7/7 on :3001"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 11
+  lines_added: 293
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2573-designer-store-uuid-identity-mint-on-cre.md
+generated_by: context-agent-hybrid

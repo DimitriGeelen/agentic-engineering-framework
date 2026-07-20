@@ -21778,3 +21778,47 @@ scan_id: R-14d1ba9b
 task_id: T-2572
 payload:
   task_file: .tasks/active/T-2572-drafting-instincts-diff-832-dispatch-loo.md
+---
+kind: scan_emitted
+timestamp: '2026-07-20T21:53:58Z'
+scan_id: R-75e094b3
+task_id: T-2571
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-20T21:53:58Z'
+scan_id: R-75e094b3
+task_id: T-2571
+payload:
+  task_file: .tasks/active/T-2571-off-page-connector-linkage-to-referenced.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-20T21:53:58Z'
+scan_id: RC-79ecaf74
+task_id: T-2571
+payload:
+  overall: CONFIRMED
+  claim_count: 3
+---
+kind: scan_emitted
+timestamp: '2026-07-20T21:58:46Z'
+scan_id: R-8202cd75
+task_id: T-2573
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-20T21:58:46Z'
+scan_id: R-8202cd75
+task_id: T-2573
+payload:
+  task_file: .tasks/active/T-2573-designer-store-uuid-identity-mint-on-cre.md

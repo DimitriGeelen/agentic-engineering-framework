@@ -4732,3 +4732,13 @@ s=s.replace(tags: [],tags: [arc:designer-corpus],1)
 open(p,w).write(s)
 EOF
 git add .tasks/active/T-2570-'
+- timestamp: '2026-07-20T21:53:57Z'
+  task: 'T-2571'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-20T21:58:46Z'
+  task: 'T-2573'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: additive JSON field in /api/list consumed by 832''s client — no template/CSS/layout touched, shape pinned by test + live curl; visual ghost-card work is S5 which will carry [REVIEW]'
+  reason: ''

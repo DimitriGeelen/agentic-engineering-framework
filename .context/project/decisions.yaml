@@ -2249,3 +2249,17 @@ decisions:
     date: 2026-07-19
     task: T-2567
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-324
+    decision: "save-time capture through the FW_TASK_ORIGIN gate (idempotent per uuid) + compile WARN + audit drift sweep as backstop."
+    scope: project
+    date: 2026-07-20
+    task: T-2571
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-325
+    decision: "explicit claim only — ghost-card \"create this workflow\" (uuid inherited at birth) + `fw bpmn claim <uuid> <project>` fallback."
+    scope: project
+    date: 2026-07-20
+    task: T-2571
+    rationale: "Auto-captured from task file on completion"
