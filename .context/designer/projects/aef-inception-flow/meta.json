@@ -1,14 +1,19 @@
 {
-  "id": "aef-inception-flow",
-  "title": "aef-inception-flow",
-  "versions": [
-    {
-      "v": 1,
-      "note": "T-2558 pair-draft v1 (agent-drafted; operator review pending)",
-      "ts": 1784492393
-    }
-  ],
-  "latest": 1,
-  "updated": 1784492393,
-  "uuid": "6178cf0a-400d-4d0c-b1b7-0ca4236ca7ea"
+ "id": "aef-inception-flow",
+ "title": "aef-inception-flow",
+ "versions": [
+  {
+   "v": 1,
+   "note": "T-2558 pair-draft v1 (agent-drafted; operator review pending)",
+   "ts": 1784492393
+  },
+  {
+   "v": 2,
+   "note": "T-2586 pair-draft v2: off-page Handoff -> aef-task-lifecycle after GO/file-children (T-2571 seam observable; T-2584 RCA)",
+   "ts": 1784623654
+  }
+ ],
+ "latest": 2,
+ "updated": 1784623654,
+ "uuid": "6178cf0a-400d-4d0c-b1b7-0ca4236ca7ea"
 }

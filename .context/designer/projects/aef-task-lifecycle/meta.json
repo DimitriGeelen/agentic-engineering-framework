@@ -1,14 +1,19 @@
 {
-  "id": "aef-task-lifecycle",
-  "title": "aef-task-lifecycle",
-  "versions": [
-    {
-      "v": 1,
-      "note": "T-2555 pair-draft v1 (agent-drafted; operator review pending)",
-      "ts": 1784491597
-    }
-  ],
-  "latest": 1,
-  "updated": 1784491597,
-  "uuid": "1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7"
+ "id": "aef-task-lifecycle",
+ "title": "aef-task-lifecycle",
+ "versions": [
+  {
+   "v": 1,
+   "note": "T-2555 pair-draft v1 (agent-drafted; operator review pending)",
+   "ts": 1784491597
+  },
+  {
+   "v": 2,
+   "note": "T-2586 pair-draft v2: off-page Handoff -> aef-dispatch-loop at the work/dispatch step (T-2571 seam observable; T-2584 RCA)",
+   "ts": 1784623654
+  }
+ ],
+ "latest": 2,
+ "updated": 1784623654,
+ "uuid": "1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7"
 }
