@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-19T18:30:00Z
-last_update: '2026-07-19T18:45:06Z'
+last_update: 2026-07-21T22:52:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -47,6 +47,15 @@ cost_estimate_proposed:
       tier: 4
       effort: 7
     rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-20T19:00:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---

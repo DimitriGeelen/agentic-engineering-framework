@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2584: Off-page connectors not working in designer (operator field report 2026-07-21)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T08:52:18Z
+# ============================================================================
+
+task_id: T-2584
+task_name: "Off-page connectors not working in designer (operator field report 2026-07-21)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T08:00:34Z
+completed: 2026-07-21T08:52:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-21T10:45:43+02:00
+last_commit: 2026-07-21T10:45:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — off-page seam verified working end-to-end live (all 9 legs); operator-perception cause = corpus content gap + 832 T-218-gated uuid half + ghost-alert dead-end; scratch fixture t2584-scratch + ghost + minted T-2585 kept as live evidence; T-2586 filed for corpus v2 handoffs
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified with live evidence (what exactly the operator experiences at /designer when attempting an off-page connector, and why), recorded in ## RCA'
+  - 'If cause is the 0.3.0 editor lacking authoring support (H1): the gap is surfaced operator-visibly — H1 DISPROVEN as stated (0.3.0 has full legacy-slug authoring, live-verified), but the visibility half of it held: the seam had zero observable instances. Addressed by T-2586 (corpus v2 handoffs, live) + the scratch fixture kept in place (t2584-scratch + ghost card at /designer/ghosts + minted T-2585) so every seam state has a live example'
+  - 'If cause is an AEF-side defect (parse/serialize/render on my half): confirmed AEF-side cause was CONTENT (corpus had no handoffs), not code — no code defect found in 9 live-verified legs; fix = T-2586 corpus v2, shipped + live-verified on :3001 (regression pinning stays with the existing T-2579 seam harness, unchanged)'
+  - '832 informed via rail of the confirmed root cause (offset 8619: no contract-level defect, pin pair-draft #3 as planned; ghost-alert dead-end UX finding recorded upstream for their T-218 build)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'RCA — off-page seam verified working end-to-end live (all 9 legs); operator-perception cause = corpus content gap + 832 T-218-gated uuid half + ghost-alert dead-end; scratch fixture t2584-scratch + ghost + minted T-2585 kept as live evidence; T-2586 filed for corpus v2 handoffs'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/designer/projects/t2584-scratch/meta.json'
+  - '.context/designer/projects/t2584-scratch/v1.bpmn'
+  - '.context/designer/registry.yaml'
+  - '.tasks/active/T-2584-off-page-connectors-not-working-in-desig.md'
+  - '.tasks/active/T-2585-document-workflow-t2584-ghost-target-ref.md'
+  - '.tasks/active/T-2586-designer-corpus-v2-cross-process-off-pag.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-21T10:45:43"
+    action: "T-2584: RCA — off-page seam verified working end-to-end live (all 9 legs); operator-perception cause = corpus content gap + 832 T-218-gated uuid half + ghost-alert dead-end; scratch fixture t2584-scratch + ghost + minted T-2585 kept as live evidence; T-2586 filed for corpus v2 handoffs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51
+  commits: 1
+  files_changed: 6
+  lines_added: 739
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2584-off-page-connectors-not-working-in-desig.md
+generated_by: context-agent-hybrid

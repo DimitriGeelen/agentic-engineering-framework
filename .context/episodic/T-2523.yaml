@@ -1,0 +1,127 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2523: T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T22:51:48Z
+# ============================================================================
+
+task_id: T-2523
+task_name: "T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-10T17:08:15Z
+completed: 2026-07-21T22:51:36Z
+duration_days: 11
+updates_count: 13
+first_commit: 2026-07-10T19:11:54+02:00
+last_commit: 2026-07-22T00:15:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  stage durable 832 convergence handoff (IW-1..IW-5) + real ACs. confirm IW-1..IW-5 delivery to 832 (thread T-175, offset 6835); capture 832's live-PTY hold state. async-ack to 832 (thread T-175 offset 6844) + /designer live-verify; capture in contract dialogue. capture IW-6 (horizon is instance-transient) + IW-7 (owner double-encodes lane) from operator design review of 0.2.0 fields. capture IW-8 (no project browser / cannot save-to-project) + relay IW-6/7/8 to 832 (thread T-175 offset 6862). CORRECT IW-8 via live client inspection — 832 already shipped the persistence client; AEF just missing the gallery-server API (contract recovered). capture 832's T-175 child-decomposition dossier (offset 6864) + bounded G-3 reply. checkpoint — no new 832 reply on thread T-175, 832 session now idle at picker. checkpoint — no new 832 reply, PTY still idle at picker; flag 10 concurrent worker dispatches for cleanup. checkpoint — no new 832 reply; cleaned up 10 stale worker sessions, registered OBS-091. capture straggler design-review findings IW-9 (authority triple-encoded) + IW-12 (event palette missing typed events) — post-hoc reconstruction, marked pending operator framing confirm, not yet relayed to 832. comms fix verified (agent-key signing + return leg + no-flag auto-accept); root-caused AC-2/AC-3 stall to broadcast-rail delivery; re-delivered IW-1 keystone + gallery-API confirm on the DM rail that rings 832. IW-1 KEYSTONE answered by 832 = (a) extensionElements <aef:uid> child on every flowNode+sequenceFlow (reuse-verbatim = modify-vs-create discriminator); captured gallery-API contract corrections (sources/latest.ts/latest.count, health.store). Child 2 forward-compiler unblocked (ready for operator GO). capture 832 multi-source sources[] ordering contract (rail offset 16) — rendered/saved/BOTH legs, saved-wins-openTarget; AEF ships saved-only, rest is rendered-corpus follow-up. identity-binding forensics — host-107 discovery collapse proven (aef/workflow-designer/termlink-agent all resolve to shared host key d1993c2c); 6a646ce8=832 agent key via prior handshake+content, today's reply awaiting liveness challenge (offset 18); homed to OBS-093/T-2527. rendered-corpus follow-up — capture AEF client contract (GET /rendered/<id>.bpmn relative fetch, isCorpus delete, thumb fallback) + BLOCKER (no corpus exists, 0 non-vendor .bpmn; likely 832-delivered fixture); coordination Q raised to 832 (rail offset 19). relay IW-9 (authority triple-encoded) + IW-12 (event palette missing typed events) to 832 (rail offset 20), framed as reconstructed/needs-832-read; dispositions draft→relayed-awaiting-832. strengthen OBS-093 with discovery-collapse proof (3 names→shared host key d1993c2c; name-based contact targeting broken, not just ack-dedup); fix homes to termlink/host-config. record 832 milestone (T-187/T-188 round-trip guards, G-002 closed, seam proven both ways → de-risks Child-2) + draft AEF proposed positions on Child-1 v1.1 rulings (G-3 lightweight marker=gateway-constitutive; tier default=1; AC-seeding=skeleton-not-placeholder) + confirm 2/3/5 ownership split — all needs operator ratification, none relayed to 832. S3-live ping intake — reachable twin :8834 is PRE-S3 (stale Jul-10 instance); S4 run-parameter request posted (offset 137, vehicles A/B). S4 e2e complete vs 832's redeployed :8834 — S1 mint/S2 emit/S3 rescan/drop-rule all PASS both sides; S1 gap found (net-new maps save uuid:null); report at rail offset 139
+
+# Key outcomes
+outcomes:
+  - 'IW-1..IW-5 delivered to 832 durably (delivery confirmed live — visible in 832''s session or a durable channel record, not fire-and-forget)'
+  - '832''s answers (or explicit "will answer later") captured back into `docs/reports/T-2522-bpmn-aef-mapping-contract.md` §Open questions / Dialogue Log'
+  - 'For each of IW-1..IW-5 that 832 answers, the corresponding disposition in T-2522 is updated from `deferred` to `answered` with the ruling (note: T-2522 is completed — dispositions recorded in the artifact, cross-referenced)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'strengthen OBS-093 with discovery-collapse proof (3 names→shared host key d1993c2c; name-based contact targeting broken, not just ack-dedup); fix homes to termlink/host-config'
+    source: git-mined
+  - description: 'rendered-corpus follow-up — capture AEF client contract (GET /rendered/<id>.bpmn relative fetch, isCorpus delete, thumb fallback) + BLOCKER (no corpus exists, 0 non-vendor .bpmn; likely 832-delivered fixture); coordination Q raised to 832 (rail offset 19)'
+    source: git-mined
+  - description: 'comms fix verified (agent-key signing + return leg + no-flag auto-accept); root-caused AC-2/AC-3 stall to broadcast-rail delivery; re-delivered IW-1 keystone + gallery-API confirm on the DM rail that rings 832'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0710-2347.md'
+  - '.context/handovers/S-2026-0711-0746.md'
+  - '.context/inbox.yaml'
+  - '.context/project/concerns.yaml'
+  - 'docs/reports/T-2522-bpmn-aef-mapping-contract.md'
+  - 'docs/reports/T-2523-832-convergence-handoff.md'
+  - '.tasks/active/T-2523-t-175-mapping-contract-convergence-with-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-10T19:11:54"
+    action: "T-2523: stage durable 832 convergence handoff (IW-1..IW-5) + real ACs"
+  - time: "2026-07-10T20:50:00"
+    action: "T-2523: confirm IW-1..IW-5 delivery to 832 (thread T-175, offset 6835); capture 832's live-PTY hold state"
+  - time: "2026-07-10T21:45:54"
+    action: "T-2523: async-ack to 832 (thread T-175 offset 6844) + /designer live-verify; capture in contract dialogue"
+  - time: "2026-07-10T23:53:43"
+    action: "T-2523: capture IW-6 (horizon is instance-transient) + IW-7 (owner double-encodes lane) from operator design review of 0.2.0 fields"
+  - time: "2026-07-10T23:57:26"
+    action: "T-2523: capture IW-8 (no project browser / cannot save-to-project) + relay IW-6/7/8 to 832 (thread T-175 offset 6862)"
+  - time: "2026-07-11T00:15:07"
+    action: "T-2523: CORRECT IW-8 via live client inspection — 832 already shipped the persistence client; AEF just missing the gallery-server API (contract recovered)"
+  - time: "2026-07-11T00:46:40"
+    action: "T-2523: capture 832's T-175 child-decomposition dossier (offset 6864) + bounded G-3 reply"
+  - time: "2026-07-11T03:12:41"
+    action: "T-2523: checkpoint — no new 832 reply on thread T-175, 832 session now idle at picker"
+  - time: "2026-07-11T04:42:39"
+    action: "T-2523: checkpoint — no new 832 reply, PTY still idle at picker; flag 10 concurrent worker dispatches for cleanup"
+  - time: "2026-07-11T05:44:00"
+    action: "T-2523: checkpoint — no new 832 reply; cleaned up 10 stale worker sessions, registered OBS-091"
+  - time: "2026-07-11T08:11:48"
+    action: "T-2523: capture straggler design-review findings IW-9 (authority triple-encoded) + IW-12 (event palette missing typed events) — post-hoc reconstruction, marked pending operator framing confirm, not yet relayed to 832"
+  - time: "2026-07-11T14:02:15"
+    action: "T-2523: comms fix verified (agent-key signing + return leg + no-flag auto-accept); root-caused AC-2/AC-3 stall to broadcast-rail delivery; re-delivered IW-1 keystone + gallery-API confirm on the DM rail that rings 832"
+  - time: "2026-07-11T14:08:14"
+    action: "T-2523: IW-1 KEYSTONE answered by 832 = (a) extensionElements <aef:uid> child on every flowNode+sequenceFlow (reuse-verbatim = modify-vs-create discriminator); captured gallery-API contract corrections (sources/latest.ts/latest.count, health.store). Child 2 forward-compiler unblocked (ready for operator GO)"
+  - time: "2026-07-11T15:56:36"
+    action: "T-2523: capture 832 multi-source sources[] ordering contract (rail offset 16) — rendered/saved/BOTH legs, saved-wins-openTarget; AEF ships saved-only, rest is rendered-corpus follow-up"
+  - time: "2026-07-11T16:26:28"
+    action: "T-2523: identity-binding forensics — host-107 discovery collapse proven (aef/workflow-designer/termlink-agent all resolve to shared host key d1993c2c); 6a646ce8=832 agent key via prior handshake+content, today's reply awaiting liveness challenge (offset 18); homed to OBS-093/T-2527"
+  - time: "2026-07-11T16:36:39"
+    action: "T-2523: rendered-corpus follow-up — capture AEF client contract (GET /rendered/<id>.bpmn relative fetch, isCorpus delete, thumb fallback) + BLOCKER (no corpus exists, 0 non-vendor .bpmn; likely 832-delivered fixture); coordination Q raised to 832 (rail offset 19)"
+  - time: "2026-07-11T17:13:09"
+    action: "T-2523: relay IW-9 (authority triple-encoded) + IW-12 (event palette missing typed events) to 832 (rail offset 20), framed as reconstructed/needs-832-read; dispositions draft→relayed-awaiting-832"
+  - time: "2026-07-11T17:16:21"
+    action: "T-2523: strengthen OBS-093 with discovery-collapse proof (3 names→shared host key d1993c2c; name-based contact targeting broken, not just ack-dedup); fix homes to termlink/host-config"
+  - time: "2026-07-11T18:53:36"
+    action: "T-2523: record 832 milestone (T-187/T-188 round-trip guards, G-002 closed, seam proven both ways → de-risks Child-2) + draft AEF proposed positions on Child-1 v1.1 rulings (G-3 lightweight marker=gateway-constitutive; tier default=1; AC-seeding=skeleton-not-placeholder) + confirm 2/3/5 ownership split — all needs operator ratification, none relayed to 832"
+  - time: "2026-07-21T23:53:35"
+    action: "T-2523: S3-live ping intake — reachable twin :8834 is PRE-S3 (stale Jul-10 instance); S4 run-parameter request posted (offset 137, vehicles A/B)"
+  - time: "2026-07-22T00:15:50"
+    action: "T-2523: S4 e2e complete vs 832's redeployed :8834 — S1 mint/S2 emit/S3 rescan/drop-rule all PASS both sides; S1 gap found (net-new maps save uuid:null); report at rail offset 139"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 21 commit(s), 16183 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16183
+  commits: 21
+  files_changed: 8
+  lines_added: 3214
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2523-t-175-mapping-contract-convergence-with-.md
+generated_by: context-agent-hybrid

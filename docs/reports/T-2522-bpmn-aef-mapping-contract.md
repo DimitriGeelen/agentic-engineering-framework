@@ -59,9 +59,36 @@ drawn. 6 node `aef:owner` overrides lane. 7 `aef:task-id` present⇒UPDATE absen
   `docs/standards/aef-bpmn-forward-compile-v1.md` §2/§4. disposition: answered.** This is the keystone
   — Child 2 (diagram→tasks forward compiler) is now unblocked.
 - Q2 namespace: agree an `aef:` extension URI that survives BPMN-standard round-trips.
+  **ANSWERED (settled in production, disposition pass 2026-07-22): URI =
+  `http://anchorpoint.framework/aef/extensions`.** Never ruled as a standalone rail post — it
+  converged operationally: AEF pins it as `AEF_NS` (`web/designer_registry.py:37`, also
+  `tests/web/test_designer_registry_ghosts.py:16`), 832's editor emits the same `xmlns:aef` in
+  every saved map, and the S4 e2e run (DM rail offsets 137-139, 2026-07-21) byte-verified
+  round-trips through BOTH stores (probe sha `1a2017d9…`, Pass-5 + registry rescan congruent both
+  sides). The namespace survives BPMN-standard round-trips by proof, not promise. disposition: answered.
 - Q3 DEFER shape: GO→children, NO-GO→terminate — what BPMN shape for DEFER (revisit-later)?
+  **DEFERRED (explicit, disposition pass 2026-07-22): no ruling exists.** Checked the shipped
+  forward compiler (`tools/bpmn_to_tasks.py` — no DEFER-branch handling) and the full DM rail
+  history: offset 25's ratified G-3 ruling fixes the *inception gateway* shape (constitutive
+  exclusiveGateway; lightweight form = collapsed subProcess with gateway implied at boundary) but
+  says nothing about a distinct DEFER outcome shape. Open for a future ruling; until then DEFER
+  compiles like NO-GO (no children materialised) with the decision recorded AEF-side only.
+  disposition: deferred.
 - Q4 no-lane fallback: if diagram has no lanes, per-node `aef:owner` required, or diagram default?
+  **ANSWERED (ratified O-1 semantics, shipped): neither** — a no-lane node gets its owner
+  **defaulted from node type** (userTask→human, scriptTask→fw, serviceTask→agent) **with a WARN**
+  (`tools/bpmn_to_tasks.py:462-465` "in no lane — owner defaulted from type"); when a lane IS
+  present and conflicts with the type, **Lane wins (O-1)** with a WARN (`:457`); an explicit node
+  `aef:owner` overrides both (ruling 6). Ratified through the rail during forward-compiler
+  convergence (T-2531). Per-node `aef:owner` is thus optional, not required, and there is no
+  diagram-level default attribute. disposition: answered.
 - Q5 arc round-trip: editing a collapsed subProcess (arc) → regenerate arc YAML, or only members?
+  **DEFERRED (explicit, by joint ratified ruling): reverse discovery = DEFER.** The
+  operator-ratified 2/3/5 ownership split (DM rail offset 25 item 4, confirmed by 832 at offset 26)
+  defers the entire reverse-discovery direction — (2) forward bridge = AEF-led, (3) reverse
+  discovery + (5) hosting = DEFER. Arc-YAML regeneration from diagram edits is squarely reverse
+  discovery, so Q5 is deferred *by decision*, not by omission. Revisit when reverse discovery is
+  taken up. disposition: deferred.
 
 ## Recommendation: GO (adopt the AEF-side contract)
 This task = the **AEF half** of Child 1. The AEF-side node/edge schema + 7 rulings are drafted,
@@ -372,3 +399,19 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
     - **Routing:** these are operator-ratification items (arc-scale), surfaced to the operator this session.
       Child-2 GO, IW-9/IW-12 framing, and these three rulings are the AEF-side decisions that unblock 832's
       v1.1. None self-approved.
+
+- 2026-07-22 (T-2523 disposition close-out pass) — Final per-question sweep of Q1-Q5 (= IW-1..IW-5)
+  against shipped code + full DM rail history (`dm:0e7ee6ca…:6a646ce8…` offsets 1-141), inline with
+  the S4 e2e completion (offsets 137-140: contract v0 + S3b registry spec verified congruent both
+  sides through 832's SERVED :8834; 832's T-229 fixed the S1 new-map mint gap found by our run).
+  Resulting dispositions, recorded in §Open questions above: **Q1 answered** (offset 12,
+  `<aef:uid>` child element — the keystone, long since shipped both directions); **Q2 answered**
+  (namespace `http://anchorpoint.framework/aef/extensions` settled by production convergence +
+  byte-verified S4 round-trips, no standalone ruling needed); **Q3 deferred explicitly** (no
+  DEFER-shape ruling exists anywhere in compiler or rail; G-3 covers the inception gateway only);
+  **Q4 answered** (ratified O-1 semantics in the shipped forward compiler: no-lane → type-derived
+  owner + WARN, lane conflict → Lane wins, node `aef:owner` overrides); **Q5 deferred by decision**
+  (ratified 2/3/5 ownership split defers all reverse discovery, offset 25/26). Score: 3 answered,
+  2 explicitly deferred with cross-referenced rulings — none silently open. This closes T-2523
+  AC-2/AC-3 (answers + "will answer later" equivalents captured; dispositions flipped where rulings
+  exist).

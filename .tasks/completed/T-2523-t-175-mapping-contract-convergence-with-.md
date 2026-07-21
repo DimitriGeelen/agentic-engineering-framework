@@ -6,12 +6,12 @@ description: >
   T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side
   rulings
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/designer_api.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: 2026-07-21T22:02:04Z
-date_finished:
+last_update: 2026-07-21T22:51:36Z
+date_finished: 2026-07-21T22:51:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,8 +106,8 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
 
 ### Agent
 - [x] IW-1..IW-5 delivered to 832 durably (delivery confirmed live — visible in 832's session or a durable channel record, not fire-and-forget)
-- [ ] 832's answers (or explicit "will answer later") captured back into `docs/reports/T-2522-bpmn-aef-mapping-contract.md` §Open questions / Dialogue Log
-- [ ] For each of IW-1..IW-5 that 832 answers, the corresponding disposition in T-2522 is updated from `deferred` to `answered` with the ruling (note: T-2522 is completed — dispositions recorded in the artifact, cross-referenced)
+- [x] 832's answers (or explicit "will answer later") captured back into `docs/reports/T-2522-bpmn-aef-mapping-contract.md` §Open questions / Dialogue Log
+- [x] For each of IW-1..IW-5 that 832 answers, the corresponding disposition in T-2522 is updated from `deferred` to `answered` with the ruling (note: T-2522 is completed — dispositions recorded in the artifact, cross-referenced)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -461,3 +461,29 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   scratchpad/s4-probe-v1.bin (re-pullable from their /api/version?id=s4-e2e-probe&v=1).
 - **Status:** S4 re-verify DONE. Remaining external waits: their T-228 picker (→ picker-authored
   exemplar for the T-2593 fixture drop-point), T-213 kind= ruling, 0.3.1 tag.
+
+### 2026-07-22 — Disposition close-out pass: AC-2/AC-3 complete
+- **Action:** Final Q1-Q5 (IW-1..IW-5) disposition sweep written into
+  `docs/reports/T-2522-bpmn-aef-mapping-contract.md` §Open questions + Dialogue Log.
+- **Result:** Q1 answered (offset 12, `<aef:uid>` keystone — recorded earlier); Q2 answered
+  (namespace `http://anchorpoint.framework/aef/extensions` settled by production convergence
+  both sides + S4 byte-verified round-trips — `web/designer_registry.py:37`); Q3 explicitly
+  deferred (no DEFER-shape ruling in compiler or rail; G-3 covers inception gateway only);
+  Q4 answered (ratified O-1 shipped: no-lane → type-derived owner + WARN
+  `tools/bpmn_to_tasks.py:462-465`, Lane wins `:457`, node aef:owner overrides); Q5 deferred
+  BY ratified decision (2/3/5 ownership split, offsets 25/26 — reverse discovery = DEFER).
+- **Score:** 3 answered, 2 explicitly deferred with cross-referenced rulings, none silently open.
+- **Status:** All 3 Agent ACs ticked. Rail state at close: offset 141 (832's S4a claim-on-save
+  live; picker next window — future re-verify is NEW work, not this task's scope).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a9aa0c09
+- **Timestamp:** 2026-07-21T22:51:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-21T22:51:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
