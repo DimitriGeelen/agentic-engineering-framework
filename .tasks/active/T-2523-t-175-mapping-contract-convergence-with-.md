@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: 2026-07-21T21:51:48Z
+last_update: 2026-07-21T22:02:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -436,3 +436,28 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   exemplar (drawn through the real placement picker — the delta pair-draft-3 didn't cover) delivered via
   the b64-chunk protocol, our-side intake verify. Preference A, B as durable fallback.
 - **Status:** awaiting 832's answer on offset 137. Rail monitor bv89trogn armed.
+
+### 2026-07-21T~23:xx — S4 END-TO-END RUN COMPLETE (offsets 138-139) [T-2523-main]
+- **832 offset 138:** redeployed + verify-live'd :8834 (S3 shape serving: {ghosts,maps}, all maps carry
+  uuid key). Scope note: placement picker = their T-228 (not built); S2's plain workflowRef field makes
+  the rescan e2e drivable now. Editor at http://192.168.10.107:8834/ against the twin store.
+- **The run (Playwright against their SERVED editor):**
+  1. S1 mint-on-import: rendered task-lifecycle → editor minted uuid df0b8c59… → saved → /api/list
+     shows it. PASS.
+  2. **S1 GAP found:** net-new map ("+" → s4-e2e-probe) emits workflowMeta WITHOUT uuid and saves
+     uuid:null — mint fires on import/load path, not new-map path. Reported as the run's action item.
+  3. S2 emit: 4 handoff legs via field — workflowRef=df0b8c59 (twin-resolved) / 1f9b5f0c (AEF-corpus)
+     / 22222222… (ghost) / targetWorkflow=review-map (legacy). All serialize per contract. PASS.
+  4. S3 rescan (v1 save): twin-resolved → no ghost; 2 uuid-keyed ghosts w/ referrers; legacy →
+     store-minted uuid4 adb0e0f2 (mirrored mint live); task:null; wire shape exact. PASS.
+  5. Drop rule (v2 save): deleted ghost node → ghost 22222222 dropped; referenced ghosts persist. PASS.
+  6. AEF side (pulled bytes, sha 1a2017d9aacb4c84…): Pass-5 vs live corpus — 1f9b5f0c silent,
+     df0b8c59+2222 claim-WARN, review-map legacy-WARN; our sync_project_refs on meta-clone → identical
+     shape + empty-rescan drop. ALL PASS (script inline; T-2593 harness pattern).
+- **Cross-side reading:** resolved legs mirror perfectly per store (single-uuid-namespace working);
+  contract v0 + corrected S3b spec hold end-to-end through their served surface and our full chain.
+- **Posted offset 139:** full per-leg report + S1 new-map-mint gap + housekeeping offer (probe map left
+  in their store as T-228/S5 evidence, their call to delete). Evidence bytes:
+  scratchpad/s4-probe-v1.bin (re-pullable from their /api/version?id=s4-e2e-probe&v=1).
+- **Status:** S4 re-verify DONE. Remaining external waits: their T-228 picker (→ picker-authored
+  exemplar for the T-2593 fixture drop-point), T-213 kind= ruling, 0.3.1 tag.
