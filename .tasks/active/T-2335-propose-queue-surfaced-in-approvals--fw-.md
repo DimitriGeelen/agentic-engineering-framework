@@ -6,12 +6,12 @@ description: >
   propose-queue surfaced in /approvals + fw notify on file (cross-surface visibility
   gap)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/bvp.sh, web/blueprints/approvals.py, web/blueprints/bvp.py, web/templates/_approvals_content.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T16:06:33Z
-last_update: 2026-07-21T11:24:49Z
-date_finished:
+last_update: 2026-07-21T12:19:24Z
+date_finished: 2026-07-21T12:19:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -90,6 +90,24 @@ bvp_scores_proposed:
       (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-07-21T11:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-11T16:15:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -129,17 +147,20 @@ Captured as captured/next so the operator can priority-stack against arc-011
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `/approvals` includes a "BVP Driver Proposals" section that lists pending rows from `.context/bvp-driver-proposals.jsonl` (read-only with Approve / Reject buttons that proxy to the T-2332 endpoints)
-- [ ] `bin/fw bvp driver --propose` fires a `fw notify` event (when notify is enabled) carrying `{type: bvp_proposal_pending, id, name, weight, task}` so the operator's notification channel surfaces it
-- [ ] Playwright test extends to cover the new /approvals section render
+- [x] `/approvals` includes a "BVP Driver Proposals" section that lists pending rows from `.context/bvp-driver-proposals.jsonl` (read-only with Approve / Reject buttons that proxy to the T-2332 endpoints)
+- [x] `bin/fw bvp driver --propose` fires a `fw notify` event (when notify is enabled) carrying `{type: bvp_proposal_pending, id, name, weight, task}` so the operator's notification channel surfaces it
+- [x] Playwright test extends to cover the new /approvals section render
 
-### Progress (2026-07-21 session, wrapped at budget critical — code written, NOT yet verified live; do not tick above)
-- AC1 code SHIPPED in working tree: `web/blueprints/approvals.py` (`_build_approvals_context` loads `_load_proposals()` from bvp blueprint, adds `bvp_proposals`/`bvp_proposal_count`, includes in `total_count`) + `web/templates/_approvals_content.html` (stat chip `#section-bvp-proposals` + section with Approve/Reject buttons posting to `/api/bvp/driver/approve|reject?id=P-…`, hx-prompt reject rationale, location.reload on success). NOT live-verified (needs server reload + a pending row; verify with a seeded row before ticking).
-- AC2 code SHIPPED + SANDBOX-VERIFIED: `lib/bvp.sh` `bvp_dispatch` wraps `driver --propose` at the bash layer — on rc=0 parses the OK line and fires `fw_notify "BVP driver proposal pending: <name>" "{type: bvp_proposal_pending, id: P-…, name, weight, task}" manual framework <wturl>/approvals#section-bvp-proposals`. Sandbox run (env -i, stubbed fw_notify + _watchtower_url) captured the exact payload; rc preserved; notify failure never breaks propose. Propose stdout now points at /approvals (T-2335) + /bvp (T-2332).
-- AC3 NOT DONE: tests unwritten (budget gate blocked source writes). Planned: `tests/web/test_approvals_bvp_proposals.py` (monkeypatch `web.blueprints.bvp.PROPOSALS_PATH` to tmp jsonl: pending row → section+buttons render; decided-only → section suppressed; context counts) + `tests/playwright/test_approvals_bvp_proposals.py` (graceful-skip live pattern per test_approvals_arc_closure_section.py).
-- Remaining: write both tests, restart/reload Watchtower, live-verify AC1 with a seeded pending row (then clean the seed row), run tests/web suite, tick ACs, complete.
+### Progress
+- 2026-07-21 session c/d: AC1 code shipped (`web/blueprints/approvals.py` `_build_approvals_context` loads `_load_proposals()` from the bvp blueprint — same reader as /bvp, single state machine + audit trail; `web/templates/_approvals_content.html` stat chip + `#section-bvp-proposals` section, Approve/Reject buttons proxy `/api/bvp/driver/approve|reject?id=P-…`, hx-prompt reject rationale ≥30 chars). AC2 shipped (`lib/bvp.sh` `bvp_dispatch` wraps `driver --propose`: on rc=0 parses the OK line, fires `fw_notify` with `{type: bvp_proposal_pending, id, name, weight, task}` + click_url `<wturl>/approvals#section-bvp-proposals`; notify failure never breaks propose; sandbox-verified with exact payload under env -i stub).
+- 2026-07-21 session e — LIVE VERIFIED + tests: seeded pending row `P-t2335seed` into live JSONL → Watchtower restarted on :3001 → `/approvals/content` rendered section h2, proposal card, both endpoint URLs, hx-prompt (all grep-confirmed live) → seed removed → section suppressed (0 matches), `/approvals` 200. Tests written and green: `tests/web/test_approvals_bvp_proposals.py` (3 passed; monkeypatched `PROPOSALS_PATH`, live file untouched) + `tests/playwright/test_approvals_bvp_proposals.py` (2 passed on :3099, graceful-skip pattern). Full tests/web suite: 104 passed.
 
 ### Human
+- [ ] [REVIEW] BVP Driver Proposals section on /approvals reads clean and the Approve/Reject flow feels right
+  **Steps:** 1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw bvp driver --propose --name "Review-Test" --weight 2 --rationale "Throwaway proposal to exercise the T-2335 approvals section end-to-end" --task T-2335` 2. Open http://192.168.10.107:3001/approvals — a "BVP Proposals" chip and a "BVP Driver Proposals" section should appear 3. Click Reject on the Review-Test card and enter a ≥30-char rationale
+  **Expected:** Section layout matches the other approval groups (no visual break), chip count is right, Reject prompts for rationale and the card disappears on reload; a push notification for the proposal arrived if notify is enabled
+  **If not:** Note what looks off (screenshot helps) and reopen T-2335 for follow-up
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -203,6 +224,12 @@ Captured as captured/next so the operator can priority-stack against arc-011
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/web/test_approvals_bvp_proposals.py -q
+grep -q "section-bvp-proposals" web/templates/_approvals_content.html
+grep -q "bvp_proposal_pending" lib/bvp.sh
+grep -q "_load_proposals" web/blueprints/approvals.py
+out=$(curl -sf "$(bin/fw watchtower url)/approvals/content"); [ -n "$out" ]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -243,6 +270,17 @@ Captured as captured/next so the operator can priority-stack against arc-011
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Both halves of the operator's 2026-06-11 ask ("signal that drivers are ready for review") are shipped and live-verified: /approvals now surfaces pending BVP driver proposals as a first-class approval category (same JSONL reader and endpoints as /bvp, so one state machine and one audit trail), and `fw bvp driver --propose` fires a push notification with a one-tap link to the section. The Human AC is a taste check on the section's layout plus an end-to-end Reject exercise — the functional path is pinned by 5 tests.
+
+**Evidence:**
+- Live render on :3001 with seeded pending row: section h2 + card + both `/api/bvp/driver/approve|reject` URLs + hx-prompt confirmed via curl; seed removed, section suppressed, /approvals 200
+- `tests/web/test_approvals_bvp_proposals.py` 3 passed; full tests/web 104 passed; `tests/playwright/test_approvals_bvp_proposals.py` 2 passed
+- Notify payload sandbox-captured: `{type: bvp_proposal_pending, id, name, weight, task}` + click_url `/approvals#section-bvp-proposals`; rc preserved, notify failure never breaks propose
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -278,3 +316,20 @@ Captured as captured/next so the operator can priority-stack against arc-011
 ### 2026-07-21T11:24:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5440d015
+- **Timestamp:** 2026-07-21T12:20:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `/approvals` includes a "BVP Driver Proposals" section that lists pending rows from `.context/bvp-driver-proposals.jsonl` (read-only with Approve / Reject buttons that proxy to the T-2332 endpoints)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/bvp-driver-proposals.jsonl in: `/approvals` includes a "BVP Driver Proposals" section that lists pending rows from `.context/bvp-driver-proposals.jsonl` (read-only with Approve / Re`
+
+### 2026-07-21T12:19:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
