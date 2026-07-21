@@ -1,14 +1,17 @@
 ---
-id: T-100201
-name: "Reconcile T-100196 session-on-master with T-2394 master-merge-only CLAUDE.md
-  contradiction"
+id: T-2587
+name: "budget-gate critical allow-list omits git push — handover commits strand locally"
 description: >
-  Reconcile T-100196 session-on-master with T-2394 master-merge-only CLAUDE.md contradiction
+  agents/context/budget-gate.sh critical-level allow-list permits git commit/add and
+  fw handover but NOT git push — at critical the session can commit but never land,
+  stranding handover commits locally (hit 2026-07-21 twice; T-2054/T-2462 sibling
+  class). Fix: add git push (and git fetch) to the critical allow-list; wrap-up requires
+  landing, not just committing.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +25,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-05T22:34:27Z
-last_update: 2026-07-21T12:21:21Z
+created: 2026-07-21T12:26:38Z
+last_update: '2026-07-21T12:30:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,98 +39,48 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-07T08:00:01Z'
+  - ts: '2026-07-21T12:30:05Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-07T08:00:02Z'
+  - ts: '2026-07-21T12:30:08Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
       D3: 2
       D4: 2
-      F-RECALL: 2
-      F-ORCH: 0
+      F-RECALL: 1
       F-AUTONOMY: 0
-      F3: 1
+      F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      F3=1 (body/components:prompt-incidental); F1=0 (no-signal); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-08T08:00:02Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-100201: Reconcile T-100196 session-on-master with T-2394 master-merge-only CLAUDE.md contradiction
+# T-2587: budget-gate critical allow-list omits git push — handover commits strand locally
 
 ## Context
 
-**2026-07-21 addendum (third leg of the same seam):** even when the interim safe rule is
-followed (session on a branch, FF-land to master), `fw handover --commit` only pushes
-HEAD→its own branch — it never pushes the `<branch>:master` FF leg. So master silently
-lags by every governance commit until someone manually runs the FF push (hit twice on
-2026-07-21: master was 5–6 commits behind after clean handovers). Whatever mechanism this
-task settles on should make the FF-land part of the handover/sync path, not a manual
-follow-up. Siblings filed: T-2587 (budget-gate critical allow-list omits `git push`),
-T-2588 (`--checkpoint` never pushes at all).
-
-This session (2026-07-05) shipped the T-100196 keystone into CLAUDE.md §Trunk-Based
-Session Flow with the mechanism **"the persistent session runs on `master`; handover /
-task-sync / context commits go straight to master."** That text directly contradicts the
-pre-existing **T-2394 master-merge-only gate** (`agents/git/lib/master-guard.sh`,
-`PROTECT_MASTER=1` live in this repo), which structurally BLOCKS any direct authored
-commit on `master`. The conflict was hit live: the operator's GO-decision commit on the
-main checkout was refused with `BLOCKED: direct commit on 'master' — master is merge-only
-(T-2394 G1)`, forcing a worktree→FF workaround.
-
-Two facts reconcile the conflict without a redesign:
-1. **The invariant is unaffected.** T-100196's real value is the invariant *"the session
-   never holds a commit that isn't on origin/master"* — a fast-forward satisfies it and
-   never fires the T-2394 guard. Only the *"commit directly on master"* mechanism is wrong.
-2. **Precedence already decides the interim rule.** T-2394 is a *structural* gate;
-   T-100196's "commit on master" is *advisory* text. Per §Instruction Precedence + L-405
-   (advisory-without-structure drifts to non-compliance), the structural gate wins until a
-   deliberate mechanism decision says otherwise.
-
-The **final mechanism** (how the persistent session commits governance while `PROTECT_MASTER=1`)
-is an operator Level-D ways-of-working call — see `## Recommendation` (Option A recommended)
-and the Human AC below.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Correction callout added to CLAUDE.md §Trunk-Based Session Flow naming the T-2394
-      conflict, the live-incident evidence, the interim safe rule (worktree→FF, no direct
-      master commit while `PROTECT_MASTER=1`), and the T-100201 pointer
-- [x] Concern registered in `.context/concerns.yaml` for the T-100196↔T-2394 contradiction
-      (register-first-fix-second) — OBS-091
-- [x] Reconciliation options (A/B/C/D) + recommendation documented in `## Recommendation`
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] `agents/context/budget-gate.sh` critical-level allowed-command class includes `git push` (and `git fetch`) so wrap-up can LAND commits, not just create them
+- [ ] Unit/bats test pins the contract: at critical, a `git push origin <branch>` Bash call is allowed (exit 0) while a source-file Write remains blocked (exit 2)
+- [ ] Origin evidence recorded in ## RCA (2026-07-21 sessions: handover commits `beae6eeac` et al. stranded locally twice; T-2054/T-2462 sibling class — commit allowed, landing blocked)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -159,17 +112,6 @@ and the Human AC below.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-- [ ] [REVIEW] Approve the reconciliation mechanism for how the persistent session commits
-      governance while `PROTECT_MASTER=1`
-  **Steps:**
-  1. Read `## Recommendation` below (Options A/B/C/D + recommended Option A).
-  2. Decide which mechanism the framework should adopt (or reject all and keep the interim
-     worktree→FF rule permanently).
-  3. Reply with the chosen option (or "keep interim"). A GO on a mechanism spawns a
-     separate build task to implement it and to rewrite the §Trunk-Based mechanism prose.
-  **Expected:** One mechanism chosen (or interim-rule-permanent), recorded here.
-  **If not:** Ask for clarification on a specific option's tradeoffs.
 
 ## Verification
 
@@ -220,30 +162,6 @@ and the Human AC below.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** CLAUDE.md §Trunk-Based Session Flow instructs "commit governance straight to
-`master`", but `PROTECT_MASTER=1` (T-2394) structurally blocks that. Live incident
-2026-07-05: operator's GO commit on master refused (`master is merge-only`), then a
-six-command workaround cascade ending in a manual FF push from the worktree.
-
-**Root cause:** the T-100196 keystone was authored and landed into CLAUDE.md *without
-cross-checking it against the existing structural gates it would collide with*. T-2394
-(master-guard, shipped earlier) and T-100196 (session-on-master, shipped this session) are
-mutually exclusive on the "how does the session reach master" axis, and nothing forced the
-author to reconcile them.
-
-**Why structurally allowed:** there is no gate — nor even a checklist step — that validates
-a *new keystone addition to CLAUDE.md* against the *set of already-active structural gates*.
-Advisory prose can be added that contradicts a live hook, and the contradiction only
-surfaces when an agent trips the hook at runtime (here, ~1 day later). This is the L-405
-class (advisory-vs-structural drift) inverted: instead of advisory decaying against reality,
-new advisory was born already-contradicting a structural rule.
-
-**Prevention:** (a) this correction callout + T-100201 make the conflict visible immediately;
-(b) candidate follow-up (out of scope here, note for the mechanism-decision task): a doctor
-check or reviewer detector that flags CLAUDE.md guidance instructing an action a live
-PreToolUse/pre-commit hook blocks (e.g. "commit on master" text while `PROTECT_MASTER=1`).
-Advisory teach alone is insufficient (L-300/L-405) — the durable fix is structural.
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -268,39 +186,6 @@ Advisory teach alone is insufficient (L-300/L-405) — the durable fix is struct
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## Recommendation
-
-**Recommendation:** ship the interim correction note now (done — Agent ACs), and for the
-**final mechanism** adopt **Option A** (scope the existing sanctioned bypass into the
-framework's own governance-commit tooling). Operator picks via the Human [REVIEW] AC.
-
-**The reconciliation options** (all preserve T-100196's *invariant*; they differ on *how the
-session reaches master* while `PROTECT_MASTER=1`):
-
-- **Option A — scope `FW_ALLOW_MASTER_COMMIT=1` into `fw sync` / `fw handover --commit`.**
-  T-2394 already documents `FW_ALLOW_MASTER_COMMIT=1` as its sanctioned Tier-2 bypass. Let the
-  framework's own governance-commit tools set it for their *governance-path-only* commits
-  (handovers, `.tasks/`, `.context/`). Keeps T-100196's "session on master, no branch" intact;
-  real code still can't be committed directly (tools scope the bypass to governance paths). Cost:
-  low (small change in two commands). Downside: a Tier-2 log entry per governance commit —
-  arguably a feature (audit trail), arguably noise. **RECOMMENDED.**
-- **Option B — session does NOT run on master; governance commits on a transient branch,
-  FF-landed.** This is literally what happened this session. Preserves the invariant + respects
-  T-2394 with zero code. But it re-introduces the session branch T-100196 exists to kill → the
-  branch/worktree divergence class returns. **Reject** (undoes T-100196's benefit).
-- **Option C — session on master; governance commits FF'd from a throwaway ref.** Create the
-  commit on a temp ref, FF master to it (FF never fires the guard), delete the ref. Preserves both,
-  no bypass log. Cost: medium (`fw sync` must orchestrate the temp-ref dance). Hold as fallback if
-  the Option-A bypass-log noise is judged unacceptable.
-- **Option D — turn OFF `PROTECT_MASTER` for the framework repo.** Simplest, but discards the
-  T-2394 protection whose origin (worktree-isolated parallel agents clobbering master) is *still a
-  live risk* in this repo's worktree flow. **Reject.**
-
-**Why not just rewrite the mechanism prose myself:** choosing A/B/C/D changes how *every* session
-commits governance — a Level-D ways-of-working decision that is the operator's authority, not the
-agent's initiative. The agent's job here was (1) remove the live contradiction (interim note,
-done) and (2) surface the options with a recommendation (this section). The operator decides.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -324,7 +209,7 @@ done) and (2) surface the options with a recommendation (this section). The oper
 
 ## Updates
 
-### 2026-07-05T22:34:27Z — task-created [task-create-agent]
+### 2026-07-21T12:26:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/active/T-100201-reconcile-t-100196-session-on-master-wit.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2587-budget-gate-critical-allow-list-omits-gi.md
 - **Context:** Initial task creation

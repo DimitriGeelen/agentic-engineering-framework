@@ -119,6 +119,7 @@ Resolved targets only (no ghosts) — the operator's double-click jump then work
 
 - [ ] [REVIEW] The v2 handoff placement matches how you think the processes actually connect (pair-draft loop: correct in the UI or note what to change)
   **Steps:**
+  ⚠ On opening /designer the canvas shows your LAST LOCAL DRAFT (the 0.3.0 bundle silently restores browser autosave — a "Restored your unsaved work" toast flashes bottom-center). That draft can be an old copy of a corpus diagram under the same title, WITHOUT the new handoff nodes. Ignore the initial canvas; step 1's "📂 Open project…" always fetches the server's latest saved version. (Found 2026-07-21 investigating "still not working" — defect reported upstream to 832.)
   1. Open http://192.168.10.107:3001/designer, click "📂 Open project…", open `aef-task-lifecycle` (opens v2)
   2. Find the "Handoff → dispatch loop" node branching off the work step; click it, then click "↗ Open target workflow" — it should open `aef-dispatch-loop`
   3. Re-open the project browser, open `aef-inception-flow` (v2); find "Handoff → task lifecycle" after the file-build-children step; jump the same way — it should open `aef-task-lifecycle`
