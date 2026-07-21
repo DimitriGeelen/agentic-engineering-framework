@@ -118,6 +118,16 @@ so `kind=` is the first consumed attribute.
   corpus diagrams via normal saves; WE wire compile-notice + promote-refusal legs
   (AC2, AC3) only after their delivery. They post the ruling on this rail when their
   operator decides. AC1 complete; AC2/AC3 remain gated on that ruling + fixture.
+- 2026-07-21 **AC3 absent-marker half PINNED (harness-first, T-2579/T-2590 pattern —
+  not the feature build):** `tests/web/test_bpmn_frozen_v1_pin.py` (3 tests, green;
+  tests/web 113 green) pins today's behavior on a NO-kind-marker diagram using the
+  byte-pinned pair-draft-3 fixture (which carries workflowMeta WITHOUT kind= — the
+  exact absent case): (1) premise guard — fixture has workflowMeta, no kind=;
+  (2) staged manifest sha256 golden `bbb2e46e6dcb…` byte-exact + no `kind:` key;
+  (3) reconcile → all 4 proposals plain NEW (no refusal/flag). Valid regardless of
+  ratification outcome; the post-ratification legs MUST keep all three green. The
+  kind=documentation half of AC3 (notice/refusal/override paths) still gated on
+  ruling + 832's fixture delivery. Fabric card registered (created_by T-2556).
 - Build-leg design (sketched pre-ratification, NOT built — T-2541 discipline): kind
   flows through the manifest interface, promote never re-parses BPMN. (1) compile:
   `parse_bpmn` reads `aef:workflowMeta` kind attr (local-name match like every pass);
@@ -189,6 +199,8 @@ so `kind=` is the first consumed attribute.
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
 #
+# AC3 absent-marker frozen-v1 pin (green today; post-ratification legs must keep it green):
+python3 -m pytest tests/web/test_bpmn_frozen_v1_pin.py -q > /tmp/.t2556-pin.out 2>&1 && grep -q "3 passed" /tmp/.t2556-pin.out
 # Single pipe only — no intermediate tail/awk/sed stages between capture and grep
 # (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
 # the capture step closed off — the middle stage is what `grep -q` slams its
