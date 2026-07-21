@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2593: S4 exemplar intake harness: drop-point verify for 832's picker-authored off-page
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T22:01:56Z
+# ============================================================================
+
+task_id: T-2593
+task_name: "S4 exemplar intake harness: drop-point verify for 832's picker-authored off-page"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T21:58:11Z
+completed: 2026-07-21T22:01:45Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Drop-point test file `tests/web/test_s4_exemplar_intake.py` exists with skip-until-delivered fixture tests (drop path `tests/fixtures/832/s4-exemplar.{bpmn,sha256}` documented in the module docstring)'
+  - 'Synthetic editor-dialect three-leg test proves the intake logic pre-delivery: resolved→no ghost, unresolved-uuid→uuid-keyed ghost, legacy-not-live→minted name-deduped ghost, then single-drop-rule clears all on ref removal (runs the real `sync_project_refs`, not a mock)'
+  - 'Fixture tests assert the S4 deltas: sha pin, editor-authorship fingerprint (workflowMeta uuid + throw/catch host dialect + extensionElements nesting, linkEvent* absent), Pass-5 taxonomy vs live store, per-leg registry outcome vs corrected S3b spec (offsets 134/135) incl. wire shape {uuid,name,referenced_by,task,first_seen}'
+  - 'New + sibling suites green: test_s4_exemplar_intake + test_pair_draft3_intake + test_designer_registry_ghosts'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2593-s4-exemplar-intake-harness-drop-point-ve.md
+generated_by: context-agent-hybrid
