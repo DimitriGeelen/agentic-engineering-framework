@@ -3896,3 +3896,10 @@ X'` returning empty group."
   date: 2026-07-21
   context: Added via context agent
   application: TBD
+- id: L-510
+  learning: "Deploy-surface staleness clocks: a static docroot and a long-running process are TWO deploy surfaces with independent staleness — static files go live on copy, process code only on re-exec. A failed re-exec can die silently (port held by the old process) leaving stale code serving while source/shape checks pass. Verify-live must probe the BEHAVIOR of the running process (trigger the new code path), not grep source or compare response shapes. Cross-project evidence: 832's S4a claim-on-save — their post-commit redeploy failed to bind and died silently; our behavior smoke (T-2594) caught it in minutes; sibling of our T-2494 7-transition go-live chain and their PL-046."
+  source: T-2594
+  task: T-2594
+  date: 2026-07-21
+  context: Added via context agent
+  application: TBD
