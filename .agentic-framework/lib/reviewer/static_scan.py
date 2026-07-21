@@ -637,6 +637,19 @@ _SKIP_AS_PASS_RE = re.compile(
 # than a lookbehind in `_SKIP_AS_PASS_RE` and survives nesting better.
 _QUOTED_SUBSTR_RE = re.compile(r"'[^']*'|\"[^\"]*\"")
 
+# T-2583 (OBS-091): template boilerplate lives in HTML comments — e.g. a task
+# that deleted the `## RCA` heading but kept the template's guidance comment
+# leaves `...Use --skip-rca to bypass (logged).` inside the Verification
+# section (which runs to the next `## `). HTML comments are never executed by
+# the P-011 gate, so they can't skip anything — blank them (newline-preserving,
+# so finding line numbers stay stable) before scanning. Sibling to L-488
+# (disposition comment-strip). Empirical FP: T-100142.
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+
+
+def _blank_html_comments(text: str) -> str:
+    return _HTML_COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+
 # T-2177: suppress when the line carries a real output assertion on the same
 # logical command. A `--dry-run` followed by `| grep -q PAT` or `&& test -f X`
 # is simulation-with-check, not skip-as-pass. Empirical FP: T-2072 line 9
@@ -661,6 +674,10 @@ def detect_skip_as_pass(verification_section: str) -> list[Finding]:
     findings: list[Finding] = []
     if not verification_section:
         return findings
+    # T-2583 (OBS-091): template guidance in HTML comments is not executable —
+    # strip it (newline-preserving) so boilerplate like "Use --skip-rca to
+    # bypass (logged)" never fires.
+    verification_section = _blank_html_comments(verification_section)
     for lineno, raw in enumerate(verification_section.splitlines(), start=1):
         line = raw.strip()
         if not line or line.startswith("#"):

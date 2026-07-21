@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2583: Reviewer skip-as-pass detector false-positive: it matches the RCA-template
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T06:06:23Z
+# ============================================================================
+
+task_id: T-2583
+task_name: "Reviewer skip-as-pass detector false-positive: it matches the RCA-template"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T06:02:32Z
+completed: 2026-07-21T06:06:11Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`detect_skip_as_pass` blanks `<!-- ... -->` regions (newline-preserving, line numbers stable) before matching, so the RCA/Verification template boilerplate no longer fires'
+  - 'Regression tests: template comment block → zero `skip-as-pass` findings; real bare `--skip-rca` after an HTML comment still fires at the correct line number'
+  - '`fw reviewer T-100142` live re-scan: Overall PASS, findings none (was FAIL with 1 skip-as-pass)'
+  - 'Existing reviewer test suite green (97/97) and vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2583-reviewer-skip-as-pass-detector-false-pos.md
+generated_by: context-agent-hybrid

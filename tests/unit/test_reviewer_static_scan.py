@@ -451,6 +451,35 @@ def test_skip_as_pass_positive_bare_skip_preserved():
     assert len(f) == 1 and f[0].pattern_id == "skip-as-pass"
 
 
+# ───── T-2583 (OBS-091): HTML-comment template boilerplate suppression ─────
+
+
+RCA_TEMPLATE_COMMENT = """git show origin/master:lib/x.py > /tmp/.x && grep -q "marker" /tmp/.x
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag).
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
+"""
+
+
+def test_skip_as_pass_negative_html_comment_template_boilerplate():
+    """T-100142 empirical FP: deleted ## RCA heading left the template's HTML
+    comment (mentioning --skip-rca) inside the Verification section."""
+    f = ss.detect_skip_as_pass(RCA_TEMPLATE_COMMENT)
+    assert f == [], f"template HTML comment must not fire, got: {[fnd.evidence for fnd in f]}"
+
+
+def test_skip_as_pass_positive_real_skip_after_html_comment_line_numbers_stable():
+    """A real bare skip after an HTML comment still fires, and the blanked
+    comment preserves line numbering."""
+    section = "<!-- guidance\nspanning\nlines -->\nbash agents/audit/audit.sh --skip-rca\n"
+    f = ss.detect_skip_as_pass(section)
+    assert len(f) == 1
+    assert f[0].location == "Verification:line 4"
+
+
 def test_skip_as_pass_positive_collect_only_preserved():
     """Bare pytest --collect-only (no assertion) still fires (TP regression guard)."""
     f = ss.detect_skip_as_pass("pytest --collect-only tests/\n")
