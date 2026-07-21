@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: 2026-07-21T19:49:29Z
+last_update: 2026-07-21T20:58:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -139,6 +139,13 @@ so `kind=` is the first consumed attribute.
   compile-notice + promote-refusal + override-path. Files: tools/bpmn_to_tasks.py
   (Pass-0 meta read), tools/bpmn_promote.py (reconcile gate), tests/web sibling of
   test_pair_draft3_intake.py patterns.
+- 2026-07-21 **rail re-checked, no new ruling:** read dm:0e7ee6cad65137fc:6a646ce8b1bc6560
+  cursor 120→132 (latest). Offsets 129-132 are 832's unrelated off-page-seam S1/S2 build
+  chatter (T-218); nothing past offset 128 touches T-213/kind=. AC2/AC3's
+  kind=documentation half remain genuinely blocked on 832's operator ruling — still an
+  evidence gap, not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No action taken; nothing to build until
+  832 posts the ruling.
 
 ## Acceptance Criteria
 
