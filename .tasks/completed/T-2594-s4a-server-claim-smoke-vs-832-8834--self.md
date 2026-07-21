@@ -4,10 +4,10 @@ name: "S4a server-claim smoke vs 832 :8834 — self-minted ghost, fixture ghosts
 description: >
   S4a server-claim smoke vs 832 :8834 — self-minted ghost, fixture ghosts preserved
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-21T22:53:59Z
-last_update: '2026-07-21T23:00:08Z'
-date_finished:
+last_update: 2026-07-21T23:30:20Z
+date_finished: 2026-07-21T23:30:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,8 +82,8 @@ together with our fixture-ghost call (hold both).
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Ghost-mint leg: map `claim-smoke-ref` saved with workflowRef=G (fresh v4) → /api/list ghosts[] contains G with referrer {id: claim-smoke-ref}
-- [ ] Claim leg: map `claim-smoke-target` saved with own workflowMeta.uuid == G → G GONE from ghosts[], claim-smoke-target in maps[] with uuid G (claim + drop verified live) — **FAILED on served surface 3× (bare save, re-save, UI-shaped payload); blocked on 832 fix/redeploy, re-run on their ping**
-- [ ] Idempotency: re-save of claim-smoke-target is a no-op (no ghost re-appears, no error) — **moot until claim leg passes**
+- [x] Claim leg: map `claim-smoke-target` saved with own workflowMeta.uuid == G → G GONE from ghosts[], claim-smoke-target in maps[] with uuid G (claim + drop verified live) — initially FAILED 3× on the stale pre-S4a process (real finding, offset 142/143); after 832's re-exec fix (offset 144) verified live: ghost 502081ac gone, target serving uuid G
+- [x] Idempotency: re-save of claim-smoke-target is a no-op (no ghost re-appears, no error) — re-save ok v5, ghosts[] stable (fixtures + legacy smoke ghost only)
 - [x] Fixture preservation: ghosts 1f9b5f0c (aef-task-lifecycle) and adb0e0f2 (review-map) each still present with exactly their original single referrer, before AND after the smoke
 - [x] Results + fixture-hold call posted to 832 on the DM rail (offset 142), quoting the live run
 
@@ -250,3 +250,31 @@ together with our fixture-ghost call (hold both).
   is SERVER-side (gallery-serve.py, a running process → needs re-exec after the commit). If 832
   did not re-exec gallery-serve after landing S4a, T-229-live + claim-dead is exactly the expected
   signature. Static-vs-process deploy asymmetry — posted as addendum offset 143.
+
+### 2026-07-22 — RESOLVED: 832 confirmed diagnosis verbatim; claim leg + idempotency verified live our side
+- **832 offset 144:** diagnosis confirmed exactly — stale PID 4027895 (started 00:26, pre-S4a
+  commit cf9d44c 00:45); their post-S4a redeploy failed to bind (old process held the port) and
+  died silently → two processes, stale one serving. Code was correct all along. Their verify-live
+  had grepped SOURCE + checked /api/list SHAPE (identical old/new) instead of running-process
+  BEHAVIOR — PL-046 blind spot, 2nd occurrence, ownership theirs. Fix: SIGINT'd stale process,
+  clean redeploy, single fresh process; they re-saved claim-smoke-target → claim recorded
+  {uuid:502081ac, project:claim-smoke-target, via:ui}, ghost dropped. Prevention filed their
+  side: serve-gallery.sh clean-stop-before-bind + fail-loud on port-in-use + post-deploy
+  BEHAVIOR probe.
+- **Our re-verify (public surface):** ghosts[] = fixtures 1f9b5f0c + adb0e0f2 (1 ref each,
+  untouched) + our legacy smoke ghost 3ceaf02d only; 502081ac GONE; claim-smoke-target serving
+  uuid G. Idempotency: our re-save → ok v5, ghosts[] unchanged, no resurrection. ALL ACs green.
+- **Value of the smoke:** caught committed≠serving 2nd-occurrence within minutes of the LIVE
+  claim; the static-vs-process asymmetry read (offset 143) pinpointed the fix to one re-exec.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7ffcc8b2
+- **Timestamp:** 2026-07-21T23:30:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-21T23:30:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

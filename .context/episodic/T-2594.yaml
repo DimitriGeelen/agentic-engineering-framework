@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2594: S4a server-claim smoke vs 832 :8834 — self-minted ghost, fixture ghosts preserved
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T23:30:30Z
+# ============================================================================
+
+task_id: T-2594
+task_name: "S4a server-claim smoke vs 832 :8834 — self-minted ghost, fixture ghosts preserved"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T22:53:59Z
+completed: 2026-07-21T23:30:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-22T01:00:09+02:00
+last_commit: 2026-07-22T01:25:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S4a server-claim smoke vs 832 :8834 — ghost-mint leg PASS (self-minted G, fixture ghosts preserved); claim leg FAILS on served surface 3x (merged_ghosts surfaces live-map uuid — invariant violation, offset-137 committed!=serving class suspected); reported offset 142, re-verify armed on their fix. T-229 mint-at-birth independently verified on served :8834 (no-save, uuid 23233f03 v4, rename-invariant) — resolves S4a puzzle: static-vs-process deploy asymmetry (designer.html static = live, gallery-serve.py process = pre-S4a); addendum posted offset 143 w/ one-re-exec prediction. Plus: enrich T-2593 harness fabric card (purpose + 3 edges)
+
+# Key outcomes
+outcomes:
+  - 'Ghost-mint leg: map `claim-smoke-ref` saved with workflowRef=G (fresh v4) → /api/list ghosts[] contains G with referrer {id: claim-smoke-ref}'
+  - 'Claim leg: map `claim-smoke-target` saved with own workflowMeta.uuid == G → G GONE from ghosts[], claim-smoke-target in maps[] with uuid G (claim + drop verified live) — initially FAILED 3× on the stale pre-S4a process (real finding, offset 142/143); after 832''s re-exec fix (offset 144) verified live: ghost 502081ac gone, target serving uuid G'
+  - 'Idempotency: re-save of claim-smoke-target is a no-op (no ghost re-appears, no error) — re-save ok v5, ghosts[] stable (fixtures + legacy smoke ghost only)'
+  - 'Fixture preservation: ghosts 1f9b5f0c (aef-task-lifecycle) and adb0e0f2 (review-map) each still present with exactly their original single referrer, before AND after the smoke'
+  - 'Results + fixture-hold call posted to 832 on the DM rail (offset 142), quoting the live run'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'S4a server-claim smoke vs 832 :8834 — ghost-mint leg PASS (self-minted G, fixture ghosts preserved); claim leg FAILS on served surface 3x (merged_ghosts surfaces live-map uuid — invariant violation, offset-137 committed!=serving class suspected); reported offset 142, re-verify armed on their fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/focus.yaml'
+  - '.fabric/components/tests-web-test_s4_exemplar_intake.yaml'
+  - '.tasks/active/T-2594-s4a-server-claim-smoke-vs-832-8834--self.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-22T01:00:09"
+    action: "T-2594: S4a server-claim smoke vs 832 :8834 — ghost-mint leg PASS (self-minted G, fixture ghosts preserved); claim leg FAILS on served surface 3x (merged_ghosts surfaces live-map uuid — invariant violation, offset-137 committed!=serving class suspected); reported offset 142, re-verify armed on their fix"
+  - time: "2026-07-22T01:25:48"
+    action: "T-2594: T-229 mint-at-birth independently verified on served :8834 (no-save, uuid 23233f03 v4, rename-invariant) — resolves S4a puzzle: static-vs-process deploy asymmetry (designer.html static = live, gallery-serve.py process = pre-S4a); addendum posted offset 143 w/ one-re-exec prediction. Plus: enrich T-2593 harness fabric card (purpose + 3 edges)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36
+  commits: 2
+  files_changed: 3
+  lines_added: 271
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2594-s4a-server-claim-smoke-vs-832-8834--self.md
+generated_by: context-agent-hybrid
