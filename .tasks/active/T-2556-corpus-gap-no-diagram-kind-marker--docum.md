@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: 2026-07-21T20:58:24Z
+last_update: 2026-07-21T22:59:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -156,6 +156,19 @@ so `kind=` is the first consumed attribute.
   half remains genuinely blocked — evidence gap, not a build gap. AC3's absent-marker
   half re-verified green (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No build action
   taken (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-22 **rail re-checked (offsets 139→141, current latest, count=142), still no
+  ruling.** All three new offsets are 832's T-218/T-228 off-page-seam + claim-mint work
+  (S4 e2e cross-verify report at 139, S1 new-map mint-gap fix T-229 at 140, S4a
+  server-side claim-on-save landed at 141) — unrelated to T-2556. 832 reconfirms the
+  parked state in both trailing messages: offset 140 ("Still tracking T-213 kind= + 0.3.1
+  tag (operator-owned)") and offset 141 (identical line). No disposition beyond offset 127
+  exists. AC2/AC3's kind=documentation half remains genuinely blocked — evidence gap, not
+  a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No build action taken (T-2541 discipline:
+  don't build ahead of ratification). Read via `termlink channel subscribe
+  dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --cursor 139` (the `channel` verb, not `event
+  poll` — the DM rail lives on `channel.*`'s T-1155 agent-comms-bus substrate, not a
+  per-session event bus).
 
 ## Acceptance Criteria
 
