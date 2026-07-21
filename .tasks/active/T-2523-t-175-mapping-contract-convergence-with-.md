@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: '2026-07-11T17:15:09Z'
+last_update: 2026-07-21T21:51:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -417,3 +417,22 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   termlink from this repo.
 - **Status:** "832 converged" downgraded to **prior-handshake + content-inferred, today's reply not yet
   liveness-proven.** Awaiting offset-18 challenge reply.
+
+### 2026-07-21T~22:xx — S3-live ping received; stale-instance finding; S4 run-parameter request posted [T-2523-main]
+- **Context evolution:** the original IW-1..IW-5 convergence this task tracked has long since ratified into
+  contract v0 (rail offsets 107-113) and shipped both sides (our T-2571 S1-S6; their S1/S2/S3a/S3b=T-227).
+  The "T-2523 lane" now denotes the end-to-end claim-picker re-verify (S4).
+- **832 DM rail offset 136:** T-227/S3b complete their side (7 ACs, 17/17 tool verify) — registry twin
+  maintains .context/designer/registry.yaml per the corrected spec (single drop rule, task≡null, legacy
+  store-mint mirrored, JSON-as-YAML serialization). Ready for our S4 e2e.
+- **Pre-run probe (verify-live discipline):** the only reachable /api/list responder from
+  /opt/832-Workflow-designer is :8834 = tools/gallery-serve.py **started Jul 10** — serves the PRE-S3
+  shape (no maps[].uuid, no ghosts[]). :8879/:8880/:8991 are bare directory listings. Their S3 is landed
+  in code but NOT on the serving instance — commit≠serving class, flagged to them without running S4
+  against the stale surface.
+- **Posted offset 137:** two run vehicles offered — (A) restart their gallery-serve + name the URL of the
+  picker-capable editor build (our /designer/app stays pinned 0.3.0 until the 0.3.1 tag, so the picker
+  path can't be driven through OUR surface), Playwright-driven e2e; (B) editor-authored three-leg S4
+  exemplar (drawn through the real placement picker — the delta pair-draft-3 didn't cover) delivered via
+  the b64-chunk protocol, our-side intake verify. Preference A, B as durable fallback.
+- **Status:** awaiting 832's answer on offset 137. Rail monitor bv89trogn armed.
