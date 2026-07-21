@@ -21,6 +21,13 @@
         <span class="stat-breakdown">Close-ready arcs</span>
     </a>
     {% endif %}
+    {% if bvp_proposal_count and bvp_proposal_count > 0 %}
+    <a href="#section-bvp-proposals" class="approval-stat approval-stat-group decisions-active" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ bvp_proposal_count }}</span>
+        <span class="stat-label">BVP Proposals</span>
+        <span class="stat-breakdown">Pending drivers</span>
+    </a>
+    {% endif %}
     <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
         <span class="stat-label">Verifications</span>
@@ -262,6 +269,49 @@
        tinted primary bg. Same class as T-2110's arc_review.html. #}
     <div class="headline-mechanic-box">{{ a.headline_mechanic }}</div>
     {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- T-2335: BVP driver proposals — agent-filed, awaiting Sovereign approve/reject (T-2332 endpoints) -->
+{% if bvp_proposals %}
+<h2 id="section-bvp-proposals" class="approvals-group-heading">BVP Driver Proposals</h2>
+<div class="section-header">
+    <h3>Pending driver proposals</h3>
+    <small>{{ bvp_proposal_count }} proposal{{ '' if bvp_proposal_count == 1 else 's' }} — Approve runs <code>fw bvp driver --add --from-watchtower</code> (Sovereign rail); Reject appends a rationale row. Audit trail: <code>.context/bvp-driver-proposals.jsonl</code></small>
+</div>
+{% for p in bvp_proposals %}
+<div class="approval-card pending bvp-proposal" id="proposal-{{ p.id }}">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <code>{{ p.id }}</code>
+            <strong>{{ p.name }}</strong>
+            <span style="font-size:0.8rem; color:var(--pico-muted-color);">weight {{ p.weight }}</span>
+            <small class="muted">{{ p.author or 'unknown' }}{% if p.task %} · <a href="/tasks/{{ p.task }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ p.task }}</a>{% endif %}</small>
+        </div>
+        <div style="display:flex; gap:0.4rem; align-items:center;">
+            <button type="button"
+                    hx-post="/api/bvp/driver/approve?id={{ p.id }}"
+                    hx-target="#proposal-{{ p.id }} .dp-result"
+                    hx-swap="innerHTML"
+                    hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(),800)"
+                    style="margin:0; background: var(--wt-success); color: white; padding: 0.2rem 0.6rem; border: 0; font-size:0.78rem;">
+              Approve
+            </button>
+            <button type="button"
+                    hx-post="/api/bvp/driver/reject?id={{ p.id }}"
+                    hx-prompt="Reject rationale (≥30 chars — why is this not the right driver?):"
+                    hx-target="#proposal-{{ p.id }} .dp-result"
+                    hx-swap="innerHTML"
+                    hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(),800)"
+                    style="margin:0; background: var(--wt-danger); color: white; padding: 0.2rem 0.6rem; border: 0; font-size:0.78rem;">
+              Reject
+            </button>
+            <span class="dp-result" style="display:inline-block;"></span>
+        </div>
+    </div>
+    <div style="font-size:0.85rem; margin-top:0.35rem;">{{ p.rationale }}</div>
+    {% if p.drop %}<div style="font-size:0.78rem; color:var(--pico-muted-color); margin-top:0.2rem;">replaces <code>{{ p.drop }}</code></div>{% endif %}
 </div>
 {% endfor %}
 {% endif %}

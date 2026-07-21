@@ -6,10 +6,10 @@ description: >
   propose-queue surfaced in /approvals + fw notify on file (cross-surface visibility
   gap)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T16:06:33Z
-last_update: '2026-07-07T10:45:07Z'
+last_update: 2026-07-21T11:24:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -132,6 +132,12 @@ Captured as captured/next so the operator can priority-stack against arc-011
 - [ ] `/approvals` includes a "BVP Driver Proposals" section that lists pending rows from `.context/bvp-driver-proposals.jsonl` (read-only with Approve / Reject buttons that proxy to the T-2332 endpoints)
 - [ ] `bin/fw bvp driver --propose` fires a `fw notify` event (when notify is enabled) carrying `{type: bvp_proposal_pending, id, name, weight, task}` so the operator's notification channel surfaces it
 - [ ] Playwright test extends to cover the new /approvals section render
+
+### Progress (2026-07-21 session, wrapped at budget critical — code written, NOT yet verified live; do not tick above)
+- AC1 code SHIPPED in working tree: `web/blueprints/approvals.py` (`_build_approvals_context` loads `_load_proposals()` from bvp blueprint, adds `bvp_proposals`/`bvp_proposal_count`, includes in `total_count`) + `web/templates/_approvals_content.html` (stat chip `#section-bvp-proposals` + section with Approve/Reject buttons posting to `/api/bvp/driver/approve|reject?id=P-…`, hx-prompt reject rationale, location.reload on success). NOT live-verified (needs server reload + a pending row; verify with a seeded row before ticking).
+- AC2 code SHIPPED + SANDBOX-VERIFIED: `lib/bvp.sh` `bvp_dispatch` wraps `driver --propose` at the bash layer — on rc=0 parses the OK line and fires `fw_notify "BVP driver proposal pending: <name>" "{type: bvp_proposal_pending, id: P-…, name, weight, task}" manual framework <wturl>/approvals#section-bvp-proposals`. Sandbox run (env -i, stubbed fw_notify + _watchtower_url) captured the exact payload; rc preserved; notify failure never breaks propose. Propose stdout now points at /approvals (T-2335) + /bvp (T-2332).
+- AC3 NOT DONE: tests unwritten (budget gate blocked source writes). Planned: `tests/web/test_approvals_bvp_proposals.py` (monkeypatch `web.blueprints.bvp.PROPOSALS_PATH` to tmp jsonl: pending row → section+buttons render; decided-only → section suppressed; context counts) + `tests/playwright/test_approvals_bvp_proposals.py` (graceful-skip live pattern per test_approvals_arc_closure_section.py).
+- Remaining: write both tests, restart/reload Watchtower, live-verify AC1 with a seeded pending row (then clean the seed row), run tests/web suite, tick ACs, complete.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -268,3 +274,7 @@ Captured as captured/next so the operator can priority-stack against arc-011
 ### 2026-06-11T16:08:01Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-07-21T11:24:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

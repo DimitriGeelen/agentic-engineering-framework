@@ -1071,7 +1071,7 @@ def _driver_propose(args):
 
     print(f"OK: proposal {entry['id']} filed — name='{name}' weight={weight} (state: pending)")
     print(f"  Storage: {PROPOSALS_PATH.relative_to(PROJECT_ROOT)}")
-    print(f"  Operator approves via Watchtower /bvp — Pending driver proposals section (T-2332 shipped this surface).")
+    print(f"  Operator approves via Watchtower /approvals (BVP Driver Proposals section, T-2335) or /bvp (T-2332).")
     return 0
 
 
@@ -1603,6 +1603,46 @@ EOF
         echo "ERROR: unknown estimate-cost subverb: $sub" >&2
         echo "Try: fw bvp estimate-cost --help" >&2
         return 2
+    fi
+    # T-2335: `driver --propose` fires a push notification on success so the
+    # operator's channel surfaces the pending Sovereign decision. Bash-layer
+    # wrap (not in the Python engine) because fw_notify lives in lib/notify.sh;
+    # notify stays fire-and-forget and never affects the propose exit code.
+    if [ "${1:-}" = "driver" ]; then
+        local _has_propose=0 _a
+        for _a in "$@"; do [ "$_a" = "--propose" ] && _has_propose=1; done
+        if [ "$_has_propose" -eq 1 ]; then
+            local _out _rc
+            _out=$(_bvp_python_engine "$@")
+            _rc=$?
+            [ -n "$_out" ] && printf '%s\n' "$_out"
+            if [ "$_rc" -eq 0 ]; then
+                if ! type fw_notify >/dev/null 2>&1 && [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+                    # shellcheck disable=SC1091
+                    source "$FRAMEWORK_ROOT/lib/notify.sh"
+                fi
+                if type fw_notify >/dev/null 2>&1; then
+                    # Parse the OK line: OK: proposal P-xxx filed — name='X' weight=N (state: pending)
+                    local _pid _pname _pweight _ptask="" _wturl
+                    _pid=$(printf '%s\n' "$_out" | sed -n "s/^OK: proposal \(P-[a-f0-9]*\) filed.*/\1/p" | head -1)
+                    _pname=$(printf '%s\n' "$_out" | sed -n "s/^OK: proposal .*name='\([^']*\)'.*/\1/p" | head -1)
+                    _pweight=$(printf '%s\n' "$_out" | sed -n "s/^OK: proposal .*weight=\([0-9]*\).*/\1/p" | head -1)
+                    local _seen_task=0
+                    for _a in "$@"; do
+                        if [ "$_seen_task" -eq 1 ]; then _ptask="$_a"; _seen_task=0; fi
+                        [ "$_a" = "--task" ] && _seen_task=1
+                    done
+                    _wturl=$(type _watchtower_url >/dev/null 2>&1 && _watchtower_url 2>/dev/null || echo "")
+                    fw_notify \
+                        "BVP driver proposal pending: ${_pname:-?}" \
+                        "{type: bvp_proposal_pending, id: ${_pid:-?}, name: ${_pname:-?}, weight: ${_pweight:-?}, task: ${_ptask:-none}}" \
+                        "manual" "framework" \
+                        "${_wturl:+${_wturl}/approvals#section-bvp-proposals}" \
+                        2>/dev/null || true
+                fi
+            fi
+            return $_rc
+        fi
     fi
     _bvp_python_engine "$@"
 }

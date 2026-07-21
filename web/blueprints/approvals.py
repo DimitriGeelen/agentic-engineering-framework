@@ -467,6 +467,12 @@ def _build_approvals_context(expand_overflow: bool = False):
     deferred_count = _count_deferred_inceptions()
     paused_dispatches = _load_paused_dispatches()  # T-1808
     arcs_close_ready = _load_close_ready_arcs()  # T-1961
+    # T-2335: BVP driver proposals pending the operator's Sovereign decision.
+    # Same reader the /bvp page uses (T-2332); Approve/Reject proxy to its
+    # /api/bvp/driver/* endpoints, so state machine + audit trail stay single.
+    from web.blueprints.bvp import _load_proposals
+
+    bvp_proposals = _load_proposals()
 
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
@@ -476,7 +482,9 @@ def _build_approvals_context(expand_overflow: bool = False):
     )
     paused_count = len(paused_dispatches)  # T-1808
     arc_close_count = len(arcs_close_ready)  # T-1961
-    total = tier0_count + go_count + len(pending_acs) + paused_count + arc_close_count
+    bvp_proposal_count = len(bvp_proposals)  # T-2335
+    total = (tier0_count + go_count + len(pending_acs) + paused_count
+             + arc_close_count + bvp_proposal_count)
 
     # Count tasks ready for batch completion (all human ACs checked)
     ready_count = sum(
@@ -491,6 +499,8 @@ def _build_approvals_context(expand_overflow: bool = False):
         pending_acs=pending_acs,
         paused_dispatches=paused_dispatches,
         arcs_close_ready=arcs_close_ready,
+        bvp_proposals=bvp_proposals,
+        bvp_proposal_count=bvp_proposal_count,
         tier0_count=tier0_count,
         go_count=go_count,
         ac_count=ac_count,
