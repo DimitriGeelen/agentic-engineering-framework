@@ -253,6 +253,10 @@ def _spawn_ollama_loop(
             cwd=envelope.get("cwd", str(PROJECT_ROOT)),
             env=envelope.get("env") or {},
             allowed_tools=envelope.get("allowed_tools") or [],
+            # T-2592 (OBS-096): forward the T-2488 lean-worker contract —
+            # _spawn_termlink honours these; ollama-loop was the missed sibling.
+            strict_mcp_config=bool(envelope.get("strict_mcp_config", True)),
+            mcp_config=envelope.get("mcp_config"),
         )
         try:
             for event in worker.prompt(envelope["prompt"]):
