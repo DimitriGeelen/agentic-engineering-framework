@@ -63,11 +63,19 @@ class OllamaLoopWorker:
         env: Optional[dict] = None,
         allowed_tools: Optional[List[str]] = None,
         binary: str = "claude",
+        strict_mcp_config: bool = False,
+        mcp_config: Optional[str] = None,
     ) -> None:
         self.model = model
         self.cwd = cwd
         self.allowed_tools = allowed_tools or []
         self.binary = binary
+        # T-2592 (OBS-096 / T-2488 sibling): without --strict-mcp-config the
+        # worker inherits the parent .mcp.json — 400+ MCP tool schemas that
+        # drown an 8B model's tool selection (0/2 real tool_use in probes).
+        # Contract parity with lib/termlink_worker.py (L-399 class).
+        self.strict_mcp_config = strict_mcp_config
+        self.mcp_config = mcp_config
         self._env_overlay = env or {}
         self.proc: Optional[subprocess.Popen] = None
         self._launched = False
@@ -82,6 +90,12 @@ class OllamaLoopWorker:
         ]
         if self.allowed_tools:
             argv.extend(["--tools", ",".join(self.allowed_tools)])
+        # --mcp-config must precede --strict-mcp-config so `claude -p` honours
+        # the explicit set; strict with no mcp-config = no MCP servers at all.
+        if self.mcp_config:
+            argv.extend(["--mcp-config", self.mcp_config])
+        if self.strict_mcp_config:
+            argv.append("--strict-mcp-config")
         return argv
 
     def _build_env(self) -> dict:

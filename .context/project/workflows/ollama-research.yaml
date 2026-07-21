@@ -2,7 +2,9 @@ task_type: ollama-research
 worker_kind: ollama-loop
 model: claude-3-5-sonnet-hermes3
 effort: medium
-prompt_template: prompts/default.md
+# T-2592 (OBS-096): bare probe template — prompts/default.md's task scaffolding
+# buried the probe and the 8B model summarized instead of executing (0/2 tool_use).
+prompt_template: prompts/ollama-probe.md
 allowed_tools: [Read, Bash, Grep]
 cost_cap_usd: 0.0
 cwd: $PROJECT_ROOT
