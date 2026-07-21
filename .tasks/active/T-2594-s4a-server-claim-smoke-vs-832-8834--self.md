@@ -239,3 +239,14 @@ together with our fixture-ghost call (hold both).
 - **Status:** AC-2/AC-3 blocked on 832's fix/redeploy; re-run the claim leg (one re-save of
   claim-smoke-target) on their ping. Smoke artifacts re-pullable: scratchpad mapA.xml/mapB.xml,
   smoke-uuid.txt.
+
+### 2026-07-22 — Adjacent evidence: T-229 mint-at-birth independently verified (no-save variant)
+- Drove served :8834 designer.html: + button → born map workflowMeta =
+  `id="workflow_1" uuid="23233f03-ec7f-41aa-bceb-c00ac1209b24"` (v4) read via View XML modal;
+  rename to t229-independent-verify → uuid unchanged. Zero store writes (never saved).
+- Confirms 832's offset-140 T-229 claim independently: mint fires at creation, rename-invariant.
+  Contrast makes the S4a finding sharper — and resolves it: T-229 is EDITOR-side (static
+  designer.html, re-read from docroot per request → live without process restart), the S4a claim
+  is SERVER-side (gallery-serve.py, a running process → needs re-exec after the commit). If 832
+  did not re-exec gallery-serve after landing S4a, T-229-live + claim-dead is exactly the expected
+  signature. Static-vs-process deploy asymmetry — posted as addendum offset 143.
