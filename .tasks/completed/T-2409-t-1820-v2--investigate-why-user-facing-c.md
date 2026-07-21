@@ -13,10 +13,10 @@ description: >
   not just the inner crate function. Substrate ships; this closes the demo loop for
   arc-003.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -31,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-15T17:52:53Z
-last_update: '2026-07-08T08:15:04Z'
-date_finished:
+last_update: 2026-07-05T09:59:07Z
+date_finished: 2026-07-05T09:59:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -44,7 +44,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-07T08:00:05Z'
+  - ts: '2026-07-02T13:45:04Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -54,7 +54,7 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-07T08:00:08Z'
+  - ts: '2026-07-02T13:45:07Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -72,7 +72,7 @@ bvp_scores_proposed:
       (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-07-08T08:15:04Z'
+  - ts: '2026-07-03T14:00:06Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,14 +80,17 @@ bvp_scores_proposed:
       D3: 2
       D4: 2
       F-RECALL: 0
+      F-ORCH: 0
       F-AUTONOMY: 0
+      audit_severity: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -95,14 +98,29 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Investigation of a TermLink-crate behavior gap (T-1820 AC#3 partial-ship): the
+inner function `mirror_inbox_deposit_with()` fires `inbox.queued` (proven by
+unit + integration tests), but two user-facing CLI flows (file send to offline
+target, channel post with kill-9'd member) did not fire the event. The code
+under investigation lives in `/opt/termlink` — outside this project's boundary
+(T-559), and the fix homes there (§Gap Homing, T-1333). This task therefore
+coordinates: dispatch the investigation into a worker rooted at /opt/termlink,
+collect findings, and ensure follow-up is filed where the fix lives.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Investigation dispatched to /opt/termlink (TermLink worker in the target
+      project's own context, per T-559 boundary rule); findings collected via
+      fw bus or a report file in this repo under docs/reports/T-2409-*.md
+- [x] Findings answer scope (a): which user-facing CLI deposit paths call
+      mirror_inbox_deposit_with() and which take a bypass path that skips the
+      inbox.queued emit (file:line references into the termlink crates)
+- [x] Findings answer scope (b): a CLI flow that DOES fire inbox.queued is
+      reproduced, OR the gap is confirmed with a stated root cause
+- [x] Follow-up homed where the fix lives: termlink-side task/pickup reference
+      recorded in this task's Updates (scope (c) integration-test extension is
+      termlink-repo work, not AEF work)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -137,52 +155,17 @@ bvp_scores_proposed:
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q "remote.rs:1750" docs/reports/T-2409-inbox-queued-cli-gap-summary.md
+grep -q "T-2363" docs/reports/T-2409-inbox-queued-cli-gap-summary.md
+grep -q "channel.rs:748" docs/reports/T-2409-inbox-queued-cli-gap-summary.md
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+- **Symptom:** framework subscriber long-polling inbox.queued saw nothing on two user-facing CLI "no-consumer deposit" flows (T-1820 AC#3 partial-ship).
+- **Root cause:** (1) termlink `remote send-file` legacy fallback calls RPC `event.emit` (no hub handler) instead of `event.emit_to` → SESSION_NOT_FOUND without deposit (remote.rs:1750); (2) channel-post-to-killed-member expectation was a design mismatch — the hub has no membership registry.
+- **Why structurally allowed:** T-1636's integration test covered the inner crate function, not the CLI surface; two independent emit sites (T-1636 legacy, T-1637 inline) evolved separately so a CLI path could miss both untested.
+- **Prevention:** termlink T-2363 (fix + CLI-surface integration test on two-node hub harness); topology documented in docs/reports/T-2409-inbox-queued-cli-gap-summary.md + /opt/termlink/docs/reports/T-2409-inbox-queued-cli-gap.md.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
 
 ## Evolution
 
@@ -235,3 +218,22 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2409-t-1820-v2--investigate-why-user-facing-c.md
 - **Context:** Initial task creation
+
+### 2026-07-05T00:12:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-07-05T10:20:00Z — investigation-complete [worker t2409-inbox-gap]
+- **Findings:** summary at docs/reports/T-2409-inbox-queued-cli-gap-summary.md; full report in /opt/termlink/docs/reports/ (T-2362 there)
+- **Follow-up:** termlink T-2363 (remote send-file fallback wrong RPC fix + integration test) — fix homed per §Gap Homing
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4b5dd62d
+- **Timestamp:** 2026-07-05T09:59:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-05T09:59:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

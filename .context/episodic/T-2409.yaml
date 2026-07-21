@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2409: T-1820 v2 — investigate why user-facing CLI doesn't fire inbox.queued on no-consumer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-05T09:59:17Z
+# ============================================================================
+
+task_id: T-2409
+task_name: "T-1820 v2 — investigate why user-facing CLI doesn't fire inbox.queued on no-consumer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-15T17:52:53Z
+completed: 2026-07-05T09:59:07Z
+duration_days: 20
+updates_count: 3
+first_commit: 2026-07-05T11:53:12+02:00
+last_commit: 2026-07-05T11:53:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope investigation with real ACs (dispatch-shaped, T-559 boundary) + restore lib/resolver.sh exec bit lost on this branch (origin/master has 755; 644 here broke 'fw resolver *' on MAIN)
+
+# Key outcomes
+outcomes:
+  - 'Investigation dispatched to /opt/termlink (TermLink worker in the target'
+  - 'Findings answer scope (a): which user-facing CLI deposit paths call'
+  - 'Findings answer scope (b): a CLI flow that DOES fire inbox.queued is'
+  - 'Follow-up homed where the fix lives: termlink-side task/pickup reference'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2409-t-1820-v2--investigate-why-user-facing-c.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-05T11:53:12"
+    action: "T-2409: scope investigation with real ACs (dispatch-shaped, T-559 boundary) + restore lib/resolver.sh exec bit lost on this branch (origin/master has 755; 644 here broke 'fw resolver *' on MAIN)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28326 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28326
+  commits: 1
+  files_changed: 1
+  lines_added: 19
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2409-t-1820-v2--investigate-why-user-facing-c.md
+generated_by: context-agent-hybrid
