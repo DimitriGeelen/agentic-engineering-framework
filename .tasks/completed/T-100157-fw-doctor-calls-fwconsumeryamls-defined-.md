@@ -7,12 +7,12 @@ description: >
   (lib/config.sh) without sourcing it — 'command not found' twice per run,
   consumer-yaml checks silently skipped.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T13:47:37Z
-last_update: '2026-07-08T08:00:02Z'
-date_finished:
+last_update: 2026-07-21T06:44:32Z
+date_finished: 2026-07-21T06:44:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -276,3 +276,23 @@ git show origin/master:tests/unit/t100157_doctor_config_source.bats > /tmp/.t100
 ### 2026-07-04T13:59:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-21T06:45:00Z — owner-correction [agent]
+- **Change:** owner: human → agent (authoring correction, T-2583 gotcha class: `fw note promote` defaults owner:human; all ACs here are agent-verifiable, Human section is template-comment only — no human verification exists to route)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1f780dea
+- **Timestamp:** 2026-07-21T06:44:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/config.sh` is sourced before both `fw_consumer_yamls` call sites in `do_doctor` (single idempotent source at top of do_doctor, not per-site duplication)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: `lib/config.sh` is sourced before both `fw_consumer_yamls` call sites in `do_doctor` (single idempotent source at top of do_doctor, not per-site dupli`
+
+### 2026-07-21T06:44:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

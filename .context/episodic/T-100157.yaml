@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100157: fw doctor: source lib/config.sh before fw_consumer_yamls (consumer checks silently
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T06:44:42Z
+# ============================================================================
+
+task_id: T-100157
+task_name: "fw doctor: source lib/config.sh before fw_consumer_yamls (consumer checks silently"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T13:47:37Z
+completed: 2026-07-21T06:44:32Z
+duration_days: 17
+updates_count: 4
+first_commit: 2026-07-04T16:02:52+02:00
+last_commit: 2026-07-04T16:09:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor sources lib/config.sh — consumer-project checks no longer silently no-op (OBS-085). fix bats regex (call-site pattern, not comment mentions). RCA. sync landed task file + GO recommendation (fix on origin/master). capture termlink pickups 073 (reviewer-assisted decides proposal) + 074 (disposition detector defects)
+
+# Key outcomes
+outcomes:
+  - '`lib/config.sh` is sourced before both `fw_consumer_yamls` call sites in `do_doctor` (single idempotent source at top of do_doctor, not per-site duplication)'
+  - '`fw doctor` run emits zero `command not found` lines — live-fired: `grep -c "command not found"` = 0 on doctor --quick'
+  - 'The consumer-yaml checks actually execute — live run now surfaces real Consumer Projects WARNs (001-sprechloop, 002-Claude-Partner-Network behind + missing hooks) that were silently skipped before'
+  - 'Regression pin: tests/unit/t100157_doctor_config_source.bats — static ordering pin (source line precedes first call site) + contract pin (config.sh defines fw_consumer_yamls); live no-command-not-found asserted by ## Verification at the completion gate'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'sync landed task file + GO recommendation (fix on origin/master)'
+    source: git-mined
+  - description: 'fix bats regex (call-site pattern, not comment mentions)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.pickup/073-reviewer-assisted-inception-decides.md'
+  - '.pickup/074-reviewer-disposition-detector-two-defects.md'
+  - '.tasks/active/T-100157-fw-doctor-calls-fwconsumeryamls-defined-.md'
+  - 'tests/unit/t100157_doctor_config_source.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-04T16:02:52"
+    action: "T-100157: doctor sources lib/config.sh — consumer-project checks no longer silently no-op (OBS-085)"
+  - time: "2026-07-04T16:03:30"
+    action: "T-100157: fix bats regex (call-site pattern, not comment mentions)"
+  - time: "2026-07-04T16:03:52"
+    action: "T-100157: RCA"
+  - time: "2026-07-04T16:04:58"
+    action: "T-100157: sync landed task file + GO recommendation (fix on origin/master)"
+  - time: "2026-07-04T16:09:49"
+    action: "T-100157: capture termlink pickups 073 (reviewer-assisted decides proposal) + 074 (disposition detector defects)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 24056 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24056
+  commits: 5
+  files_changed: 5
+  lines_added: 453
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100157-fw-doctor-calls-fwconsumeryamls-defined-.md
+generated_by: context-agent-hybrid
