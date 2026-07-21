@@ -764,9 +764,11 @@ def extract_recommendation(body: str) -> dict:
         end = matches[idx + 1].start() if idx + 1 < len(matches) else len(section)
         body_span = section[start:end].strip()
         if bucket == "recommendation":
-            v = re_mod.match(r"\s*(KEEP-OPEN|NO-GO|CLOSE|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
+            # NO_GO underscore form tolerated and normalized to NO-GO (T-1391
+            # contract; T-1575's alternation dropped it — T-2581 regression fix).
+            v = re_mod.match(r"\s*(KEEP-OPEN|NO[-_]GO|CLOSE|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
             if v:
-                out["verdict"] = v.group(1).upper()
+                out["verdict"] = v.group(1).upper().replace("_", "-")
         elif bucket == "rationale":
             buckets["rationale"].append(body_span)
         elif bucket == "evidence":

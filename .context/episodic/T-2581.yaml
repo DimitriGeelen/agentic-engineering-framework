@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2581: extract_recommendation verdict regex lost NO_GO underscore tolerance (T-1575 consolidation regression)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T05:57:24Z
+# ============================================================================
+
+task_id: T-2581
+task_name: "extract_recommendation verdict regex lost NO_GO underscore tolerance (T-1575 consolidation regression)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T05:55:33Z
+completed: 2026-07-21T05:57:13Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`extract_recommendation` accepts `NO_GO` and normalizes the returned verdict to `NO-GO` (all downstream comparisons use the hyphen form)'
+  - '`test_stance_extracts_no_go_including_hyphen_and_underscore` passes; full `tests/web/test_inception_rationale_extraction.py` green'
+  - 'No behavior change for existing forms: `tests/unit/test_extract_recommendation.py` and the inception/approvals web tests stay green'
+  - 'Vendored copy synced (`fw vendor self`) since web/shared.py changed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2581-extractrecommendation-verdict-regex-lost.md
+generated_by: context-agent-hybrid
