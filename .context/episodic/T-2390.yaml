@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2390: Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T07:27:22Z
+# ============================================================================
+
+task_id: T-2390
+task_name: "Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T07:16:26Z
+completed: 2026-07-21T07:27:11Z
+duration_days: 37
+updates_count: 2
+first_commit: 2026-06-14T09:36:36+02:00
+last_commit: 2026-06-27T18:51:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  mechanism identified — find_project_root walks $PWD, ignores CLAUDE_PROJECT_DIR; not universal (own session resolves fine). bin/fw prefers CLAUDE_PROJECT_DIR over $PWD walk for PROJECT_ROOT (fixes T-2389 gauge-blind) + 3 bats. RCA + re-drive ready-state handoff (fix shipped+unit-proven; live confirm blocked by parent budget critical). re-drive 2 NO-GO — corrected root cause (tmux-env PROJECT_ROOT poison + live-hook transcript_path); shipped fix proven ineffective. reviewer PASS + Evolution — both bugs re-homed to siblings. record L-485 — P-011 gate runs each Verification line isolated
+
+# Key outcomes
+outcomes:
+  - 'Classify universal-vs-launch-artifact + resolution mechanism — DONE: NOT universal (own session resolves fine); mechanism = `find_project_root()` walks `$PWD`, ignores `CLAUDE_PROJECT_DIR`. See ## Findings + ## RCA.'
+  - 'Identify + ship a fix — shipped (`bin/fw` prefers `CLAUDE_PROJECT_DIR`, 3/3 bats) BUT **the re-drive proved it INEFFECTIVE for the live bug** — see ## Re-drive 2. The real Bug A is `bin/fw` accepting an *inherited* (poisoned) `PROJECT_ROOT` verbatim; the shipped fix is gated on `[ -z PROJECT_ROOT ]` and never runs. A correct fix is still owed (follow-up).'
+  - 'Live re-drive confirmation — **DONE 2026-06-14 (session 2): NO-GO.** Drove a real `claude-fw` live-fire via TermLink twice. Loop never armed (972738 tokens / 107 checkpoints / current_iteration=0). Surfaced corrected Bug A + a new Bug B. Full evidence in ## Re-drive 2.'
+  - 'N/A (not universal — no escalation needed)'
+  - 'RCA filled (corrected in ## Re-drive 2); reviewer PASS — DONE 2026-07-21: `fw reviewer T-2390` → Overall PASS, needs_human=no, zero findings (verdict block below). **Residuals closed by landed follow-ups:** Bug A (inherited poisoned PROJECT_ROOT accepted verbatim) fixed by T-2391 `67893ed78` "bin/fw validates inherited PROJECT_ROOT — reject stale =$HOME poison" (on origin/master); Bug B (live hook reads 0 tokens — wrong transcript_path) fixed by the T-2377/T-2392/T-2400 gauge cluster — live evidence: `.context/working/.budget-status` has tracked real token counts across whole sessions since (e.g. 251582 @ 2026-07-21).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'reviewer PASS + Evolution — both bugs re-homed to siblings'
+    source: git-mined
+  - description: 're-drive 2 NO-GO — corrected root cause (tmux-env PROJECT_ROOT poison + live-hook transcript_path); shipped fix proven ineffective'
+    source: git-mined
+  - description: 'RCA + re-drive ready-state handoff (fix shipped+unit-proven; live confirm blocked by parent budget critical)'
+    source: git-mined
+  - description: 'bin/fw prefers CLAUDE_PROJECT_DIR over $PWD walk for PROJECT_ROOT (fixes T-2389 gauge-blind) + 3 bats'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-2390-spawned-session-hooks-resolve-projectroo.md'
+  - 'tests/unit/t2390_project_root_claude_dir.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-14T09:36:36"
+    action: "T-2390: mechanism identified — find_project_root walks $PWD, ignores CLAUDE_PROJECT_DIR; not universal (own session resolves fine)"
+  - time: "2026-06-14T09:59:59"
+    action: "T-2390: bin/fw prefers CLAUDE_PROJECT_DIR over $PWD walk for PROJECT_ROOT (fixes T-2389 gauge-blind) + 3 bats"
+  - time: "2026-06-14T10:03:56"
+    action: "T-2390: RCA + re-drive ready-state handoff (fix shipped+unit-proven; live confirm blocked by parent budget critical)"
+  - time: "2026-06-14T10:42:21"
+    action: "T-2390: re-drive 2 NO-GO — corrected root cause (tmux-env PROJECT_ROOT poison + live-hook transcript_path); shipped fix proven ineffective"
+  - time: "2026-06-27T18:50:05"
+    action: "T-2390: reviewer PASS + Evolution — both bugs re-homed to siblings"
+  - time: "2026-06-27T18:51:05"
+    action: "T-2390: record L-485 — P-011 gate runs each Verification line isolated"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 53290 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, bug, gauge, hooks]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 53290
+  commits: 6
+  files_changed: 4
+  lines_added: 277
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2390-spawned-session-hooks-resolve-projectroo.md
+generated_by: context-agent-hybrid

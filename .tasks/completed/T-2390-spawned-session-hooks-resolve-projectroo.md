@@ -11,12 +11,12 @@ description: >
   cd+exec did not propagate CLAUDE_PROJECT_DIR)? Same class as T-2377 but via hook-cwd
   not transcript_path. Evidence: docs/reports/T-2389-livefire-evidence.md
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, bug, gauge, hooks]
-components: []
+components: [C-004, bin/fw, tests/unit/t2391_project_root_inherited_stale.bats, tests/unit/t2446_project_root_cwd_consistency.bats]
 related_tasks: [T-2389, T-2377]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,8 +29,8 @@ related_tasks: [T-2389, T-2377]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T07:16:26Z
-last_update: '2026-07-08T08:15:04Z'
-date_finished:
+last_update: 2026-07-21T07:27:11Z
+date_finished: 2026-07-21T07:27:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -134,7 +134,7 @@ armed. Evidence: `docs/reports/T-2389-livefire-evidence.md`.
 - [x] Identify + ship a fix — shipped (`bin/fw` prefers `CLAUDE_PROJECT_DIR`, 3/3 bats) BUT **the re-drive proved it INEFFECTIVE for the live bug** — see ## Re-drive 2. The real Bug A is `bin/fw` accepting an *inherited* (poisoned) `PROJECT_ROOT` verbatim; the shipped fix is gated on `[ -z PROJECT_ROOT ]` and never runs. A correct fix is still owed (follow-up).
 - [x] Live re-drive confirmation — **DONE 2026-06-14 (session 2): NO-GO.** Drove a real `claude-fw` live-fire via TermLink twice. Loop never armed (972738 tokens / 107 checkpoints / current_iteration=0). Surfaced corrected Bug A + a new Bug B. Full evidence in ## Re-drive 2.
 - [x] N/A (not universal — no escalation needed)
-- [ ] RCA filled (corrected in ## Re-drive 2); reviewer PASS (pending — run `fw reviewer T-2390` next session)
+- [x] RCA filled (corrected in ## Re-drive 2); reviewer PASS — DONE 2026-07-21: `fw reviewer T-2390` → Overall PASS, needs_human=no, zero findings (verdict block below). **Residuals closed by landed follow-ups:** Bug A (inherited poisoned PROJECT_ROOT accepted verbatim) fixed by T-2391 `67893ed78` "bin/fw validates inherited PROJECT_ROOT — reject stale =$HOME poison" (on origin/master); Bug B (live hook reads 0 tokens — wrong transcript_path) fixed by the T-2377/T-2392/T-2400 gauge cluster — live evidence: `.context/working/.budget-status` has tracked real token counts across whole sessions since (e.g. 251582 @ 2026-07-21).
 
 ## Re-drive ready-state (for the next session — fix is shipped, just needs driving)
 
@@ -326,6 +326,19 @@ fallthrough.
 
 ## Evolution
 
+### 2026-07-21 — investigation outlived its own fix; residuals closed by siblings
+- **What changed:** the fix shipped inside this task (CLAUDE_PROJECT_DIR preference) was
+  proven INEFFECTIVE by the live re-drive (gated on empty PROJECT_ROOT, never runs) — the
+  real defects were Bug A (inherited poisoned PROJECT_ROOT accepted verbatim) and Bug B
+  (live hook fed a valid-but-wrong transcript_path → 0 tokens). Both were then fixed by
+  SIBLING tasks, not this one: T-2391 (validate inherited PROJECT_ROOT, `67893ed78`) and
+  the T-2377/T-2392/T-2400 gauge cluster.
+- **Plan impact:** this task's role collapsed from "ship the fix" to "investigation +
+  RCA + live disproof that routed the correct fixes" — the original AC-2 fix is dead code
+  superseded by T-2391's stricter validation.
+- **Triggered:** T-2391 (landed), T-2392/T-2400 (landed); close-out 2026-07-21 after
+  reviewer PASS with residuals verified closed on origin/master.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -379,3 +392,15 @@ fallthrough.
 ### 2026-06-14T07:34:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4bb78882
+- **Timestamp:** 2026-07-21T07:27:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-21T07:27:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

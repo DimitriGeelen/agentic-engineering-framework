@@ -779,5 +779,5 @@ observations:
   captured: 2026-07-21T07:09:42Z
   context_task: T-100202
   tags: [governance]
-  status: pending
+  status: dismissed
   promoted_to: null
