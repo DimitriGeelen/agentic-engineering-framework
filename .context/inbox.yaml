@@ -781,3 +781,10 @@ observations:
   tags: [governance]
   status: dismissed
   promoted_to: null
+- id: OBS-096
+  text: "ollama-research lane regression: hermes3 via litellm produced 0 real tool_use in 2/2 harness probes (dispatch 17e7b391, f46110b1 — single assistant text block 'steps I would take', zero tool_use blocks) vs T-1706 historical 100%. Harness v2 (T-2408) measures this correctly; lane quality itself needs separate investigation. litellm was started ad-hoc — deploy/litellm-proxy.service still not installed (operator step)."
+  captured: 2026-07-21T19:48:38Z
+  context_task: T-2408
+  tags: []
+  status: pending
+  promoted_to: null
