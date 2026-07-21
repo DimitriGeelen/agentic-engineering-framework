@@ -148,7 +148,19 @@ def sync_project_refs(store: Path, project_id: str, bpmn: str) -> dict:
         if entry not in ghost["referenced_by"]:
             ghost["referenced_by"].append(entry)
 
-    reg["ghosts"] = [g for g in reg["ghosts"] if g["referenced_by"] or g.get("task")]
+    # Drop rules (T-2579 composition-test finding): a ghost with no remaining
+    # referrers is kept ONLY while it represents open debt — a minted doc task
+    # for a target that still doesn't exist (deleted-connector case). If the
+    # named target now lives in the store, the legacy refs resolve by name and
+    # the debt is closed — keeping it would show a stale "needs mapping" card
+    # forever. (uuid-pinned ghosts never resolve by name; they exit via claim,
+    # which removes them explicitly.)
+    reg["ghosts"] = [
+        g
+        for g in reg["ghosts"]
+        if (g["referenced_by"] or g.get("task"))
+        and not (not g["referenced_by"] and g.get("name") in slugs)
+    ]
     save_registry(store, reg)
     return reg
 

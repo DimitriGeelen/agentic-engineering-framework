@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2579: Off-page seam lifecycle composition test — compile WARN → ghost+mint → claim → silent (T-2571)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T05:21:59Z
+# ============================================================================
+
+task_id: T-2579
+task_name: "Off-page seam lifecycle composition test — compile WARN → ghost+mint → claim → silent (T-2571)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T05:18:32Z
+completed: 2026-07-21T05:21:45Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'One integration test file walks the full loop against the real modules (compiler Pass-5, designer_api save/list, designer_registry sync/mint/claim, /designer/ghosts page) in a hermetic temp store — no mocking of the modules under test (only the task-create runner is injected)'
+  - 'Phase assertions: (1) pre-claim compile emits the dangling-WARN naming both ends; (2) save creates the ghost with referrer + minted task recorded in the registry; (3) /api/list partitions the ghost out of maps[]; (4) /designer/ghosts renders the card + task chip; (5) claim binds the uuid to the target project''s meta.json and appends the claims audit row; (6) post-claim compile Pass-5 is SILENT for that ref; (7) registry ghosts list is empty'
+  - 'Legacy leg covered in the same loop: a `targetWorkflow` slug ref flips from dangling-WARN to migrate-advisory once the target project exists'
+  - 'Full designer + compiler suites stay green alongside the new test'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-21 — stale name-resolved ghost (composition-test finding)'
+    chose: 'sync drop-rule refinement — a ghost with zero remaining referrers whose `name` now matches a live store slug is dropped even when a doc task was minted (web/designer_registry.py sync_project_refs).'
+    rationale: 'the keep-if-task rule exists to preserve deleted-connector debt; once the named target exists, legacy refs resolve by name and the debt is closed — keeping the ghost renders a stale "needs mapping" card forever. Found by Phase 7 of the lifecycle test, invisible to per-slice tests.'
+    alternatives_rejected: ['(a) auto-claim the store-minted uuid into the new project — refused, the project already minted its own uuid at creation and no diagram pins the ghost uuid (name-only refs carry no workflowRef); (b) test-only expectation change — would pin the stale-card behavior as contract.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2579-off-page-seam-lifecycle-composition-test.md
+generated_by: context-agent-hybrid
