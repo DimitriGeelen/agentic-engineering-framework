@@ -4,17 +4,23 @@ type: route
 subsystem: watchtower
 location: web/blueprints/designer.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/shared.py
+  type: calls
+- target: web/blueprints/designer_api.py
+  type: calls
+- target: web/designer_registry.py
+  type: calls
+- target: web/templates/designer_ghosts.html
+  type: renders
+- target: web/blueprints/designer_api.py
+  type: registers
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/blueprints/__init__.py
+  type: called_by
+- target: web/blueprints/__init__.py
+  type: registered_by
 last_verified: 2026-07-10
 created_by: unknown
+last_enriched: '2026-07-21'

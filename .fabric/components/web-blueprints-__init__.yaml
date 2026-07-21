@@ -138,6 +138,14 @@ depends_on:
   type: calls
 - target: web/blueprints/bvp.py
   type: registers
+- target: web/blueprints/designer.py
+  type: calls
+- target: web/blueprints/designer_api.py
+  type: calls
+- target: web/blueprints/designer.py
+  type: registers
+- target: web/blueprints/designer_api.py
+  type: registers
 depended_by:
 - target: web/app.py
   type: imported_by
@@ -166,4 +174,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-01
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-07-21'

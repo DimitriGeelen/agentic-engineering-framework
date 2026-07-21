@@ -158,4 +158,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_command_palette.py
   type: called_by
-last_enriched: '2026-07-07'
+- target: web/blueprints/designer.py
+  type: called_by
+- target: web/blueprints/designer_api.py
+  type: called_by
+last_enriched: '2026-07-21'

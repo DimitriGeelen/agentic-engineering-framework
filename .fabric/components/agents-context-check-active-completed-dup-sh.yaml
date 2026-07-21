@@ -7,16 +7,16 @@ tags:
 - hook
 - pretooluse
 - wrapper
-
-purpose: "Thin wrapper (T-2517) the fw hook dispatcher loads for the active/completed duplicate write-time guard. Execs check-active-completed-dup.py; the shell layer exists only because bin/fw's hook loader globs .sh files."
-
+purpose: Thin wrapper (T-2517) the fw hook dispatcher loads for the active/completed duplicate write-time guard. Execs check-active-completed-dup.py;
+  the shell layer exists only because bin/fw's hook loader globs .sh files.
 depends_on:
 - target: agents/context/check-active-completed-dup.py
   type: calls
-
 depended_by:
 - target: bin/fw
   type: triggers
-
+- target: C-009
+  type: called_by
 last_verified: 2026-07-10
 created_by: T-2517
+last_enriched: '2026-07-21'

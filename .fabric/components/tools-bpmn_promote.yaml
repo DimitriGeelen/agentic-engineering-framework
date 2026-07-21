@@ -4,17 +4,17 @@ type: script
 subsystem: unknown
 location: tools/bpmn_promote.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: tools/bpmn_to_tasks.py
+  type: calls
+- target: lib/paths.sh
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/test_bpmn_promote.py
+  type: called_by
 last_verified: 2026-07-18
 created_by: unknown
+last_enriched: '2026-07-21'

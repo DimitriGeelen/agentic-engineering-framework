@@ -147,9 +147,13 @@ depends_on:
   type: calls
 - target: agents/orchestrator/orchestrator-graph.py
   type: calls
+- target: agents/designer/designer.sh
+  type: calls
+- target: agents/bpmn/bpmn.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-07-21'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -762,4 +766,12 @@ depended_by:
 - target: tests/unit/verify_acs.bats
   type: called_by
 - target: tests/unit/watchtower_health_verdict_identity.bats
+  type: called_by
+- target: agents/designer/designer.sh
+  type: called_by
+- target: tests/unit/doctor_designer_pin_drift.bats
+  type: tests_by
+- target: tools/bpmn_promote.py
+  type: called_by
+- target: web/designer_registry.py
   type: called_by
