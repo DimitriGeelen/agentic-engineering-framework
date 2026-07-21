@@ -782,7 +782,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-096
-  text: "ollama-research lane regression: hermes3 via litellm produced 0 real tool_use in 2/2 harness probes (dispatch 17e7b391, f46110b1 — single assistant text block 'steps I would take', zero tool_use blocks) vs T-1706 historical 100%. Harness v2 (T-2408) measures this correctly; lane quality itself needs separate investigation. litellm was started ad-hoc — deploy/litellm-proxy.service still not installed (operator step)."
+  text: "ollama-research probes score 0/2 real tool_use through the T-2408 resolver reroute (dispatch 17e7b391, f46110b1) vs T-1706 historical 100%. CORRECTED RCA (prompt.txt blob evidence): NOT lane decay — the probe ('Use Read to read /etc/hostname...') lands as the Description slot inside the 4.6KB prompts/default.md task scaffolding (incl. T-2408's own ACs), so the 8B model summarizes 'steps I would take' for the task instead of executing the probe. Not apples-to-apples with T-1706's direct prompts. Fix candidate: dedicated minimal probe template for the ollama-research workflow (prompt_template: prompts/ollama-probe.md substituting TASK_DESCRIPTION only) — one-task follow-up. Also: litellm was started ad-hoc; deploy/litellm-proxy.service still not installed (operator step)."
   captured: 2026-07-21T19:48:38Z
   context_task: T-2408
   tags: []
