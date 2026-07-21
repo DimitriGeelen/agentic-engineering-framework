@@ -267,8 +267,13 @@ def test_inception_decide_failure_redirects_with_error_param(consumer_project, m
     )
 
 
-def test_inception_decide_failure_htmx_returns_500(consumer_project, monkeypatch):
-    """htmx path is unchanged — returns 500 with error fragment (T-643)."""
+def test_inception_decide_failure_htmx_surfaces_swappable_error(consumer_project, monkeypatch):
+    """htmx failure path returns a swappable 200 error fragment (T-2051).
+
+    Pre-T-2051 this was a 500 — but htmx hx-swap ignores non-2xx, so the GO
+    button never changed and the human re-clicked (T-2030). The contract now:
+    HTTP 200 + "Decision not recorded" fragment carrying the failure reason.
+    """
     _make_inception_task(consumer_project, "T-9995")
     client, csrf = _flask_client(monkeypatch)
 
@@ -284,8 +289,9 @@ def test_inception_decide_failure_htmx_returns_500(consumer_project, monkeypatch
         headers={"HX-Request": "true"},
     )
 
-    assert resp.status_code == 500
-    assert b"Error:" in resp.data
+    assert resp.status_code == 200
+    assert b"Decision not recorded" in resp.data
+    assert b"Required AC unchecked: foo" in resp.data
 
 
 # T-1746 — pin the three RCs from T-1745 RCA.

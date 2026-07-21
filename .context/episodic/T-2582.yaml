@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2582: update 3 stale test pins to current deliberate contracts (T-2051 htmx decide
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T06:01:31Z
+# ============================================================================
+
+task_id: T-2582
+task_name: "update 3 stale test pins to current deliberate contracts (T-2051 htmx decide"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T05:57:49Z
+completed: 2026-07-21T06:00:39Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'The two decide-failure tests assert the T-2051 contract: HTTP 200 + swappable fragment containing "Decision not recorded" + the failure reason; they still fail if the route stops surfacing the error (asserts pin fragment content directly)'
+  - 'The badge test asserts the T-2026 contract: per-verdict semantic token (`--wt-success`/`--wt-warn`/`--wt-danger`/`--wt-muted`) present in each card''s badge style — verified non-tautological (GO card renders --wt-success only, other tokens absent)'
+  - 'Full-dir `python3 -m pytest tests/web -q` exits 0 (101 passed) — first fully green run since the OBS-094 bundle formed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2582-update-3-stale-test-pins-to-current-deli.md
+generated_by: context-agent-hybrid

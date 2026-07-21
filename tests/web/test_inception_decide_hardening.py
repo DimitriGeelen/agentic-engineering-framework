@@ -189,8 +189,15 @@ def test_decide_returns_500_when_primary_did_not_land(consumer_project):
     assert "error=" in location, f"expected ?error= in redirect, got {location!r}"
 
 
-def test_decide_htmx_returns_500_when_primary_did_not_land(consumer_project):
-    """T-1470: htmx 500 path preserved when primary fails."""
+def test_decide_htmx_surfaces_error_when_primary_did_not_land(consumer_project):
+    """T-1470 → T-2051: primary failure surfaces a swappable 200 error fragment.
+
+    T-1470 distinguished primary-failure from side-effect-failure; T-2051 then
+    changed the primary-failure htmx response from 500 to a swappable 200
+    ("Decision not recorded" + reason), since htmx ignores non-2xx swaps.
+    The invariant this test guards: a failed primary is never rendered as a
+    recorded decision, and the reason is visible.
+    """
     task_id = "T-9994"
     (consumer_project / ".tasks/active" / f"{task_id}-test.md").write_text(
         TASK_BODY_NOT_DECIDED.format(task_id=task_id)
@@ -209,4 +216,8 @@ def test_decide_htmx_returns_500_when_primary_did_not_land(consumer_project):
             headers={"HX-Request": "true"},
         )
 
-    assert resp.status_code == 500
+    assert resp.status_code == 200
+    assert b"Decision not recorded" in resp.data
+    assert b"fatal" in resp.data
+    # Never rendered as a recorded decision
+    assert b"Decision recorded" not in resp.data

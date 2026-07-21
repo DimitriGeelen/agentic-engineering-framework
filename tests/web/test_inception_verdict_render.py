@@ -78,18 +78,21 @@ def test_inception_card_renders_verdict_badge_with_correct_class():
 
 
 def test_inception_card_badge_colour_matches_verdict():
-    """GO is green (#1b5e20), DEFER amber (#e65100), NO-GO red (#b71c1c), ? grey (#616161)."""
+    """Per-verdict badge styling via semantic tokens (T-2026, arc-007 S3c2).
+
+    Pre-T-2026 the badge carried inline hexes (#1b5e20 etc.); the tokens layer
+    now owns the palette. The invariant: each verdict maps to its own semantic
+    token, so GO/DEFER/NO-GO/? remain visually distinct.
+    """
     cases = [
-        ("GO", "#1b5e20"),
-        ("DEFER", "#e65100"),
-        ("NO-GO", "#b71c1c"),
-        ("?", "#616161"),
+        ("GO", "--wt-success"),
+        ("DEFER", "--wt-warn"),
+        ("NO-GO", "--wt-danger"),
+        ("?", "--wt-muted"),
     ]
-    for verdict, colour in cases:
+    for verdict, token in cases:
         html = _render_approvals([_fake_inception(f"T-9{verdict}", verdict)])
-        # Badge style block sits inside the card; assert the colour appears
-        # alongside the verdict marker.
-        assert colour in html, f"expected colour {colour} in card for verdict {verdict}"
+        assert token in html, f"expected token {token} in card for verdict {verdict}"
 
 
 def test_multiple_inception_cards_each_get_their_own_badge():
