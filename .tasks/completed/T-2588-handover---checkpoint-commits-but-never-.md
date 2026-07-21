@@ -7,10 +7,10 @@ description: >
   budget gate blocks push), checkpoints are stranded exactly when they matter. Fix:
   push after checkpoint commit like --commit does (respect FW_HANDOVER_PUSH_TIMEOUT).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-21T12:27:16Z
-last_update: '2026-07-21T12:30:08Z'
-date_finished:
+last_update: 2026-07-21T13:06:11Z
+date_finished: 2026-07-21T13:06:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -77,9 +77,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw handover --checkpoint` pushes the checkpoint commit after committing (same push path + FW_HANDOVER_PUSH_TIMEOUT handling as `--commit`), with push failure surfaced as a warning, never a silent skip
-- [ ] Test pins the contract: checkpoint run in a repo with an origin remote leaves zero unpushed commits (or emits the explicit push-failure warning)
-- [ ] ## RCA names the stranding window: checkpoint commits accumulate locally mid-session; a session death or budget-gate push block (T-2587) strands exactly the state checkpoints exist to protect
+- [x] `fw handover --checkpoint` pushes the checkpoint commit after committing (same push path + FW_HANDOVER_PUSH_TIMEOUT handling as `--commit`), with push failure surfaced as a warning, never a silent skip
+- [x] Test pins the contract: checkpoint run in a repo with an origin remote leaves zero unpushed commits (or emits the explicit push-failure warning)
+- [x] ## RCA names the stranding window: checkpoint commits accumulate locally mid-session; a session death or budget-gate push block (T-2587) strands exactly the state checkpoints exist to protect
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,21 +145,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/handover/handover.sh
+grep -q '^_push_to_remotes()' agents/handover/handover.sh
+bats tests/unit/handover_checkpoint_push.bats
+bats tests/unit/handover.bats tests/unit/handover_push_no_origin.bats tests/unit/handover_t012_active_only.bats tests/integration/fw_handover.bats
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw handover --checkpoint` writes a `CHECKPOINT-*.md` file and commits it locally, but the commit is never pushed. Checkpoint commits accumulate on the local branch for the rest of the session.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `--checkpoint` mode and normal (`--commit`) mode are two separate code paths in `handover.sh`. The push leg (T-1144, T-1277) was written only into the normal-mode auto-commit block; the checkpoint-mode auto-commit block called `git commit` and stopped there. The two paths were never factored to share the push step, so the push leg silently didn't exist for checkpoints.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** checkpoints are a mid-session mechanism (`fw handover --checkpoint`, invoked by `checkpoint.sh` at budget warn/urgent) — their commits are usually invisible because a later normal handover (session end) commits and pushes everything, including the earlier checkpoint commits, masking the gap. The stranding window only becomes visible when (a) the session dies before a normal handover runs, or (b) the budget gate (T-2587) blocks a later push attempt — exactly the two failure modes checkpoints exist to protect against. No test exercised checkpoint mode's git behaviour end-to-end (existing tests used `--no-commit` or `--checkpoint --no-commit`), so the missing push leg had no test surface to catch it.
+
+**Prevention:** extracted the push logic into a shared `_push_to_remotes()` function called from both the checkpoint and normal auto-commit branches, so the two paths cannot drift again. `tests/unit/handover_checkpoint_push.bats` behaviourally pins the contract — a checkpoint commit against a local bare-repo remote must leave local `HEAD` matching the remote's `HEAD`.
 
 ## Evolution
 
@@ -212,3 +211,19 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2588-handover---checkpoint-commits-but-never-.md
 - **Context:** Initial task creation
+
+### 2026-07-21T13:01:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fab3466f
+- **Timestamp:** 2026-07-21T13:08:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-21T13:06:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

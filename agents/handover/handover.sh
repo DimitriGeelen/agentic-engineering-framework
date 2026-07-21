@@ -57,6 +57,53 @@ _resolve_commit_task() {
     COMMIT_TASK="T-000"
 }
 
+# T-2588: Shared push leg for both normal handovers and --checkpoint commits.
+# Checkpoint commits previously accumulated locally with no push — exactly the
+# state a checkpoint exists to protect gets stranded if the session dies or
+# the budget gate blocks a later push (T-2587). Push failures are warnings,
+# never a silent skip: the caller sees explicit WARNING lines either way.
+_push_to_remotes() {
+    echo ""
+    echo -e "${CYAN}Pushing to remotes...${NC}"
+    _push_failed=false
+    _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-60}"
+    # T-1255 (G-007): When >1 remote is configured AND `origin` is one of them,
+    # push ONLY to origin. Mirroring (e.g. github) is OneDev's job via
+    # .onedev-buildspec.yml's PushRepository job. Pushing directly to mirror
+    # remotes caused github-ahead-of-onedev divergence whenever onedev briefly
+    # 502'd at handover time (T-1253 inception, PL-036).
+    # T-1474: Guard against the no-origin case. If no remote is named `origin`,
+    # there is no canonical source for OneDev to mirror from, so the assumption
+    # that other remotes are "mirrors" is invalid — push to all of them.
+    _remote_count=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
+    if git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin'; then
+        _has_origin=true
+    else
+        _has_origin=false
+    fi
+    while IFS= read -r remote_name; do
+        [ -z "$remote_name" ] && continue
+        if [ "$_has_origin" = true ] && [ "$_remote_count" -gt 1 ] && [ "$remote_name" != "origin" ]; then
+            echo -e "  ${CYAN}Skipping $remote_name (mirrored from origin via PushRepository)${NC}"
+            continue
+        fi
+        if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
+            echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
+        else
+            _exit=$?
+            if [ "$_exit" -eq 124 ]; then
+                echo -e "  ${YELLOW}WARNING: Push to $remote_name timed out after ${_push_timeout}s (non-blocking, T-1277)${NC}" >&2
+            else
+                echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
+            fi
+            _push_failed=true
+        fi
+    done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
+    if [ "$_push_failed" = true ]; then
+        echo -e "${YELLOW}Some pushes failed. Run 'git push' manually after resolving.${NC}"
+    fi
+}
+
 # Parse arguments
 SESSION_ID=""
 AUTO_COMMIT=true
@@ -172,6 +219,9 @@ CHECKPOINT_EOF
         if [ -n "$GIT_AGENT" ]; then
             git -C "$PROJECT_ROOT" add "$HANDOVER_FILE"
             PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Checkpoint handover $SESSION_ID"
+            # T-2588: push immediately — checkpoints exist to survive session
+            # death, so a checkpoint commit stranded locally defeats the point.
+            _push_to_remotes
         fi
     fi
     exit 0
@@ -1052,45 +1102,7 @@ if [ "$AUTO_COMMIT" = true ]; then
         # T-1341 (L-019): default raised 15s → 60s because pre-push hook runs
         # fw audit (~10s), leaving too little headroom for the actual push at 15s.
         # Override via FW_HANDOVER_PUSH_TIMEOUT.
-        echo ""
-        echo -e "${CYAN}Pushing to remotes...${NC}"
-        _push_failed=false
-        _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-60}"
-        # T-1255 (G-007): When >1 remote is configured AND `origin` is one of them,
-        # push ONLY to origin. Mirroring (e.g. github) is OneDev's job via
-        # .onedev-buildspec.yml's PushRepository job. Pushing directly to mirror
-        # remotes caused github-ahead-of-onedev divergence whenever onedev briefly
-        # 502'd at handover time (T-1253 inception, PL-036).
-        # T-1474: Guard against the no-origin case. If no remote is named `origin`,
-        # there is no canonical source for OneDev to mirror from, so the assumption
-        # that other remotes are "mirrors" is invalid — push to all of them.
-        _remote_count=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
-        if git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin'; then
-            _has_origin=true
-        else
-            _has_origin=false
-        fi
-        while IFS= read -r remote_name; do
-            [ -z "$remote_name" ] && continue
-            if [ "$_has_origin" = true ] && [ "$_remote_count" -gt 1 ] && [ "$remote_name" != "origin" ]; then
-                echo -e "  ${CYAN}Skipping $remote_name (mirrored from origin via PushRepository)${NC}"
-                continue
-            fi
-            if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
-                echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
-            else
-                _exit=$?
-                if [ "$_exit" -eq 124 ]; then
-                    echo -e "  ${YELLOW}WARNING: Push to $remote_name timed out after ${_push_timeout}s (non-blocking, T-1277)${NC}" >&2
-                else
-                    echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
-                fi
-                _push_failed=true
-            fi
-        done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
-        if [ "$_push_failed" = true ]; then
-            echo -e "${YELLOW}Some pushes failed. Run 'git push' manually after resolving.${NC}"
-        fi
+        _push_to_remotes
     else
         error "Git agent not found. Manual commit required."
         echo "Run: git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
