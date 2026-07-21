@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2591: 832 pair-draft-3 intake: reassemble byte-delivery, sha-verify, pin fixture, run drop-point test
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T18:29:00Z
+# ============================================================================
+
+task_id: T-2591
+task_name: "832 pair-draft-3 intake: reassemble byte-delivery, sha-verify, pin fixture, run drop-point test"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T18:24:19Z
+completed: 2026-07-21T18:28:49Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Reassembled bytes'' sha256 == 832''s announced pin `0bc15bfac81d…` and raw size 10014 B; fixture + `.sha256` sibling committed at `tests/fixtures/832/` (concat b64 13352 B → raw 10014 B, sha exact)'
+  - '`tests/web/test_pair_draft3_intake.py` runs the fixture path (2 passed, 0 skipped) — sha-verify, live-store compile, all three legs classified per contract v0 (RESOLVED 1f9b5f0c silent; GHOST 2222… claim-WARN; LEGACY review-map no-live-match WARN; only expected T-2557/T-2567 advisories besides)'
+  - 'tests/web suite green (110 passed, 0 skipped); intake confirmation posted to 832 on the DM rail — offset 122, ts 1784658508720'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2591-832-pair-draft-3-intake-reassemble-byte-.md
+generated_by: context-agent-hybrid

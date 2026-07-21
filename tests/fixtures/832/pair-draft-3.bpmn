@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_offpage_seam"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_offpage_seam">
+    <bpmn:participant id="Pool_offpage_seam" name="offpage-seam" processRef="Process_offpage_seam"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_offpage_seam" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="offpage-seam" version="1" schemaVersion="2" title="Off-Page Reference Authoring" description="An agent drafts a workflow map carrying off-page connectors to other workflows; a framework gate resolves each cross-workflow reference against the registry; the map hands off three ways — to a RESOLVED workflow (live uuid), to a GHOST workflow (unresolved uuid, minted + human-reviewed), and to a LEGACY slug-named workflow (no uuid, resolve-by-name). Pair-draft #3 exemplar for the off-page connector seam (AEF T-2571)." tier_default="2"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human &#183; Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_7_review</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework &#183; Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>frw_3_resolve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_6_mint</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent &#183; Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="360"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_draft</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_route</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_resolved</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_8_ghost</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_9_legacy</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_start" name="Authoring begins">
+      <bpmn:extensionElements>
+        <aef:uid value="n_0f1e2d3c"/>
+        <aef:position x="120.0" y="430.0"/>
+        <aef:meta triggeredBy="operator opens a map that references other workflows"/>
+        <aef:io>
+          <aef:output name="map_id" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_2_draft" name="Draft map with off-page connectors">
+      <bpmn:extensionElements>
+        <aef:uid value="n_1a2b3c4d"/>
+        <aef:position x="250.0" y="415.0"/>
+        <aef:meta tier="2" agentType="primary"/>
+        <aef:endpoint>designer:/edit/${map_id}</aef:endpoint>
+        <aef:artifactsWrites paths="projects/${map_id}/latest.bpmn"/>
+        <aef:io>
+          <aef:input name="map_id" type="string" required="true"/>
+          <aef:output name="refs" type="list"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:scriptTask id="frw_3_resolve" name="Resolve refs against registry (/api/save rescan)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_2b3c4d5e"/>
+        <aef:position x="400.0" y="165.0"/>
+        <aef:meta tier="2"/>
+        <aef:endpoint>store: rescan aef:link refs -> .context/designer/registry.yaml</aef:endpoint>
+        <aef:contextReads paths=".context/designer/registry.yaml"/>
+        <aef:io>
+          <aef:input name="refs" type="list" required="true"/>
+          <aef:output name="ref_kinds" type="list"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:exclusiveGateway id="agt_4_route" name="Reference kind?">
+      <bpmn:extensionElements>
+        <aef:uid value="n_3c4d5e6f"/>
+        <aef:position x="560.0" y="423.0"/>
+        <aef:meta decisionOwner="agent"/>
+        <aef:decisionInput>${ref.kind}</aef:decisionInput>
+        <aef:io>
+          <aef:input name="ref_kinds" type="list" required="true"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:linkEventThrow id="agt_5_resolved" name="&#8594; aef-task-lifecycle (resolved)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_4d5e6f70"/>
+        <aef:position x="740.0" y="330.0"/>
+        <aef:link workflowRef="1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7" name="aef-task-lifecycle"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+    </bpmn:linkEventThrow>
+
+    <bpmn:scriptTask id="frw_6_mint" name="Mint ghost uuid + doc task (FW_TASK_ORIGIN=designer-ghost)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_5e6f7081"/>
+        <aef:position x="720.0" y="165.0"/>
+        <aef:meta tier="2"/>
+        <aef:endpoint>store: ghosts[] merge + gated task-mint (owner:human, captured)</aef:endpoint>
+        <aef:artifactsWrites paths=".context/designer/registry.yaml, .tasks/active/"/>
+        <aef:io>
+          <aef:input name="ref" type="string" required="true"/>
+          <aef:output name="ghost_uuid" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:userTask id="hum_7_review" name="Review needs-mapping ghost ref">
+      <bpmn:extensionElements>
+        <aef:uid value="n_6f708192"/>
+        <aef:position x="880.0" y="40.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>watchtower:/designer/ghosts</aef:endpoint>
+        <aef:decisionOutputs>claim, defer</aef:decisionOutputs>
+        <aef:io>
+          <aef:input name="ghost_uuid" type="string" required="true"/>
+          <aef:output name="decision" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:linkEventThrow id="agt_8_ghost" name="&#8594; publish-map (ghost)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_70819203"/>
+        <aef:position x="1040.0" y="430.0"/>
+        <aef:link workflowRef="22222222-2222-4222-8222-222222222222" name="publish-map"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+    </bpmn:linkEventThrow>
+
+    <bpmn:linkEventThrow id="agt_9_legacy" name="&#8594; review-map (legacy slug)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_81920314"/>
+        <aef:position x="740.0" y="540.0"/>
+        <aef:link targetWorkflow="review-map"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+    </bpmn:linkEventThrow>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_start" targetRef="agt_2_draft">
+      <bpmn:extensionElements>
+        <aef:uid value="e_a1b2c3d4"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_draft" targetRef="frw_3_resolve">
+      <bpmn:extensionElements>
+        <aef:uid value="e_b2c3d4e5"/>
+        <aef:anchors sourcePort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="frw_3_resolve" targetRef="agt_4_route">
+      <bpmn:extensionElements>
+        <aef:uid value="e_c3d4e5f6"/>
+        <aef:anchors targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" name="resolved &#183; live uuid" sourceRef="agt_4_route" targetRef="agt_5_resolved">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${ref.kind == 'resolved'}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_d4e5f607"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" name="unresolved &#183; ghost" sourceRef="agt_4_route" targetRef="frw_6_mint">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${ref.kind == 'ghost'}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_e5f60718"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" name="legacy &#183; by-name" sourceRef="agt_4_route" targetRef="agt_9_legacy">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${ref.kind == 'legacy'}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_f6071829"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" sourceRef="frw_6_mint" targetRef="hum_7_review">
+      <bpmn:extensionElements>
+        <aef:uid value="e_0718293a"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" sourceRef="hum_7_review" targetRef="agt_8_ghost">
+      <bpmn:extensionElements>
+        <aef:uid value="e_18293a4b"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+  </bpmn:process>
+</bpmn:definitions>
