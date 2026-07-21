@@ -87,6 +87,17 @@ so `kind=` is the first consumed attribute.
   consumption legs 1-3, editor-side optional asks, disposition menu: ratify / amend /
   reject). Awaiting 832 disposition; build legs (AC2, AC3) gated on ratification.
   Rail monitor armed (offset ≥123 watcher).
+- Build-leg design (sketched pre-ratification, NOT built — T-2541 discipline): kind
+  flows through the manifest interface, promote never re-parses BPMN. (1) compile:
+  `parse_bpmn` reads `aef:workflowMeta` kind attr (local-name match like every pass);
+  kind=documentation appends ONE advisory warning + `--write` stamps `kind:` into
+  `<stage>/<stem>/manifest.yaml`. (2) promote: `load_manifests` surfaces kind;
+  kind=documentation → refuse with actionable stderr unless `--promote-documentation`
+  override (logged to `.bpmn-promote-audit.jsonl` like every write). (3) tests: absent
+  marker → manifest byte-identical vs today (frozen-v1 pin); kind=documentation →
+  compile-notice + promote-refusal + override-path. Files: tools/bpmn_to_tasks.py
+  (Pass-0 meta read), tools/bpmn_promote.py (reconcile gate), tests/web sibling of
+  test_pair_draft3_intake.py patterns.
 
 ## Acceptance Criteria
 
