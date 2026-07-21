@@ -4,10 +4,10 @@ name: "audit.sh post-emit hook — convert WARN/FAIL to bugfix tasks (T-2352 S1)
 description: >
   audit.sh post-emit hook — convert WARN/FAIL to bugfix tasks (T-2352 S1)
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: [T-2352, T-1550]
@@ -22,7 +22,7 @@ related_tasks: [T-2352, T-1550]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:22:42Z
-last_update: '2026-07-07T10:45:07Z'
+last_update: 2026-07-21T07:04:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,6 +89,19 @@ bvp_scores_proposed:
 Slice 1 of T-2352 (audit findings → RCA tasks). Implements the post-emit hook in `audit.sh` that parses its own WARN/FAIL output and creates one `workflow_type: bugfix` task per finding, deduplicated by sha1(normalized text). Reuses existing T-1550 RCA gate at close. Spec: `docs/reports/T-2352-audit-findings-to-tasks.md` §5.
 
 Spike A from T-2352 §Exploration Plan validates the emit format BEFORE this slice's implementation (~30 min) — if the regex `^(WARN|FAIL):` doesn't cover real emits, the slice's parsing AC needs widening.
+
+**STRAND FINDING (2026-07-21, surfaced during T-100202):** this feature WAS built and
+"completed" on the stranded branch `origin/t2416-fw-safe-mode-hook-timing` (feature commit
+`57d343abd`, plus the T-2417 "audit cron emit-tasks wired" leg) — and in live operation the
+emitter recursed: it minted audit-warn tasks named after audit-warn tasks, seeding T-99971
+and inflating the ID space to the T-100xxx band (T-100202 RCA). The emitter was deliberately
+removed from HEAD; audit findings now flow through the observations inbox (`fw note`,
+hash-deduped) instead, and T-100202 added a create-time gate that refuses recursive
+audit-warn task names. **Blocked on an operator architecture decision** (same fork as
+T-2354): (a) restore the strand's emit-tasks stack, now contained by the recursion gate —
+note the gate will (correctly) block any emission whose finding text is about another
+audit-warn task; (b) redesign the T-2352 arc on top of the observations flow (this task
+obsolete as written); (c) drop the arc. Shelved `later` until that call is made.
 
 ## Acceptance Criteria
 
@@ -247,3 +260,7 @@ grep -q "emit-tasks" agents/audit/AGENT.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2353-auditsh-post-emit-hook--convert-warnfail.md
 - **Context:** Initial task creation
+
+### 2026-07-21T07:04:03Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

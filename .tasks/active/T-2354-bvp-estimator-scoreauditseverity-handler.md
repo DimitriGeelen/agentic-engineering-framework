@@ -7,10 +7,10 @@ description: >
   WARN=0.75) mirroring T-2329 F-AUTONOMY pattern. Add audit_severity:fail|warn frontmatter
   field. Validates that audit-finding tasks rank above routine backlog.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: [T-2352, T-2353, T-2329]
@@ -25,7 +25,7 @@ related_tasks: [T-2352, T-2353, T-2329]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:24:41Z
-last_update: '2026-07-07T10:45:07Z'
+last_update: 2026-07-21T07:03:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,6 +94,20 @@ BVP estimator that reads an `audit_severity: fail|warn` frontmatter field and sc
 audit-finding tasks high (FAIL → top band, WARN → next), mirroring the dedicated-handler
 pattern of `score_f_autonomy` (T-2329). Goal: audit-finding tasks rank above routine
 backlog on `fw bvp`.
+
+**STRAND FINDING (2026-07-21, surfaced during T-100202):** an implementation of this task
+(handler + driver definition + 97-line tests, commit `7d278b1e4`, completion `15f1727c7`)
+exists ONLY on the stranded branch `origin/t2416-fw-safe-mode-hook-timing` — it never
+reached master (`git log -S score_audit_severity HEAD` is empty; T-100199's census line
+"proven DONE and live on origin/master per session memory" was wrong for this task).
+**Blocked on an operator architecture decision:** the handler's producer — T-2353's
+`fw audit --emit-tasks` — was deliberately removed from HEAD after the emit recursion
+inflated the ID space to T-100xxx (T-100202 RCA), and audit findings now flow through the
+observations inbox (`fw note`, hash-deduped) instead. Options: (a) restore the strand's
+emit-tasks stack, now contained by T-100202's recursion-name gate; (b) redesign the
+T-2352 arc for the observations flow (this task obsolete as written — severity priority
+would attach at `fw note promote` instead); (c) drop the arc. Shelved `later` until that
+call is made.
 
 **BLOCKED — dependency not yet in place (2026-06-13):** `audit_severity` exists nowhere
 in the codebase (`grep -rn audit_severity policy/ agents/` → 0 hits). The prerequisite is
@@ -257,3 +271,7 @@ when S1 fixes the driver's scale.
 ### 2026-06-13T11:23:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-07-21T07:03:38Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
