@@ -98,9 +98,12 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- Restored 2026-07-21 from stranded scoping commit e72af99a3 (origin/t2416) — same
+     recovery class as T-2409: real ACs written 2026-07-05, never landed on master. -->
+- [ ] tools/t1700-ollama-harness.sh dispatches via `bin/fw resolver run <task> ollama-research --var TASK_DESCRIPTION="<probe prompt>"` instead of raw `bin/fw termlink dispatch` (envelope rows land in .context/dispatches.jsonl)
+- [ ] Harness adapts result handling to resolver-run outcome (status/events_path from `--json`) — tool_use counting reads the events stream, no orphan exit_code polling
+- [ ] Live N=1 harness run produces: (1) a dispatches.jsonl row with task_type=ollama-research, (2) after `fw outcome backprop`, a matching row in dispatch-outcomes.jsonl
+- [ ] Verification greps pin all three surfaces (harness uses resolver run; dispatches.jsonl row; outcomes row)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
