@@ -3875,3 +3875,10 @@ X'` returning empty group."
   date: 2026-07-21
   context: Added via context agent
   application: TBD
+- id: L-507
+  learning: "Entry-point shadowing class: a live-verified feature can still read as broken when the DEFAULT entry surface restores client-local stale state (0.3.0 bundle B1 localStorage autosave shadowed server corpus updates under the same title). Verification must walk the operator's default entry path, not just the documented happy path; AEF-side fix pattern = own the entry URL, render server truth, deep-link past the restore."
+  source: P-001
+  task: T-2589
+  date: 2026-07-21
+  context: Added via context agent
+  application: TBD

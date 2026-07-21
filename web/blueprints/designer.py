@@ -93,8 +93,7 @@ def designer_ghosts():
     )
 
 
-@bp.route("/designer")
-def designer():
+def _serve_bundle():
     pin = _pin()
     vpath = _vendored_path()
     if vpath and vpath.is_file():
@@ -102,3 +101,75 @@ def designer():
         # (inline CSS/JS); it links Google Fonts CDN with an offline fallback.
         return Response(vpath.read_text(), status=200, mimetype="text/html")
     return _placeholder(pin)
+
+
+@bp.route("/designer/app")
+def designer_app():
+    """T-2589: the editor itself (vendored 0.3.0 bundle), moved off the entry URL.
+
+    The bundle's B1 autosave silently restores the browser's last local draft on
+    open — an operator following /designer saw a stale copy of a corpus diagram
+    (same title, no off-page handoff nodes) and read the seam as broken (operator
+    recurrence #2, 2026-07-21). Accepts the bundle's own ?load=<same-origin path>
+    deep-link; a src that differs from the stored autosave src wins over the
+    restore (bundle B1 contract), which is what the landing cards exploit.
+    """
+    return _serve_bundle()
+
+
+@bp.route("/designer")
+def designer():
+    """T-2589: corpus landing page — server truth first, editor one click away.
+
+    Lists every saved project from the same store /api/list reads, each card
+    deep-linking /designer/app?load=/api/version?id=<id>&v=<latest> so the editor
+    opens the SERVER-LATEST version instead of whatever the browser last had.
+    Falls back to the bundle directly when the store has no projects yet (fresh
+    install — nothing to land on).
+    """
+    from urllib.parse import quote
+
+    import web.blueprints.designer_api as designer_api
+
+    store = designer_api._STORE
+    projects = []
+    if store.is_dir():
+        for d in sorted(store.iterdir()):
+            if not d.is_dir():
+                continue
+            m = designer_api._read_meta(d.name)
+            if not m:
+                continue
+            latest_v = int(m.get("latest", 0))
+            if latest_v < 1:
+                continue
+            vlist = m.get("versions", [])
+            latest_entry = next((x for x in vlist if x.get("v") == latest_v), None)
+            latest_ts = int(
+                latest_entry["ts"]
+                if latest_entry and "ts" in latest_entry
+                else m.get("updated", 0)
+            )
+            src = f"/api/version?id={m['id']}&v={latest_v}"
+            projects.append({
+                "id": m["id"],
+                "title": m.get("title", m["id"]),
+                "latest_v": latest_v,
+                "version_count": len(vlist),
+                "saved_h": time.strftime("%Y-%m-%d %H:%M", time.localtime(latest_ts)),
+                "open_url": "/designer/app?load=" + quote(src, safe=""),
+            })
+    if not projects:
+        return _serve_bundle()
+    ghost_count = 0
+    try:
+        from web.designer_registry import load_registry
+        ghost_count = len(load_registry(store).get("ghosts") or [])
+    except Exception:
+        pass
+    return render_page(
+        "designer_landing.html",
+        page_title="Workflow Designer — Corpus",
+        projects=projects,
+        ghost_count=ghost_count,
+    )

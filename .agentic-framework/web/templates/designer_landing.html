@@ -1,0 +1,68 @@
+<style>
+    .corpus-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .corpus-card {
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        background: var(--pico-card-background-color);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    .corpus-card h4 { margin: 0; }
+    .corpus-meta {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+    }
+    .corpus-id {
+        font-family: var(--pico-font-family-monospace, monospace);
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+    }
+    .corpus-open {
+        margin-top: 0.4rem;
+        align-self: flex-start;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 0.3rem 0.9rem;
+        border: 1px solid var(--pico-primary);
+        border-radius: 6px;
+    }
+    .landing-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+    }
+</style>
+
+<h2>Workflow Designer — Corpus</h2>
+<p class="corpus-meta">
+    Server-saved workflows below are the source of truth — each card opens the editor
+    at the <strong>latest saved version</strong>. (The editor's own entry restores your
+    browser's last local draft, which can silently shadow newer saved content — T-2589.)
+</p>
+
+<div class="landing-actions">
+    <a href="/designer/app">Open blank editor</a>
+    <a href="/designer/ghosts">Pending references{% if ghost_count %} ({{ ghost_count }}){% endif %}</a>
+</div>
+
+<div class="corpus-grid">
+    {% for p in projects %}
+    <div class="corpus-card">
+        <h4>{{ p.title }}</h4>
+        <span class="corpus-id">{{ p.id }}</span>
+        <span class="corpus-meta">v{{ p.latest_v }} · {{ p.version_count }} version{{ '' if p.version_count == 1 else 's' }} · saved {{ p.saved_h }}</span>
+        <a class="corpus-open" href="{{ p.open_url }}">Open in editor →</a>
+    </div>
+    {% endfor %}
+</div>
