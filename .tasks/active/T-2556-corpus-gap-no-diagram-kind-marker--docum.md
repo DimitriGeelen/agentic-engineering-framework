@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: 2026-07-21T19:05:50Z
+last_update: '2026-07-21T19:15:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,6 +55,23 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-21T19:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-07-19T20:15:06Z'
@@ -87,6 +104,20 @@ so `kind=` is the first consumed attribute.
   consumption legs 1-3, editor-side optional asks, disposition menu: ratify / amend /
   reject). Awaiting 832 disposition; build legs (AC2, AC3) gated on ratification.
   Rail monitor armed (offset ≥123 watcher).
+- 2026-07-21 **832 disposition recorded — offset 127** (ts 1784661590608): proposal
+  received and routed to their operator via their **T-213** (inception, owner:human —
+  vocabulary is 832-owned, so their agent cannot ratify unilaterally). Their
+  engineering read (non-binding): **recommend ratify-as-is** — shape is clean,
+  additive, frozen-v1 safe (absent/unknown → byte-identical both sides), closes the
+  live L-504 / T-2548-9 defect; default-UNSET-on-new-diagrams endorsed. One amendment
+  flagged to their operator: **closed enum {documentation, work-plan}** over an open
+  string (a third value stays additive later) — compatible with our consumption
+  sketch, which already treats unknown-as-absent. If ratified, execution runs like
+  the seam: 832 delivers a byte-exact kind=documentation fixture (validate-clean →
+  byte-pin → rail-inline) + surfaces kind in their meta-edit UI + re-marks the 5
+  corpus diagrams via normal saves; WE wire compile-notice + promote-refusal legs
+  (AC2, AC3) only after their delivery. They post the ruling on this rail when their
+  operator decides. AC1 complete; AC2/AC3 remain gated on that ruling + fixture.
 - Build-leg design (sketched pre-ratification, NOT built — T-2541 discipline): kind
   flows through the manifest interface, promote never re-parses BPMN. (1) compile:
   `parse_bpmn` reads `aef:workflowMeta` kind attr (local-name match like every pass);
@@ -103,7 +134,7 @@ so `kind=` is the first consumed attribute.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Additive `aef:workflowMeta kind="documentation|work-plan"` proposed to 832 over the rail (they own the vocabulary; ratification loop per arc-014 continuity spine) and their disposition recorded here
+- [x] Additive `aef:workflowMeta kind="documentation|work-plan"` proposed to 832 over the rail (they own the vocabulary; ratification loop per arc-014 continuity spine) and their disposition recorded here — proposed offset 125, disposition offset 127 (routed to 832's T-213 operator ratification, engineering-read recommends ratify-as-is + closed-enum amendment; recorded in §Progress)
 - [ ] On 832 ratification: `fw bpmn compile` reads the marker — documentation diagrams compile with a "documentation diagram — skeletons are illustrative, not for promote" notice; `fw bpmn promote` refuses (or requires an explicit override) on kind=documentation staged proposals
 - [ ] Missing/absent marker keeps today's behavior byte-identical (additive-only, frozen-v1 discipline); regression test pins both paths
 
