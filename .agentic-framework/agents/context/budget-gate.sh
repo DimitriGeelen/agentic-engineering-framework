@@ -147,7 +147,9 @@ if os.path.exists(status_file):
 # Output: LEVEL TOKENS AGE TOOL_NAME CLASSIFICATION
 # Classification: 'allowed' for wrap-up/read ops, 'blocked' for new work
 import re
-is_allowed_cmd = bool(re.search(r'(git\s+commit|git\s+add|git\s+(status|log|diff)|fw\s+(handover|git|context\s+init|resume|task)|context\.sh\s+init|resume\.sh|checkpoint\.sh|budget-gate\.sh|handover\.sh|update-task\.sh|echo\s+0\s*>)', command)) if command else False
+# T-2587: git push/fetch must be allowed at critical — commit-only wrap-up
+# strands handover commits locally (session can commit but never land).
+is_allowed_cmd = bool(re.search(r'(git\s+commit|git\s+add|git\s+push|git\s+fetch|git\s+(status|log|diff)|fw\s+(handover|git|context\s+init|resume|task)|context\.sh\s+init|resume\.sh|checkpoint\.sh|budget-gate\.sh|handover\.sh|update-task\.sh|echo\s+0\s*>)', command)) if command else False
 is_read_tool = tool_name in ('Read', 'Glob', 'Grep')
 
 # At critical, allow Write/Edit to wrap-up paths (handover, tasks, context)
@@ -205,9 +207,9 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             echo "  Context is at ~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
             echo "  Task files already have all essential state. Time to wrap up." >&2
             echo "" >&2
-            echo "  ALLOWED: git commit, $(_fw_cmd) handover, reading files," >&2
+            echo "  ALLOWED: git commit/push, $(_fw_cmd) handover, reading files," >&2
             echo "           Write/Edit to .context/ .tasks/ .claude/" >&2
-            echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
+            echo "  BLOCKED: Write/Edit to source files, Bash (except commit/push/handover)" >&2
             echo "" >&2
             echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
             _supervision_notice
@@ -371,9 +373,9 @@ case "$LEVEL" in
         echo "  Context is at ~$((TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
         echo "  Task files already have all essential state. Time to wrap up." >&2
         echo "" >&2
-        echo "  ALLOWED: git commit, $(_fw_cmd) handover, reading files," >&2
+        echo "  ALLOWED: git commit/push, $(_fw_cmd) handover, reading files," >&2
         echo "           Write/Edit to .context/ .tasks/ .claude/" >&2
-        echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
+        echo "  BLOCKED: Write/Edit to source files, Bash (except commit/push/handover)" >&2
         echo "" >&2
         echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
         _supervision_notice

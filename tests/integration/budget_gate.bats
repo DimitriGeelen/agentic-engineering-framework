@@ -131,6 +131,26 @@ run_gate() {
     [ "$status" -eq 2 ]
 }
 
+# --- T-2587: git push/fetch allowed at critical (wrap-up must LAND, not just commit) ---
+
+@test "T-2587: fast path critical: allows git push via Bash" {
+    write_status "critical" 175000
+    run_gate "Bash" "\"command\": \"git push origin t2587-fix\""
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2587: fast path critical: allows git fetch via Bash" {
+    write_status "critical" 175000
+    run_gate "Bash" "\"command\": \"git fetch origin\""
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2587: fast path critical: source-file Write still blocked" {
+    write_status "critical" 175000
+    run_gate "Write" "\"file_path\": \"/some/project/src/main.py\""
+    [ "$status" -eq 2 ]
+}
+
 # --- Stale cache falls through to slow path ---
 
 @test "stale status: old cache (>90s) falls through" {
