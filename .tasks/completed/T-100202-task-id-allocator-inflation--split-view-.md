@@ -6,12 +6,12 @@ description: >
   Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emit
   runaway)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-task.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T22:49:00Z
-last_update: '2026-07-08T08:00:02Z'
-date_finished:
+last_update: 2026-07-21T06:54:42Z
+date_finished: 2026-07-21T06:54:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -135,13 +135,24 @@ emitter hand-assigned IDs by a scheme other than `generate_id`. Must be pinned b
       unaffected in correctness. NOTE (sibling risk, out of scope): `L-`/`P-`/`D-`/`FP-` ID
       allocators (learning.sh/pattern.sh/decision.sh/resolve.sh) share the same max+1 pattern and
       would inflate identically if ever seeded — not quarantined by this fix.
-- [ ] **Close or gate the split-view divergence** — `generate_id` (and `find_task_file`) must not
-      produce a lower `max`/wrong file when run from a worktree that sees a partial `.tasks/` view
-      (this is the T-100200-dup root). Either resolve `.tasks/` to a canonical location or add a
-      cross-view guard. Coordinate with T-100201 / the session-on-master invariant.
-- [ ] **Prevent the audit-emit recursion** — the emitter must not create tasks whose name/slug
-      recursively embeds a prior emitted task (the `audit-warn--task-t-99974-audit-warn` pattern),
-      and must be idempotent so a re-run doesn't emit a task about its own prior emission.
+- [x] **Close or gate the split-view divergence** — DONE (cross-view guard): `_task_view_dirs`
+      union-scans `.tasks/{active,completed}` across EVERY git worktree of the repo owning
+      `TASKS_DIR` (via `git worktree list --porcelain`), falling back to the local view for
+      non-git dirs (harness/consumers). The allocation keylock is additionally anchored at the
+      MAIN worktree's `.context/locks` so concurrent minting from different views serializes on
+      one lock (per-view locks were siloed). Live-fired: from the framework repo the scan sees
+      main + 3 linked worktrees and mints T-2584 (correct main-cluster next). Regression:
+      bats test 7 (stale worktree unions main → T-021 not T-011) + test 8 (non-git fallback).
+      `find_task_file` wrong-file-on-collision is prevented at source — dup IDs can no longer
+      be minted across views; canonical-location resolution deferred to T-100201's mechanism call.
+- [x] **Prevent the audit-emit recursion** — DONE (two legs): (a) verified the emitter is
+      REMOVED from HEAD — zero `emit-tasks`/`emit_tasks` hits in bin/fw, agents/audit/, lib/;
+      audit now emits hash-deduped observations via `fw note` (idempotence by
+      `audit_finding_hash` dedup, no ID minted). (b) Structural gate in create-task.sh refuses
+      ANY task name carrying the recursion signature (two `audit[ -]?warn` occurrences — a WARN
+      task named after a WARN task), with a die message routing to `fw note`. Covers all future
+      emitter paths, not just the removed one. Regression: bats tests 9 (refusal, no file
+      minted) + 10 (single audit-warn mention stays legal).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -269,9 +280,13 @@ allocator + a split filesystem view compose into unbounded inflation, and nothin
 composition. Each piece is individually reasonable; the failure is at the joins (same shape as
 L-399 producer/consumer parity).
 
-**Prevention:** ACs above — bound the allocator (regression test), gate the split view, make the
-emitter idempotent + non-recursive. Advisory alone is insufficient (L-300/L-405); the fixes are
-structural (guard + test).
+**Prevention:** all three legs now structural (10/10 bats in `t100202_id_quarantine.bats`):
+1. Allocator bounded — quarantine band (>1000 gap) excluded from the ceiling.
+2. Split view gated — `_task_view_dirs` union-scan across all git worktrees + main-worktree
+   keylock anchor; a stale view can no longer compute a lower max or race a sibling view.
+3. Recursion impossible — name gate refuses the double-audit-warn signature at create time for
+   ANY caller; the removed emitter's successor path (`fw note` observations) is hash-deduped.
+Advisory alone is insufficient (L-300/L-405); each leg is a guard + regression test.
 
 **Decision — do NOT renumber the T-100xxx band.** Task IDs are referenced across commits,
 episodic memory (`.context/episodic/`), fabric cards, cross-links, and handovers. Renumbering 22
@@ -330,3 +345,15 @@ but the recommendation is leave-the-labels, fix-the-cause.)
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/active/T-100202-task-id-allocator-inflation--split-view-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-335cf4c4
+- **Timestamp:** 2026-07-21T06:54:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-21T06:54:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

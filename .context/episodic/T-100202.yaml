@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100202: Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emit
+Audit WARN — Task T-2488-audit-warn--task-t-2462-audit-warn--task.md missing Updates...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T06:54:55Z
+# ============================================================================
+
+task_id: T-100202
+task_name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emit
+Audit WARN — Task T-2488-audit-warn--task-t-2462-audit-warn--task.md missing Updates..."
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-05T22:49:00Z
+completed: 2026-07-21T06:54:42Z
+duration_days: 16
+updates_count: 1
+first_commit: 2026-07-06T00:51:41+02:00
+last_commit: 2026-07-06T01:09:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file task-ID inflation + split-view collision RCA. pin inflation mechanism (AC#1) — self-feeding audit-finding emitter. quarantine far-outlier ID bands in generate_id (AC#2). refresh vendored create-task.sh (self-vendor parity)
+
+# Key outcomes
+outcomes:
+  - '**Pin the inflation mechanism** — git-archaeology on the T-2514→T-99xxx→T-100000 transition;'
+  - '**Harden `generate_id` against runaway** — DONE: `generate_id` now allocates "MAIN-CLUSTER'
+  - '**Close or gate the split-view divergence** — DONE (cross-view guard): `_task_view_dirs`'
+  - '**Prevent the audit-emit recursion** — DONE (two legs): (a) verified the emitter is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - 'agents/task-create/create-task.sh'
+  - '.tasks/active/T-100202-task-id-allocator-inflation--split-view-.md'
+  - 'tests/unit/t100202_id_quarantine.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-06T00:51:41"
+    action: "T-100202: file task-ID inflation + split-view collision RCA"
+  - time: "2026-07-06T00:56:06"
+    action: "T-100202: pin inflation mechanism (AC#1) — self-feeding audit-finding emitter"
+  - time: "2026-07-06T01:08:17"
+    action: "T-100202: quarantine far-outlier ID bands in generate_id (AC#2)"
+  - time: "2026-07-06T01:09:06"
+    action: "T-100202: refresh vendored create-task.sh (self-vendor parity)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 22085 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [
+audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22085
+  commits: 4
+  files_changed: 4
+  lines_added: 459
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100202-task-id-allocator-inflation--split-view-.md
+generated_by: context-agent-hybrid

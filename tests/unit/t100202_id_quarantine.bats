@@ -21,6 +21,9 @@ setup() {
     # Hermeticity (T-100185 sibling): strip inherited session env so the
     # inception recommendation gate never arms during --type build creation.
     unset CLAUDECODE FW_ALLOW_EMPTY_RECOMMENDATION FW_INCEPTION_PRE_GATED
+    # Hermeticity (T-2289 invariant): a derivation sentinel inherited from the
+    # invoking session would cause paths.sh to discard the explicit TASKS_DIR.
+    unset _FW_PATHS_DERIVED_BY
 }
 
 teardown() {
@@ -81,4 +84,53 @@ _mint() {
 @test "T-100202: empty corpus mints T-001" {
     _mint "First task probe"
     ls "$TEST_DIR/active/" | grep -q '^T-001-'
+}
+
+# ── AC3: cross-view guard ────────────────────────────────────────────────────
+
+@test "T-100202 AC3: worktree with stale .tasks view unions the main checkout — no duplicate ID" {
+    local repo="$TEST_DIR/repo" wt="$TEST_DIR/wt"
+    mkdir -p "$repo/.tasks/active" "$repo/.tasks/completed" "$repo/.tasks/templates"
+    cp "$FRAMEWORK_ROOT/.tasks/templates/zzz-default.md" "$repo/.tasks/templates/default.md" 2>/dev/null || true
+    : > "$repo/.tasks/active/T-0010-committed.md"
+    git -C "$repo" init -q
+    git -C "$repo" add -A
+    git -C "$repo" -c user.email=t@t -c user.name=t commit -qm seed
+    git -C "$repo" worktree add -q "$wt" HEAD
+    # Main checkout advances past the worktree's snapshot (uncommitted is enough
+    # to diverge the views — the worktree never sees it).
+    : > "$repo/.tasks/active/T-0020-main-only.md"
+
+    run timeout 15 env TASKS_DIR="$wt/.tasks" "$CREATE_TASK" \
+        --name "Cross view probe" --description "d" --type build --owner agent < /dev/null
+    [ "$status" -eq 0 ]
+    # Union max is 20 → T-021. The old local-only scan would mint T-011,
+    # colliding with a future main-side T-011 (the T-100200 dup class).
+    ls "$wt/.tasks/active/" | grep -q '^T-021-'
+    ! ls "$wt/.tasks/active/" | grep -q '^T-011-'
+}
+
+@test "T-100202 AC3: non-git TASKS_DIR falls back to local-only scan (harness/back-compat)" {
+    _seed "T-0030-local"
+    _mint "Fallback probe"
+    ls "$TEST_DIR/active/" | grep -q '^T-031-'
+}
+
+# ── AC4: audit-emit recursion guard ──────────────────────────────────────────
+
+@test "T-100202 AC4: recursive audit-warn name is refused, no file minted" {
+    _seed "T-0010-a"
+    run timeout 15 "$CREATE_TASK" \
+        --name "Audit WARN — Task T-2488-audit-warn--task-t-2462-audit-warn--task.md missing Updates" \
+        --description "d" --type build --owner agent < /dev/null
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Recursive audit-warn task name refused"* ]]
+    # Nothing minted
+    [ "$(ls "$TEST_DIR/active/" | grep -c '^T-011-')" -eq 0 ]
+}
+
+@test "T-100202 AC4: a single audit-warn mention is still a legal task name" {
+    _seed "T-0010-a"
+    _mint "Fix audit WARN on cron drift"
+    ls "$TEST_DIR/active/" | grep -q '^T-011-'
 }

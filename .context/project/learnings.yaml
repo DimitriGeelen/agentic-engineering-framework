@@ -3868,3 +3868,10 @@ X'` returning empty group."
   date: 2026-07-19
   context: Added via context agent
   application: TBD
+- id: L-506
+  learning: "ID allocators that scan an on-disk corpus for max+1 have three composable failure legs: (1) no plausibility bound — one out-of-band seed permanently inflates the space; (2) split filesystem views — a git worktree scanning only its own checkout computes a stale max and mints duplicates; (3) self-feeding emitters — anything that creates corpus entries named after other entries recurses unboundedly. Fix each leg structurally: quarantine gap-separated bands, union-scan all worktree views + share one lock at the main checkout, and gate the recursive-name signature at create time. Same union+canonical-lock pattern applies to any per-view allocator (L-/P-/D-/FP- ids share the max+1 shape and would inflate identically if seeded)."
+  source: P-001
+  task: T-100202
+  date: 2026-07-21
+  context: Added via context agent
+  application: TBD

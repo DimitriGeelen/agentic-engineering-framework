@@ -190,6 +190,19 @@ if ! is_valid_horizon "$HORIZON"; then
     die "Valid horizons: $VALID_HORIZONS"
 fi
 
+# T-100202 AC4 (recursion guard): refuse names carrying the self-feeding
+# audit-emitter signature — a WARN task named after another WARN task, e.g.
+# "Audit WARN — Task T-2488-audit-warn--task-t-2462-…". The emitter itself is
+# removed from HEAD (audit emits observations via `fw note`, hash-deduped),
+# but this gate makes the recursion class structurally impossible for ANY
+# future emitter path, not just the removed one.
+if printf '%s' "$NAME" | grep -qiE 'audit[ -]?warn.*audit[ -]?warn'; then
+    error "Recursive audit-warn task name refused (T-100202)"
+    error "  A task about an audit-warn task re-audits its own emission and inflates"
+    error "  the ID space unboundedly (origin: T-99971 seed, 2026-07-03)."
+    die   "  Capture the finding as an observation instead: fw note \"<finding>\" (hash-deduped, no ID minted)"
+fi
+
 # Generate next task ID.
 #
 # T-100202: the allocator is "MAIN-CLUSTER max + 1", not "global max + 1".
@@ -208,16 +221,36 @@ fi
 #
 # Hardening: the id is parsed from the LEADING `^T-<n>` only — never from an
 # embedded T-NNNN inside a recursive inflation-era slug.
+#
+# T-100202 AC3 (cross-view guard): a linked git worktree checks out its own
+# snapshot of .tasks/ — possibly behind the main checkout — so scanning ONE
+# view computes a stale max and mints a duplicate ID (the T-100200 dup class).
+# generate_id therefore union-scans the .tasks/ of EVERY worktree of the repo
+# that owns TASKS_DIR. Falls back to the local view alone when TASKS_DIR is
+# not inside a git repo (test harness, non-git consumers).
+_task_view_dirs() {
+    local base wt
+    base="$(cd "$(dirname "$TASKS_DIR")" 2>/dev/null && pwd)"
+    if [ -n "$base" ] && git -C "$base" rev-parse --git-dir >/dev/null 2>&1; then
+        while IFS= read -r wt; do
+            [ -d "$wt/.tasks" ] && printf '%s\n' "$wt/.tasks"
+        done < <(git -C "$base" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p')
+    fi
+    printf '%s\n' "$TASKS_DIR"
+}
+
 generate_id() {
     local gap_threshold="${FW_ID_QUARANTINE_GAP:-1000}"
-    local ids=() f id
+    local ids=() f id d
     shopt -s nullglob
-    for f in "$TASKS_DIR"/active/T-*.md "$TASKS_DIR"/completed/T-*.md; do
-        [ -f "$f" ] || continue
-        id=$(basename "$f" | grep -oE '^T-[0-9]+' | grep -oE '[0-9]+')
-        # Use 10# to force base-10 interpretation (avoids octal issues with 008, 009)
-        [ -n "$id" ] && ids+=("$((10#$id))")
-    done
+    while IFS= read -r d; do
+        for f in "$d"/active/T-*.md "$d"/completed/T-*.md; do
+            [ -f "$f" ] || continue
+            id=$(basename "$f" | grep -oE '^T-[0-9]+' | grep -oE '[0-9]+')
+            # Use 10# to force base-10 interpretation (avoids octal issues with 008, 009)
+            [ -n "$id" ] && ids+=("$((10#$id))")
+        done
+    done < <(_task_view_dirs | sort -u)
     shopt -u nullglob
 
     if [ "${#ids[@]}" -eq 0 ]; then
@@ -253,6 +286,16 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # T-1279/T-1424: Acquire lock BEFORE reading max_id; release AFTER file write.
 # Without this, concurrent calls all observe the same max_id and collide.
 # T-1424: unconditional — the source above already guaranteed the primitive is loaded.
+#
+# T-100202 AC3: anchor the allocation lock at the repo's MAIN worktree so that
+# concurrent minting from different worktrees serializes on ONE lock. The
+# per-view default (KEYLOCK_DIR under each checkout's .context/locks) silos the
+# lock per worktree and lets two views race to the same ID even with the
+# cross-view scan above. `git worktree list` emits the main worktree first.
+_main_wt="$(git -C "$(dirname "$TASKS_DIR")" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p' | head -1)"
+if [ -n "$_main_wt" ] && [ -d "$_main_wt/.context/locks" ]; then
+    KEYLOCK_DIR="$_main_wt/.context/locks"
+fi
 keylock_acquire "task-id-allocation"
 trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
 
