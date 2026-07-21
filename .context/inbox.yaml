@@ -774,3 +774,10 @@ observations:
   tags: [bug]
   status: promoted
   promoted_to: task
+- id: OBS-095
+  text: "T-100199 strand census line 'T-2417/T-2418/T-2354/T-2335 proven DONE and live on origin/master per session memory' was NOT content-verified: T-2354 disproven 2026-07-21 (git log -S score_audit_severity HEAD empty; shelved later with fork documented). Remaining unverified: T-2335 (active; propose code partially on HEAD via other commits), T-2171 (active; verification commit 31c4c6a94 stranded on t2353-audit-emit-tasks), T-2390 (active). Each needs per-task content-verify against HEAD before any close — session-memory 'landed' claims from the t2416 era are untrustworthy (branch-local truth)."
+  captured: 2026-07-21T07:09:42Z
+  context_task: T-100202
+  tags: [governance]
+  status: pending
+  promoted_to: null
