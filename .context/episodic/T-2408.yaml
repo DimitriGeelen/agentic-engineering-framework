@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2408: T-1700 v2 — backprop dispatch-outcomes via fw resolver dispatch for ollama-research
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T19:49:09Z
+# ============================================================================
+
+task_id: T-2408
+task_name: "T-1700 v2 — backprop dispatch-outcomes via fw resolver dispatch for ollama-research"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-15T17:27:56Z
+completed: 2026-07-21T19:48:58Z
+duration_days: 36
+updates_count: 2
+first_commit: 2026-07-21T21:41:50+02:00
+last_commit: 2026-07-21T21:41:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restore stranded AC scoping from origin/t2416 (e72af99a3) — 4 real ACs (resolver-run reroute + outcome backprop) written 2026-07-05 never landed; T-2409-class record recovery
+
+# Key outcomes
+outcomes:
+  - 'tools/t1700-ollama-harness.sh dispatches via `bin/fw resolver run <task> ollama-research --var TASK_DESCRIPTION="<probe prompt>"` instead of raw `bin/fw termlink dispatch` (envelope rows land in .context/dispatches.jsonl) — v2 rewrite, live dispatch row 17e7b391-f9ac-431f-804b-acefb10ebda4'
+  - 'Harness adapts result handling to resolver-run outcome (status/events_path from `--json`) — tool_use counting reads the events stream, no orphan exit_code polling — parses outcome JSON (status success|error), counts tool_use blocks from events_path; zero references to /tmp/tl-dispatch remain'
+  - 'Live N=1 harness run produces: (1) a dispatches.jsonl row with task_type=ollama-research, (2) after `fw outcome backprop`, a matching row in dispatch-outcomes.jsonl — two live runs 2026-07-21, backprop appended 1 then 2 rows (cumulative per matching dispatch)'
+  - 'Verification greps pin all three surfaces (harness uses resolver run; dispatches.jsonl row; outcomes row) — see ## Verification'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2408-t-1700-v2--backprop-dispatch-outcomes-vi.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-21T21:41:50"
+    action: "T-2408: restore stranded AC scoping from origin/t2416 (e72af99a3) — 4 real ACs (resolver-run reroute + outcome backprop) written 2026-07-05 never landed; T-2409-class record recovery"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 51981 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51981
+  commits: 1
+  files_changed: 1
+  lines_added: 6
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2408-t-1700-v2--backprop-dispatch-outcomes-vi.md
+generated_by: context-agent-hybrid

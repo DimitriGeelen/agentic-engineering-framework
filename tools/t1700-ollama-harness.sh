@@ -1,13 +1,24 @@
 #!/bin/bash
-# T-1700 ollama-research harness — exercises v1 dispatch substrate end-to-end
-# through litellm proxy onto ollama. Used for AC group 4 (empirical validation).
+# T-1700 ollama-research harness (v2, T-2408) — exercises the v1 dispatch
+# substrate end-to-end through `fw resolver run` onto litellm/ollama.
 #
 # Usage:
 #   tools/t1700-ollama-harness.sh [N]
 #
-# N defaults to 3. Each iteration spawns one TermLink worker via
-# `fw termlink dispatch --task-type ollama-research` with a unique tool-use
-# prompt, waits for completion, captures exit code + result + latency.
+# N defaults to 3. Each iteration dispatches one ollama-loop worker via
+# `fw resolver run <task> ollama-research --var TASK_DESCRIPTION=...` with a
+# unique tool-use prompt, reads the JSON outcome (status / events_path), and
+# counts real tool_use events from the events stream.
+#
+# v2 (T-2408): rerouted from the raw termlink-CLI dispatch path so every run
+# lands an envelope row in .context/dispatches.jsonl, and a final
+# `fw outcome backprop` appends matching rows to dispatch-outcomes.jsonl —
+# closing the T-1697 observability loop. Model / tools / env now come from
+# .context/project/workflows/ollama-research.yaml (single source of truth);
+# the old T1700_HARNESS_MODEL / T1700_HARNESS_TOOLS knobs are gone — edit the
+# workflow YAML to change the probe matrix.
+#
+#   T1700_HARNESS_TASK — task ID the dispatches are tagged with (default T-1700)
 #
 # Output: docs/reports/T-1700-harness-results.md (overwritten each run).
 #
@@ -15,10 +26,9 @@
 #   - litellm proxy on :4000 (health/liveliness)
 #   - ollama @ 192.168.10.107:11434 (api/tags)
 #   - .context/project/workflows/ollama-research.yaml exists
-#   - termlink binary on PATH
+#   - claude binary on PATH (ollama-loop worker_kind spawns `claude -p`)
 #
-# Timeout per worker: 180s. Sequential (not parallel) to avoid overloading
-# the single-host ollama. ollama serializes most requests anyway.
+# Sequential (not parallel) to avoid overloading the single-host ollama.
 
 set -euo pipefail
 
@@ -26,7 +36,7 @@ cd "$(dirname "$0")/.."
 N="${1:-3}"
 RESULTS="docs/reports/T-1700-harness-results.md"
 BATCH_ID=$(date -u +%Y%m%d-%H%M%S)
-WDIR_BASE="/tmp/tl-dispatch"
+HTASK="${T1700_HARNESS_TASK:-T-1700}"
 
 # 10 tool-use prompts varying difficulty + tool mix
 PROMPTS=(
@@ -46,7 +56,7 @@ PROMPTS=(
 PROMPTS=("${PROMPTS[@]:0:$N}")
 
 # --- Pre-flight checks ---
-echo "[$(date -u +%H:%M:%S)] T-1700 harness starting (N=$N, batch=$BATCH_ID)"
+echo "[$(date -u +%H:%M:%S)] T-1700 harness v2 starting (N=$N, batch=$BATCH_ID, task=$HTASK)"
 
 curl -sf -m 3 http://localhost:4000/health/liveliness >/dev/null || {
   echo "FAIL: litellm proxy not responding on :4000" >&2; exit 1
@@ -57,99 +67,107 @@ curl -sf -m 5 http://192.168.10.107:11434/api/tags >/dev/null || {
 test -f .context/project/workflows/ollama-research.yaml || {
   echo "FAIL: ollama-research workflow missing" >&2; exit 1
 }
-command -v termlink >/dev/null || {
-  echo "FAIL: termlink binary not on PATH" >&2; exit 1
+command -v claude >/dev/null || {
+  echo "FAIL: claude binary not on PATH (ollama-loop spawns claude -p)" >&2; exit 1
 }
 echo "[$(date -u +%H:%M:%S)] Pre-flight OK"
 
-# --- Run dispatches sequentially ---
-declare -a EXITS
+# --- Run dispatches sequentially via fw resolver run (T-2408) ---
+declare -a STATUSES
 declare -a LATENCIES
 declare -a RESULTS_ARR
 declare -a TOOL_USE_COUNTS
+declare -a DISPATCH_IDS
+declare -a EVENTS_PATHS
 
 for i in "${!PROMPTS[@]}"; do
-  N=$((i+1))
-  WORKER="t1700-h-$BATCH_ID-$N"
+  IDX=$((i+1))
   PROMPT="${PROMPTS[$i]}"
 
-  echo "[$(date -u +%H:%M:%S)] [$N/${#PROMPTS[@]}] Dispatching: ${PROMPT:0:60}..."
+  echo "[$(date -u +%H:%M:%S)] [$IDX/${#PROMPTS[@]}] Dispatching: ${PROMPT:0:60}..."
   START=$(date +%s)
 
-  # T-1703: harness now parameterized via env vars so the same script can
-  # exercise a probe matrix (model × tool catalogue) without source edits.
-  #   T1700_HARNESS_MODEL  — litellm alias (default claude-3-5-sonnet-20241022)
-  #   T1700_HARNESS_TOOLS  — comma list passed as --tools (default: empty = wide catalogue)
-  #   T1700_HARNESS_TASK   — task ID for tagging (default T-1700)
-  HMODEL="${T1700_HARNESS_MODEL:-claude-3-5-sonnet-20241022}"
-  HTOOLS="${T1700_HARNESS_TOOLS:-}"
-  HTASK="${T1700_HARNESS_TASK:-T-1700}"
-  TOOLS_ARG=()
-  [ -n "$HTOOLS" ] && TOOLS_ARG=(--tools "$HTOOLS")
-
-  bin/fw termlink dispatch \
-    --task "$HTASK" \
-    --name "$WORKER" \
-    --task-type ollama-research \
-    --model "$HMODEL" \
-    --timeout 180 \
-    --env "ANTHROPIC_BASE_URL=http://localhost:4000" \
-    --env "ANTHROPIC_API_KEY=sk-litellm-local-dev" \
-    "${TOOLS_ARG[@]}" \
-    --prompt "$PROMPT" >/dev/null 2>&1
-
-  # Wait for completion (poll exit_code file)
-  for _ in $(seq 1 90); do
-    [ -f "$WDIR_BASE/$WORKER/exit_code" ] && break
-    sleep 2
-  done
+  # resolver run exit codes: 0 ok, 1 infra error, 2 worker terminal error.
+  # All three still produce a JSON outcome on stdout when the resolver got far
+  # enough to spawn; capture regardless and parse what we got.
+  RC=0
+  OUTCOME_JSON=$(bin/fw resolver run "$HTASK" ollama-research \
+    --var TASK_DESCRIPTION="$PROMPT" --json 2>/dev/null) || RC=$?
 
   END=$(date +%s)
   LATENCY=$((END - START))
   LATENCIES+=("$LATENCY")
 
-  if [ -f "$WDIR_BASE/$WORKER/exit_code" ]; then
-    EC=$(cat "$WDIR_BASE/$WORKER/exit_code")
-    EXITS+=("$EC")
-    RES=$(head -c 200 "$WDIR_BASE/$WORKER/result.md" 2>/dev/null || echo "(empty)")
-    RESULTS_ARR+=("$RES")
-    # T-1700 RCA: exit=0 is NOT a tool-use signal. Count actual tool_use events
-    # in the assistant's content blocks. This is the real GO criterion.
-    TOOL_USES=$(python3 -c "
-import json,sys
+  if [ -n "$OUTCOME_JSON" ]; then
+    read -r STATUS EVENTS_PATH RESULT_HEAD < <(python3 -c "
+import json, sys
 try:
-    events = [json.loads(l) for l in open('$WDIR_BASE/$WORKER/result.jsonl')]
+    o = json.loads(sys.argv[1])
+except Exception:
+    print('parse-error - -'); raise SystemExit
+te = o.get('terminal_event') or {}
+head = str(te.get('result', ''))[:80].replace(chr(10), ' ') or '-'
+print(o.get('status', 'unknown'), o.get('events_path', '-'), head)
+" "$OUTCOME_JSON")
+    STATUSES+=("$STATUS")
+    EVENTS_PATHS+=("$EVENTS_PATH")
+    RESULTS_ARR+=("$RESULT_HEAD")
+    # T-1700 RCA: clean completion is NOT a tool-use signal. Count actual
+    # tool_use events in the assistant content blocks of the events stream.
+    # This is the real GO criterion. (T-2408: reads resolver events_path —
+    # no more orphan exit_code polling.)
+    TOOL_USES=$(python3 -c "
+import json, sys
+try:
+    events = [json.loads(l) for l in open('$EVENTS_PATH') if l.strip()]
     n = sum(1 for e in events if e.get('type')=='assistant'
             for c in e.get('message',{}).get('content',[])
-            if c.get('type')=='tool_use')
+            if isinstance(c, dict) and c.get('type')=='tool_use')
     print(n)
-except: print(0)" 2>/dev/null || echo 0)
+except Exception: print(0)" 2>/dev/null || echo 0)
     TOOL_USE_COUNTS+=("$TOOL_USES")
-    echo "[$(date -u +%H:%M:%S)] [$N/${#PROMPTS[@]}] exit=$EC tools=$TOOL_USES latency=${LATENCY}s"
+    echo "[$(date -u +%H:%M:%S)] [$IDX/${#PROMPTS[@]}] status=$STATUS tools=$TOOL_USES latency=${LATENCY}s (rc=$RC)"
   else
-    EXITS+=("TIMEOUT")
-    RESULTS_ARR+=("(timeout — no exit_code)")
+    STATUSES+=("spawn-failed")
+    EVENTS_PATHS+=("-")
+    RESULTS_ARR+=("(no outcome JSON — rc=$RC)")
     TOOL_USE_COUNTS+=(0)
-    echo "[$(date -u +%H:%M:%S)] [$N/${#PROMPTS[@]}] TIMEOUT"
+    echo "[$(date -u +%H:%M:%S)] [$IDX/${#PROMPTS[@]}] SPAWN FAILED (rc=$RC)"
   fi
 done
+
+# Dispatch ids for this task (tail = this batch's rows, newest last)
+mapfile -t DISPATCH_IDS < <(python3 -c "
+import json
+rows = []
+try:
+    for l in open('.context/dispatches.jsonl'):
+        l = l.strip()
+        if not l: continue
+        try: r = json.loads(l)
+        except Exception: continue
+        if r.get('task_id') == '$HTASK' and r.get('dispatch_id'):
+            rows.append(r['dispatch_id'])
+except OSError: pass
+for d in rows[-${#PROMPTS[@]}:]: print(d)")
 
 # --- Compute stats ---
 PASS=0
 FAIL=0
 TOOL_USE_PASS=0
-for i in "${!EXITS[@]}"; do
-  ec="${EXITS[$i]}"
+for i in "${!STATUSES[@]}"; do
+  st="${STATUSES[$i]}"
   tu="${TOOL_USE_COUNTS[$i]}"
-  if [ "$ec" = "0" ]; then PASS=$((PASS+1)); else FAIL=$((FAIL+1)); fi
-  # T-1700: real success = exit 0 AND at least one tool call. exit=0 alone is
-  # cleanly-hallucinated output. The 90% threshold MUST be measured against
-  # this stricter metric.
-  if [ "$ec" = "0" ] && [ "$tu" -ge 1 ]; then
+  # lib/spawn.py outcome status vocabulary is "success" | "error"
+  if [ "$st" = "success" ]; then PASS=$((PASS+1)); else FAIL=$((FAIL+1)); fi
+  # T-1700: real success = clean completion AND at least one tool call.
+  # Clean completion alone is cleanly-hallucinated output. The 90% threshold
+  # MUST be measured against this stricter metric.
+  if [ "$st" = "success" ] && [ "$tu" -ge 1 ]; then
     TOOL_USE_PASS=$((TOOL_USE_PASS+1))
   fi
 done
-TOTAL=${#EXITS[@]}
+TOTAL=${#STATUSES[@]}
 PCT=$((PASS * 100 / TOTAL))
 TOOL_USE_PCT=$((TOOL_USE_PASS * 100 / TOTAL))
 
@@ -159,49 +177,64 @@ MEDIAN=$(echo "$SORTED_LATS" | awk 'BEGIN{c=0} {a[c++]=$1} END{print (c%2==1) ? 
 P95_IDX=$(awk "BEGIN{print int(0.95*${TOTAL}-0.5)}")
 P95=$(echo "$SORTED_LATS" | sed -n "$((P95_IDX+1))p")
 
+# --- Backprop outcomes (T-2408: close the T-1697 observability loop) ---
+echo "[$(date -u +%H:%M:%S)] Backprop: fw outcome backprop $HTASK"
+BACKPROP_OUT=$(bin/fw outcome backprop "$HTASK" 2>&1 || true)
+BACKPROP_N=$(echo "$BACKPROP_OUT" | grep -oE 'outcomes appended:\s+[0-9]+' | grep -oE '[0-9]+' || echo 0)
+echo "$BACKPROP_OUT" | sed 's/^/  /'
+
 # --- Write results ---
-MODEL_USED="${T1700_HARNESS_MODEL:-claude-3-5-sonnet-20241022}"
-TOOLS_USED="${T1700_HARNESS_TOOLS:-(wide catalogue — claude -p default)}"
-mkdir -p "$(dirname "$RESULTS")"
+WORKFLOW_MODEL=$(grep -E '^model:' .context/project/workflows/ollama-research.yaml | awk '{print $2}')
 {
-  echo "# T-1700 — ollama-research harness results"
+  echo "# T-1700 — ollama-research harness results (v2, resolver-run substrate)"
   echo ""
-  echo "**Batch:** \`$BATCH_ID\` &nbsp; **N:** $TOTAL &nbsp; **Model alias:** \`$MODEL_USED\` &nbsp; **Tools:** \`$TOOLS_USED\`"
+  echo "**Batch:** \`$BATCH_ID\` &nbsp; **N:** $TOTAL &nbsp; **Task:** \`$HTASK\` &nbsp; **Model (workflow):** \`$WORKFLOW_MODEL\`"
   echo ""
   echo "| Metric | Value | Threshold | Status |"
   echo "|--------|-------|-----------|--------|"
   echo "| **Real tool-use rate** | $TOOL_USE_PASS/$TOTAL ($TOOL_USE_PCT%) | ≥90% | $([ "$TOOL_USE_PCT" -ge 90 ] && echo "✅ MET" || echo "❌ MISSED") |"
-  echo "| Exit-code pass | $PASS/$TOTAL ($PCT%) | (informational) | — |"
+  echo "| Completed status | $PASS/$TOTAL ($PCT%) | (informational) | — |"
   echo "| Median latency | ${MEDIAN}s | — | — |"
   echo "| p95 latency | ${P95}s | — | — |"
+  echo "| Outcome rows backpropped | $BACKPROP_N | ≥$TOTAL | $([ "$BACKPROP_N" -ge "$TOTAL" ] && echo "✅" || echo "❌") |"
   echo ""
-  echo "**Critical:** \`exit=0\` is NOT a tool-use signal. \`claude -p\` exits cleanly when"
-  echo "the model hallucinates an answer instead of calling tools. T-1700 GO requires real"
-  echo "tool_use events in the response stream, not just clean exit."
+  echo "**Critical:** clean completion is NOT a tool-use signal. The worker completes"
+  echo "cleanly when the model hallucinates an answer instead of calling tools. T-1700 GO"
+  echo "requires real tool_use events in the events stream, not just clean completion."
+  echo ""
+  echo "**v2 (T-2408):** dispatches route through \`fw resolver run $HTASK ollama-research\`;"
+  echo "envelope rows land in \`.context/dispatches.jsonl\`; \`fw outcome backprop\` appends"
+  echo "matching rows to \`.context/dispatch-outcomes.jsonl\`."
   echo ""
   echo "## Per-dispatch results"
   echo ""
-  echo "| # | Exit | Tools called | Latency | Prompt (head) | Result (head) |"
-  echo "|---|------|--------------|---------|---------------|---------------|"
+  echo "| # | Status | Tools called | Latency | Prompt (head) | Result (head) |"
+  echo "|---|--------|--------------|---------|---------------|---------------|"
   for i in "${!PROMPTS[@]}"; do
     P="${PROMPTS[$i]:0:50}"
     R="${RESULTS_ARR[$i]:0:80}"
-    echo "| $((i+1)) | ${EXITS[$i]} | ${TOOL_USE_COUNTS[$i]} | ${LATENCIES[$i]}s | ${P//|/\\|} | ${R//|/\\|} |"
+    echo "| $((i+1)) | ${STATUSES[$i]} | ${TOOL_USE_COUNTS[$i]} | ${LATENCIES[$i]}s | ${P//|/\\|} | ${R//|/\\|} |"
   done
   echo ""
-  echo "## Workers"
+  echo "## Dispatches (this batch, from .context/dispatches.jsonl)"
+  echo ""
+  if [ "${#DISPATCH_IDS[@]}" -gt 0 ]; then
+    for d in "${DISPATCH_IDS[@]}"; do
+      echo "- \`$d\` — forensics: \`fw resolver explain $d\` / merged view: \`fw outcome read $d\`"
+    done
+  else
+    echo "- (none found for $HTASK — dispatches.jsonl emit missing?)"
+  fi
+  echo ""
+  echo "## Events streams"
   echo ""
   for i in "${!PROMPTS[@]}"; do
-    echo "- \`$WDIR_BASE/t1700-h-$BATCH_ID-$((i+1))/\`"
+    echo "- \`${EVENTS_PATHS[$i]}\`"
   done
   echo ""
   echo "_Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)_"
 } > "$RESULTS"
 
 echo
-echo "[$(date -u +%H:%M:%S)] Done. Pass: $PASS/$TOTAL ($PCT%). Median: ${MEDIAN}s. p95: ${P95}s."
+echo "[$(date -u +%H:%M:%S)] Done. Completed: $PASS/$TOTAL ($PCT%). Real tool-use: $TOOL_USE_PASS/$TOTAL. Backprop rows: $BACKPROP_N. Median: ${MEDIAN}s."
 echo "Report: $RESULTS"
-
-# Cleanup test workers (keep last batch for forensics)
-# Keeping all workers — fw termlink cleanup handles stale ones
-true

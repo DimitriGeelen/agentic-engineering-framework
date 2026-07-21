@@ -11,10 +11,10 @@ description: >
   shows the N outcome rows. The v1 substrate already shipped via T-1706 'ollama-loop'
   worker (100% real tool_use); this v2 task closes the observability loop.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-15T17:27:56Z
-last_update: '2026-07-07T10:45:07Z'
-date_finished:
+last_update: 2026-07-21T19:48:58Z
+date_finished: 2026-07-21T19:48:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -49,6 +49,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-21T19:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -87,23 +96,62 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-07-21T19:42:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2408: T-1700 v2 — backprop dispatch-outcomes via fw resolver dispatch for ollama-research harness
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reroute the T-1700 ollama harness through the v1 dispatch substrate so its runs are
+observable: `fw resolver run` emits envelope rows to `.context/dispatches.jsonl`,
+and `fw outcome backprop` appends matching rows to `.context/dispatch-outcomes.jsonl`
+(T-1697 loop). ACs restored 2026-07-21 from stranded scoping commit e72af99a3.
+
+### Progress
+- 2026-07-21: harness rewritten (tools/t1700-ollama-harness.sh v2): dispatch via
+  `bin/fw resolver run "$HTASK" ollama-research --var TASK_DESCRIPTION=... --json`;
+  result handling reads the outcome dict (status/events_path — spawn vocabulary is
+  `success|error`, NOT `completed`); tool_use counting reads the events stream at
+  `events_path` (dispatch-blobs), no `/tmp/tl-dispatch` exit_code polling remains.
+  Model/tools/env knobs removed — the workflow YAML is the single source of truth.
+  litellm :4000 was down (systemd unit `deploy/litellm-proxy.service` exists but is
+  NOT installed — operator step); started ad-hoc per T-1700-litellm-build.md.
+- 2026-07-21 live runs (N=1 × 2): dispatch rows `17e7b391…` + `f46110b1…`
+  task_type=ollama-research in dispatches.jsonl; backprop appended matching rows
+  (cumulative: 1 then 2, one per matching dispatch — by design). **Lane finding:**
+  tools=0 in 2/2 probes — the events stream shows a single assistant text block
+  ("steps I would take…"), zero tool_use: hermes3 via litellm is currently
+  hallucinating completions, vs T-1706's historical 100% real tool-use. Filed as
+  observation (harness measures this correctly now — that is its job); the lane
+  regression itself is out of T-2408 scope.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Restored 2026-07-21 from stranded scoping commit e72af99a3 (origin/t2416) — same
      recovery class as T-2409: real ACs written 2026-07-05, never landed on master. -->
-- [ ] tools/t1700-ollama-harness.sh dispatches via `bin/fw resolver run <task> ollama-research --var TASK_DESCRIPTION="<probe prompt>"` instead of raw `bin/fw termlink dispatch` (envelope rows land in .context/dispatches.jsonl)
-- [ ] Harness adapts result handling to resolver-run outcome (status/events_path from `--json`) — tool_use counting reads the events stream, no orphan exit_code polling
-- [ ] Live N=1 harness run produces: (1) a dispatches.jsonl row with task_type=ollama-research, (2) after `fw outcome backprop`, a matching row in dispatch-outcomes.jsonl
-- [ ] Verification greps pin all three surfaces (harness uses resolver run; dispatches.jsonl row; outcomes row)
+- [x] tools/t1700-ollama-harness.sh dispatches via `bin/fw resolver run <task> ollama-research --var TASK_DESCRIPTION="<probe prompt>"` instead of raw `bin/fw termlink dispatch` (envelope rows land in .context/dispatches.jsonl) — v2 rewrite, live dispatch row 17e7b391-f9ac-431f-804b-acefb10ebda4
+- [x] Harness adapts result handling to resolver-run outcome (status/events_path from `--json`) — tool_use counting reads the events stream, no orphan exit_code polling — parses outcome JSON (status success|error), counts tool_use blocks from events_path; zero references to /tmp/tl-dispatch remain
+- [x] Live N=1 harness run produces: (1) a dispatches.jsonl row with task_type=ollama-research, (2) after `fw outcome backprop`, a matching row in dispatch-outcomes.jsonl — two live runs 2026-07-21, backprop appended 1 then 2 rows (cumulative per matching dispatch)
+- [x] Verification greps pin all three surfaces (harness uses resolver run; dispatches.jsonl row; outcomes row) — see ## Verification
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,6 +216,16 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# AC1: harness routes through resolver run, no raw termlink dispatch remains
+grep -q 'bin/fw resolver run' tools/t1700-ollama-harness.sh
+! grep -q 'termlink dispatch' tools/t1700-ollama-harness.sh
+# AC2: result handling reads outcome JSON + events stream, no exit_code polling
+grep -q 'events_path' tools/t1700-ollama-harness.sh
+! grep -q 'tl-dispatch' tools/t1700-ollama-harness.sh
+# AC3: live dispatch row (task_type=ollama-research) + backprop outcome row exist
+python3 -c "import json; rows=[json.loads(l) for l in open('.context/dispatches.jsonl') if l.strip()]; assert any(r.get('task_id')=='T-2408' and r.get('task_type')=='ollama-research' for r in rows)"
+python3 -c "import json; rows=[json.loads(l) for l in open('.context/dispatch-outcomes.jsonl') if l.strip()]; assert any(r.get('task_id')=='T-2408' for r in rows)"
 
 ## RCA
 
@@ -236,3 +294,18 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2408-t-1700-v2--backprop-dispatch-outcomes-vi.md
 - **Context:** Initial task creation
+
+### 2026-07-21T19:42:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e9b17626
+- **Timestamp:** 2026-07-21T19:48:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-21T19:48:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
