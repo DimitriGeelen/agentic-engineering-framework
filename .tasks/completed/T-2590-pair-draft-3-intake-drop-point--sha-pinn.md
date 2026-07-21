@@ -1,13 +1,15 @@
 ---
 id: T-2590
-name: "pair-draft-3 intake drop-point — sha-pinned 832 fixture test, graceful-skip until delivery"
+name: "pair-draft-3 intake drop-point — sha-pinned 832 fixture test, graceful-skip
+  until delivery"
 description: >
-  pair-draft-3 intake drop-point — sha-pinned 832 fixture test, graceful-skip until delivery
+  pair-draft-3 intake drop-point — sha-pinned 832 fixture test, graceful-skip until
+  delivery
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-21T17:54:13Z
-last_update: 2026-07-21T17:54:13Z
-date_finished: null
+last_update: 2026-07-21T18:22:20Z
+date_finished: 2026-07-21T18:22:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-21T18:00:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-21T18:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2590: pair-draft-3 intake drop-point — sha-pinned 832 fixture test, graceful-skip until delivery
@@ -58,9 +88,9 @@ Drop procedure (also in the test docstring): save fixture bytes to
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `tests/web/test_pair_draft3_intake.py` exists: skips cleanly (pytest.skip, not pass/fail) while `tests/fixtures/832/pair-draft-3.bpmn` is absent; when present it (a) verifies the bytes' sha256 against the sibling `.sha256` pin, (b) compiles via `bpmn_to_tasks.parse_bpmn`, (c) asserts leg taxonomy: RESOLVED uuid silent, GHOST uuid → pending-ghost WARN carrying `fw bpmn claim <uuid>`, LEGACY slug → legacy WARN (either migrate-advisory or no-live-match form)
-- [ ] Taxonomy assertions proven against a synthetic three-leg fixture in the same file (constructed from the live corpus uuid `1f9b5f0c-…` + unknown uuid + slug) so the test logic is green BEFORE 832's bytes arrive — the skip-path and the assert-path are both exercised
-- [ ] tests/web suite green including the new file; fabric card registered
+- [x] `tests/web/test_pair_draft3_intake.py` exists: skips cleanly (pytest.skip, not pass/fail) while `tests/fixtures/832/pair-draft-3.bpmn` is absent; when present it (a) verifies the bytes' sha256 against the sibling `.sha256` pin, (b) compiles via `bpmn_to_tasks.parse_bpmn`, (c) asserts leg taxonomy: RESOLVED uuid silent, GHOST uuid → pending-ghost WARN carrying `fw bpmn claim <uuid>`, LEGACY slug → legacy WARN (either migrate-advisory or no-live-match form)
+- [x] Taxonomy assertions proven against a synthetic three-leg fixture in the same file (constructed from the live corpus uuid `1f9b5f0c-…` + unknown uuid + slug) so the test logic is green BEFORE 832's bytes arrive — the skip-path and the assert-path are both exercised (assert-path additionally smoke-proven live: temp synthetic drop → 2 passed, then removed)
+- [x] tests/web suite green including the new file (109 passed, 1 skipped — the skip IS the new drop-point awaiting 832's bytes); fabric card registered (`tests-web-test_pair_draft3_intake.yaml`)
 
 ### Progress (2026-07-21 session f — wrapped at budget critical BEFORE any code; do not tick above)
 - Task scoped + ACs written; NO test file written yet (gate blocked at 289K).
@@ -131,6 +161,10 @@ Drop procedure (also in the test docstring): save fixture bytes to
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/web/test_pair_draft3_intake.py -q > /tmp/.t2590-intake.out 2>&1 && grep -qE "1 passed, 1 skipped|2 passed" /tmp/.t2590-intake.out
+test -f tests/fixtures/832/README.md
+test -f .fabric/components/tests-web-test_pair_draft3_intake.yaml
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -198,3 +232,20 @@ Drop procedure (also in the test docstring): save fixture bytes to
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2590-pair-draft-3-intake-drop-point--sha-pinn.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2c44d436
+- **Timestamp:** 2026-07-21T18:22:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `tests/web/test_pair_draft3_intake.py` exists: skips cleanly (pytest.skip, not pass/fail) while `tests/fixtures/832/pair-draft-3.bpmn` is absent; when present it (a) verifies the bytes' sha256 against
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/fixtures/832/pair-draft-3.bpmn in: `tests/web/test_pair_draft3_intake.py` exists: skips cleanly (pytest.skip, not pass/fail) while `tests/fixtures/832/pair-draft-3.bpmn` is absent; when`
+
+### 2026-07-21T18:22:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

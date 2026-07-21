@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2590: pair-draft-3 intake drop-point — sha-pinned 832 fixture test, graceful-skip
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T18:22:30Z
+# ============================================================================
+
+task_id: T-2590
+task_name: "pair-draft-3 intake drop-point — sha-pinned 832 fixture test, graceful-skip"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T17:54:13Z
+completed: 2026-07-21T18:22:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-21T19:56:22+02:00
+last_commit: 2026-07-21T19:56:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file pair-draft-3 intake drop-point task — full spec + design in task body (scoped, not built; session wrapped at budget critical)
+
+# Key outcomes
+outcomes:
+  - '`tests/web/test_pair_draft3_intake.py` exists: skips cleanly (pytest.skip, not pass/fail) while `tests/fixtures/832/pair-draft-3.bpmn` is absent; when present it (a) verifies the bytes'' sha256 against the sibling `.sha256` pin, (b) compiles via `bpmn_to_tasks.parse_bpmn`, (c) asserts leg taxonomy: RESOLVED uuid silent, GHOST uuid → pending-ghost WARN carrying `fw bpmn claim <uuid>`, LEGACY slug → legacy WARN (either migrate-advisory or no-live-match form)'
+  - 'Taxonomy assertions proven against a synthetic three-leg fixture in the same file (constructed from the live corpus uuid `1f9b5f0c-…` + unknown uuid + slug) so the test logic is green BEFORE 832''s bytes arrive — the skip-path and the assert-path are both exercised (assert-path additionally smoke-proven live: temp synthetic drop → 2 passed, then removed)'
+  - 'tests/web suite green including the new file (109 passed, 1 skipped — the skip IS the new drop-point awaiting 832''s bytes); fabric card registered (`tests-web-test_pair_draft3_intake.yaml`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2590-pair-draft-3-intake-drop-point--sha-pinn.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-21T19:56:22"
+    action: "T-2590: file pair-draft-3 intake drop-point task — full spec + design in task body (scoped, not built; session wrapped at budget critical)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28
+  commits: 1
+  files_changed: 1
+  lines_added: 200
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2590-pair-draft-3-intake-drop-point--sha-pinn.md
+generated_by: context-agent-hybrid

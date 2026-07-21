@@ -1,0 +1,20 @@
+id: tests/web/test_pair_draft3_intake.py
+name: test_pair_draft3_intake
+type: script
+subsystem: unknown
+location: tests/web/test_pair_draft3_intake.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-07-21
+created_by: unknown
