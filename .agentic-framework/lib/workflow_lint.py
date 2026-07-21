@@ -10,7 +10,7 @@ Schema rules (kept in sync with `lib/resolver.py:VALID_WORKER_KINDS`):
   - inline:true forbids dispatch fields
   - non-inline requires: task_type, worker_kind, model, effort, prompt_template,
     allowed_tools, cost_cap_usd, cwd
-  - worker_kind ∈ {Task, TermLink, pi, ollama-loop}
+  - worker_kind ∈ {Task, TermLink, pi, ollama-loop, ollama-thin-loop}
   - prompt_template must resolve to an existing file
   - prompt_strategy ∈ {static, assembled, meta-prompted}
   - meta_model required iff prompt_strategy == meta-prompted
@@ -39,7 +39,7 @@ except ImportError:  # pragma: no cover - exercised in environments without yaml
 
 
 # Kept in sync with bin/fw and lib/resolver.py:VALID_WORKER_KINDS (T-1734/T-1735).
-VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop"}
+VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop", "ollama-thin-loop"}
 VALID_PROMPT_STRATEGIES = {"static", "assembled", "meta-prompted"}
 VALID_PAUSE_THRESHOLDS = {"low", "medium", "high"}
 

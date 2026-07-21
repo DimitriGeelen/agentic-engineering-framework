@@ -3882,3 +3882,17 @@ X'` returning empty group."
   date: 2026-07-21
   context: Added via context agent
   application: TBD
+- id: L-508
+  learning: "Cross-agent byte deliveries over the rail: never hand-transcribe base64 from chat context — re-fetch envelopes mechanically (termlink channel subscribe --cursor N --json), reassemble per the sender's split instructions, and verify sha256 against the announced pin BEFORE writing the fixture. The T-2590 drop-point pattern (sha-pinned fixture + graceful-skip pytest that flips to full assert on delivery) makes intake a two-file drop + one pytest run."
+  source: T-2591
+  task: T-2591
+  date: 2026-07-21
+  context: Added via context agent
+  application: TBD
+- id: L-509
+  learning: "Small-local-model dispatch lanes must use a thin direct-API tool loop, not claude -p: claude -p's injected multi-K system prompt drowns 8B models regardless of tool-catalogue size (hermes3 0/9 via claude -p vs 12/13=92% via lib/ollama_thin_loop.py direct /v1/messages loop). When GO evidence comes from a probe script, verify the production worker is the SAME primitive — T-1706's 100% was tools/ollama-tool-loop.py while production wrapped claude -p; the conflated comment shipped a lane that never had the validated behavior."
+  source: unknown
+  task: T-2592
+  date: 2026-07-21
+  context: Added via context agent
+  application: TBD

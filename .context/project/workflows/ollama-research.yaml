@@ -1,5 +1,9 @@
 task_type: ollama-research
-worker_kind: ollama-loop
+# T-2592: ollama-thin-loop = direct /v1/messages tool loop (lib/ollama_thin_loop.py).
+# The previous worker_kind ollama-loop wraps `claude -p`, whose injected system
+# prompt drowns 8B models — hermes3 0/9 real tool_use (T-1704). T-1706's 100%
+# GO evidence came from the thin loop; this flip aligns production with it.
+worker_kind: ollama-thin-loop
 model: claude-3-5-sonnet-hermes3
 effort: medium
 # T-2592 (OBS-096): bare probe template — prompts/default.md's task scaffolding
@@ -11,7 +15,9 @@ cwd: $PROJECT_ROOT
 env:
   ANTHROPIC_BASE_URL: http://localhost:4000
   ANTHROPIC_API_KEY: sk-litellm-local-dev
-# T-1706: switched from worker_kind: TermLink (claude -p, 0% real tool_use)
-# to ollama-loop (curated litellm direct, 100% real tool_use). See
-# docs/reports/T-1706-tool-loop-probe.md for empirical evidence.
+# History: T-1706 probe proved the thin direct loop at 100% real tool_use vs
+# claude -p at 0% (T-1704) — see docs/reports/T-1706-tool-loop-probe.md. The
+# earlier comment here credited "ollama-loop" with that 100%, but ollama-loop
+# also wraps claude -p; T-2592 untangled the conflation and shipped the thin
+# loop as its own worker_kind.
 # Model alias claude-3-5-sonnet-hermes3 → ollama_chat/hermes3:8b via litellm.

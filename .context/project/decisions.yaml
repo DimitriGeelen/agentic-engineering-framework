@@ -2263,3 +2263,31 @@ decisions:
     date: 2026-07-20
     task: T-2571
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-326
+    decision: "sync drop-rule refinement — a ghost with zero remaining referrers whose `name` now matches a live store slug is dropped even when a doc task was minted (web/designer_registry.py sync_project_refs)."
+    scope: project
+    date: 2026-07-21
+    task: T-2579
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-327
+    decision: "One shared conftest autouse fixture that detects drift and reloads `web.shared` in place (importlib.reload on the existing module object)."
+    scope: project
+    date: 2026-07-21
+    task: T-2580
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-328
+    decision: "author the two handoff connectors in the 0.3.0 editor's own shape: `aef:link targetWorkflow=\"<slug>\"` (no `workflowRef`)"
+    scope: project
+    date: 2026-07-21
+    task: T-2586
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-329
+    decision: "task-lifecycle→dispatch-loop and inception-flow→task-lifecycle only; session-lifecycle and audit-cron handoffs deferred to a follow-up slice"
+    scope: project
+    date: 2026-07-21
+    task: T-2586
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2592: ollama-research probe template — stop burying probes in default task scaffolding
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T20:58:13Z
+# ============================================================================
+
+task_id: T-2592
+task_name: "ollama-research probe template — stop burying probes in default task scaffolding"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T19:55:52Z
+completed: 2026-07-21T20:58:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-21T22:01:51+02:00
+last_commit: 2026-07-21T22:02:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bare probe template + strict-mcp forwarding for ollama-loop (T-2488 sibling gap) — worker tools 439→3, prompt un-buried; AC3 finding: claude -p+hermes3 was ALWAYS 0% (T-1704), T-1706's 100% GO used tools/ollama-tool-loop.py thin loop — production ollama-loop wraps the wrong primitive; next leg routes to the thin loop. refresh vendored copies (lib/ollama_loop.py, lib/spawn.py strict-mcp forwarding)
+
+# Key outcomes
+outcomes:
+  - '`prompts/ollama-probe.md` exists and renders to (near-)bare `$TASK_DESCRIPTION` — no task scaffolding slots — live-verified: dispatch 8f7ab9d8 prompt.txt is exactly the bare probe text'
+  - '`.context/project/workflows/ollama-research.yaml` points `prompt_template:` at it'
+  - 'strict-mcp contract parity (added mid-task): `lib/ollama_loop.py` accepts + maps `--strict-mcp-config`/`--mcp-config`, `lib/spawn.py _spawn_ollama_loop` forwards them from the envelope (T-2488 sibling gap, L-399 class) — live-verified: worker init tools 439 → 3 (Bash, Grep, Read)'
+  - 'Live harness run via the reroute shows real tool_use ≥1 (the T-1706 behavior restored through the resolver substrate) — **MET via thin-loop leg (see §Progress): N=3 batch 3/3 (100%) + N=10 batch 9/10 (90%) real tool_use, 13/13 status=success, median 2s — vs 0/2 pre-fix and claude -p''s 0/9 baseline (T-1704)**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/ollama_loop.py'
+  - '.agentic-framework/lib/spawn.py'
+  - '.context/project/workflows/ollama-research.yaml'
+  - 'docs/reports/T-1700-harness-results.md'
+  - 'lib/ollama_loop.py'
+  - 'lib/spawn.py'
+  - 'prompts/ollama-probe.md'
+  - '.tasks/active/T-2592-ollama-research-probe-template--stop-bur.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-21T22:01:51"
+    action: "T-2592: bare probe template + strict-mcp forwarding for ollama-loop (T-2488 sibling gap) — worker tools 439→3, prompt un-buried; AC3 finding: claude -p+hermes3 was ALWAYS 0% (T-1704), T-1706's 100% GO used tools/ollama-tool-loop.py thin loop — production ollama-loop wraps the wrong primitive; next leg routes to the thin loop"
+  - time: "2026-07-21T22:02:37"
+    action: "T-2592: refresh vendored copies (lib/ollama_loop.py, lib/spawn.py strict-mcp forwarding)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 62
+  commits: 2
+  files_changed: 8
+  lines_added: 294
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2592-ollama-research-probe-template--stop-bur.md
+generated_by: context-agent-hybrid

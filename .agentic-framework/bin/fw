@@ -1798,7 +1798,7 @@ for e in d.get('errors',[])[:3]:
     # currently target (192.168.10.107:11434). If a workflow points
     # elsewhere, this check needs widening.
     if [ -d "$_wf_dir" ] && \
-       grep -lE "^worker_kind:\s*ollama-loop\b" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
+       grep -lE "^worker_kind:\s*ollama(-thin)?-loop\b" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
         if curl -sf --max-time 2 http://192.168.10.107:11434/api/tags >/dev/null 2>&1; then
             echo -e "  ${GREEN}OK${NC}  ollama reachable (http://192.168.10.107:11434)"
         else

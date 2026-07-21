@@ -279,6 +279,54 @@ def _spawn_ollama_loop(
     }
 
 
+def _spawn_ollama_thin_loop(
+    envelope: Dict[str, Any],
+    on_event: Optional[Callable[[Dict[str, Any]], None]],
+) -> Dict[str, Any]:
+    """Run the direct-API tool loop in-process (no claude subprocess).
+
+    T-2592: `claude -p` (worker_kind=ollama-loop) drowns 8B local models in its
+    injected system prompt — hermes3 0/9 real tool_use (T-1704) vs 100% on the
+    thin direct loop (T-1706). This dispatcher routes to the validated
+    primitive. No strict_mcp_config forwarding: the thin loop has no MCP
+    surface at all — the curated 3-tool catalogue IS the whole tool set.
+    """
+    import ollama_thin_loop  # noqa: PLC0415 — deferred like the siblings
+
+    blob_dir = _resolve_blob_dir(envelope)
+    blob_dir.mkdir(parents=True, exist_ok=True)
+    events_path = blob_dir / "events.jsonl"
+
+    terminal: Optional[Dict[str, Any]] = None
+    count = 0
+    with events_path.open("a") as ev_f:
+        worker = ollama_thin_loop.OllamaThinLoopWorker(
+            model=envelope["model"],
+            cwd=envelope.get("cwd", str(PROJECT_ROOT)),
+            env=envelope.get("env") or {},
+            allowed_tools=envelope.get("allowed_tools") or [],
+        )
+        try:
+            for event in worker.prompt(envelope["prompt"]):
+                ev_f.write(json.dumps(event) + "\n")
+                count += 1
+                if on_event is not None:
+                    on_event(event)
+                etype = event.get("type")
+                if etype in ("result", _PAUSE_EVENT_TYPE):
+                    terminal = event
+        finally:
+            worker.close()
+
+    status = _classify_status(terminal)
+    return {
+        "status": status,
+        "events_count": count,
+        "events_path": str(events_path),
+        "terminal_event": terminal,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -367,5 +415,6 @@ def _spawn_termlink(
 _DISPATCHERS = {
     "pi": _spawn_pi,
     "ollama-loop": _spawn_ollama_loop,
+    "ollama-thin-loop": _spawn_ollama_thin_loop,
     "TermLink": _spawn_termlink,
 }

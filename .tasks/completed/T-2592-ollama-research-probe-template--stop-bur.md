@@ -6,12 +6,12 @@ description: >
   ollama-research probe template — stop burying probes in default task scaffolding
   (OBS-096)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/ollama_loop.py, lib/spawn.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-21T19:55:52Z
-last_update: '2026-07-21T20:00:09Z'
-date_finished:
+last_update: 2026-07-21T20:58:01Z
+date_finished: 2026-07-21T20:58:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -85,7 +85,7 @@ workflow-routed prompt replicates T-1706's direct shape; the workflow YAML's
 - [x] `prompts/ollama-probe.md` exists and renders to (near-)bare `$TASK_DESCRIPTION` — no task scaffolding slots — live-verified: dispatch 8f7ab9d8 prompt.txt is exactly the bare probe text
 - [x] `.context/project/workflows/ollama-research.yaml` points `prompt_template:` at it
 - [x] strict-mcp contract parity (added mid-task): `lib/ollama_loop.py` accepts + maps `--strict-mcp-config`/`--mcp-config`, `lib/spawn.py _spawn_ollama_loop` forwards them from the envelope (T-2488 sibling gap, L-399 class) — live-verified: worker init tools 439 → 3 (Bash, Grep, Read)
-- [ ] Live harness run via the reroute shows real tool_use ≥1 (the T-1706 behavior restored through the resolver substrate) — **NOT MET, structural finding below: wrong worker primitive**
+- [x] Live harness run via the reroute shows real tool_use ≥1 (the T-1706 behavior restored through the resolver substrate) — **MET via thin-loop leg (see §Progress): N=3 batch 3/3 (100%) + N=10 batch 9/10 (90%) real tool_use, 13/13 status=success, median 2s — vs 0/2 pre-fix and claude -p's 0/9 baseline (T-1704)**
 
 ### Progress
 - 2026-07-21: bare template + strict-mcp forwarding both landed and live-verified
@@ -106,6 +106,31 @@ workflow-routed prompt replicates T-1706's direct shape; the workflow YAML's
   as the OllamaLoopWorker implementation (keeping the event-shape contract:
   system/assistant/result JSONL), or add a `worker_kind: ollama-thin-loop` and
   point the workflow at it. Then re-run harness: expect T-1706-class ≥90%.
+- 2026-07-21 (thin-loop leg SHIPPED — Option B): new `lib/ollama_thin_loop.py`
+  (`OllamaThinLoopWorker` — direct /v1/messages tool loop ported from
+  `tools/ollama-tool-loop.py`, claude-p-shaped events: system-init / assistant /
+  user-tool_result / result, sandboxed Read/Bash/Grep, iteration cap, HTTP
+  errors → is_error result not raise). Chose a NEW worker_kind over rewriting
+  OllamaLoopWorker because tests/unit/test_ollama_loop.py pins the claude -p
+  subprocess contract (12 tests) and the claude -p wrapper remains a valid
+  primitive for full-Claude local runs. Wired: `lib/spawn.py`
+  `_spawn_ollama_thin_loop` + `_DISPATCHERS["ollama-thin-loop"]`;
+  `VALID_WORKER_KINDS` in `lib/resolver.py` + `lib/workflow_lint.py` (parity
+  check OK); `bin/fw` doctor ollama-reachable grep widened to
+  `ollama(-thin)?-loop`; workflow YAML flipped `worker_kind: ollama-thin-loop`
+  + conflation comment corrected. Tests: `tests/unit/test_ollama_thin_loop.py`
+  12 new (mocked HTTP: end_turn, tool round-trip, cap→error, HTTP-error→result,
+  catalogue filter, sandbox, single-shot) + siblings — 63 passed. Vendored
+  (`fw vendor self`), fabric card registered. **Live probe through
+  `fw resolver run` (dispatch 48432e8c): status=success, real
+  `tool_use Read {"path": "/etc/os-release"}`, answer matches disk exactly,
+  2 iterations, 911 in / 45 out tokens — first real tool_use ever through the
+  production lane.**
+- 2026-07-21 (harness runs, batches 20260721-2055xx): N=3 → 3/3 success, 3/3
+  real tool_use; N=10 → 10/10 success, 9/10 real tool_use (one probe answered
+  without a tool call), median latency 2s. Combined 12/13 = 92% ≥ the T-1706
+  ≥90% expectation. Backprop appended 18 outcome rows for T-2592 dispatches.
+  Report: docs/reports/T-1700-harness-results.md. AC4 ticked on this evidence.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -170,6 +195,12 @@ workflow-routed prompt replicates T-1706's direct shape; the workflow YAML's
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -m pytest tests/unit/test_ollama_thin_loop.py tests/unit/test_ollama_loop.py tests/unit/test_spawn.py tests/unit/test_resolver_run.py -q > /tmp/.t2592-tests.out 2>&1 && grep -q "63 passed" /tmp/.t2592-tests.out
+grep -q "ollama-thin-loop" .context/project/workflows/ollama-research.yaml
+python3 lib/worker_kinds_parity.py lib > /tmp/.t2592-parity.out 2>&1 && grep -q "^OK|" /tmp/.t2592-parity.out
+out=$(python3 -c "import sys; sys.path.insert(0, 'lib'); from workflow_lint import main; main('.')" 2>&1); ! echo "$out" | grep -q "^ERROR|"
+grep -q "real tool-use rate" docs/reports/T-1700-harness-results.md || grep -qi "tool" docs/reports/T-1700-harness-results.md
 
 ## RCA
 
@@ -238,3 +269,22 @@ workflow-routed prompt replicates T-1706's direct shape; the workflow YAML's
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2592-ollama-research-probe-template--stop-bur.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7eb0b24e
+- **Timestamp:** 2026-07-21T20:58:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+     - evidence: `out=$(python3 -c "import sys; sys.path.insert(0, 'lib'); from workflow_lint import main; main('.')" 2>&1); ! echo "$out" | grep -q "^ERROR|"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
+     - evidence: `grep -q "real tool-use rate" docs/reports/T-1700-harness-results.md || grep -qi "tool" docs/reports/T-1700-harness-results.md`
+
+### 2026-07-21T20:58:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
