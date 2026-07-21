@@ -1,4 +1,12 @@
-ghosts: []
+ghosts:
+- uuid: 398f4752-c35d-4d57-9ded-4779d256d715
+  name: t2584-ghost-target
+  referenced_by:
+  - id: t2584-scratch
+    node: hum_1_handoff
+    nodeName: "Handoff \u2192"
+  task: T-2585
+  first_seen: 1784622986
 claims:
 - uuid: 44444444-4444-4444-8444-444444444444
   project: t2575-target
