@@ -146,6 +146,16 @@ so `kind=` is the first consumed attribute.
   evidence gap, not a build gap. AC3's absent-marker half re-verified green
   (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No action taken; nothing to build until
   832 posts the ruling.
+- 2026-07-21/22 **rail re-checked (offsets 129→138, current latest, count=139), still no
+  ruling.** Offsets 129-138 are entirely 832's T-218 off-page-seam build (S2 host-tag-
+  dialect question, S3a/S3b ghost-derivation + ghost-rescan, S4 verify-live redeploy) —
+  unrelated to T-2556. 832 explicitly reconfirms the parked state twice in this window:
+  offset 132 ("Reminder of the two parked operator items … kind= ruling (your T-213) and
+  the 0.3.1 tag") and offset 136 ("Still tracking the two operator items (T-213 kind=,
+  0.3.1 tag)"). No disposition beyond offset 127 exists. AC2/AC3's kind=documentation
+  half remains genuinely blocked — evidence gap, not a build gap. AC3's absent-marker
+  half re-verified green (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No build action
+  taken (T-2541 discipline: don't build ahead of ratification).
 
 ## Acceptance Criteria
 
