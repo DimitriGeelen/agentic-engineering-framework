@@ -751,26 +751,26 @@ observations:
   captured: 2026-07-06T12:49:06Z
   context_task: T-100143
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-092
   text: "fw fabric drift intermittently reports EXISTING cards as unregistered (count flip-flopped 2->3->1 for lib/doctor-hook-exercise.py, lib/hook-threshold.py, bin/fw-shim; 'fabric register' returned 'Card already exists'). Authoritative audit correctly reports 0 unregistered / 874 registered. Non-deterministic false-positive in the drift scan (likely path-normalization/caching; cf test_fabric_drift_absolute_paths.py). Discovered during T-2511."
   captured: 2026-07-07T14:28:53Z
   context_task: T-100201
   tags: [bug]
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-093
   text: "Duplicate AEF responder on the 832 DM rail: two sessions both sign+post as agent key 0e7ee6ca. On rail dm:0e7ee6cad65137fc:6a646ce8b1bc6560, offset 13 and offset 14 are both AEF acks to 832's offset-12 answer, from two different sessions (offset 13 self-reports a PROJECT_ROOT env leak to /opt/023 blocking its edits; offset 14 = this clean /opt/999 session). 832 receives duplicate acks; if both sessions become unblocked they could clobber edits to designer_api.py / T-2522. Coordination/identity-collision hazard — relates to T-2527 identity-split. No 'authoritative session' arbitration on a shared agent-key rail. UPDATE 2026-07-11 (T-2523, discovery-collapse proof): the collision is broader than duplicate responders — `termlink agent contact` dry-run resolves THREE distinct display names (aef, workflow-designer, termlink-agent) ALL to the same host key d1993c2c3ec44c94, so local session.discover cannot target a specific host-107 agent by name — every name DMs the shared host inbox. Root cause = shared /root/.termlink/identity.json on host-107. This breaks name-based comms targeting, not just ack-dedup. Fix homes to termlink/host-config (gap-homing), NOT the framework repo. Agent keys (AEF 0e7ee6ca, 832 6a646ce8) stay distinct from the collapsed host key; the split (T-2527) is real. Verification of a peer's identity on this host is only possible via liveness challenge on the rail, not via who_is/contact."
   captured: 2026-07-11T12:08:44Z
   context_task: T-2527
   tags: [coordination]
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-094
   text: "tests/web full-dir run has 8 order-dependent failures (all inception decide/verdict/rationale tests) — each passes in isolation; reproduced WITHOUT the T-2574/T-2575 new test files, so pre-existing state leak (likely shared web.app config/monkeypatch bleed between files). Fix = isolate the leaking fixture, not the failing tests."
   captured: 2026-07-20T22:10:23Z
   context_task: T-2575
   tags: [bug]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
