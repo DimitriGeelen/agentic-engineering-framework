@@ -11,7 +11,7 @@ description: >
 
 status: started-work
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-16T12:01:29Z
-last_update: '2026-07-08T08:15:04Z'
+last_update: 2026-07-21T21:05:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -281,3 +281,6 @@ out=$(bats tests/unit/check_task_ac_structure.bats 2>&1); echo "$out" | grep -q 
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-07-21T21:05:56Z — status-update [task-update-agent]
+- **Change:** owner: agent → human
