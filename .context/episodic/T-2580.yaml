@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2580: tests/web full-dir run has 8 order-dependent failures (all inception decide/verdict/rationale
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-21T05:55:01Z
+# ============================================================================
+
+task_id: T-2580
+task_name: "tests/web full-dir run has 8 order-dependent failures (all inception decide/verdict/rationale"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-21T05:42:12Z
+completed: 2026-07-21T05:54:49Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the cross-file state leak identified and named in ## RCA (which fixture/module state bleeds, from which file to which)'
+  - 'Fix isolates the leaking state at its source (shared conftest repair fixture) — none of the failing tests are weakened or skipped'
+  - 'The order-dependent class is cured: the 4 TemplateNotFound verdict-render failures pass full-dir; the full-dir failure set reduces to exactly the 4 standalone (non-order-dependent) failures, identical across two consecutive runs'
+  - 'The 4 residual standalone failures are proven NOT order-dependent (fail alone on clean tree) and are filed as their own tasks per "one bug = one task" (NO_GO verdict-regex regression; stale T-2051/T-2026 test pins)'
+  - 'The five leaker files (build_ambient, fabric_loader, load_latest_audit, secret_key, project_root_discovery) still pass alone and full-dir'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-07-21 — repair mechanism for the module-state leak'
+    chose: 'One shared conftest autouse fixture that detects drift and reloads `web.shared` in place (importlib.reload on the existing module object).'
+    rationale: 'In-place reload preserves module identity, so `monkeypatch.setattr(web.shared, ...)` targets in other files stay coherent; drift detection makes it a no-op for clean tests; one fixture covers all five leaker files plus any future one.'
+    alternatives_rejected: ['(a) Per-file teardown fixtures in each leaker — five copies of the same logic, misses future leakers. (b) Popping all `web.*` from sys.modules on drift — breaks identity for test modules that bound blueprint objects at collection time (their monkeypatch.setattr would then patch a dead object while the app under test uses the fresh one). (c) Rewriting the leaker tests to use subprocess isolation — heavyweight, changes what they pin.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, testing]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2580-testsweb-full-dir-run-has-8-order-depend.md
+generated_by: context-agent-hybrid
