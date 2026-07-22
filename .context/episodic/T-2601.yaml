@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2601: RCA T-2600 defective fix: duplicate handoff node + wrongly-connected return
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T10:52:21Z
+# ============================================================================
+
+task_id: T-2601
+task_name: "RCA T-2600 defective fix: duplicate handoff node + wrongly-connected return"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T10:14:10Z
+completed: 2026-07-22T10:52:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-22T12:24:36+02:00
+last_commit: 2026-07-22T12:24:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA of T-2600 defective fix — operator's 'handoff back' was agt_msg_result (typed message event aef:eventDef kind=message) which the 0.3.0 bundle misclassifies as linkEventCatch w/ inert 'Open target workflow' (Target: none); my T-2600 fixed the inferred bug not the reported one (grep-only investigation, no canvas look, legacy targetWorkflow form, fork wiring) -> two handoff glyphs; fix options A/B/C for operator steer, A recommended
+
+# Key outcomes
+outcomes:
+  - 'RCA written with evidence: what the operator sees (two handoffs, unconnected "worker result on bus"), what the served v3 actually contains, and where my T-2600 fix diverged from the off-page connector contract (linkId pairing / catch-vs-throw side)'
+  - 'Corrected dispatch-loop version: SUPERSEDED by operator GO on T-2602 (2026-07-22T10:47Z) — the fix ships as T-2605''s first spec-driven recreate of aef-dispatch-loop (options A/B/C dissolved; "worker result on bus" ruled a typed-event seam item — 832 filed T-237 for the rendering collision, T-2551 tracks the emitter gap)'
+  - 'Live re-verify: moves with the fix to T-2605 (recreate proof includes round-trip + visual inspection as hard ACs there); this task''s deliverable — the RCA with evidence — is complete and was confirmed accurate by 832 against their source (rail offset 154: "classifier keys on the BPMN element name, not the extension payload")'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'RCA of T-2600 defective fix — operator''s ''handoff back'' was agt_msg_result (typed message event aef:eventDef kind=message) which the 0.3.0 bundle misclassifies as linkEventCatch w/ inert ''Open target workflow'' (Target: none); my T-2600 fixed the inferred bug not the reported one (grep-only investigation, no canvas look, legacy targetWorkflow form, fork wiring) -> two handoff glyphs; fix options A/B/C for operator steer, A recommended'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2601-rca-t-2600-defective-fix-duplicate-hando.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-22T12:24:36"
+    action: "T-2601: RCA of T-2600 defective fix — operator's 'handoff back' was agt_msg_result (typed message event aef:eventDef kind=message) which the 0.3.0 bundle misclassifies as linkEventCatch w/ inert 'Open target workflow' (Target: none); my T-2600 fixed the inferred bug not the reported one (grep-only investigation, no canvas look, legacy targetWorkflow form, fork wiring) -> two handoff glyphs; fix options A/B/C for operator steer, A recommended"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 38 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 38
+  commits: 1
+  files_changed: 1
+  lines_added: 237
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2601-rca-t-2600-defective-fix-duplicate-hando.md
+generated_by: context-agent-hybrid

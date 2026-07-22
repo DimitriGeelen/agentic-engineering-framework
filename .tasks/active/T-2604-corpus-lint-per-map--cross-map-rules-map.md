@@ -1,12 +1,10 @@
 ---
-id: T-2601
-name: "RCA T-2600 defective fix: duplicate handoff node + wrongly-connected return
-  leg + worker-result-on-bus unconnected (operator report)"
+id: T-2604
+name: "Corpus lint: per-map + cross-map rules mapped 1:1 to observed defect classes"
 description: >
-  RCA T-2600 defective fix: duplicate handoff node + wrongly-connected return leg
-  + worker-result-on-bus unconnected (operator report)
+  T-2602 GO child 2/3. Lint rules each citing an observed defect: legacy-ref form (T-2600), duplicate/inert handoff glyphs (T-2600/T-2601), emitterless typed events (T-2551 gap), ghost refs (T-2584). Extends T-2552 compile-WARN leg.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-22T10:14:10Z
-last_update: '2026-07-22T10:15:08Z'
-date_finished:
+created: 2026-07-22T10:49:18Z
+last_update: 2026-07-22T10:49:18Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,63 +34,11 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-22T10:15:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-22T10:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2601: RCA T-2600 defective fix: duplicate handoff node + wrongly-connected return leg + worker-result-on-bus unconnected (operator report)
+# T-2604: Corpus lint: per-map + cross-map rules mapped 1:1 to observed defect classes
 
 ## Context
-
-Operator escalation after T-2600 shipped: "you just fabricated another handoff wrongly connected — we now have two handoffs and 'worker result on bus' is still unconnected."
-
-## RCA
-
-**What the operator was actually clicking (the original "handoff back does not work"):**
-`agt_msg_result` ("worker result on bus") in aef-dispatch-loop is authored as `bpmn:intermediateCatchEvent` with `<aef:eventDef kind="message" binding="bus:task-channel"/>` — a **typed message event** (T-204 vocabulary), NOT a handoff. But the 0.3.0 bundle's editor classifies EVERY intermediateCatchEvent as `linkEventCatch` — the "← Handoff from another workflow" node type. Evidence (live properties panel, 2026-07-22): node type shows `linkEventCatch`, "Target workflow: — none —", and an "↗ Open target workflow" affordance that is permanently inert. So the operator saw a handoff-in node that does nothing. Their report was accurate; the node was never a handoff.
-
-**What T-2600 did wrong (my defect):**
-1. Investigated by grepping XML for `aef:link` only → concluded "no handoff node exists" → **fixed the inferred bug, not the reported one**. Never selected the node the operator was clicking, never opened its properties, never looked at the rendered canvas (first screenshot taken only during THIS RCA).
-2. Added a NEW outgoing throw handoff (`agt_7_handoff_back`) wired as a fork off `agt_5_outcome` → canvas now shows TWO handoff-glyph circles (the inert linkEventCatch + my throw). "Two handoffs" ✓.
-3. Authored the link in the LEGACY form (`targetWorkflow="aef-task-lifecycle"` name-ref, empty linkId) instead of the ratified contract v0 form (`workflowRef` uuid, T-2571 offset-109). Same class as the rename-fragile refs the whole S1-S6 seam exists to eliminate.
-4. Verified with a click-path test on MY OWN node only — the "agt_9_handoff" auto-label was visible in my own probe output next to my node and I didn't chase what else rendered as a handoff.
-
-**Root defect split (three owners):**
-- **832 bundle (0.3.1 candidate):** eventDef-typed catch events must NOT classify as linkEventCatch / must not offer an inert jump affordance. Vocabulary collision between `aef:eventDef` (T-204) and `aef:link` handoff typing on the same BPMN element. → reported on rail.
-- **T-2600 fix (mine):** duplicate node, legacy ref form, fork wiring — needs revert/re-author (this task).
-- **Seam (pre-existing, tracked):** "worker result on bus" is also *typed-event unconnected* — nothing in the corpus emits `bus:task-channel` (T-2551/T-2552 consumption gap; that leg blocked on 832 fixture + T-213 kind= ruling).
-
-## Fix Options (operator steer)
-
-- **A (recommended):** v4 removes my `agt_7_handoff_back` + `dl_f10` fork; author the back-affordance as the bundle's designed pair — an incoming "← Handoff from task lifecycle" (linkEventCatch WITH target, near the start, `workflowRef` uuid form) so "Open target workflow" jumps back; leave "worker result on bus" authored as-is (bundle fix will de-collide its rendering).
-- **B:** v4 removes my node only; back-navigation waits for 832's bundle fix (eventDef de-collision + IW-2 back-ref markers).
-- **C:** keep my throw node (it does work as a back-jump) but re-author to `workflowRef` uuid + reposition/rewire cleanly; plus everything in A.
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
@@ -100,9 +46,8 @@ Operator escalation after T-2600 shipped: "you just fabricated another handoff w
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] RCA written with evidence: what the operator sees (two handoffs, unconnected "worker result on bus"), what the served v3 actually contains, and where my T-2600 fix diverged from the off-page connector contract (linkId pairing / catch-vs-throw side)
-- [ ] Corrected dispatch-loop version authored replacing the T-2600 duplicate: conforms to the 832 pair contract, "worker result on bus" connection question resolved (either connected per contract or explicitly ruled a typed-event seam item)
-- [ ] Live round-trip re-verified on the corrected version (jump in from task-lifecycle, jump back), rendered diagram visually inspected (screenshot or geometry dump), not just click-path
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -231,7 +176,7 @@ Operator escalation after T-2600 shipped: "you just fabricated another handoff w
 
 ## Updates
 
-### 2026-07-22T10:14:10Z — task-created [task-create-agent]
+### 2026-07-22T10:49:18Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2601-rca-t-2600-defective-fix-duplicate-hando.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2604-corpus-lint-per-map--cross-map-rules-map.md
 - **Context:** Initial task creation

@@ -6,16 +6,16 @@ description: >
   Inception: Spec-driven corpus map authoring: declarative spec -> deterministic BPMN
   generation -> delete/recreate repeatability proof
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-22T10:42:06Z
-last_update: '2026-07-22T10:45:05Z'
-date_finished:
+last_update: 2026-07-22T10:51:21Z
+date_finished: 2026-07-22T10:51:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -69,18 +69,18 @@ Corpus workflow maps are authored and fixed by ad-hoc XML surgery with no source
 
 - **IW-1: Who is authoritative after GO — the spec or the designer canvas?**
   confidence: 1
-  disposition:
-  rationale: Operator design call. Spec-authoritative (designer read/annotate only) makes recreate-proof trivial but constrains visual editing; canvas-authoritative needs a reverse path (export → spec update) to keep the proof honest.
+  disposition: deferred
+  rationale: Operator design call, deferred to T-2603 design time (question posed to operator in chat 2026-07-22; T-2603 blocks on the answer before generator semantics freeze). Spec-authoritative makes recreate-proof trivial; canvas-authoritative needs a reverse export path.
 
 - **IW-2: Does the 832 bundle round-trip generator-produced XML without normalizing it?**
   confidence: 1
-  disposition:
-  rationale: A1 in the research artifact — if first manual save in the designer reshapes the XML, spec and reality drift on first edit; S1 spike answers this against the live bundle.
+  disposition: deferred
+  rationale: Empirical — answered by T-2603's S1 spike against the live bundle (first manual save of generator output compared to generator output). GO explicitly accepted running the spike under the build child.
 
 - **IW-3: What does "identical" mean for the recreate proof, given server-stamped versions/timestamps?**
   confidence: 2
-  disposition:
-  rationale: S2 spike — canonical-form comparison (strip stamped fields, normalize order) vs byte-identity; the T-100191 corpus lint and 832 S5a parity guard are prior art for key-set parity checks.
+  disposition: deferred
+  rationale: Answered by T-2605's comparator design (canonical-form compare, prior art: T-100191 corpus lint + 832 S5a key-set parity guard). GO accepted comparator definition as build-child work.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -205,3 +205,28 @@ Operator steer 2026-07-22: repeatable/reliable/transferable process over artifac
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Operator steer 2026-07-22: repeatable/reliable/transferable process over artifact-fixing. Evidence base: T-2600/T-2601 RCA proved ad-hoc XML surgery produces contract violations (legacy ref form) and duplicate nodes even under live verification; corpus has no regeneration path. Acceptance test operator-defined: delete aef-dispatch-loop and recreate from spec, correct and identical. Builds on existing substrate: /api/save, T-2552 compile WARN lint leg, sha-pinned fixture discipline from 832 seam.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-eb861381
+- **Timestamp:** 2026-07-22T10:51:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-053b37af
+- **Timestamp:** 2026-07-22T10:51:21Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2600` | task | ✓ pass |
+| `T-2601` | task | ✓ pass |
+| `T-2552` | task | ✓ pass |
+
+### 2026-07-22T10:51:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
