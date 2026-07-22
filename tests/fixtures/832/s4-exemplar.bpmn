@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_claim-smoke-legacy"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_claim-smoke-legacy">
+    <bpmn:participant id="Pool_claim-smoke-legacy" name="claim-smoke-legacy" processRef="Process_claim-smoke-legacy"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_claim-smoke-legacy" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="claim-smoke-legacy" uuid="3ceaf02d-07a7-49e2-ad15-63dfe68cf474" version="1" schemaVersion="2" title="claim-smoke-legacy" tier_default="2"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="130"/>
+        </bpmn:extensionElements>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>frw_1_handoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_2_handoff-2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_3_handoff-3</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="320"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_task</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_start" name="Start">
+      <bpmn:extensionElements>
+        <aef:uid value="n_f050f9ca"/>
+        <aef:position x="122.0" y="382.0"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_2_task" name="Prepare handoff">
+      <bpmn:extensionElements>
+        <aef:uid value="n_a7469fdb"/>
+        <aef:position x="265.0" y="368.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:intermediateThrowEvent id="frw_1_handoff" name="resolved: aef-task-lifecycle">
+      <bpmn:extensionElements>
+        <aef:uid value="n_be03310a"/>
+        <aef:position x="522.0" y="232.0"/>
+        <aef:link workflowRef="1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7" name="aef-task-lifecycle"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:intermediateThrowEvent id="frw_2_handoff-2" name="ghost: future-map">
+      <bpmn:extensionElements>
+        <aef:uid value="n_56e6019f"/>
+        <aef:position x="682.0" y="232.0"/>
+        <aef:link workflowRef="4300eae7-f2b4-4a1f-abcf-a2812a882a5e" name="future-map"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:intermediateThrowEvent id="frw_3_handoff-3" name="legacy: review-map">
+      <bpmn:extensionElements>
+        <aef:uid value="n_658ade4f"/>
+        <aef:position x="842.0" y="232.0"/>
+        <aef:link targetWorkflow="review-map"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_start" targetRef="agt_2_task">
+      <bpmn:extensionElements>
+        <aef:uid value="e_f5724f08"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_task" targetRef="frw_1_handoff">
+      <bpmn:extensionElements>
+        <aef:uid value="e_4bf2130e"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_2_task" targetRef="frw_2_handoff-2">
+      <bpmn:extensionElements>
+        <aef:uid value="e_5e9d937b"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_2_task" targetRef="frw_3_handoff-3">
+      <bpmn:extensionElements>
+        <aef:uid value="e_763f3013"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
+</bpmn:definitions>
