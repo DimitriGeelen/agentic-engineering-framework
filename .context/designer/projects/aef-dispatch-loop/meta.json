@@ -11,9 +11,14 @@
       "v": 2,
       "note": "arc-014 D4 (T-2563): v2 \u2014 escape fix for <dispatch_id> in aef:meta note",
       "ts": 1784494716
+    },
+    {
+      "v": 3,
+      "note": "T-2600: add return handoff -> aef-task-lifecycle (agt_7_handoff_back from agt_5_outcome); completes the bidirectional off-page chain",
+      "ts": 1784713994
     }
   ],
-  "latest": 2,
-  "updated": 1784494716,
+  "latest": 3,
+  "updated": 1784713994,
   "uuid": "e32a518c-01de-4243-aafc-691cc99caf0d"
 }
