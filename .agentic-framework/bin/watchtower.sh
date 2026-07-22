@@ -257,9 +257,24 @@ do_start() {
 # restart — Stop then start
 # ---------------------------------------------------------------------------
 do_restart() {
+    # T-2598 (OBS-097): remember the running port BEFORE do_stop deletes the
+    # triple file — a bare `restart` must come back on the SAME port, not fall
+    # back to FW_PORT/3000 (which may belong to a foreign service; that failure
+    # mode left no instance running at all). Explicit --port still wins.
+    local prev_port=""
+    [ -f "$PORT_FILE" ] && prev_port=$(cat "$PORT_FILE" 2>/dev/null)
     do_stop
     sleep 1
-    do_start "$@"
+    case " $* " in
+        *" --port"*) do_start "$@" ;;
+        *)
+            if [ -n "$prev_port" ]; then
+                do_start --port "$prev_port" "$@"
+            else
+                do_start "$@"
+            fi
+            ;;
+    esac
 }
 
 # ---------------------------------------------------------------------------
