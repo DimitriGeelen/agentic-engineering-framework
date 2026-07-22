@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2597: S4a picker UI re-verify vs 832 served :8834 (claim 1f9b5f0c via picker; fixtures
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T06:00:41Z
+# ============================================================================
+
+task_id: T-2597
+task_name: "S4a picker UI re-verify vs 832 served :8834 (claim 1f9b5f0c via picker; fixtures"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T05:55:08Z
+completed: 2026-07-22T06:00:30Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Picker reachable on the RUNNING :8834 UI (behavior, not source grep): "🔗 Pending refs…" opened the modal listing all 3 fixture ghosts (1f9b5f0c aef-task-lifecycle · 1 referrer s4-e2e-probe, 3ceaf02d claim-smoke-legacy, adb0e0f2 review-map) with referrer info'
+  - 'Claim-via-picker end-to-end on 1f9b5f0c: card click seeded a new map ADOPTING uuid 1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7 (properties panel confirmed); "⤓ Save to project" → note modal completed → claim fired'
+  - 'Post-claim wire state verified via /api/list: ghost 1f9b5f0c GONE from ghosts[]; live map aef-task-lifecycle carries the full uuid; remaining fixtures adb0e0f2 + 3ceaf02d UNTOUCHED'
+  - 'Result reported to 832 on the DM rail — offset 149 (single post: picker re-verify green + T-2596 in-bundle root-cause report w/ 0.3.1 fix request + exemplar spec: 3 legs via claim-smoke-ref)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2597-s4a-picker-ui-re-verify-vs-832-served-88.md
+generated_by: context-agent-hybrid
