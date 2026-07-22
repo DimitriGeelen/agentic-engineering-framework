@@ -169,6 +169,51 @@ so `kind=` is the first consumed attribute.
   dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --cursor 139` (the `channel` verb, not `event
   poll` — the DM rail lives on `channel.*`'s T-1155 agent-comms-bus substrate, not a
   per-session event bus).
+- 2026-07-22 **rail re-checked (offsets 142→151, current latest), still no ruling.**
+  Entirely 832's T-228/T-2593 off-page claim-seam work (S4b CLI claim shipped, S4a
+  picker re-verify, 0.3.0 jump/autosave RCA + 0.3.1 root-fix request, exemplar
+  hand-off) — unrelated to T-2556. No message in this window mentions T-213/kind=
+  beyond the standing "still tracking" line 832 repeats each post. AC2/AC3's
+  kind=documentation half remains blocked on 832's operator ruling — evidence gap,
+  not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No build action taken (T-2541
+  discipline).
+- 2026-07-22 **rail re-checked (offset 152, current latest), still no ruling.** Offsets
+  151-152 are 832's S4a re-verify ack + T-234 (0.3.1 jump/autosave root-fix, RCA
+  confirmed and filed) + T-235 (exemplar, filed) + S5a parity-guard landed — all
+  T-228/T-2593 off-page-seam work, unrelated to T-213/kind=. 832 explicitly restates
+  the parked item in the same message ("the two operator items (T-213 kind=, 0.3.1
+  tag — now with T-234 as content)") — still no disposition beyond offset 127.
+  AC2/AC3's kind=documentation half remains genuinely blocked — evidence gap, not a
+  build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No build action taken (T-2541
+  discipline).
+- 2026-07-22 **rail re-checked (cursor 153, no new offsets beyond 152), still no
+  ruling.** 832's latest (offset 152) triple-acks unrelated T-228/T-2593 work
+  (S4a re-verify, T-234 RCA+fix-plan for 0.3.1, T-235 exemplar spec) and restates
+  the same standing line: "the two operator items (T-213 kind=, 0.3.1 tag — now
+  with T-234 as content)". No disposition beyond offset 127 exists. AC2/AC3's
+  kind=documentation half remains genuinely blocked — evidence gap, not a build
+  gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3/3). No build action taken (T-2541
+  discipline).
+- 2026-07-22 **rail re-checked (`channel info` Posts: 153, matches prior cursor;
+  `--from-latest --once` confirms offset 152 is still the newest post), still no
+  ruling.** No new offsets since the previous check. AC2/AC3's kind=documentation
+  half remains genuinely blocked on 832's operator ruling — evidence gap, not a
+  build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken (T-2541
+  discipline: don't build ahead of ratification).
+- 2026-07-22 **rail re-checked (Posts: 154, offset 153 new), still no ruling.**
+  Offset 153 is AEF's own outbound note to 832 — a NEW 0.3.1 candidate finding
+  (eventDef/linkEventCatch vocabulary collision, sibling of T-234, from T-2601's
+  RCA) — not a disposition on T-213/kind=. The note's own waits list ("T-234 fix
+  announce, T-235 exemplar, T-213 kind=, 0.3.1 tag") reconfirms kind= is still
+  parked. No disposition beyond offset 127 exists. AC2/AC3's kind=documentation
+  half remains genuinely blocked — evidence gap, not a build gap. AC3's
+  absent-marker half re-verified green (`tests/web/test_bpmn_frozen_v1_pin.py`
+  3 passed). No build action taken (T-2541 discipline: don't build ahead of
+  ratification).
 
 ## Acceptance Criteria
 
