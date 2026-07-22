@@ -4,16 +4,16 @@ name: "scope AEF consumption semantics for 832 typed BPMN events (error/timer/me
 description: >
   Inception: scope AEF consumption semantics for 832 typed BPMN events (error/timer/message)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tests/fixtures/bpmn/typed-event-sample.bpmn, tools/bpmn_to_tasks.py, tools/corpus_lint.py, tools/corpus_spec.py]
 related_tasks: []
 created: 2026-07-19T18:30:00Z
-last_update: 2026-07-21T22:52:29Z
-date_finished:
+last_update: 2026-07-22T19:56:38Z
+date_finished: 2026-07-22T19:56:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -169,15 +169,15 @@ kind; the go/no-go on building consumption.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -259,7 +259,22 @@ and consumption belongs in the compile path (`bpmn_to_tasks.py` → skeleton fro
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Spike-1 completed and answered the load-bearing question (IW-1, confidence 3): **AEF has no
+consumer for a per-task trigger annotation.** The resolver dispatch envelope reads exactly six
+frontmatter fields (`id/name/workflow_type/owner/horizon/status`, `lib/resolver.py:1056-1061`), and
+no dispatch/bus/pause/pending/spawn path reads any trigger/event field. So consuming error/message
+annotations would write frontmatter that nothing reads — the D2/D3 anti-pattern the framework
+exists to prevent. The only kind with a live target (timer→`horizon`) overlaps the existing
+T-2532 flow-order derivation, so even it adds no net-new value. Meanwhile the actual *reliability*
+need — never silently drop the annotation — is already met by the shipped WARN (T-2552). There is
+no bounded consumption worth building. This is a confident NO-GO on evidence, **not** a DEFER: the
+decision does not depend on 832's fixture (that gates only the WARN's byte-exactness), and the
+sovereignty question ("should the task model carry producer-trigger vocab?") is answerable now —
+the answer is "not until something reads it."
+
+**Date**: 2026-07-22T19:56:38Z
 
 ## Updates
 
@@ -268,3 +283,47 @@ and consumption belongs in the compile path (`bpmn_to_tasks.py` → skeleton fro
 
 ### 2026-07-19T18:31:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-22T19:56:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Spike-1 completed and answered the load-bearing question (IW-1, confidence 3): **AEF has no
+consumer for a per-task trigger annotation.** The resolver dispatch envelope reads exactly six
+frontmatter fields (`id/name/workflow_type/owner/horizon/status`, `lib/resolver.py:1056-1061`), and
+no dispatch/bus/pause/pending/spawn path reads any trigger/event field. So consuming error/message
+annotations would write frontmatter that nothing reads — the D2/D3 anti-pattern the framework
+exists to prevent. The only kind with a live target (timer→`horizon`) overlaps the existing
+T-2532 flow-order derivation, so even it adds no net-new value. Meanwhile the actual *reliability*
+need — never silently drop the annotation — is already met by the shipped WARN (T-2552). There is
+no bounded consumption worth building. This is a confident NO-GO on evidence, **not** a DEFER: the
+decision does not depend on 832's fixture (that gates only the WARN's byte-exactness), and the
+sovereignty question ("should the task model carry producer-trigger vocab?") is answerable now —
+the answer is "not until something reads it."
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-400e28d6
+- **Timestamp:** 2026-07-22T19:56:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-e5c81c14
+- **Timestamp:** 2026-07-22T19:56:39Z
+- **Overall:** CONTRADICTED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/resolver.py:1056-1061` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `inbox.queued` | module | ✓ pass |
+| `docs/reports/T-2551-typed-event-consumption-semantics.md` | file | ✓ pass |
+| `T-2532` | task | ✓ pass |
+| `T-2552` | task | ✓ pass |
+
+### 2026-07-22T19:56:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO
