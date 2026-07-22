@@ -2,7 +2,9 @@
 id: T-2605
 name: "Delete/recreate repeatability proof harness + first recreate of aef-dispatch-loop"
 description: >
-  T-2602 GO child 3/3, the operator's acceptance test: snapshot -> delete -> regenerate from spec -> canonical-identical check (IW-3 comparator). First recreate = aef-dispatch-loop with the correct back-handoff, superseding T-2601 fix options A/B/C.
+  T-2602 GO child 3/3, the operator's acceptance test: snapshot -> delete -> regenerate
+  from spec -> canonical-identical check (IW-3 comparator). First recreate = aef-dispatch-loop
+  with the correct back-handoff, superseding T-2601 fix options A/B/C.
 
 status: captured
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T10:49:57Z
-last_update: 2026-07-22T10:49:57Z
-date_finished: null
+last_update: '2026-07-22T11:00:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +36,72 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-22T11:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-22T11:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2605: Delete/recreate repeatability proof harness + first recreate of aef-dispatch-loop
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2602 GO child 3/3 — the operator's acceptance test verbatim: *"fine with deleting
+it and then recreating, that would actually prove repeatable, consistent, correct and
+reliable."* Substrate now in place: T-2603 (`fw corpus derive/generate/diff`, specs at
+`.context/designer/specs/`, round-trip IDENTICAL proven on both source maps) and
+T-2604 (`fw corpus lint`, live baseline = 4× legacy-ref + 1× emitterless-typed-event).
+The first recreate target is `aef-dispatch-loop` (currently serving the intentionally
+preserved T-2600 defective v3); regeneration from spec fixes its `legacy-ref` finding
+automatically (generator emits `workflowRef` uuid form). 832 confirmed (rail offset
+159) their pair-draft byte-pin is on frozen delivered bytes, not the live map — the
+recreate trips nothing client-side.
+
+**⚠ Load-bearing design constraint discovered at code-read (2026-07-22, designer_api.py
+save/delete):** `/api/delete scope:map` removes `meta.json`, and `/api/save` mints the
+uuid server-side via `meta.setdefault("uuid", uuid4())` — it does NOT read the XML's
+workflowMeta uuid. So a map-scope delete + re-save mints a **fresh uuid**, orphaning
+every referrer pinned to the old uuid (T-2573 immutable-identity broken by the
+recreate itself; e.g. the regenerated task-lifecycle pins dispatch-loop's e32a518c…).
+The prove harness must therefore default to **identity-preserving recreate**: delete
+all *versions* (`scope:version` per version) while keeping `meta.json`/uuid, then
+regenerate — `setdefault` no-ops and the uuid survives. Map-scope delete + `fw bpmn
+claim <old-uuid> <id>` rebind is the separate disaster-recovery variant, exercised as
+a distinct proof leg, not the default.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw corpus prove <map-id>` harness: snapshot served latest → identity-preserving delete (all versions, meta/uuid kept) → regenerate from spec via `/api/save` → fetch served → canonical diff vs snapshot; exits 0 only on IDENTICAL; reports uuid-before == uuid-after
+- [ ] First recreate executed on `aef-dispatch-loop`: prove run passes (canonical-identical, uuid e32a518c… preserved), and `fw corpus lint` afterwards no longer reports `legacy-ref` on aef-dispatch-loop (regeneration upgraded the ref form); `tests/unit/test_corpus_lint.py` live-corpus expectation pin updated deliberately in the same change
+- [ ] Registry invariant: ghost list before == after the recreate (only pre-existing 398f4752 fixture); no referrer of aef-dispatch-loop becomes a ghost
+- [ ] Designer surface re-verified live after recreate: `/designer/app?load=/api/version?id=aef-dispatch-loop&v=<new>` serves the regenerated map (nonce-mint 302 still fires) and `/api/list` shows it as latest
+- [ ] DR variant documented + exercised on a scratch map (NOT the live corpus): map-scope delete → recreate mints fresh uuid → old-uuid ref becomes registered ghost → `fw bpmn claim` rebinds it; each step's output recorded in the task
+- [ ] Recreate flow documented in `docs/reports/T-2602-spec-driven-corpus-authoring.md` follow-up section or a T-2605 report, including the identity-preservation constraint above
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
