@@ -788,3 +788,10 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-097
+  text: "fw watchtower restart drops the running port: restart on a :3001 instance stopped it, then tried default :3000 (held by foreign service), refused, left NO instance + triple-file gone. restart should reuse the port it just stopped. Hit live during T-2596 — operator Watchtower briefly down; recovered with 'watchtower start --port 3001'."
+  captured: 2026-07-22T05:54:03Z
+  context_task: T-2596
+  tags: [bug]
+  status: promoted
+  promoted_to: task
