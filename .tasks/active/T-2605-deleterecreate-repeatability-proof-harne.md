@@ -224,6 +224,54 @@ a distinct proof leg, not the default.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-22 — prove harness shipped, first recreate landed, DR variant + docs remain (session paused at budget-critical)
+
+- **What changed:** `fw corpus prove <map-id>` implemented in `tools/corpus_spec.py`
+  (no `bin/fw` dispatch change needed — the existing `corpus)` case already forwards
+  `"$@"` to `corpus_spec.py`; the verb self-resolves the Watchtower URL via
+  `FW_WATCHTOWER_URL`/`WATCHTOWER_URL` env or the `.context/working/watchtower.url`
+  triple-file, falling back to `localhost:3000`). Dry-run proved on a hand-authored
+  scratch map first (`t2605-scratch-prove`, cleaned up via `scope:map` delete after —
+  zero corpus pollution, confirmed via `git status --porcelain .context/designer/`)
+  before touching the live corpus. First real recreate executed on
+  `aef-dispatch-loop`: PASS, canonical-identical, uuid `e32a518c-01de-4243-aafc-691cc99caf0d`
+  preserved (verified `git diff` on `meta.json` — versions collapsed v1-v3 → single
+  v1, uuid unchanged). `fw corpus lint` re-run post-recreate: aef-dispatch-loop's own
+  `legacy-ref` finding is gone (5→4 findings); the 3 remaining legacy-refs are OTHER
+  maps referencing aef-dispatch-loop/aef-task-lifecycle by slug — untouched by this
+  recreate, each a future recreate's job. Registry (`registry.yaml`) diff-checked
+  unchanged (only the pre-existing 398f4752 fixture ghost). Designer surface
+  live-curl-verified: `/designer/app?load=...` still fires the nonce-mint 302,
+  follow-redirect returns 200; `/api/list` reports `latest.v: 1`. Test pin in
+  `tests/unit/test_corpus_lint.py::test_live_corpus_current_findings` updated
+  deliberately (asserts absence of aef-dispatch-loop's own legacy-ref now, not
+  presence) — 11/11 unit tests green.
+- **Plan impact:** none — AC1-4 landed exactly as scoped. AC5 (DR variant on a
+  scratch map) and AC6 (report doc) remain — session hit budget-critical
+  mid-execution of the DR variant's first API call (before any live mutation;
+  nothing left on the server to clean up).
+- **Concurrent-session hazard observed (not part of this task, flagging for
+  continuity):** mid-session, `.context/working/focus.yaml` was externally flipped
+  to T-2608 by another process (reclaimed via `fw context focus T-2605`), and later
+  the git index showed `.context/designer/specs/aef-dispatch-loop.yaml` +
+  `aef-task-lifecycle.yaml` **staged for deletion** by a concurrent T-2608
+  ("single stored representation for corpus") session, which had already moved to
+  `.tasks/completed/`. This T-2605 commit deliberately used `git commit -- <scoped
+  paths>` (not `git add -A` / plain `git commit`) to avoid co-committing that
+  unrelated staged deletion — if T-2608's spec-file removal is intentional (folding
+  spec+store into one representation), the next session should reconcile rather than
+  silently resurrect `.context/designer/specs/` if it re-stages a T-2605 touch there.
+- **Triggered:** continuation needed for AC5 (DR variant: create 2 scratch maps
+  target+referrer, map-scope delete target, recreate under same id → fresh uuid,
+  resave referrer to register the stale-uuid ghost, strip the auto-minted uuid key
+  from target's meta.json (required — `claim_ghost` refuses to rebind over an
+  existing different uuid per `tests/web/test_designer_registry_claim.py`), then
+  `fw bpmn claim <old-uuid> t2605-dr-target`, verify referrer resolves, then clean up
+  both scratch maps + confirm `registry.yaml` reverts to baseline) and AC6 (append a
+  "T-2605 recreate" follow-up section to
+  `docs/reports/T-2602-spec-driven-corpus-authoring.md` documenting the harness, the
+  identity-preservation constraint, and the DR variant's manual-uuid-strip gotcha).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
