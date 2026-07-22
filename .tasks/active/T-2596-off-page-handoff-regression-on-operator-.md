@@ -4,12 +4,12 @@ name: "Off-page handoff regression on operator surface — reproduce + RCA"
 description: >
   Off-page handoff regression on operator surface — reproduce + RCA
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/web/test_designer_landing.py, web/templates/designer_landing.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T05:39:13Z
-last_update: '2026-07-22T05:45:08Z'
-date_finished:
+last_update: 2026-07-22T05:59:00Z
+date_finished: 2026-07-22T05:59:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -154,8 +154,8 @@ Operator reports (2026-07-22, 3rd recurrence of the off-page class): "THE HANDOF
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 python3 -m pytest tests/web/test_designer_landing.py -q
-out=$(curl -s "$(bin/fw watchtower url)/designer"); echo "$out" | grep -q 'hx-boost="false"'
-out=$(curl -s "$(bin/fw watchtower url)/designer"); echo "$out" | grep -q "Date.now()"
+out=$(curl -s "$(bin/fw watchtower url)/designer"); grep -q 'hx-boost="false"' <<< "$out"
+out=$(curl -s "$(bin/fw watchtower url)/designer"); grep -q "Date.now()" <<< "$out"
 
 ## RCA
 
@@ -218,6 +218,18 @@ out=$(curl -s "$(bin/fw watchtower url)/designer"); echo "$out" | grep -q "Date.
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The regression was reproduced live on first attempt, root-caused to a two-layer interaction (in-bundle B1 autosave src-keyed restore self-poisoning after `jumpToWorkflow` switches maps in-place, plus an htmx-boost swallowing the first onclick-only counter-fix), and the fix was live-verified across both browser states (fresh and poisoned) and both jump directions, including the exact post-jump re-entry sequence that caused the original regression. A regression test (`test_card_links_mint_clicktime_nonce`) pins the fix. The remaining Human AC only asks the operator to re-confirm the fix in their own already-poisoned browser session — no further agent work is possible on that AC since it exercises state private to their browser.
+
+**Evidence:**
+- `tests/web/test_designer_landing.py` — 5/5 passing, including the pinning test
+- Live verify: `curl -s "$(bin/fw watchtower url)/designer" | grep -q 'hx-boost="false"'` and `Date.now()` nonce both present
+- RCA section names exact in-bundle line numbers (vendor/designer/aef-workflow-designer-0.3.0.html:6535, 8412, 8437) and why T-2589's single-pass verification missed the re-entry sequence
+- In-bundle root cause escalated to 832 for their 0.3.1 fix (our fix is a counter-measure on our surface only, per the byte-pinned vendored bundle constraint)
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -239,3 +251,20 @@ out=$(curl -s "$(bin/fw watchtower url)/designer"); echo "$out" | grep -q "Date.
 - **Action:** Reproduced the regression on the live surface first try (poisoned `aefAutosaveDoc` rendered dispatch-loop under the task-lifecycle deep-link). RCA'd to jump-follow poisoning B1's src-keyed autosave restore (in-bundle, lines 6535/8412/8437). Shipped our-layer counter in `designer_landing.html`: click-time nonce inside the load value + `hx-boost="false"` (the first onclick-only attempt was silently eaten by htmx boost — caught live, corrected). Watchtower restarted on :3001 (note: `fw watchtower restart` DROPPED the port and tried :3000 default — observation filed separately).
 - **Verification:** tests/web 115 passed, 2 expected skips; live Playwright: poisoned browser + card → correct map; jump both directions (tl_handoff_dispatch, if_handoff_tl); post-jump re-entry (the regression loop) → correct map; fresh profile → correct map.
 - **Context:** 3rd operator recurrence of the off-page class (T-2584 visibility, T-2589 entry shadowing, T-2596 jump poisoning) — each a different layer of the same B1 autosave interaction.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-81fc5144
+- **Timestamp:** 2026-07-22T05:59:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Fix implemented on OUR surface only (vendored 0.3.0 bundle stays byte-pinned READ-ONLY) — `web/templates/designer_landing.html`: click-time nonce inside the load value + `hx-boost="false"` (first fix 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/designer_landing.html in: Fix implemented on OUR surface only (vendored 0.3.0 bundle stays byte-pinned READ-ONLY) — `web/templates/designer_landing.html`: click-time nonce insi`
+
+### 2026-07-22T05:59:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
