@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2604: Corpus lint: per-map + cross-map rules mapped 1:1 to observed defect classes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T18:31:06Z
+# ============================================================================
+
+task_id: T-2604
+task_name: "Corpus lint: per-map + cross-map rules mapped 1:1 to observed defect classes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T10:49:18Z
+completed: 2026-07-22T18:30:54Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw corpus lint` verb exists (routes to `tools/corpus_lint.py`, scans all store maps by default or named maps/files) and exits 0 on a clean corpus, non-zero when any rule fires; output names rule id, map, node, detail, and the defect-class origin task; `--json` for machine consumption'
+  - 'Rule `legacy-ref` (origin T-2600 + as-served corpus): flags every `aef:link` carrying `targetWorkflow` without `workflowRef` — live run fires on `aef-task-lifecycle` v2, `aef-dispatch-loop` v3 (the T-2600 defective fix), PLUS two previously-uncatalogued maps (`aef-inception-flow` v2, `t2584-scratch` v1); also fires on the s4-exemplar legacy leg when pointed at that file'
+  - 'Rule `handoff-wiring` (origin T-2600/T-2601): flags a throw-handoff that is not a branch terminal (has outgoing flows) and two+ throw-handoffs targeting the same workflow from one map (duplicate-glyph defect); pinned both ways by unit fixtures (served v3''s wiring is terminal-clean — its live defect is legacy-ref, per XML re-read during AC authoring)'
+  - 'Rule `emitterless-typed-event` (origin T-2551): cross-map — flags a typed catch (`aef:eventDef`) whose `binding` has no typed throw with the same binding in any scanned map and no explicit `aef:meta seamPending` marker; fires on `agt_msg_result` (bus:task-channel) in the live run'
+  - 'Rule `ghost-ref` (origin T-2584): flags `workflowRef` uuids resolving to neither a store map nor the pending-ref registry (ghosts AND claims honored); registered ghost 398f4752 not flagged in live run; fires on the s4-exemplar''s 4300eae7 leg (832''s ghost, unknown to our store — correct)'
+  - 'Unit tests pin all rules both ways (`tests/unit/test_corpus_lint.py`, 11 passed: fire-on-defective + silent-on-clean per rule, plus a live-corpus expectation pin documenting as-served findings until the T-2605 recreate deliberately shrinks them); live lint run: 8 maps scanned, 5 findings (4× legacy-ref, 1× emitterless-typed-event), recorded above'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 461 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 461
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2604-corpus-lint-per-map--cross-map-rules-map.md
+generated_by: context-agent-hybrid

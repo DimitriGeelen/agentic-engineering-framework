@@ -4263,6 +4263,11 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
     corpus)
         # T-2603 (T-2602 GO): spec-driven corpus authoring — derive specs from
         # served maps, generate contract-v0 BPMN via /api/save, canonical diff.
+        # T-2604: `lint` routes to the defect-class linter (per-map + cross-map).
+        if [ "${1:-}" = "lint" ]; then
+            shift
+            exec python3 "$FRAMEWORK_ROOT/tools/corpus_lint.py" "$@"
+        fi
         exec python3 "$FRAMEWORK_ROOT/tools/corpus_spec.py" "$@"
         ;;
     git)
