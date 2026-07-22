@@ -8,12 +8,12 @@ name: "fw watchtower restart drops the running port: restart on a :3001 instance
 description: >
   Promoted from observation OBS-097
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
-components: []
+components: [bin/watchtower.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T06:02:45Z
-last_update: 2026-07-22T06:05:09Z
-date_finished:
+last_update: 2026-07-22T10:02:31Z
+date_finished: 2026-07-22T10:02:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,6 +56,16 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-22T06:15:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2598: fw watchtower restart drops the running port: restart on a :3001 instance stopped it, then tried default :3000 (held by foreign service), refused, left NO instance + triple-file gone. restart should reuse the port it just stopped. Hit live during T-2596 — operator Watchtower briefly down; recovered with 'watchtower start --port 3001'.
@@ -70,6 +80,7 @@ OBS-097 (hit live during T-2596): `bin/fw watchtower restart` on a :3001 instanc
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `do_restart` captures the running port from the triple file BEFORE `do_stop` deletes it; a bare `restart` (no --port) restarts on that SAME port; explicit `--port N` still wins (case-matched on `" --port"` in args)
 - [x] Live-verified: `bin/fw watchtower restart` with no args on the :3001 instance came back on :3001 (triple file: 3001; /designer HTTP 200), not :3000
+- [x] Independently re-verified by the EXTERNAL termlink testing agent per operator delegation in chat 2026-07-22 ("3 is also agent doable"): dispatch D-3338179-1784714255000 ran `bin/fw watchtower restart` from an isolated worker — restart-same-port (:3001) + serving-after-restart both PASS (`fw bus read T-2599 R-001`, run included T-2598 legs)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -218,3 +229,15 @@ out=$(curl -s -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/designer"
 
 ### 2026-07-22T06:05:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e884d3a6
+- **Timestamp:** 2026-07-22T10:02:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-22T10:02:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -242,6 +242,8 @@ out=$(curl -s "$(bin/fw watchtower url)/designer"); grep -q "Date.now()" <<< "$o
 
 ## Updates
 
+- 2026-07-22: Operator confirmed in chat: **"2 works"** — the landing-card flow (this task's fix) verified personally by the operator. The [REVIEW] tick remains with the operator (T-1731 guard): one tap at /review/T-2596. Note: the "handoff node back does not work" part of the same message was a SEPARATE corpus gap (dispatch-loop had no return handoff at all) — fixed as T-2600 (v3 authored, round-trip live-verified).
+
 ### 2026-07-22T05:39:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2596-off-page-handoff-regression-on-operator-.md

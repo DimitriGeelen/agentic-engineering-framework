@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2598: fw watchtower restart drops the running port: restart on a :3001 instance stopped
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T10:02:41Z
+# ============================================================================
+
+task_id: T-2598
+task_name: "fw watchtower restart drops the running port: restart on a :3001 instance stopped"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T06:02:45Z
+completed: 2026-07-22T10:02:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-22T08:08:08+02:00
+last_commit: 2026-07-22T08:08:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw watchtower restart keeps the running port (OBS-097) — do_restart captures triple-file port before do_stop deletes it, bare restart re-binds SAME port (explicit --port still wins); live-verified :3001 round-trip; RCA in task; agent legs done, owner:human close via /review/T-2598
+
+# Key outcomes
+outcomes:
+  - '`do_restart` captures the running port from the triple file BEFORE `do_stop` deletes it; a bare `restart` (no --port) restarts on that SAME port; explicit `--port N` still wins (case-matched on `" --port"` in args)'
+  - 'Live-verified: `bin/fw watchtower restart` with no args on the :3001 instance came back on :3001 (triple file: 3001; /designer HTTP 200), not :3000'
+  - 'Independently re-verified by the EXTERNAL termlink testing agent per operator delegation in chat 2026-07-22 ("3 is also agent doable"): dispatch D-3338179-1784714255000 ran `bin/fw watchtower restart` from an isolated worker — restart-same-port (:3001) + serving-after-restart both PASS (`fw bus read T-2599 R-001`, run included T-2598 legs)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/watchtower.sh'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2598-fw-watchtower-restart-drops-the-running-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-22T08:08:08"
+    action: "T-2598: fw watchtower restart keeps the running port (OBS-097) — do_restart captures triple-file port before do_stop deletes it, bare restart re-binds SAME port (explicit --port still wins); live-verified :3001 round-trip; RCA in task; agent legs done, owner:human close via /review/T-2598"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 239 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 239
+  commits: 1
+  files_changed: 3
+  lines_added: 243
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2598-fw-watchtower-restart-drops-the-running-.md
+generated_by: context-agent-hybrid

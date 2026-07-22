@@ -6,12 +6,12 @@ description: >
   Handoff regression hole 2: non-landing entries (history/bookmark, no nonce) still
   trigger poisoned restore — server-side 302 nonce-mint on /designer/app
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
-components: []
+components: [tests/web/test_designer_landing.py, web/blueprints/designer.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T06:21:40Z
-last_update: '2026-07-22T06:30:08Z'
-date_finished:
+last_update: 2026-07-22T10:01:35Z
+date_finished: 2026-07-22T10:01:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,15 +80,14 @@ Operator re-reported the handoff regression AFTER T-2596's fix went live. Access
 - [x] The operator's EXACT logged URL shape (`/designer/app?load=/api/version?id%3Daef-dispatch-loop%26v%3D2`, mixed encoding) redirects correctly and the followed redirect loads the right diagram in a poisoned-autosave browser (Playwright live on :3001)
 - [x] `/designer/app` with NO load param is untouched (bundle served directly — B1 last-draft restore by design); bundle bytes remain sha==pin (no bundle modification)
 - [x] tests/web pin the redirect (nonce-less load → 302 w/ t= inside load; nonce'd load → 200 bundle; no-load → 200 bundle); full tests/web suite green
+- [x] Regressed-entry-path re-test executed by the EXTERNAL termlink testing agent (converted from the [REVIEW] Human AC per operator delegation in chat 2026-07-22: "1 should be able to be exectured by our external termlink testing agent"): dispatch D-3338179-1784714255000 ran independently — 302-mint, nonce-in-Location, redirect-serves-bundle, bare-app-200-direct all PASS (evidence: `fw bus read T-2599 R-001`, 9/9). Browser-level equivalent (poisoned-autosave profile, operator's exact logged URL, correct diagram rendered incl. re-entry loop) verified via Playwright same day.
 
 ### Human
-- [ ] [REVIEW] The handoff works in YOUR browser via YOUR entry path (the one that was regressed)
-  **Steps:**
-  1. In the same browser/profile where the handoff was broken, open the designer the way you normally do — browser history entry, bookmark, or the URL bar autocomplete for `/designer/app?load=...` (do NOT go through the landing page cards; the point is to test the history path)
-  2. Verify the diagram that renders matches the map named in the URL (e.g. `aef-dispatch-loop` shows the dispatch-loop diagram, not a different map)
-  3. Use an off-page handoff node to jump to the referenced map, then press Back and re-open the same history/bookmark entry again
-  **Expected:** The correct map renders every time, including after the jump→back→re-enter loop; the URL you land on carries a `t=` timestamp appended by the server redirect
-  **If not:** Note the exact URL from the address bar and which map rendered instead — the access log at `.context/working/watchtower.log` will show whether the 302 fired
+<!-- The original [REVIEW] AC ("works in YOUR browser via YOUR entry path") was
+     converted to the Agent AC above per explicit operator delegation in chat
+     2026-07-22. If the operator still hits a wrong map on any personal entry
+     path, reopen: note the address-bar URL + rendered map; watchtower.log
+     shows whether the 302 fired. -->
 
 ## Verification
 
@@ -215,3 +214,15 @@ out=$(curl -s -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/designer/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2599-handoff-regression-hole-2-non-landing-en.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5f296780
+- **Timestamp:** 2026-07-22T10:01:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-22T10:01:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2599: Handoff regression hole 2: non-landing entries (history/bookmark, no nonce)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T10:01:47Z
+# ============================================================================
+
+task_id: T-2599
+task_name: "Handoff regression hole 2: non-landing entries (history/bookmark, no nonce)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T06:21:40Z
+completed: 2026-07-22T10:01:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-22T08:26:53+02:00
+last_commit: 2026-07-22T08:35:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handoff regression hole 2 CLOSED — server-side 302 nonce-mint on /designer/app?load (browser history/bookmarks replay nonce-less URLs forever, bypassing T-2596's landing-card nonce; operator access-log 08:18:58 was exactly that shape); redirected URL keeps its nonce so F5 edit-restore intact, no-load entry untouched, bundle bytes untouched; live-verified operator's exact URL + poisoned-autosave Playwright → correct diagram; tests/web 116 green. sync vendored bin/watchtower.sh (audit self-vendor gate; fw vendor self --check misses the bin class drift — noted). wrap for review — Human AC (operator re-tests THEIR history/bookmark entry path in the poisoned browser, incl jump→back→re-enter loop), GO Recommendation w/ live-verify evidence, owner:human → /review/T-2599. OBS-098 filed — fw vendor self --check misses the bin file-class the pre-push audit self-vendor gate enforces (check says in-sync while audit FAILs; manual cp needed twice today)
+
+# Key outcomes
+outcomes:
+  - '`/designer/app?load=X` where X lacks a `t=` nonce → 302 redirect to the same route with `t=<ms-timestamp>` minted INSIDE the load value; requests already carrying `t=` serve the bundle directly (no redirect loop; F5-of-redirected-URL keeps its nonce so same-session edit restore still works)'
+  - 'The operator''s EXACT logged URL shape (`/designer/app?load=/api/version?id%3Daef-dispatch-loop%26v%3D2`, mixed encoding) redirects correctly and the followed redirect loads the right diagram in a poisoned-autosave browser (Playwright live on :3001)'
+  - '`/designer/app` with NO load param is untouched (bundle served directly — B1 last-draft restore by design); bundle bytes remain sha==pin (no bundle modification)'
+  - 'tests/web pin the redirect (nonce-less load → 302 w/ t= inside load; nonce''d load → 200 bundle; no-load → 200 bundle); full tests/web suite green'
+  - 'Regressed-entry-path re-test executed by the EXTERNAL termlink testing agent (converted from the [REVIEW] Human AC per operator delegation in chat 2026-07-22: "1 should be able to be exectured by our external termlink testing agent"): dispatch D-3338179-1784714255000 ran independently — 302-mint, nonce-in-Location, redirect-serves-bundle, bare-app-200-direct all PASS (evidence: `fw bus read T-2599 R-001`, 9/9). Browser-level equivalent (poisoned-autosave profile, operator''s exact logged URL, correct diagram rendered incl. re-entry loop) verified via Playwright same day.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/web/blueprints/designer.py'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2599-handoff-regression-hole-2-non-landing-en.md'
+  - 'tests/web/test_designer_landing.py'
+  - 'web/blueprints/designer.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-22T08:26:53"
+    action: "T-2599: handoff regression hole 2 CLOSED — server-side 302 nonce-mint on /designer/app?load (browser history/bookmarks replay nonce-less URLs forever, bypassing T-2596's landing-card nonce; operator access-log 08:18:58 was exactly that shape); redirected URL keeps its nonce so F5 edit-restore intact, no-load entry untouched, bundle bytes untouched; live-verified operator's exact URL + poisoned-autosave Playwright → correct diagram; tests/web 116 green"
+  - time: "2026-07-22T08:29:43"
+    action: "T-2599: sync vendored bin/watchtower.sh (audit self-vendor gate; fw vendor self --check misses the bin class drift — noted)"
+  - time: "2026-07-22T08:35:16"
+    action: "T-2599: wrap for review — Human AC (operator re-tests THEIR history/bookmark entry path in the poisoned browser, incl jump→back→re-enter loop), GO Recommendation w/ live-verify evidence, owner:human → /review/T-2599"
+  - time: "2026-07-22T08:35:45"
+    action: "T-2599: OBS-098 filed — fw vendor self --check misses the bin file-class the pre-push audit self-vendor gate enforces (check says in-sync while audit FAILs; manual cp needed twice today)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 219 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 219
+  commits: 4
+  files_changed: 6
+  lines_added: 344
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2599-handoff-regression-hole-2-non-landing-en.md
+generated_by: context-agent-hybrid
