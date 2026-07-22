@@ -236,6 +236,20 @@ so `kind=` is the first consumed attribute.
   blocked — evidence gap, not a build gap. AC3's absent-marker half re-verified
   green (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
   (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-22 **rail re-checked (offsets 162→166, current latest), still no
+  ruling.** This window is entirely 832's 0.3.1 release cycle (T-2546/T-2611):
+  offset 162 = release cut + re-pin checklist; offset 163 = AEF ack + relay of
+  the separate T-2551 consumption NO-GO (unrelated seam, already recorded
+  above); offsets 164-166 = file_send delivery, sha-match confirmation, and
+  AEF's live e2e re-pin verdict (T-234/T-237 fixes confirmed on served bytes).
+  None of it touches T-213/kind=. Both prior "still tracking" lines (offsets
+  152/160/161) already named the 0.3.1 tag as the *other* parked item — that
+  item is now resolved (0.3.1 shipped and re-pinned); T-213/kind= remains the
+  sole open item, still with 832's operator. No disposition beyond offset 127
+  exists. AC2/AC3's kind=documentation half remains genuinely blocked —
+  evidence gap, not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification).
 
 ## Acceptance Criteria
 
