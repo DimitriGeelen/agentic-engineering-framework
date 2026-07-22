@@ -10,23 +10,31 @@
 # the delivered artifact's sha256 against `sha256:` below and installs it, rejecting
 # (non-zero exit) on any mismatch. The pin is the reproducibility anchor.
 
-version: "0.3.0"
-sha256: "36be033d66aa1c159a9e75df674f02032eb9f308882af288fad909e6d754a4bb"
-bytes: 826643
+version: "0.3.1"
+sha256: "d99a42da304fc9377e580a1e34e54467431727058026ded7a8ee85fd464fd05c"
+bytes: 862852
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.3.0.html"
-source_tag: "designer-v0.3.0"
+source_artifact: "dist/aef-workflow-designer-0.3.1.html"
+source_tag: "designer-v0.3.1"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.3.1 = 0.3.0 + (1) 832 T-234 jump-autosave root fix (_loadSrcKey tracks the
+#   adopted map identity; post-jump autosaves no longer stamp the deep-link src —
+#   the T-2596 wrong-map-restore class closed at the root; AEF keeps the T-2599
+#   server-side 302 nonce-mint as defense-in-depth, see T-2611 Decisions);
+#   (2) 832 T-237 + full T-204 typed-event vocabulary (aef:eventDef ⇒ typed
+#   rendering, no jump affordance; linkEventCatch reserved for aef:link carriers —
+#   the 0.3.0 misclassification of agt_msg_result was a release-lineage gap:
+#   0.3.0 was cut 2026-07-18, one day before T-204 landed).
 # 0.3.0 = 0.2.0 + 832 T-200: (1) IW-9 editor owner-collapse — node-level `owner`
 #   override RETIRED from the authoring surface; owner is now a READ-ONLY readout
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.3.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.3.1.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for

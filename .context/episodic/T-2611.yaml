@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2611: re-pin designer 0.3.1 (T-234 jump-autosave root fix + T-237 eventDef classification
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T20:21:19Z
+# ============================================================================
+
+task_id: T-2611
+task_name: "re-pin designer 0.3.1 (T-234 jump-autosave root fix + T-237 eventDef classification"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T20:10:49Z
+completed: 2026-07-22T20:21:08Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '0.3.1 artifact delivered clean: `file_receive` reassembles + integrity-passes (xfer-mcp-3359980-1784750781760-1); landed file sha256 == pin (`d99a42da304fc9377e580a1e34e54467431727058026ded7a8ee85fd464fd05c`), bytes == 862852 — verified independently via sha256sum; in-bundle markers `_loadSrcKey` ×4 (T-234) + `EVENT_KIND_TYPE` ×2 (T-204) on delivered bytes'
+  - 'sha256 match confirmed back to 832 on the rail BEFORE `fw designer sync` (rail offset 165; T-2546 offset-64 commitment pattern)'
+  - '`policy/designer-pin.yaml` bumped to 0.3.1 (version, sha256, bytes, vendored_path, source_artifact, source_tag; 0.3.1 content note added)'
+  - '`fw designer sync --from <delivered>` installed read-only to `vendor/designer/aef-workflow-designer-0.3.1.html`; `fw designer status` reports PRESENT ✓ (sha256 matches pin); `fw doctor`: `OK designer vendored build matches pin (d99a42da304f...)`'
+  - 'LIVE e2e — bundle: `/designer/app` serves the 0.3.1 bytes (served sha256sum == pin, 862852 bytes); `EVENT_KIND_TYPE` present in served bytes; 0.3.1 UI surface visible in browser (Typed events palette Error/Timer/Message, "🔗 Pending refs…" button)'
+  - 'LIVE e2e — T-234 jump-autosave repro (Playwright, served bundle): loaded aef-task-lifecycle via ?load deep-link (nonce URL captured) → bound + jumped via "↗ Open target workflow" to aef-dispatch-loop (in-place, URL unchanged — the hazard state) → revisited the SAME nonce URL → **renders task-lifecycle** (0.3.0 restored the jumped-to map here). T-237: `agt_msg_result` classifies as `eventMessage` (Bus topic bus:task-channel, boundary/interrupting fields), NO jump affordance — 0.3.0 showed linkEventCatch + inert "Open target workflow"'
+  - 'Nonce decision recorded in `## Decisions`: server-side 302 nonce-mint KEPT as defense-in-depth — operator may override'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-22 — server-side nonce-mint: KEEP after T-234 root fix'
+    chose: 'keep the T-2599 server-side 302 nonce-mint on `/designer/app?load=` even'
+    rationale: 'defense-in-depth at near-zero cost. Browser history, bookmarks, and cached'
+    alternatives_rejected: ['dropping the nonce (832''s offer at release, rail 162). Revisit only']
+  - decision: '2026-07-22 — observation for 832 (not a blocker): uuid workflowRef does not auto-resolve target on deep-link load'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2611-re-pin-designer-031-t-234-jump-autosave-.md
+generated_by: context-agent-hybrid
