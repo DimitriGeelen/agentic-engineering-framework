@@ -8,12 +8,12 @@ description: >
   wiring invariants) through /api/save. Answers IW-2 (bundle round-trip fidelity)
   en route. IW-1 (spec vs canvas authority) needs operator answer at design time.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tools/corpus_spec.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T10:48:38Z
-last_update: '2026-07-22T11:00:06Z'
-date_finished:
+last_update: 2026-07-22T19:20:44Z
+date_finished: 2026-07-22T19:20:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -91,7 +91,7 @@ answer; generator authority semantics are held until it's answered.
 - [x] Generator emits BPMN from a spec; regenerated `aef-task-lifecycle` is semantically equivalent to served v2 under the canonical comparator (modulo server-stamped fields) — `fw corpus diff` → IDENTICAL on both maps; mutation negative-test exits 1 (comparator not vacuous)
 - [x] Generator enforces contract v0: emits `workflowRef` uuid form only (resolved against the store registry at generate time; unresolvable target → hard refusal unless explicit `ghost_intent: true`) and `aef:eventDef` vocabulary for typed events — regenerated task-lifecycle carries `workflowRef="e32a518c-…"` where served v2 has legacy `targetWorkflow` slug, and the two still compare IDENTICAL (ref normalization)
 - [x] Generator writes through `/api/save` only (no direct store writes); generate-save cycle under probe id `t2603-roundtrip` → `{ok:true,v:1}`, ghost registry unchanged (only pre-existing 398f4752), served probe canonically IDENTICAL to original; probe deleted via `/api/delete scope:map`, registry clean after
-- [ ] IW-1 operator answer recorded in `## Decisions` and the generator's authority semantics (who wins: spec or canvas) match the recorded answer — AWAITING OPERATOR (reply **1** spec-authoritative or **2** canvas-authoritative + reverse export)
+- [x] IW-1 operator answer recorded in `## Decisions` and the generator's authority semantics (who wins: spec or canvas) match the recorded answer — resolved by T-2608 GO (operator, via Watchtower): the question DISSOLVED — single stored representation, no second artifact to win or lose
 
 ## Verification
 
@@ -126,11 +126,13 @@ answer; generator authority semantics are held until it's answered.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# Round-trip identity on both S1 source maps (pinned to the versions the specs were derived from)
-python3 tools/corpus_spec.py generate .context/designer/specs/aef-task-lifecycle.yaml --out /tmp/.t2603-tl.bpmn >/dev/null && python3 tools/corpus_spec.py diff .context/designer/projects/aef-task-lifecycle/v2.bpmn /tmp/.t2603-tl.bpmn
-python3 tools/corpus_spec.py generate .context/designer/specs/aef-dispatch-loop.yaml --out /tmp/.t2603-dl.bpmn >/dev/null && python3 tools/corpus_spec.py diff .context/designer/projects/aef-dispatch-loop/v3.bpmn /tmp/.t2603-dl.bpmn
+# Round-trip identity on both S1 source maps — specs derived ON DEMAND (T-2608
+# single stored representation: no persisted spec files; dispatch-loop is v1
+# post-T-2605 recreate)
+python3 tools/corpus_spec.py derive aef-task-lifecycle --v 2 --out /tmp/.t2603-tl.yaml >/dev/null && python3 tools/corpus_spec.py generate /tmp/.t2603-tl.yaml --out /tmp/.t2603-tl.bpmn >/dev/null && python3 tools/corpus_spec.py diff .context/designer/projects/aef-task-lifecycle/v2.bpmn /tmp/.t2603-tl.bpmn
+python3 tools/corpus_spec.py derive aef-dispatch-loop --out /tmp/.t2603-dl.yaml >/dev/null && python3 tools/corpus_spec.py generate /tmp/.t2603-dl.yaml --out /tmp/.t2603-dl.bpmn >/dev/null && python3 tools/corpus_spec.py diff "$(ls .context/designer/projects/aef-dispatch-loop/v*.bpmn | sort -V | tail -1)" /tmp/.t2603-dl.bpmn
 # Contract v0: generated XML carries uuid workflowRef form, never legacy targetWorkflow
-out=$(python3 tools/corpus_spec.py generate .context/designer/specs/aef-task-lifecycle.yaml); echo "$out" | grep -q 'workflowRef=' && ! echo "$out" | grep -q 'targetWorkflow='
+out=$(python3 tools/corpus_spec.py generate /tmp/.t2603-tl.yaml); echo "$out" | grep -q 'workflowRef=' && ! echo "$out" | grep -q 'targetWorkflow='
 # fw corpus verb routes
 out=$(bin/fw corpus canon aef-task-lifecycle); echo "$out" | grep -q '"pool_name"'
 
@@ -176,14 +178,23 @@ out=$(bin/fw corpus canon aef-task-lifecycle); echo "$out" | grep -q '"pool_name
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-07-22 — IW-1 (spec vs canvas authority) — dissolved by T-2608 GO
+
+- **Chose:** neither option 1 (spec-authoritative) nor option 2
+  (canvas-authoritative + persisted reverse export). Operator's question *"why are
+  these two not combined in one file?"* → T-2608 inception → GO recorded via
+  Watchtower: **single stored representation** — the canvas BPMN XML in the
+  designer store is the only persisted truth; the spec YAML is an on-demand lens
+  (`fw corpus derive`) and a transient authoring input, never stored.
+- **Why:** the spec is a lossless derived view (this task's own round-trip proof)
+  — persisting it stores zero new information and buys the derived-artifact drift
+  class the framework already gates 3× over (cron registry→generated,
+  tool-set→manifest, source→vendored). With one stored artifact there is no
+  "who wins."
+- **Rejected:** both original IW-1 options presumed two persisted artifacts;
+  full alternatives analysis in `docs/reports/T-2608-single-stored-representation.md`.
+  The two spec files this task originally tracked were removed under the GO;
+  Verification retrofitted to derive-on-the-fly.
 
 ## Decision
 
@@ -209,3 +220,15 @@ out=$(bin/fw corpus canon aef-task-lifecycle); echo "$out" | grep -q '"pool_name
 - **Action:** `tools/corpus_spec.py` (fabric-registered) + `bin/fw corpus` route; specs for both source maps landed at `.context/designer/specs/`; report `docs/reports/T-2603-corpus-spec-format.md`
 - **Evidence:** round-trip IDENTICAL both maps; mutation negative-test exit 1; save-leg probe `t2603-roundtrip` → `{ok:true,v:1}` → served twin IDENTICAL → deleted, ghost registry unchanged throughout (398f4752 fixture only)
 - **Insight (Evolution-grade):** the one derivation gap S1 caught — participant `pool_name` ≠ workflowMeta `title` — was invisible to the comparator until parse_map captured it; lesson for T-2604 lint: every spec field must be in the canonical form or drift in it is silent. AC6 (IW-1 authority model) remains open awaiting operator answer.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cfd437c1
+- **Timestamp:** 2026-07-22T19:20:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-22T19:20:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

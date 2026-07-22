@@ -6,12 +6,12 @@ description: >
   from spec -> canonical-identical check (IW-3 comparator). First recreate = aef-dispatch-loop
   with the correct back-handoff, superseding T-2601 fix options A/B/C.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tools/corpus_lint.py, tools/corpus_spec.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T10:49:57Z
-last_update: 2026-07-22T18:58:10Z
-date_finished:
+last_update: 2026-07-22T19:21:04Z
+date_finished: 2026-07-22T19:21:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,8 +117,8 @@ a distinct proof leg, not the default.
 - [x] First recreate executed on `aef-dispatch-loop`: prove run passes (canonical-identical, uuid e32a518c… preserved), and `fw corpus lint` afterwards no longer reports `legacy-ref` on aef-dispatch-loop (regeneration upgraded the ref form); `tests/unit/test_corpus_lint.py` live-corpus expectation pin updated deliberately in the same change
 - [x] Registry invariant: ghost list before == after the recreate (only pre-existing 398f4752 fixture); no referrer of aef-dispatch-loop becomes a ghost
 - [x] Designer surface re-verified live after recreate: `/designer/app?load=/api/version?id=aef-dispatch-loop&v=<new>` serves the regenerated map (nonce-mint 302 still fires) and `/api/list` shows it as latest
-- [ ] DR variant documented + exercised on a scratch map (NOT the live corpus): map-scope delete → recreate mints fresh uuid → old-uuid ref becomes registered ghost → `fw bpmn claim` rebinds it; each step's output recorded in the task
-- [ ] Recreate flow documented in `docs/reports/T-2602-spec-driven-corpus-authoring.md` follow-up section or a T-2605 report, including the identity-preservation constraint above
+- [x] DR variant documented + exercised on a scratch map (NOT the live corpus): map-scope delete → recreate mints fresh uuid → old-uuid ref becomes registered ghost → `fw bpmn claim` rebinds it; each step's output recorded in the task
+- [x] Recreate flow documented in `docs/reports/T-2602-spec-driven-corpus-authoring.md` follow-up section or a T-2605 report, including the identity-preservation constraint above
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -183,6 +183,11 @@ a distinct proof leg, not the default.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -m pytest tests/unit/test_corpus_lint.py tests/web/test_designer_dr_recreate.py tests/web/test_s4_exemplar_intake.py -q
+out=$(bin/fw corpus lint 2>&1); echo "$out" | grep -q "corpus lint: scanned"
+out=$(bin/fw corpus lint 2>&1); ! echo "$out" | grep -q "legacy-ref] aef-dispatch-loop"
+grep -q "T-2605 follow-up" docs/reports/T-2602-spec-driven-corpus-authoring.md
 
 ## RCA
 
@@ -272,6 +277,32 @@ a distinct proof leg, not the default.
   `docs/reports/T-2602-spec-driven-corpus-authoring.md` documenting the harness, the
   identity-preservation constraint, and the DR variant's manual-uuid-strip gotcha).
 
+### 2026-07-22 — retrofit + DR leg + docs (session continuation, AC5/AC6 closed)
+
+- **What changed:** `cmd_prove` retrofitted per T-2608 GO — the persisted-spec
+  default path (`.context/designer/specs/<id>.yaml`, deleted under T-2608) is gone;
+  prove now **derives the spec in-memory from the served snapshot** by default,
+  `--spec` accepts a transient authoring file, and `--from <git-ref>` regenerates
+  from the map's XML at a git ref (IW-3 survivability leg; proof target = that
+  historical artifact). Live re-run on the recreated map: idempotent PASS
+  ("uuid e32a518c… PRESERVED / canonical IDENTICAL") — the derive-in-memory
+  default proven end-to-end against the live server. Designer surface re-verified
+  in a real browser (Playwright): landing-card URL → nonce-mint 302 fires →
+  regenerated v1 renders fully (pool header, both lanes, all 10 nodes incl. the
+  single correct `agt_9_handoff` back-handoff and `agt_4_worker` bus catch).
+- **AC5 (DR leg):** exercised **hermetically** in
+  `tests/web/test_designer_dr_recreate.py` (tmp store, never the live corpus —
+  ghost registration has registry side effects). Pinned sequence: map-scope
+  delete destroys meta.json → recreate mints fresh uuid B≠A → referrer re-save
+  registers A as ghost → `claim_ghost(A)` REFUSES while map owns B ("already
+  owns uuid" — the manual-uuid-strip gotcha) → strip `uuid` key → claim rebinds
+  A, ghost removed, claim recorded, `/api/list` reports A. 1/1 green.
+- **AC6 (docs):** "T-2605 follow-up — recreate flow as executed" appended to
+  `docs/reports/T-2602-spec-driven-corpus-authoring.md` (default leg steps,
+  identity-preservation constraint, DR-leg gotcha).
+- **Test state:** corpus_lint 11/11 + s4-exemplar 3/3 + DR 1/1; `fw corpus lint`
+  = 4 findings, aef-dispatch-loop's own legacy-ref confirmed absent.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -302,3 +333,20 @@ a distinct proof leg, not the default.
 
 ### 2026-07-22T18:58:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-af5d8b5f
+- **Timestamp:** 2026-07-22T19:21:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 34
+     - evidence: `out=$(bin/fw corpus lint 2>&1); ! echo "$out" | grep -q "legacy-ref] aef-dispatch-loop"`
+
+### 2026-07-22T19:21:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

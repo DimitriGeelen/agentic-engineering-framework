@@ -89,3 +89,39 @@ valuable, smaller).
 **GO** — operator-initiated direction, observed-defect evidence base, bounded spikes,
 existing substrate to build on (/api/save, T-2552 lint leg, sha-pin fixture discipline
 from the 832 seam). Decision belongs to the operator at /inception/T-2602.
+
+---
+
+## T-2605 follow-up — recreate flow as executed (2026-07-22)
+
+The GO's acceptance test ran end-to-end. `fw corpus prove <map-id>` is the harness
+(tools/corpus_spec.py `cmd_prove`); `aef-dispatch-loop` was the first recreate.
+
+**Default leg — identity-preserving recreate (what `prove` does):**
+1. Snapshot the served latest (`/api/version`), compute its canonical form.
+2. Derive the spec **in-memory** from that snapshot (T-2608 single stored
+   representation: the store XML is the only persisted truth; `--spec` accepts a
+   transient authoring file, `--from <git-ref>` regenerates from history).
+3. Delete every **version** (`/api/delete scope:version` per version) — meta.json
+   and its uuid survive.
+4. Regenerate via `emit_map` → `/api/save`; the server's
+   `meta.setdefault("uuid", …)` no-ops because the uuid is still there.
+5. Fetch the served result; PASS iff canonically IDENTICAL and uuid unchanged.
+
+First run: PASS — uuid `e32a518c-01de-4243-aafc-691cc99caf0d` preserved, canonical
+IDENTICAL, and `fw corpus lint` dropped aef-dispatch-loop's own `legacy-ref`
+finding (regeneration emits the contract-v0 `workflowRef` uuid form). Re-running
+`prove` on the recreated map is idempotent (verified post-retrofit).
+
+**The identity-preservation constraint (why version-scope, not map-scope):**
+`/api/save` mints the uuid server-side and ignores the XML's workflowMeta uuid. A
+map-scope delete destroys meta.json, so recreate mints a FRESH uuid and every
+referrer pinned to the old uuid goes ghost — the recreate itself would break
+T-2573 immutable identity.
+
+**DR leg (map-scope delete happened anyway) — pinned hermetically in
+`tests/web/test_designer_dr_recreate.py`, never run on the live corpus:**
+recreate under the same id mints uuid B ≠ A → referrer re-save registers A as a
+ghost → `fw bpmn claim A <id>` **refuses** while the map owns B (gotcha: manually
+strip the auto-minted `uuid` key from meta.json first) → claim then rebinds A,
+removes the ghost, records the claim, and the referrer resolves live again.

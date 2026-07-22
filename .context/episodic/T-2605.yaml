@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2605: Delete/recreate repeatability proof harness + first recreate of aef-dispatch-loop
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T19:21:16Z
+# ============================================================================
+
+task_id: T-2605
+task_name: "Delete/recreate repeatability proof harness + first recreate of aef-dispatch-loop"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T10:49:57Z
+completed: 2026-07-22T19:21:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-22T20:37:32+02:00
+last_commit: 2026-07-22T20:37:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs + load-bearing design constraint recorded — /api/save mints uuid server-side (setdefault, ignores XML workflowMeta uuid), so map-scope delete+recreate would orphan uuid-pinned referrers; prove harness must default to identity-preserving recreate (version-scope deletes, meta/uuid kept), map-scope+claim-rebind is the separate DR leg
+
+# Key outcomes
+outcomes:
+  - '`fw corpus prove <map-id>` harness: snapshot served latest → identity-preserving delete (all versions, meta/uuid kept) → regenerate from spec via `/api/save` → fetch served → canonical diff vs snapshot; exits 0 only on IDENTICAL; reports uuid-before == uuid-after'
+  - 'First recreate executed on `aef-dispatch-loop`: prove run passes (canonical-identical, uuid e32a518c… preserved), and `fw corpus lint` afterwards no longer reports `legacy-ref` on aef-dispatch-loop (regeneration upgraded the ref form); `tests/unit/test_corpus_lint.py` live-corpus expectation pin updated deliberately in the same change'
+  - 'Registry invariant: ghost list before == after the recreate (only pre-existing 398f4752 fixture); no referrer of aef-dispatch-loop becomes a ghost'
+  - 'Designer surface re-verified live after recreate: `/designer/app?load=/api/version?id=aef-dispatch-loop&v=<new>` serves the regenerated map (nonce-mint 302 still fires) and `/api/list` shows it as latest'
+  - 'DR variant documented + exercised on a scratch map (NOT the live corpus): map-scope delete → recreate mints fresh uuid → old-uuid ref becomes registered ghost → `fw bpmn claim` rebinds it; each step''s output recorded in the task'
+  - 'Recreate flow documented in `docs/reports/T-2602-spec-driven-corpus-authoring.md` follow-up section or a T-2605 report, including the identity-preservation constraint above'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2605-deleterecreate-repeatability-proof-harne.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-22T20:37:32"
+    action: "T-2605: real ACs + load-bearing design constraint recorded — /api/save mints uuid server-side (setdefault, ignores XML workflowMeta uuid), so map-scope delete+recreate would orphan uuid-pinned referrers; prove harness must default to identity-preserving recreate (version-scope deletes, meta/uuid kept), map-scope+claim-rebind is the separate DR leg"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 511 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 511
+  commits: 1
+  files_changed: 1
+  lines_added: 61
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2605-deleterecreate-repeatability-proof-harne.md
+generated_by: context-agent-hybrid

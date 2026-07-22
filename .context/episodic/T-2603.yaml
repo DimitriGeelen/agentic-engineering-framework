@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2603: Corpus spec format + deterministic generator (S1): derive specs from served
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T19:20:57Z
+# ============================================================================
+
+task_id: T-2603
+task_name: "Corpus spec format + deterministic generator (S1): derive specs from served"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T10:48:38Z
+completed: 2026-07-22T19:20:44Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-07-22T20:10:39+02:00
+last_commit: 2026-07-22T20:11:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S1 shipped — spec format v1 + fw corpus derive/generate/canon/diff (tools/corpus_spec.py); specs reverse-derived from served aef-task-lifecycle v2 + aef-dispatch-loop v3 (.context/designer/specs/); round-trip IDENTICAL both maps under canonical comparator (ref-normalized: legacy targetWorkflow ⇒ workflowRef uuid on regenerate); save-leg proven via /api/save probe t2603-roundtrip (no new ghosts, served twin identical, deleted clean); mutation negative-test exit 1; pool_name derivation gap found+closed in-pass; AC6/IW-1 authority model awaits operator (1=spec-authoritative, 2=canvas-authoritative). refresh vendored bin/fw (corpus verb) — self-vendor sync
+
+# Key outcomes
+outcomes:
+  - 'Spec schema documented (format doc + annotated example) covering everything the two served maps express: lanes, node types (task kinds, typed events with `kind=`/`binding=`, handoff throw/catch), flows, display labels, positions/layout, notes — `docs/reports/T-2603-corpus-spec-format.md`'
+  - 'S1 reverse-derivation complete: specs derived from served `aef-dispatch-loop` v3 and `aef-task-lifecycle` v2 with a per-element inventory showing zero unrepresented semantic elements — inventory table in the report (one gap, `pool_name`, found and closed during S1 itself). *T-2608 retrofit: specs are NOT persisted — `fw corpus derive` emits them on demand (single stored representation; the two tracked files originally shipped here were removed under the T-2608 GO)*'
+  - 'Generator emits BPMN from a spec; regenerated `aef-task-lifecycle` is semantically equivalent to served v2 under the canonical comparator (modulo server-stamped fields) — `fw corpus diff` → IDENTICAL on both maps; mutation negative-test exits 1 (comparator not vacuous)'
+  - 'Generator enforces contract v0: emits `workflowRef` uuid form only (resolved against the store registry at generate time; unresolvable target → hard refusal unless explicit `ghost_intent: true`) and `aef:eventDef` vocabulary for typed events — regenerated task-lifecycle carries `workflowRef="e32a518c-…"` where served v2 has legacy `targetWorkflow` slug, and the two still compare IDENTICAL (ref normalization)'
+  - 'Generator writes through `/api/save` only (no direct store writes); generate-save cycle under probe id `t2603-roundtrip` → `{ok:true,v:1}`, ghost registry unchanged (only pre-existing 398f4752), served probe canonically IDENTICAL to original; probe deleted via `/api/delete scope:map`, registry clean after'
+  - 'IW-1 operator answer recorded in `## Decisions` and the generator''s authority semantics (who wins: spec or canvas) match the recorded answer — resolved by T-2608 GO (operator, via Watchtower): the question DISSOLVED — single stored representation, no second artifact to win or lose'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-22 — IW-1 (spec vs canvas authority) — dissolved by T-2608 GO'
+    chose: 'neither option 1 (spec-authoritative) nor option 2'
+    rationale: 'the spec is a lossless derived view (this task''s own round-trip proof)'
+    alternatives_rejected: ['both original IW-1 options presumed two persisted artifacts;']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.context/designer/specs/aef-dispatch-loop.yaml'
+  - '.context/designer/specs/aef-task-lifecycle.yaml'
+  - 'docs/reports/T-2603-corpus-spec-format.md'
+  - '.fabric/components/tools-corpus_spec.yaml'
+  - '.tasks/active/T-2603-corpus-spec-format--deterministic-genera.md'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-22T20:10:39"
+    action: "T-2603: S1 shipped — spec format v1 + fw corpus derive/generate/canon/diff (tools/corpus_spec.py); specs reverse-derived from served aef-task-lifecycle v2 + aef-dispatch-loop v3 (.context/designer/specs/); round-trip IDENTICAL both maps under canonical comparator (ref-normalized: legacy targetWorkflow ⇒ workflowRef uuid on regenerate); save-leg proven via /api/save probe t2603-roundtrip (no new ghosts, served twin identical, deleted clean); mutation negative-test exit 1; pool_name derivation gap found+closed in-pass; AC6/IW-1 authority model awaits operator (1=spec-authoritative, 2=canvas-authoritative)"
+  - time: "2026-07-22T20:11:18"
+    action: "T-2603: refresh vendored bin/fw (corpus verb) — self-vendor sync"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 512 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 512
+  commits: 2
+  files_changed: 8
+  lines_added: 1032
+  lines_removed: 36
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2603-corpus-spec-format--deterministic-genera.md
+generated_by: context-agent-hybrid

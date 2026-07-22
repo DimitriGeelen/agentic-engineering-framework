@@ -29,6 +29,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -399,19 +400,38 @@ def cmd_prove(args) -> int:
         print("prove: map has no versions to snapshot", file=sys.stderr)
         return 2
 
-    spec_path = Path(args.spec) if args.spec else (STORE.parent / "specs" / f"{map_id}.yaml")
-    if not spec_path.is_file():
-        print(f"prove: no spec at {spec_path} — supply --spec", file=sys.stderr)
-        return 2
-    if yaml is None:
-        raise SystemExit("prove needs PyYAML")
-    spec = yaml.safe_load(spec_path.read_text())
+    print(f"prove: snapshotting {map_id}@v{latest_before} (served, {url}) ...")
+    snapshot_xml = _http_get(f"{url}/api/version?id={map_id}&v={latest_before}")
+    snapshot_canon = canonical(snapshot_xml)
+
+    # Spec source (T-2608 single stored representation): the XML in the store is
+    # the only persisted truth, so the default derives the spec in-memory from the
+    # snapshot just taken. --spec accepts a transient authoring file; --from
+    # regenerates from the map's XML at a git ref (survivability leg, IW-3) — the
+    # proof target then becomes that historical artifact.
+    spec_src = "derived in-memory from served snapshot"
+    if args.spec:
+        if yaml is None:
+            raise SystemExit("prove --spec needs PyYAML")
+        spec = yaml.safe_load(Path(args.spec).read_text())
+        spec_src = args.spec
+    elif args.from_ref:
+        rel = f".context/designer/projects/{map_id}"
+        ref_meta = json.loads(subprocess.run(
+            ["git", "show", f"{args.from_ref}:{rel}/meta.json"],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=True).stdout)
+        ref_v = int(ref_meta.get("latest") or 0)
+        ref_xml = subprocess.run(
+            ["git", "show", f"{args.from_ref}:{rel}/v{ref_v}.bpmn"],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=True).stdout
+        spec = parse_map(ref_xml)
+        snapshot_canon = canonical(ref_xml)
+        spec_src = f"derived from {args.from_ref}:{rel}/v{ref_v}.bpmn"
+    else:
+        spec = parse_map(snapshot_xml)
     if spec.get("id") != map_id:
         print(f"prove: spec id {spec.get('id')!r} != map_id {map_id!r}", file=sys.stderr)
         return 2
-
-    print(f"prove: snapshotting {map_id}@v{latest_before} (served, {url}) ...")
-    snapshot_canon = canonical(_http_get(f"{url}/api/version?id={map_id}&v={latest_before}"))
 
     print(f"prove: identity-preserving delete — {len(versions_before)} version(s), "
           f"meta/uuid kept ...")
@@ -429,7 +449,7 @@ def cmd_prove(args) -> int:
               file=sys.stderr)
         return 1
 
-    print(f"prove: regenerating from spec {spec_path} via /api/save ...")
+    print(f"prove: regenerating from spec ({spec_src}) via /api/save ...")
     xml_text = emit_map(spec, version=1)
     ET.fromstring(xml_text)  # self-check: well-formed before it ships
     save_resp = _http_post(f"{url}/api/save", {
@@ -508,7 +528,11 @@ def main(argv=None):
     pr = sub.add_parser("prove", help="delete/recreate repeatability proof harness (T-2605)")
     pr.add_argument("map_id")
     pr.add_argument("--spec", default=None,
-                     help="spec path (default: .context/designer/specs/<map_id>.yaml)")
+                     help="transient authoring spec file (default: derive in-memory "
+                          "from the served snapshot — T-2608 single stored representation)")
+    pr.add_argument("--from", dest="from_ref", default=None,
+                     help="git ref: regenerate from the map's XML at this ref "
+                          "(survivability leg; proof target = that historical artifact)")
     pr.add_argument("--url", default=None,
                      help="watchtower base URL (default: env FW_WATCHTOWER_URL/WATCHTOWER_URL "
                           "or the triple-file)")
