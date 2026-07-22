@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2608: Single stored representation for corpus maps: drop persisted spec YAML, XML
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T19:03:35Z
+# ============================================================================
+
+task_id: T-2608
+task_name: "Single stored representation for corpus maps: drop persisted spec YAML, XML"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T18:58:47Z
+completed: 2026-07-22T19:03:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-22T21:01:44+02:00
+last_commit: 2026-07-22T21:01:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception filed — single stored representation for corpus maps (operator: 'why are these two not combined in one file?'); spec YAML is a lossless derived view (T-2603 proof), zero code consumers (grep-verified), persisting it = the drift class the framework already polices 3x over; GO recommended: XML sole stored truth, spec as on-demand lens + transient authoring input; IW-1 diff-lens deferred, IW-2 retrofit list in artifact, IW-3 prove-source both-legs
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2608-single-stored-representation.md'
+  - '.tasks/active/T-2608-single-stored-representation-for-corpus-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-22T21:01:44"
+    action: "T-2608: inception filed — single stored representation for corpus maps (operator: 'why are these two not combined in one file?'); spec YAML is a lossless derived view (T-2603 proof), zero code consumers (grep-verified), persisting it = the drift class the framework already polices 3x over; GO recommended: XML sole stored truth, spec as on-demand lens + transient authoring input; IW-1 diff-lens deferred, IW-2 retrofit list in artifact, IW-3 prove-source both-legs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 312
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2608-single-stored-representation-for-corpus-.md
+generated_by: context-agent-hybrid

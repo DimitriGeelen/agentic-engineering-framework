@@ -6,16 +6,16 @@ description: >
   Inception: Single stored representation for corpus maps: drop persisted spec YAML,
   XML as sole source, spec as on-demand lens
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-22T18:58:47Z
-last_update: '2026-07-22T19:00:09Z'
-date_finished:
+last_update: 2026-07-22T19:03:26Z
+date_finished: 2026-07-22T19:03:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -123,15 +123,15 @@ the editor bundle, 832-side anything.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -189,9 +189,48 @@ Operator question 'why are these two not combined in one file?' exposed that the
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Operator question 'why are these two not combined in one file?' exposed that the persisted spec YAML is a fully-derivable view (T-2603 proved lossless round-trip both directions) — storing it creates a derived-artifact drift class the framework has been burned by repeatedly (T-1935 cron registry, T-2290 manifest, OBS-098 today); single stored XML + derive-on-demand eliminates the drift class and dissolves the IW-1 authority question entirely
+
+**Date**: 2026-07-22T19:03:25Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-07-22T19:03:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Operator question 'why are these two not combined in one file?' exposed that the persisted spec YAML is a fully-derivable view (T-2603 proved lossless round-trip both directions) — storing it creates a derived-artifact drift class the framework has been burned by repeatedly (T-1935 cron registry, T-2290 manifest, OBS-098 today); single stored XML + derive-on-demand eliminates the drift class and dissolves the IW-1 authority question entirely
+
+### 2026-07-22T19:03:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f27f2568
+- **Timestamp:** 2026-07-22T19:03:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-66cd2093
+- **Timestamp:** 2026-07-22T19:03:27Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2603` | task | ✓ pass |
+| `T-1935` | task | ✓ pass |
+| `T-2290` | task | ✓ pass |
+
+### 2026-07-22T19:03:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
