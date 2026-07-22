@@ -433,6 +433,23 @@ def cmd_prove(args) -> int:
         print(f"prove: spec id {spec.get('id')!r} != map_id {map_id!r}", file=sys.stderr)
         return 2
 
+    # Pre-flight loss guard (T-2609): everything from the first /api/delete on is
+    # destructive, and the snapshot exists only in memory (plus git). Regenerate
+    # from the spec IN MEMORY and canonical-diff against the proof target first —
+    # a map the spec format cannot express losslessly is refused with the store
+    # untouched, instead of being replaced by its lossy regeneration.
+    preflight_canon = canonical(emit_map(spec, version=1))
+    if preflight_canon != snapshot_canon:
+        import difflib
+        print("prove: REFUSED — in-memory regeneration is not canonically identical "
+              "to the proof target; store untouched", file=sys.stderr)
+        sa = json.dumps(snapshot_canon, indent=2, sort_keys=True).splitlines()
+        sb = json.dumps(preflight_canon, indent=2, sort_keys=True).splitlines()
+        for line in difflib.unified_diff(sa, sb, fromfile="target", tofile="regenerated",
+                                         lineterm=""):
+            print(line, file=sys.stderr)
+        return 2
+
     print(f"prove: identity-preserving delete — {len(versions_before)} version(s), "
           f"meta/uuid kept ...")
     for vent in versions_before:

@@ -31,6 +31,7 @@
         <bpmn:flowNodeRef>agt_2_artifact</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_gw_outcome</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_4_children</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_8_handoff_tl</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_5_archive</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_6_go</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_7_closed</bpmn:flowNodeRef>
@@ -39,7 +40,6 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_3_inception</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
@@ -56,7 +56,7 @@
       <bpmn:extensionElements>
         <aef:uid value="if_file"/>
         <aef:position x="260.0" y="120.0"/>
-        <aef:meta note="one inception = one question (Task Sizing); readiness gate requires >=1 IW-N Open Question before source reads"/>
+        <aef:meta note="one inception = one question (Task Sizing); readiness gate requires &gt;=1 IW-N Open Question before source reads"/>
       </bpmn:extensionElements>
       <bpmn:incoming>if_f1</bpmn:incoming>
       <bpmn:outgoing>if_f2</bpmn:outgoing>
@@ -71,21 +71,6 @@
       <bpmn:incoming>if_f2</bpmn:incoming>
       <bpmn:outgoing>if_f3</bpmn:outgoing>
     </bpmn:serviceTask>
-
-    <bpmn:subProcess id="hum_3_inception" name="explore the question — go/no-go">
-      <bpmn:extensionElements>
-        <aef:uid value="if_inception"/>
-        <aef:position x="620.0" y="340.0"/>
-        <aef:meta workflowType="inception" tier="1" note="collapsed inception (ratified G-3): go/no-go implied at boundary; owner derives from sovereignty lane; agent explores + recommends, decision is human via Watchtower /inception (fw inception decide agent-blocked under CLAUDECODE=1)"/>
-        <aef:constituents>
-          <aef:constituent id="if_c_spikes" name="run spikes / gather evidence (IW-N dispositions)" ref="docs/reports/T-XXX-*.md"/>
-          <aef:constituent id="if_c_recommend" name="agent writes Recommendation GO/NO-GO/DEFER with rationale (DEFER only for evidence gaps, T-2144)"/>
-          <aef:constituent id="if_c_decide" name="human records decision via Watchtower (sovereignty boundary)"/>
-        </aef:constituents>
-      </bpmn:extensionElements>
-      <bpmn:incoming>if_f3</bpmn:incoming>
-      <bpmn:outgoing>if_f4</bpmn:outgoing>
-    </bpmn:subProcess>
 
     <bpmn:exclusiveGateway id="agt_gw_outcome" name="decision?">
       <bpmn:extensionElements>
@@ -105,7 +90,18 @@
       </bpmn:extensionElements>
       <bpmn:incoming>if_f5</bpmn:incoming>
       <bpmn:outgoing>if_f7</bpmn:outgoing>
+      <bpmn:outgoing>if_f9</bpmn:outgoing>
     </bpmn:serviceTask>
+
+    <bpmn:intermediateThrowEvent id="agt_8_handoff_tl" name="Handoff → task lifecycle">
+      <bpmn:extensionElements>
+        <aef:uid value="if_handoff_tl"/>
+        <aef:position x="1260.0" y="140.0"/>
+        <aef:link workflowRef="1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7" name="aef-task-lifecycle" linkId=""/>
+        <aef:meta note="each GO'd build child enters the standard task lifecycle — continues in aef-task-lifecycle (T-2586, T-2571 seam)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>if_f9</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
 
     <bpmn:serviceTask id="agt_5_archive" name="archive: completed/ + episodic; on DEFER set revisit_at + revisit_evidence_needed (T-1451)">
       <bpmn:extensionElements>
@@ -158,6 +154,9 @@
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="if_f8" sourceRef="agt_5_archive" targetRef="agt_7_closed">
       <bpmn:extensionElements><aef:uid value="if_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="if_f9" name="build children enter task lifecycle" sourceRef="agt_4_children" targetRef="agt_8_handoff_tl">
+      <bpmn:extensionElements><aef:uid value="if_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>
 </bpmn:definitions>

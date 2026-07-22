@@ -156,13 +156,16 @@ def test_ghost_ref_silent_on_registered_ghost(tmp_path):
 # ── live-corpus expectations (as-served today; updated by T-2605 recreate) ────
 
 def test_live_corpus_current_findings():
-    """The live store carries the defect classes T-2602 catalogued minus the
-    T-2605 recreate: aef-dispatch-loop's legacy-ref (the T-2600 defective fix)
-    was resolved by regenerating the map from spec via `fw corpus prove`
-    (contract v0 uuid workflowRef form). Remaining legacy-refs are OTHER maps'
-    references TO aef-dispatch-loop/aef-task-lifecycle — untouched by this
-    recreate, tracked for their own future recreates. This pin documents
-    as-served reality; update deliberately on the next recreate."""
+    """As-served reality after the T-2605 first recreate (aef-dispatch-loop)
+    and the T-2609 rollout (aef-task-lifecycle, aef-inception-flow): every
+    corpus map's own legacy-ref was resolved by identity-preserving
+    regeneration via `fw corpus prove` (contract v0 uuid workflowRef form,
+    uuids preserved). Two findings remain BY DESIGN:
+    - t2584-scratch legacy-ref: fixture map whose ghost-target ref exists to
+      exercise the T-2584 ghost registry — not recreated on purpose.
+    - agt_msg_result emitterless-typed-event: awaits T-2551 consumption
+      semantics (832 go/no-go) before any map emits on bus:task-channel.
+    Update this pin deliberately when either of those moves."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
@@ -173,10 +176,13 @@ def test_live_corpus_current_findings():
         findings.extend(f)
         typed.extend(t)
     findings.extend(corpus_lint.cross_map_typed_events(typed))
-    rules = {f["rule"] for f in findings}
-    assert rules <= {"legacy-ref", "emitterless-typed-event"}, findings
-    assert not any(f["map"].startswith("aef-dispatch-loop") and f["rule"] == "legacy-ref"
-                   for f in findings), (
-        "aef-dispatch-loop's own legacy-ref was fixed by the T-2605 recreate — "
-        "if this fires again, the map regressed to a legacy-form save"
+    pinned = sorted((f["rule"], f["map"].split("@")[0]) for f in findings)
+    assert pinned == [
+        ("emitterless-typed-event", "aef-dispatch-loop"),
+        ("legacy-ref", "t2584-scratch"),
+    ], (
+        "live-corpus lint drifted from the T-2609 post-rollout baseline — a new "
+        "legacy-ref means a map regressed to a legacy-form save; a missing "
+        "finding means t2584-scratch or T-2551 moved (update deliberately)",
+        findings,
     )

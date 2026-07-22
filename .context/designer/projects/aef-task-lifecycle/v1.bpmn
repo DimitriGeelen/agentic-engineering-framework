@@ -35,6 +35,7 @@
         <bpmn:flowNodeRef>agt_gw_human</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_7_archive</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_8_done</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_9_handoff_dispatch</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
@@ -82,6 +83,7 @@
       <bpmn:incoming>tl_f3</bpmn:incoming>
       <bpmn:incoming>tl_f6</bpmn:incoming>
       <bpmn:outgoing>tl_f4</bpmn:outgoing>
+      <bpmn:outgoing>tl_f13</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:exclusiveGateway id="agt_gw_issues" name="issues encountered?">
@@ -154,6 +156,16 @@
       <bpmn:incoming>tl_f12</bpmn:incoming>
     </bpmn:endEvent>
 
+    <bpmn:intermediateThrowEvent id="agt_9_handoff_dispatch" name="Handoff → dispatch loop">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_handoff_dispatch"/>
+        <aef:position x="600.0" y="230.0"/>
+        <aef:link workflowRef="e32a518c-01de-4243-aafc-691cc99caf0d" name="aef-dispatch-loop" linkId=""/>
+        <aef:meta note="heavy/parallel sub-work leaves this page: fw resolver dispatch / fw termlink dispatch — continues in aef-dispatch-loop (T-2586, T-2571 seam)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tl_f13</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
     <bpmn:sequenceFlow id="tl_f1" sourceRef="agt_0_capture" targetRef="agt_1_create">
       <bpmn:extensionElements><aef:uid value="tl_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
@@ -189,6 +201,9 @@
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="tl_f12" sourceRef="agt_7_archive" targetRef="agt_8_done">
       <bpmn:extensionElements><aef:uid value="tl_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tl_f13" name="heavy sub-work → dispatch" sourceRef="agt_3_work" targetRef="agt_9_handoff_dispatch">
+      <bpmn:extensionElements><aef:uid value="tl_e13"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>
 </bpmn:definitions>
