@@ -6,7 +6,7 @@ description: >
   from spec -> canonical-identical check (IW-3 comparator). First recreate = aef-dispatch-loop
   with the correct back-handoff, superseding T-2601 fix options A/B/C.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T10:49:57Z
-last_update: '2026-07-22T11:00:09Z'
+last_update: 2026-07-22T18:58:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,6 +64,23 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-07-22T18:58:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2605: Delete/recreate repeatability proof harness + first recreate of aef-dispatch-loop
@@ -96,10 +113,10 @@ a distinct proof leg, not the default.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw corpus prove <map-id>` harness: snapshot served latest → identity-preserving delete (all versions, meta/uuid kept) → regenerate from spec via `/api/save` → fetch served → canonical diff vs snapshot; exits 0 only on IDENTICAL; reports uuid-before == uuid-after
-- [ ] First recreate executed on `aef-dispatch-loop`: prove run passes (canonical-identical, uuid e32a518c… preserved), and `fw corpus lint` afterwards no longer reports `legacy-ref` on aef-dispatch-loop (regeneration upgraded the ref form); `tests/unit/test_corpus_lint.py` live-corpus expectation pin updated deliberately in the same change
-- [ ] Registry invariant: ghost list before == after the recreate (only pre-existing 398f4752 fixture); no referrer of aef-dispatch-loop becomes a ghost
-- [ ] Designer surface re-verified live after recreate: `/designer/app?load=/api/version?id=aef-dispatch-loop&v=<new>` serves the regenerated map (nonce-mint 302 still fires) and `/api/list` shows it as latest
+- [x] `fw corpus prove <map-id>` harness: snapshot served latest → identity-preserving delete (all versions, meta/uuid kept) → regenerate from spec via `/api/save` → fetch served → canonical diff vs snapshot; exits 0 only on IDENTICAL; reports uuid-before == uuid-after
+- [x] First recreate executed on `aef-dispatch-loop`: prove run passes (canonical-identical, uuid e32a518c… preserved), and `fw corpus lint` afterwards no longer reports `legacy-ref` on aef-dispatch-loop (regeneration upgraded the ref form); `tests/unit/test_corpus_lint.py` live-corpus expectation pin updated deliberately in the same change
+- [x] Registry invariant: ghost list before == after the recreate (only pre-existing 398f4752 fixture); no referrer of aef-dispatch-loop becomes a ghost
+- [x] Designer surface re-verified live after recreate: `/designer/app?load=/api/version?id=aef-dispatch-loop&v=<new>` serves the regenerated map (nonce-mint 302 still fires) and `/api/list` shows it as latest
 - [ ] DR variant documented + exercised on a scratch map (NOT the live corpus): map-scope delete → recreate mints fresh uuid → old-uuid ref becomes registered ghost → `fw bpmn claim` rebinds it; each step's output recorded in the task
 - [ ] Recreate flow documented in `docs/reports/T-2602-spec-driven-corpus-authoring.md` follow-up section or a T-2605 report, including the identity-preservation constraint above
 
@@ -234,3 +251,6 @@ a distinct proof leg, not the default.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2605-deleterecreate-repeatability-proof-harne.md
 - **Context:** Initial task creation
+
+### 2026-07-22T18:58:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

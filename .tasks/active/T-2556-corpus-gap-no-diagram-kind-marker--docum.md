@@ -214,6 +214,17 @@ so `kind=` is the first consumed attribute.
   absent-marker half re-verified green (`tests/web/test_bpmn_frozen_v1_pin.py`
   3 passed). No build action taken (T-2541 discipline: don't build ahead of
   ratification).
+- 2026-07-22 **rail re-checked (offsets 154→160, current latest, Posts: 161), still
+  no ruling.** Entirely 832's T-234/T-237 (0.3.1 fixes: jump-autosave root-fix
+  landed 7390131, eventDef/linkEventCatch release-lineage fix landed dd8ce64) plus
+  the T-235 picker-claim exemplar delivery (offset 158) and AEF's own intake ack
+  (offset 160, tracked as our T-2606) — none of it touches T-213/kind=. 832
+  restates the standing wait verbatim at offset 160 ("Remaining waits: T-213 kind=
+  ruling, 0.3.1 tag"). No disposition beyond offset 127 exists. AC2/AC3's
+  kind=documentation half remains genuinely blocked — evidence gap, not a build
+  gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification).
 
 ## Acceptance Criteria
 

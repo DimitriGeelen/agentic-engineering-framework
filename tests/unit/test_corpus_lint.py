@@ -156,10 +156,13 @@ def test_ghost_ref_silent_on_registered_ghost(tmp_path):
 # ── live-corpus expectations (as-served today; updated by T-2605 recreate) ────
 
 def test_live_corpus_current_findings():
-    """The live store carries exactly the defect classes T-2602 catalogued:
-    legacy-refs (incl. the T-2600 defective fix) + the T-2551 emitterless
-    typed event. This pin documents as-served reality; T-2605's recreate is
-    expected to shrink it — update deliberately then."""
+    """The live store carries the defect classes T-2602 catalogued minus the
+    T-2605 recreate: aef-dispatch-loop's legacy-ref (the T-2600 defective fix)
+    was resolved by regenerating the map from spec via `fw corpus prove`
+    (contract v0 uuid workflowRef form). Remaining legacy-refs are OTHER maps'
+    references TO aef-dispatch-loop/aef-task-lifecycle — untouched by this
+    recreate, tracked for their own future recreates. This pin documents
+    as-served reality; update deliberately on the next recreate."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
@@ -172,5 +175,8 @@ def test_live_corpus_current_findings():
     findings.extend(corpus_lint.cross_map_typed_events(typed))
     rules = {f["rule"] for f in findings}
     assert rules <= {"legacy-ref", "emitterless-typed-event"}, findings
-    assert any(f["map"].startswith("aef-dispatch-loop") and f["rule"] == "legacy-ref"
-               for f in findings), "T-2600 defective-fix legacy-ref expected until T-2605 recreate"
+    assert not any(f["map"].startswith("aef-dispatch-loop") and f["rule"] == "legacy-ref"
+                   for f in findings), (
+        "aef-dispatch-loop's own legacy-ref was fixed by the T-2605 recreate — "
+        "if this fires again, the map regressed to a legacy-form save"
+    )

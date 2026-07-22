@@ -27,6 +27,7 @@ the spec is the source of truth for the whole rendered map.
 
 import argparse
 import json
+import os
 import re
 import sys
 import urllib.request
@@ -344,6 +345,131 @@ def canonical(xml_text: str) -> dict:
     return spec
 
 
+# ── prove: delete/recreate repeatability harness (T-2605, T-2602 GO child 3/3) ──
+
+def _default_watchtower_url() -> str:
+    """FW_WATCHTOWER_URL/WATCHTOWER_URL env, else the triple-file, else localhost:3000.
+
+    Mirrors bin/fw's watchtower-port resolution order (CLAUDE.md §Watchtower
+    Port) without sourcing bash — this script also runs standalone.
+    """
+    env = os.environ.get("FW_WATCHTOWER_URL") or os.environ.get("WATCHTOWER_URL")
+    if env:
+        return env.rstrip("/")
+    p = REPO_ROOT / ".context" / "working" / "watchtower.url"
+    if p.is_file():
+        for line in p.read_text().splitlines():
+            line = line.strip()
+            if line:
+                return line.rstrip("/")
+    return "http://localhost:3000"
+
+
+def _http_get(url: str) -> str:
+    with urllib.request.urlopen(url, timeout=15) as resp:
+        return resp.read().decode()
+
+
+def _http_post(url: str, body: dict) -> dict:
+    req = urllib.request.Request(
+        url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return json.loads(resp.read().decode())
+
+
+def cmd_prove(args) -> int:
+    """snapshot served latest -> identity-preserving delete (all versions, meta/
+    uuid kept) -> regenerate from spec via /api/save -> fetch served -> canonical
+    diff vs snapshot. Exits 0 only when canonically IDENTICAL and uuid preserved.
+    """
+    map_id = args.map_id
+    url = (args.url or _default_watchtower_url()).rstrip("/")
+    meta_path = STORE / map_id / "meta.json"
+    if not meta_path.is_file():
+        print(f"prove: no such map in store: {map_id}", file=sys.stderr)
+        return 2
+    meta_before = json.loads(meta_path.read_text())
+    uuid_before = meta_before.get("uuid")
+    if not uuid_before:
+        print("prove: map has no uuid — cannot verify identity preservation", file=sys.stderr)
+        return 2
+    versions_before = list(meta_before.get("versions", []))
+    latest_before = int(meta_before.get("latest") or 0)
+    if latest_before < 1 or not versions_before:
+        print("prove: map has no versions to snapshot", file=sys.stderr)
+        return 2
+
+    spec_path = Path(args.spec) if args.spec else (STORE.parent / "specs" / f"{map_id}.yaml")
+    if not spec_path.is_file():
+        print(f"prove: no spec at {spec_path} — supply --spec", file=sys.stderr)
+        return 2
+    if yaml is None:
+        raise SystemExit("prove needs PyYAML")
+    spec = yaml.safe_load(spec_path.read_text())
+    if spec.get("id") != map_id:
+        print(f"prove: spec id {spec.get('id')!r} != map_id {map_id!r}", file=sys.stderr)
+        return 2
+
+    print(f"prove: snapshotting {map_id}@v{latest_before} (served, {url}) ...")
+    snapshot_canon = canonical(_http_get(f"{url}/api/version?id={map_id}&v={latest_before}"))
+
+    print(f"prove: identity-preserving delete — {len(versions_before)} version(s), "
+          f"meta/uuid kept ...")
+    for vent in versions_before:
+        _http_post(f"{url}/api/delete", {"id": map_id, "scope": "version", "v": vent["v"]})
+
+    meta_mid = json.loads(meta_path.read_text())
+    if meta_mid.get("uuid") != uuid_before:
+        print(f"prove: FAIL — uuid changed after version-delete "
+              f"({uuid_before} -> {meta_mid.get('uuid')}); aborting before regenerate",
+              file=sys.stderr)
+        return 1
+    if meta_mid.get("versions"):
+        print("prove: FAIL — versions not fully cleared by version-scope delete",
+              file=sys.stderr)
+        return 1
+
+    print(f"prove: regenerating from spec {spec_path} via /api/save ...")
+    xml_text = emit_map(spec, version=1)
+    ET.fromstring(xml_text)  # self-check: well-formed before it ships
+    save_resp = _http_post(f"{url}/api/save", {
+        "id": map_id,
+        "bpmn": xml_text,
+        "note": args.note or f"fw corpus prove — identity-preserving recreate ({map_id})",
+    })
+    new_v = save_resp.get("v")
+
+    print(f"prove: fetching served regenerated v{new_v} ...")
+    served_canon = canonical(_http_get(f"{url}/api/version?id={map_id}&v={new_v}"))
+
+    meta_after = json.loads(meta_path.read_text())
+    uuid_after = meta_after.get("uuid")
+    identical = served_canon == snapshot_canon
+    uuid_preserved = uuid_after == uuid_before
+
+    result = {
+        "map_id": map_id, "snapshot_v": latest_before, "regenerated_v": new_v,
+        "uuid_before": uuid_before, "uuid_after": uuid_after,
+        "uuid_preserved": uuid_preserved, "identical": identical,
+    }
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        print(f"  uuid before: {uuid_before}")
+        print(f"  uuid after:  {uuid_after}  "
+              f"({'PRESERVED' if uuid_preserved else 'CHANGED — FAIL'})")
+        print(f"  canonical:   {'IDENTICAL' if identical else 'DIFFERENT — FAIL'}")
+        print(f"prove: {'PASS' if identical and uuid_preserved else 'FAIL'}")
+    if not identical:
+        import difflib
+        sa = json.dumps(snapshot_canon, indent=2, sort_keys=True).splitlines()
+        sb = json.dumps(served_canon, indent=2, sort_keys=True).splitlines()
+        for line in difflib.unified_diff(sa, sb, fromfile="snapshot", tofile="regenerated",
+                                         lineterm=""):
+            print(line)
+    return 0 if identical and uuid_preserved else 1
+
+
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def _load_xml(arg: str, v: int | None) -> str:
@@ -379,6 +505,15 @@ def main(argv=None):
     f = sub.add_parser("diff", help="semantic compare; exit 0 iff canonically identical")
     f.add_argument("a")
     f.add_argument("b")
+    pr = sub.add_parser("prove", help="delete/recreate repeatability proof harness (T-2605)")
+    pr.add_argument("map_id")
+    pr.add_argument("--spec", default=None,
+                     help="spec path (default: .context/designer/specs/<map_id>.yaml)")
+    pr.add_argument("--url", default=None,
+                     help="watchtower base URL (default: env FW_WATCHTOWER_URL/WATCHTOWER_URL "
+                          "or the triple-file)")
+    pr.add_argument("--note", default=None)
+    pr.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
     if args.cmd == "derive":
@@ -431,6 +566,8 @@ def main(argv=None):
         for line in difflib.unified_diff(sa, sb, fromfile=args.a, tofile=args.b, lineterm=""):
             print(line)
         return 1
+    elif args.cmd == "prove":
+        return cmd_prove(args)
     return 0
 
 
