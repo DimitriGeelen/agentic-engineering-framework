@@ -163,8 +163,13 @@ def test_live_corpus_current_findings():
     uuids preserved). Two findings remain BY DESIGN:
     - t2584-scratch legacy-ref: fixture map whose ghost-target ref exists to
       exercise the T-2584 ghost registry — not recreated on purpose.
-    - agt_msg_result emitterless-typed-event: awaits T-2551 consumption
-      semantics (832 go/no-go) before any map emits on bus:task-channel.
+    - agt_msg_result emitterless-typed-event: PERMANENT by decision — T-2551
+      consumption NO-GO (operator-recorded 2026-07-22): AEF has no consumer
+      for trigger annotations (resolver reads 6 frontmatter fields, none
+      trigger-shaped); the no-silent-drop guarantee is covered by the T-2552
+      compile WARN. Revisit condition: flip only if AEF grows a
+      trigger-consuming execution engine — then this catch gets an emitter
+      and this pin shrinks.
     Update this pin deliberately when either of those moves."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)

@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2610: T-2551 NO-GO follow-through - corpus lint pin rationale and 832 rail notify
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-22T20:05:39Z
+# ============================================================================
+
+task_id: T-2610
+task_name: "T-2551 NO-GO follow-through - corpus lint pin rationale and 832 rail notify"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T20:01:49Z
+completed: 2026-07-22T20:05:29Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Live-corpus lint pin docstring (`tests/unit/test_corpus_lint.py::test_live_corpus_current_findings`) re-annotated: agt_msg_result emitterless finding no longer says "awaits T-2551 go/no-go" — cites the operator-recorded NO-GO (2026-07-22) + the revisit condition (trigger-consuming execution engine); all corpus suites still green (11/11)'
+  - 'Rail post to 832 sent: ack offset 162 (0.3.1 release) + T-2551 consumption NO-GO notice (their eventDef vocabulary stays producer-side; T-2552 WARN unchanged) + request 0.3.1 artifact delivery via file_send per T-559 boundary — posted at rail offset 163'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2610-t-2551-no-go-follow-through---corpus-lin.md
+generated_by: context-agent-hybrid
