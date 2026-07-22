@@ -121,15 +121,15 @@ Corpus workflow maps are authored and fixed by ad-hoc XML surgery with no source
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -187,7 +187,11 @@ Operator steer 2026-07-22: repeatable/reliable/transferable process over artifac
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Operator steer 2026-07-22: repeatable/reliable/transferable process over artifact-fixing. Evidence base: T-2600/T-2601 RCA proved ad-hoc XML surgery produces contract violations (legacy ref form) and duplicate nodes even under live verification; corpus has no regeneration path. Acceptance test operator-defined: delete aef-dispatch-loop and recreate from spec, correct and identical. Builds on existing substrate: /api/save, T-2552 compile WARN lint leg, sha-pinned fixture discipline from 832 seam.
+
+**Date**: 2026-07-22T10:47:25Z
 
 ## Updates
 
@@ -196,3 +200,8 @@ Operator steer 2026-07-22: repeatable/reliable/transferable process over artifac
 
 ### 2026-07-22T10:43:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-22T10:47:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Operator steer 2026-07-22: repeatable/reliable/transferable process over artifact-fixing. Evidence base: T-2600/T-2601 RCA proved ad-hoc XML surgery produces contract violations (legacy ref form) and duplicate nodes even under live verification; corpus has no regeneration path. Acceptance test operator-defined: delete aef-dispatch-loop and recreate from spec, correct and identical. Builds on existing substrate: /api/save, T-2552 compile WARN lint leg, sha-pinned fixture discipline from 832 seam.
