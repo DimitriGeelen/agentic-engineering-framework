@@ -4260,6 +4260,11 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         # T-2533: Child-2 forward compiler — BPMN diagram → AEF task skeletons.
         exec "$AGENTS_DIR/bpmn/bpmn.sh" "$@"
         ;;
+    corpus)
+        # T-2603 (T-2602 GO): spec-driven corpus authoring — derive specs from
+        # served maps, generate contract-v0 BPMN via /api/save, canonical diff.
+        exec python3 "$FRAMEWORK_ROOT/tools/corpus_spec.py" "$@"
+        ;;
     git)
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;
