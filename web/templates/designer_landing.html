@@ -62,7 +62,21 @@
         <h4>{{ p.title }}</h4>
         <span class="corpus-id">{{ p.id }}</span>
         <span class="corpus-meta">v{{ p.latest_v }} · {{ p.version_count }} version{{ '' if p.version_count == 1 else 's' }} · saved {{ p.saved_h }}</span>
-        <a class="corpus-open" href="{{ p.open_url }}">Open in editor →</a>
+        {# T-2596: mint a click-time nonce INSIDE the load value. The editor's B1
+           autosave keys its restore on "stored src === current ?load", but the
+           in-editor handoff jump switches maps in-place without updating the URL,
+           so post-jump autosaves record the WRONG map under this card's src and
+           the next same-src entry silently restores it. A per-click nonce makes
+           every card entry a distinct src → the deep-link always wins by B1's own
+           rule. Plain reloads of the opened URL keep the same nonce, so in-progress
+           edit restore on refresh still works. onclick attribute (not a wired
+           listener) so htmx history-cache restores keep the behavior.
+           hx-boost="false" is REQUIRED: this page renders inside an hx-boost
+           container and boosted anchors navigate off htmx's cached href, silently
+           discarding the onclick mutation (live-verified); the editor is a
+           standalone app, not an htmx partial, so full navigation is correct. #}
+        <a class="corpus-open" href="{{ p.open_url }}" hx-boost="false"
+           onclick="this.href=this.href.split('%26t%3D')[0]+'%26t%3D'+Date.now()">Open in editor →</a>
     </div>
     {% endfor %}
 </div>

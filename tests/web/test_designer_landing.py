@@ -84,3 +84,25 @@ def test_ghosts_page_unchanged(client):
     c, store = client
     resp = c.get("/designer/ghosts")
     assert resp.status_code == 200
+
+
+def test_card_links_mint_clicktime_nonce(client):
+    """T-2596: jump-follow poisons the B1 autosave (in-place map switch leaves the
+    URL's ?load stale, so the autosave records the JUMPED-TO map under the card's
+    src; the next same-src card entry silently restores the wrong diagram). The
+    counter is a click-time nonce appended INSIDE the load value so every card
+    entry is a distinct src and the deep-link always wins. The onclick must be an
+    inline attribute (survives htmx history-cache restore) and must split on any
+    prior nonce before appending (idempotent across repeat clicks)."""
+    c, store = client
+    _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle", latest=2)
+
+    html = c.get("/designer").get_data(as_text=True)
+    # One onclick nonce-minter per corpus card link, targeting the encoded load value.
+    n_cards = html.count('class="corpus-open"')
+    assert n_cards == 1  # one seeded project → one card link
+    # hx-boost="false" is load-bearing: boosted anchors navigate off htmx's cached
+    # href and silently discard the onclick mutation (live-verified on :3001).
+    assert html.count('hx-boost="false"') >= n_cards
+    assert html.count("this.href=this.href.split('%26t%3D')[0]+'%26t%3D'+Date.now()") \
+        == n_cards
