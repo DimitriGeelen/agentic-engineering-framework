@@ -1,12 +1,14 @@
 ---
 id: T-2599
-name: "Handoff regression hole 2: non-landing entries (history/bookmark, no nonce) still trigger poisoned restore — server-side 302 nonce-mint on /designer/app"
+name: "Handoff regression hole 2: non-landing entries (history/bookmark, no nonce)
+  still trigger poisoned restore — server-side 302 nonce-mint on /designer/app"
 description: >
-  Handoff regression hole 2: non-landing entries (history/bookmark, no nonce) still trigger poisoned restore — server-side 302 nonce-mint on /designer/app
+  Handoff regression hole 2: non-landing entries (history/bookmark, no nonce) still
+  trigger poisoned restore — server-side 302 nonce-mint on /designer/app
 
 status: started-work
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T06:21:40Z
-last_update: 2026-07-22T06:21:40Z
-date_finished: null
+last_update: '2026-07-22T06:30:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-22T06:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-22T06:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2599: Handoff regression hole 2: non-landing entries (history/bookmark, no nonce) still trigger poisoned restore — server-side 302 nonce-mint on /designer/app
@@ -52,35 +82,13 @@ Operator re-reported the handoff regression AFTER T-2596's fix went live. Access
 - [x] tests/web pin the redirect (nonce-less load → 302 w/ t= inside load; nonce'd load → 200 bundle; no-load → 200 bundle); full tests/web suite green
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [ ] [REVIEW] The handoff works in YOUR browser via YOUR entry path (the one that was regressed)
+  **Steps:**
+  1. In the same browser/profile where the handoff was broken, open the designer the way you normally do — browser history entry, bookmark, or the URL bar autocomplete for `/designer/app?load=...` (do NOT go through the landing page cards; the point is to test the history path)
+  2. Verify the diagram that renders matches the map named in the URL (e.g. `aef-dispatch-loop` shows the dispatch-loop diagram, not a different map)
+  3. Use an off-page handoff node to jump to the referenced map, then press Back and re-open the same history/bookmark entry again
+  **Expected:** The correct map renders every time, including after the jump→back→re-enter loop; the URL you land on carries a `t=` timestamp appended by the server redirect
+  **If not:** Note the exact URL from the address bar and which map rendered instead — the access log at `.context/working/watchtower.log` will show whether the 302 fired
 
 ## Verification
 
@@ -118,6 +126,18 @@ Operator re-reported the handoff regression AFTER T-2596's fix went live. Access
 python3 -m pytest tests/web/test_designer_landing.py -q
 out=$(curl -s -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/designer/app?load=/api/version?id%3Daef-dispatch-loop%26v%3D2"); [ "$out" = "302" ]
 out=$(curl -s -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/designer/app"); [ "$out" = "200" ]
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The regression the operator hit twice (recurrences #3 and #4) is now closed at the only layer that covers every entry path — the server. T-2596's landing-card nonce only protected clicks through current markup; the access log proved the operator's re-entry was a nonce-less history/bookmark URL. The 302 nonce-mint on `/designer/app?load=` defeats the poisoned B1 autosave restore for ALL arrivals (history, bookmarks, cached pages, landing cards), while a redirected URL keeps its nonce so F5/same-session edit restore is intact and the no-load entry (deliberate last-draft behavior) is untouched. Bundle bytes unmodified (sha==pin). The in-bundle root cause (jump-in-place autosave under stale src) is escalated to 832 for 0.3.1.
+
+**Evidence:**
+- Operator's exact logged URL (`/designer/app?load=/api/version?id%3Daef-dispatch-loop%26v%3D2`) → 302 with nonce minted inside load; followed in a poisoned-autosave Playwright browser → correct diagram (metaId `aef-dispatch-loop`) rendered
+- tests/web 116 passed, 2 skipped — includes new redirect pins in `tests/web/test_designer_landing.py`
+- Live on Watchtower :3001 (commit 93cd1c6dd, serving process restarted and verified)
+- No-load `/designer/app` → 200 bundle directly; nonce'd load → 200, no redirect loop
 
 ## RCA
 
