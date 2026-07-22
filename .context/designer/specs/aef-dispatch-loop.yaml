@@ -1,0 +1,184 @@
+spec_version: 1
+id: aef-dispatch-loop
+title: AEF dispatch-orchestration loop (resolver dispatch → worker → outcome backprop, with pause chain)
+schema_version: 2
+tier_default: 1
+pool_name: AEF dispatch-orchestration loop
+doc: " designer-corpus D4 (arc-014, T-2563): the v1 dispatch-orchestration loop as\n       actually operated.\
+  \ Sources of truth: fw resolver dispatch (workflow → assemble →\n       telemetry, .context/dispatches.jsonl),\
+  \ fw termlink dispatch (kill watchdog,\n       T-577), fw bus post/manifest (result ledger), paused-dispatch\
+  \ chain\n       (dispatch-safety arc slice 5: pause_requested → fw pause resolve →\n       retry_of_dispatch_id),\
+  \ fw outcome evaluate/backprop (dispatch-outcomes.jsonl).\n       Message flavor: the orchestrator observes\
+  \ worker results via the bus — the one\n       honest kind=message typed event. Pair-draft v1."
+lanes:
+- id: agent
+  name: Agent · Initiative
+  abbr: agt
+  authority: initiative
+  height: 260
+- id: human
+  name: Human · Sovereignty
+  abbr: hum
+  authority: sovereignty
+  height: 160
+nodes:
+- id: agt_0_start
+  lane: agent
+  type: start
+  name: task selected for dispatch
+  uid: dl_start
+  pos:
+  - 120.0
+  - 120.0
+  meta:
+    triggeredBy: resolver pick, operator ask, or orchestrated demo (arc-010); main agent delegates bounded
+      sub-tasks via fw resolver run
+- id: agt_1_resolve
+  lane: agent
+  type: service
+  name: fw resolver dispatch — match workflow, assemble envelope, telemetry to dispatches.jsonl
+  uid: dl_resolve
+  pos:
+  - 260.0
+  - 120.0
+  meta:
+    note: 'envelope is the forensic unit: fw resolver explain <dispatch_id> reconstructs any captured
+      dispatch'
+- id: agt_2_spawn
+  lane: agent
+  type: service
+  name: spawn isolated worker — fw termlink dispatch (task-tagged, kill watchdog T-577)
+  uid: dl_spawn
+  pos:
+  - 440.0
+  - 120.0
+  meta:
+    note: TermLink worker = independent process, zero parent-context cost; writes results to repo targets,
+      posts to fw bus (T-818)
+- id: agt_msg_result
+  lane: agent
+  type: catch
+  name: worker result on bus
+  uid: dl_msg_result
+  pos:
+  - 620.0
+  - 120.0
+  event:
+    kind: message
+    binding: bus:task-channel
+  meta:
+    note: fw bus post → orchestrator reads manifest (5 lines, not 25KB); size gate auto-blobs >=2KB payloads
+- id: agt_gw_paused
+  lane: agent
+  type: gateway
+  name: worker paused?
+  uid: dl_gw_paused
+  pos:
+  - 780.0
+  - 120.0
+  meta:
+    note: pause_requested = worker hit a question only the operator can answer (dispatch-safety arc slice
+      5)
+- id: hum_3_pause
+  lane: human
+  type: user
+  name: operator resolves pause — fw pause resolve <dispatch_id> --answer
+  uid: dl_pause_resolve
+  pos:
+  - 780.0
+  - 340.0
+  meta:
+    note: 'sovereignty boundary: the worker asked, only the human answers; fw pause list surfaces the
+      queue'
+- id: agt_4_retry
+  lane: agent
+  type: service
+  name: re-dispatch retry envelope — linked via retry_of_dispatch_id
+  uid: dl_retry
+  pos:
+  - 960.0
+  - 200.0
+  meta:
+    note: the retry is a NEW envelope carrying the operator's answer, chained to the paused one for forensics
+- id: agt_5_outcome
+  lane: agent
+  type: service
+  name: fw outcome evaluate + backprop — outcome rows joined to dispatch rows (dispatch-outcomes.jsonl)
+  uid: dl_outcome
+  pos:
+  - 960.0
+  - 60.0
+  meta:
+    note: best-effort hook also fires from update-task.sh on work-completed; fw outcome read joins both
+      JSONL files
+- id: agt_6_done
+  lane: agent
+  type: end
+  name: loop closed — dispatch + outcome queryable
+  uid: dl_done
+  pos:
+  - 1120.0
+  - 60.0
+  meta:
+    terminalKind: success
+    state: closed
+- id: agt_7_handoff_back
+  lane: null
+  type: throw
+  name: Handoff → task lifecycle
+  uid: dl_handoff_back
+  pos:
+  - 1120.0
+  - 180.0
+  handoff:
+    link_id: ''
+    target: aef-task-lifecycle
+    derived_from_legacy_form: true
+  meta:
+    note: dispatch outcome lands back in the owning task — status/AC updates continue in aef-task-lifecycle
+      (return leg of the tl_handoff_dispatch jump; T-2600)
+flows:
+- id: dl_f1
+  from: agt_0_start
+  to: agt_1_resolve
+  uid: dl_e1
+- id: dl_f2
+  from: agt_1_resolve
+  to: agt_2_spawn
+  uid: dl_e2
+- id: dl_f3
+  from: agt_2_spawn
+  to: agt_msg_result
+  uid: dl_e3
+- id: dl_f4
+  from: agt_msg_result
+  to: agt_gw_paused
+  uid: dl_e4
+- id: dl_f5
+  from: agt_gw_paused
+  to: hum_3_pause
+  name: yes — pause_requested
+  uid: dl_e5
+- id: dl_f6
+  from: agt_gw_paused
+  to: agt_5_outcome
+  name: no — completed
+  uid: dl_e6
+- id: dl_f7
+  from: hum_3_pause
+  to: agt_4_retry
+  uid: dl_e7
+- id: dl_f8_retry
+  from: agt_4_retry
+  to: agt_2_spawn
+  name: retry envelope
+  uid: dl_e8
+- id: dl_f9
+  from: agt_5_outcome
+  to: agt_6_done
+  uid: dl_e9
+- id: dl_f10
+  from: agt_5_outcome
+  to: agt_7_handoff_back
+  name: outcome → owning task
+  uid: dl_e10

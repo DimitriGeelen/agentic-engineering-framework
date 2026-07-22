@@ -1,0 +1,206 @@
+spec_version: 1
+id: aef-task-lifecycle
+title: AEF task lifecycle (captured → started-work ↔ issues → work-completed)
+schema_version: 2
+tier_default: 1
+pool_name: AEF task lifecycle
+doc: " designer-corpus D1 (arc-014, T-2555): the AEF task lifecycle as actually operated.\n       Sources\
+  \ of truth this diagram documents: agents/task-create/update-task.sh (status\n       machine, P-010/P-011\
+  \ gates, T-193 partial-complete), agents/healing (issues loop),\n       CLAUDE.md §Task Lifecycle. Pair-draft\
+  \ v1: agent-drafted, operator corrects in UI."
+lanes:
+- id: agent
+  name: Agent · Initiative
+  abbr: agt
+  authority: initiative
+  height: 200
+- id: human
+  name: Human · Sovereignty
+  abbr: hum
+  authority: sovereignty
+  height: 160
+nodes:
+- id: agt_0_capture
+  lane: agent
+  type: start
+  name: work identified
+  uid: tl_capture
+  pos:
+  - 120.0
+  - 120.0
+  meta:
+    triggeredBy: operator request, pickup message, audit emit, or agent discovery
+- id: agt_1_create
+  lane: agent
+  type: service
+  name: 'create task — fw work-on (status: captured)'
+  uid: tl_create
+  pos:
+  - 240.0
+  - 120.0
+  meta:
+    note: nothing gets done without a task (Core Principle); G-020 blocks source edits until real ACs
+      exist
+- id: agt_2_start
+  lane: agent
+  type: service
+  name: 'start work (status: started-work, focus set)'
+  uid: tl_start
+  pos:
+  - 420.0
+  - 120.0
+  meta:
+    note: 'fw work-on T-XXX; auto-sets horizon: now (T-1068 invariant)'
+- id: agt_3_work
+  lane: agent
+  type: service
+  name: do the work; tick Agent ACs progressively
+  uid: tl_work
+  pos:
+  - 600.0
+  - 120.0
+  meta:
+    note: commit cadence P-009; each AC ticked when its content lands (T-1831 C-4), not at the gate
+- id: agt_gw_issues
+  lane: agent
+  type: gateway
+  name: issues encountered?
+  uid: tl_gw_issues
+  pos:
+  - 760.0
+  - 120.0
+- id: agt_4_heal
+  lane: agent
+  type: service
+  name: 'healing loop (status: issues → diagnose → resolve)'
+  uid: tl_heal
+  pos:
+  - 760.0
+  - 240.0
+  meta:
+    note: fw task update --status issues auto-triggers healing diagnosis; resolution logged for pattern
+      learning (antifragility D1)
+- id: agt_5_verify
+  lane: agent
+  type: service
+  name: 'completion gates: Agent ACs (P-010) + ## Verification commands (P-011)'
+  uid: tl_verify
+  pos:
+  - 920.0
+  - 120.0
+  meta:
+    note: fw task update --status work-completed runs the Verification commands mechanically; any non-zero
+      exit blocks completion
+- id: agt_gw_human
+  lane: agent
+  type: gateway
+  name: unchecked Human ACs?
+  uid: tl_gw_human
+  pos:
+  - 1080.0
+  - 120.0
+- id: hum_6_review
+  lane: human
+  type: user
+  name: 'partial-complete: review Human ACs (Watchtower /review), tick, complete'
+  uid: tl_human_review
+  pos:
+  - 1220.0
+  - 340.0
+  meta:
+    note: 'T-193: task stays in active/ owner:human; agent NEVER ticks a ### Human AC; human finalizes
+      via fw task update --status work-completed'
+- id: agt_7_archive
+  lane: agent
+  type: service
+  name: 'archive: move to completed/, generate episodic memory'
+  uid: tl_archive
+  pos:
+  - 1380.0
+  - 120.0
+  meta:
+    note: date_finished stamped; decisions captured to context fabric; git mining populates Updates
+- id: agt_8_done
+  lane: agent
+  type: end
+  name: task archived
+  uid: tl_done
+  pos:
+  - 1520.0
+  - 120.0
+  meta:
+    terminalKind: success
+- id: agt_9_handoff_dispatch
+  lane: agent
+  type: throw
+  name: Handoff → dispatch loop
+  uid: tl_handoff_dispatch
+  pos:
+  - 600.0
+  - 230.0
+  handoff:
+    link_id: ''
+    target: aef-dispatch-loop
+    derived_from_legacy_form: true
+  meta:
+    note: 'heavy/parallel sub-work leaves this page: fw resolver dispatch / fw termlink dispatch — continues
+      in aef-dispatch-loop (T-2586, T-2571 seam)'
+flows:
+- id: tl_f1
+  from: agt_0_capture
+  to: agt_1_create
+  uid: tl_e1
+- id: tl_f2
+  from: agt_1_create
+  to: agt_2_start
+  uid: tl_e2
+- id: tl_f3
+  from: agt_2_start
+  to: agt_3_work
+  uid: tl_e3
+- id: tl_f4
+  from: agt_3_work
+  to: agt_gw_issues
+  uid: tl_e4
+- id: tl_f5
+  from: agt_gw_issues
+  to: agt_4_heal
+  name: 'yes — status: issues'
+  uid: tl_e5
+- id: tl_f6
+  from: agt_4_heal
+  to: agt_3_work
+  name: resolved — back to work
+  uid: tl_e6
+- id: tl_f7
+  from: agt_gw_issues
+  to: agt_5_verify
+  name: 'no'
+  uid: tl_e7
+- id: tl_f8
+  from: agt_5_verify
+  to: agt_gw_human
+  uid: tl_e8
+- id: tl_f9
+  from: agt_gw_human
+  to: hum_6_review
+  name: 'yes — partial-complete (owner: human)'
+  uid: tl_e9
+- id: tl_f10
+  from: agt_gw_human
+  to: agt_7_archive
+  name: no — all ACs agent-verifiable
+  uid: tl_e10
+- id: tl_f11
+  from: hum_6_review
+  to: agt_7_archive
+  uid: tl_e11
+- id: tl_f12
+  from: agt_7_archive
+  to: agt_8_done
+  uid: tl_e12
+- id: tl_f13
+  from: agt_3_work
+  to: agt_9_handoff_dispatch
+  name: heavy sub-work → dispatch
+  uid: tl_e13

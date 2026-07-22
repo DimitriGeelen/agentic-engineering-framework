@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-22T10:48:38Z
-last_update: 2026-07-22T10:52:39Z
+last_update: '2026-07-22T11:00:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -56,51 +56,42 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-22T11:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2603: Corpus spec format + deterministic generator (S1): derive specs from served maps, emit contract-conformant BPMN via /api/save
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2602 GO child 1/3 (operator decision 2026-07-22T10:47Z). Design basis:
+`docs/reports/T-2602-spec-driven-corpus-authoring.md` (design sketch items 1-2, spike S1,
+assumptions A1/A2). Served source maps: `aef-dispatch-loop` v3 (uuid e32a518c…, currently
+the intentionally-served defective version — spec derivation captures it AS-IS; the
+corrected map ships via T-2605 recreate) and `aef-task-lifecycle` v2. Contract v0 per
+T-2571 rail ratification (offsets 107-113): cross-workflow refs use `workflowRef` uuid
+form; bare `targetWorkflow` name-form is legacy; `aef:eventDef` is the typed-event
+vocabulary (T-204/832). IW-1 (spec-authoritative vs canvas-authoritative + reverse
+export) is an OPEN operator question — S1 reverse-derivation is valid under either
+answer; generator authority semantics are held until it's answered.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] Spec schema documented (format doc + annotated example) covering everything the two served maps express: lanes, node types (task kinds, typed events with `kind=`/`binding=`, handoff throw/catch), flows, display labels, positions/layout, notes — `docs/reports/T-2603-corpus-spec-format.md`
+- [x] S1 reverse-derivation complete: specs derived from served `aef-dispatch-loop` v3 and `aef-task-lifecycle` v2 with a per-element inventory showing zero unrepresented semantic elements — specs at `.context/designer/specs/`, inventory table in the report (one gap, `pool_name`, found and closed during S1 itself)
+- [x] Generator emits BPMN from a spec; regenerated `aef-task-lifecycle` is semantically equivalent to served v2 under the canonical comparator (modulo server-stamped fields) — `fw corpus diff` → IDENTICAL on both maps; mutation negative-test exits 1 (comparator not vacuous)
+- [x] Generator enforces contract v0: emits `workflowRef` uuid form only (resolved against the store registry at generate time; unresolvable target → hard refusal unless explicit `ghost_intent: true`) and `aef:eventDef` vocabulary for typed events — regenerated task-lifecycle carries `workflowRef="e32a518c-…"` where served v2 has legacy `targetWorkflow` slug, and the two still compare IDENTICAL (ref normalization)
+- [x] Generator writes through `/api/save` only (no direct store writes); generate-save cycle under probe id `t2603-roundtrip` → `{ok:true,v:1}`, ghost registry unchanged (only pre-existing 398f4752), served probe canonically IDENTICAL to original; probe deleted via `/api/delete scope:map`, registry clean after
+- [ ] IW-1 operator answer recorded in `## Decisions` and the generator's authority semantics (who wins: spec or canvas) match the recorded answer — AWAITING OPERATOR (reply **1** spec-authoritative or **2** canvas-authoritative + reverse export)
 
 ## Verification
 
@@ -134,6 +125,14 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# Round-trip identity on both S1 source maps (pinned to the versions the specs were derived from)
+python3 tools/corpus_spec.py generate .context/designer/specs/aef-task-lifecycle.yaml --out /tmp/.t2603-tl.bpmn >/dev/null && python3 tools/corpus_spec.py diff .context/designer/projects/aef-task-lifecycle/v2.bpmn /tmp/.t2603-tl.bpmn
+python3 tools/corpus_spec.py generate .context/designer/specs/aef-dispatch-loop.yaml --out /tmp/.t2603-dl.bpmn >/dev/null && python3 tools/corpus_spec.py diff .context/designer/projects/aef-dispatch-loop/v3.bpmn /tmp/.t2603-dl.bpmn
+# Contract v0: generated XML carries uuid workflowRef form, never legacy targetWorkflow
+out=$(python3 tools/corpus_spec.py generate .context/designer/specs/aef-task-lifecycle.yaml); echo "$out" | grep -q 'workflowRef=' && ! echo "$out" | grep -q 'targetWorkflow='
+# fw corpus verb routes
+out=$(bin/fw corpus canon aef-task-lifecycle); echo "$out" | grep -q '"pool_name"'
 
 ## RCA
 
@@ -205,3 +204,8 @@ bvp_scores_proposed:
 
 ### 2026-07-22T10:52:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-22T18:20Z — S1 shipped: derive/generate/canon/diff + fw corpus verb [agent]
+- **Action:** `tools/corpus_spec.py` (fabric-registered) + `bin/fw corpus` route; specs for both source maps landed at `.context/designer/specs/`; report `docs/reports/T-2603-corpus-spec-format.md`
+- **Evidence:** round-trip IDENTICAL both maps; mutation negative-test exit 1; save-leg probe `t2603-roundtrip` → `{ok:true,v:1}` → served twin IDENTICAL → deleted, ghost registry unchanged throughout (398f4752 fixture only)
+- **Insight (Evolution-grade):** the one derivation gap S1 caught — participant `pool_name` ≠ workflowMeta `title` — was invisible to the comparator until parse_map captured it; lesson for T-2604 lint: every spec field must be in the canonical form or drift in it is silent. AC6 (IW-1 authority model) remains open awaiting operator answer.
