@@ -9,6 +9,12 @@ depends_on: []
 depended_by:
 - target: tools/bpmn_promote.py
   type: called_by
+- target: tests/web/test_bpmn_frozen_v1_pin.py
+  type: called_by
+- target: tests/web/test_pair_draft3_intake.py
+  type: called_by
+- target: tests/web/test_s4_exemplar_intake.py
+  type: called_by
 last_verified: 2026-07-11
 created_by: unknown
-last_enriched: '2026-07-21'
+last_enriched: '2026-07-22'

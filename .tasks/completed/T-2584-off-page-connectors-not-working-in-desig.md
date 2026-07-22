@@ -4,12 +4,12 @@ name: "Off-page connectors not working in designer (operator field report 2026-0
 description: >
   Off-page connectors not working in designer (operator field report 2026-07-21)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-task.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-21T08:00:34Z
-last_update: '2026-07-21T08:15:08Z'
-date_finished:
+last_update: 2026-07-21T08:52:08Z
+date_finished: 2026-07-21T08:52:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -76,9 +76,9 @@ Operator field report 2026-07-21 (mid-session, verbatim): "noticed that the off 
 
 ### Agent
 - [x] Root cause identified with live evidence (what exactly the operator experiences at /designer when attempting an off-page connector, and why), recorded in ## RCA
-- [ ] If cause is the 0.3.0 editor lacking authoring support (H1): the gap is surfaced operator-visibly on an AEF-owned surface (not the vendored bundle) so "not working" becomes "not yet delivered by 832, gated on T-218" — no silent dead-end
-- [ ] If cause is an AEF-side defect (parse/serialize/render on my half): fix shipped + regression test + live-verified on :3001
-- [ ] 832 informed via rail of the confirmed root cause (contract-level flag posted BEFORE they byte-pin pair-draft #3 if the contract shape is implicated)
+- [x] If cause is the 0.3.0 editor lacking authoring support (H1): the gap is surfaced operator-visibly — H1 DISPROVEN as stated (0.3.0 has full legacy-slug authoring, live-verified), but the visibility half of it held: the seam had zero observable instances. Addressed by T-2586 (corpus v2 handoffs, live) + the scratch fixture kept in place (t2584-scratch + ghost card at /designer/ghosts + minted T-2585) so every seam state has a live example
+- [x] If cause is an AEF-side defect (parse/serialize/render on my half): confirmed AEF-side cause was CONTENT (corpus had no handoffs), not code — no code defect found in 9 live-verified legs; fix = T-2586 corpus v2, shipped + live-verified on :3001 (regression pinning stays with the existing T-2579 seam harness, unchanged)
+- [x] 832 informed via rail of the confirmed root cause (offset 8619: no contract-level defect, pin pair-draft #3 as planned; ghost-alert dead-end UX finding recorded upstream for their T-218 build)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -235,3 +235,15 @@ Cosmetic: /api/thumb 404s in the picker for server-side-authored corpus versions
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2584-off-page-connectors-not-working-in-desig.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a1af339a
+- **Timestamp:** 2026-07-21T08:52:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-21T08:52:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

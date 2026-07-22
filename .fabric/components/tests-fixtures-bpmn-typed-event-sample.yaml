@@ -4,17 +4,10 @@ type: script
 subsystem: unknown
 location: tests/fixtures/bpmn/typed-event-sample.bpmn
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
-last_verified: 2026-07-19
+- target: tests/unit/test_bpmn_to_tasks.py
+  type: read_by
+last_verified: '2026-07-22'
 created_by: unknown

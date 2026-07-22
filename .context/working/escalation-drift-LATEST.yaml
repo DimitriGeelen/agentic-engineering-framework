@@ -1,39 +1,47 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-07-20T03:23:02.237691+00:00
-corpus_total: 2295
-bug_class_total: 459
-bug_class_pct: 20
-h1_flagged: 342
+generated: 2026-07-22T03:23:02.583649+00:00
+corpus_total: 2321
+bug_class_total: 464
+bug_class_pct: 19
+h1_flagged: 346
 h1_pct_of_bug_class: 74
-h2_repeat_patterns: 125
+h2_repeat_patterns: 127
 h3_flagged: 265
 h3_pct_of_bug_class: 57
-recent_30d_flagged: 2
+recent_30d_flagged: 6
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
+  - tid: "T-100202-task-id-allocator-inflation--split-view-"
+    name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emi"
   - tid: "T-2476-investigate-pyyaml-timestamp-round-trip-"
     name: "investigate PyYAML timestamp round-trip corruption class — register concern, fix"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
+  - tid: "T-2580-testsweb-full-dir-run-has-8-order-depend"
+    name: "tests/web full-dir run has 8 order-dependent failures (all inception decide/verd"
+  - tid: "T-2581-extractrecommendation-verdict-regex-lost"
+    name: "extract_recommendation verdict regex lost NO_GO underscore tolerance (T-1575 con"
+  - tid: "T-2583-reviewer-skip-as-pass-detector-false-pos"
+    name: "Reviewer skip-as-pass detector false-positive: it matches the RCA-template"
 h2_top:
   - learning: "P-011"
-    task_count: 1136
+    task_count: 1185
   - learning: "L-387"
-    task_count: 972
+    task_count: 1021
   - learning: "L-291"
-    task_count: 628
+    task_count: 653
   - learning: "L-398"
-    task_count: 412
+    task_count: 436
   - learning: "P-010"
-    task_count: 216
+    task_count: 230
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
     task_count: 38
   - learning: "L-364"
     task_count: 38
+  - learning: "L-399"
+    task_count: 37
   - learning: "L-332"
     task_count: 36
-  - learning: "L-399"
-    task_count: 35

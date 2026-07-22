@@ -71,7 +71,7 @@ depends_on:
   type: registers
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-07-21'
+last_enriched: '2026-07-22'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -152,4 +152,6 @@ depended_by:
 - target: tests/web/test_designer_registry_claim.py
   type: called_by
 - target: tests/web/test_designer_registry_ghosts.py
+  type: called_by
+- target: tests/web/test_designer_landing.py
   type: called_by

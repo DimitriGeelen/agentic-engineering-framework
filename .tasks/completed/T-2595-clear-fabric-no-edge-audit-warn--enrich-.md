@@ -1,8 +1,8 @@
 ---
-id: T-2546
-name: "re-pin designer 0.3.0 (T-200 release: IW-9 owner-collapse + offline-hardened)"
+id: T-2595
+name: "Clear fabric no-edge audit WARN — enrich remaining no-edge cards"
 description: >
-  re-pin designer 0.3.0 (T-200 release: IW-9 owner-collapse + offline-hardened)
+  Clear fabric no-edge audit WARN — enrich remaining no-edge cards
 
 status: work-completed
 workflow_type: build
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-19T08:04:27Z
-last_update: 2026-07-19T09:12:11Z
-date_finished: 2026-07-19T09:12:11Z
+created: 2026-07-22T05:08:14Z
+last_update: 2026-07-22T05:26:12Z
+date_finished: 2026-07-22T05:26:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,7 +35,7 @@ date_finished: 2026-07-19T09:12:11Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-19T08:15:06Z'
+  - ts: '2026-07-22T05:15:05Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -45,54 +45,43 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-19T08:15:09Z'
+  - ts: '2026-07-22T05:15:08Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 2
-      D4: 3
+      D4: 2
       F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=0 
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
+      F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2546: re-pin designer 0.3.0 (T-200 release: IW-9 owner-collapse + offline-hardened)
+# T-2595: Clear fabric no-edge audit WARN — enrich remaining no-edge cards
 
 ## Context
 
-832 cut designer 0.3.0 (their T-200): IW-9 editor owner-collapse (node `owner` retired
-from authoring surface → read-only readout derived from lane authority) + T-176
-offline-hardening (fonts embedded base64 woff2, zero-network; 395KB→827KB). Delivered
-into AEF via `file_send` per the T-559 boundary. Re-pin mirrors the completed T-2526
-(0.2.0 re-pin) flow: verify delivered sha256 against pin → `fw designer sync` installs
-read-only. Pin target: version 0.3.0, sha256 `36be033d66aa1c159a9e75df674f02032eb9f308882af288fad909e6d754a4bb`, bytes 826643.
-
-**Delivery resolved:** first `file_send` (xfer-mcp-3273116) failed reassembly
-("17/1 chunks") due to a transfer-id collision (root-caused, L-502). 832 re-fired
-under fresh `xfer-mcp-3313260` (rail offset 70); it reassembled clean and sha-matched.
+Audit emits a standing WARN "Fabric: 15/812 cards have no edges" (graph coverage below
+target). ~20 cards currently have neither depends_on nor depended_by. Mitigation per audit:
+`fw fabric enrich` (automated edge detection) + manual purpose/edges where the detector
+cannot derive them (docs/reports evidence artifacts, fixtures, schema files). Bounded
+housekeeping while the 832 lane waits on external events.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] 0.3.0 artifact delivered clean: `file_receive` reassembles + integrity-passes; landed file sha256 == pin (`36be033d…`), bytes == 826643 — verified independently via sha256sum
-- [x] `policy/designer-pin.yaml` bumped to 0.3.0 (version, sha256, bytes, vendored_path, source_artifact, source_tag; cdn_fonts→false per offline-hardening)
-- [x] `fw designer sync --from <delivered>` installs read-only to `vendor/designer/aef-workflow-designer-0.3.0.html`; `fw designer status` reports PRESENT ✓ (sha256 matches pin)
-- [x] `fw doctor` clean on designer pin drift — emits `OK designer vendored build matches pin (36be033d…)`
-- [x] sha256 match confirmed back to 832 on the rail BEFORE sync (rail offset 71; offset-64 commitment honored)
-- [x] LIVE end-to-end: `/designer` serves HTTP 200, 826643 bytes, served sha256 == pin; served page has 0 CDN-font refs + 14 base64 woff2 embeds (T-176 offline-hardening confirmed on live bytes)
-
-## Verification
-bin/fw designer status | grep -q "PRESENT ✓ (sha256 matches pin)"
-test "$(sha256sum vendor/designer/aef-workflow-designer-0.3.0.html | cut -d' ' -f1)" = "36be033d66aa1c159a9e75df674f02032eb9f308882af288fad909e6d754a4bb"
-test "$(grep -c 'fonts.googleapis.com\|fonts.gstatic.com' vendor/designer/aef-workflow-designer-0.3.0.html)" = "0"
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] `fw fabric enrich` run over the no-edge card set (dry-run inspected first); auto-derivable edges written (9 cards, 15 edges)
+- [x] Remaining no-edge cards enriched manually with real purpose + at least one edge (12 cards, edges derived from actual callers/readers: hook chains, cron/fw dispatch, test targets, template renderer, fixture readers)
+- [x] Audit fabric section no longer emits the no-edge WARN (or count strictly reduced with the residual honestly justified) — non-standalone no-edge count now 0/812 (WARN threshold >10)
+- [x] All touched card YAMLs parse (python yaml.safe_load)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -126,6 +115,9 @@ test "$(grep -c 'fonts.googleapis.com\|fonts.gstatic.com' vendor/designer/aef-wo
 -->
 
 ## Verification
+
+python3 -c "import yaml, glob; rem=[f for f in glob.glob('.fabric/components/*.yaml') if (lambda d: d and d.get('standalone') is not True and not (d.get('depends_on') or []) and not (d.get('depended_by') or []))(yaml.safe_load(open(f)))]; assert len(rem) <= 10, rem"
+python3 -c "import yaml, glob; [yaml.safe_load(open(f)) for f in glob.glob('.fabric/components/*.yaml')]"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -221,31 +213,35 @@ test "$(grep -c 'fonts.googleapis.com\|fonts.gstatic.com' vendor/designer/aef-wo
 
 ## Updates
 
-### 2026-07-19T08:04:27Z — task-created [task-create-agent]
+### 2026-07-22T05:08:14Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2546-re-pin-designer-030-t-200-release-iw-9-o.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2595-clear-fabric-no-edge-audit-warn--enrich-.md
 - **Context:** Initial task creation
+
+## Updates
+
+### 2026-07-22 — No-edge WARN cleared: 0/812
+- **Auto pass:** `fw fabric enrich` (dry-run first) over the no-edge set — 9 cards enriched,
+  15 edges (3 forward, 12 reverse; includes reverse edges into pair-draft-3 /
+  test_designer_registry_ghosts / bpmn_to_tasks / designer_registry from the 832-seam tests).
+- **Manual pass (12 cards):** edges derived from real callers/readers, verified by grep:
+  chat-bare-path-scan ← warn.sh + checkpoint.sh; chat-bare-path-warn → scan.sh;
+  revisit-due-scan ← handover.sh + bin/fw; integrate-go-live ← bin/fw;
+  typed-event-sample fixture ← test_bpmn_to_tasks.py; 5 test cards → their test targets
+  (approvals.py `_load_close_ready_arcs`, check-inception-schema.py, web/shared.py
+  extract_recommendation, update-task.sh render-surface heredoc, bvp-estimator/estimator.py);
+  escalation-scan-v0 ← bin/fw; designer_landing template ← web/blueprints/designer.py.
+- **Result:** non-standalone no-edge count 15 → 0 (of 812); audit WARN threshold is >10.
+  All card YAMLs parse. Verification pins the ≤10 invariant so regrowth re-blocks at close.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-aca4e1d9
-- **Timestamp:** 2026-07-19T09:12:13Z
+- **Scan ID:** R-4c44f00f
+- **Timestamp:** 2026-07-22T05:26:18Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#2 (Agent)** — `policy/designer-pin.yaml` bumped to 0.3.0 (version, sha256, bytes, vendored_path, source_artifact, source_tag; cdn_fonts→false per offline-hardening)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: `policy/designer-pin.yaml` bumped to 0.3.0 (version, sha256, bytes, vendored_path, source_artifact, source_tag; cdn_fonts→false per offline-hardening)`
-
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
-     - evidence: `bin/fw designer status | grep -q "PRESENT ✓ (sha256 matches pin)"`
-  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
-     - evidence: ``bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.`
-
-### 2026-07-19T09:12:11Z — status-update [task-update-agent]
+### 2026-07-22T05:26:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

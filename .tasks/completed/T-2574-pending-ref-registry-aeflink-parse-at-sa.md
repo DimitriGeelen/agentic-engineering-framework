@@ -6,12 +6,12 @@ description: >
   pending-ref registry: aef:link parse at save, ghost capture, /api/list ghosts[]
   (T-2571 S2)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/web/test_designer_registry_ghosts.py, web/blueprints/designer_api.py, web/designer_registry.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-20T21:59:03Z
-last_update: '2026-07-20T22:00:09Z'
-date_finished:
+last_update: 2026-07-20T22:05:25Z
+date_finished: 2026-07-20T22:05:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -216,3 +216,15 @@ out=$(curl -sf "$(bin/fw watchtower url)/api/list"); echo "$out" | python3 -c "i
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2574-pending-ref-registry-aeflink-parse-at-sa.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f2cddf2f
+- **Timestamp:** 2026-07-20T22:05:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-20T22:05:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
