@@ -113,7 +113,31 @@ def designer_app():
     recurrence #2, 2026-07-21). Accepts the bundle's own ?load=<same-origin path>
     deep-link; a src that differs from the stored autosave src wins over the
     restore (bundle B1 contract), which is what the landing cards exploit.
+
+    T-2599: any ?load WITHOUT a t= nonce is 302-redirected to the same URL with
+    a ms-timestamp nonce minted INSIDE the load value. The in-editor handoff
+    jump switches maps in-place without updating ?load, so post-jump autosaves
+    record the jumped-to map under the entry URL's src — and B1's same-src
+    restore then silently renders the WRONG map on the next visit through that
+    URL (T-2596). The T-2596 click-time nonce only covers the landing cards'
+    current markup; browser history / bookmarks / cached pages replay nonce-less
+    URLs forever (operator recurrence #4, access-log evidence 2026-07-22
+    08:18:58). Minting server-side closes every entry path. A redirected URL
+    keeps its nonce, so F5 / same-session reload still restores in-progress
+    edits (B1 same-src contract intact); only NEW arrivals get a fresh nonce.
     """
+    import re
+    from urllib.parse import quote as _q
+
+    from flask import redirect, request
+
+    load = request.args.get("load")
+    if load and not re.search(r"[?&]t=", load):
+        sep = "&" if "?" in load else "?"
+        nonce = str(int(time.time() * 1000))
+        return redirect(
+            "/designer/app?load=" + _q(f"{load}{sep}t={nonce}", safe=""), code=302
+        )
     return _serve_bundle()
 
 

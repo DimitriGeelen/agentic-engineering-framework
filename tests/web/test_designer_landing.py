@@ -106,3 +106,25 @@ def test_card_links_mint_clicktime_nonce(client):
     assert html.count('hx-boost="false"') >= n_cards
     assert html.count("this.href=this.href.split('%26t%3D')[0]+'%26t%3D'+Date.now()") \
         == n_cards
+
+
+def test_app_route_mints_nonce_for_nonceless_load(client):
+    """T-2599: browser history / bookmarks replay nonce-less ?load URLs forever,
+    bypassing the T-2596 landing-card nonce — the server must mint one. A load
+    already carrying t= must NOT redirect (F5 of a redirected URL keeps its nonce
+    so B1 same-src edit restore still works in-session)."""
+    c, store = client
+    # Nonce-less load (the operator's replayed-history shape) → 302 with t= inside load
+    r = c.get("/designer/app?load=/api/version?id%3Daef-dispatch-loop%26v%3D2")
+    assert r.status_code == 302
+    assert "load=" in r.headers["Location"] and "t%3D" in r.headers["Location"]
+    # Following the redirect serves the bundle (no loop)
+    r2 = c.get(r.headers["Location"])
+    assert r2.status_code == 200
+    assert "aefAutosaveDoc" in r2.get_data(as_text=True)
+    # Fully-encoded landing-card shape without nonce also redirects
+    r3 = c.get("/designer/app?load=%2Fapi%2Fversion%3Fid%3Daef-task-lifecycle%26v%3D2")
+    assert r3.status_code == 302
+    # No load param → bundle served directly (B1 last-draft restore by design)
+    r4 = c.get("/designer/app")
+    assert r4.status_code == 200
