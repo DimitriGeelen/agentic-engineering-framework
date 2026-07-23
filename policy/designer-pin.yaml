@@ -4,23 +4,34 @@
 # RELEASED single-file build artifact — never 832 source — and never edits the
 # vendored copy in place. Improvements route upstream to 832 (see protocol).
 #
-# Bump procedure (phase-1): 832 cuts a release → delivers the artifact into AEF
-# (cross-project boundary means AEF cannot pull it; 832 pushes it, T-559) →
-# operator/agent updates this pin → `fw designer sync --from <delivered>` verifies
-# the delivered artifact's sha256 against `sha256:` below and installs it, rejecting
-# (non-zero exit) on any mismatch. The pin is the reproducibility anchor.
+# Bump procedure (pull-at-tag, T-247/D-335, first used for 0.4.0): 832 cuts a
+# release (annotated tag designer-vX.Y.Z carrying dist artifact + MANIFEST.yaml)
+# → rail announce (version, sha256, bytes, tag — stays the trigger + verdict
+# handshake) → AEF fetches artifact + MANIFEST AT the tag from read-only LAN
+# origin ssh://git@192.168.10.201:6611/workflow-designer → independent sha256
+# must match BOTH the announce AND the MANIFEST at the SAME tag → update this
+# pin → `fw designer sync` verifies against `sha256:` below and installs,
+# rejecting (non-zero exit) on any mismatch. file_send remains fallback
+# (pre-T-247 phase-1 flow). The pin is the reproducibility anchor; T-559 ruling:
+# frozen annotated tag = published frozen bytes — 832's working tree stays
+# off-limits.
 
-version: "0.3.2"
-sha256: "983e0e304a3dc12e41ed9ea7270ba6edd032453c72c9ee423f466aa9d9e8d38a"
-bytes: 866701
+version: "0.4.0"
+sha256: "ea47db53a55be41df7ee6a2ff934146eeeed9f247b4a9bb1db9bcc152c3880d7"
+bytes: 872147
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.3.2.html"
-source_tag: "designer-v0.3.2"
+source_artifact: "dist/aef-workflow-designer-0.4.0.html"
+source_tag: "designer-v0.4.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.4.0 = 0.3.2 + 832 T-245 view-chrome controls (ZERO seam surface — no
+#   document/bridge/contract change): ◧/◨ per-panel hide-show toggles persisted
+#   in editor-local prefs; ⛶ fullscreen focus mode (transient, floating-exit/Esc
+#   restore); hidden properties panel auto-reveals on explicit selection.
+#   First release taken via pull-at-tag intake (T-247 contract / D-335 / T-2617).
 # 0.3.2 = 0.3.1 + (1) 832 T-240 uuid workflowRef auto-resolve — at map load the
 #   editor resolves each aef:link workflowRef (uuid) against /api/list and binds
 #   the jump ONLY on an exactly-one live-map uuid match; ghost refs stay disabled;
@@ -44,7 +55,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.3.2.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.4.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -54,7 +65,7 @@ cdn_fonts: false
 
 # T-2612: capability flag — can the pinned build auto-resolve a workflowRef
 # (uuid) link target for the handoff jump WITHOUT a targetWorkflow slug alias?
-# 0.3.2 CAN (832 T-240 landed): uuid-only links auto-resolve at load against
+# 0.4.0 CAN (T-240 retained; markers re-verified at re-pin): uuid-only links auto-resolve at load against
 # /api/list (exactly-one live-map match binds; ghosts stay disabled). While
 # true, `fw corpus` emits canonical uuid-only links (no targetWorkflow alias)
 # and corpus lint rule `editor-unbindable` stays dormant. If a future re-pin

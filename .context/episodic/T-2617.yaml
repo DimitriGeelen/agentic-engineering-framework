@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2617: Re-pin designer 0.4.0 (T-245 view-chrome) — first pull-at-tag intake per T-247/D-335
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-23T18:08:52Z
+# ============================================================================
+
+task_id: T-2617
+task_name: "Re-pin designer 0.4.0 (T-245 view-chrome) — first pull-at-tag intake per T-247/D-335"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-23T18:03:45Z
+completed: 2026-07-23T18:08:41Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Artifact `dist/aef-workflow-designer-0.4.0.html` + `dist/MANIFEST.yaml` pulled AT tag `designer-v0.4.0` from LAN origin (not file_send); independent sha256 of pulled artifact = ea47db53…80d7 and matches BOTH the rail-190 announce AND the MANIFEST entry at the same tag; byte count 872147'
+  - '`policy/designer-pin.yaml` bumped to 0.4.0 (sha/bytes/artifact/tag/vendored_path + content note); `resolves_workflow_ref: true` retained (T-240 capability present in 0.4.0 per markers) — no emit/lint behavior change expected'
+  - '`fw designer sync` clean; served bytes at `$(bin/fw watchtower url)/designer/app` sha-identical to pin'
+  - 'Marker check on served bytes: T-245 markers present (btn-focus-mode x2, vc-exit x6, revealPropsForSelection x4) AND 0.3.x markers retained (_loadSrcKey x4, EVENT_KIND_TYPE x2, ''auto-resolved from workflow ref'' x1)'
+  - 'Suites green: corpus round-trip + lint unit suites pass; corpus lint at 2-finding steady baseline; live e2e — editor loads a corpus map from the store and the T-245 view-chrome controls are present in the served DOM'
+  - 'Verdict posted on the rail (dm 0e7ee6ca↔6a646ce8) closing the 0.4.0 intake loop'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2617-re-pin-designer-040-t-245-view-chrome--f.md
+generated_by: context-agent-hybrid

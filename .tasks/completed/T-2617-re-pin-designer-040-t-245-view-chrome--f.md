@@ -1,19 +1,13 @@
 ---
-id: T-2616
-name: "fw designer sync --from-tag: pull-at-tag release intake (832 T-247, operator-ratified)"
+id: T-2617
+name: "Re-pin designer 0.4.0 (T-245 view-chrome) — first pull-at-tag intake per T-247/D-335"
 description: >
-  Operator ratified 832's pull-at-tag proposal (rail 178, ratified 2026-07-23): from
-  the next designer release, intake = rail announce -> git fetch artifact dist/aef-workflow-designer-X.Y.Z.html
-  + MANIFEST.yaml at annotated tag designer-vX.Y.Z from read-only LAN origin (192.168.10.201:6611/workflow-designer)
-  -> independent sha256 vs MANIFEST at same tag -> re-pin -> sync -> e2e -> verdict
-  on rail. T-559 ruling: frozen annotated tag = published frozen bytes, satisfies
-  the invariant; never their working tree. file_send remains fallback. Build: extend
-  fw designer sync with --from-tag <tag> path.
+  Re-pin designer 0.4.0 (T-245 view-chrome) — first pull-at-tag intake per T-247/D-335
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -27,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-23T10:36:26Z
-last_update: '2026-07-23T10:45:08Z'
-date_finished:
+created: 2026-07-23T18:03:45Z
+last_update: 2026-07-23T18:08:41Z
+date_finished: 2026-07-23T18:08:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -40,48 +34,23 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-23T10:45:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-23T10:45:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2616: fw designer sync --from-tag: pull-at-tag release intake (832 T-247, operator-ratified)
+# T-2617: Re-pin designer 0.4.0 (T-245 view-chrome) — first pull-at-tag intake per T-247/D-335
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 released designer 0.4.0 (rail 190, their T-248) — content since 0.3.2 is exactly their T-245 view-chrome controls (◧/◨ per-panel toggles persisted in editor-local prefs; ⛶ fullscreen focus mode; hidden-props auto-reveal on selection). ZERO seam surface: no document/bridge/contract change, so intake is pin+sync+e2e only — no corpus or emit work. This is the FIRST pull-at-tag intake under the T-247 contract (our D-335, T-2616): fetch artifact + MANIFEST at annotated tag `designer-v0.4.0` from read-only LAN origin `ssh://git@192.168.10.201:6611/workflow-designer`, verify independent sha256 vs MANIFEST at the SAME tag, re-pin, sync, e2e, verdict on the rail. Announced: sha256 ea47db53a55be41df7ee6a2ff934146eeeed9f247b4a9bb1db9bcc152c3880d7, 872147 bytes, release commit 413e111.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Artifact `dist/aef-workflow-designer-0.4.0.html` + `dist/MANIFEST.yaml` pulled AT tag `designer-v0.4.0` from LAN origin (not file_send); independent sha256 of pulled artifact = ea47db53…80d7 and matches BOTH the rail-190 announce AND the MANIFEST entry at the same tag; byte count 872147
+- [x] `policy/designer-pin.yaml` bumped to 0.4.0 (sha/bytes/artifact/tag/vendored_path + content note); `resolves_workflow_ref: true` retained (T-240 capability present in 0.4.0 per markers) — no emit/lint behavior change expected
+- [x] `fw designer sync` clean; served bytes at `$(bin/fw watchtower url)/designer/app` sha-identical to pin
+- [x] Marker check on served bytes: T-245 markers present (btn-focus-mode x2, vc-exit x6, revealPropsForSelection x4) AND 0.3.x markers retained (_loadSrcKey x4, EVENT_KIND_TYPE x2, 'auto-resolved from workflow ref' x1)
+- [x] Suites green: corpus round-trip + lint unit suites pass; corpus lint at 2-finding steady baseline; live e2e — editor loads a corpus map from the store and the T-245 view-chrome controls are present in the served DOM
+- [x] Verdict posted on the rail (dm 0e7ee6ca↔6a646ce8) closing the 0.4.0 intake loop
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,6 +116,24 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Vendored artifact matches pin sha (pull-at-tag intake)
+out=$(sha256sum vendor/designer/aef-workflow-designer-0.4.0.html); echo "$out" | grep -q "ea47db53a55be41df7ee6a2ff934146eeeed9f247b4a9bb1db9bcc152c3880d7"
+# Pin file carries 0.4.0 + retained capability flag
+out=$(cat policy/designer-pin.yaml); echo "$out" | grep -q 'version: "0.4.0"' && echo "$out" | grep -q "resolves_workflow_ref: true"
+# Served bytes sha-identical to pin
+out=$(curl -sf "$(bin/fw watchtower url)/designer/app" | sha256sum); echo "$out" | grep -q "ea47db53a55be41df7ee6a2ff934146eeeed9f247b4a9bb1db9bcc152c3880d7"
+# T-245 markers present + 0.3.x markers retained (occurrence counts)
+test "$(grep -o 'btn-focus-mode' vendor/designer/aef-workflow-designer-0.4.0.html | wc -l)" = "2"
+test "$(grep -o 'vc-exit' vendor/designer/aef-workflow-designer-0.4.0.html | wc -l)" = "6"
+test "$(grep -o 'revealPropsForSelection' vendor/designer/aef-workflow-designer-0.4.0.html | wc -l)" = "4"
+test "$(grep -c '_loadSrcKey' vendor/designer/aef-workflow-designer-0.4.0.html)" = "4"
+test "$(grep -o 'EVENT_KIND_TYPE' vendor/designer/aef-workflow-designer-0.4.0.html | wc -l)" = "2"
+test "$(grep -o 'auto-resolved from workflow ref' vendor/designer/aef-workflow-designer-0.4.0.html | wc -l)" = "1"
+# Suites green
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint.py -q
+# Corpus lint at 2-finding steady baseline
+test "$(python3 tools/corpus_lint.py 2>&1 | grep -c '^  \[')" = "2"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -210,7 +197,29 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-07-23T10:36:26Z — task-created [task-create-agent]
+### 2026-07-23T18:03:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2616-fw-designer-sync---from-tag-pull-at-tag-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2617-re-pin-designer-040-t-245-view-chrome--f.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-132ee531
+- **Timestamp:** 2026-07-23T18:08:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Artifact `dist/aef-workflow-designer-0.4.0.html` + `dist/MANIFEST.yaml` pulled AT tag `designer-v0.4.0` from LAN origin (not file_send); independent sha256 of pulled artifact = ea47db53…80d7 and match
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=dist/MANIFEST.yaml in: Artifact `dist/aef-workflow-designer-0.4.0.html` + `dist/MANIFEST.yaml` pulled AT tag `designer-v0.4.0` from LAN origin (not file_send); independent s`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint.py -q`
+
+### 2026-07-23T18:08:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
