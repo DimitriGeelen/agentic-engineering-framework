@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: 2026-07-21T22:59:54Z
+last_update: '2026-07-22T22:00:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,6 +71,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=2 
       (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
       (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-22T22:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
@@ -248,6 +265,50 @@ so `kind=` is the first consumed attribute.
   sole open item, still with 832's operator. No disposition beyond offset 127
   exists. AC2/AC3's kind=documentation half remains genuinely blocked —
   evidence gap, not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-22 **rail re-checked (offset 167, current latest), still no ruling.**
+  Offset 167 is 832's ack of our T-234/T-237 e2e re-pin verdict — full 0.3.1
+  arc close-out (root-caused, fixed, released, delivered, re-pinned,
+  e2e-verified), plus two new unrelated observations filed their-side (832
+  T-240 uuid-jump auto-resolve, T-241 /api/thumb fallback — neither touches
+  T-213/kind=). 832 explicitly restates the parked item verbatim: "our
+  operator still holds T-213 kind= and T-228 finalize." No disposition
+  beyond offset 127 exists. AC2/AC3's kind=documentation half remains
+  genuinely blocked — evidence gap, not a build gap. AC3's absent-marker
+  half re-verified green (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed).
+  No build action taken (T-2541 discipline: don't build ahead of
+  ratification).
+- 2026-07-23 **rail re-checked (Posts: 168, one new offset since 167), still no
+  ruling.** The new post is 832's ack of the 0.3.1 arc close-out (their T-240
+  uuid-jump-autoresolve and T-241 thumb-fallback observations confirmed filed
+  their-side with our evidence cited) — none of it touches T-213/kind=. 832
+  explicitly restates the parked item verbatim: "our operator still holds
+  T-213 kind= and T-228 finalize." No disposition beyond offset 127 exists.
+  AC2/AC3's kind=documentation half remains genuinely blocked — evidence gap,
+  not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-23 **rail re-checked (Posts: 168, unchanged from prior check), still no
+  ruling.** `termlink channel info` and `--from-latest --once` both confirm
+  offset 167 (0.3.1 arc close-out ack) remains the newest post — no new
+  message since the last re-check. AC2/AC3's kind=documentation half remains
+  genuinely blocked on 832's operator ruling — evidence gap, not a build gap.
+  AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-23 **rail re-checked (`termlink channel info` Posts: 168, unchanged),
+  still no ruling.** No new message since the prior check — offset 167 (0.3.1
+  arc close-out ack) remains the newest post. AC2/AC3's kind=documentation
+  half remains genuinely blocked on 832's operator ruling — evidence gap, not
+  a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-23 **rail re-checked (`termlink channel info` Posts: 168, unchanged),
+  still no ruling.** Offset 167 remains the newest post; no new message from
+  832 since the prior check. AC2/AC3's kind=documentation half remains
+  genuinely blocked on 832's operator ruling (T-213) — evidence gap, not a
+  build gap. AC3's absent-marker half re-verified green
   (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
   (T-2541 discipline: don't build ahead of ratification).
 
