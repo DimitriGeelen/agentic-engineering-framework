@@ -22362,3 +22362,387 @@ scan_id: R-4c44f00f
 task_id: T-2595
 payload:
   task_file: .tasks/active/T-2595-clear-fabric-no-edge-audit-warn--enrich-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T05:59:03Z'
+scan_id: R-81fc5144
+task_id: T-2596
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T05:59:03Z'
+scan_id: R-81fc5144
+task_id: T-2596
+payload:
+  task_file: .tasks/active/T-2596-off-page-handoff-regression-on-operator-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T06:00:32Z'
+scan_id: R-02448682
+task_id: T-2597
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T06:00:32Z'
+scan_id: R-02448682
+task_id: T-2597
+payload:
+  task_file: .tasks/active/T-2597-s4a-picker-ui-re-verify-vs-832-served-88.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T09:55:10Z'
+scan_id: R-54d6d496
+task_id: T-2600
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T09:55:10Z'
+scan_id: R-54d6d496
+task_id: T-2600
+payload:
+  task_file: .tasks/active/T-2600-dispatch-loop-workflow-has-no-return-han.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T10:01:38Z'
+scan_id: R-5f296780
+task_id: T-2599
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T10:01:38Z'
+scan_id: R-5f296780
+task_id: T-2599
+payload:
+  task_file: .tasks/active/T-2599-handoff-regression-hole-2-non-landing-en.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T10:02:33Z'
+scan_id: R-e884d3a6
+task_id: T-2598
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T10:02:33Z'
+scan_id: R-e884d3a6
+task_id: T-2598
+payload:
+  task_file: .tasks/active/T-2598-fw-watchtower-restart-drops-the-running-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T10:51:21Z'
+scan_id: R-eb861381
+task_id: T-2602
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T10:51:21Z'
+scan_id: R-eb861381
+task_id: T-2602
+payload:
+  task_file: .tasks/active/T-2602-spec-driven-corpus-map-authoring-declara.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-22T10:51:21Z'
+scan_id: RC-053b37af
+task_id: T-2602
+payload:
+  overall: CONFIRMED
+  claim_count: 3
+---
+kind: scan_emitted
+timestamp: '2026-07-22T10:52:12Z'
+scan_id: R-2951813a
+task_id: T-2601
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T10:52:12Z'
+scan_id: R-2951813a
+task_id: T-2601
+payload:
+  task_file: .tasks/active/T-2601-rca-t-2600-defective-fix-duplicate-hando.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T18:20:27Z'
+scan_id: R-553fd274
+task_id: T-2606
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T18:20:27Z'
+scan_id: R-553fd274
+task_id: T-2606
+payload:
+  task_file: .tasks/active/T-2606-t-235-s4-exemplar-fixture-intake-drop-pi.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T18:30:56Z'
+scan_id: R-796356da
+task_id: T-2604
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T18:30:56Z'
+scan_id: R-796356da
+task_id: T-2604
+payload:
+  task_file: .tasks/active/T-2604-corpus-lint-per-map--cross-map-rules-map.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T19:03:27Z'
+scan_id: R-f27f2568
+task_id: T-2608
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T19:03:27Z'
+scan_id: R-f27f2568
+task_id: T-2608
+payload:
+  task_file: .tasks/active/T-2608-single-stored-representation-for-corpus-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-22T19:03:27Z'
+scan_id: RC-66cd2093
+task_id: T-2608
+payload:
+  overall: CONFIRMED
+  claim_count: 3
+---
+kind: scan_emitted
+timestamp: '2026-07-22T19:20:47Z'
+scan_id: R-cfd437c1
+task_id: T-2603
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T19:20:47Z'
+scan_id: R-cfd437c1
+task_id: T-2603
+payload:
+  task_file: .tasks/active/T-2603-corpus-spec-format--deterministic-genera.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T19:21:07Z'
+scan_id: R-af5d8b5f
+task_id: T-2605
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T19:21:07Z'
+scan_id: R-af5d8b5f
+task_id: T-2605
+payload:
+  task_file: .tasks/active/T-2605-deleterecreate-repeatability-proof-harne.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T19:34:54Z'
+scan_id: R-99955c31
+task_id: T-2609
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T19:34:54Z'
+scan_id: R-99955c31
+task_id: T-2609
+payload:
+  task_file: .tasks/active/T-2609-corpus-recreate-rollout---task-lifecycle.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T19:56:39Z'
+scan_id: R-400e28d6
+task_id: T-2551
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T19:56:39Z'
+scan_id: R-400e28d6
+task_id: T-2551
+payload:
+  task_file: .tasks/active/T-2551-scope-aef-consumption-semantics-for-832-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-22T19:56:39Z'
+scan_id: RC-e5c81c14
+task_id: T-2551
+payload:
+  overall: CONTRADICTED
+  claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-07-22T20:05:30Z'
+scan_id: R-d3e0590b
+task_id: T-2610
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T20:05:30Z'
+scan_id: R-d3e0590b
+task_id: T-2610
+payload:
+  task_file: .tasks/active/T-2610-t-2551-no-go-follow-through---corpus-lin.md
+---
+kind: scan_emitted
+timestamp: '2026-07-22T20:21:10Z'
+scan_id: R-67b5eb8a
+task_id: T-2611
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-22T20:21:10Z'
+scan_id: R-67b5eb8a
+task_id: T-2611
+payload:
+  task_file: .tasks/active/T-2611-re-pin-designer-031-t-234-jump-autosave-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-23T07:06:42Z'
+scan_id: R-10a0814d
+task_id: T-2612
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-23T07:06:42Z'
+scan_id: R-10a0814d
+task_id: T-2612
+payload:
+  task_file: .tasks/active/T-2612-handoff-jump-regression-uuid-form-corpus.md
+---
+kind: scan_emitted
+timestamp: '2026-07-23T07:54:28Z'
+scan_id: R-6b5fce20
+task_id: T-2614
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-23T07:54:28Z'
+scan_id: R-6b5fce20
+task_id: T-2614
+payload:
+  task_file: .tasks/active/T-2614-corpusspec-parse-silently-drops-unknown-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-23T08:52:02Z'
+scan_id: R-3c4427c8
+task_id: T-2615
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-23T08:52:02Z'
+scan_id: R-3c4427c8
+task_id: T-2615
+payload:
+  task_file: .tasks/active/T-2615-re-pin-designer-032-t-240-uuid-auto-reso.md
+---
+kind: scan_emitted
+timestamp: '2026-07-23T08:58:10Z'
+scan_id: R-899e5045
+task_id: T-2613
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-23T08:58:10Z'
+scan_id: R-899e5045
+task_id: T-2613
+payload:
+  task_file: .tasks/active/T-2613-aef-audit-cron-warnfail-connector-unwire.md

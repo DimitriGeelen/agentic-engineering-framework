@@ -1,14 +1,14 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-07-22T03:23:02.583649+00:00
-corpus_total: 2321
-bug_class_total: 464
+generated: 2026-07-23T03:23:02.524069+00:00
+corpus_total: 2337
+bug_class_total: 467
 bug_class_pct: 19
 h1_flagged: 346
 h1_pct_of_bug_class: 74
 h2_repeat_patterns: 127
 h3_flagged: 265
-h3_pct_of_bug_class: 57
+h3_pct_of_bug_class: 56
 recent_30d_flagged: 6
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
@@ -26,15 +26,15 @@ recent_sample:
     name: "Reviewer skip-as-pass detector false-positive: it matches the RCA-template"
 h2_top:
   - learning: "P-011"
-    task_count: 1185
+    task_count: 1213
   - learning: "L-387"
-    task_count: 1021
+    task_count: 1046
   - learning: "L-291"
-    task_count: 653
+    task_count: 669
   - learning: "L-398"
-    task_count: 436
+    task_count: 449
   - learning: "P-010"
-    task_count: 230
+    task_count: 239
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"

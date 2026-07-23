@@ -8,10 +8,10 @@ description: >
   vs work-plan), so promote would offer filing process steps as real tasks. Propose
   additive aef:workflowMeta kind= attribute to 832 (they own vocabulary; rail loop).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: 2026-07-23T07:29:39Z
+last_update: 2026-07-23T08:59:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -517,3 +517,7 @@ python3 -m pytest tests/web/test_bpmn_frozen_v1_pin.py -q > /tmp/.t2556-pin.out 
 ### 2026-07-23T07:29:39Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-07-23T08:59:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
