@@ -7,11 +7,11 @@
 # Bump procedure (pull-at-tag, T-247/D-335, first used for 0.4.0): 832 cuts a
 # release (annotated tag designer-vX.Y.Z carrying dist artifact + MANIFEST.yaml)
 # → rail announce (version, sha256, bytes, tag — stays the trigger + verdict
-# handshake) → AEF fetches artifact + MANIFEST AT the tag from read-only LAN
-# origin ssh://git@192.168.10.201:6611/workflow-designer → independent sha256
-# must match BOTH the announce AND the MANIFEST at the SAME tag → update this
-# pin → `fw designer sync` verifies against `sha256:` below and installs,
-# rejecting (non-zero exit) on any mismatch. file_send remains fallback
+# handshake) → update this pin from the announce → `fw designer sync --from-tag`
+# (canonical intake step, T-2616) fetches artifact + MANIFEST AT the tag from
+# `source_origin:` below → independent sha256 must match BOTH the MANIFEST at
+# the SAME tag AND `sha256:` below, rejecting (non-zero exit) on any mismatch,
+# then installs read-only. file_send + `sync --from <file>` remains fallback
 # (pre-T-247 phase-1 flow). The pin is the reproducibility anchor; T-559 ruling:
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
@@ -24,6 +24,10 @@ source_repo: "832-Workflow-designer"
 source_artifact: "dist/aef-workflow-designer-0.4.0.html"
 source_tag: "designer-v0.4.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
+# Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
+# `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
+# from here — frozen published bytes only (T-559), never 832's working tree.
+source_origin: "ssh://git@192.168.10.201:6611/workflow-designer"
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2616: fw designer sync --from-tag: pull-at-tag release intake (832 T-247, operator-ratified)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-23T19:47:23Z
+# ============================================================================
+
+task_id: T-2616
+task_name: "fw designer sync --from-tag: pull-at-tag release intake (832 T-247, operator-ratified)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-23T10:36:26Z
+completed: 2026-07-23T19:47:08Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw designer sync --from-tag <tag>` fetches artifact + MANIFEST at the annotated tag from the pin''s `source_origin`, computes an independent sha256, and refuses install (non-zero exit, no vendored write) unless the sha matches BOTH the MANIFEST at the same tag AND the pin''s `sha256:`'
+  - '`--dry-run` verifies tag self-consistency (artifact sha + bytes vs MANIFEST at that tag) and reports pin-match as info WITHOUT installing — live-verified against a historical tag (designer-v0.3.2, sha 983e0e30…d38a ≠ current pin) exiting 0 with no vendored change'
+  - 'Bare `--from-tag` (no tag argument) defaults to the pin''s `source_tag`; live run against designer-v0.4.0 installs bytes sha-identical to the pin (ea47db53…80d7), idempotent re-install, vendored file mode 0444'
+  - '`policy/designer-pin.yaml` gains `source_origin:` read by the script; bump-procedure comment names `fw designer sync --from-tag` as the canonical intake step'
+  - 'bats coverage with a LOCAL fixture origin (git repo + annotated tag carrying dist artifact + MANIFEST — no network): happy install, MANIFEST-mismatch refusal, pin-mismatch refusal, dry-run no-install'
+  - 'Existing `--from <file>` fallback path unchanged (same verify+install semantics, still green in bats)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-23 — origin URL location'
+    chose: 'origin URL lives in `policy/designer-pin.yaml` as `source_origin:`; script reads it, no hard-coded URL.'
+    rationale: 'the pin is already the single AEF↔832 contract file (sha, tag, artifact path); a host move on 832''s side is then a one-line pin edit, and the bats fixture can point `source_origin` at a local repo with zero network.'
+    alternatives_rejected: ['hard-coding the URL in designer.sh (contract data in code, untestable offline); an `FW_*` env/config key (splits the contract across two files for no gain).']
+  - decision: '2026-07-23 — --dry-run semantics'
+    chose: 'dry-run checks tag SELF-consistency (artifact vs MANIFEST at the same tag) as a hard gate but reports pin-match as info only, exit 0 either way; install mode requires both anchors.'
+    rationale: 'dry-run''s job is inspecting arbitrary tags (historical audits, previewing a just-announced release BEFORE the pin bump) — a pin mismatch is the expected state there. A self-inconsistent release is a defect at any tag and must always fail loudly.'
+    alternatives_rejected: ['dry-run failing on pin mismatch (would make the pre-bump preview — its main use — always exit non-zero).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 550 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 550
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2616-fw-designer-sync---from-tag-pull-at-tag-.md
+generated_by: context-agent-hybrid

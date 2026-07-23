@@ -10,10 +10,10 @@ description: >
   the invariant; never their working tree. file_send remains fallback. Build: extend
   fw designer sync with --from-tag <tag> path.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-23T10:36:26Z
-last_update: '2026-07-23T10:45:08Z'
-date_finished:
+last_update: 2026-07-23T19:47:08Z
+date_finished: 2026-07-23T19:47:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -74,14 +74,25 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Mechanise the pull-at-tag intake (T-247/D-335) proven manually in T-2617: extend
+`agents/designer/designer.sh` with `sync --from-tag [<tag>] [--dry-run]` that
+fetches `dist/aef-workflow-designer-X.Y.Z.html` + `dist/MANIFEST.yaml` AT the
+annotated tag from the read-only LAN origin, verifies the independent sha256
+against BOTH the MANIFEST at the same tag AND the pin, and installs read-only.
+MANIFEST shape (confirmed at designer-v0.4.0): flat YAML keys `artifact`,
+`sha256`, `bytes`. Origin URL moves into `policy/designer-pin.yaml` as
+`source_origin:` (no hard-coded URL in the script). T-559 boundary: the fetch
+touches only frozen tag bytes, never 832's working tree.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw designer sync --from-tag <tag>` fetches artifact + MANIFEST at the annotated tag from the pin's `source_origin`, computes an independent sha256, and refuses install (non-zero exit, no vendored write) unless the sha matches BOTH the MANIFEST at the same tag AND the pin's `sha256:`
+- [x] `--dry-run` verifies tag self-consistency (artifact sha + bytes vs MANIFEST at that tag) and reports pin-match as info WITHOUT installing — live-verified against a historical tag (designer-v0.3.2, sha 983e0e30…d38a ≠ current pin) exiting 0 with no vendored change
+- [x] Bare `--from-tag` (no tag argument) defaults to the pin's `source_tag`; live run against designer-v0.4.0 installs bytes sha-identical to the pin (ea47db53…80d7), idempotent re-install, vendored file mode 0444
+- [x] `policy/designer-pin.yaml` gains `source_origin:` read by the script; bump-procedure comment names `fw designer sync --from-tag` as the canonical intake step
+- [x] bats coverage with a LOCAL fixture origin (git repo + annotated tag carrying dist artifact + MANIFEST — no network): happy install, MANIFEST-mismatch refusal, pin-mismatch refusal, dry-run no-install
+- [x] Existing `--from <file>` fallback path unchanged (same verify+install semantics, still green in bats)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,6 +158,14 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/designer/designer.sh
+out=$(bats tests/unit/designer_sync_from_tag.bats tests/unit/designer_sync_sha256.bats 2>&1); echo "$out" | grep -q "^ok 10" && ! echo "$out" | grep -q "^not ok"
+test "$(grep -c '^source_origin:' policy/designer-pin.yaml)" = "1"
+out=$(grep -A1 'sync --from-tag' policy/designer-pin.yaml); echo "$out" | grep -q "canonical intake step"
+# live pull-at-tag dry-run against the pinned tag (LAN origin must be reachable — that IS the contract surface)
+out=$(bin/fw designer sync --from-tag --dry-run 2>&1); echo "$out" | grep -q "sha matches current pin"
+out=$(sha256sum vendor/designer/aef-workflow-designer-0.4.0.html); echo "$out" | grep -q "ea47db53a55be41df7ee6a2ff934146eeeed9f247b4a9bb1db9bcc152c3880d7"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -189,14 +208,15 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-07-23 — origin URL location
+- **Chose:** origin URL lives in `policy/designer-pin.yaml` as `source_origin:`; script reads it, no hard-coded URL.
+- **Why:** the pin is already the single AEF↔832 contract file (sha, tag, artifact path); a host move on 832's side is then a one-line pin edit, and the bats fixture can point `source_origin` at a local repo with zero network.
+- **Rejected:** hard-coding the URL in designer.sh (contract data in code, untestable offline); an `FW_*` env/config key (splits the contract across two files for no gain).
+
+### 2026-07-23 — --dry-run semantics
+- **Chose:** dry-run checks tag SELF-consistency (artifact vs MANIFEST at the same tag) as a hard gate but reports pin-match as info only, exit 0 either way; install mode requires both anchors.
+- **Why:** dry-run's job is inspecting arbitrary tags (historical audits, previewing a just-announced release BEFORE the pin bump) — a pin mismatch is the expected state there. A self-inconsistent release is a defect at any tag and must always fail loudly.
+- **Rejected:** dry-run failing on pin mismatch (would make the pre-bump preview — its main use — always exit non-zero).
 
 ## Decision
 
@@ -214,3 +234,19 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2616-fw-designer-sync---from-tag-pull-at-tag-.md
 - **Context:** Initial task creation
+
+### 2026-07-23T19:41:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b5232991
+- **Timestamp:** 2026-07-23T19:47:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-23T19:47:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
