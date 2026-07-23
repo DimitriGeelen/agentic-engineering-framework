@@ -173,6 +173,26 @@ def test_unbindable_exempts_registered_ghost_refs(tmp_path):
     assert f == [], f
 
 
+# ── dangling-flow-ref (origin T-2614) ─────────────────────────────────────────
+
+def test_dangling_flow_ref_fires_on_missing_endpoint(tmp_path):
+    store = _store(tmp_path)
+    body = ('<bpmn:serviceTask id="n1" name="a"/>'
+            '<bpmn:sequenceFlow id="f1" sourceRef="n1" targetRef="GONE_NODE"/>')
+    f = _lint(body, store)
+    assert _rules(f) == ["dangling-flow-ref"], f
+    assert "GONE_NODE" in f[0]["detail"]
+
+
+def test_dangling_flow_ref_silent_on_attached_graph(tmp_path):
+    store = _store(tmp_path)
+    body = ('<bpmn:serviceTask id="n1" name="a"/>'
+            '<bpmn:subProcess id="n2" name="b"/>'
+            '<bpmn:sequenceFlow id="f1" sourceRef="n1" targetRef="n2"/>')
+    f = _lint(body, store)
+    assert f == [], f
+
+
 # ── ghost-ref (origin T-2584) ─────────────────────────────────────────────────
 
 def test_ghost_ref_fires_on_silent_dangler(tmp_path):

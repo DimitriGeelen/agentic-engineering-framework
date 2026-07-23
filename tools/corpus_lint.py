@@ -21,6 +21,11 @@ discipline: no speculative rules — each one has a task-traceable origin).
   ghost-ref               workflowRef uuid resolving to neither a store map nor
                           a pending-ref registry ghost. Registered ghosts are
                           deliberate (T-2584 flow) and NOT flagged.
+  dangling-flow-ref       a sequenceFlow sourceRef/targetRef naming no element in
+                          the map — renders as a disconnected graph (editor drops
+                          the edge silently). Origin: T-2614 — the T-2609 recreate
+                          dropped aef-inception-flow's subProcess (unknown tag,
+                          silent parse skip) while keeping both flows through it.
   editor-unbindable       a workflowRef-only link to a resolvable store map while
                           the pinned designer build cannot auto-resolve uuid refs
                           (policy/designer-pin.yaml resolves_workflow_ref is
@@ -189,6 +194,29 @@ def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set,
                           f"({target}) — duplicate handoff glyphs",
                 "origin": "T-2600/T-2601",
             })
+
+    # dangling-flow-ref (T-2614): a sequenceFlow endpoint naming no element in
+    # the map. This is exactly what renders as "the workflow is disconnected" —
+    # the editor keeps the nodes it has and silently drops the dangling edges.
+    # Origin: T-2609 recreate dropped aef-inception-flow's subProcess node
+    # (parse didn't know the tag) while both flows through it survived.
+    node_ids = {el.get("id") for el in proc
+                if isinstance(el.tag, str) and el.get("id")
+                and el.tag.split("}")[-1] != "sequenceFlow"}
+    for el in proc:
+        if isinstance(el.tag, str) and el.tag.split("}")[-1] == "sequenceFlow":
+            for attr in ("sourceRef", "targetRef"):
+                ref = el.get(attr)
+                if ref and ref not in node_ids:
+                    findings.append({
+                        "rule": "dangling-flow-ref", "map": map_name,
+                        "node": el.get("id"),
+                        "detail": f'{attr}="{ref}" names no element in this map '
+                                  f"— the edge will not render and the graph "
+                                  f"falls apart (usually a dropped node; see "
+                                  f"T-2614 parse data-loss class)",
+                        "origin": "T-2614",
+                    })
     return findings, typed
 
 

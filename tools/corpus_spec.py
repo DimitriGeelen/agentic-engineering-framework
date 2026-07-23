@@ -53,8 +53,25 @@ TYPE_TO_TAG = {
     "gateway": "exclusiveGateway",
     "catch": "intermediateCatchEvent",
     "throw": "intermediateThrowEvent",
+    # T-2614: designer-palette types the parser used to SILENTLY DROP — the
+    # T-2609 recreate destroyed aef-inception-flow's subProcess node this way
+    # (flows kept, node gone → map rendered disconnected). Structured ext parts
+    # are handled like any node; unrecognized ext children round-trip verbatim
+    # via ext_raw (subProcess aef:constituents, scriptTask aef:endpoint/…).
+    "subprocess": "subProcess",
+    "script": "scriptTask",
+    "parallel-gateway": "parallelGateway",
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
+
+# Known structured aef:* ext children; everything else is preserved verbatim.
+_KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta"}
+
+# Register stable prefixes so verbatim ET.tostring round-trips keep the same
+# serialization on every pass (capture-from-source == capture-from-emit).
+ET.register_namespace("bpmn", BPMN_NS)
+ET.register_namespace("aef", AEF_NS)
+ET.register_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STORE = REPO_ROOT / ".context" / "designer" / "projects"
@@ -96,6 +113,26 @@ def _ext(el):
         local = c.tag.split("}")[-1]
         out[local] = dict(c.attrib)
     return out
+
+
+def _raw_xml(el) -> str:
+    """Verbatim-stable serialization of an element (T-2614 passthrough).
+
+    Registered prefixes (bpmn/aef/xsi) make tostring deterministic across
+    passes: capturing from the source doc and re-capturing from the emitted
+    doc yield the same string, so canonical identity holds for raw parts."""
+    return ET.tostring(el, encoding="unicode").strip()
+
+
+def _ext_raw(el) -> list:
+    """Unrecognized ext children preserved verbatim (aef:constituents,
+    aef:endpoint, aef:contextReads, …) — the parser dropping these silently
+    is the T-2614 data-loss class."""
+    ee = el.find(_q("extensionElements"))
+    if ee is None:
+        return []
+    return [_raw_xml(c) for c in ee
+            if isinstance(c.tag, str) and c.tag.split("}")[-1] not in _KNOWN_EXT]
 
 
 def parse_map(xml_text: str) -> dict:
@@ -180,6 +217,9 @@ def parse_map(xml_text: str) -> dict:
                 n["handoff"] = h
             if "meta" in ext:
                 n["meta"] = dict(ext["meta"])
+            raw = _ext_raw(el)
+            if raw:
+                n["ext_raw"] = raw
             nodes.append(n)
         elif local == "sequenceFlow":
             f = {
@@ -192,7 +232,27 @@ def parse_map(xml_text: str) -> dict:
             ext = _ext(el)
             if "uid" in ext:
                 f["uid"] = ext["uid"].get("value")
+            # T-2614: preserve non-extension flow children verbatim
+            # (conditionExpression with xsi:type + expression text).
+            raw = [_raw_xml(c) for c in el
+                   if isinstance(c.tag, str)
+                   and c.tag.split("}")[-1] not in ("extensionElements",)]
+            if raw:
+                f["raw_children"] = raw
             flows.append(f)
+        elif (local is not None and el.get("id")
+                and local not in ("laneSet", "extensionElements")):
+            # T-2614: silent skips destroyed data (aef-inception-flow subProcess
+            # gone through recreate, flows left dangling, map rendered
+            # disconnected). Any identified process child we cannot round-trip
+            # is now a hard error — extend TYPE_TO_TAG deliberately instead.
+            raise SystemExit(
+                f"parse: unsupported BPMN element <bpmn:{local} "
+                f"id=\"{el.get('id')}\"> — parse_map cannot round-trip this "
+                f"tag; silently dropping it would lose the node while keeping "
+                f"its flows (T-2614 data-loss class). Add the tag to "
+                f"TYPE_TO_TAG (+ emit support) before regenerating this map."
+            )
     spec["nodes"] = nodes
     spec["flows"] = flows
     return spec
@@ -308,6 +368,8 @@ def emit_map(spec: dict, version: int = 1) -> str:
         if n.get("meta"):
             attrs = " ".join(f"{k}={quoteattr(str(v))}" for k, v in n["meta"].items())
             a(f"        <aef:meta {attrs}/>")
+        for raw in n.get("ext_raw", []):
+            a(f"        {raw}")
         a("      </bpmn:extensionElements>")
         for fid in incoming.get(n["id"], []):
             a(f"      <bpmn:incoming>{escape(fid)}</bpmn:incoming>")
@@ -324,6 +386,8 @@ def emit_map(spec: dict, version: int = 1) -> str:
         if uid:
             a(f'      <bpmn:extensionElements><aef:uid value={quoteattr(uid)}/>'
               f"</bpmn:extensionElements>")
+        for raw in f.get("raw_children", []):
+            a(f"      {raw}")
         a("    </bpmn:sequenceFlow>")
     a("  </bpmn:process>")
     a("</bpmn:definitions>")

@@ -11,9 +11,14 @@
       "v": 2,
       "note": "T-2612: targetWorkflow compat alias (dual-form) \u2014 restores 0.3.1 handoff jump until 832 T-240",
       "ts": 1784790211
+    },
+    {
+      "v": 3,
+      "note": "T-2614: restore hum_3_inception subProcess (lost by T-2609 recreate \u2014 parser didn't know the tag); dual-form link per T-2612",
+      "ts": 1784793110
     }
   ],
-  "latest": 2,
-  "updated": 1784790211,
+  "latest": 3,
+  "updated": 1784793110,
   "uuid": "6178cf0a-400d-4d0c-b1b7-0ca4236ca7ea"
 }
