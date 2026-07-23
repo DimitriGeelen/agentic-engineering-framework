@@ -10,17 +10,27 @@
 # the delivered artifact's sha256 against `sha256:` below and installs it, rejecting
 # (non-zero exit) on any mismatch. The pin is the reproducibility anchor.
 
-version: "0.3.1"
-sha256: "d99a42da304fc9377e580a1e34e54467431727058026ded7a8ee85fd464fd05c"
-bytes: 862852
+version: "0.3.2"
+sha256: "983e0e304a3dc12e41ed9ea7270ba6edd032453c72c9ee423f466aa9d9e8d38a"
+bytes: 866701
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.3.1.html"
-source_tag: "designer-v0.3.1"
+source_artifact: "dist/aef-workflow-designer-0.3.2.html"
+source_tag: "designer-v0.3.2"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.3.2 = 0.3.1 + (1) 832 T-240 uuid workflowRef auto-resolve — at map load the
+#   editor resolves each aef:link workflowRef (uuid) against /api/list and binds
+#   the jump ONLY on an exactly-one live-map uuid match; ghost refs stay disabled;
+#   resolution is runtime-only (never writes targetWorkflow back into the XML);
+#   raw-uuid jump accepted. Closes the T-2612 uuid-only-unbindable class at the
+#   consumer root. (2) 832 T-242 dual-form contract hardening — a targetWorkflow
+#   compat alias present alongside workflowRef is preserved VERBATIM on re-export
+#   (was either/or: alias silently dropped), and a RESOLVABLE workflowRef is
+#   authoritative over the slug (stale slug cannot shadow the uuid); slug fallback
+#   only when the uuid is unresolvable.
 # 0.3.1 = 0.3.0 + (1) 832 T-234 jump-autosave root fix (_loadSrcKey tracks the
 #   adopted map identity; post-jump autosaves no longer stamp the deep-link src —
 #   the T-2596 wrong-map-restore class closed at the root; AEF keeps the T-2599
@@ -34,7 +44,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.3.1.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.3.2.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -44,12 +54,11 @@ cdn_fonts: false
 
 # T-2612: capability flag — can the pinned build auto-resolve a workflowRef
 # (uuid) link target for the handoff jump WITHOUT a targetWorkflow slug alias?
-# 0.3.1 cannot (832 T-240, unlanded): a uuid-only link renders "Target
-# workflow — none —" with the jump disabled. While false, `fw corpus` emits a
-# targetWorkflow compat alias alongside workflowRef (canonical-neutral — the
-# semantic ref stays the uuid) and corpus lint rule `editor-unbindable` FAILs
-# any served map the pinned editor cannot bind. Flip to true on the first
-# re-pin of a T-240-capable release, then regenerate the corpus to drop the
-# aliases.
-resolves_workflow_ref: false
+# 0.3.2 CAN (832 T-240 landed): uuid-only links auto-resolve at load against
+# /api/list (exactly-one live-map match binds; ghosts stay disabled). While
+# true, `fw corpus` emits canonical uuid-only links (no targetWorkflow alias)
+# and corpus lint rule `editor-unbindable` stays dormant. If a future re-pin
+# ever regresses this capability, flip back to false — the dual-form emit and
+# the lint gate reactivate automatically (T-2612 guard).
+resolves_workflow_ref: true
 notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority)"

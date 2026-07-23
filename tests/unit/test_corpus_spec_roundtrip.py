@@ -85,6 +85,49 @@ def test_scripttask_parallel_gateway_and_flow_condition_round_trip():
     assert spec2["flows"] == spec["flows"]
 
 
+LIVE_UUID = "11111111-1111-4111-8111-111111111111"
+_IDX = {"by_id": {"live-map": LIVE_UUID}, "by_uuid": {LIVE_UUID: "live-map"}}
+
+
+def _handoff_spec(monkeypatch):
+    """Parse a minimal map with one handoff throw against a synthetic store."""
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _IDX)
+    xml = HEAD + (
+        '<bpmn:intermediateThrowEvent id="n1" name="hand off">'
+        "<bpmn:extensionElements>"
+        f'<aef:link workflowRef="{LIVE_UUID}" name="live map" linkId="l1"/>'
+        "</bpmn:extensionElements></bpmn:intermediateThrowEvent>"
+    ) + TAIL
+    return corpus_spec.parse_map(xml)
+
+
+# ── T-2615: compat alias is capability-conditional on the pin flag ────────────
+
+def test_emit_dual_form_while_editor_cannot_resolve_uuid(monkeypatch):
+    spec = _handoff_spec(monkeypatch)
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=True)
+    assert 'targetWorkflow="live-map"' in out
+    assert f'workflowRef="{LIVE_UUID}"' in out
+
+
+def test_emit_uuid_only_when_editor_resolves_uuid(monkeypatch):
+    spec = _handoff_spec(monkeypatch)
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert "targetWorkflow" not in out
+    assert f'workflowRef="{LIVE_UUID}"' in out
+
+
+def test_emit_default_reads_pin_capability_flag(monkeypatch):
+    """Default (compat_alias=None) derives from policy/designer-pin.yaml —
+    pinned expectation post-T-2615: 0.3.2 resolves uuids, so the live default
+    is uuid-only. If a future re-pin flips the flag back to false, this pin
+    must be updated deliberately alongside a corpus regeneration."""
+    assert corpus_spec._pin_resolves_workflow_ref() is True
+    spec = _handoff_spec(monkeypatch)
+    out = corpus_spec.emit_map(spec, version=1)
+    assert "targetWorkflow" not in out and f'workflowRef="{LIVE_UUID}"' in out
+
+
 def test_live_inception_flow_carries_the_restored_subprocess():
     """Regression pin on the store itself: the operator-visible defect was the
     inception-decision node missing from the SERVED map. Latest version must

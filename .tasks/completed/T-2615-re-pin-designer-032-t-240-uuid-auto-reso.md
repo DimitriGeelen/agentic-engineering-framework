@@ -1,13 +1,15 @@
 ---
 id: T-2615
-name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias drop + e2e"
+name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias
+  drop + e2e"
 description: >
-  re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias drop + e2e
+  re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias drop
+  + e2e
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-23T07:55:16Z
-last_update: 2026-07-23T07:55:16Z
-date_finished: null
+last_update: 2026-07-23T08:52:00Z
+date_finished: 2026-07-23T08:52:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-23T08:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-23T08:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2615: re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias drop + e2e
@@ -59,37 +89,28 @@ prove auto-resolve on a uuid-ONLY link (the case 0.3.1 failed).
       markers retained (_loadSrcKey x5, EVENT_KIND_TYPE x2); match confirmed to
       832 at rail offset 172 BEFORE sync (T-559/T-2611 flow).
 
-**SESSION-BOUNDARY RESUME STATE (budget gate fired mid-flight, 2026-07-23):**
-- DONE: file received + sha-verified; rail 172 = pre-sync confirm posted.
-- Artifact at (session scratchpad, may not survive):
-  `/tmp/claude-0/-opt-999-Agentic-Engineering-Framework/127bca7a-7a5a-4195-b80f-bbc9cea4c5a4/scratchpad/aef-workflow-designer-0.3.2.html`
-  If gone: re-receive via `termlink file_receive` target "aef"
-  (transfer xfer-mcp-888946-1784792300564-0) and re-verify sha.
-- NEXT (in order): (1) pin bump in policy/designer-pin.yaml → version 0.3.2, sha
-  983e0e30…d38a, bytes 866701, tag designer-v0.3.2, vendored_path
-  vendor/designer/aef-workflow-designer-0.3.2.html, content-note (T-240+T-242
-  surgical hotfix), flip `resolves_workflow_ref: true`; (2) `fw designer sync
-  --from <artifact>` → doctor → served-bytes sha check; (3) make emit_map alias
-  CONDITIONAL on the pin flag (tools/corpus_spec.py — alias currently
-  unconditional; add pin read + unit tests both ways); (4) regenerate the 4
-  handoff maps uuid-only as new versions (task-lifecycle, dispatch-loop,
-  inception-flow — NOTE inception-flow latest is v3 w/ restored subProcess);
-  (5) Playwright e2e per 832's rail-171 suggestion: uuid-ONLY jump + dual-form
-  jump, both bind via uuid w/ "auto-resolved" marker; (6) lint baseline + suites;
-  (7) verdict to 832 on the rail; (8) then finish T-2613 (audit-cron agt_6_warn
-  wiring — separate task, still active).
-- [ ] Pin bumped to 0.3.2 (sha/bytes/tag/vendored_path/content-note) with
-      `resolves_workflow_ref: true`; `fw designer sync` clean; doctor OK; served
-      bytes sha-identical to the pin.
-- [ ] emit_map made capability-conditional: targetWorkflow compat alias emitted
-      ONLY while the pin lacks resolves_workflow_ref (pinned both ways in unit
-      tests); corpus maps with handoffs regenerated back to uuid-only form as new
-      versions, uuids preserved.
-- [ ] T-240 proven on served bytes: a uuid-ONLY link (no targetWorkflow attr —
-      exactly the 0.3.1-dead case) auto-resolves in the editor: target shows the
-      map name, jump enabled, jump completes (Playwright, operator path).
-- [ ] Corpus lint at pinned baseline; editor-unbindable dormant under the flipped
-      flag; suites green.
+- [x] Pin bumped to 0.3.2 (sha/bytes/tag/vendored_path/content-note) with
+      `resolves_workflow_ref: true`; `fw designer sync` clean; doctor OK
+      ("designer vendored build matches pin 983e0e304a3d…"); served bytes at
+      /designer/app sha-identical to the pin (983e0e30…d38a).
+- [x] emit_map made capability-conditional: `compat_alias` param (None → derived
+      from the pin flag; explicit bool in tests) — targetWorkflow compat alias
+      emitted ONLY while the pin lacks resolves_workflow_ref; pinned both ways +
+      live-default in tests/unit/test_corpus_spec_roundtrip.py. Corpus handoff
+      maps regenerated uuid-only as new versions (task-lifecycle v3,
+      dispatch-loop v3, inception-flow v4), canonical-IDENTICAL to their
+      predecessors, uuids preserved (1f9b5f0c/e32a518c/6178cf0a), zero
+      targetWorkflow attrs in the new versions.
+- [x] T-240 proven on served bytes (Playwright, operator path): uuid-ONLY link
+      (task-lifecycle v3 tl_handoff_dispatch — exactly the 0.3.1-dead case)
+      shows "Target workflow: aef-dispatch-loop ↳ auto-resolved from workflow
+      ref (uuid)", jump enabled, jump completes (landed in dispatch-loop, 20
+      dl_* elements). T-242 proven on dual-form (v2): same uuid-authoritative
+      binding + jump completes. inception-flow v4 renders connected
+      (if_inception present, 9/9 edges).
+- [x] Corpus lint at pinned 2-finding baseline (t2584-scratch legacy-ref +
+      agt_msg_result emitterless); editor-unbindable dormant under the flipped
+      flag; corpus suites 27/27 green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -155,6 +176,12 @@ prove auto-resolve on a uuid-ONLY link (the case 0.3.1 failed).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import yaml; p=yaml.safe_load(open('policy/designer-pin.yaml')); assert p['version']=='0.3.2' and p['resolves_workflow_ref'] is True and p['sha256'].startswith('983e0e30'), p"
+out=$(sha256sum vendor/designer/aef-workflow-designer-0.3.2.html); echo "$out" | grep -q 983e0e304a3dc12e41ed9ea7270ba6edd032453c72c9ee423f466aa9d9e8d38a
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint.py -q
+out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "2 finding(s)"
+! grep -q targetWorkflow .context/designer/projects/aef-task-lifecycle/v3.bpmn .context/designer/projects/aef-dispatch-loop/v3.bpmn .context/designer/projects/aef-inception-flow/v4.bpmn
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -170,6 +197,27 @@ prove auto-resolve on a uuid-ONLY link (the case 0.3.1 failed).
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** (inherited class — full RCA in T-2612) corpus handoff jumps dead on
+the served designer: uuid-only `workflowRef` links rendered "Target workflow
+— none —" with the jump disabled, because the pinned 0.3.1 editor could only
+bind from the legacy `targetWorkflow` slug.
+
+**Root cause:** producer serialized form (contract-v0 uuid refs, T-2605/T-2609
+recreates) drifted ahead of the pinned consumer's binding capability — the
+canonical-diff gate proves serialization identity, not consumer-binding
+semantics (L-399 cross-project producer/consumer sibling).
+
+**Why structurally allowed:** the pin recorded WHICH build was served but not
+WHAT the build could bind; no capability axis existed for the emitter or lint
+to key off.
+
+**Prevention (this task closes the loop):** capability now lives in the pin
+(`resolves_workflow_ref`) and drives BOTH sides symmetrically — emit_map's
+compat alias (auto re-enables on a capability regression) and lint rule
+`editor-unbindable` (FAILs any served map the pinned editor cannot bind), plus
+the live-default unit pin in test_corpus_spec_roundtrip.py. A future re-pin that
+regresses T-240 flips one flag and the whole guard rearms with zero code change.
 
 ## Evolution
 
@@ -197,14 +245,24 @@ prove auto-resolve on a uuid-ONLY link (the case 0.3.1 failed).
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-07-23 — emit_map alias conditionality mechanism
+- **Chose:** `compat_alias: bool | None = None` parameter on emit_map — None
+  reads policy/designer-pin.yaml `resolves_workflow_ref` (missing file/field →
+  alias ON, the safe direction); tests pass an explicit bool for hermeticity.
+  Mirrors the T-2612 lint pattern (`editor_resolves_uuid=None` → pin read).
+- **Why:** symmetric producer/consumer pattern — the same pin flag drives both
+  the emitter (alias on/off) and the lint gate (editor-unbindable armed/dormant),
+  so a future capability regression re-activates BOTH automatically with one
+  flag flip and zero code changes.
+- **Rejected:** importing corpus_lint's pin reader into corpus_spec (cross-tool
+  import coupling for 10 lines); a CLI flag on `corpus_spec generate` (operator
+  could emit a form the pinned editor can't bind — the exact T-2612 class).
+
+### 2026-07-23 — old dual-form versions retained
+- **Chose:** regenerate uuid-only as NEW versions (v3/v3/v4); dual-form v2/v2/v3
+  stay in the store as history.
+- **Why:** /api/save is non-destructive by design; old versions double as the
+  T-242 dual-form e2e fixture (proven: v2 binds uuid-authoritatively on 0.3.2).
 
 ## Decision
 
@@ -222,3 +280,15 @@ prove auto-resolve on a uuid-ONLY link (the case 0.3.1 failed).
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2615-re-pin-designer-032-t-240-uuid-auto-reso.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c4427c8
+- **Timestamp:** 2026-07-23T08:52:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-23T08:52:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

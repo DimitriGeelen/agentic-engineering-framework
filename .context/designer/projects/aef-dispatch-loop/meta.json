@@ -11,9 +11,14 @@
       "v": 2,
       "note": "T-2612: targetWorkflow compat alias (dual-form) \u2014 restores 0.3.1 handoff jump until 832 T-240",
       "ts": 1784790211
+    },
+    {
+      "v": 3,
+      "note": "T-2615: uuid-only regen \u2014 0.3.2 re-pin (T-240 auto-resolve), compat aliases dropped",
+      "ts": 1784796342
     }
   ],
-  "latest": 2,
-  "updated": 1784790211,
+  "latest": 3,
+  "updated": 1784796342,
   "uuid": "e32a518c-01de-4243-aafc-691cc99caf0d"
 }

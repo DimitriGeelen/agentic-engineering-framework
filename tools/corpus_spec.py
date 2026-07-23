@@ -77,6 +77,19 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 STORE = REPO_ROOT / ".context" / "designer" / "projects"
 
 
+def _pin_resolves_workflow_ref() -> bool:
+    """policy/designer-pin.yaml `resolves_workflow_ref` — capability flag of the
+    pinned editor build (T-2612). Missing file/field reads as False (emit the
+    compat alias — the safe direction)."""
+    pin = REPO_ROOT / "policy" / "designer-pin.yaml"
+    if yaml is None or not pin.exists():
+        return False
+    try:
+        return bool((yaml.safe_load(pin.read_text()) or {}).get("resolves_workflow_ref"))
+    except Exception:
+        return False
+
+
 # ── store registry (read-only; writes go through /api/save only) ──────────────
 
 def store_index(store: Path = STORE) -> dict:
@@ -283,7 +296,12 @@ def _resolve_target(target: str, ghost_intent: bool, idx: dict) -> str:
     )
 
 
-def emit_map(spec: dict, version: int = 1) -> str:
+def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> str:
+    # T-2615: compat_alias None → derived from the pin capability flag (emit the
+    # targetWorkflow alias only while the pinned editor cannot auto-resolve
+    # uuid workflowRefs). Tests pass an explicit bool for hermeticity.
+    if compat_alias is None:
+        compat_alias = not _pin_resolves_workflow_ref()
     idx = store_index()
     mid = spec["id"]
     L = []
@@ -354,14 +372,14 @@ def emit_map(spec: dict, version: int = 1) -> str:
             wref = _resolve_target(h.get("target"), h.get("ghost_intent", False), idx)
             name = h.get("name") or (h["target"] if not UUID_RE.match(h.get("target", "")) else "")
             name_part = f" name={quoteattr(name)}" if name else ""
-            # T-2612 compat alias: the pinned 0.3.1 editor binds the jump target
-            # from targetWorkflow only (832 T-240 uuid auto-resolve unlanded) — a
-            # workflowRef-only link renders "Target workflow — none —" with the
-            # jump disabled. Emit both attrs while the pin lacks
-            # resolves_workflow_ref; canonical() folds either form to the uuid,
-            # so round-trip identity and the prove guard are unaffected. Ghost
-            # refs get no alias (no store slug exists to bind).
-            slug = idx["by_uuid"].get(wref)
+            # T-2612 compat alias: while the pinned editor lacks T-240 uuid
+            # auto-resolve (pin resolves_workflow_ref false), emit both attrs —
+            # the editor binds via the slug, the uuid stays canonical.
+            # canonical() folds either form to the uuid, so round-trip identity
+            # and the prove guard are unaffected. Ghost refs get no alias (no
+            # store slug exists to bind). T-2615: alias is capability-
+            # conditional — a T-240-capable pin emits canonical uuid-only.
+            slug = idx["by_uuid"].get(wref) if compat_alias else None
             tw_part = f" targetWorkflow={quoteattr(slug)}" if slug else ""
             a(f'        <aef:link{tw_part} workflowRef={quoteattr(wref)}{name_part} '
               f'linkId={quoteattr(h.get("link_id", ""))}/>')
