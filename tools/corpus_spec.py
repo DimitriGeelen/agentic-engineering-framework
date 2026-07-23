@@ -294,7 +294,16 @@ def emit_map(spec: dict, version: int = 1) -> str:
             wref = _resolve_target(h.get("target"), h.get("ghost_intent", False), idx)
             name = h.get("name") or (h["target"] if not UUID_RE.match(h.get("target", "")) else "")
             name_part = f" name={quoteattr(name)}" if name else ""
-            a(f'        <aef:link workflowRef={quoteattr(wref)}{name_part} '
+            # T-2612 compat alias: the pinned 0.3.1 editor binds the jump target
+            # from targetWorkflow only (832 T-240 uuid auto-resolve unlanded) — a
+            # workflowRef-only link renders "Target workflow — none —" with the
+            # jump disabled. Emit both attrs while the pin lacks
+            # resolves_workflow_ref; canonical() folds either form to the uuid,
+            # so round-trip identity and the prove guard are unaffected. Ghost
+            # refs get no alias (no store slug exists to bind).
+            slug = idx["by_uuid"].get(wref)
+            tw_part = f" targetWorkflow={quoteattr(slug)}" if slug else ""
+            a(f'        <aef:link{tw_part} workflowRef={quoteattr(wref)}{name_part} '
               f'linkId={quoteattr(h.get("link_id", ""))}/>')
         if n.get("meta"):
             attrs = " ".join(f"{k}={quoteattr(str(v))}" for k, v in n["meta"].items())

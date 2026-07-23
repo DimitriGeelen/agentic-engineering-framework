@@ -21,6 +21,19 @@ discipline: no speculative rules — each one has a task-traceable origin).
   ghost-ref               workflowRef uuid resolving to neither a store map nor
                           a pending-ref registry ghost. Registered ghosts are
                           deliberate (T-2584 flow) and NOT flagged.
+  editor-unbindable       a workflowRef-only link to a resolvable store map while
+                          the pinned designer build cannot auto-resolve uuid refs
+                          (policy/designer-pin.yaml resolves_workflow_ref is
+                          false/absent — 832 T-240 unlanded). The editor renders
+                          "Target workflow — none —" and disables the jump: the
+                          operator-surface handoff is dead even though the ref is
+                          valid. Origin: T-2612 — the T-2605/T-2609 recreates
+                          migrated the corpus to uuid form ahead of the consumer
+                          capability and every corpus jump regressed. Fix: emit
+                          the targetWorkflow compat alias (fw corpus generate does
+                          this while the pin flag is false), or flip the pin flag
+                          after a T-240-capable re-pin. Ghost refs are exempt (no
+                          store slug exists to bind).
 
 Exit codes: 0 clean, 1 findings, 2 usage/environment error.
 
@@ -63,15 +76,32 @@ def _registry_ghost_uuids(store: Path) -> set:
     return out
 
 
+def _pin_resolves_workflow_ref() -> bool:
+    """policy/designer-pin.yaml `resolves_workflow_ref` — capability flag of the
+    pinned editor build. False/absent until a T-240-capable release is pinned."""
+    pin = REPO_ROOT / "policy" / "designer-pin.yaml"
+    try:
+        import yaml
+        return bool((yaml.safe_load(pin.read_text()) or {}).get("resolves_workflow_ref"))
+    except Exception:
+        return False
+
+
 def _iter_flow_nodes(proc):
     for el in proc:
         if isinstance(el.tag, str) and el.tag.startswith("{" + BPMN_NS):
             yield el
 
 
-def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set) -> tuple[list, list]:
+def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set,
+             editor_resolves_uuid: bool | None = None) -> tuple[list, list]:
     """Per-map findings + this map's typed-event contributions for the
-    cross-map pass: (findings, [(kind, binding, direction, node_id), ...])."""
+    cross-map pass: (findings, [(kind, binding, direction, node_id), ...]).
+
+    editor_resolves_uuid: None → read policy/designer-pin.yaml (live behavior);
+    tests pass an explicit bool to stay hermetic from the repo's pin state."""
+    if editor_resolves_uuid is None:
+        editor_resolves_uuid = _pin_resolves_workflow_ref()
     findings = []
     typed = []
     try:
@@ -113,6 +143,20 @@ def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set) -> tuple
                         "detail": f'workflowRef="{wref}" resolves to neither a '
                                   f"store map nor a registered ghost (silent dangler)",
                         "origin": "T-2584",
+                    })
+                elif (not editor_resolves_uuid and wref in idx["by_uuid"]
+                        and not link.get("targetWorkflow")):
+                    findings.append({
+                        "rule": "editor-unbindable", "map": map_name, "node": nid,
+                        "detail": f'workflowRef-only link to '
+                                  f'"{idx["by_uuid"][wref]}" — the pinned designer '
+                                  f"build cannot bind a uuid-only target (jump "
+                                  f"disabled; 832 T-240 unlanded). Regenerate via "
+                                  f"fw corpus to emit the targetWorkflow compat "
+                                  f"alias, or flip resolves_workflow_ref in "
+                                  f"policy/designer-pin.yaml after a T-240-capable "
+                                  f"re-pin",
+                        "origin": "T-2612",
                     })
             if local == "intermediateThrowEvent":
                 # wiring invariant (a): throw handoffs are branch terminals

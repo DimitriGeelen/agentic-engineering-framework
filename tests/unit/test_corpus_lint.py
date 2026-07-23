@@ -65,10 +65,14 @@ def _store(tmp_path, registry_ghosts=()):
     return store
 
 
-def _lint(xml_body, store, name="m"):
+def _lint(xml_body, store, name="m", editor_resolves_uuid=True):
+    # editor_resolves_uuid=True keeps the pre-T-2612 rule fixtures hermetic from
+    # the repo's live pin state; the editor-unbindable tests pass False explicitly.
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
-    findings, typed = corpus_lint.lint_map(name, HEAD + xml_body + TAIL, idx, ghosts)
+    findings, typed = corpus_lint.lint_map(
+        name, HEAD + xml_body + TAIL, idx, ghosts,
+        editor_resolves_uuid=editor_resolves_uuid)
     findings.extend(corpus_lint.cross_map_typed_events(typed))
     return findings
 
@@ -139,6 +143,36 @@ def test_emitterless_silent_with_seam_marker(tmp_path):
     assert f == [], f
 
 
+# ── editor-unbindable (origin T-2612) ─────────────────────────────────────────
+
+def test_unbindable_fires_on_uuid_only_link_when_pin_cannot_resolve(tmp_path):
+    store = _store(tmp_path)
+    f = _lint(_throw("n1", f'workflowRef="{LIVE_UUID}" linkId=""'), store,
+              editor_resolves_uuid=False)
+    assert _rules(f) == ["editor-unbindable"], f
+
+
+def test_unbindable_silent_with_dual_form_alias(tmp_path):
+    store = _store(tmp_path)
+    f = _lint(_throw("n1", f'targetWorkflow="live-map" workflowRef="{LIVE_UUID}" linkId=""'),
+              store, editor_resolves_uuid=False)
+    assert f == [], f
+
+
+def test_unbindable_silent_when_pin_resolves_uuid(tmp_path):
+    store = _store(tmp_path)
+    f = _lint(_throw("n1", f'workflowRef="{LIVE_UUID}" linkId=""'), store,
+              editor_resolves_uuid=True)
+    assert f == [], f
+
+
+def test_unbindable_exempts_registered_ghost_refs(tmp_path):
+    store = _store(tmp_path, registry_ghosts=[GHOST_UUID])
+    f = _lint(_throw("n1", f'workflowRef="{GHOST_UUID}" linkId=""'), store,
+              editor_resolves_uuid=False)
+    assert f == [], f
+
+
 # ── ghost-ref (origin T-2584) ─────────────────────────────────────────────────
 
 def test_ghost_ref_fires_on_silent_dangler(tmp_path):
@@ -170,7 +204,13 @@ def test_live_corpus_current_findings():
       compile WARN. Revisit condition: flip only if AEF grows a
       trigger-consuming execution engine — then this catch gets an emitter
       and this pin shrinks.
-    Update this pin deliberately when either of those moves."""
+    Update this pin deliberately when either of those moves.
+
+    T-2612: this test runs lint against the LIVE pin capability flag
+    (resolves_workflow_ref) — so it also asserts the served corpus stays
+    bindable by the pinned editor: while the flag is false, every corpus
+    handoff must carry the targetWorkflow compat alias (dual-form), else
+    editor-unbindable appears here and the assert names the regressed map."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)

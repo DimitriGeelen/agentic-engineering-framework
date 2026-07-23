@@ -41,4 +41,15 @@ vendored_path: "vendor/designer/aef-workflow-designer-0.3.1.html"
 # air-gapped deployments. This is why bytes jumped 395178 → 826643. The 0.2.0
 # CDN-fonts caveat no longer applies.
 cdn_fonts: false
+
+# T-2612: capability flag — can the pinned build auto-resolve a workflowRef
+# (uuid) link target for the handoff jump WITHOUT a targetWorkflow slug alias?
+# 0.3.1 cannot (832 T-240, unlanded): a uuid-only link renders "Target
+# workflow — none —" with the jump disabled. While false, `fw corpus` emits a
+# targetWorkflow compat alias alongside workflowRef (canonical-neutral — the
+# semantic ref stays the uuid) and corpus lint rule `editor-unbindable` FAILs
+# any served map the pinned editor cannot bind. Flip to true on the first
+# re-pin of a T-240-capable release, then regenerate the corpus to drop the
+# aliases.
+resolves_workflow_ref: false
 notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority)"
