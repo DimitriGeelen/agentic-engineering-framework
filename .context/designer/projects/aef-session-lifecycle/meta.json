@@ -11,9 +11,14 @@
       "v": 2,
       "note": "",
       "ts": 1784498935
+    },
+    {
+      "v": 3,
+      "note": "T-2613: agt_8_wrapper typed kind=timer (sl_tmr_restart author intent; kills dead link UI)",
+      "ts": 1784796932
     }
   ],
-  "latest": 2,
-  "updated": 1784498935,
+  "latest": 3,
+  "updated": 1784796932,
   "uuid": "2640d597-80ec-4232-b263-11ef01bc726c"
 }

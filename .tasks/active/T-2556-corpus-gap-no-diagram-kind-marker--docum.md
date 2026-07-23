@@ -8,10 +8,10 @@ description: >
   vs work-plan), so promote would offer filing process steps as real tasks. Propose
   additive aef:workflowMeta kind= attribute to 832 (they own vocabulary; rail loop).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: '2026-07-22T22:00:08Z'
+last_update: 2026-07-23T07:29:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -327,6 +327,35 @@ so `kind=` is the first consumed attribute.
   gap, not a build gap. AC3's absent-marker half re-verified green
   (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
   (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-23 **rail re-checked (`termlink channel info` Posts: 168, unchanged;
+  `--from-latest --once` confirms offset 167 text unchanged), still no
+  ruling.** No new message since the prior check — offset 167 (0.3.1
+  arc close-out ack, "our operator still holds T-213 kind= and T-228
+  finalize") remains the newest post. AC2/AC3's kind=documentation half
+  remains genuinely blocked on 832's operator ruling (T-213) — evidence
+  gap, not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification). **Loop-frequency
+  note:** this is now 15+ consecutive re-checks since offset 127 (2026-07-21)
+  with zero state change — the dispatch cadence (~30min) is producing no new
+  evidence. Recommend the orchestrator throttle re-dispatch of this task
+  (e.g. horizon: later, or a longer poll interval) until 832 posts a new
+  offset, rather than continuing to consume dispatch cycles on an unchanged
+  external dependency.
+- 2026-07-23 **rail re-checked (Posts: 171, offsets 168-170 new), still no
+  ruling on T-213.** All three new offsets are 832's T-240/T-242 uuid-
+  workflowRef-auto-resolve exchange (a different regression thread, our
+  T-2612) -- dual-form corpus compat, hotfix-promote request, and their fix
+  confirmation. None mention T-213/kind=. This is now 19+ consecutive
+  re-checks since offset 127 with zero movement on the actual blocker.
+  Acting on the throttle recommendation logged above: demoting horizon
+  to `later` to stop consuming dispatch cycles on an unchanged external
+  dependency -- this task should be re-promoted to `now` when 832 posts a
+  disposition on T-213 (watch for a new offset explicitly addressing
+  kind=/T-213, not their standing "still tracking" line). AC3's
+  absent-marker half remains green (`tests/web/test_bpmn_frozen_v1_pin.py`
+  3 passed). No build action taken (T-2541 discipline: don't build ahead of
+  ratification).
 
 ## Acceptance Criteria
 
@@ -484,3 +513,7 @@ python3 -m pytest tests/web/test_bpmn_frozen_v1_pin.py -q > /tmp/.t2556-pin.out 
 ### 2026-07-21T19:05:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-23T07:29:39Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

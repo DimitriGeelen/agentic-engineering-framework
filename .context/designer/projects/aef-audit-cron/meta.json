@@ -11,9 +11,14 @@
       "v": 2,
       "note": "",
       "ts": 1784498898
+    },
+    {
+      "v": 3,
+      "note": "T-2613: agt_6_warn typed kind=error (kills dead link UI); NEW terminal handoff agt_8_handoff_lifecycle -> aef-task-lifecycle (emitted tasks continue as governed work)",
+      "ts": 1784796932
     }
   ],
-  "latest": 2,
-  "updated": 1784498898,
+  "latest": 3,
+  "updated": 1784796932,
   "uuid": "ad10b106-e46e-469d-aca8-45d8881bbd77"
 }

@@ -6,10 +6,10 @@ description: >
   aef-audit-cron warn/fail connector unwired — corpus sweep for unlinked handoff-intent
   nodes
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-23T07:38:47Z
-last_update: '2026-07-23T07:45:08Z'
-date_finished:
+last_update: 2026-07-23T08:58:07Z
+date_finished: 2026-07-23T08:58:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,19 +82,46 @@ jumps.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The "warn/fail findings present" element on aef-audit-cron is identified and
-      its intended target workflow determined from the map's semantics (documented
-      in this task).
-- [ ] aef-audit-cron regenerated with the handoff properly wired (dual-form link per
-      T-2612, uuid preserved, saved as a NEW version — non-destructive).
-- [ ] Corpus-wide sweep: every map checked for handoff-intent nodes without aef:link
-      wiring (name/label suggests a cross-workflow handoff but no link element);
-      findings listed in this task, each either wired or explicitly recorded as
-      not-a-handoff with reasoning.
-- [ ] Live e2e on the served surface: aef-audit-cron's wired handoff binds and the
-      jump completes to its target map (Playwright, operator path via landing card).
-- [ ] Corpus lint + prove-guard suites green; live-corpus baseline pin updated only
-      if a deliberate finding-set change results (documented if so).
+- [x] The "warn/fail findings present" element on aef-audit-cron is identified and
+      its intended semantics determined: `agt_6_warn` (uid ac_err_findings) is a
+      BARE intermediateCatchEvent — no aef:link AND no aef:eventDef — so the
+      editor offered the link-catch UI with an empty target ("isn't linked").
+      Semantically it is a mid-branch severity condition (exit 1/2 → emission),
+      NOT a cross-workflow handoff: its flow continues agt_6_warn → agt_7_emit →
+      operator triage. Two-part fix: (a) type it `aef:eventDef kind="error"`
+      (editor vocabulary: error/timer/message) → typed rendering, no dead jump
+      affordance; (b) the genuinely missing cross-workflow link on this map is
+      emitted-findings-tasks → aef-task-lifecycle — added as NEW terminal
+      handoff throw `agt_8_handoff_lifecycle` "Handoff → task lifecycle" (uid
+      ac_handoff_lifecycle) branching from agt_7_emit, mirroring the
+      dispatch-loop return-leg convention.
+- [x] aef-audit-cron regenerated with the handoff wired, saved as v3
+      (non-destructive; uuid preserved). NOTE: link is uuid-ONLY, not dual-form —
+      the AC's "dual-form per T-2612" was authored against the 0.3.1 pin; the
+      T-2615 re-pin (0.3.2, resolves_workflow_ref=true) landed first, so emit is
+      canonical uuid-only by design (see Evolution).
+- [x] Corpus-wide sweep (programmatic: bare catch/throw without link/eventDef +
+      handoff-vocabulary names without aef:link) — 5 candidates, each dispositioned:
+      1. aef-audit-cron agt_6_warn — FIXED (kind=error + new handoff, above).
+      2. aef-session-lifecycle agt_8_wrapper "wrapper cancel window" — same
+         bare-catch dead-UI class; uid `sl_tmr_restart` shows original timer
+         intent → FIXED as `kind="timer"`, saved v3; renders eventTimer, no
+         Target-workflow UI.
+      3. aef-session-lifecycle agt_4_session — "→" is prose ("uncaptured work →
+         tasks"), an in-map transformation; NOT-A-HANDOFF.
+      4. aef-task-lifecycle agt_4_heal — "→" is prose ("issues → diagnose →
+         resolve"), internal healing loop; NOT-A-HANDOFF.
+      5. t2529-verify — no bpmn:process element (T-2529 API-verify fixture, not
+         a workflow map); SKIPPED.
+- [x] Live e2e on served bytes (Playwright, operator path): audit-cron v3
+      renders all 19 elements incl. ac_handoff_lifecycle + edge ac_e9; handoff
+      binds "aef-task-lifecycle ↳ auto-resolved from workflow ref (uuid)", jump
+      enabled, jump lands in task-lifecycle (25 tl_* elements). agt_6_warn
+      selected → panel shows `eventError`, NO Target-workflow UI. session-
+      lifecycle v3 sl_tmr_restart → `eventTimer`, no Target-workflow UI.
+- [x] Corpus lint at the pinned 2-finding baseline (kind=error/timer carry no
+      binding → emitterless rule silent; new throw is terminal single-target →
+      handoff-wiring silent); suites 24/24 green; no baseline change needed.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -160,6 +187,12 @@ jumps.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(grep -c 'aef:link workflowRef="1f9b5f0c' .context/designer/projects/aef-audit-cron/v3.bpmn); test "$out" = "1"
+grep -q 'aef:eventDef kind="error"' .context/designer/projects/aef-audit-cron/v3.bpmn
+grep -q 'aef:eventDef kind="timer"' .context/designer/projects/aef-session-lifecycle/v3.bpmn
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint.py -q
+out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "2 finding(s)"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -175,6 +208,30 @@ jumps.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** clicking "warn/fail findings present" on the served aef-audit-cron
+showed the link-catch UI with an empty target and a dead jump — operator read it
+as an unlinked connector.
+
+**Root cause:** the node was authored as a BARE intermediateCatchEvent — neither
+aef:link (handoff) nor aef:eventDef (typed event). The editor's default catch
+rendering is the link-catch shape, so an untyped catch always presents a jump
+affordance that can never bind. Two distinct authoring gaps: the condition node
+was never typed, and the map's real cross-workflow seam (emitted tasks →
+task lifecycle) was never drawn at all.
+
+**Why structurally allowed:** corpus lint had no rule for the untyped-event
+class — legacy-ref/ghost-ref/editor-unbindable all key off an EXISTING aef:link;
+a node with no link at all matched nothing. Handoff-intent that was simply
+missing (no element) is invisible to any per-element scan.
+
+**Prevention:** the T-2613 sweep classifier (bare catch/throw without
+link/eventDef + handoff-vocabulary names without aef:link) ran corpus-wide and
+dispositioned all 5 candidates; every catch/throw in the corpus now carries
+either aef:link or aef:eventDef. A future `untyped-event` lint rule would make
+this structural — deferred: the operator-facing rendering question (should a
+bare catch offer the link UI at all?) belongs to 832's editor; raised as a
+possible upstream refinement in the rail verdict rather than pinned locally.
 
 ## Evolution
 
@@ -199,6 +256,24 @@ jumps.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-07-23 — dual-form AC superseded by the 0.3.2 re-pin landing first
+- **What changed:** the AC "wire dual-form per T-2612" was authored while the
+  pin was 0.3.1; T-2615 (0.3.2 re-pin, resolves_workflow_ref=true, aliases
+  dropped corpus-wide) completed before this task's wiring step.
+- **Plan impact:** the new handoff is emitted canonical uuid-ONLY — emit_map is
+  now capability-conditional, so hand-authoring a dual-form link would have
+  reintroduced the exact alias the re-pin just dropped.
+- **Triggered:** no new task; AC2 annotated in place.
+
+### 2026-07-23 — sweep widened the fix beyond the reported map
+- **What changed:** the operator's example (audit-cron) was one of TWO
+  bare-catch dead-UI instances; session-lifecycle's "wrapper cancel window"
+  had the same class (uid sl_tmr_restart — author intended a timer).
+- **Plan impact:** both fixed in one pass; the two "→"-named service tasks are
+  prose, not handoffs — recorded as not-a-handoff rather than over-wiring.
+- **Triggered:** possible upstream question for 832 (should a bare catch offer
+  the link UI?) — raised on the rail, not filed locally.
 
 ## Decisions
 
@@ -227,3 +302,20 @@ jumps.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2613-aef-audit-cron-warnfail-connector-unwire.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-899e5045
+- **Timestamp:** 2026-07-23T08:58:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint.py -q`
+
+### 2026-07-23T08:58:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
