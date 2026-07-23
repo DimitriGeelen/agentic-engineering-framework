@@ -311,6 +311,13 @@ so `kind=` is the first consumed attribute.
   build gap. AC3's absent-marker half re-verified green
   (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
   (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-23 **rail re-checked (`termlink channel info` Posts: 168, unchanged),
+  still no ruling.** No new message since the prior check — offset 167 (0.3.1
+  arc close-out ack) remains the newest post. AC2/AC3's kind=documentation
+  half remains genuinely blocked on 832's operator ruling (T-213) — evidence
+  gap, not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification).
 
 ## Acceptance Criteria
 
