@@ -2291,3 +2291,45 @@ decisions:
     date: 2026-07-21
     task: T-2586
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-330
+    decision: "neither option 1 (spec-authoritative) nor option 2"
+    scope: project
+    date: 2026-07-22
+    task: T-2603
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-331
+    decision: "keep the T-2599 server-side 302 nonce-mint on `/designer/app?load=` even"
+    scope: project
+    date: 2026-07-22
+    task: T-2611
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-332
+    decision: "Ship the AEF-side interim immediately — emit BOTH `targetWorkflow`"
+    scope: project
+    date: 2026-07-23
+    task: T-2612
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-333
+    decision: "`compat_alias: bool | None = None` parameter on emit_map — None"
+    scope: project
+    date: 2026-07-23
+    task: T-2615
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-334
+    decision: "regenerate uuid-only as NEW versions (v3/v3/v4); dual-form v2/v2/v3"
+    scope: project
+    date: 2026-07-23
+    task: T-2615
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-335
+    decision: "Pull-at-tag designer release intake ratified (832 T-247): from next release, AEF fetches artifact+MANIFEST at annotated tag designer-vX.Y.Z from read-only LAN origin 192.168.10.201:6611/workflow-designer; independent sha256 vs MANIFEST at same tag; rail announce stays trigger+verdict handshake; file_send stays fallback. T-559 ruling: frozen annotated tag = published frozen bytes, invariant satisfied — working tree remains off-limits. Build tracked as T-2616."
+    scope: project
+    date: 2026-07-23
+    task: T-2556
+    rationale: "Not specified"
