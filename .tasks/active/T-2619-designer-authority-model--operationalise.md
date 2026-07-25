@@ -137,15 +137,15 @@ This inception decides the authority model and, on GO, authorises the constituen
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -206,7 +206,11 @@ Critical review (2026-07-25 dialogue): 5 corpus maps are documentation-only — 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Critical review (2026-07-25 dialogue): 5 corpus maps are documentation-only — troubleshoot goal unserved (no live state on maps), maintain = double maintenance (no map-vs-reality divergence detection), agents never consult maps (CLAUDE.md stays sole authority). Substrate (uuid permanence, gallery API, DOM data-id=uid) is ready for operationalisation. Recommend GO: mirror-first (live-state overlay) + selective spec-conformance (task-lifecycle only, where transitions are mechanically enforced).
+
+**Date**: 2026-07-25T17:13:29Z
 
 ## Updates
 
@@ -215,3 +219,8 @@ Critical review (2026-07-25 dialogue): 5 corpus maps are documentation-only — 
 
 ### 2026-07-25T16:42:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-25T17:13:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Critical review (2026-07-25 dialogue): 5 corpus maps are documentation-only — troubleshoot goal unserved (no live state on maps), maintain = double maintenance (no map-vs-reality divergence detection), agents never consult maps (CLAUDE.md stays sole authority). Substrate (uuid permanence, gallery API, DOM data-id=uid) is ready for operationalisation. Recommend GO: mirror-first (live-state overlay) + selective spec-conformance (task-lifecycle only, where transitions are mechanically enforced).
