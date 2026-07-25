@@ -1,0 +1,14 @@
+{
+  "id": "draft-trigger-handling",
+  "title": "draft-trigger-handling",
+  "versions": [
+    {
+      "v": 1,
+      "note": "pair-draft v1 skeleton seeded by agent (T-2620 trigger-handling exploration)",
+      "ts": 1785008689
+    }
+  ],
+  "uuid": "d1682058-fe33-4a3b-b580-0f7b8e09ee60",
+  "latest": 1,
+  "updated": 1785008689
+}
