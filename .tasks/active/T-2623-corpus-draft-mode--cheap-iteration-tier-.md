@@ -75,6 +75,12 @@ bvp_scores_proposed:
 
 **Operator endorsed 2026-07-25 (T-2619 dialogue round 3):** *"makes sense, we can also jointly iterate it and test it before releasing it fully in production."* Draft mode is the joint iteration + testing surface: agent and operator sketch/refine a workflow as DRAFT, exercise it together, and only promotion to production (ratified corpus) pays the full ceremony — uuid audit, lint clean, suites, e2e, operator sign-off as Human AC. Drafts are excluded from the retrieval index and lint baseline, badged DRAFT in the gallery, and never treated as authority (cascading-detail rules from T-2622 apply only to ratified maps). Stale drafts (~30 days untouched) surface as audit INFO. See docs/reports/T-2619-designer-authority-model.md Dialogue Log.
 
+**Session-start triggers (operator question 2026-07-25: "how can I trigger starting a drafting session together with agent?"):** three entry points, all converging on the same ritual:
+1. **Chat**: operator says "let's draft <topic>" → agent runs the ritual (task, registry entry status:draft, skeleton seed, deep-link back).
+2. **CLI**: `fw designer draft new <name>` → creates draft registry entry + empty/seeded map + prints editor deep-link (+ ntfy push of the URL).
+3. **Watchtower**: "New draft" button in /designer gallery → same as CLI, opens editor directly.
+The ritual (pair-draft loop, proven in arc-014 D1-D5): agent seeds skeleton from dialogue → operator edits visually in /designer/app → agent re-reads saved version (fw corpus derive/parse), critiques/normalizes, writes next version → repeat until settled → promotion ceremony. Versions v1..vN in .context/designer/projects/<name>/ are the shared medium; operator holds the pen in the UI, agent holds the pen in the spec.
+
 ## Acceptance Criteria
 
 ### Agent
