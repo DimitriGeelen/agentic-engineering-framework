@@ -73,7 +73,7 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Precedence target REVISED by operator (2026-07-25 round 2, T-2619 dialogue):** the end-state is **cascading detail levels** — CLAUDE.md thins to principles + pointers, workflow maps hold the process detail, code enforces. NOT permanent map-subordination. The original "corpus descriptive-subordinate to CLAUDE.md" rule survives only as a **transitional safety** per map: it applies until that map's conformance rail (T-2621 pattern) is green, then the map graduates to detail-authority and the corresponding CLAUDE.md prose is REPLACED by a reference to the map. This task's first AC must encode the cascade + transition, and `fw corpus explain` provenance footers must state the map's current authority stage (transitional-subordinate vs detail-authority). See docs/reports/T-2619-designer-authority-model.md Dialogue Log round 2.
 
 ## Acceptance Criteria
 

@@ -86,9 +86,9 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: What live state does the operator want on the maps FIRST — task statuses on aef-task-lifecycle, dispatch outcomes on aef-dispatch-loop, or gate-refusal events?**
-  confidence: 1
-  disposition:
-  rationale: Agent guess is task-status (serves "where is T-XXXX stuck"); operator steer pending — agenda item from 2026-07-25 dialogue.
+  confidence: 2
+  disposition: answered
+  rationale: Operator 2026-07-25 round 2 — task-status overlay OK'd BUT challenged against designer purpose ("what does this have to do with the purpose and goals?"). Reframed: the headline is PROCESS-level state (WIP concentration per stage, gate-friction hotspots — the process misbehaving), with per-task drill-down as the secondary affordance, NOT the headline. A bare "where is T-XXXX" lookup would duplicate Watchtower's task list and be off-purpose; process-health-on-the-map closes the observe→diagnose→redesign loop the designer exists for. Overlay v0 spec must lead with stage-level aggregates.
 
 - **IW-2: Wrapper-only v0 (same-origin iframe + external annotation, no 832 change) or ask 832 for a designer-side annotation hook first?**
   confidence: 3
