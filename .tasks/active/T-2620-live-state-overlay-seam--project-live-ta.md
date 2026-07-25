@@ -9,16 +9,16 @@ description: >
   bridge? Serves the TROUBLESHOOT goal: 'where is T-XXXX stuck' as a picture. Dependency:
   T-2619 authority-model GO.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 arc_id: designer-corpus
 tags: [designer, corpus, t2619-slice]
 components: []
 related_tasks: [T-2619]
 created: 2026-07-25T16:41:52Z
-last_update: '2026-07-25T16:45:08Z'
+last_update: 2026-07-25T17:15:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,9 +85,33 @@ bvp_scores_proposed:
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+- **IW-1: What live state does the operator want on the maps FIRST — task statuses on aef-task-lifecycle, dispatch outcomes on aef-dispatch-loop, or gate-refusal events?**
+  confidence: 1
+  disposition:
+  rationale: Agent guess is task-status (serves "where is T-XXXX stuck"); operator steer pending — agenda item from 2026-07-25 dialogue.
+
+- **IW-2: Wrapper-only v0 (same-origin iframe + external annotation, no 832 change) or ask 832 for a designer-side annotation hook first?**
+  confidence: 2
+  disposition:
+  rationale: T-2619 IW-3 spike shows wrapper v0 is feasible alone; 832 hook is cleaner long-term. Sequencing + rail-ask wording needs operator steer before posting.
+
+- **IW-3: Does same-origin iframe DOM-reach actually work live against the served 0.4.0 bundle, incl. after its ?load= rendering completes?**
+  confidence: 1
+  disposition:
+  rationale: Same-origin policy guarantees access in principle; timing vs bundle render + SVG internals unverified — first spike of this inception.
+
+- **IW-4: Where does the live-state feed come from — one Watchtower endpoint aggregating .tasks/active + focus.yaml + dispatches.jsonl keyed by map uid, or per-source fetches in the wrapper?**
+  confidence: 1
+  disposition:
+  rationale: Single aggregation endpoint likely cleaner (one contract, cacheable); needs a look at existing Watchtower blueprints before deciding.
+
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Operator dialogue: IW-1 (which state first) + IW-2 (wrapper v0 vs 832 hook, rail-ask wording) — in progress 2026-07-25.
+2. Live spike (30 min): wrapper page iframes /designer/app?load=<task-lifecycle> and annotates one g[data-id] node post-render — IW-3.
+3. Feed-shape look (30 min): existing Watchtower blueprints + gallery API → aggregation endpoint sketch — IW-4.
+4. If IW-2 lands on asking 832: draft rail proposal, post, capture their answer here.
+5. Decide via fw task review T-2620.
 
 ## Technical Constraints
 
@@ -168,3 +192,7 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-07-25T17:15:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -2,7 +2,13 @@
 id: T-2624
 name: "Read-value wiring — deep-link maps from gate messages and review pages"
 description: >
-  DOCS READ-VALUE goal (T-2619 slice): make the existing maps get read where work happens, independent of the authority decision. Wire deep links (designer/app?load=... with node focus) into: (a) task-lifecycle gate refusal messages (completion gate P-010/P-011 stderr points at the map node being enforced), (b) Watchtower /review and /inception pages (link the workflow map for the task's current state), (c) relevant CLAUDE.md sections reference map uids. Cheap, reversible, serves option-3 value even under NO-GO on operationalisation.
+  DOCS READ-VALUE goal (T-2619 slice): make the existing maps get read where work
+  happens, independent of the authority decision. Wire deep links (designer/app?load=...
+  with node focus) into: (a) task-lifecycle gate refusal messages (completion gate
+  P-010/P-011 stderr points at the map node being enforced), (b) Watchtower /review
+  and /inception pages (link the workflow map for the task's current state), (c) relevant
+  CLAUDE.md sections reference map uids. Cheap, reversible, serves option-3 value
+  even under NO-GO on operationalisation.
 
 status: captured
 workflow_type: build
@@ -22,8 +28,8 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-25T16:47:07Z
-last_update: 2026-07-25T16:47:07Z
-date_finished: null
+last_update: '2026-07-25T17:00:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +40,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-25T17:00:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-25T17:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2624: Read-value wiring — deep-link maps from gate messages and review pages

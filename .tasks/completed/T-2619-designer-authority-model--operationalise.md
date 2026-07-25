@@ -4,17 +4,17 @@ name: "Designer authority model — operationalise as live mirror"
 description: >
   Inception: Designer authority model — operationalise as live mirror
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 arc_id: designer-corpus
 tags: [designer, corpus, authority-model]
 components: []
 related_tasks: [T-2618, T-2617, T-2616]
 created: 2026-07-25T16:40:48Z
-last_update: '2026-07-25T16:45:05Z'
-date_finished:
+last_update: 2026-07-25T17:15:11Z
+date_finished: 2026-07-25T17:15:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -91,14 +91,14 @@ This inception decides the authority model and, on GO, authorises the constituen
 -->
 
 - **IW-1: Which authority direction do we commit to — map-as-spec, map-as-live-mirror, map-as-docs, or a scoped hybrid?**
-  confidence: 2
-  disposition:
-  rationale: Review recommends mirror-first + selective spec (task-lifecycle only); operator has not yet weighed in on the trade.
+  confidence: 3
+  disposition: answered
+  rationale: Operator GO recorded 2026-07-25 via /inception/T-2619 on the filed recommendation — mirror-first (live-state overlay) + selective spec-conformance (task-lifecycle only). Decision block below.
 
 - **IW-2: Does the operator actually pull on the maps today, and for what?**
-  confidence: 0
-  disposition:
-  rationale: Agent-side behavioral evidence only (agent greps code, never opens /designer); operator usage pattern unknown — direct question in review dialogue.
+  confidence: 1
+  disposition: dissolved
+  rationale: Operator's GO commits to *creating* operational pull (mirror-first direction); current-usage measurement no longer changes the build path — the question informed the review but is moot post-decision. T-2620/T-2624 outcomes will show real pull empirically.
 
 - **IW-3: Can live state be projected onto the served 0.4.0 bundle without forking the pinned artifact?**
   confidence: 2
@@ -112,8 +112,8 @@ This inception decides the authority model and, on GO, authorises the constituen
 
 - **IW-5: Does making the corpus an agent read-surface (fw corpus explain / ask index) create a conflicting second source of truth vs CLAUDE.md, or can precedence be declared cleanly?**
   confidence: 1
-  disposition:
-  rationale: CLAUDE.md instruction-precedence section exists as a model; corpus could be declared descriptive-subordinate until conformance rails (T-2621) mature — untested.
+  disposition: deferred
+  rationale: Deferred to T-2622 (the slice that builds the read-surface): it must declare corpus descriptive-subordinate to CLAUDE.md until T-2621 conformance rails mature — precedence declaration is that task's first AC, not a blocker for this authority decision.
 
 ## Exploration Plan
 
@@ -224,3 +224,32 @@ Critical review (2026-07-25 dialogue): 5 corpus maps are documentation-only — 
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Critical review (2026-07-25 dialogue): 5 corpus maps are documentation-only — troubleshoot goal unserved (no live state on maps), maintain = double maintenance (no map-vs-reality divergence detection), agents never consult maps (CLAUDE.md stays sole authority). Substrate (uuid permanence, gallery API, DOM data-id=uid) is ready for operationalisation. Recommend GO: mirror-first (live-state overlay) + selective spec-conformance (task-lifecycle only, where transitions are mechanically enforced).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-579954bc
+- **Timestamp:** 2026-07-25T17:15:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-0b3df780
+- **Timestamp:** 2026-07-25T17:15:11Z
+- **Overall:** CONTRADICTED
+- **Claims:** 7
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2619-designer-authority-model.md` | file | ✓ pass |
+| `lib/enums.sh:68-77` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `T-2620` | task | ✓ pass |
+| `T-2621` | task | ✓ pass |
+| `T-2622` | task | ✓ pass |
+| `T-2623` | task | ✓ pass |
+| `T-2624` | task | ✓ pass |
+
+### 2026-07-25T17:15:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

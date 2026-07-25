@@ -8,10 +8,10 @@ description: >
   vs work-plan), so promote would offer filing process steps as real tasks. Propose
   additive aef:workflowMeta kind= attribute to 832 (they own vocabulary; rail loop).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: 2026-07-23T08:59:22Z
+last_update: 2026-07-25T17:02:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -356,6 +356,43 @@ so `kind=` is the first consumed attribute.
   absent-marker half remains green (`tests/web/test_bpmn_frozen_v1_pin.py`
   3 passed). No build action taken (T-2541 discipline: don't build ahead of
   ratification).
+- 2026-07-23 **rail re-checked (offsets 172→191, current latest, Posts: 192),
+  still no ruling on T-213.** This entire window is 832's 0.3.2 hotfix
+  release (T-240/T-242, re-pinned+verified, our T-2615), a corpus bare-catch
+  follow-up (T-2613), a "newer than 0.3.2?" check that resolved to "no" (832's
+  T-245 view-chrome sits on their master unreleased), the T-247 pull-at-tag
+  intake proposal/GO-ratification (both sides' operators recorded a formal
+  GO — our D-335/T-2616, their commit e22d160), and its first live exercise:
+  designer 0.4.0 released + pull-at-tag intake executed end-to-end (our
+  T-2617, verdict GREEN). None of these 20 offsets mention T-213/kind= even
+  in a "still tracking" line — this is the first re-check window where 832
+  didn't restate the standing wait at all (their attention is on the 0.4.0
+  release cycle). No disposition beyond offset 127 exists. AC2/AC3's
+  kind=documentation half remains genuinely blocked — evidence gap, not a
+  build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). Horizon was flipped back
+  to `now`/`started-work` by auto-sync since the last demotion (dispatcher
+  re-promoted it) — re-applying the throttle: demoting horizon to `later`
+  again per the standing recommendation (23+ consecutive re-checks since
+  offset 127 with zero movement on the actual blocker). No build action
+  taken (T-2541 discipline: don't build ahead of ratification).
+- 2026-07-25 **rail re-checked (offsets 192→195, current latest, Posts: 196),
+  still no ruling on T-213.** All four new offsets are 832's T-247/T-248
+  pull-at-tag intake round-trip closeout (our 0.4.0 VERDICT GREEN at 191,
+  their T-247 open-question-2 close on our T-2616 tooling at 192, 832's
+  ack+counting-method learning at 193, a receipt at 194, our closing ack at
+  195) — entirely unrelated to T-213/kind=. 832 explicitly restates the
+  parked item verbatim at offset 193: "Operator queue our side unchanged
+  (T-213 / T-228 / T-240+T-245 reviews)." No disposition beyond offset 127
+  exists. AC2/AC3's kind=documentation half remains genuinely blocked —
+  evidence gap, not a build gap. AC3's absent-marker half re-verified green
+  (`tests/web/test_bpmn_frozen_v1_pin.py` 3 passed). No build action taken
+  (T-2541 discipline: don't build ahead of ratification). Horizon was
+  auto-synced back to `now`/`started-work` since the last demotion (per
+  T-1068 invariant, `started-work` forces `horizon: now`) — re-applying the
+  throttle: demoting horizon to `later` again per the standing recommendation
+  (25+ consecutive re-checks since offset 127 with zero movement on the
+  actual blocker).
 
 ## Acceptance Criteria
 
@@ -521,3 +558,15 @@ python3 -m pytest tests/web/test_bpmn_frozen_v1_pin.py -q > /tmp/.t2556-pin.out 
 ### 2026-07-23T08:59:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-23T18:30:26Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-07-23T19:39:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-25T17:02:16Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
