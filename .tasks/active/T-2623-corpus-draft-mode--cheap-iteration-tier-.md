@@ -73,7 +73,7 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Operator endorsed 2026-07-25 (T-2619 dialogue round 3):** *"makes sense, we can also jointly iterate it and test it before releasing it fully in production."* Draft mode is the joint iteration + testing surface: agent and operator sketch/refine a workflow as DRAFT, exercise it together, and only promotion to production (ratified corpus) pays the full ceremony — uuid audit, lint clean, suites, e2e, operator sign-off as Human AC. Drafts are excluded from the retrieval index and lint baseline, badged DRAFT in the gallery, and never treated as authority (cascading-detail rules from T-2622 apply only to ratified maps). Stale drafts (~30 days untouched) surface as audit INFO. See docs/reports/T-2619-designer-authority-model.md Dialogue Log.
 
 ## Acceptance Criteria
 

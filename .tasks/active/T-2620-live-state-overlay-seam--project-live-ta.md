@@ -88,7 +88,7 @@ bvp_scores_proposed:
 - **IW-1: What live state does the operator want on the maps FIRST — task statuses on aef-task-lifecycle, dispatch outcomes on aef-dispatch-loop, or gate-refusal events?**
   confidence: 2
   disposition: answered
-  rationale: Operator 2026-07-25 round 2 — task-status overlay OK'd BUT challenged against designer purpose ("what does this have to do with the purpose and goals?"). Reframed: the headline is PROCESS-level state (WIP concentration per stage, gate-friction hotspots — the process misbehaving), with per-task drill-down as the secondary affordance, NOT the headline. A bare "where is T-XXXX" lookup would duplicate Watchtower's task list and be off-purpose; process-health-on-the-map closes the observe→diagnose→redesign loop the designer exists for. Overlay v0 spec must lead with stage-level aggregates.
+  rationale: Operator 2026-07-25 rounds 2-3 — settled. Headline = PROCESS-level state (WIP concentration per stage, gate-friction hotspots). Round-3 refinement: drill-down descends to GENERALIZED sub-workflows (subProcess expansion / linked maps via T-2613 handoff jumps — cascading detail levels WITHIN the map hierarchy), NEVER to individual task pages. Individual task data is the OBSERVATION layer only: it feeds the aggregates and fires TRIGGERS when thresholds breach (task stuck N days at a stage, gate refused M times) — triggers surface as actionable signals (fw note obs / inbox / approvals — landing surface TBD in this inception), not as navigation targets. Duplicating Watchtower's task list is explicitly off-purpose.
 
 - **IW-2: Wrapper-only v0 (same-origin iframe + external annotation, no 832 change) or ask 832 for a designer-side annotation hook first?**
   confidence: 3
@@ -107,11 +107,13 @@ bvp_scores_proposed:
 
 ## Exploration Plan
 
-1. Operator dialogue: IW-1 (which state first) + IW-2 (wrapper v0 vs 832 hook, rail-ask wording) — in progress 2026-07-25.
-2. Live spike (30 min): wrapper page iframes /designer/app?load=<task-lifecycle> and annotates one g[data-id] node post-render — IW-3.
+1. Operator dialogue: IW-1 (which state first) + IW-2 (wrapper v0 vs 832 hook, rail-ask wording) — DONE 2026-07-25 (rounds 1-3; see rationales).
+2. Live spike (30 min): wrapper page iframes /designer/app?load=<task-lifecycle> and annotates one g[data-id] node post-render — IW-3. (May be superseded if 832 accepts the annotation-hook proposal, rail 196.)
 3. Feed-shape look (30 min): existing Watchtower blueprints + gallery API → aggregation endpoint sketch — IW-4.
-4. If IW-2 lands on asking 832: draft rail proposal, post, capture their answer here.
-5. Decide via fw task review T-2620.
+4. Rail: 832 answer to annotation-seam proposal (posted offset 196) — capture here; hook shape vs wrapper fallback decides the v0 architecture.
+5. Design note before decide: trigger model — which threshold breaches (stuck-N-days, gate-refused-M-times) fire, and where the actionable signal lands (fw note obs / inbox / approvals). Operator round-3 steer: task data = observations/triggers to be actioned, never drill-down targets.
+6. Design note before decide: drill-down = subProcess expansion + T-2613 cross-map handoff jumps (generalized sub-workflows), aligning with the cascading-detail architecture from T-2619 round-2 (item 4).
+7. Decide via fw task review T-2620.
 
 ## Technical Constraints
 
