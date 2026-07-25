@@ -91,9 +91,9 @@ bvp_scores_proposed:
   rationale: Agent guess is task-status (serves "where is T-XXXX stuck"); operator steer pending — agenda item from 2026-07-25 dialogue.
 
 - **IW-2: Wrapper-only v0 (same-origin iframe + external annotation, no 832 change) or ask 832 for a designer-side annotation hook first?**
-  confidence: 2
-  disposition:
-  rationale: T-2619 IW-3 spike shows wrapper v0 is feasible alone; 832 hook is cleaner long-term. Sequencing + rail-ask wording needs operator steer before posting.
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-07-25 — "ask 832 first". Proposal posted at rail offset 196 (two candidate shapes: postMessage protocol w/ aef:ready, or window.AefDesigner API; fallback wrapper stated honestly; T-246 MANIFEST capabilities flag suggested for advertising). Awaiting 832 shape-level ack/counter.
 
 - **IW-3: Does same-origin iframe DOM-reach actually work live against the served 0.4.0 bundle, incl. after its ?load= rendering completes?**
   confidence: 1
