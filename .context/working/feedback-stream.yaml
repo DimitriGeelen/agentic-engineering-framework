@@ -22880,3 +22880,21 @@ scan_id: R-d95a47f0
 task_id: T-2621
 payload:
   task_file: .tasks/active/T-2621-map-conformance-audit-leg--task-lifecycl.md
+---
+kind: scan_emitted
+timestamp: '2026-07-26T20:36:40Z'
+scan_id: R-2692dd05
+task_id: T-2622
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-26T20:36:40Z'
+scan_id: R-2692dd05
+task_id: T-2622
+payload:
+  task_file: .tasks/active/T-2622-agent-retrieval-seam--fw-corpus-explain-.md

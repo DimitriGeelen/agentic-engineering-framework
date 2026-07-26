@@ -9,10 +9,10 @@ description: >
   declared: corpus is descriptive-subordinate to CLAUDE.md until conformance rails
   (T-2621) mature (IW-5). Build only after T-2619 GO.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [designer, corpus, t2619-slice]
 components: []
 related_tasks: [T-2619]
@@ -27,8 +27,8 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-25T16:45:38Z
-last_update: '2026-07-26T17:00:08Z'
-date_finished:
+last_update: 2026-07-26T20:36:36Z
+date_finished: 2026-07-26T20:36:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,8 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw corpus explain <map-id>` (tools/corpus_explain.py, routed in bin/fw) renders an agent-readable walkthrough of the latest stored version: lanes with authority levels, BFS flow-order walkthrough with gateway branch labels, handoff targets, typed events, state annotations, embedded notes — live-verified on aef-task-lifecycle v5 and draft-trigger-handling v3
+- [x] Provenance footer states authority stage, derived mechanically from the T-2621 rail (asserted == canonical → detail-authority + "rail GREEN"; divergent/dormant/absent → transitional-subordinate with rail state named); footer states the precedence consequence both ways. Live: aef-task-lifecycle correctly reads transitional-subordinate citing the 2 divergent pairs
+- [x] Corpus joins the searched sources: `fw search <term>` keyword mode appends a "Corpus maps:" section matching map ids/titles/node names — pointer + `fw corpus explain <id>` command only, never XML dumps; silent on no match. Live: `fw search "healing loop"` surfaces aef-task-lifecycle
+- [x] Tests (tests/unit/test_corpus_explain.py, 6 passed): green rail → detail-authority; divergent rail → transitional-subordinate naming pairs; unrailed map → transitional-subordinate; explain renders every node + footer; search matches node names; search silent on no match
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +133,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(python3 -m pytest tests/unit/test_corpus_explain.py -q 2>&1); echo "$out" | grep -q "6 passed"
+out=$(bin/fw corpus explain aef-task-lifecycle 2>&1); echo "$out" | grep -q "authority stage:"
+out=$(bin/fw corpus explain aef-task-lifecycle 2>&1); echo "$out" | grep -q "## Walkthrough"
+out=$(bin/fw search "healing loop" 2>&1); echo "$out" | grep -q "fw corpus explain aef-task-lifecycle"
+out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "^2 finding"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -203,6 +211,11 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-26 — retrieval seam landed in search, not the recall index
+- **What changed:** At filing, "corpus in ask/recall index" implied touching the memory-recall/embeddings pipeline. Building revealed the cheaper correct seam: `fw search` keyword mode already scans `.tasks`/`.context`, so corpus joins retrieval as a dedicated match section (id/title/node names → pointer + explain command) with zero index maintenance. The semantic-embedding index remains untouched — adding maps there is a separate decision once explain-output proves its retrieval value (T-2624 territory).
+- **Plan impact:** No recall-index writer shipped; the AC was satisfied via the search surface (the AC's stated disjunction).
+- **Triggered:** Nothing new filed; T-2624 (read-value wiring) inherits the "explain output as the browsable artifact" direction.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -230,3 +243,24 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2622-agent-retrieval-seam--fw-corpus-explain-.md
 - **Context:** Initial task creation
+
+### 2026-07-26T20:31:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2692dd05
+- **Timestamp:** 2026-07-26T20:36:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw corpus explain <map-id>` (tools/corpus_explain.py, routed in bin/fw) renders an agent-readable walkthrough of the latest stored version: lanes with authority levels, BFS flow-order walkthrough wit
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_explain.py in: `fw corpus explain <map-id>` (tools/corpus_explain.py, routed in bin/fw) renders an agent-readable walkthrough of the latest stored version: lanes wit`
+
+### 2026-07-26T20:36:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4268,6 +4268,12 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
             shift
             exec python3 "$FRAMEWORK_ROOT/tools/corpus_lint.py" "$@"
         fi
+        # T-2622: `explain` renders an agent-readable walkthrough + authority-
+        # stage provenance footer (cascading-detail model, T-2619).
+        if [ "${1:-}" = "explain" ]; then
+            shift
+            exec python3 "$FRAMEWORK_ROOT/tools/corpus_explain.py" "$@"
+        fi
         exec python3 "$FRAMEWORK_ROOT/tools/corpus_spec.py" "$@"
         ;;
     git)
@@ -6901,6 +6907,15 @@ if total_results == 0:
 else:
     print(f'{total_results} result(s) found')
 PYSEARCH
+        # T-2622: retrieval seam — corpus maps join the searched sources.
+        # Matches on map id/title/node names; pointer + explain command only
+        # (never dumps XML). Silent on no match.
+        _corpus_hits=$(python3 "$FRAMEWORK_ROOT/tools/corpus_explain.py" --search "$SEARCH_TERM" 2>/dev/null || true)
+        if [ -n "$_corpus_hits" ]; then
+            echo ""
+            echo -e "${BOLD}Corpus maps:${NC}"
+            echo "$_corpus_hits"
+        fi
         ;;
     vendor)
         # T-2095 (T-2078 V1-D, F2): `fw vendor self` subcommand routes to the

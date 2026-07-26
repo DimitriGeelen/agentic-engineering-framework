@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2622: Agent retrieval seam — fw corpus explain + corpus in ask/recall index
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-26T20:36:48Z
+# ============================================================================
+
+task_id: T-2622
+task_name: "Agent retrieval seam — fw corpus explain + corpus in ask/recall index"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-25T16:45:38Z
+completed: 2026-07-26T20:36:36Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-07-26T22:32:44+02:00
+last_commit: 2026-07-26T22:32:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored copies (T-2621 conformance tool + audit drift)
+
+# Key outcomes
+outcomes:
+  - '`fw corpus explain <map-id>` (tools/corpus_explain.py, routed in bin/fw) renders an agent-readable walkthrough of the latest stored version: lanes with authority levels, BFS flow-order walkthrough with gateway branch labels, handoff targets, typed events, state annotations, embedded notes — live-verified on aef-task-lifecycle v5 and draft-trigger-handling v3'
+  - 'Provenance footer states authority stage, derived mechanically from the T-2621 rail (asserted == canonical → detail-authority + "rail GREEN"; divergent/dormant/absent → transitional-subordinate with rail state named); footer states the precedence consequence both ways. Live: aef-task-lifecycle correctly reads transitional-subordinate citing the 2 divergent pairs'
+  - 'Corpus joins the searched sources: `fw search <term>` keyword mode appends a "Corpus maps:" section matching map ids/titles/node names — pointer + `fw corpus explain <id>` command only, never XML dumps; silent on no match. Live: `fw search "healing loop"` surfaces aef-task-lifecycle'
+  - 'Tests (tests/unit/test_corpus_explain.py, 6 passed): green rail → detail-authority; divergent rail → transitional-subordinate naming pairs; unrailed map → transitional-subordinate; explain renders every node + footer; search matches node names; search silent on no match'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-26T22:32:44"
+    action: "T-2622: refresh vendored copies (T-2621 conformance tool + audit drift)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1670 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, corpus, t2619-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1670
+  commits: 1
+  files_changed: 1
+  lines_added: 37
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2622-agent-retrieval-seam--fw-corpus-explain-.md
+generated_by: context-agent-hybrid
