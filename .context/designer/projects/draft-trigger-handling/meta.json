@@ -6,9 +6,19 @@
       "v": 1,
       "note": "pair-draft v1 skeleton seeded by agent (T-2620 trigger-handling exploration)",
       "ts": 1785008689
+    },
+    {
+      "v": 2,
+      "note": "layout corrected",
+      "ts": 1785091374
+    },
+    {
+      "v": 3,
+      "note": "agent-normalize: v2 verbatim + eventDef timer/message restored on start+throw (dropped by editor save; suspected round-trip gap, to be flagged to 832). UNVERIFIED: lint/derive pending budget-gate clearance",
+      "ts": 1785092600
     }
   ],
   "uuid": "d1682058-fe33-4a3b-b580-0f7b8e09ee60",
-  "latest": 1,
-  "updated": 1785008689
+  "latest": 3,
+  "updated": 1785092600
 }
