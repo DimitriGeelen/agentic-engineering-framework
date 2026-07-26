@@ -2347,3 +2347,10 @@ decisions:
     date: 2026-07-23
     task: T-2616
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-338
+    decision: "Ship the rail with the 2-pair divergence surfaced as audit WARN; propose the map edit to the operator."
+    scope: project
+    date: 2026-07-26
+    task: T-2621
+    rationale: "Auto-captured from task file on completion"

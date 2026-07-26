@@ -1812,6 +1812,43 @@ PYEOF
 }
 check_designer_ghost_drift
 
+# T-2621: map-conformance rail — task-lifecycle corpus map vs enforced transitions.
+# First selective spec-conformance leg (T-2619 GO). The checker collapses the
+# map's state-carrier nodes (aef:meta state=) to transition pairs and compares
+# against status-transitions.yaml (legacy entries excluded). Divergence is the
+# finding, not a failure of the rail — the map graduates to detail-authority
+# only when this stays green (T-2619 cascading-detail model).
+check_map_conformance() {
+    local _tool="$PROJECT_ROOT/tools/corpus_conformance.py"
+    local _store="$PROJECT_ROOT/.context/designer/projects/aef-task-lifecycle"
+    if [ ! -f "$_tool" ] || [ ! -d "$_store" ]; then
+        return 0  # rail not applicable (consumer project / no corpus)
+    fi
+    local _out _rc
+    _out=$(python3 "$_tool" --map aef-task-lifecycle --root "$PROJECT_ROOT" 2>&1)
+    _rc=$?
+    case "$_rc" in
+        0)
+            if echo "$_out" | grep -q "SKIP"; then
+                info "Map conformance: aef-task-lifecycle has no state-carrier annotations yet (rail dormant)"
+            else
+                pass "Map conformance: aef-task-lifecycle matches enforced transitions"
+            fi
+            ;;
+        1)
+            warn "Map conformance: aef-task-lifecycle diverges from enforced transitions (T-2621)" \
+                 "$(echo "$_out" | grep -E 'map-asserts|code-allows' | tr '\n' '; ')" \
+                 "Update the map (pair-draft round adding the missing edges) or fix status-transitions.yaml if the map is right — the rail must be green before the map graduates to detail-authority (T-2619)"
+            ;;
+        *)
+            warn "Map conformance: checker failed to load aef-task-lifecycle (T-2621)" \
+                 "$_out" \
+                 "Inspect .context/designer/projects/aef-task-lifecycle/ and tools/corpus_conformance.py"
+            ;;
+    esac
+}
+check_map_conformance
+
 echo ""
 fi # end structure
 

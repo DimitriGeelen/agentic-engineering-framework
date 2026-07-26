@@ -21,9 +21,14 @@
       "v": 4,
       "note": "T-2618: document task workflow \u2014 gate-refusal loop, horizon backlog, escalation/gate-variant/review-URL notes",
       "ts": 1784840186
+    },
+    {
+      "v": 5,
+      "note": "T-2621: state-carrier annotations (aef:meta state=) on 7 lifecycle nodes \u2014 machine-readable status mapping for the conformance rail; zero visual/structural change vs v4",
+      "ts": 1785097536
     }
   ],
-  "latest": 4,
-  "updated": 1784840186,
+  "latest": 5,
+  "updated": 1785097536,
   "uuid": "1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7"
 }

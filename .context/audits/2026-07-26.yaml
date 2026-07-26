@@ -1,10 +1,10 @@
-# Audit Results - 2026-07-26-2154
-timestamp: 2026-07-26T19:54:37Z
+# Audit Results - 2026-07-26-2227
+timestamp: 2026-07-26T20:27:12Z
 sections: "structure"
 summary:
-  pass: 24
-  warn: 3
-  fail: 0
+  pass: 22
+  warn: 5
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -46,11 +46,12 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 902 registered, 0 unregistered"
+    check: "Fabric: 902 registered, 1 unregistered (coverage growing)"
   - level: PASS
     check: "Fabric edges: 812/816 cards enriched (4 without edges)"
-  - level: PASS
-    check: "Fabric drift: All watched source files registered (902 cards)"
+  - level: WARN
+    check: "Fabric drift: 1 source file(s) have no fabric card"
+    mitigation: "Run: fw fabric scan"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: PASS
@@ -59,7 +60,11 @@ findings:
     check: "Secret scan: tracked tree clean"
   - level: PASS
     check: "Large-file gate: tracked tree clean"
-  - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 1 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
+  - level: WARN
+    check: "Map conformance: aef-task-lifecycle diverges from enforced transitions (T-2621)"
+    mitigation: "Update the map (pair-draft round adding the missing edges) or fix status-transitions.yaml if the map is right — the rail must be green before the map graduates to detail-authority (T-2619)"

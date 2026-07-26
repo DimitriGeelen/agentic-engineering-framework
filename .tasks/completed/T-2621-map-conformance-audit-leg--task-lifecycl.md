@@ -10,10 +10,10 @@ description: >
   T-2619 recommendation — task-lifecycle only, where transitions are already mechanically
   enforced.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [designer, corpus, t2619-slice]
 components: []
 related_tasks: [T-2619]
@@ -28,8 +28,8 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-25T16:43:07Z
-last_update: '2026-07-25T16:45:08Z'
-date_finished:
+last_update: 2026-07-26T20:30:42Z
+date_finished: 2026-07-26T20:30:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +50,15 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-07-26T20:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-07-25T16:45:08Z'
     estimator: bvp-estimator-v1-heuristic
@@ -68,20 +77,39 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-07-26T20:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2621: Map-conformance audit leg — task-lifecycle map edges vs update-task.sh transitions
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+First selective spec-conformance rail per the T-2619 GO (mirror-first + selective conformance, task-lifecycle only). The keystone of the operator's cascading-detail authority model (T-2619 round 2): a map graduates from transitional-subordinate to detail-authority only when its conformance rail is green — this task builds that rail for aef-task-lifecycle. Extraction convention: map nodes carrying a machine-readable status annotation (`aef:meta state=<status>`) are state carriers; a flow (or flow path through non-state nodes) between two state carriers asserts a status transition. Canonical enforced set: `VALID_TRANSITIONS` (policy/enums.yaml via lib/enums.sh, enforced at agents/task-create/update-task.sh). Divergence in either direction is a WARN (map documents what code refuses / code allows what map lacks) — the rail's job is to surface divergence, not to hide it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw audit` structure section gains a map-conformance check (`check_map_conformance` in agents/audit/audit.sh, thin wrapper over `tools/corpus_conformance.py`): PASS when aligned, WARN listing each divergent pair with direction, INFO when rail dormant (zero carriers), WARN on checker load failure
+- [x] Extraction deterministic and documented in the checker docstring: state-carrier nodes (`aef:meta state=`) only; walks pass through non-carriers and terminate at the first carrier reached; same-state pairs ignored; only aef-task-lifecycle is scanned (rail scoped per T-2619 selective conformance)
+- [x] Unit tests (tests/unit/test_corpus_conformance.py, 6 passed): aligned fixture asserts exactly the canonical set; refused-transition divergence; missing-transition divergence; zero-carrier skip; carrier-terminated walks; legacy exclusion
+- [x] Live run recorded: aef-task-lifecycle v5 (state annotations added this task, uuid preserved, zero visual change) → DIVERGENT, 2 findings, both code-allows/map-lacks: `issues → work-completed` and `started-work → captured` (shelving demote, T-1068). Surfaced as audit WARN by design — map catch-up (2 new flows) proposed to operator as a pair-draft round rather than redrawing the T-2618-reviewed diagram unilaterally
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +143,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(python3 -m pytest tests/unit/test_corpus_conformance.py -q 2>&1); echo "$out" | grep -q "6 passed"
+python3 tools/corpus_conformance.py > /dev/null 2>&1; rc=$?; test "$rc" -le 1
+out=$(python3 tools/corpus_conformance.py 2>&1); echo "$out" | grep -qE "conformance: (PASS|DIVERGENT)"
+out=$(bin/fw corpus derive aef-task-lifecycle 2>&1); test "$(echo "$out" | grep -c 'state:')" = "7"
+out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "^2 finding"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -187,7 +221,17 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-26 — map had no machine-readable state at filing
+- **What changed:** The task assumed the map's transitions were extractable; in fact v4 encoded statuses only in display names. The schema already supported `aef:meta state=`, so the task grew a first leg: annotate 7 carrier nodes as v5 (uuid preserved, canon diff = exactly the 7 additions, zero visual change).
+- **Plan impact:** "Derive the allowed transition set from the map" became a two-step: define the carrier convention, then collapse. The convention (walks terminate at carriers, same-state ignored) is now the documented contract in the checker.
+- **Triggered:** Map catch-up proposal to operator (2 missing flows: shelve-demote, issues→completed) — deliberately NOT drawn unilaterally while T-2618's review of this diagram is pending.
+
 ## Decisions
+
+### 2026-07-26 — surface divergence vs redraw the map
+- **Chose:** Ship the rail with the 2-pair divergence surfaced as audit WARN; propose the map edit to the operator.
+- **Why:** The diagram is a joint pair-draft artifact currently under operator review (T-2618). The rail's job is to surface divergence; closing it by redrawing a reviewed diagram unilaterally would invert the sovereignty of the review. WARN is the honest steady-state until the next pair round.
+- **Rejected:** (a) Save v6 with the 2 flows now — green rail but stale review; (b) exclude those transitions from the canonical set — hides real enforcement.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -214,3 +258,24 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2621-map-conformance-audit-leg--task-lifecycl.md
 - **Context:** Initial task creation
+
+### 2026-07-26T20:22:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d95a47f0
+- **Timestamp:** 2026-07-26T20:30:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw audit` structure section gains a map-conformance check (`check_map_conformance` in agents/audit/audit.sh, thin wrapper over `tools/corpus_conformance.py`): PASS when aligned, WARN listing each div
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `fw audit` structure section gains a map-conformance check (`check_map_conformance` in agents/audit/audit.sh, thin wrapper over `tools/corpus_conforma`
+
+### 2026-07-26T20:30:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

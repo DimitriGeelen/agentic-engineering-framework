@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2621: Map-conformance audit leg — task-lifecycle map edges vs update-task.sh transitions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-26T20:30:55Z
+# ============================================================================
+
+task_id: T-2621
+task_name: "Map-conformance audit leg — task-lifecycle map edges vs update-task.sh transitions"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-25T16:43:07Z
+completed: 2026-07-26T20:30:42Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw audit` structure section gains a map-conformance check (`check_map_conformance` in agents/audit/audit.sh, thin wrapper over `tools/corpus_conformance.py`): PASS when aligned, WARN listing each divergent pair with direction, INFO when rail dormant (zero carriers), WARN on checker load failure'
+  - 'Extraction deterministic and documented in the checker docstring: state-carrier nodes (`aef:meta state=`) only; walks pass through non-carriers and terminate at the first carrier reached; same-state pairs ignored; only aef-task-lifecycle is scanned (rail scoped per T-2619 selective conformance)'
+  - 'Unit tests (tests/unit/test_corpus_conformance.py, 6 passed): aligned fixture asserts exactly the canonical set; refused-transition divergence; missing-transition divergence; zero-carrier skip; carrier-terminated walks; legacy exclusion'
+  - 'Live run recorded: aef-task-lifecycle v5 (state annotations added this task, uuid preserved, zero visual change) → DIVERGENT, 2 findings, both code-allows/map-lacks: `issues → work-completed` and `started-work → captured` (shelving demote, T-1068). Surfaced as audit WARN by design — map catch-up (2 new flows) proposed to operator as a pair-draft round rather than redrawing the T-2618-reviewed diagram unilaterally'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-26 — surface divergence vs redraw the map'
+    chose: 'Ship the rail with the 2-pair divergence surfaced as audit WARN; propose the map edit to the operator.'
+    rationale: 'The diagram is a joint pair-draft artifact currently under operator review (T-2618). The rail''s job is to surface divergence; closing it by redrawing a reviewed diagram unilaterally would invert the sovereignty of the review. WARN is the honest steady-state until the next pair round.'
+    alternatives_rejected: ['(a) Save v6 with the 2 flows now — green rail but stale review; (b) exclude those transitions from the canonical set — hides real enforcement.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1667 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, corpus, t2619-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1667
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2621-map-conformance-audit-leg--task-lifecycl.md
+generated_by: context-agent-hybrid
