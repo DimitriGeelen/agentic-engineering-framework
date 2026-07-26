@@ -141,3 +141,29 @@ def test_live_inception_flow_carries_the_restored_subprocess():
     assert "hum_3_inception" in ids
     for f in spec["flows"]:
         assert f["from"] in ids and f["to"] in ids, f"dangling flow {f['id']}"
+
+
+def test_fractional_lane_height_round_trips_and_integer_stays_bare():
+    """T-2625: the designer editor saves fractional lane heights (drag-resize);
+    int() coercion crashed derive. Fractional heights must round-trip verbatim,
+    integer heights must keep emitting bare (byte-stability for existing maps)."""
+    xml = (
+        HEAD.replace("</bpmn:extensionElements>", "</bpmn:extensionElements>"
+                     '<bpmn:laneSet id="ls">'
+                     '<bpmn:lane id="a" name="A"><bpmn:extensionElements>'
+                     '<aef:laneMeta abbr="a" authority="initiative" height="220"/>'
+                     "</bpmn:extensionElements></bpmn:lane>"
+                     '<bpmn:lane id="h" name="H"><bpmn:extensionElements>'
+                     '<aef:laneMeta abbr="h" authority="sovereignty" '
+                     'height="323.91686531856146"/>'
+                     "</bpmn:extensionElements></bpmn:lane>"
+                     "</bpmn:laneSet>")
+        + TAIL
+    )
+    spec = corpus_spec.parse_map(xml)
+    heights = {l["id"]: l["height"] for l in spec["lanes"]}
+    assert heights["a"] == 220 and isinstance(heights["a"], int)
+    assert heights["h"] == 323.91686531856146
+    out = corpus_spec.emit_map(spec, version=1)
+    assert 'height="220"' in out
+    assert 'height="323.91686531856146"' in out

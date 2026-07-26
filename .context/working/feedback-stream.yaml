@@ -22746,3 +22746,101 @@ scan_id: R-899e5045
 task_id: T-2613
 payload:
   task_file: .tasks/active/T-2613-aef-audit-cron-warnfail-connector-unwire.md
+---
+kind: scan_emitted
+timestamp: '2026-07-23T18:08:43Z'
+scan_id: R-132ee531
+task_id: T-2617
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-23T18:08:43Z'
+scan_id: R-132ee531
+task_id: T-2617
+payload:
+  task_file: .tasks/active/T-2617-re-pin-designer-040-t-245-view-chrome--f.md
+---
+kind: scan_emitted
+timestamp: '2026-07-23T19:47:14Z'
+scan_id: R-b5232991
+task_id: T-2616
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-23T19:47:14Z'
+scan_id: R-b5232991
+task_id: T-2616
+payload:
+  task_file: .tasks/active/T-2616-fw-designer-sync---from-tag-pull-at-tag-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-23T20:57:46Z'
+scan_id: R-9afc98f6
+task_id: T-2618
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-23T20:57:46Z'
+scan_id: R-9afc98f6
+task_id: T-2618
+payload:
+  task_file: .tasks/active/T-2618-aef-task-lifecycle-map-reviewextend--doc.md
+---
+kind: scan_emitted
+timestamp: '2026-07-25T17:15:11Z'
+scan_id: R-579954bc
+task_id: T-2619
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-25T17:15:11Z'
+scan_id: R-579954bc
+task_id: T-2619
+payload:
+  task_file: .tasks/active/T-2619-designer-authority-model--operationalise.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-25T17:15:11Z'
+scan_id: RC-0b3df780
+task_id: T-2619
+payload:
+  overall: CONTRADICTED
+  claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-07-26T19:51:51Z'
+scan_id: R-0fc2451f
+task_id: T-2625
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-26T19:51:51Z'
+scan_id: R-0fc2451f
+task_id: T-2625
+payload:
+  task_file: .tasks/active/T-2625-corpusspec-derive-crashes-on-fractional-.md

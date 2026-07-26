@@ -186,7 +186,7 @@ def parse_map(xml_text: str) -> dict:
                 "name": lane.get("name"),
                 "abbr": lm.get("abbr"),
                 "authority": lm.get("authority"),
-                "height": int(lm["height"]) if lm.get("height") else None,
+                "height": _dim(lm["height"]) if lm.get("height") else None,
             })
             for ref in lane.findall(_q("flowNodeRef")):
                 node_lane[ref.text.strip()] = lane.get("id")
@@ -269,6 +269,15 @@ def parse_map(xml_text: str) -> dict:
     spec["nodes"] = nodes
     spec["flows"] = flows
     return spec
+
+
+def _dim(v: str):
+    """DI dimension: int when integral (byte-stable for existing maps), float otherwise.
+
+    The designer editor saves fractional lane heights (drag-resize); int() crashed
+    on those (T-2625). repr(float) round-trips the fractional value verbatim."""
+    f = float(v)
+    return int(f) if f == int(f) else f
 
 
 # ── generate: spec → BPMN ─────────────────────────────────────────────────────

@@ -1,21 +1,19 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-07-23T03:23:02.524069+00:00
-corpus_total: 2337
-bug_class_total: 467
-bug_class_pct: 19
-h1_flagged: 346
+generated: 2026-07-26T03:23:02.756775+00:00
+corpus_total: 2344
+bug_class_total: 470
+bug_class_pct: 20
+h1_flagged: 349
 h1_pct_of_bug_class: 74
 h2_repeat_patterns: 127
 h3_flagged: 265
 h3_pct_of_bug_class: 56
-recent_30d_flagged: 6
+recent_30d_flagged: 8
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-100202-task-id-allocator-inflation--split-view-"
     name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emi"
-  - tid: "T-2476-investigate-pyyaml-timestamp-round-trip-"
-    name: "investigate PyYAML timestamp round-trip corruption class — register concern, fix"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
   - tid: "T-2580-testsweb-full-dir-run-has-8-order-depend"
@@ -24,24 +22,30 @@ recent_sample:
     name: "extract_recommendation verdict regex lost NO_GO underscore tolerance (T-1575 con"
   - tid: "T-2583-reviewer-skip-as-pass-detector-false-pos"
     name: "Reviewer skip-as-pass detector false-positive: it matches the RCA-template"
+  - tid: "T-2612-handoff-jump-regression-uuid-form-corpus"
+    name: "handoff jump regression: uuid-form corpus + 0.3.1 no auto-resolve — operator-sur"
+  - tid: "T-2613-aef-audit-cron-warnfail-connector-unwire"
+    name: "aef-audit-cron warn/fail connector unwired — corpus sweep for unlinked handoff-i"
+  - tid: "T-2615-re-pin-designer-032-t-240-uuid-auto-reso"
+    name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias"
 h2_top:
   - learning: "P-011"
-    task_count: 1213
+    task_count: 1226
   - learning: "L-387"
-    task_count: 1046
+    task_count: 1058
   - learning: "L-291"
-    task_count: 669
+    task_count: 676
   - learning: "L-398"
-    task_count: 449
+    task_count: 455
   - learning: "P-010"
     task_count: 239
   - learning: "L-006"
     task_count: 54
+  - learning: "L-399"
+    task_count: 39
   - learning: "L-001"
     task_count: 38
   - learning: "L-364"
     task_count: 38
-  - learning: "L-399"
-    task_count: 37
   - learning: "L-332"
     task_count: 36

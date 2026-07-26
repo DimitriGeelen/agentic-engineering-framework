@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2612: handoff jump regression: uuid-form corpus + 0.3.1 no auto-resolve — operator-surface
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-23T07:06:51Z
+# ============================================================================
+
+task_id: T-2612
+task_name: "handoff jump regression: uuid-form corpus + 0.3.1 no auto-resolve — operator-surface"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-22T21:29:24Z
+completed: 2026-07-23T07:06:39Z
+duration_days: 1
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Live repro captured on the served surface (:3001): a corpus map handoff node''s'
+  - 'RCA section written: root cause, why the framework allowed it (recreate rollout'
+  - 'Escalated to 832 on the DM rail with repro evidence (rail offset 168: regression'
+  - 'Fix landed and live-verified end-to-end on served bytes: dual-form emit'
+  - 'Regression guard: corpus lint rule `editor-unbindable` (tools/corpus_lint.py)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-07-23 — Interim fix form: dual-form emit vs wait for 832 T-240'
+    chose: 'Ship the AEF-side interim immediately — emit BOTH `targetWorkflow`'
+    rationale: 'Operator-surface regression, reported twice with escalating severity;'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 577 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 577
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2612-handoff-jump-regression-uuid-form-corpus.md
+generated_by: context-agent-hybrid

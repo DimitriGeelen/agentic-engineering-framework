@@ -2333,3 +2333,17 @@ decisions:
     date: 2026-07-23
     task: T-2556
     rationale: "Not specified"
+
+  - id: D-336
+    decision: "origin URL lives in `policy/designer-pin.yaml` as `source_origin:`; script reads it, no hard-coded URL."
+    scope: project
+    date: 2026-07-23
+    task: T-2616
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-337
+    decision: "dry-run checks tag SELF-consistency (artifact vs MANIFEST at the same tag) as a hard gate but reports pin-match as info only, exit 0 either way; install mode requires both anchors."
+    scope: project
+    date: 2026-07-23
+    task: T-2616
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2615: re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-23T08:52:11Z
+# ============================================================================
+
+task_id: T-2615
+task_name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-23T07:55:16Z
+completed: 2026-07-23T08:52:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-23T09:58:14+02:00
+last_commit: 2026-07-23T09:58:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  0.3.2 re-pin ARMED — artifact received + sha independently verified (983e0e30…d38a, 866701 B, T-240 marker present), pre-sync confirm at rail 172; resume state pinned in task (pin bump + flag flip + conditional alias emit + uuid-only regen + e2e pending). T-2613 scoped (audit-cron agt_6_warn wiring)
+
+# Key outcomes
+outcomes:
+  - 'Delivered artifact received and INDEPENDENTLY verified: sha256'
+  - 'Pin bumped to 0.3.2 (sha/bytes/tag/vendored_path/content-note) with'
+  - 'emit_map made capability-conditional: `compat_alias` param (None → derived'
+  - 'T-240 proven on served bytes (Playwright, operator path): uuid-ONLY link'
+  - 'Corpus lint at pinned 2-finding baseline (t2584-scratch legacy-ref +'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-23 — emit_map alias conditionality mechanism'
+    chose: '`compat_alias: bool | None = None` parameter on emit_map — None'
+    rationale: 'symmetric producer/consumer pattern — the same pin flag drives both'
+    alternatives_rejected: ['importing corpus_lint''s pin reader into corpus_spec (cross-tool']
+  - decision: '2026-07-23 — old dual-form versions retained'
+    chose: 'regenerate uuid-only as NEW versions (v3/v3/v4); dual-form v2/v2/v3'
+    rationale: '/api/save is non-destructive by design; old versions double as the'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2613-aef-audit-cron-warnfail-connector-unwire.md'
+  - '.tasks/active/T-2615-re-pin-designer-032-t-240-uuid-auto-reso.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-23T09:58:14"
+    action: "T-2615: 0.3.2 re-pin ARMED — artifact received + sha independently verified (983e0e30…d38a, 866701 B, T-240 marker present), pre-sync confirm at rail 172; resume state pinned in task (pin bump + flag flip + conditional alias emit + uuid-only regen + e2e pending). T-2613 scoped (audit-cron agt_6_warn wiring)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 56 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 56
+  commits: 1
+  files_changed: 2
+  lines_added: 453
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2615-re-pin-designer-032-t-240-uuid-auto-reso.md
+generated_by: context-agent-hybrid

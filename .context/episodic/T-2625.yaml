@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2625: corpus_spec derive crashes on fractional lane height (editor-saved floats)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-26T19:51:59Z
+# ============================================================================
+
+task_id: T-2625
+task_name: "corpus_spec derive crashes on fractional lane height (editor-saved floats)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-26T19:48:20Z
+completed: 2026-07-26T19:51:48Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw corpus derive draft-trigger-handling` (fractional lane height) completes without traceback'
+  - 'Round-trip preserved: derived spec → generate emits the fractional height verbatim (`323.91686531856146`), and integer heights still emit without a `.0` suffix (existing corpus maps byte-stable)'
+  - '`fw corpus derive aef-dispatch-loop` (integer heights) still succeeds and lint baseline stays at 2 findings'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2625-corpusspec-derive-crashes-on-fractional-.md
+generated_by: context-agent-hybrid

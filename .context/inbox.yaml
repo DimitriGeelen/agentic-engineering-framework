@@ -800,5 +800,5 @@ observations:
   captured: 2026-07-22T06:35:32Z
   context_task: T-2599
   tags: [bug]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task

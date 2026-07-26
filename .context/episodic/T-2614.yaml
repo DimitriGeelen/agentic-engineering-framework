@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2614: corpus_spec parse silently drops unknown BPMN tags — subProcess lost from inception-flow, strict-parse + restore
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-23T07:54:37Z
+# ============================================================================
+
+task_id: T-2614
+task_name: "corpus_spec parse silently drops unknown BPMN tags — subProcess lost from inception-flow, strict-parse + restore"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-23T07:46:37Z
+completed: 2026-07-23T07:54:25Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'parse_map fails LOUDLY (non-zero, naming the tag and node id) on any'
+  - 'Vocabulary extended to the designer-palette types found in the corpus:'
+  - 'aef-inception-flow restored: regenerated from the last pre-loss source'
+  - 'New lint rule `dangling-flow-ref` shipped in tools/corpus_lint.py; pinned'
+  - 'Live e2e: aef-inception-flow v3 renders CONNECTED on the served surface —'
+  - 'Suites green: 27/27 (roundtrip 4 + lint 17 + prove-guard 2 + DR 1 + s4 3).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2614-corpusspec-parse-silently-drops-unknown-.md
+generated_by: context-agent-hybrid
