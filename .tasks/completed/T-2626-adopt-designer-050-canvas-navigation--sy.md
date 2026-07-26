@@ -1,22 +1,17 @@
 ---
-id: T-2622
-name: "Agent retrieval seam — fw corpus explain + corpus in ask/recall index"
+id: T-2626
+name: "Adopt designer 0.5.0 (canvas navigation) — sync at tag, sha verify, pin, e2e verdict"
 description: >
-  DEVELOP/CONSULT goal (T-2619 slice): make agents actually consult the maps. Add
-  'fw corpus explain <uid|node-name|map>' returning the node, its edges, lane/owner
-  and meta notes from the corpus spec; index corpus node/edge text into fw ask / fw
-  recall so workflow questions resolve from the corpus, not only CLAUDE.md. Precedence
-  declared: corpus is descriptive-subordinate to CLAUDE.md until conformance rails
-  (T-2621) mature (IW-5). Build only after T-2619 GO.
+  Adopt designer 0.5.0 (canvas navigation) — sync at tag, sha verify, pin, e2e verdict
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
-tags: [designer, corpus, t2619-slice]
+horizon: null
+tags: []
 components: []
-related_tasks: [T-2619]
-arc_id: designer-corpus
+related_tasks: []
+# arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
@@ -26,9 +21,9 @@ arc_id: designer-corpus
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-25T16:45:38Z
-last_update: '2026-07-26T17:00:08Z'
-date_finished:
+created: 2026-07-26T19:54:18Z
+last_update: 2026-07-26T19:57:59Z
+date_finished: 2026-07-26T19:57:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,65 +34,22 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-25T17:00:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-25T17:00:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-26T17:00:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2622: Agent retrieval seam — fw corpus explain + corpus in ask/recall index
+# T-2626: Adopt designer 0.5.0 (canvas navigation) — sync at tag, sha verify, pin, e2e verdict
 
 ## Context
 
-**Precedence target REVISED by operator (2026-07-25 round 2, T-2619 dialogue):** the end-state is **cascading detail levels** — CLAUDE.md thins to principles + pointers, workflow maps hold the process detail, code enforces. NOT permanent map-subordination. The original "corpus descriptive-subordinate to CLAUDE.md" rule survives only as a **transitional safety** per map: it applies until that map's conformance rail (T-2621 pattern) is green, then the map graduates to detail-authority and the corresponding CLAUDE.md prose is REPLACED by a reference to the map. This task's first AC must encode the cascade + transition, and `fw corpus explain` provenance footers must state the map's current authority stage (transitional-subordinate vs detail-authority). See docs/reports/T-2619-designer-authority-model.md Dialogue Log round 2.
+832 released designer 0.5.0 (rail offset 199): canvas navigation only (zoom controls, Ctrl+wheel zoom-at-cursor, drag-to-pan, scrollbars past fit), ZERO seam surface. Claimed sha256 `787e40251f624bb39532be096232f4e25ea9014fe7dc0da0bc46285e140e025e`, 879243 bytes, tag `designer-v0.5.0`. Our contract side: `fw designer sync --from-tag designer-v0.5.0` → independent sha vs MANIFEST-at-same-tag AND vs rail claim → pin → e2e → verdict on the rail (counting method stated per the mutual learning at rail offset 195).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Synced artifact sha256 independently computed == 832's rail claim (787e4025…) == MANIFEST-at-tag sha; bytes == 879243
+- [x] Pin updated to 0.5.0; served /designer/app returns the 0.5.0 bundle byte-identical (served-response sha == artifact sha); markers btn-zoom-fit=3, applyCanvasZoom=3, syncOverlayPin=4 (LINES containing string, per 832's method) — all match announce
+- [x] Live e2e: draft-trigger-handling@v3 (fractional-height map) loads in 0.5.0 — 39 g[data-id] = 19 nodes + 20 flows exact, zoom-fit control present, console clean except known favicon 404
+- [x] Verdict posted to DM rail offset 202 (reply to 199) with counting method stated
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +83,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(sha256sum vendor/designer/aef-workflow-designer-0.5.0.html); echo "$out" | grep -q "787e40251f624bb39532be096232f4e25ea9014fe7dc0da0bc46285e140e025e"
+out=$(curl -s "$(bin/fw watchtower url)/designer/app" | sha256sum); echo "$out" | grep -q "787e40251f624bb39532be096232f4e25ea9014fe7dc0da0bc46285e140e025e"
+out=$(grep -c "btn-zoom-fit" vendor/designer/aef-workflow-designer-0.5.0.html); test "$out" = "3"
+out=$(grep -c 'version: "0.5.0"' policy/designer-pin.yaml); test "$out" = "1"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -226,7 +183,19 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-07-25T16:45:38Z — task-created [task-create-agent]
+### 2026-07-26T19:54:18Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2622-agent-retrieval-seam--fw-corpus-explain-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2626-adopt-designer-050-canvas-navigation--sy.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4f08ff64
+- **Timestamp:** 2026-07-26T19:58:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-26T19:57:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

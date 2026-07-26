@@ -18,7 +18,7 @@ tags: [designer, corpus, t2619-slice]
 components: []
 related_tasks: [T-2619]
 created: 2026-07-25T16:41:52Z
-last_update: 2026-07-25T17:15:46Z
+last_update: 2026-07-26T19:58:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,9 @@ bvp_scores_proposed:
   rationale: Operator 2026-07-25 — "ask 832 first". Proposal posted at rail offset 196 (two candidate shapes: postMessage protocol w/ aef:ready, or window.AefDesigner API; fallback wrapper stated honestly; T-246 MANIFEST capabilities flag suggested for advertising). Awaiting 832 shape-level ack/counter.
 
 - **IW-3: Does same-origin iframe DOM-reach actually work live against the served 0.4.0 bundle, incl. after its ?load= rendering completes?**
-  confidence: 1
+  confidence: 4
   disposition:
-  rationale: Same-origin policy guarantees access in principle; timing vs bundle render + SVG internals unverified — first spike of this inception.
+  rationale: Superseded at shape level by 832's rail-197 advisory answer — postMessage lean, with the load-bearing contract that renderAll() rebuilds the SVG DOM so the bundle re-emits aef:ready after EVERY render and we re-send aef:annotate each time; their T-250 (inception, operator-gated) tracks it, T-246 MANIFEST capabilities flag rides along. Iframe DOM-reach fallback mutually parked as the coupling to avoid. v0 plans against the postMessage contract; build waits on their operator ratification.
 
 - **IW-4: Where does the live-state feed come from — one Watchtower endpoint aggregating .tasks/active + focus.yaml + dispatches.jsonl keyed by map uid, or per-source fetches in the wrapper?**
   confidence: 1

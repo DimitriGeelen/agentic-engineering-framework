@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.4.0"
-sha256: "ea47db53a55be41df7ee6a2ff934146eeeed9f247b4a9bb1db9bcc152c3880d7"
-bytes: 872147
+version: "0.5.0"
+sha256: "787e40251f624bb39532be096232f4e25ea9014fe7dc0da0bc46285e140e025e"
+bytes: 879243
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.4.0.html"
-source_tag: "designer-v0.4.0"
+source_artifact: "dist/aef-workflow-designer-0.5.0.html"
+source_tag: "designer-v0.5.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -31,6 +31,11 @@ source_origin: "ssh://git@192.168.10.201:6611/workflow-designer"
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.5.0 = 0.4.0 + 832 T-251 canvas navigation (ZERO seam surface — no BPMN
+#   serialization, aef:* vocabulary, or consumer-API change): header zoom
+#   controls (Fit/100%/+/−), Ctrl+wheel zoom-at-cursor, native scrollbars past
+#   fit, drag-to-pan (middle-mouse or space+drag), overlay/nudge scroll pinning,
+#   thumbnails zoom-independent. Zoom is transient view state — never serialized.
 # 0.4.0 = 0.3.2 + 832 T-245 view-chrome controls (ZERO seam surface — no
 #   document/bridge/contract change): ◧/◨ per-panel hide-show toggles persisted
 #   in editor-local prefs; ⛶ fullscreen focus mode (transient, floating-exit/Esc
@@ -59,7 +64,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.4.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.5.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for

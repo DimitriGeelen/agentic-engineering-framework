@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2626: Adopt designer 0.5.0 (canvas navigation) — sync at tag, sha verify, pin, e2e verdict
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-26T19:58:08Z
+# ============================================================================
+
+task_id: T-2626
+task_name: "Adopt designer 0.5.0 (canvas navigation) — sync at tag, sha verify, pin, e2e verdict"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-26T19:54:18Z
+completed: 2026-07-26T19:57:59Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Synced artifact sha256 independently computed == 832''s rail claim (787e4025…) == MANIFEST-at-tag sha; bytes == 879243'
+  - 'Pin updated to 0.5.0; served /designer/app returns the 0.5.0 bundle byte-identical (served-response sha == artifact sha); markers btn-zoom-fit=3, applyCanvasZoom=3, syncOverlayPin=4 (LINES containing string, per 832''s method) — all match announce'
+  - 'Live e2e: draft-trigger-handling@v3 (fractional-height map) loads in 0.5.0 — 39 g[data-id] = 19 nodes + 20 flows exact, zoom-fit control present, console clean except known favicon 404'
+  - 'Verdict posted to DM rail offset 202 (reply to 199) with counting method stated'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2626-adopt-designer-050-canvas-navigation--sy.md
+generated_by: context-agent-hybrid
