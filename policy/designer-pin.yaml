@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.5.0"
-sha256: "787e40251f624bb39532be096232f4e25ea9014fe7dc0da0bc46285e140e025e"
-bytes: 879243
+version: "0.6.0"
+sha256: "c2aceff44a2cdf91dd2dfefb8c12db1550bfed2b40a4e62cdf7b145ba3a97e57"
+bytes: 882944
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.5.0.html"
-source_tag: "designer-v0.5.0"
+source_artifact: "dist/aef-workflow-designer-0.6.0.html"
+source_tag: "designer-v0.6.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -31,6 +31,12 @@ source_origin: "ssh://git@192.168.10.201:6611/workflow-designer"
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.6.0 = 0.5.0 + 832 T-255 pool right-edge resize (ZERO seam surface): page
+#   right edge draggable like a lane boundary, backed by OPTIONAL additive-only
+#   pageWidth attr on aef:workflowMeta — a floor inside contentRightEdge(),
+#   never cropping; maps without the attr behave byte-identically to 0.5.0.
+#   Consumer note: our spec generator rebuilds workflowMeta attrs, so authored
+#   pageWidth drops on spec-side regeneration — 832 confirms view-layout, safe.
 # 0.5.0 = 0.4.0 + 832 T-251 canvas navigation (ZERO seam surface — no BPMN
 #   serialization, aef:* vocabulary, or consumer-API change): header zoom
 #   controls (Fit/100%/+/−), Ctrl+wheel zoom-at-cursor, native scrollbars past
@@ -64,7 +70,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.5.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.6.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
