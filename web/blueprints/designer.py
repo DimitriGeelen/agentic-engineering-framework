@@ -8,11 +8,13 @@ Read-only: this blueprint never writes the vendored artifact. Improvements route
 upstream to 832 per docs/aef-designer-integration-protocol.md (832 side).
 """
 
+import re
+import subprocess
 import time
 from pathlib import Path
 
 import yaml
-from flask import Blueprint, Response
+from flask import Blueprint, Response, redirect, request
 
 from web.shared import PROJECT_ROOT, render_page
 
@@ -182,6 +184,8 @@ def designer():
                 "version_count": len(vlist),
                 "saved_h": time.strftime("%Y-%m-%d %H:%M", time.localtime(latest_ts)),
                 "open_url": "/designer/app?load=" + quote(src, safe=""),
+                # T-2623 draft mode: id prefix is the draft convention.
+                "is_draft": m["id"].startswith("draft-"),
             })
     if not projects:
         return _serve_bundle()
@@ -197,3 +201,30 @@ def designer():
         projects=projects,
         ghost_count=ghost_count,
     )
+
+
+@bp.route("/designer/draft/new", methods=["POST"])
+def designer_draft_new():
+    """T-2623: gallery entry point for a pair-draft session.
+
+    Thin wrapper over the CLI (`fw designer draft new <name>`) so seeding logic
+    has exactly one implementation; on success redirects straight into the
+    editor at the seeded v1.
+    """
+    name = (request.form.get("name") or "").strip()
+    if not re.fullmatch(r"[A-Za-z0-9 _-]{1,48}", name):
+        return Response("draft name: 1-48 chars, letters/digits/space/dash only",
+                        status=400, mimetype="text/plain")
+    r = subprocess.run(
+        [str(PROJECT_ROOT / "bin" / "fw"), "designer", "draft", "new", name],
+        capture_output=True, text=True, timeout=60, cwd=str(PROJECT_ROOT),
+    )
+    # mirror the CLI's tr 'A-Z _' 'a-z--' normalization
+    slug = "draft-" + name.removeprefix("draft-").lower().replace(" ", "-").replace("_", "-")
+    link = f"/designer/app?load=%2Fapi%2Fversion%3Fid%3D{slug}%26v%3D1"
+    if r.returncode != 0:
+        detail = (r.stderr or r.stdout or "").strip()[-500:]
+        return Response(f"draft creation failed:\n{detail}",
+                        status=409 if "already exists" in detail else 500,
+                        mimetype="text/plain")
+    return redirect(link)

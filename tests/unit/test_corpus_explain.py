@@ -129,3 +129,41 @@ def test_search_silent_on_no_match(tmp_path, capsys):
     root = _store(tmp_path, GREEN_XML)
     assert ce.search(root, "zzz-no-such-term") == 0
     assert capsys.readouterr().out == ""
+
+
+# ── T-2623 draft mode ────────────────────────────────────────────────────────
+
+def _draft_store(tmp_path):
+    for mid in ("draft-sketch", "real-map"):
+        d = tmp_path / ".context/designer/projects" / mid
+        d.mkdir(parents=True)
+        (d / "meta.json").write_text('{"latest": 1, "uuid": "u"}')
+        (d / "v1.bpmn").write_text(HEAD + _node("serviceTask", "n1", "shared-term-node") + TAIL)
+    (tmp_path / "status-transitions.yaml").write_text(TRANSITIONS)
+    return tmp_path
+
+
+def test_search_excludes_drafts(tmp_path, capsys):
+    root = _draft_store(tmp_path)
+    assert ce.search(root, "shared-term") == 0
+    out = capsys.readouterr().out
+    assert "real-map" in out and "draft-sketch" not in out
+
+
+def test_explain_renders_draft_provenance(tmp_path, capsys):
+    root = _draft_store(tmp_path)
+    assert ce.explain(root, "draft-sketch") == 0
+    out = capsys.readouterr().out
+    assert "DRAFT — not authority" in out
+    assert "authority stage: transitional" not in out
+
+
+def test_lint_collect_targets_skips_drafts(tmp_path):
+    import corpus_lint
+    root = _draft_store(tmp_path)
+    store = root / ".context/designer/projects"
+    names = [n for n, _ in corpus_lint.collect_targets([], store)]
+    assert names == ["real-map@v1"]
+    # explicit targeting still lints a draft
+    explicit = [n for n, _ in corpus_lint.collect_targets(["draft-sketch"], store)]
+    assert explicit == ["draft-sketch@v1"]

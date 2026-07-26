@@ -42,6 +42,41 @@
         margin-bottom: 1.5rem;
         font-size: 0.85rem;
     }
+    /* T-2623 draft mode */
+    .draft-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 0.1rem 0.45rem;
+        border-radius: 4px;
+        background: var(--pico-mark-background-color, #ffdd57);
+        color: #5c4b00;
+        vertical-align: middle;
+        margin-left: 0.4rem;
+    }
+    .corpus-card.is-draft {
+        border-style: dashed;
+    }
+    .draft-new-form {
+        display: inline-flex;
+        gap: 0.4rem;
+        align-items: center;
+        margin: 0;
+    }
+    .draft-new-form input {
+        margin: 0;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.85rem;
+        width: 12rem;
+        height: auto;
+    }
+    .draft-new-form button {
+        margin: 0;
+        padding: 0.25rem 0.8rem;
+        font-size: 0.85rem;
+        width: auto;
+    }
 </style>
 
 <h2>Workflow Designer — Corpus</h2>
@@ -54,12 +89,20 @@
 <div class="landing-actions">
     <a href="/designer/app">Open blank editor</a>
     <a href="/designer/ghosts">Pending references{% if ghost_count %} ({{ ghost_count }}){% endif %}</a>
+    {# T-2623: gallery entry to the pair-draft ritual — seeds a skeleton via the
+       CLI and lands in the editor. hx-boost off: full navigation into the app. #}
+    <form class="draft-new-form" method="post" action="/designer/draft/new" hx-boost="false">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="text" name="name" placeholder="new draft name…" required
+               pattern="[A-Za-z0-9 _-]{1,48}" title="letters, digits, space, dash, underscore">
+        <button type="submit">New draft</button>
+    </form>
 </div>
 
 <div class="corpus-grid">
     {% for p in projects %}
-    <div class="corpus-card">
-        <h4>{{ p.title }}</h4>
+    <div class="corpus-card{% if p.is_draft %} is-draft{% endif %}">
+        <h4>{{ p.title }}{% if p.is_draft %}<span class="draft-badge">DRAFT</span>{% endif %}</h4>
         <span class="corpus-id">{{ p.id }}</span>
         <span class="corpus-meta">v{{ p.latest_v }} · {{ p.version_count }} version{{ '' if p.version_count == 1 else 's' }} · saved {{ p.saved_h }}</span>
         {# T-2596: mint a click-time nonce INSIDE the load value. The editor's B1

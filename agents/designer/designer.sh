@@ -221,14 +221,119 @@ do_url() {
     printf '%s/designer\n' "$base"
 }
 
+# T-2623: draft mode — cheap iteration tier. Convention: map id prefix `draft-`
+# marks a draft (excluded from lint baseline + fw search retrieval; DRAFT badge
+# in the gallery; never authority). `fw designer draft new <name>` seeds a
+# minimal skeleton via /api/save and prints the editor deep-link (the pair-draft
+# ritual entry point: agent seeds, operator edits in UI, agent normalizes).
+do_draft_new() {
+    local name="${1:-}"
+    if [ -z "$name" ]; then
+        echo "usage: fw designer draft new <name>" >&2; return 2
+    fi
+    name="draft-$(printf '%s' "${name#draft-}" | tr 'A-Z _' 'a-z--')"
+    local store="$PROJECT_ROOT/.context/designer/projects/$name"
+    local base
+    base="$("$PROJECT_ROOT/bin/fw" watchtower url 2>/dev/null || true)"
+    [ -n "$base" ] || base="http://localhost:3000"
+    local link="$base/designer/app?load=%2Fapi%2Fversion%3Fid%3D$name%26v%3D1"
+    if [ -d "$store" ]; then
+        echo "refused: draft '$name' already exists — open it instead:" >&2
+        echo "  $link" >&2
+        return 1
+    fi
+    if ! curl -sf "$base/api/list" >/dev/null 2>&1; then
+        echo "Watchtower not reachable at $base — start it first: fw serve" >&2
+        return 1
+    fi
+    local tmp_spec
+    tmp_spec="$(mktemp)"
+    cat > "$tmp_spec" <<SPEC
+spec_version: 1
+id: $name
+title: $name (DRAFT)
+schema_version: 2
+doc: |
+  DRAFT — pair-draft session seed (fw designer draft new). Agent seeds,
+  operator edits in the UI, agent re-reads + normalizes. Promotion to a
+  production id pays the full ceremony (T-2623).
+lanes:
+- id: agent
+  name: "Agent · Initiative"
+  abbr: agt
+  authority: initiative
+  height: 220
+- id: human
+  name: "Human · Sovereignty"
+  abbr: hum
+  authority: sovereignty
+  height: 200
+nodes:
+- id: d_start
+  lane: agent
+  type: start
+  name: session opens
+  uid: d_start
+  pos: [160, 100]
+- id: d_sketch
+  lane: agent
+  type: service
+  name: "sketch the flow here — every node/flow is a proposal"
+  uid: d_sketch
+  pos: [320, 100]
+- id: d_end
+  lane: agent
+  type: end
+  name: settled — ready for promotion ceremony
+  uid: d_end
+  pos: [560, 100]
+flows:
+- id: d_f1
+  from: d_start
+  to: d_sketch
+  uid: d_f1
+- id: d_f2
+  from: d_sketch
+  to: d_end
+  uid: d_f2
+SPEC
+    if ! python3 "$PROJECT_ROOT/tools/corpus_spec.py" generate "$tmp_spec" \
+            --save --url "$base" --save-id "$name" \
+            --note "draft seeded by fw designer draft new (T-2623)" >/dev/null; then
+        rm -f "$tmp_spec"
+        echo "seed save failed (see /api/save response above)" >&2
+        return 1
+    fi
+    rm -f "$tmp_spec"
+    echo "${_c_grn}draft created:${_c_off} $name"
+    echo "  edit: $link"
+    if ! type fw_notify >/dev/null 2>&1 && [ -f "$PROJECT_ROOT/lib/notify.sh" ]; then
+        # shellcheck disable=SC1091
+        . "$PROJECT_ROOT/lib/notify.sh" 2>/dev/null || true
+    fi
+    if type fw_notify >/dev/null 2>&1; then
+        fw_notify "Draft session: $name" "Editor ready — open to start the pair-draft" \
+            "designer-draft" "info" "$link" 2>/dev/null || true
+    fi
+}
+
+do_draft() {
+    local sub="${1:-}"; shift || true
+    case "$sub" in
+        new) do_draft_new "$@" ;;
+        *) echo "usage: fw designer draft new <name>" >&2; return 2 ;;
+    esac
+}
+
 cmd="${1:-status}"; shift || true
 case "$cmd" in
     status)  do_status "$@" ;;
     path)    do_path "$@" ;;
     sync)    do_sync "$@" ;;
     url)     do_url "$@" ;;
+    draft)   do_draft "$@" ;;
     -h|--help|help)
         sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
         ;;
-    *) echo "unknown verb: $cmd (try: status|path|sync|url)" >&2; exit 2 ;;
+    *) echo "unknown verb: $cmd (try: status|path|sync|url|draft)" >&2; exit 2 ;;
 esac

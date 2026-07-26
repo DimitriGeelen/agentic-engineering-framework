@@ -125,8 +125,16 @@ def explain(root: Path, map_id: str) -> int:
             tgt = nodes.get(f["to"], {})
             print(f"    -> {tgt.get('name') or f['to']}{label}")
 
-    stage, rail = authority_stage(root, map_id)
     print("\n## Provenance")
+    if map_id.startswith("draft-"):
+        # T-2623 draft mode: drafts are never authority and sit outside the
+        # retrieval index and lint baseline until promoted to a production id.
+        print("authority stage: DRAFT — not authority at any stage")
+        print("rail: n/a (drafts are excluded from lint baseline and retrieval; "
+              "promotion to a production id pays the full ceremony)")
+        print("precedence: none — a draft is a shared sketch, not a source of truth.")
+        return 0
+    stage, rail = authority_stage(root, map_id)
     print(f"authority stage: {stage}")
     print(f"rail: {rail}")
     if stage == "detail-authority":
@@ -145,6 +153,10 @@ def search(root: Path, term: str) -> int:
     t = term.lower()
     for d in sorted(sd.iterdir()):
         if not (d / "meta.json").is_file():
+            continue
+        if d.name.startswith("draft-"):
+            # T-2623: drafts are excluded from retrieval — they are sketches,
+            # not knowledge. Browse them in the /designer gallery instead.
             continue
         try:
             spec, meta = load_latest(root, d.name)

@@ -1849,6 +1849,28 @@ check_map_conformance() {
 }
 check_map_conformance
 
+# T-2623: draft hygiene — drafts (id prefix draft-) untouched >30 days surface
+# as INFO (never WARN: drafts are the cheap tier; staleness is a nudge, not drift).
+check_stale_drafts() {
+    local _store="$PROJECT_ROOT/.context/designer/projects"
+    [ -d "$_store" ] || return 0
+    local _now _stale="" _d _mp _upd
+    _now=$(date +%s)
+    for _d in "$_store"/draft-*/; do
+        [ -d "$_d" ] || continue
+        _mp="$_d/meta.json"
+        [ -f "$_mp" ] || continue
+        _upd=$(python3 -c "import json,sys; print(int(json.load(open(sys.argv[1])).get('updated') or 0))" "$_mp" 2>/dev/null || echo 0)
+        if [ "${_upd:-0}" -gt 0 ] && [ $(( _now - _upd )) -gt $(( 30 * 86400 )) ]; then
+            _stale="$_stale $(basename "$_d")"
+        fi
+    done
+    if [ -n "$_stale" ]; then
+        info "Stale draft(s), 30d+ untouched:$_stale — promote via the ceremony or delete from the gallery (T-2623)"
+    fi
+}
+check_stale_drafts
+
 echo ""
 fi # end structure
 

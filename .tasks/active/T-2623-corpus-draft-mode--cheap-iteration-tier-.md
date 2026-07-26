@@ -9,10 +9,10 @@ description: >
   or agent sketch a workflow in /designer without the contract-grade ceremony, then
   graduate it. Build only after T-2619 GO.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: later
+owner: human
+horizon: now
 tags: [designer, corpus, t2619-slice]
 components: []
 related_tasks: [T-2619]
@@ -27,8 +27,8 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-25T16:46:22Z
-last_update: '2026-07-26T17:00:08Z'
-date_finished:
+last_update: 2026-07-26T20:51:50Z
+date_finished: 2026-07-26T20:51:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -111,8 +111,21 @@ The ritual (pair-draft loop, proven in arc-014 D1-D5): agent seeds skeleton from
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Draft convention settled and documented: map id prefix `draft-` marks a draft (no registry to drift); documented in designer.sh, corpus_lint, corpus_explain docstrings/comments
+- [x] `fw designer draft new <name>` live-verified: created draft-smoke-test (seeded 3-node/2-flow skeleton via /api/save), printed deep-link, ntfy best-effort; duplicate refused with the existing deep-link; refuses when Watchtower is down
+- [x] Draft exclusions live: lint skips `draft-*` (scanned 9→8 maps, baseline unchanged at 2 findings); `fw search` corpus section skips drafts (verified: "threshold" no longer surfaces draft-trigger-handling); `fw corpus explain draft-trigger-handling` renders "DRAFT — not authority at any stage" provenance
+- [x] Stale-draft audit leg shipped (check_stale_drafts in audit.sh structure section, INFO at 30d+ via meta.json updated ts)
+- [x] Gallery live-verified after restart: DRAFT badge markup renders for draft maps (dashed card + badge), "New draft" form POSTs to /designer/draft/new (CSRF-tokened) → 302 into editor at seeded v1 (draft-post-smoke round-trip confirmed, then cleaned up)
+- [x] Tests (test_corpus_explain.py 9 passed): search excludes drafts; explain DRAFT footer; lint collect_targets skips drafts but lints one explicitly targeted; duplicate-refusal covered live above
+
+### Human
+- [ ] [REVIEW] Gallery DRAFT badge + "New draft" affordance read cleanly in the live gallery
+  **Steps:**
+  1. Open http://192.168.10.107:3001/designer in a browser
+  2. Locate draft-trigger-handling — verify the DRAFT badge is visible and unambiguous
+  3. Click "New draft", enter a throwaway name, verify the editor opens on a seeded skeleton; delete the throwaway via the gallery if desired
+  **Expected:** Badge clearly separates drafts from ratified maps; New draft lands you in the editor without manual URL work
+  **If not:** Note what reads wrong; the badge/button styling iterates in the next round
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,6 +159,14 @@ The ritual (pair-draft loop, proven in arc-014 D1-D5): agent seeds skeleton from
 -->
 
 ## Verification
+
+out=$(python3 -m pytest tests/unit/test_corpus_explain.py -q 2>&1); echo "$out" | grep -q "9 passed"
+out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "^2 finding"
+out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "scanned 8 map"
+out=$(bin/fw corpus explain draft-trigger-handling 2>&1); echo "$out" | grep -q "DRAFT — not authority"
+out=$(python3 tools/corpus_explain.py --search "threshold" 2>&1); test -z "$out"
+curl -s "$(bin/fw watchtower url)/designer" -o /tmp/.t2623-gallery.html && grep -q "draft-badge" /tmp/.t2623-gallery.html
+grep -q "New draft" /tmp/.t2623-gallery.html
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -218,6 +239,24 @@ The ritual (pair-draft loop, proven in arc-014 D1-D5): agent seeds skeleton from
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-26 — registry dissolved into a naming convention
+- **What changed:** Filing assumed a draft *registry* ("registry entry status:draft"). Building revealed the id prefix `draft-` gives the same partition with zero registry to drift — every surface (lint, search, explain, gallery, audit) tests one string prefix. The T-2622 retrieval seam shipping first made this urgent: search was surfacing drafts unbadged for a few hours.
+- **Plan impact:** No registry file; promotion = re-author under a production id (new uuid — acceptable since prod maps must never reference draft uuids anyway). Promotion ceremony itself is deliberately NOT built here — it's the settled-draft moment's work, and draft-trigger-handling will be its first live case.
+- **Triggered:** CSRF form-token requirement discovered on the gallery POST (403 → `_csrf_token` hidden field per T-1343 idiom).
+
+## Recommendation
+
+**Recommendation:** GO — approve the gallery draft UI as shipped.
+
+**Rationale:** All six agent ACs verified live: the pair-draft ritual now has all three endorsed entry points (chat worked already; `fw designer draft new` and the gallery button shipped here), drafts are structurally partitioned from ratified corpus on every surface (lint 8-map scan/2-finding baseline unchanged, search excludes, explain shows DRAFT provenance, audit nudges stale drafts at 30d as INFO), and the create→edit round-trip was proven end-to-end (POST → 302 → editor on seeded v1, then cleaned up). The only open judgment is visual: whether the DRAFT badge + New draft form read cleanly in the gallery — that's the single [REVIEW] Human AC.
+
+**Evidence:**
+- `fw designer draft new "smoke test"` → created + deep-link; duplicate refused with link; drafts deleted after test
+- lint: `scanned 8 map(s)` / `2 finding(s)` (draft excluded, baseline intact)
+- `fw corpus explain draft-trigger-handling` → "DRAFT — not authority at any stage"
+- gallery live at /designer: dashed card + DRAFT badge on draft-trigger-handling, New draft form (CSRF-tokened) → 302 into editor
+- tests/unit/test_corpus_explain.py: 9 passed
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -245,3 +284,19 @@ The ritual (pair-draft loop, proven in arc-014 D1-D5): agent seeds skeleton from
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2623-corpus-draft-mode--cheap-iteration-tier-.md
 - **Context:** Initial task creation
+
+### 2026-07-26T20:42:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4cf536fa
+- **Timestamp:** 2026-07-26T20:51:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-26T20:51:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

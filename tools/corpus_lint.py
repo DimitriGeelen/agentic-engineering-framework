@@ -250,6 +250,11 @@ def collect_targets(args_targets: list, store: Path) -> list:
             mp = d / "meta.json"
             if not (d.is_dir() and mp.is_file()):
                 continue
+            if d.name.startswith("draft-"):
+                # T-2623 draft mode: drafts are the cheap iteration tier —
+                # excluded from the corpus-wide baseline so sketch churn never
+                # moves it. Lint a draft explicitly by naming it as a target.
+                continue
             meta = json.loads(mp.read_text())
             v = int(meta.get("latest") or 0)
             f = d / f"v{v}.bpmn"
