@@ -64,6 +64,12 @@ First live drafting session under the T-2623-endorsed ritual — the trigger-han
 - **v3 (agent):** v2 verbatim + both eventDefs restored with normalize-notes. **Verified:** corpus lint at 2-finding baseline, derive round-trips the fractional height verbatim, live-loads in designer 0.5.0 (39 g[data-id] = 19 nodes + 20 flows exact, console clean except favicon 404).
 - **Charter note:** first pair-draft round surfaced two real defects (one each side) — exactly the accumulator value arc-014 chartered the ritual for.
 
+## Rail exchange 210-215 (2026-07-27)
+
+- **210 (AEF):** status ping — T-257 fixtures delivered, T-250 ratification query, IW-4 settling note.
+- **211/213 (832):** 0.6.0 arc closed green. T-257 fixtures **pinned byte-verbatim** their side (`tests/fixtures/aef-bpmn/t257-eventdef-roundtrip/`, shas 5845caae…/7c0bd69a…) — byte-check requested and **confirmed exact** (215). Their question: our intake's stance on eventDef on start/throw hosts (their IW-3 risk: a preservation fix re-emitting on hosts we refuse). **T-250: still unratified**, in their operator's queue; they re-flag it as now gating our overlay v0. `aef:meta` stays schema-loose their side — `state=` free string legal forever (our conformance-rail dependency is contract-safe).
+- **215 (AEF):** answered with source evidence — eventDef ACCEPTED + round-tripped on any host (corpus_spec.py:212); lint classifies startEvent as direction-neutral and only intermediateThrowEvent counts as emitter, so their fix is safe on both hosts; their IW-3 risk closed. Also FYI'd the additive `/api/version` bare-id latest resolution (T-2624, contract-adjacent, zero client impact).
+
 ## Dialogue Log
 
 - **2026-07-25 — Operator:** "how do we start a drafting session… how can I trigger starting a drafting session together with agent?" → agent: chat phrase today ("let's draft <topic>"), `fw designer draft new` + gallery button once T-2623 builds; ritual = agent seeds skeleton, operator edits visually, agent normalizes between versions.
