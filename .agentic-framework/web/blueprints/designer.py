@@ -158,6 +158,10 @@ def designer():
     import web.blueprints.designer_api as designer_api
 
     store = designer_api._STORE
+    try:
+        overlay_ids = set(_overlay_module().PROFILES)
+    except Exception:
+        overlay_ids = set()
     projects = []
     if store.is_dir():
         for d in sorted(store.iterdir()):
@@ -186,6 +190,8 @@ def designer():
                 "open_url": "/designer/app?load=" + quote(src, safe=""),
                 # T-2623 draft mode: id prefix is the draft convention.
                 "is_draft": m["id"].startswith("draft-"),
+                # T-2630: live-overlay wrapper exists only for profiled maps.
+                "has_overlay": m["id"] in overlay_ids,
             })
     if not projects:
         return _serve_bundle()
@@ -203,6 +209,30 @@ def designer():
     )
 
 
+def _overlay_module():
+    """Load tools/corpus_overlay.py from the CODE tree (this file's repo).
+
+    Data always comes from PROJECT_ROOT — the two differ under test
+    monkeypatching and in vendored consumers.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "corpus_overlay",
+        Path(__file__).resolve().parents[2] / "tools" / "corpus_overlay.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _known_map_or_none(map_id):
+    """Shared id guard for the overlay surfaces: syntax + store existence."""
+    store_dir = PROJECT_ROOT / ".context/designer/projects" / map_id
+    if not re.fullmatch(r"[a-z0-9-]{1,64}", map_id or ""):
+        return None
+    return map_id if (store_dir / "meta.json").is_file() else None
+
+
 @bp.route("/api/overlay")
 def api_overlay():
     """T-2629 (T-2620 GO, Slice A): wire-ready aef:annotate payload for a map.
@@ -212,23 +242,37 @@ def api_overlay():
     aef:ready (rail-197 re-ready/re-annotate contract). Projection rules live
     in tools/corpus_overlay.py, in exactly one place (T-2620 IW-4).
     """
-    import importlib.util
-
-    map_id = request.args.get("id", "")
-    store_dir = PROJECT_ROOT / ".context/designer/projects" / map_id
-    if not re.fullmatch(r"[a-z0-9-]{1,64}", map_id) or not (store_dir / "meta.json").is_file():
+    map_id = _known_map_or_none(request.args.get("id", ""))
+    if not map_id:
         return Response('{"error":"not found","ok":false}', status=404,
                         mimetype="application/json")
-    # Module loads from the CODE tree (this file's repo), data from PROJECT_ROOT —
-    # the two differ under test monkeypatching and in vendored consumers.
-    spec = importlib.util.spec_from_file_location(
-        "corpus_overlay",
-        Path(__file__).resolve().parents[2] / "tools" / "corpus_overlay.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
     import json as _json
-    return Response(_json.dumps(mod.build_payload(PROJECT_ROOT, map_id)),
+    return Response(_json.dumps(_overlay_module().build_payload(PROJECT_ROOT, map_id)),
                     status=200, mimetype="application/json")
+
+
+@bp.route("/designer/overlay")
+def designer_overlay():
+    """T-2630 (T-2620 GO, Slice B): live-overlay wrapper page.
+
+    Iframes the editor at server-latest (/designer/app?load=/api/version?id=…,
+    T-2599 nonce flow untouched — the app route 302-mints it) and forwards the
+    Slice A payload verbatim via postMessage on EVERY aef:ready, per 832's
+    ratified T-250 contract (rail 216: re-ready after every render, aef:annotate
+    keyed by uid, unknown uids ignored). Until the pinned bundle ships aef:ready
+    (832 T-258, next release cut), the listener never fires — documented no-op;
+    both halves land independently and the seam lights up on re-pin.
+    """
+    from urllib.parse import quote as _q
+
+    from flask import render_template
+
+    map_id = _known_map_or_none(request.args.get("id", ""))
+    if not map_id:
+        return Response("unknown map", status=404, mimetype="text/plain")
+    editor_url = "/designer/app?load=" + _q(f"/api/version?id={map_id}", safe="")
+    return render_template(
+        "designer_overlay.html", map_id=map_id, editor_url=editor_url)
 
 
 @bp.route("/designer/draft/new", methods=["POST"])
