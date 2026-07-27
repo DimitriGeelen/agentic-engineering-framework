@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.7.0"
-sha256: "472d6a5d333ccb3c5e0d9cc5cfbb6bb9cff366c997d0362a77c3ec1856b8be04"
-bytes: 889411
+version: "0.7.1"
+sha256: "d2bf0d633e9e347b3429f8c22f194d27d673d05e11650d32c1cb6a71359ca353"
+bytes: 890278
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.7.0.html"
-source_tag: "designer-v0.7.0"
+source_artifact: "dist/aef-workflow-designer-0.7.1.html"
+source_tag: "designer-v0.7.1"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -31,6 +31,13 @@ source_origin: "ssh://git@192.168.10.201:6611/workflow-designer"
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.7.1 = 0.7.0 + 832 T-261 wire-shape reconciliation (crossed-release fix):
+#   annotate intake accepts AEF's live wire shape as canonical —
+#   {nodes:[{uid,badge,text,severity:info|warn|alert}]} (severity→tone mapping,
+#   text→tooltip, map/generated ignored; fixture = our live /api/overlay bytes
+#   pinned in their harness) — PLUS the 0.7.0 {annotations/tone/title} form as
+#   alias. Guards unchanged. AEF currently emits the alias form (T-2632);
+#   convergence on one canonical form proposed at rail 226, 832's call.
 # 0.7.0 = 0.6.0 + (1) 832 T-259 eventDef preservation (their T-257 inception →
 #   GO): aef:eventDef survives open→save on ANY host the typed-catch override
 #   doesn't consume (startEvent, intermediateThrowEvent, link-with-target);
@@ -82,7 +89,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.7.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.7.1.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
