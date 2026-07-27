@@ -203,6 +203,34 @@ def designer():
     )
 
 
+@bp.route("/api/overlay")
+def api_overlay():
+    """T-2629 (T-2620 GO, Slice A): wire-ready aef:annotate payload for a map.
+
+    AEF-side extension — NOT part of 832's designer client contract (T-2530);
+    the Slice B wrapper forwards this verbatim via postMessage on every
+    aef:ready (rail-197 re-ready/re-annotate contract). Projection rules live
+    in tools/corpus_overlay.py, in exactly one place (T-2620 IW-4).
+    """
+    import importlib.util
+
+    map_id = request.args.get("id", "")
+    store_dir = PROJECT_ROOT / ".context/designer/projects" / map_id
+    if not re.fullmatch(r"[a-z0-9-]{1,64}", map_id) or not (store_dir / "meta.json").is_file():
+        return Response('{"error":"not found","ok":false}', status=404,
+                        mimetype="application/json")
+    # Module loads from the CODE tree (this file's repo), data from PROJECT_ROOT —
+    # the two differ under test monkeypatching and in vendored consumers.
+    spec = importlib.util.spec_from_file_location(
+        "corpus_overlay",
+        Path(__file__).resolve().parents[2] / "tools" / "corpus_overlay.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    import json as _json
+    return Response(_json.dumps(mod.build_payload(PROJECT_ROOT, map_id)),
+                    status=200, mimetype="application/json")
+
+
 @bp.route("/designer/draft/new", methods=["POST"])
 def designer_draft_new():
     """T-2623: gallery entry point for a pair-draft session.
