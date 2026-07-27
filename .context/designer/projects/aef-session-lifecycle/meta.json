@@ -4,21 +4,11 @@
   "versions": [
     {
       "v": 1,
-      "note": "arc-014 D3 (T-2561): session lifecycle pair-draft v1",
-      "ts": 1784494278
-    },
-    {
-      "v": 2,
-      "note": "",
-      "ts": 1784498935
-    },
-    {
-      "v": 3,
-      "note": "T-2613: agt_8_wrapper typed kind=timer (sl_tmr_restart author intent; kills dead link UI)",
-      "ts": 1784796932
+      "note": "fw corpus prove \u2014 identity-preserving recreate (aef-session-lifecycle)",
+      "ts": 1785171538
     }
   ],
-  "latest": 3,
-  "updated": 1784796932,
+  "latest": 1,
+  "updated": 1785171538,
   "uuid": "2640d597-80ec-4232-b263-11ef01bc726c"
 }

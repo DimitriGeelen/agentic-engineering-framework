@@ -40,6 +40,7 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
         </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_3_inception</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
@@ -71,6 +72,21 @@
       <bpmn:incoming>if_f2</bpmn:incoming>
       <bpmn:outgoing>if_f3</bpmn:outgoing>
     </bpmn:serviceTask>
+
+    <bpmn:subProcess id="hum_3_inception" name="explore the question — go/no-go">
+      <bpmn:extensionElements>
+        <aef:uid value="if_inception"/>
+        <aef:position x="620.0" y="340.0"/>
+        <aef:meta workflowType="inception" tier="1" note="collapsed inception (ratified G-3): go/no-go implied at boundary; owner derives from sovereignty lane; agent explores + recommends, decision is human via Watchtower /inception (fw inception decide agent-blocked under CLAUDECODE=1)"/>
+        <aef:constituents xmlns:aef="http://anchorpoint.framework/aef/extensions">
+          <aef:constituent id="if_c_spikes" name="run spikes / gather evidence (IW-N dispositions)" ref="docs/reports/T-XXX-*.md" />
+          <aef:constituent id="if_c_recommend" name="agent writes Recommendation GO/NO-GO/DEFER with rationale (DEFER only for evidence gaps, T-2144)" />
+          <aef:constituent id="if_c_decide" name="human records decision via Watchtower (sovereignty boundary)" />
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>if_f3</bpmn:incoming>
+      <bpmn:outgoing>if_f4</bpmn:outgoing>
+    </bpmn:subProcess>
 
     <bpmn:exclusiveGateway id="agt_gw_outcome" name="decision?">
       <bpmn:extensionElements>

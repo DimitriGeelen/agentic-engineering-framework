@@ -4,21 +4,11 @@
   "versions": [
     {
       "v": 1,
-      "note": "arc-014 D5 (T-2565): audit cron pair-draft v1",
-      "ts": 1784495199
-    },
-    {
-      "v": 2,
-      "note": "",
-      "ts": 1784498898
-    },
-    {
-      "v": 3,
-      "note": "T-2613: agt_6_warn typed kind=error (kills dead link UI); NEW terminal handoff agt_8_handoff_lifecycle -> aef-task-lifecycle (emitted tasks continue as governed work)",
-      "ts": 1784796932
+      "note": "fw corpus prove \u2014 identity-preserving recreate (aef-audit-cron)",
+      "ts": 1785171538
     }
   ],
-  "latest": 3,
-  "updated": 1784796932,
+  "latest": 1,
+  "updated": 1785171538,
   "uuid": "ad10b106-e46e-469d-aca8-45d8881bbd77"
 }
