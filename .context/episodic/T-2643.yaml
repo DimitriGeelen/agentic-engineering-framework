@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2643: escalation-patterns catalogue_version stale at v1.1-seed after v1.4 content (832 rail-249 FYI)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-27T22:44:47Z
+# ============================================================================
+
+task_id: T-2643
+task_name: "escalation-patterns catalogue_version stale at v1.1-seed after v1.4 content (832 rail-249 FYI)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-27T22:42:28Z
+completed: 2026-07-27T22:44:36Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`policy/escalation-patterns.yaml` declares `catalogue_version: "v1.4"`; trigger content byte-identical to the 86383a96 version (only the version line + its comment context change) — new sha d98f2cd0'
+  - 'Reviewer escalation tests still green (they load the real catalogue file — version bump must not break pattern pins) — 6 passed'
+  - 'Vendored copy refreshed (`bin/fw vendor self`) — policy/ is in the vendor set (T-2329), push gate requires it — diff clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2643-escalation-patterns-catalogueversion-sta.md
+generated_by: context-agent-hybrid

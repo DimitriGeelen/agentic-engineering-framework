@@ -22,7 +22,9 @@
 #     severity: low | medium | high
 
 schema_version: 1
-catalogue_version: "v1.1-seed"
+# v1.4 (T-2642): cross-project-blast "all nodes" co-occurrence fix — first content
+# change since the v1.1 seed. Version tracks content vintage (832 rail-249 FYI, T-2643).
+catalogue_version: "v1.4"
 policy_origin: T-1443
 
 triggers:
