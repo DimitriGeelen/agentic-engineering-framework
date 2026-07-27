@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2644: draft-trigger-handling v3 lint verify + eventDef save round-trip drop flagged
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-27T23:03:17Z
+# ============================================================================
+
+task_id: T-2644
+task_name: "draft-trigger-handling v3 lint verify + eventDef save round-trip drop flagged"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-27T22:56:27Z
+completed: 2026-07-27T23:03:06Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'v3 draft passes corpus derive + canon fresh (re-confirmation of the v3-note verification) — rc=0 both, spec + canon written to scratchpad'
+  - '832''s T-257 eventDef round-trip fix live-verified against our pair-draft bytes: scratch project (id/uuid rewritten) seeded with v3 bytes, Playwright-driven editor load → Save-to-project on served 0.7.1 bundle; saved v2 retains all 3 aef:eventDef with kinds intact (startEvent timer fwk_1_observation, throw message fwk_5_emit, catch message agt_1_trigger); full canonical delta = binding="" uniform emission + lane height 323.917→323 (both cosmetic); scratch deleted after verify'
+  - 'meta.json v3 note corrected (verified + flagged-and-fixed lineage) — no stale "UNVERIFIED"/"to be flagged" text remains'
+  - 'Verification result reported to 832 on the DM rail — offset 255 (thread=T-257, no asks)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2644-draft-trigger-handling-v3-lint-verify--e.md
+generated_by: context-agent-hybrid

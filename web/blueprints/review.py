@@ -12,10 +12,12 @@ import sys
 
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 
-from web.shared import PROJECT_ROOT, parse_frontmatter
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, parse_frontmatter
 
 # T-1810: paused-dispatch helpers live in lib/ (CLI parity with `fw pause list`).
-sys.path.insert(0, str(PROJECT_ROOT / "lib"))
+# T-2645 (832 G-004): lib/ is FRAMEWORK-owned — resolving it via PROJECT_ROOT
+# 500s every /review page in split-root consumers (roots coincide only here).
+sys.path.insert(0, str(FRAMEWORK_ROOT / "lib"))
 
 bp = Blueprint("review", __name__)
 

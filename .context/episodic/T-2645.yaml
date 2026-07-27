@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2645: review.py sys.path uses PROJECT_ROOT/lib for dispatch_pause — all /review pages 500 in split-root consumers (832 G-004, rail 253)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-27T23:09:58Z
+# ============================================================================
+
+task_id: T-2645
+task_name: "review.py sys.path uses PROJECT_ROOT/lib for dispatch_pause — all /review pages 500 in split-root consumers (832 G-004, rail 253)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-27T23:03:27Z
+completed: 2026-07-27T23:09:48Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'review.py resolves dispatch_pause via FRAMEWORK_ROOT/lib (832''s exact fix shape); no other blueprint uses PROJECT_ROOT to resolve framework-owned lib modules — sweep found+fixed 2 siblings 832 didn''t report: approvals.py:23 (identical insert, masked by try/except) and orchestrator.py:434 (workflow-coverage panel silently unavailable); repo-wide grep clean'
+  - 'Live /review/<id> page still renders on our Watchtower after the change — restart + /review/T-2634, /approvals, /orchestrator all 200 with content'
+  - 'Split-root defect class registered in concerns.yaml — OBS-097 (open: class-level prevention pending; 832''s split-root CI smoke + grep-lint proposal captured verbatim)'
+  - 'tests/web green for the review blueprint — 7 passed (review/approval/orchestrator selection)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2645-reviewpy-syspath-uses-projectrootlib-for.md
+generated_by: context-agent-hybrid

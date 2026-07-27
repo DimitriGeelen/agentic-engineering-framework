@@ -17,10 +17,12 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
-sys.path.insert(0, str(PROJECT_ROOT / "lib"))
+# T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
+# split-root consumers (masked here by the try/except fallback, feature silently dead).
+sys.path.insert(0, str(FRAMEWORK_ROOT / "lib"))
 try:
     from dispatch_pause import list_paused_dispatches, format_age, truncate as _trunc_q
 except Exception:  # pragma: no cover - fallback for consumer projects without lib/
