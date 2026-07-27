@@ -1,0 +1,20 @@
+id: tests/web/test_api_version_latest.py
+name: test_api_version_latest
+type: script
+subsystem: unknown
+location: tests/web/test_api_version_latest.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-07-27
+created_by: unknown

@@ -219,6 +219,14 @@
 
 <div class="page-header">
     <h1><code>{{ task_id }}</code>: {{ task.name }}</h1>
+    {# T-2624 read-value wiring: inception decisions live in the inception-flow /
+       task-lifecycle process context. Bare ?load resolves server-latest (T-2599
+       nonce 302). hx-boost off: the editor is a standalone app, not an htmx
+       partial (same rule as the designer landing cards). #}
+    <p style="margin:0.25rem 0 0; font-size:0.85rem;">
+        <a href="/designer/app?load=%2Fapi%2Fversion%3Fid%3Daef-task-lifecycle" hx-boost="false"
+           title="aef-task-lifecycle — where this decision sits in the process">workflow map</a>
+    </p>
 </div>
 
 <!-- Decision banner -->

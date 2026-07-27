@@ -448,6 +448,11 @@
         <div class="review-meta">
             <span class="status-badge badge-{{ task_status|replace('-','') }}">{{ task_status }}</span>
             <span>Owner: {{ task_owner }}</span>
+            {# T-2624 read-value wiring: this review IS the tl_human_review stage of the
+               task-lifecycle map. Bare ?load (no v=) resolves server-latest; the T-2599
+               302 mints the nonce. #}
+            <span><a href="/designer/app?load=%2Fapi%2Fversion%3Fid%3Daef-task-lifecycle"
+                     title="aef-task-lifecycle — this page is the tl_human_review stage">workflow map</a></span>
         </div>
     </div>
 

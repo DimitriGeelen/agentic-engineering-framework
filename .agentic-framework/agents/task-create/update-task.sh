@@ -158,6 +158,11 @@ check_acceptance_criteria() {
             echo "Options:" >&2
             echo "  1. Check the criteria in the task file, then retry" >&2
             echo "  2. Use --skip-acceptance-criteria to bypass (logged)" >&2
+            # T-2624 read-value wiring: this gate IS the tl_archive edge of the
+            # task-lifecycle map — point the tripping agent at the process picture.
+            if [ -f "$PROJECT_ROOT/.context/designer/projects/aef-task-lifecycle/meta.json" ]; then
+                echo "Map: aef-task-lifecycle node tl_archive enforces this — bin/fw corpus explain aef-task-lifecycle" >&2
+            fi
             exit 1
         fi
     elif [ "$ac_total" -gt 0 ]; then

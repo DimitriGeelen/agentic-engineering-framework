@@ -259,14 +259,22 @@ def versions():
 
 @bp.route("/api/version")
 def version():
+    """`?id=&v=` → that version's bpmn; `?id=` alone → latest (T-2624, additive —
+    same missing-v resolution /api/thumb already has; 832's client always passes
+    an explicit v, deep-link consumers like the read-value map links need not
+    hardcode a version that goes stale on every save)."""
     i = request.args.get("id", "")
     v = request.args.get("v", "")
     if not _valid_id(i):
         return _err("invalid id")
-    try:
-        vn = int(v)
-    except (ValueError, TypeError):
-        return _err("invalid v")
+    if v:
+        try:
+            vn = int(v)
+        except (ValueError, TypeError):
+            return _err("invalid v")
+    else:
+        m = _read_meta(i)
+        vn = int(m.get("latest", 0)) if m else 0
     p = _map_dir(i) / f"v{vn}.bpmn"
     if not p.is_file():
         return _err("not found", 404)
