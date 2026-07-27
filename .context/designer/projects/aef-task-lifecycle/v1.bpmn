@@ -87,6 +87,7 @@
         <aef:meta note="captured tasks wait at horizon next/later; handover sorts them last and excludes later from Suggested First Action; shelving a started task auto-demotes status to captured (T-1068)" state="captured"/>
       </bpmn:extensionElements>
       <bpmn:incoming>tl_f15</bpmn:incoming>
+      <bpmn:incoming>tl_f19</bpmn:incoming>
       <bpmn:outgoing>tl_f16</bpmn:outgoing>
     </bpmn:serviceTask>
 
@@ -112,6 +113,7 @@
       <bpmn:incoming>tl_f18</bpmn:incoming>
       <bpmn:outgoing>tl_f4</bpmn:outgoing>
       <bpmn:outgoing>tl_f13</bpmn:outgoing>
+      <bpmn:outgoing>tl_f19</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:exclusiveGateway id="agt_gw_issues" name="issues encountered?">
@@ -132,6 +134,7 @@
       </bpmn:extensionElements>
       <bpmn:incoming>tl_f5</bpmn:incoming>
       <bpmn:outgoing>tl_f6</bpmn:outgoing>
+      <bpmn:outgoing>tl_f20</bpmn:outgoing>
     </bpmn:serviceTask>
 
     <bpmn:serviceTask id="agt_5_verify" name="completion gates: Agent ACs (P-010) + ## Verification commands (P-011)">
@@ -141,6 +144,7 @@
         <aef:meta note="fw task update --status work-completed runs the Verification commands mechanically; any non-zero exit blocks completion. Variants: bug-class tasks need a substantive ## RCA (T-1550); render-surface tasks need a [REVIEW] Human AC (P-013); [REVIEWER] ACs auto-tick on reviewer PASS (T-1985)"/>
       </bpmn:extensionElements>
       <bpmn:incoming>tl_f7</bpmn:incoming>
+      <bpmn:incoming>tl_f20</bpmn:incoming>
       <bpmn:outgoing>tl_f8</bpmn:outgoing>
     </bpmn:serviceTask>
 
@@ -257,6 +261,12 @@
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="tl_f13" name="heavy sub-work → dispatch" sourceRef="agt_3_work" targetRef="agt_9_handoff_dispatch">
       <bpmn:extensionElements><aef:uid value="tl_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tl_f19" name="shelved — horizon next/later auto-demotes to captured (T-1068)" sourceRef="agt_3_work" targetRef="agt_1c_parked">
+      <bpmn:extensionElements><aef:uid value="tl_e19"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tl_f20" name="resolved at gate — complete directly (issues → work-completed)" sourceRef="agt_4_heal" targetRef="agt_5_verify">
+      <bpmn:extensionElements><aef:uid value="tl_e20"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>
 </bpmn:definitions>
