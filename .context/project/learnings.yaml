@@ -3903,3 +3903,10 @@ X'` returning empty group."
   date: 2026-07-21
   context: Added via context agent
   application: TBD
+- id: L-511
+  learning: "L-387 refinement: the documented safe pattern out=$(cmd); echo \"$out\" | grep -q PAT still SIGPIPEs (exit 141) under pipefail when $out exceeds the pipe buffer (~64KB) and grep matches early — hit live on the /designer landing HTML in T-2630 verification. For large captures use a here-string: grep -q PAT <<<\"$out\" — no pipe, no SIGPIPE. echo|grep is only safe for small outputs."
+  source: unknown
+  task: T-2630
+  date: 2026-07-27
+  context: Added via context agent
+  application: TBD

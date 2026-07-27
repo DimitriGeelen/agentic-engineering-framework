@@ -234,6 +234,78 @@ def test_silent_on_no_expected_clause():
     assert findings == []
 
 
+# ─── T-2641: 832 foreign-corpus FP fixtures (rail 240, their T-100) ───
+# First foreign-corpus run of the catalogue (832's T-262 sweep, 57 tasks)
+# confirmed one human-ac-mechanical-signal FP. The AC below is 832's exact
+# bytes (peer-bytes-as-contract-input) — a genuine taste AC that fired via
+# the substring 'show n' in "maps show no prompt". Two composable gaps:
+# the shows?-alternative matched negation objects, and the taste gate
+# missed 'naggy'-class vocabulary. Both pinned here.
+
+T832_T100_AC = """
+### Human
+- [ ] [REVIEW] Nudge is helpful, not naggy
+  **Steps:**
+  1. Ensure Settings → View → "Clean layout when opening a file" is OFF
+  2. Open http://192.168.10.107:8834/designer.html?load=rendered/task-lifecycle.bpmn
+  3. Try the nudge's Clean button, and (reload) try its ✕ dismiss
+  **Expected:** A small "This map could use Clean layout" prompt appears on a messy map; Clean tidies it and the prompt vanishes; ✕ dismisses without changing the map; already-tidy maps show no prompt
+  **If not:** Note whether it nagged on a clean map or failed to appear on a messy one; screenshot
+"""
+
+
+def test_silent_on_832_t100_taste_nudge_ac():
+    """832's verbatim T-100 AC (rail 240): must emit zero findings."""
+    findings = ss.detect_human_ac_mechanical_signal(T832_T100_AC)
+    assert findings == [], f"832 T-100 fixture must not fire: {findings}"
+
+
+def test_silent_on_show_no_negation_in_expected():
+    """Gap 1 isolated: AC line has NO taste token, Expected's only
+    would-be-mechanical signal is the negation form 'show no X' — an
+    absence-of-UI assertion, not grep-able conformance. Must not fire."""
+    ac = """
+### Human
+- [ ] [REVIEW] Prompt only appears when relevant
+  **Steps:**
+  1. Open a tidy map
+  **Expected:** Already-tidy maps show no prompt
+  **If not:** Screenshot the spurious prompt
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert findings == [], f"'show no X' negation must not fire: {findings}"
+
+
+def test_silent_on_naggy_taste_token_in_ac_line():
+    """Gap 2 isolated: 'naggy' in the AC line is taste vocabulary — Gate 2b
+    must suppress even when Expected carries a mechanical determiner form."""
+    ac = """
+### Human
+- [ ] [REVIEW] Nudge is helpful, not naggy
+  **Steps:**
+  1. Trigger the nudge
+  **Expected:** The banner shows the current map name
+  **If not:** Iterate wording
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert findings == [], f"'naggy' in AC line must suppress: {findings}"
+
+
+def test_still_fires_on_shows_determiner_after_t2641_narrowing():
+    """Regression guard: the T-2641 negation exclusion must not weaken the
+    determiner conformance forms ('shows the/current/missing X')."""
+    ac = """
+### Human
+- [ ] [REVIEW] Confirm gate message content
+  **Steps:**
+  1. Trigger the gate
+  **Expected:** Block message shows the missing deliverable path
+  **If not:** Re-word
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert len(findings) == 1, f"'shows the X' must still fire: {findings}"
+
+
 # ───────────────────────── Wired into scan_task ─────────────────────────
 
 def test_detector_is_wired_into_scan_task(tmp_path):

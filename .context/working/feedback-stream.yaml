@@ -22934,3 +22934,317 @@ scan_id: R-4cf536fa
 task_id: T-2623
 payload:
   task_file: .tasks/active/T-2623-corpus-draft-mode--cheap-iteration-tier-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T16:51:41Z'
+scan_id: R-7088bbfd
+task_id: T-2624
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T16:51:41Z'
+scan_id: R-7088bbfd
+task_id: T-2624
+payload:
+  task_file: .tasks/active/T-2624-read-value-wiring--deep-link-maps-from-g.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T17:54:32Z'
+scan_id: R-29d1547d
+task_id: T-2620
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T17:54:32Z'
+scan_id: R-29d1547d
+task_id: T-2620
+payload:
+  task_file: .tasks/active/T-2620-live-state-overlay-seam--project-live-ta.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-27T17:54:32Z'
+scan_id: RC-1752e56b
+task_id: T-2620
+payload:
+  overall: CONFIRMED
+  claim_count: 4
+---
+kind: scan_emitted
+timestamp: '2026-07-27T18:01:18Z'
+scan_id: R-7f62e5ed
+task_id: T-2628
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T18:01:18Z'
+scan_id: R-7f62e5ed
+task_id: T-2628
+payload:
+  task_file: .tasks/active/T-2628-corpus-squash-burst-rca--operator-delete.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T18:09:24Z'
+scan_id: R-2a3ec303
+task_id: T-2629
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T18:09:24Z'
+scan_id: R-2a3ec303
+task_id: T-2629
+payload:
+  task_file: .tasks/active/T-2629-overlay-slice-a--apioverlay-endpoint-liv.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T18:47:00Z'
+scan_id: R-932030a7
+task_id: T-2630
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T18:47:00Z'
+scan_id: R-932030a7
+task_id: T-2630
+payload:
+  task_file: .tasks/active/T-2630-overlay-slice-b--wrapper-page-forwards-a.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T19:08:04Z'
+scan_id: R-d5189fe2
+task_id: T-2631
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T19:08:04Z'
+scan_id: R-d5189fe2
+task_id: T-2631
+payload:
+  task_file: .tasks/active/T-2631-map-catch-up-pair-round-seed--2-missing-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T19:29:27Z'
+scan_id: R-778b75f1
+task_id: T-2632
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T19:29:27Z'
+scan_id: R-778b75f1
+task_id: T-2632
+payload:
+  task_file: .tasks/active/T-2632-designer-070-adoption--re-pin--annotatio.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T20:27:09Z'
+scan_id: R-e9ca5240
+task_id: T-2633
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T20:27:09Z'
+scan_id: R-e9ca5240
+task_id: T-2633
+payload:
+  task_file: .tasks/active/T-2633-designer-071-re-pin--wire-shape-reconcil.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T20:39:33Z'
+scan_id: R-e4464604
+task_id: T-2634
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T20:39:33Z'
+scan_id: R-e4464604
+task_id: T-2634
+payload:
+  task_file: .tasks/active/T-2634-overlay-profile-2--aef-inception-flow-ui.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T20:47:52Z'
+scan_id: R-b7b7f359
+task_id: T-2635
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T20:47:52Z'
+scan_id: R-b7b7f359
+task_id: T-2635
+payload:
+  task_file: .tasks/active/T-2635-wire-shape-convergence-flip--emit-nodess.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T20:55:52Z'
+scan_id: R-575a17db
+task_id: T-2636
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T20:55:52Z'
+scan_id: R-575a17db
+task_id: T-2636
+payload:
+  task_file: .tasks/active/T-2636-ship-reviewer-policy-catalogues-to-832-r.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T21:03:23Z'
+scan_id: R-db17ff79
+task_id: T-2638
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T21:03:23Z'
+scan_id: R-db17ff79
+task_id: T-2638
+payload:
+  task_file: .tasks/active/T-2638-designer-pin-history-note-refresh--conve.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T21:14:17Z'
+scan_id: R-1262a5d7
+task_id: T-2639
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T21:14:17Z'
+scan_id: R-1262a5d7
+task_id: T-2639
+payload:
+  task_file: .tasks/active/T-2639-fabric-enrich-sweep--clear-12824-no-edge.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T21:45:07Z'
+scan_id: R-dc7377cc
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T21:45:07Z'
+scan_id: R-dc7377cc
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T21:45:07Z'
+scan_id: R-7b740cac
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T21:45:07Z'
+scan_id: R-7b740cac
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T21:45:08Z'
+scan_id: R-084e3223
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T21:45:08Z'
+scan_id: R-084e3223
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T21:46:16Z'
+scan_id: R-fd82235a
+task_id: T-2641
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T21:46:16Z'
+scan_id: R-fd82235a
+task_id: T-2641
+payload:
+  task_file: .tasks/active/T-2641-reviewer-fp-human-ac-mechanical-signal-f.md

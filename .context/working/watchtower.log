@@ -11,19 +11,27 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3001
  * Running on http://192.168.10.107:3001
 Press CTRL+C to quit
-127.0.0.1 - - [26/Jul/2026 22:49:49] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [26/Jul/2026 22:49:49] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:49:52] "GET /designer HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:49:52] "GET /api/list HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:49:52] "POST /api/save HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:49:52] "POST /designer/draft/new HTTP/1.1" 302 -
-192.168.10.107 - - [26/Jul/2026 22:49:52] "GET /api/version?id=draft-post-smoke&v=1 HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:50:08] "POST /api/delete HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:50:08] "POST /api/delete HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:51:09] "GET /designer HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:51:09] "GET /designer HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:51:31] "GET /designer HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:51:51] "GET /designer HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:51:53] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:51:53] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [26/Jul/2026 22:51:54] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jul/2026 22:46:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jul/2026 22:46:13] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:16] "GET /api/overlay?id=aef-task-lifecycle HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:16] "GET /api/overlay?id=aef-inception-flow HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /designer/overlay?id=aef-task-lifecycle HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /designer/app?load=/api/version?id%3Daef-task-lifecycle HTTP/1.1" 302 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /designer/app?load=/api/version?id%3Daef-task-lifecycle%26t%3D1785185180089 HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /api/version?id=aef-task-lifecycle&t=1785185180089 HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /api/health HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /api/list HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.10.107 - - [27/Jul/2026 22:46:20] "GET /api/overlay?id=aef-task-lifecycle HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:21] "GET /api/overlay?id=aef-task-lifecycle HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:33] "GET /designer/overlay?id=aef-inception-flow HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:33] "GET /designer/app?load=/api/version?id%3Daef-inception-flow HTTP/1.1" 302 -
+192.168.10.107 - - [27/Jul/2026 22:46:33] "GET /designer/app?load=/api/version?id%3Daef-inception-flow%26t%3D1785185193824 HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:33] "GET /api/version?id=aef-inception-flow&t=1785185193824 HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:33] "GET /api/health HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:34] "GET /api/list HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:34] "GET /api/overlay?id=aef-inception-flow HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:46:34] "GET /api/overlay?id=aef-inception-flow HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:47:50] "GET /api/overlay?id=aef-task-lifecycle HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 22:47:51] "GET /api/overlay?id=aef-task-lifecycle HTTP/1.1" 200 -
+192.168.10.107 - - [27/Jul/2026 23:20:48] "GET /api/_identity HTTP/1.1" 200 -

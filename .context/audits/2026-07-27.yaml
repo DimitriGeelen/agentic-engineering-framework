@@ -1,8 +1,8 @@
-# Audit Results - 2026-07-26-2253
-timestamp: 2026-07-26T20:53:13Z
+# Audit Results - 2026-07-27-2341
+timestamp: 2026-07-27T21:41:01Z
 sections: "structure"
 summary:
-  pass: 24
+  pass: 25
   warn: 4
   fail: 0
 findings:
@@ -45,12 +45,15 @@ findings:
     check: "No stale-slice-references (L-417)"
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
+  - level: WARN
+    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
+    mitigation: "Run: fw fabric drift"
   - level: PASS
-    check: "Fabric: 904 registered, 0 unregistered"
+    check: "Fabric: 910 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 812/818 cards enriched (6 without edges)"
+    check: "Fabric edges: 823/823 cards enriched (0 without edges)"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (904 cards)"
+    check: "Fabric drift: All watched source files registered (910 cards)"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: PASS
@@ -63,6 +66,5 @@ findings:
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
-  - level: WARN
-    check: "Map conformance: aef-task-lifecycle diverges from enforced transitions (T-2621)"
-    mitigation: "Update the map (pair-draft round adding the missing edges) or fix status-transitions.yaml if the map is right — the rail must be green before the map graduates to detail-authority (T-2619)"
+  - level: PASS
+    check: "Map conformance: aef-task-lifecycle matches enforced transitions"

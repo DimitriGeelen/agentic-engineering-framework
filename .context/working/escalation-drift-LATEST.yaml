@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-07-26T03:23:02.756775+00:00
-corpus_total: 2344
+generated: 2026-07-27T03:23:02.281343+00:00
+corpus_total: 2349
 bug_class_total: 470
 bug_class_pct: 20
 h1_flagged: 349
@@ -30,15 +30,15 @@ recent_sample:
     name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias"
 h2_top:
   - learning: "P-011"
-    task_count: 1226
+    task_count: 1236
   - learning: "L-387"
-    task_count: 1058
+    task_count: 1068
   - learning: "L-291"
-    task_count: 676
+    task_count: 681
   - learning: "L-398"
-    task_count: 455
+    task_count: 460
   - learning: "P-010"
-    task_count: 239
+    task_count: 244
   - learning: "L-006"
     task_count: 54
   - learning: "L-399"

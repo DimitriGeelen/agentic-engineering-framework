@@ -1,13 +1,20 @@
 ---
 id: T-2641
-name: "reviewer FP: human-ac-mechanical-signal fires in taste prose (832 sweep, token boundary)"
+name: "reviewer FP: human-ac-mechanical-signal fires in taste prose (832 sweep, token
+  boundary)"
 description: >
-  832 T-262 sweep (rail 237): human-ac-mechanical-signal FP on their T-100 — substring 'show n' matched inside genuine taste prose 'nudge shown... not naggy'. Two composable gaps: (1) the shows?/names? conformance alternatives in _HUMAN_AC_MECHANICAL_RE match any 'show X' including taste objects; (2) _HUMAN_AC_TASTE_RE vocabulary misses taste tokens like naggy/subtle/noisy so the taste-suppression gate never fired. Fix in lib/reviewer/static_scan.py; pin with 832's exact AC text as fixture (requested on rail).
+  832 T-262 sweep (rail 237): human-ac-mechanical-signal FP on their T-100 — substring
+  'show n' matched inside genuine taste prose 'nudge shown... not naggy'. Two composable
+  gaps: (1) the shows?/names? conformance alternatives in _HUMAN_AC_MECHANICAL_RE
+  match any 'show X' including taste objects; (2) _HUMAN_AC_TASTE_RE vocabulary misses
+  taste tokens like naggy/subtle/noisy so the taste-suppression gate never fired.
+  Fix in lib/reviewer/static_scan.py; pin with 832's exact AC text as fixture (requested
+  on rail).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-27T21:27:24Z
-last_update: 2026-07-27T21:27:24Z
-date_finished: null
+last_update: 2026-07-27T21:46:09Z
+date_finished: 2026-07-27T21:46:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +41,60 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-27T21:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-27T21:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2641: reviewer FP: human-ac-mechanical-signal fires in taste prose (832 sweep, token boundary)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+First foreign-corpus reviewer run (832's T-262 sweep, 57 tasks) confirmed a
+human-ac-mechanical-signal FP on their T-100: the AC `[REVIEW] Nudge is
+helpful, not naggy` (Expected: "...already-tidy maps show no prompt") fired
+the detector because the substring `show n` matched a mechanical-conformance
+alternative. 832 delivered the exact AC bytes at rail 240 — they become the
+negative test fixture. Two composable gaps in `lib/reviewer/static_scan.py`:
+(1) `_HUMAN_AC_MECHANICAL_RE`'s `shows?` alternative matches ANY "show X"
+object including taste prose; (2) `_HUMAN_AC_TASTE_RE` misses 'naggy'-class
+taste tokens, so the suppression gate that should have saved the AC never
+fired. Both fixed together; existing detector behavior on genuinely
+mechanical ACs must not regress.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Negative test fixture pinned with 832's verbatim T-100 AC text (title `Nudge is helpful, not naggy` + Expected clause containing "maps show no prompt"): detector emits ZERO human-ac-mechanical-signal findings on it
+- [x] `_HUMAN_AC_TASTE_RE` extended with naggy-class taste vocabulary (naggy, subtle, noisy, intrusive, distracting or equivalent set) — gap (2) closed
+- [x] Mechanical-signal breadth narrowed or taste-gate ordering fixed so a taste-vocabulary AC cannot fire the detector via a `shows?` substring — gap (1) closed
+- [x] Existing detector tests still pass: genuinely mechanical Human ACs (grep-able Expected, page-shows-element class) still fire the detector
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,7 +160,36 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(python3 -m pytest tests/unit/test_reviewer_human_ac_mechanical_signal.py -q 2>&1); echo "$out" | grep -q "20 passed"
+out=$(python3 -m pytest tests/unit/ -q -k "reviewer" 2>&1); echo "$out" | grep -q " passed" && ! echo "$out" | grep -q "failed"
+grep -q "naggy" lib/reviewer/static_scan.py
+grep -qF 'shows?\s+(?!no\b)' lib/reviewer/static_scan.py
+
 ## RCA
+
+**Symptom:** 832's foreign-corpus sweep (their T-262, 57 tasks) reported a
+confirmed FP: `human-ac-mechanical-signal` fired on their T-100 AC
+`[REVIEW] Nudge is helpful, not naggy` — a genuine taste AC — via the
+substring `show n` inside "already-tidy maps show no prompt".
+
+**Root cause:** two composable gaps. (1) The T-1897 conformance alternative
+`\bshows?\s+(the\s+|current\s+|missing\s+)?\S` matched ANY "show X" object,
+including the negation form "show no prompt" (a UI-absence assertion, not
+grep-able conformance). (2) `_HUMAN_AC_TASTE_RE` had no nuisance/salience
+vocabulary (naggy/subtle/intrusive/...), so the Gate-2b AC-line suppression
+that exists precisely to save taste ACs never fired.
+
+**Why structurally allowed:** the detector's taste vocabulary was seeded from
+AEF's own corpus (reads/tone/rhythm/UX-class prose); a foreign corpus with a
+different taste dialect ("naggy", UI-nudge language) had never been scanned —
+no mechanism existed to exercise the catalogue outside home vocabulary until
+832's sweep produced the first foreign-corpus data.
+
+**Prevention:** 832's exact AC bytes are pinned as a negative fixture
+(`T832_T100_AC` in tests/unit/test_reviewer_human_ac_mechanical_signal.py)
+plus two isolation tests (one per gap) and a determiner-form regression
+guard — the peer-bytes-as-contract-input pattern; future regex edits that
+re-widen either gap fail the suite.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -180,3 +256,19 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2641-reviewer-fp-human-ac-mechanical-signal-f.md
 - **Context:** Initial task creation
+
+### 2026-07-27T21:40:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fd82235a
+- **Timestamp:** 2026-07-27T21:46:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-27T21:46:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
