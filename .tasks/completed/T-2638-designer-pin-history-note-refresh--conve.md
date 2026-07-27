@@ -1,16 +1,13 @@
 ---
-id: T-2637
-name: "vendor policy catalogues with reviewer code (OBS-096, 832 G-011)"
+id: T-2638
+name: "designer-pin history note refresh — convergence executed (post-T-2635 accuracy)"
 description: >
-  fw vendor/upgrade ships lib/reviewer/* without policy/ catalogue data — fw reviewer
-  crashes on every vendored consumer (832 G-011, rail 229). Fix: add policy/anti-patterns.yaml
-  + escalation-patterns.yaml to the vendor file set; extend upgrade_fresh_machine_simulation.bats
-  with a fw reviewer smoke-run. See OBS-096 in .context/concerns.yaml
+  designer-pin history note refresh — convergence executed (post-T-2635 accuracy)
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-27T20:59:16Z
-last_update: '2026-07-27T21:00:09Z'
-date_finished:
+created: 2026-07-27T21:00:56Z
+last_update: 2026-07-27T21:03:22Z
+date_finished: 2026-07-27T21:03:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,48 +34,26 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-27T21:00:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-27T21:00:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2637: vendor policy catalogues with reviewer code (OBS-096, 832 G-011)
+# T-2638: designer-pin history note refresh — convergence executed (post-T-2635 accuracy)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+policy/designer-pin.yaml (the AEF↔832 contract anchor, read at every re-pin)
+still says "AEF currently emits the alias form (T-2632); convergence on one
+canonical form proposed at rail 226, 832's call" — stale after T-2635: 832
+confirmed at rail 230, we flipped to nodes/severity/text canonical, bytes
+posted at 233. Comment-only accuracy fix; sha/version fields untouched.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] 0.7.1 history note in policy/designer-pin.yaml states the resolved
+      state: canonical nodes/severity/text emitted (T-2635, 832 confirm rail
+      230), alias accepted-intake until 832's operator-sequenced retirement
+      (≥0.8.0); no non-comment field changed — verified parsed fields
+      identical (0.7.1 / d2bf0d63 / 890278)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -207,7 +182,24 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-07-27T20:59:16Z — task-created [task-create-agent]
+### 2026-07-27T21:00:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2637-vendor-policy-catalogues-with-reviewer-c.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2638-designer-pin-history-note-refresh--conve.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-db17ff79
+- **Timestamp:** 2026-07-27T21:03:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — 0.7.1 history note in policy/designer-pin.yaml states the resolved
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: 0.7.1 history note in policy/designer-pin.yaml states the resolved`
+
+### 2026-07-27T21:03:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

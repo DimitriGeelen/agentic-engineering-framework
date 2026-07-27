@@ -36,8 +36,11 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   {nodes:[{uid,badge,text,severity:info|warn|alert}]} (severity→tone mapping,
 #   text→tooltip, map/generated ignored; fixture = our live /api/overlay bytes
 #   pinned in their harness) — PLUS the 0.7.0 {annotations/tone/title} form as
-#   alias. Guards unchanged. AEF currently emits the alias form (T-2632);
-#   convergence on one canonical form proposed at rail 226, 832's call.
+#   alias. Guards unchanged. CONVERGENCE RESOLVED (T-2635): 832 confirmed
+#   canonical at rail 230; AEF emitter flipped back to nodes/severity/text
+#   (bytes posted rail 233, fixture==live shape restored). The alias form
+#   stays accepted-intake until an operator-sequenced retirement no earlier
+#   than 0.8.0 (832's release note will say so).
 # 0.7.0 = 0.6.0 + (1) 832 T-259 eventDef preservation (their T-257 inception →
 #   GO): aef:eventDef survives open→save on ANY host the typed-catch override
 #   doesn't consume (startEvent, intermediateThrowEvent, link-with-target);
