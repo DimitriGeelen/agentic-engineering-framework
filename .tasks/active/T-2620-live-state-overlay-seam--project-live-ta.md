@@ -61,11 +61,13 @@ bvp_scores_proposed:
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+The corpus maps are static pictures; the operator's TROUBLESHOOT goal ("where is T-XXXX stuck" as a picture) needs live framework state projected onto them. For the operator, now, because the conformance rail (T-2621) just made aef-task-lifecycle a trustworthy substrate and the state-carrier annotations give every status a home node.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1 (validated live): node uids survive operator editing — pair-draft round 2 proved all 19 uids preserved through a real layout pass in 832's editor.
+- A2 (validated by spike): the projection from task frontmatter to carrier uids is computable sub-second from flat files, no index needed (0.49s over 265 active + 53 windowed completed).
+- A3 (validated by 832 rail 197, ratification pending): the bundle can accept external annotations without forking — postMessage + re-ready/re-annotate contract.
 
 ## Open Questions
 
@@ -97,13 +99,13 @@ bvp_scores_proposed:
 
 - **IW-3: Does same-origin iframe DOM-reach actually work live against the served 0.4.0 bundle, incl. after its ?load= rendering completes?**
   confidence: 4
-  disposition:
+  disposition: dissolved
   rationale: Superseded at shape level by 832's rail-197 advisory answer — postMessage lean, with the load-bearing contract that renderAll() rebuilds the SVG DOM so the bundle re-emits aef:ready after EVERY render and we re-send aef:annotate each time; their T-250 (inception, operator-gated) tracks it, T-246 MANIFEST capabilities flag rides along. Iframe DOM-reach fallback mutually parked as the coupling to avoid. v0 plans against the postMessage contract; build waits on their operator ratification.
 
 - **IW-4: Where does the live-state feed come from — one Watchtower endpoint aggregating .tasks/active + focus.yaml + dispatches.jsonl keyed by map uid, or per-source fetches in the wrapper?**
-  confidence: 1
-  disposition:
-  rationale: Single aggregation endpoint likely cleaner (one contract, cacheable); needs a look at existing Watchtower blueprints before deciding.
+  confidence: 3
+  disposition: answered
+  rationale: Single endpoint, spike-proven 2026-07-27 (docs/reports/T-2620-live-state-overlay-seam.md §IW-4). Projection is NOT a pure status join — needs frontmatter × horizon × active-vs-completed × focus.yaml crossed (e.g. tl_human_review = work-completed still in active/); those rules must live in one place server-side. Endpoint emits the wire-ready aef:annotate payload verbatim; wrapper forwards on every aef:ready. Live run: 0.49s cold, tl_human_review badge 183/alert (oldest 46d) — the first render already IS the troubleshoot insight.
 
 ## Exploration Plan
 
@@ -125,17 +127,17 @@ bvp_scores_proposed:
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** seam shape (where the overlay lives), feed shape (endpoint contract + projection rules), trigger model design notes, pair-drafting the trigger-handling workflow. **OUT:** building the overlay (post-GO build slices), any edit to the pinned bundle or /opt/832, individual-task drill-down pages (operator rule: task data is observation layer, never a navigation destination), trigger landing-surface implementation (operator decision pending).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -151,12 +153,14 @@ bvp_scores_proposed:
 
 <!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- Seam shape settled with 832 at contract level (no bundle fork, no /opt/832 coupling)
+- Feed computable from existing flat files at interactive cost (<2s) with projection rules in one place
+- Content model honours the operator's observation-layer rule (no task-page drill-down)
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- Annotation requires forking the pinned bundle or per-release re-integration work
+- Projection needs new state capture (schema changes to task files / dispatch log)
+- Overlay duplicates Watchtower task-list surfaces instead of process-level aggregates
 
 ## Verification
 
@@ -171,9 +175,20 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
-**Rationale:** Genuine evidence gaps: (1) depends on T-2619 authority-model decision; (2) seam placement needs 832 consultation on the rail — designer is their artifact, overlay may need a designer-side hook or may be pure Watchtower wrapper; (3) no spike yet on whether served-bundle DOM can be annotated without forking the pinned artifact. DEFER until T-2619 decides and 832 answers seam question.
+**Rationale:** All four IW questions disposed with evidence (the original DEFER's three gaps each closed: T-2619 decided GO; 832 answered the seam question at rail 197 with a postMessage contract that needs no bundle fork; the feed spike ran live). Build is scoped, testable, reversible, and cleanly sliceable so the one external dependency (832's T-250 operator ratification) blocks only the slice that touches their contract:
+
+- **Slice A — `/api/overlay?id=<map-id>` endpoint** (no external dep, curl-testable): productionize the spike's projection rules (frontmatter × horizon × active-vs-completed × focus.yaml → carrier uids, stuck-age severity) emitting the wire-ready `aef:annotate` payload.
+- **Slice B — overlay wrapper page** (waits on 832 T-250 ratification): iframe the served bundle, forward the payload via postMessage on every `aef:ready`, per the rail-197 re-ready/re-annotate contract.
+- **Slice C — trigger landing surface** (waits on operator decision: obs inbox vs /approvals vs overlay panel; drafted as a decision node in draft-trigger-handling).
+
+**Evidence:**
+- Research artifact: `docs/reports/T-2620-live-state-overlay-seam.md` (dialogue rounds 1-3, 832 rail-197 contract, IW-4 spike section)
+- Live spike output: 0.49s cold; `tl_human_review` badge 183/alert (176 stuck >7d, oldest 46d) — first render already answers "where is work stuck"
+- uid identity contract proven under real operator editing (pair-draft round 2: 19/19 uids survived)
+- Conformance rail (T-2621) live on the target map; state-carrier mapping is the projection key
+- 832 status pinged rail 210; their constraints (read-only presentation, unknown-uid tolerance, never serialized) all honoured by the slice design
 
 ## Decisions
 

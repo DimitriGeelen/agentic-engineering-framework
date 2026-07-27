@@ -15,10 +15,35 @@ Minimal seam to project live framework state onto served designer maps, keyed by
 
 832's agent lean: **(A) postMessage** — origin-independent, no global namespace in the bundle. Load-bearing contract detail they surfaced: their `renderAll()` rebuilds the SVG DOM on every render, so annotations are wiped by any edit/re-render. Durable contract: **bundle re-emits `aef:ready` after EVERY render; we re-send `aef:annotate` each time.** Designer-side constraints they'd hold: read-only presentation (badge/class on `g[data-id=uid]` only), never serialized, dropped on document switch, unknown uids ignored silently (live state may outrun the loaded map version). Capability advertised via MANIFEST capabilities block — our ask was the promotion trigger for their parked T-246. Their side captured as **T-250** (inception, operator-gated, parked behind T-249 + operator reviews). Iframe DOM-reach fallback mutually parked as the coupling versioned releases exist to prevent. Acked at offset 201. **IW-3 effectively resolved at shape level** — v0 plans against the postMessage + re-ready/re-annotate contract; build waits for their ratification.
 
-## Open (IW-4 + trigger design)
+## IW-4 settled: single aggregation endpoint (spike evidence, 2026-07-27)
 
-- IW-4: feed shape — single Watchtower aggregation endpoint vs per-source fetches. Lean: single endpoint.
+**Verdict: single Watchtower endpoint** — `GET /api/overlay?id=<map-id>` returning the wire-ready `aef:annotate` payload verbatim (`{type, map, generated, nodes:[{uid,badge,text,severity}]}`). The wrapper page just forwards it via postMessage on every `aef:ready`; zero aggregation logic in page JS.
+
+Why per-source fetches lose — the spike proved the projection is **not a pure status join**. Carrier discrimination needs four sources crossed:
+
+| v5 carrier | projection rule |
+|------------|-----------------|
+| `tl_create` | `captured` + horizon `now` |
+| `tl_parked` | `captured` + horizon `next/later` |
+| `tl_work` | `started-work` (tl_start treated as transient) |
+| `tl_heal` | `issues` |
+| `tl_human_review` | `work-completed` **in `active/`** (partial-complete) |
+| `tl_archive` | `work-completed` in `completed/`, 7-day window (else the count is meaningless) |
+
+Plus focus.yaml (focus badge) and stuck-age severity (warn >7d, alert >30d — threshold values are the draft-trigger-handling tuning decision point, deliberately not hardcoded doctrine yet). These rules must live in exactly one place; splitting them across per-source page fetches duplicates governance semantics into JS.
+
+**Spike run against live data** (scratchpad `overlay_spike.py`, 0.49s cold over 265 active + 7-day completed frontmatter):
+
+- `tl_human_review` badge **183**, severity alert — 176 stuck >7d, oldest **46d**. The overlay's first real render IS the troubleshoot insight: WIP concentrates at human review.
+- `tl_parked` 49 (44 stuck), `tl_work` 32 (focus: T-2620), `tl_create` 1, `tl_archive` 53/7d.
+- Cost: sub-second cold → fine for on-page-load cadence; cacheable if the cron cadence is chosen (cadence remains a draft-trigger-handling decision node).
+
+Unknown-uid tolerance is 832-side per their rail-197 constraints (live state may outrun the loaded map version) — the endpoint sends what it knows; the bundle ignores what it can't place.
+
+## Open (trigger design + external)
+
 - Trigger landing surface: observations inbox (`fw note obs`, agent lean) vs /approvals vs overlay-page panel — operator undecided; also drafted as an explicit decision-point node in the pair-draft below.
+- External dependency: 832's T-250 operator ratification of the annotation-seam contract (status pinged rail 210, 2026-07-27). v0 build waits on it; everything AEF-side is now settled.
 
 ## Pair-draft: draft-trigger-handling v1 (2026-07-25)
 
