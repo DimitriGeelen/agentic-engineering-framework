@@ -1,9 +1,9 @@
-# Audit Results - 2026-07-27-2341
-timestamp: 2026-07-27T21:41:01Z
+# Audit Results - 2026-07-27-2347
+timestamp: 2026-07-27T21:47:23Z
 sections: "structure"
 summary:
   pass: 25
-  warn: 4
+  warn: 3
   fail: 0
 findings:
   - level: PASS
@@ -45,9 +45,6 @@ findings:
     check: "No stale-slice-references (L-417)"
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
   - level: PASS
     check: "Fabric: 910 registered, 0 unregistered"
   - level: PASS

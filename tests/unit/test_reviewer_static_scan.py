@@ -530,6 +530,64 @@ def test_mock_only_integration_negative_no_integration_in_ac():
     assert f == []
 
 
+# ─── T-2640: spawn-signal content check (832 foreign-corpus FP, rail 240) ───
+# 832's T-258: tests/test_t258_annotation_seam.py LOOKS unit by path but
+# spawns a Playwright-CDP node harness via subprocess.run — integration by
+# runtime nature. The spawn lines below are 832's exact bytes (their :56-58).
+
+T832_SPAWN_BYTES = (
+    "proc = subprocess.run(\n"
+    '    ["node", HARNESS], cwd=ROOT, capture_output=True, text=True, timeout=240\n'
+    ")\n"
+)
+
+
+def _spawn_fixture_root(tmp_path, test_rel, content):
+    (tmp_path / "policy").mkdir()          # repo-root marker for the walk-up
+    tf = tmp_path / test_rel
+    tf.parent.mkdir(parents=True, exist_ok=True)
+    tf.write_text(content)
+    tasks = tmp_path / ".tasks" / "active"
+    tasks.mkdir(parents=True)
+    task = tasks / "T-9998-x.md"
+    task.write_text("---\nid: T-9998\n---\n")
+    return task
+
+
+def test_mock_only_integration_silent_on_spawn_signal_832_bytes(tmp_path):
+    """832's exact fixture: unit-looking path + subprocess.run spawn → suppress."""
+    task = _spawn_fixture_root(
+        tmp_path, "tests/test_t258_annotation_seam.py",
+        "import subprocess\nHARNESS = 'tools/harness.mjs'\nROOT = '.'\n"
+        + T832_SPAWN_BYTES,
+    )
+    ac = "### Agent\n- [x] Annotation seam verified end-to-end in the real editor\n"
+    verif = "pytest tests/test_t258_annotation_seam.py\n"
+    f = ss.detect_mock_only_integration(ac, verif, task)
+    assert f == [], f"spawn-signal file must suppress: {f}"
+
+
+def test_mock_only_integration_still_fires_without_spawn_signal(tmp_path):
+    """Regression guard: content check must not blanket-suppress — a
+    unit-pathed file with NO spawn signal still fires."""
+    task = _spawn_fixture_root(
+        tmp_path, "tests/unit/test_db.py",
+        "def test_db():\n    assert query_mock() == 42\n",
+    )
+    ac = "### Agent\n- [x] Integration tested with real database\n"
+    verif = "pytest tests/unit/test_db.py\n"
+    f = ss.detect_mock_only_integration(ac, verif, task)
+    assert len(f) == 1 and f[0].pattern_id == "mock-only-integration"
+
+
+def test_mock_only_integration_task_path_none_keeps_legacy_behavior():
+    """Backward compat: omitting task_path preserves the pre-T-2640 verdict."""
+    ac = "### Agent\n- [x] Integration tested with real database\n"
+    verif = "pytest tests/unit/test_db.py\n"
+    f = ss.detect_mock_only_integration(ac, verif)
+    assert len(f) == 1
+
+
 # ───────────────── v1.1: AC-verify-mismatch ─────────────────
 
 

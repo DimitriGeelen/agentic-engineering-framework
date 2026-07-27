@@ -1,13 +1,20 @@
 ---
 id: T-2640
-name: "reviewer FP: mock-only-integration blind to browser/CDP-driving tests (832 sweep)"
+name: "reviewer FP: mock-only-integration blind to browser/CDP-driving tests (832
+  sweep)"
 description: >
-  832 T-262 foreign-corpus sweep (rail 237): mock-only-integration fired on their tests/test_t258_annotation_seam.py — path LOOKS unit but drives the real editor in a real iframe via CDP. Path heuristic cannot see runtime nature. Refinement (832's suggestion, endorsed): treat files that spawn a browser/CDP/subprocess as integration regardless of path. Fix in lib/reviewer/static_scan.py mock-only-integration detector; pin with a fixture modeled on their exact file shape (request exact bytes from 832 first — peer-bytes-as-contract-input).
+  832 T-262 foreign-corpus sweep (rail 237): mock-only-integration fired on their
+  tests/test_t258_annotation_seam.py — path LOOKS unit but drives the real editor
+  in a real iframe via CDP. Path heuristic cannot see runtime nature. Refinement (832's
+  suggestion, endorsed): treat files that spawn a browser/CDP/subprocess as integration
+  regardless of path. Fix in lib/reviewer/static_scan.py mock-only-integration detector;
+  pin with a fixture modeled on their exact file shape (request exact bytes from 832
+  first — peer-bytes-as-contract-input).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-27T21:26:46Z
-last_update: 2026-07-27T21:26:46Z
-date_finished: null
+last_update: 2026-07-27T21:52:25Z
+date_finished: 2026-07-27T21:52:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +41,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-27T21:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-27T21:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2640: reviewer FP: mock-only-integration blind to browser/CDP-driving tests (832 sweep)
@@ -46,8 +81,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `detect_mock_only_integration` inspects the content of referenced test files (resolved against repo root from `task_path`, same walk-up pattern as `detect_ac_evidence_untick`) and suppresses when a spawn signal is present — subprocess/browser/CDP/Playwright/pexpect class — i.e. runtime nature wins over directory name
+- [x] Negative fixture pinned with 832's exact spawn bytes (rail 240): a task whose Verification references `tests/test_t258_annotation_seam.py` containing `proc = subprocess.run(\n    ["node", HARNESS], cwd=ROOT, capture_output=True, text=True, timeout=240\n)` emits ZERO mock-only-integration findings
+- [x] Signature stays backward-compatible (`task_path` optional): all 4 existing mock-only-integration tests pass unchanged
+- [x] A unit-pathed test file WITHOUT spawn signals still fires the detector (regression guard: content check must not blanket-suppress)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,7 +150,34 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1); echo "$out" | grep -q "100 passed"
+out=$(python3 -m pytest tests/unit/ -q -k "reviewer" 2>&1); echo "$out" | grep -q " passed" && ! echo "$out" | grep -q "failed"
+grep -q "_SPAWN_SIGNAL_RE" lib/reviewer/static_scan.py
+grep -q "detect_mock_only_integration(ac_section, verif_section, task_path)" lib/reviewer/static_scan.py
+
 ## RCA
+
+**Symptom:** 832's foreign-corpus sweep (their T-262) reported a confirmed
+FP: `mock-only-integration` fired on their T-258 even though its referenced
+test (`tests/test_t258_annotation_seam.py`) drives the real editor in a real
+iframe via a Playwright-CDP node harness — genuine integration.
+
+**Root cause:** the detector classified tests purely by directory name. A
+top-level `tests/*.py` path matches neither `_UNIT_PATH_RE` nor the
+integration-path regex (`tests/(integration|e2e|playwright|web)`), so it
+fell through to the "only unit paths" branch by default. Runtime nature —
+the file spawns `subprocess.run(["node", HARNESS], ...)` — was invisible.
+
+**Why structurally allowed:** the detector was designed against AEF's own
+test layout where the unit/integration split IS the directory split; no
+corpus with integration tests at `tests/` top-level had ever been scanned
+until 832's foreign run.
+
+**Prevention:** 832's exact spawn bytes (rail 240) are pinned as a negative
+fixture in tests/unit/test_reviewer_static_scan.py, alongside a
+no-spawn-still-fires regression guard and a task_path=None legacy-behavior
+pin — the content check can neither regress nor blanket-suppress without
+failing the suite.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -180,3 +244,19 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2640-reviewer-fp-mock-only-integration-blind-.md
 - **Context:** Initial task creation
+
+### 2026-07-27T21:50:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-463c9b79
+- **Timestamp:** 2026-07-27T21:52:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-27T21:52:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

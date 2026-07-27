@@ -711,13 +711,61 @@ _INTEGRATION_AC_RE = re.compile(
 )
 _UNIT_PATH_RE = re.compile(r"\btests?/unit\b|\bspec/unit\b|_unit_test|test_unit_")
 
+# T-2640: runtime-nature spawn signals. A test file that spawns a subprocess,
+# browser, or PTY is integration REGARDLESS of its directory name — the path
+# heuristic cannot see runtime nature (832 foreign-corpus FP: their
+# tests/test_t258_annotation_seam.py drives the real editor in a real iframe
+# via a Playwright-CDP node harness, spawned with subprocess.run; rail 240
+# fixture). Content check, capped read, suppresses the finding.
+_SPAWN_SIGNAL_RE = re.compile(
+    r"""(?x)
+    \bsubprocess\.(?:run|Popen|check_output|check_call|call)\b |
+    \bos\.system\b            |
+    \bpexpect\.               |
+    \bpty\.spawn\b            |
+    \bplaywright\b            |
+    \bchromium\b              |
+    \bpuppeteer\b             |
+    \bCDP\b                   |
+    chrome-remote-interface   |
+    \btermlink\s+(?:spawn|dispatch|exec|interact)\b
+    """
+)
+_TEST_FILE_IN_LINE_RE = re.compile(r"\btests?/[\w./-]+\.(?:py|sh|bats|js|mjs|ts)\b")
 
-def detect_mock_only_integration(ac_section: str, verification_section: str) -> list[Finding]:
+
+def _spawn_signal_in_referenced_tests(lines: list[str], task_path) -> bool:
+    """True when any test file referenced on the given verification lines
+    exists on disk and contains a spawn signal (subprocess/browser/CDP/PTY).
+    Repo root derived from task_path by the same policy/-walk-up used in
+    detect_ac_evidence_untick; unreadable/missing files contribute nothing."""
+    if task_path is None:
+        return False
+    repo_root = task_path.parent
+    while repo_root != repo_root.parent and not (repo_root / "policy").is_dir():
+        repo_root = repo_root.parent
+    for line in lines:
+        for rel in _TEST_FILE_IN_LINE_RE.findall(line):
+            f = repo_root / rel
+            try:
+                content = f.read_text(errors="replace")[:262144]
+            except OSError:
+                continue
+            if _SPAWN_SIGNAL_RE.search(content):
+                return True
+    return False
+
+
+def detect_mock_only_integration(
+    ac_section: str, verification_section: str, task_path=None
+) -> list[Finding]:
     """AC promises integration but verification only exercises tests/unit/.
 
     Heuristic — fires when:
       - any AC mentions integration / e2e / cross-process, AND
-      - verification commands only reference tests/unit/ paths (no integration).
+      - verification commands only reference tests/unit/ paths (no integration), AND
+      - (T-2640) no referenced test file contains a spawn signal — runtime
+        nature (subprocess/browser/CDP) counts as integration regardless of path.
     """
     findings: list[Finding] = []
     if not ac_section or not verification_section:
@@ -739,6 +787,8 @@ def detect_mock_only_integration(ac_section: str, verification_section: str) -> 
         return findings  # no test paths referenced at all → not this pattern
     if has_integration_path:
         return findings  # actually runs integration tests
+    if _spawn_signal_in_referenced_tests(test_path_lines, task_path):
+        return findings  # T-2640: spawns a process/browser → integration by nature
     # Only unit-test paths but AC promises integration
     findings.append(
         Finding(
@@ -2451,7 +2501,7 @@ def scan_task(
     # v1.1 detectors
     findings.extend(detect_empty_output_success(verif_section))
     findings.extend(detect_skip_as_pass(verif_section))
-    findings.extend(detect_mock_only_integration(ac_section, verif_section))
+    findings.extend(detect_mock_only_integration(ac_section, verif_section, task_path))
     findings.extend(detect_ac_verify_mismatch(ac_section, verif_section))
     # v1.3-seed +1: T-1896 — [REVIEW] mechanical-Expected catch (T-1878 B)
     findings.extend(detect_human_ac_mechanical_signal(ac_section))
