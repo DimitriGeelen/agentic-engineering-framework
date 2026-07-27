@@ -660,6 +660,56 @@ def test_escalation_external_publish_fires_on_npm_publish(escalation_catalogue):
     assert "external-publish" in ids
 
 
+# ─── T-2642: cross-project-blast domain-vocabulary collision (832, rail 240) ───
+# 832's T-115 sentence is verbatim corpus bytes: "all nodes" = SVG diagram
+# nodes in a layout task. Note it even contains "clusters" (verb) — which is
+# why the co-occurrence set uses singular-only "cluster".
+
+T832_T115_SENTENCE = (
+    "respaceColumns clusters all nodes into columns by centre-x, shifts each "
+    "column rigidly so consecutive column centres sit gap px apart (anchored "
+    "left), clamped 130-360 (>widest node 120 so columns never fold), "
+    "undoable via axis-aware lastTidy."
+)
+
+
+def test_escalation_cross_project_blast_silent_on_832_svg_nodes(escalation_catalogue):
+    """832's verbatim T-115 sentence: 'all nodes' = SVG nodes → no trigger."""
+    triggers = ss.evaluate_escalations(
+        ac_section=f"### Agent\n- [x] {T832_T115_SENTENCE}\n",
+        verif_section="",
+        meta={},
+        escalation_catalogue=escalation_catalogue,
+    )
+    ids = {t.trigger_id for t in triggers}
+    assert "cross-project-blast" not in ids, f"SVG-domain 'all nodes' must not fire: {ids}"
+
+
+def test_escalation_cross_project_blast_fires_with_infra_cooccurrence(escalation_catalogue):
+    """'all nodes' WITH fleet/deploy context on the same line still triggers."""
+    triggers = ss.evaluate_escalations(
+        ac_section="### Agent\n- [x] Restart the fleet agent on all nodes after deploy\n",
+        verif_section="",
+        meta={},
+        escalation_catalogue=escalation_catalogue,
+    )
+    ids = {t.trigger_id for t in triggers}
+    assert "cross-project-blast" in ids, f"infra 'all nodes' must fire: {ids}"
+
+
+def test_escalation_cross_project_blast_unambiguous_forms_unchanged(escalation_catalogue):
+    """'all consumers' / 'fleet-wide' / 'all hosts' stay bare triggers."""
+    for phrase in ("propagates to all consumers", "fleet-wide rollout", "applies to all hosts"):
+        triggers = ss.evaluate_escalations(
+            ac_section=f"### Agent\n- [x] Change {phrase}\n",
+            verif_section="",
+            meta={},
+            escalation_catalogue=escalation_catalogue,
+        )
+        ids = {t.trigger_id for t in triggers}
+        assert "cross-project-blast" in ids, f"{phrase!r} must still fire: {ids}"
+
+
 def test_escalation_no_fire_on_benign_task(escalation_catalogue):
     triggers = ss.evaluate_escalations(
         ac_section="### Agent\n- [x] foo.py exists\n",
