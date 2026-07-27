@@ -48,7 +48,7 @@ def test_overlay_serves_annotate_payload(client):
     assert resp.mimetype == "application/json"
     p = json.loads(resp.get_data(as_text=True))
     assert p["type"] == "aef:annotate"
-    assert {n["uid"]: n["badge"] for n in p["annotations"]} == {"tl_work": "1"}
+    assert {n["uid"]: n["badge"] for n in p["nodes"]} == {"tl_work": "1"}
 
 
 def test_overlay_unknown_map_404s(client):

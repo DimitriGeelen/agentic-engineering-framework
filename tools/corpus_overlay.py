@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """T-2629 (T-2620 GO, Slice A): live task-state projection onto map carrier uids.
 
-Emits the wire-ready ``aef:annotate`` payload in the designer 0.7.0 SHIPPED
-intake shape (T-2632; 832 T-258, protocol doc §Annotation seam at tag
-designer-v0.7.0 — supersedes the rail-197 draft field names):
+Emits the wire-CANONICAL ``aef:annotate`` payload (T-2635; convergence
+confirmed by 832 at rail 230 — their doc-at-tag names this shape canonical
+and their harness fixture pins these exact bytes; the 0.7.0-era
+``annotations/tone/title`` form remains an accepted intake alias until an
+operator-sequenced retirement no earlier than 0.8.0):
 
     {"type": "aef:annotate", "map": <id>, "generated": <epoch>,
-     "annotations": [{"uid", "badge", "tone", "title"}]}
+     "nodes": [{"uid", "badge", "text", "severity": info|warn|alert}]}
 
-``badge`` clamps at 48 chars, ``title`` at 200 (intake-side too); ``tone`` is
-one of info|ok|warn|err — our severity ladder maps info→info, warn→warn,
-alert→err. Extra top-level keys (map, generated) are ignored by the intake.
+``badge`` clamps at 48 chars, ``text`` at 200 (intake-side too); the intake
+maps severity→tone (info/warn/alert → info/warn/err). Extra top-level keys
+(map, generated) are ignored by the intake.
 
 Projection profiles are map-specific and live HERE, server-side, in exactly
 one place (T-2620 IW-4) — the maps' carriers under-determine the projection
@@ -191,13 +193,11 @@ _TERMINAL_UIDS = {"tl_archive", "if_done_go", "if_done_closed"}
 # the oldest waiter exceeds WARN_DAYS.
 _QUEUE_UIDS = {"if_gw_outcome"}
 
-_TONE = {"info": "info", "warn": "warn", "alert": "err"}
-
 
 def build_payload(root: Path, map_id: str, now: float | None = None) -> dict:
     now = now if now is not None else time.time()
     payload = {"type": "aef:annotate", "map": map_id, "generated": int(now),
-               "annotations": []}
+               "nodes": []}
     profile = PROFILES.get(map_id)
     live = carriers(root, map_id)
     if not profile or not live:
@@ -222,9 +222,9 @@ def build_payload(root: Path, map_id: str, now: float | None = None) -> dict:
             title += f", {stuck} stuck >{WARN_DAYS}d (oldest {oldest:.0f}d)"
         if focus and any(t.get("id") == focus for t in tasks):
             title += f" — focus: {focus}"
-        payload["annotations"].append(
+        payload["nodes"].append(
             {"uid": uid, "badge": str(len(tasks))[:48],
-             "tone": _TONE[severity], "title": title[:200]}
+             "severity": severity, "text": title[:200]}
         )
     return payload
 

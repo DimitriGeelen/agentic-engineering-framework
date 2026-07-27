@@ -72,7 +72,7 @@ def _root(tmp_path, xml=FULL_CARRIERS, focus=None):
 
 
 def _nodes(payload):
-    return {n["uid"]: n for n in payload["annotations"]}
+    return {n["uid"]: n for n in payload["nodes"]}
 
 
 def test_projection_rules_route_each_status_to_its_carrier(tmp_path):
@@ -107,18 +107,18 @@ def test_severity_thresholds_and_stuck_text(tmp_path):
     a = root / ".tasks/active"
     _task(a, "T-1", "started-work", last_update="2026-07-15T12:00:00Z")  # 12d -> warn
     n = _nodes(co.build_payload(root, "aef-task-lifecycle", now=NOW))
-    assert n["tl_work"]["tone"] == "warn"
-    assert "1 stuck >7d" in n["tl_work"]["title"]
+    assert n["tl_work"]["severity"] == "warn"
+    assert "1 stuck >7d" in n["tl_work"]["text"]
     _task(a, "T-2", "started-work", last_update="2026-06-01T12:00:00Z")  # 56d -> alert
     n = _nodes(co.build_payload(root, "aef-task-lifecycle", now=NOW))
-    assert n["tl_work"]["tone"] == "err"
+    assert n["tl_work"]["severity"] == "alert"
 
 
 def test_focus_badge_lands_in_the_focused_tasks_bucket(tmp_path):
     root = _root(tmp_path, focus="T-9")
     _task(root / ".tasks/active", "T-9", "started-work")
     n = _nodes(co.build_payload(root, "aef-task-lifecycle", now=NOW))
-    assert "focus: T-9" in n["tl_work"]["title"]
+    assert "focus: T-9" in n["tl_work"]["text"]
 
 
 def test_phantom_uid_filter_drops_buckets_without_live_carrier(tmp_path):
@@ -133,8 +133,8 @@ def test_phantom_uid_filter_drops_buckets_without_live_carrier(tmp_path):
 
 def test_unprofiled_map_and_empty_buckets_yield_empty_nodes(tmp_path):
     root = _root(tmp_path)
-    assert co.build_payload(root, "some-other-map", now=NOW)["annotations"] == []
-    assert co.build_payload(root, "aef-task-lifecycle", now=NOW)["annotations"] == []
+    assert co.build_payload(root, "some-other-map", now=NOW)["nodes"] == []
+    assert co.build_payload(root, "aef-task-lifecycle", now=NOW)["nodes"] == []
 
 
 def test_payload_carries_contract_shape(tmp_path):
@@ -142,7 +142,7 @@ def test_payload_carries_contract_shape(tmp_path):
     _task(root / ".tasks/active", "T-1", "issues")
     p = co.build_payload(root, "aef-task-lifecycle", now=NOW)
     assert p["type"] == "aef:annotate" and p["map"] == "aef-task-lifecycle"
-    assert set(p["annotations"][0]) == {"uid", "badge", "tone", "title"}
+    assert set(p["nodes"][0]) == {"uid", "badge", "severity", "text"}
 
 
 # ── T-2634: aef-inception-flow profile ──────────────────────────────────────
@@ -207,7 +207,7 @@ def test_inception_profile_ignores_non_inception_tasks(tmp_path):
     root = _if_root(tmp_path)
     _task(root / ".tasks/active", "T-1", "captured")  # build task, no workflow_type
     p = co.build_payload(root, "aef-inception-flow", now=NOW)
-    assert p["annotations"] == []
+    assert p["nodes"] == []
 
 
 def test_decision_queue_floors_at_warn_and_escalates_when_stuck(tmp_path):
@@ -215,10 +215,10 @@ def test_decision_queue_floors_at_warn_and_escalates_when_stuck(tmp_path):
     a = root / ".tasks/active"
     _inception(a, "T-1", "work-completed", last_update="2026-07-26T12:00:00Z")  # 1d
     n = _nodes(co.build_payload(root, "aef-inception-flow", now=NOW))
-    assert n["if_gw_outcome"]["tone"] == "warn"       # floor, even when fresh
+    assert n["if_gw_outcome"]["severity"] == "warn"       # floor, even when fresh
     _inception(a, "T-2", "work-completed", last_update="2026-07-15T12:00:00Z")  # 12d
     n = _nodes(co.build_payload(root, "aef-inception-flow", now=NOW))
-    assert n["if_gw_outcome"]["tone"] == "err"        # oldest > 7d
+    assert n["if_gw_outcome"]["severity"] == "alert"        # oldest > 7d
 
 
 def test_inception_terminal_buckets_stay_info_and_windowed(tmp_path):
@@ -231,4 +231,4 @@ def test_inception_terminal_buckets_stay_info_and_windowed(tmp_path):
     _inception(c, "T-3", "work-completed", decision="GO")  # 1d: inside
     n = _nodes(co.build_payload(root, "aef-inception-flow", now=NOW))
     assert n["if_done_go"]["badge"] == "1"
-    assert n["if_done_go"]["tone"] == "info"          # terminal: never escalates
+    assert n["if_done_go"]["severity"] == "info"          # terminal: never escalates

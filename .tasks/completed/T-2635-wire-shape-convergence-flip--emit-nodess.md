@@ -1,17 +1,17 @@
 ---
-id: T-2629
-name: "Overlay Slice A — /api/overlay endpoint: live task-state projection onto map carrier uids (aef:annotate payload)"
+id: T-2635
+name: "wire-shape convergence flip — emit nodes/severity/text canonical (832 rail
+  230 confirm)"
 description: >
-  Overlay Slice A — /api/overlay endpoint: live task-state projection onto map carrier uids (aef:annotate payload)
+  wire-shape convergence flip — emit nodes/severity/text canonical (832 rail 230 confirm)
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
-tags: [designer, corpus, t2619-slice]
+owner: agent
+horizon: null
+tags: []
 components: []
-related_tasks: [T-2620]
-arc_id: designer-corpus
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,9 +22,9 @@ arc_id: designer-corpus
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-27T18:01:48Z
-last_update: 2026-07-27T18:09:20Z
-date_finished: 2026-07-27T18:09:20Z
+created: 2026-07-27T20:43:16Z
+last_update: 2026-07-27T20:47:48Z
+date_finished: 2026-07-27T20:47:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,23 +35,63 @@ date_finished: 2026-07-27T18:09:20Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-27T20:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-27T20:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2629: Overlay Slice A — /api/overlay endpoint: live task-state projection onto map carrier uids (aef:annotate payload)
+# T-2635: wire-shape convergence flip — emit nodes/severity/text canonical (832 rail 230 confirm)
 
 ## Context
 
-Slice A of the T-2620 GO (operator decided 2026-07-27, /inception/T-2620): the no-external-dependency leg — a Watchtower endpoint emitting the wire-ready `aef:annotate` payload from live task state, per the IW-4 spike (docs/reports/T-2620-live-state-overlay-seam.md §IW-4). Slice B (postMessage wrapper) waits on 832's T-250 ratification and consumes this endpoint verbatim; Slice C (trigger surface) waits on the operator. Design note: the map's `state=` carriers under-determine the projection (two `captured` carriers split on horizon, three `started-work` carriers split on focus/partial-complete), so v0 ships a **map-specific projection profile** for aef-task-lifecycle, with every emitted node filtered against the map's live carriers so map edits can't produce phantom badges.
+832 confirmed at rail 230 (re our 228 proposal): converge on the
+`nodes/severity/text` wire shape — their doc-at-tag names it canonical and
+their harness fixture pins our pre-T-2632 live bytes, so our revert re-unifies
+fixture==live with zero 832 change. The `annotations/tone/title` alias stays
+accepted (retirement no earlier than 0.8.0, operator-sequenced). Flip =
+revert the T-2632 emitter adaptation in tools/corpus_overlay.py; the wrapper
+forwards verbatim but its status line counts `.annotations` → update to
+`.nodes`; T-2629's stored Verification greps `['annotations']` → back to
+`['nodes']` so the human's completion re-run passes.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] tools/corpus_overlay.py: `build_payload(root, map_id)` returns `{type: "aef:annotate", map, generated, nodes: [{uid, badge, text, severity}]}` implementing the IW-4 projection profile for aef-task-lifecycle — captured×horizon→tl_create/tl_parked, started-work→tl_work, issues→tl_heal, work-completed-in-active/→tl_human_review (partial-complete), work-completed-in-completed/ 7-day window→tl_archive, focus badge from focus.yaml, stuck-age severity (info/warn>7d/alert>30d)
-- [x] Emitted nodes are filtered against the map's live latest-version carriers (uid exists AND carries `aef:meta state=`) — pinned by test_phantom_uid_filter_drops_buckets_without_live_carrier
-- [x] GET /api/overlay?id=aef-task-lifecycle serves the payload as application/json; unknown map id → 404 (also bad-id/path-traversal shapes); a map with no projection profile or no carriers → 200 with empty nodes list
-- [x] Unit tests pin the projection rules (7 tests: routing, horizon split, archive window, severity thresholds, focus badge, phantom filter, contract shape) + web tests pin endpoint statuses (3 tests) — 10/10
-- [x] Live endpoint responds in <2s (0.38s measured) and its tl_work badge equals the live started-work count (verification command pins the equality)
+- [x] tools/corpus_overlay.py emits canonical shape
+      `{type,map,generated,nodes:[{uid,badge,text,severity:info|warn|alert}]}`
+      (severity raw, no tone mapping; text clamp-at-200 kept); wrapper
+      status line counts `.nodes`; all overlay tests updated and green (17/17)
+- [x] Live e2e on 0.7.1 with canonical emission: both profiled maps render
+      badges (0.7.1 intake maps severity→tone) — lifecycle 5, inception 4,
+      0 console errors (one pre-existing favicon 404, unrelated)
+- [x] New live /api/overlay bytes posted on the rail (offset 233, reply-to
+      230) for 832's fixture diff — both maps' bytes included; T-263 ruling
+      acked in the same post; T-2629 Verification re-pointed at `['nodes']`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -83,13 +123,6 @@ Slice A of the T-2620 GO (operator decided 2026-07-27, /inception/T-2620): the n
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-- [ ] [REVIEW] The v0 badge semantics read right to you — counts, "stuck >7d" wording, and the info/warn>7d/alert>30d severity thresholds (these thresholds are the tuning decision point you flagged in draft-trigger-handling; this is your first look at them live)
-  **Steps:**
-  1. Open http://192.168.10.107:3001/api/overlay?id=aef-task-lifecycle in a browser
-  2. Sanity-check the JSON against your sense of the project: does tl_human_review's big number + "alert" match your review-backlog reality? Do "stuck >7d" and the 7d/30d thresholds feel like the right first cut?
-  **Expected:** numbers plausible, wording clear, thresholds acceptable as v0 defaults (tuning stays open via the dismissal-feedback loop drafted in draft-trigger-handling)
-  **If not:** note which threshold or wording is off — they're constants at the top of tools/corpus_overlay.py (ARCHIVE_WINDOW_DAYS / WARN_DAYS / ALERT_DAYS)
 
 ## Verification
 
@@ -124,31 +157,9 @@ Slice A of the T-2620 GO (operator decided 2026-07-27, /inception/T-2620): the n
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py -q
-curl -s "$(bin/fw watchtower url)/api/overlay?id=aef-task-lifecycle" -o /tmp/.t2629.json && grep -q '"aef:annotate"' /tmp/.t2629.json
-# T-2635: payload key back to canonical 'nodes' (convergence confirmed, rail 230)
-test "$(python3 -c "import json;print(next(n['badge'] for n in json.load(open('/tmp/.t2629.json'))['nodes'] if n['uid']=='tl_work'))")" = "$(grep -l '^status: started-work' .tasks/active/T-*.md | wc -l)"
-test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/api/overlay?id=no-such-map")" = "404"
-
-## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** Slice A is live end-to-end with the exact payload shape Slice B will forward verbatim; the one [REVIEW] AC is the genuine operator call this slice surfaces for the first time — whether the v0 badge/severity semantics read right (the threshold-tuning decision point from draft-trigger-handling, now with live numbers to judge against).
-
-**Evidence:**
-- 10/10 tests (7 projection-rule pins incl. partial-complete routing + phantom-uid filter; 3 endpoint contract)
-- Live: 200 in 0.38s, tl_work badge = live started-work count, 404 on unknown/bad ids
-- Payload byte-shape matches the rail-197 contract 832 advised (`aef:annotate`, nodes[{uid,badge,text,severity}])
-- Projection rules in exactly one place (tools/corpus_overlay.py), carriers read from the map's live latest version
-
-## Evolution
-
-### 2026-07-27 — carriers under-determine the projection
-
-- **What changed:** the GO plan said "projection keyed on state carriers"; building it showed `state=` alone can't split tl_create/tl_parked (both captured) or tl_work/tl_human_review (both started-work) — the discriminators (horizon, active-vs-completed, focus) live in task frontmatter, not the map.
-- **Plan impact:** v0 ships a map-specific projection profile (PROFILES registry in corpus_overlay.py) instead of a generic carrier walk; generic projection would need richer carrier attrs (e.g. a filter expression) — that's a future pair-draft contract question, not a v0 blocker.
-- **Triggered:** nothing filed; noted in T-2620's artifact trail via this task.
+python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py tests/web/test_designer_overlay.py -q
+out=$(curl -sf "$(bin/fw watchtower url)/api/overlay?id=aef-task-lifecycle"); grep -q '"nodes"' <<<"$out"
+out=$(curl -sf "$(bin/fw watchtower url)/api/overlay?id=aef-task-lifecycle"); ! grep -q '"annotations"' <<<"$out"
 
 ## RCA
 
@@ -213,24 +224,29 @@ test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/api/ove
 
 ## Updates
 
-### 2026-07-27T18:01:48Z — task-created [task-create-agent]
+### 2026-07-27T20:43:16Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2629-overlay-slice-a--apioverlay-endpoint-liv.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2635-wire-shape-convergence-flip--emit-nodess.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2a3ec303
-- **Timestamp:** 2026-07-27T18:09:24Z
+- **Scan ID:** R-b7b7f359
+- **Timestamp:** 2026-07-27T20:47:52Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
-- **AC#1 (Agent)** — tools/corpus_overlay.py: `build_payload(root, map_id)` returns `{type: "aef:annotate", map, generated, nodes: [{uid, badge, text, severity}]}` implementing the IW-4 projection profile for aef-task-lif
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_overlay.py in: tools/corpus_overlay.py: `build_payload(root, map_id)` returns `{type: "aef:annotate", map, generated, nodes: [{uid, badge, text, severity}]}` impleme`
+- **AC#1 (Agent)** — tools/corpus_overlay.py emits canonical shape
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_overlay.py in: tools/corpus_overlay.py emits canonical shape`
 
-### 2026-07-27T18:09:20Z — status-update [task-update-agent]
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py tests/web/test_designer_overlay.py -q`
+
+### 2026-07-27T20:47:48Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
