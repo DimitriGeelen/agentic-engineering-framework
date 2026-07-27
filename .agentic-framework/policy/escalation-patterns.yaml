@@ -66,7 +66,14 @@ triggers:
       impact is acceptable; only the human owning those consumers can.
     match:
       - kind: ac_text
-        pattern: '\b(consumer\s+project|all\s+consumers|vendored\s+install|cross[- ](repo|project)|fleet[- ]wide|all\s+(machines|hosts|nodes))\b'
+        # T-2642: bare "all nodes" removed — it collides with non-infra domain
+        # vocabulary (832 foreign-corpus FP: "respaceColumns clusters all nodes
+        # into columns" = SVG diagram nodes, rail 240 fixture). "all nodes" now
+        # requires an infra co-occurrence (fleet/deploy/ssh/provision/machine/
+        # host/cluster-singular) on the same line, either side, 160-char window.
+        # "cluster" is singular-only: the verb "clusters" is exactly the SVG
+        # collision. "all machines"/"all hosts" stay bare — unambiguous nouns.
+        pattern: '\b(consumer\s+project|all\s+consumers|vendored\s+install|cross[- ](repo|project)|fleet[- ]wide|all\s+(machines|hosts))\b|\b(?:fleet\w*|deploy\w*|ssh|provision\w*|machines?|hosts?|cluster)\b[^\n]{0,160}\ball\s+nodes\b|\ball\s+nodes\b[^\n]{0,160}\b(?:fleet\w*|deploy\w*|ssh|provision\w*|machines?|hosts?|cluster)\b'
         description: cross-project / cross-repo / fleet language
       - kind: verification_text
         pattern: '\bfor\s+\w+\s+in.*\.framework|fleet[- ]doctor|termlink\s+remote\s+\w+\s+--all\b'
