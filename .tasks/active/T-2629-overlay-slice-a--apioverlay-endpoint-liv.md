@@ -126,7 +126,8 @@ Slice A of the T-2620 GO (operator decided 2026-07-27, /inception/T-2620): the n
 
 python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py -q
 curl -s "$(bin/fw watchtower url)/api/overlay?id=aef-task-lifecycle" -o /tmp/.t2629.json && grep -q '"aef:annotate"' /tmp/.t2629.json
-test "$(python3 -c "import json;print(next(n['badge'] for n in json.load(open('/tmp/.t2629.json'))['nodes'] if n['uid']=='tl_work'))")" = "$(grep -l '^status: started-work' .tasks/active/T-*.md | wc -l)"
+# T-2632: payload key nodes->annotations (designer 0.7.0 shipped intake shape)
+test "$(python3 -c "import json;print(next(n['badge'] for n in json.load(open('/tmp/.t2629.json'))['annotations'] if n['uid']=='tl_work'))")" = "$(grep -l '^status: started-work' .tasks/active/T-*.md | wc -l)"
 test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/api/overlay?id=no-such-map")" = "404"
 
 ## Recommendation

@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.6.0"
-sha256: "c2aceff44a2cdf91dd2dfefb8c12db1550bfed2b40a4e62cdf7b145ba3a97e57"
-bytes: 882944
+version: "0.7.0"
+sha256: "472d6a5d333ccb3c5e0d9cc5cfbb6bb9cff366c997d0362a77c3ec1856b8be04"
+bytes: 889411
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.6.0.html"
-source_tag: "designer-v0.6.0"
+source_artifact: "dist/aef-workflow-designer-0.7.0.html"
+source_tag: "designer-v0.7.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -31,6 +31,18 @@ source_origin: "ssh://git@192.168.10.201:6611/workflow-designer"
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.7.0 = 0.6.0 + (1) 832 T-259 eventDef preservation (their T-257 inception →
+#   GO): aef:eventDef survives open→save on ANY host the typed-catch override
+#   doesn't consume (startEvent, intermediateThrowEvent, link-with-target);
+#   re-emit canonical (kind + binding=""); editor can no longer manufacture
+#   emitterless typed catches (T-2551 class closed at the editor).
+#   (2) 832 T-258 annotation seam v0 (T-250 GO contract, rail 216/222):
+#   aef:ready re-handshake per render; aef:annotate intake {uid, badge<=48,
+#   tone:info|ok|warn|err, title<=200}; parent-source-gated, read-only, never
+#   serialized, thumbnail-stripped. First release where AEF's overlay wrapper
+#   (T-2630) fires end-to-end. (3) MANIFEST gains structured capabilities block
+#   (capabilities: {annotation_seam: 1}) — key conditional behavior off it at
+#   re-pin instead of byte-sniffing.
 # 0.6.0 = 0.5.0 + 832 T-255 pool right-edge resize (ZERO seam surface): page
 #   right edge draggable like a lane boundary, backed by OPTIONAL additive-only
 #   pageWidth attr on aef:workflowMeta — a floor inside contentRightEdge(),
@@ -70,7 +82,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.6.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.7.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for

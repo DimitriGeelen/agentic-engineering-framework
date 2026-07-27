@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """T-2629 (T-2620 GO, Slice A): live task-state projection onto map carrier uids.
 
-Emits the wire-ready ``aef:annotate`` payload (rail-197 contract shape):
+Emits the wire-ready ``aef:annotate`` payload in the designer 0.7.0 SHIPPED
+intake shape (T-2632; 832 T-258, protocol doc §Annotation seam at tag
+designer-v0.7.0 — supersedes the rail-197 draft field names):
 
     {"type": "aef:annotate", "map": <id>, "generated": <epoch>,
-     "nodes": [{"uid", "badge", "text", "severity"}]}
+     "annotations": [{"uid", "badge", "tone", "title"}]}
+
+``badge`` clamps at 48 chars, ``title`` at 200 (intake-side too); ``tone`` is
+one of info|ok|warn|err — our severity ladder maps info→info, warn→warn,
+alert→err. Extra top-level keys (map, generated) are ignored by the intake.
 
 Projection profile (v0, aef-task-lifecycle only — the map's ``state=`` carriers
 under-determine the projection: two ``captured`` carriers split on horizon,
@@ -122,9 +128,13 @@ def _task_lifecycle_buckets(root: Path, now: float) -> dict:
 PROFILES = {"aef-task-lifecycle": _task_lifecycle_buckets}
 
 
+_TONE = {"info": "info", "warn": "warn", "alert": "err"}
+
+
 def build_payload(root: Path, map_id: str, now: float | None = None) -> dict:
     now = now if now is not None else time.time()
-    payload = {"type": "aef:annotate", "map": map_id, "generated": int(now), "nodes": []}
+    payload = {"type": "aef:annotate", "map": map_id, "generated": int(now),
+               "annotations": []}
     profile = PROFILES.get(map_id)
     live = carriers(root, map_id)
     if not profile or not live:
@@ -141,13 +151,14 @@ def build_payload(root: Path, map_id: str, now: float | None = None) -> dict:
         if uid != "tl_archive":
             severity = ("alert" if oldest > ALERT_DAYS
                         else "warn" if oldest > WARN_DAYS else "info")
-        text = f"{len(tasks)} task(s)"
+        title = f"{len(tasks)} task(s)"
         if stuck and uid != "tl_archive":
-            text += f", {stuck} stuck >{WARN_DAYS}d (oldest {oldest:.0f}d)"
+            title += f", {stuck} stuck >{WARN_DAYS}d (oldest {oldest:.0f}d)"
         if focus and any(t.get("id") == focus for t in tasks):
-            text += f" — focus: {focus}"
-        payload["nodes"].append(
-            {"uid": uid, "badge": str(len(tasks)), "text": text, "severity": severity}
+            title += f" — focus: {focus}"
+        payload["annotations"].append(
+            {"uid": uid, "badge": str(len(tasks))[:48],
+             "tone": _TONE[severity], "title": title[:200]}
         )
     return payload
 

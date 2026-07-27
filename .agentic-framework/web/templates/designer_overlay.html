@@ -53,7 +53,7 @@
         if (!payload) return;
         frame.contentWindow.postMessage(payload, window.location.origin);
         status.textContent = "aef:annotate forwarded " +
-          new Date().toLocaleTimeString() + " (" + payload.nodes.length + " nodes)";
+          new Date().toLocaleTimeString() + " (" + payload.annotations.length + " badges)";
         status.className = "live";
       })
       .catch(function () {
