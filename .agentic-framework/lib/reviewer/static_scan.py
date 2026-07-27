@@ -844,8 +844,11 @@ _HUMAN_AC_MECHANICAL_RE = re.compile(
         # "block message names X / names the X / names current focus"
         \bnames?\s+(the\s+|current\s+|missing\s+)?\S |
         # "shows X / shows the Y / shows current Z"  (NB: taste gate suppresses
-        # "shows good", "shows rhythm" via _HUMAN_AC_TASTE_RE)
-        \bshows?\s+(the\s+|current\s+|missing\s+)?\S |
+        # "shows good", "shows rhythm" via _HUMAN_AC_TASTE_RE).
+        # Negation objects excluded (T-2641): "maps show no prompt" is a
+        # UI-absence assertion, not grep-able conformance — 832 foreign-corpus
+        # FP on their T-100 (rail 240 fixture).
+        \bshows?\s+(?!no\b)(the\s+|current\s+|missing\s+)?\S |
         # "points at X / points to X"
         \bpoints?\s+(at|to)\b |
         # "contains the override flag / contains the focus name"
@@ -881,7 +884,19 @@ _HUMAN_AC_TASTE_RE = re.compile(
         acceptable\s+feel    |
         looks?\s+good   |
         UX              |
-        cohesive
+        cohesive        |
+        # T-2641: nuisance/salience taste vocabulary — 832 foreign-corpus FP:
+        # AC line "Nudge is helpful, not naggy" carried no recognised taste
+        # token, so the Gate-2b suppression that should have saved it never
+        # fired (their T-100, rail 240 fixture).
+        naggy           |
+        \bnag(?:s|ged|ging)?\b |
+        \bsubtle\b      |
+        unobtrusive     |
+        intrusive       |
+        \bnoisy\b       |
+        distracting     |
+        jarring
     )
     """
 )
