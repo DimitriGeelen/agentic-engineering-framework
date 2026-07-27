@@ -12,10 +12,11 @@ designer-v0.7.0 — supersedes the rail-197 draft field names):
 one of info|ok|warn|err — our severity ladder maps info→info, warn→warn,
 alert→err. Extra top-level keys (map, generated) are ignored by the intake.
 
-Projection profile (v0, aef-task-lifecycle only — the map's ``state=`` carriers
-under-determine the projection: two ``captured`` carriers split on horizon,
-three ``started-work`` carriers split on focus/partial-complete, so the rules
-are map-specific and live HERE, server-side, in exactly one place — T-2620 IW-4):
+Projection profiles are map-specific and live HERE, server-side, in exactly
+one place (T-2620 IW-4) — the maps' carriers under-determine the projection
+(horizon splits, focus/partial-complete splits, decision parsing).
+
+aef-task-lifecycle (T-2629):
 
     tl_create        captured, horizon now
     tl_parked        captured, horizon next/later
@@ -24,14 +25,26 @@ are map-specific and live HERE, server-side, in exactly one place — T-2620 IW-
     tl_human_review  work-completed still in .tasks/active/ (partial-complete)
     tl_archive       work-completed in .tasks/completed/, 7-day window
 
-Severity: bucket's oldest last_update age — info, warn >7d, alert >30d
-(tl_archive always info). Thresholds are v0 defaults; tuning is the
+aef-inception-flow (T-2634 — inception tasks only, keyed to the map's
+existing uids):
+
+    if_file          captured (filed, exploration not started)
+    if_inception     started-work / issues (exploring)
+    if_gw_outcome    work-completed still in .tasks/active/ — the go/no-go
+                     decision queue (same population /approvals holds)
+    if_done_go       completed, 7-day window, body ``**Decision**: GO``
+    if_done_closed   completed, 7-day window, non-GO (NO-GO/DEFER/unparsed)
+
+Severity: bucket's oldest last_update age — info, warn >7d, alert >30d.
+Terminal buckets (tl_archive, if_done_*) are always info. Operator-queue
+buckets (if_gw_outcome) floor at warn and escalate to alert when the oldest
+waiter exceeds 7d — a non-empty decision queue is an action request, not
+ambient state. Thresholds are v0 defaults; tuning is the
 draft-trigger-handling decision point, deliberately not doctrine yet.
 
-Every emitted node is filtered against the map's live latest-version carriers
-(uid present AND carrying ``aef:meta state=``) — a map edit that removes or
-renames a carrier silently drops that badge instead of emitting a phantom uid
-(mirror of 832's unknown-uid tolerance, rail 197).
+Every emitted node is filtered against the map's live latest-version uids —
+a map edit that removes or renames a node silently drops that badge instead
+of emitting a phantom uid (mirror of 832's unknown-uid tolerance, rail 197).
 """
 
 import argparse
@@ -49,7 +62,7 @@ ARCHIVE_WINDOW_DAYS = 7
 WARN_DAYS = 7
 ALERT_DAYS = 30
 
-_FM_KEYS = re.compile(r"^(status|horizon|id):\s*(.+?)\s*$")
+_FM_KEYS = re.compile(r"^(status|horizon|id|workflow_type):\s*(.+?)\s*$")
 
 
 def _frontmatter(path: Path) -> dict:
@@ -80,7 +93,10 @@ def _age_days(ts: str, now: float):
 
 
 def carriers(root: Path, map_id: str) -> dict:
-    """{uid: state} for the map's latest version; {} when unreadable."""
+    """{uid: state-or-None} for every uid-bearing node in the map's latest
+    version; {} when unreadable. Presence (not state) is what the phantom-uid
+    filter needs — inception-flow nodes like the decision gateway carry a uid
+    but no ``aef:meta state=`` (T-2634)."""
     d = root / ".context/designer/projects" / map_id
     try:
         meta = json.loads((d / "meta.json").read_text())
@@ -88,9 +104,9 @@ def carriers(root: Path, map_id: str) -> dict:
     except (OSError, ValueError, KeyError):
         return {}
     return {
-        n.get("uid"): n["meta"]["state"]
+        n["uid"]: (n.get("meta") or {}).get("state")
         for n in spec["nodes"]
-        if n.get("uid") and (n.get("meta") or {}).get("state")
+        if n.get("uid")
     }
 
 
@@ -125,8 +141,55 @@ def _task_lifecycle_buckets(root: Path, now: float) -> dict:
     return buckets
 
 
-PROFILES = {"aef-task-lifecycle": _task_lifecycle_buckets}
+_DECISION_RE = re.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b", re.M | re.I)
 
+
+def _decision(path: Path):
+    """GO/NO-GO/DEFER from the task body's ``**Decision**:`` marker, or None."""
+    try:
+        m = _DECISION_RE.search(path.read_text(errors="replace"))
+    except OSError:
+        return None
+    return m.group(1).upper() if m else None
+
+
+def _inception_flow_buckets(root: Path, now: float) -> dict:
+    buckets = {u: [] for u in (
+        "if_file", "if_inception", "if_gw_outcome", "if_done_go", "if_done_closed"
+    )}
+    for p in (root / ".tasks/active").glob("T-*.md"):
+        f = _frontmatter(p)
+        if f.get("workflow_type") != "inception":
+            continue
+        status = f.get("status")
+        if status == "captured":
+            buckets["if_file"].append(f)
+        elif status in ("started-work", "issues"):
+            buckets["if_inception"].append(f)
+        elif status == "work-completed":
+            buckets["if_gw_outcome"].append(f)
+    for p in (root / ".tasks/completed").glob("T-*.md"):
+        f = _frontmatter(p)
+        if f.get("workflow_type") != "inception":
+            continue
+        age = _age_days(f.get("last_update", ""), now)
+        if age is None or age > ARCHIVE_WINDOW_DAYS:
+            continue
+        key = "if_done_go" if _decision(p) == "GO" else "if_done_closed"
+        buckets[key].append(f)
+    return buckets
+
+
+PROFILES = {
+    "aef-task-lifecycle": _task_lifecycle_buckets,
+    "aef-inception-flow": _inception_flow_buckets,
+}
+
+# Terminal buckets: settled history, never escalates past info.
+_TERMINAL_UIDS = {"tl_archive", "if_done_go", "if_done_closed"}
+# Operator-queue buckets: non-empty = action request. Warn floor, alert when
+# the oldest waiter exceeds WARN_DAYS.
+_QUEUE_UIDS = {"if_gw_outcome"}
 
 _TONE = {"info": "info", "warn": "warn", "alert": "err"}
 
@@ -147,12 +210,15 @@ def build_payload(root: Path, map_id: str, now: float | None = None) -> dict:
                 if a is not None]
         oldest = max(ages) if ages else 0.0
         stuck = sum(1 for a in ages if a > WARN_DAYS)
-        severity = "info"
-        if uid != "tl_archive":
+        if uid in _TERMINAL_UIDS:
+            severity = "info"
+        elif uid in _QUEUE_UIDS:
+            severity = "alert" if oldest > WARN_DAYS else "warn"
+        else:
             severity = ("alert" if oldest > ALERT_DAYS
                         else "warn" if oldest > WARN_DAYS else "info")
         title = f"{len(tasks)} task(s)"
-        if stuck and uid != "tl_archive":
+        if stuck and uid not in _TERMINAL_UIDS:
             title += f", {stuck} stuck >{WARN_DAYS}d (oldest {oldest:.0f}d)"
         if focus and any(t.get("id") == focus for t in tasks):
             title += f" — focus: {focus}"

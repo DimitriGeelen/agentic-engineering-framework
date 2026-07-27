@@ -143,3 +143,92 @@ def test_payload_carries_contract_shape(tmp_path):
     p = co.build_payload(root, "aef-task-lifecycle", now=NOW)
     assert p["type"] == "aef:annotate" and p["map"] == "aef-task-lifecycle"
     assert set(p["annotations"][0]) == {"uid", "badge", "tone", "title"}
+
+
+# ── T-2634: aef-inception-flow profile ──────────────────────────────────────
+# The real map carries uids on every node but ``aef:meta state=`` only on the
+# two end events — the gateway/subProcess nodes are deliberately state-less.
+# The synthetic map mirrors that so the uid-presence (not state) phantom
+# filter is what these tests actually exercise.
+
+def _plain_node(nid, uid):
+    return (f'<bpmn:serviceTask id="{nid}" name="{nid}"><bpmn:extensionElements>'
+            f'<aef:uid value="{uid}"/>'
+            f"</bpmn:extensionElements></bpmn:serviceTask>")
+
+
+IF_MAP = HEAD + "".join([
+    _plain_node("i1", "if_file"),
+    _plain_node("i2", "if_inception"),
+    _plain_node("i3", "if_gw_outcome"),          # no state= — like the real gateway
+    _carrier("i4", "if_done_go", "go"),
+    _carrier("i5", "if_done_closed", "closed"),
+]) + TAIL
+
+
+def _if_root(tmp_path):
+    root = _root(tmp_path)
+    proj = tmp_path / ".context/designer/projects/aef-inception-flow"
+    proj.mkdir(parents=True)
+    (proj / "meta.json").write_text('{"latest": 1}')
+    (proj / "v1.bpmn").write_text(IF_MAP)
+    return root
+
+
+def _inception(d, tid, status, decision=None, last_update="2026-07-26T12:00:00Z"):
+    body = f"# {tid}\n"
+    if decision:
+        body += f"\n## Decision\n\n**Decision**: {decision}\n"
+    (d / f"{tid}-x.md").write_text(
+        f"---\nid: {tid}\nstatus: {status}\nworkflow_type: inception\n"
+        f"last_update: '{last_update}'\n---\n{body}"
+    )
+
+
+def test_inception_profile_routes_statuses_and_decisions(tmp_path):
+    root = _if_root(tmp_path)
+    a, c = root / ".tasks/active", root / ".tasks/completed"
+    _inception(a, "T-1", "captured")
+    _inception(a, "T-2", "started-work")
+    _inception(a, "T-3", "issues")                    # folds into if_inception
+    _inception(a, "T-4", "work-completed")            # decision queue
+    _inception(c, "T-5", "work-completed", decision="GO")
+    _inception(c, "T-6", "work-completed", decision="NO-GO")
+    _inception(c, "T-7", "work-completed")            # no marker -> closed
+    n = _nodes(co.build_payload(root, "aef-inception-flow", now=NOW))
+    assert n["if_file"]["badge"] == "1"
+    assert n["if_inception"]["badge"] == "2"
+    assert n["if_gw_outcome"]["badge"] == "1"
+    assert n["if_done_go"]["badge"] == "1"
+    assert n["if_done_closed"]["badge"] == "2"
+
+
+def test_inception_profile_ignores_non_inception_tasks(tmp_path):
+    root = _if_root(tmp_path)
+    _task(root / ".tasks/active", "T-1", "captured")  # build task, no workflow_type
+    p = co.build_payload(root, "aef-inception-flow", now=NOW)
+    assert p["annotations"] == []
+
+
+def test_decision_queue_floors_at_warn_and_escalates_when_stuck(tmp_path):
+    root = _if_root(tmp_path)
+    a = root / ".tasks/active"
+    _inception(a, "T-1", "work-completed", last_update="2026-07-26T12:00:00Z")  # 1d
+    n = _nodes(co.build_payload(root, "aef-inception-flow", now=NOW))
+    assert n["if_gw_outcome"]["tone"] == "warn"       # floor, even when fresh
+    _inception(a, "T-2", "work-completed", last_update="2026-07-15T12:00:00Z")  # 12d
+    n = _nodes(co.build_payload(root, "aef-inception-flow", now=NOW))
+    assert n["if_gw_outcome"]["tone"] == "err"        # oldest > 7d
+
+
+def test_inception_terminal_buckets_stay_info_and_windowed(tmp_path):
+    root = _if_root(tmp_path)
+    c = root / ".tasks/completed"
+    _inception(c, "T-1", "work-completed", decision="GO",
+               last_update="2026-06-01T12:00:00Z")    # 56d: outside window
+    _inception(c, "T-2", "work-completed", decision="GO",
+               last_update="2026-07-15T12:00:00Z")    # 12d... also outside 7d
+    _inception(c, "T-3", "work-completed", decision="GO")  # 1d: inside
+    n = _nodes(co.build_payload(root, "aef-inception-flow", now=NOW))
+    assert n["if_done_go"]["badge"] == "1"
+    assert n["if_done_go"]["tone"] == "info"          # terminal: never escalates
