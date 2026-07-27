@@ -1,17 +1,15 @@
 ---
-id: T-2646
-name: "inception disposition-gate FP: unanchored IW/Q marker regex tokenizes prose
-  cross-refs as questions (832 G-008, rail 254)"
+id: T-2647
+name: "fw vendor payload gaps: secret-scan.sh silently skipped + orchestrator-mcp baseline missing on fresh consumers (832 G-001, rail 256)"
 description: >
-  inception disposition-gate FP: unanchored IW/Q marker regex tokenizes prose cross-refs
-  as questions (832 G-008, rail 254)
+  fw vendor payload gaps: secret-scan.sh silently skipped + orchestrator-mcp baseline missing on fresh consumers (832 G-001, rail 256)
 
 status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: []
+components: [C-004, agents/audit/orchestrator-mcp-scan.sh, agents/git/lib/hooks.sh, tests/unit/upgrade_fresh_machine_simulation.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-27T23:10:08Z
-last_update: 2026-07-27T23:16:14Z
-date_finished: 2026-07-27T23:16:14Z
+created: 2026-07-27T23:16:37Z
+last_update: 2026-07-27T23:26:28Z
+date_finished: 2026-07-27T23:26:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,73 +34,37 @@ date_finished: 2026-07-27T23:16:14Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-27T23:15:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-27T23:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2646: inception disposition-gate FP: unanchored IW/Q marker regex tokenizes prose cross-refs as questions (832 G-008, rail 254)
+# T-2647: fw vendor payload gaps: secret-scan.sh silently skipped + orchestrator-mcp baseline missing on fresh consumers (832 G-001, rail 256)
 
 ## Context
 
-832's upstream report 2/3 (their T-270 / G-008, rail 254): `check_disposition_gate` in
-`agents/task-create/update-task.sh` uses an UNANCHORED IW-N/Q-N question-marker regex,
-so a legitimate prose cross-reference inside a rationale ("see IW-2") tokenizes as a new
-empty question and `--status work-completed` falsely blocks with "under-disposed
-question". Field-hit their T-190 with all three questions fully disposed. Their fix
-(live+tested their side since Jul 18, T-203): anchor the marker to a block-start run of
--/#/* list/heading chars: `^[[:space:]]*([-#*]+[[:space:]]*)+(IW-[0-9]+|Q-?[0-9]+)`.
-They also shipped a regression test (agents/task-create/tests/test_disposition_gate.sh)
-ready to lift verbatim: awk-extracts the REAL function from update-task.sh, stubs
-ambient vars, asserts (a) disposed fixture with prose "IW-2" cross-ref PASSES and
-(b) genuinely under-disposed fixture still BLOCKS. Same evaporation risk as G-009:
-their local fix dies on next re-vendor unless it lands canonically here.
-
-**SCOPE DISCOVERY at verification:** this FP was ALREADY fixed canonically by T-2218
-RC5 (update-task.sh:786-792 — marker regex anchored to `- IW-N` / `### IW-N` / `- Q-N`
-start-of-line forms, comment documents the exact prose-mention class) AND the
-regression test already exists (tests/unit/disposition_gate.bats test 7, "prose mention
-of IW-N in rationale does NOT trigger a false flush", plus under-disposed-still-BLOCKS
-coverage in tests 2-4). 832's vendored snapshot predates T-2218 — same vintage pattern
-as their G-011. Nothing to build; deliverable = verification against their reported
-scenario + vintage answer on the rail. One honest caveat for their re-vendor: our
-canonical marker grammar does NOT recognize `* IW-N` / `# IW-N` forms (832's local fix
-accepted those) — tasks using asterisk-list question markers fail OPEN (question
-unseen), not FP.
+832's upstream report 3/3 (their T-270 / G-001, rail 256, oldest open gap in their
+register, detected 2026-06-05, cross-corroborated by fan-dashboard RCA): `fw vendor` /
+`fw init` ship incomplete payloads — advertised subsystems no-op or fail on consumers.
+Two confirmed instances their side: (F2) `orchestrator-mcp-scan.sh` expects
+`orchestrator-mcp-baseline.yaml` that vendor never copies → first audit FAILs on fresh
+consumer; (F4) `secret-scan.sh` absent from their payload → pre-commit prints
+"scanner not found … (skipping)" — a security control that SILENTLY no-ops (live their
+side today, not historical). Their proposal: extend the T-2637 fresh-machine sim with a
+payload-completeness assert (runtime-referenced files must exist in the vendored tree)
++ no-silent-skip policy on security-relevant hooks. Initial verification our side:
+secret-scan.sh IS present in our current .agentic-framework/ self-vendor (their snapshot
+may predate its addition — vintage TBD); the mcp-baseline resolves
+`FRAMEWORK_ROOT/.context/audits/` which is itself questionable (mutable state under the
+vendored tree in split-root). Scope per claim: verify vintage vs real gap, fix what is
+real, land the sim guard, define no-silent-skip for secret-scan.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Question-marker regex in check_disposition_gate anchored (T-2218 RC5 verified at update-task.sh:792) — prose IW-N/Q-N cross-references do not tokenize as questions
-- [x] Regression test coverage confirmed both directions: disposed-with-prose-crossref PASSES (bats test 7) + under-disposed still BLOCKS (bats tests 2-4) — full suite 8/8 green
-- [x] Existing disposition-gate behavior unchanged for genuine markers — same 8/8 run
-- [x] Vintage answer posted to 832 on the rail (fix already canonical; re-vendor closes their G-008; marker-grammar caveat noted) — offset 258, combined with the T-2645 G-004 answer
+- [x] F4 disposition settled: VINTAGE for the payload — secret-scan.sh is in do_vendor's `agents/` include (bin/fw:269) and has shipped in the vendored tree since 2026-05-15 (commit 850130094), predating 832's 2026-06-05 detection; their consumer simply carries an older payload. No vendor-filter change needed; re-vendor delivers it.
+- [x] No-silent-skip: pre-commit template v1.2 (agents/git/lib/hooks.sh) — missing scanner now prints an unmissable multi-line warning naming the risk + fix commands; default stays fail-open (missing scanner usually = stale payload, blocking every commit would be hostile); FW_SECRET_SCAN_STRICT=1 opts into blocking (exit 1). Local hooks reinstalled --force.
+- [x] F2 disposition settled: REAL live gap, fixed — baselines live under .context/ (excluded from vendor BY DESIGN as per-install state) and the scan hard-exit-2'd → audit FAILed with a misleading "regression" message on every fresh install. Now: missing baseline(s) → exit 3 (first-run, NOTE lines + seed guidance; verified rc=3 on empty project) and audit maps 3 → INFO. Framework-side behavior unchanged (baselines present → normal PASS/WARN path, confirmed live).
+- [x] Fresh-machine sim extended: test 6 payload-completeness (secret-scan.sh + master-guard.sh + orchestrator-mcp-scan.sh in vendored tree) + test 7 no-silent-skip pinned against the INSTALLED hook via the vendored fw's own install-hooks (loud warning + fail-open default + strict blocks). 7/7 green on committed state.
+- [x] Findings + fix state answered to 832 on the rail (their G-001 close condition) — offset 259 (F4 vintage + loud-fail, F2 fixed, sim teeth, backlog drained)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,24 +130,41 @@ unseen), not FP.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-grep -qE '^[[:space:]]*# forms only' agents/task-create/update-task.sh
-out=$(bats tests/unit/disposition_gate.bats 2>&1); echo "$out" | grep -q "ok 7 prose mention"; ! echo "$out" | grep -q "not ok"
+grep -q "SECRET SCAN IS NOT RUNNING" agents/git/lib/hooks.sh
+grep -q "FW_SECRET_SCAN_STRICT" agents/git/lib/hooks.sh
+grep -q "VERSION=1.2" .git/hooks/pre-commit
+rc=0; out=$(PROJECT_ROOT=$(mktemp -d) bash agents/audit/orchestrator-mcp-scan.sh 2>&1) || rc=$?; test "$rc" = "3"
+grep -q 'ORCH_EXIT_CAPTURED" = "3"' agents/audit/audit.sh
+out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q "ok 7"; ! echo "$out" | grep -q "not ok"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** (F4) 832's consumer printed "secret-scan: scanner not found … (skipping)"
+on EVERY commit — a security control silently no-oping for weeks. (F2) A fresh
+consumer's very first `fw audit` FAILed the orchestrator section with a misleading
+"regression — gated tool lost its check_task_governance" message, because the drift
+baseline never exists on a new install.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Two distinct causes under one reported class. F4: vintage — the scanner
+HAS shipped in the vendor payload since 2026-05-15; their payload predates it. The real
+defect was the skip semantics: one ignorable stderr line + exit 0 made the degraded
+state costless to ignore. F2: genuine design gap — the baselines live under `.context/`
+(per-install state, excluded from vendor BY DESIGN), but the scan treated
+missing-baseline as a hard error (exit 2) and audit mapped exit 2 to FAIL with a
+regression message. First-run and regression were conflated in one exit code.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Both are producer-side blindness (same class as OBS-096,
+OBS-097, T-1633): in the framework repo the baseline always exists and the scanner is
+always present, so neither degraded path ever fires where the code is developed. The
+fresh-machine sim existed (T-1635) but asserted nothing about hook/audit runtime
+dependencies until now.
+
+**Prevention:** Sim tests 6+7 (payload-completeness for runtime-referenced scripts +
+no-silent-skip contract pinned against the INSTALLED hook via the vendored fw's own
+install-hooks path). Distinct first-run exit code (3) keeps future missing-state
+conditions from masquerading as regressions. 832's fuller proposal (grep vendored
+hooks/scripts for runtime path references, assert existence generically) noted in
+OBS-097's class-prevention follow-up scope.
 
 ## Evolution
 
@@ -234,19 +213,19 @@ out=$(bats tests/unit/disposition_gate.bats 2>&1); echo "$out" | grep -q "ok 7 p
 
 ## Updates
 
-### 2026-07-27T23:10:08Z — task-created [task-create-agent]
+### 2026-07-27T23:16:37Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2646-inception-disposition-gate-fp-unanchored.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2647-fw-vendor-payload-gaps-secret-scansh-sil.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-18327738
-- **Timestamp:** 2026-07-27T23:16:16Z
+- **Scan ID:** R-78733209
+- **Timestamp:** 2026-07-27T23:27:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-### 2026-07-27T23:16:14Z — status-update [task-update-agent]
+### 2026-07-27T23:26:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2647: fw vendor payload gaps: secret-scan.sh silently skipped + orchestrator-mcp baseline missing on fresh consumers (832 G-001, rail 256)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-27T23:27:12Z
+# ============================================================================
+
+task_id: T-2647
+task_name: "fw vendor payload gaps: secret-scan.sh silently skipped + orchestrator-mcp baseline missing on fresh consumers (832 G-001, rail 256)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-27T23:16:37Z
+completed: 2026-07-27T23:26:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-28T01:23:53+02:00
+last_commit: 2026-07-28T01:23:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vendor payload teeth (832 G-001) — secret-scan missing is LOUD + FW_SECRET_SCAN_STRICT=1 blocks (pre-commit template v1.2); mcp-scan missing baseline = first-run exit 3 → audit INFO not FAIL; sim tests 6+7 payload-completeness + no-silent-skip
+
+# Key outcomes
+outcomes:
+  - 'F4 disposition settled: VINTAGE for the payload — secret-scan.sh is in do_vendor''s `agents/` include (bin/fw:269) and has shipped in the vendored tree since 2026-05-15 (commit 850130094), predating 832''s 2026-06-05 detection; their consumer simply carries an older payload. No vendor-filter change needed; re-vendor delivers it.'
+  - 'No-silent-skip: pre-commit template v1.2 (agents/git/lib/hooks.sh) — missing scanner now prints an unmissable multi-line warning naming the risk + fix commands; default stays fail-open (missing scanner usually = stale payload, blocking every commit would be hostile); FW_SECRET_SCAN_STRICT=1 opts into blocking (exit 1). Local hooks reinstalled --force.'
+  - 'F2 disposition settled: REAL live gap, fixed — baselines live under .context/ (excluded from vendor BY DESIGN as per-install state) and the scan hard-exit-2''d → audit FAILed with a misleading "regression" message on every fresh install. Now: missing baseline(s) → exit 3 (first-run, NOTE lines + seed guidance; verified rc=3 on empty project) and audit maps 3 → INFO. Framework-side behavior unchanged (baselines present → normal PASS/WARN path, confirmed live).'
+  - 'Fresh-machine sim extended: test 6 payload-completeness (secret-scan.sh + master-guard.sh + orchestrator-mcp-scan.sh in vendored tree) + test 7 no-silent-skip pinned against the INSTALLED hook via the vendored fw''s own install-hooks (loud warning + fail-open default + strict blocks). 7/7 green on committed state.'
+  - 'Findings + fix state answered to 832 on the rail (their G-001 close condition) — offset 259 (F4 vintage + loud-fail, F2 fixed, sim teeth, backlog drained)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/orchestrator-mcp-scan.sh'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/orchestrator-mcp-scan.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.tasks/completed/T-2646-inception-disposition-gate-fp-unanchored.md'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-28T01:23:53"
+    action: "T-2647: vendor payload teeth (832 G-001) — secret-scan missing is LOUD + FW_SECRET_SCAN_STRICT=1 blocks (pre-commit template v1.2); mcp-scan missing baseline = first-run exit 3 → audit INFO not FAIL; sim tests 6+7 payload-completeness + no-silent-skip"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 8
+  lines_added: 129
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2647-fw-vendor-payload-gaps-secret-scansh-sil.md
+generated_by: context-agent-hybrid

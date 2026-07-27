@@ -14,7 +14,7 @@
     },
     {
       "v": 3,
-      "note": "agent-normalize: v2 verbatim + eventDef timer/message restored on start+throw (dropped by editor save; suspected round-trip gap, to be flagged to 832). UNVERIFIED: lint/derive pending budget-gate clearance",
+      "note": "agent-normalize: v2 verbatim + eventDef timer/message restored on start+throw (dropped by pre-fix editor save). VERIFIED: lint 2-baseline + derive/canon pass (T-2620 report, re-confirmed T-2644). Round-trip gap WAS flagged to 832 (rail 201), fixed their side (their T-257, rail 218), fix live-verified T-2644: editor resave of these bytes preserves all 3 eventDefs (start/throw/catch, kinds intact; only binding=\"\" normalization + lane-height int rounding)",
       "ts": 1785092600
     }
   ],

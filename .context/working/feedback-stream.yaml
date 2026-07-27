@@ -23320,3 +23320,75 @@ scan_id: R-45db4a99
 task_id: T-2643
 payload:
   task_file: .tasks/active/T-2643-escalation-patterns-catalogueversion-sta.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T23:03:08Z'
+scan_id: R-661d7b4d
+task_id: T-2644
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T23:03:08Z'
+scan_id: R-661d7b4d
+task_id: T-2644
+payload:
+  task_file: .tasks/active/T-2644-draft-trigger-handling-v3-lint-verify--e.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T23:09:49Z'
+scan_id: R-ff086ec7
+task_id: T-2645
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T23:09:49Z'
+scan_id: R-ff086ec7
+task_id: T-2645
+payload:
+  task_file: .tasks/active/T-2645-reviewpy-syspath-uses-projectrootlib-for.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T23:16:16Z'
+scan_id: R-18327738
+task_id: T-2646
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T23:16:16Z'
+scan_id: R-18327738
+task_id: T-2646
+payload:
+  task_file: .tasks/active/T-2646-inception-disposition-gate-fp-unanchored.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T23:27:03Z'
+scan_id: R-78733209
+task_id: T-2647
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T23:27:03Z'
+scan_id: R-78733209
+task_id: T-2647
+payload:
+  task_file: .tasks/active/T-2647-fw-vendor-payload-gaps-secret-scansh-sil.md
