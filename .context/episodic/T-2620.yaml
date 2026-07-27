@@ -1,0 +1,148 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2620: Live-state overlay seam — project live task/dispatch state onto map uids
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-27T17:54:41Z
+# ============================================================================
+
+task_id: T-2620
+task_name: "Live-state overlay seam — project live task/dispatch state onto map uids"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-25T16:41:52Z
+completed: 2026-07-27T17:54:31Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-07-25T19:16:56+02:00
+last_commit: 2026-07-27T18:59:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2619 GO recorded (mirror-first + selective spec-conformance) — dispositions closed (IW-1 answered by operator decide, IW-2 dissolved, IW-5 deferred to T-2622), task completed+archived; T-2620 started with IW-1..IW-4 (state-priority, wrapper-v0 vs 832-hook, live iframe spike, feed shape) + exploration plan; dialogue log updated with GO + discussion agenda. operator decisions round 1 — IW-2 answered (ask 832 first; annotation-seam proposal posted rail 196: postMessage or window-API shapes, aef:ready, fallback stated, T-246 capabilities flag suggested); T-2621-before-T-2622 sequencing locked; dialogue log updated. dialogue round 2 — IW-1 answered w/ purpose-reframe (overlay = PROCESS-level state, task drill-down secondary); arc decision (b) recorded; T-2622 precedence target flipped to operator's cascading-detail model (MD thins to principles+pointers, maps hold detail, subordination transitional until conformance green). dialogue round 3 — drill-down model settled (generalized sub-workflows via subProcess/cross-map jumps, NEVER individual task pages; task data = observation layer firing actionable triggers); T-2623 draft mode endorsed as joint iterate+test surface w/ promotion=production release; exploration plan updated w/ trigger-model + drill-down design notes. pair-draft session opened — draft-trigger-handling v1 skeleton (19 nodes/20 flows/3 lanes incl. proposed Framework-Authority lane; observation-signal-triage-action w/ tuning feedback edge + handoff to task-lifecycle); C-001 research artifact created; lint baseline untouched (2), live-verified in served designer. pair-draft round 2 — operator v2 (layout corrected: end-column alignment, taller Human lane, edge anchors/routing hints; all 19 nodes+20 flows+uids preserved) + agent v3 normalize (eventDef timer/message restored on start+throw — editor save dropped them, catch kept typing: suspected 832 round-trip gap on start/throw carriers, creates emitterless-catch lint class; v3 UNVERIFIED pending budget-gate clearance). 832 seam answer (rail 197) captured — postMessage lean + re-ready/re-annotate contract, IW-3 superseded at shape level; pair-draft round-2 record (v2 defect report rail 201, T-2625 spin-out) in C-001 artifact; plus T-2626 designer 0.5.0 adopted (canvas nav) — pin+vendor 787e4025 sha-verified vs rail claim+MANIFEST-at-tag, served byte-identical, markers 3/3/4 match, e2e draft-trigger-handling@v3 39 data-ids exact, verdict rail 202. land T-2623 draft-mode slice — draft- id prefix convention; fw designer draft new (seed skeleton + deep-link + ntfy); gallery DRAFT badge + New draft form (CSRF) -> /designer/draft/new -> 302 editor; lint/search/explain draft exclusions (baseline 2 intact, scanned 8); stale-draft audit INFO; tests 9/9; T-2623 partial-complete -> /review/T-2623. inception complete — IW-4 settled by live spike (single /api/overlay endpoint emitting wire-ready aef:annotate; projection = frontmatter×horizon×active-vs-completed×focus crossed to v5 carrier uids, 0.49s cold, tl_human_review 183/alert oldest 46d = first render IS the troubleshoot insight); IW-3 dissolved (832 rail-197 postMessage contract); DEFER->GO w/ slices A(endpoint, no dep)/B(wrapper, waits 832 T-250)/C(trigger surface, waits operator); 832 pinged rail 210. land T-2624 read-value slice — gate refusal stderr names tl_archive + corpus explain (consumer-guarded, live-fired); /review + /inception render workflow-map links (hx-boost off, server-latest); /api/version bare ?id= resolves latest (additive, mirrors /api/thumb, 4 tests); CLAUDE.md Task Lifecycle carries map pointer + carrier uids; T-2624 partial-complete -> /review/T-2624. dialogue log — rail 210-215 (832 pinned T-257 fixtures, byte-check confirmed exact; eventDef host stance answered w/ source evidence, their IW-3 risk closed; T-250 still operator-queued, re-flagged as gating overlay v0; /api/version additive FYI); corpus prove PASS on all 5 maps (T-2602 rollout backlog closed read-only)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'dialogue log — rail 210-215 (832 pinned T-257 fixtures, byte-check confirmed exact; eventDef host stance answered w/ source evidence, their IW-3 risk closed; T-250 still operator-queued, re-flagged as gating overlay v0; /api/version additive FYI); corpus prove PASS on all 5 maps (T-2602 rollout backlog closed read-only)'
+    source: git-mined
+  - description: 'land T-2623 draft-mode slice — draft- id prefix convention; fw designer draft new (seed skeleton + deep-link + ntfy); gallery DRAFT badge + New draft form (CSRF) -> /designer/draft/new -> 302 editor; lint/search/explain draft exclusions (baseline 2 intact, scanned 8); stale-draft audit INFO; tests 9/9; T-2623 partial-complete -> /review/T-2623'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/web/blueprints/designer_api.py'
+  - '.agentic-framework/web/blueprints/designer.py'
+  - '.agentic-framework/web/templates/designer_landing.html'
+  - '.agentic-framework/web/templates/inception_detail.html'
+  - '.agentic-framework/web/templates/review.html'
+  - 'agents/audit/audit.sh'
+  - 'agents/designer/designer.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'CLAUDE.md'
+  - '.context/audits/2026-07-26.yaml'
+  - '.context/designer/projects/draft-trigger-handling/meta.json'
+  - '.context/designer/projects/draft-trigger-handling/v1.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v2.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v3.bpmn'
+  - '.context/episodic/T-2626.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - 'docs/reports/T-2619-designer-authority-model.md'
+  - 'docs/reports/T-2620-live-state-overlay-seam.md'
+  - '.fabric/components/tests-web-test_api_version_latest.yaml'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-2556-corpus-gap-no-diagram-kind-marker--docum.md'
+  - '.tasks/active/T-2620-live-state-overlay-seam--project-live-ta.md'
+  - '.tasks/active/T-2622-agent-retrieval-seam--fw-corpus-explain-.md'
+  - '.tasks/active/T-2623-corpus-draft-mode--cheap-iteration-tier-.md'
+  - '.tasks/active/T-2624-read-value-wiring--deep-link-maps-from-g.md'
+  - '.tasks/completed/T-2619-designer-authority-model--operationalise.md'
+  - '.tasks/completed/T-2626-adopt-designer-050-canvas-navigation--sy.md'
+  - 'tests/unit/test_corpus_explain.py'
+  - 'tests/web/test_api_version_latest.py'
+  - 'tools/corpus_explain.py'
+  - 'tools/corpus_lint.py'
+  - 'vendor/designer/aef-workflow-designer-0.5.0.html'
+  - 'web/blueprints/designer_api.py'
+  - 'web/blueprints/designer.py'
+  - 'web/templates/designer_landing.html'
+  - 'web/templates/inception_detail.html'
+  - 'web/templates/review.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-25T19:16:56"
+    action: "T-2620: T-2619 GO recorded (mirror-first + selective spec-conformance) — dispositions closed (IW-1 answered by operator decide, IW-2 dissolved, IW-5 deferred to T-2622), task completed+archived; T-2620 started with IW-1..IW-4 (state-priority, wrapper-v0 vs 832-hook, live iframe spike, feed shape) + exploration plan; dialogue log updated with GO + discussion agenda"
+  - time: "2026-07-25T21:04:44"
+    action: "T-2620: operator decisions round 1 — IW-2 answered (ask 832 first; annotation-seam proposal posted rail 196: postMessage or window-API shapes, aef:ready, fallback stated, T-246 capabilities flag suggested); T-2621-before-T-2622 sequencing locked; dialogue log updated"
+  - time: "2026-07-25T21:16:28"
+    action: "T-2620: dialogue round 2 — IW-1 answered w/ purpose-reframe (overlay = PROCESS-level state, task drill-down secondary); arc decision (b) recorded; T-2622 precedence target flipped to operator's cascading-detail model (MD thins to principles+pointers, maps hold detail, subordination transitional until conformance green)"
+  - time: "2026-07-25T21:29:09"
+    action: "T-2620: dialogue round 3 — drill-down model settled (generalized sub-workflows via subProcess/cross-map jumps, NEVER individual task pages; task data = observation layer firing actionable triggers); T-2623 draft mode endorsed as joint iterate+test surface w/ promotion=production release; exploration plan updated w/ trigger-model + drill-down design notes"
+  - time: "2026-07-25T21:50:24"
+    action: "T-2620: pair-draft session opened — draft-trigger-handling v1 skeleton (19 nodes/20 flows/3 lanes incl. proposed Framework-Authority lane; observation-signal-triage-action w/ tuning feedback edge + handoff to task-lifecycle); C-001 research artifact created; lint baseline untouched (2), live-verified in served designer"
+  - time: "2026-07-26T20:46:41"
+    action: "T-2620: pair-draft round 2 — operator v2 (layout corrected: end-column alignment, taller Human lane, edge anchors/routing hints; all 19 nodes+20 flows+uids preserved) + agent v3 normalize (eventDef timer/message restored on start+throw — editor save dropped them, catch kept typing: suspected 832 round-trip gap on start/throw carriers, creates emitterless-catch lint class; v3 UNVERIFIED pending budget-gate clearance)"
+  - time: "2026-07-26T21:59:39"
+    action: "T-2620: 832 seam answer (rail 197) captured — postMessage lean + re-ready/re-annotate contract, IW-3 superseded at shape level; pair-draft round-2 record (v2 defect report rail 201, T-2625 spin-out) in C-001 artifact; plus T-2626 designer 0.5.0 adopted (canvas nav) — pin+vendor 787e4025 sha-verified vs rail claim+MANIFEST-at-tag, served byte-identical, markers 3/3/4 match, e2e draft-trigger-handling@v3 39 data-ids exact, verdict rail 202"
+  - time: "2026-07-26T22:52:48"
+    action: "T-2620: land T-2623 draft-mode slice — draft- id prefix convention; fw designer draft new (seed skeleton + deep-link + ntfy); gallery DRAFT badge + New draft form (CSRF) -> /designer/draft/new -> 302 editor; lint/search/explain draft exclusions (baseline 2 intact, scanned 8); stale-draft audit INFO; tests 9/9; T-2623 partial-complete -> /review/T-2623"
+  - time: "2026-07-27T18:44:02"
+    action: "T-2620: inception complete — IW-4 settled by live spike (single /api/overlay endpoint emitting wire-ready aef:annotate; projection = frontmatter×horizon×active-vs-completed×focus crossed to v5 carrier uids, 0.49s cold, tl_human_review 183/alert oldest 46d = first render IS the troubleshoot insight); IW-3 dissolved (832 rail-197 postMessage contract); DEFER->GO w/ slices A(endpoint, no dep)/B(wrapper, waits 832 T-250)/C(trigger surface, waits operator); 832 pinged rail 210"
+  - time: "2026-07-27T18:52:38"
+    action: "T-2620: land T-2624 read-value slice — gate refusal stderr names tl_archive + corpus explain (consumer-guarded, live-fired); /review + /inception render workflow-map links (hx-boost off, server-latest); /api/version bare ?id= resolves latest (additive, mirrors /api/thumb, 4 tests); CLAUDE.md Task Lifecycle carries map pointer + carrier uids; T-2624 partial-complete -> /review/T-2624"
+  - time: "2026-07-27T18:59:27"
+    action: "T-2620: dialogue log — rail 210-215 (832 pinned T-257 fixtures, byte-check confirmed exact; eventDef host stance answered w/ source evidence, their IW-3 risk closed; T-250 still operator-queued, re-flagged as gating overlay v0; /api/version additive FYI); corpus prove PASS on all 5 maps (T-2602 rollout backlog closed read-only)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 2952 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, corpus, t2619-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2952
+  commits: 11
+  files_changed: 50
+  lines_added: 12084
+  lines_removed: 1870
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2620-live-state-overlay-seam--project-live-ta.md
+generated_by: context-agent-hybrid

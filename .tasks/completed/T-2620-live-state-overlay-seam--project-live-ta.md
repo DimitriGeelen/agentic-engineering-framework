@@ -9,17 +9,17 @@ description: >
   bridge? Serves the TROUBLESHOOT goal: 'where is T-XXXX stuck' as a picture. Dependency:
   T-2619 authority-model GO.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 arc_id: designer-corpus
 tags: [designer, corpus, t2619-slice]
-components: []
+components: [C-004, agents/designer/designer.sh, agents/task-create/update-task.sh, tests/web/test_api_version_latest.py, tools/corpus_explain.py, tools/corpus_lint.py, web/blueprints/designer_api.py, web/blueprints/designer.py, web/templates/designer_landing.html, web/templates/inception_detail.html, web/templates/review.html]
 related_tasks: [T-2619]
 created: 2026-07-25T16:41:52Z
-last_update: 2026-07-26T19:58:21Z
-date_finished:
+last_update: 2026-07-27T17:54:31Z
+date_finished: 2026-07-27T17:54:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -36,6 +36,15 @@ cost_estimate_proposed:
       tier: 4
       effort: 6
     rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-27T16:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -141,7 +150,7 @@ The corpus maps are static pictures; the operator's TROUBLESHOOT goal ("where is
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -203,7 +212,11 @@ The corpus maps are static pictures; the operator's TROUBLESHOOT goal ("where is
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: All four IW questions disposed with evidence (the original DEFER's three gaps each closed: T-2619 decided GO; 832 answered the seam question at rail 197 with a postMessage contract that needs no bundle fork; the feed spike ran live). Build is scoped, testable, reversible, and cleanly sliceable so the one external dependency (832's T-250 operator ratification) blocks only the slice that touches their contract:
+
+**Date**: 2026-07-27T17:54:30Z
 
 ## Updates
 
@@ -213,3 +226,35 @@ The corpus maps are static pictures; the operator's TROUBLESHOOT goal ("where is
 ### 2026-07-25T17:15:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-07-27T17:54:30Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** All four IW questions disposed with evidence (the original DEFER's three gaps each closed: T-2619 decided GO; 832 answered the seam question at rail 197 with a postMessage contract that needs no bundle fork; the feed spike ran live). Build is scoped, testable, reversible, and cleanly sliceable so the one external dependency (832's T-250 operator ratification) blocks only the slice that touches their contract:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-29d1547d
+- **Timestamp:** 2026-07-27T17:54:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-1752e56b
+- **Timestamp:** 2026-07-27T17:54:32Z
+- **Overall:** CONFIRMED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2620-live-state-overlay-seam.md` | file | ✓ pass |
+| `T-2619` | task | ✓ pass |
+| `T-250` | task | ✓ pass |
+| `T-2621` | task | ✓ pass |
+
+### 2026-07-27T17:54:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
