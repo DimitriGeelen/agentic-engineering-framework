@@ -1,0 +1,67 @@
+<!doctype html>
+{# T-2630 (T-2620 GO, Slice B): live-overlay wrapper. Standalone full page —
+   the editor is not an htmx partial (same reason /designer/app is standalone).
+   Contract (832 T-250 ratified, rail 216): the embedded designer emits
+   aef:ready (with uid list) to its parent after EVERY render incl. initial
+   load; this page answers each ready by fetching /api/overlay (Slice A,
+   T-2629) and forwarding the aef:annotate JSON VERBATIM via postMessage —
+   no caching, no mutation. Badge layer is the designer's side: read-only on
+   g[data-id=uid], never serialized, unknown uids silently ignored.
+   Until the pinned bundle ships aef:ready (832 T-258, next release cut) the
+   listener never fires — this page is then just the editor at server-latest. #}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Live overlay — {{ map_id }}</title>
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header {
+    display: flex; align-items: baseline; gap: 0.75rem;
+    padding: 0.4rem 0.9rem; border-bottom: 1px solid #d0d0d0;
+    background: #fafafa; font-size: 0.85rem;
+  }
+  header h1 { font-size: 0.95rem; margin: 0; }
+  header code { font-size: 0.8rem; color: #666; }
+  #overlay-status { margin-left: auto; color: #888; }
+  #overlay-status.live { color: #1a7f37; }
+  iframe { flex: 1; border: 0; width: 100%; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Live overlay</h1>
+  <code>{{ map_id }}</code>
+  <a href="/designer" style="font-size:0.8rem">corpus</a>
+  <span id="overlay-status">waiting for aef:ready — badges render once the pinned bundle ships them (832 T-258)</span>
+</header>
+<iframe id="editor" src="{{ editor_url }}" title="Workflow Designer — {{ map_id }}"></iframe>
+<script>
+(function () {
+  var MAP = {{ map_id | tojson }};
+  var frame = document.getElementById("editor");
+  var status = document.getElementById("overlay-status");
+  window.addEventListener("message", function (ev) {
+    // Same-origin + same-frame + typed: everything else is ignored.
+    if (ev.origin !== window.location.origin) return;
+    if (ev.source !== frame.contentWindow) return;
+    if (!ev.data || ev.data.type !== "aef:ready") return;
+    // Fetch fresh on EVERY ready (216 re-ready contract) and forward verbatim.
+    fetch("/api/overlay?id=" + encodeURIComponent(MAP))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (payload) {
+        if (!payload) return;
+        frame.contentWindow.postMessage(payload, window.location.origin);
+        status.textContent = "aef:annotate forwarded " +
+          new Date().toLocaleTimeString() + " (" + payload.nodes.length + " nodes)";
+        status.className = "live";
+      })
+      .catch(function () {
+        status.textContent = "overlay fetch failed — retrying on next aef:ready";
+        status.className = "";
+      });
+  });
+})();
+</script>
+</body>
+</html>

@@ -120,6 +120,14 @@
            standalone app, not an htmx partial, so full navigation is correct. #}
         <a class="corpus-open" href="{{ p.open_url }}" hx-boost="false"
            onclick="this.href=this.href.split('%26t%3D')[0]+'%26t%3D'+Date.now()">Open in editor →</a>
+        {# T-2630: wrapper exists only for maps with a server-side overlay
+           profile (tools/corpus_overlay.py PROFILES). Standalone page → no boost. #}
+        {% if p.has_overlay %}
+        {# compound class: inherits .corpus-open styling without matching the
+           per-card nonce-minter counter (test_card_links_mint_clicktime_nonce)
+           — this link carries no ?load, so no nonce belongs on it. #}
+        <a class="corpus-open corpus-overlay" href="/designer/overlay?id={{ p.id }}" hx-boost="false">Live overlay →</a>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
