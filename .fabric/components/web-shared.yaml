@@ -162,4 +162,6 @@ depended_by:
   type: called_by
 - target: web/blueprints/designer_api.py
   type: called_by
-last_enriched: '2026-07-21'
+- target: tests/unit/extract_recommendation_close_keep_open.bats
+  type: tests_by
+last_enriched: '2026-07-27'

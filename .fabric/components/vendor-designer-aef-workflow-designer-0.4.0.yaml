@@ -5,7 +5,7 @@ subsystem: unknown
 location: vendor/designer/aef-workflow-designer-0.4.0.html
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Vendored 832 designer release 0.4.0 (superseded by later pins; kept for pull-at-tag lineage). Self-contained single-file artifact — no framework imports by design"
 
 depends_on:
   # Format: - target: <relative-path>
@@ -18,3 +18,4 @@ depended_by:
 
 last_verified: 2026-07-23
 created_by: unknown
+standalone: true

@@ -5,12 +5,13 @@ subsystem: unknown
 location: tests/unit/test_corpus_overlay.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Unit pins for the overlay projection profiles (T-2629/T-2634): bucket routing, severity ladder + queue floor, phantom-uid filter, canonical wire shape"
 
 depends_on:
   # Format: - target: <relative-path>
   #          type: calls|reads|writes|triggers|renders
-  []
+  - target: tools/corpus_overlay.py
+    type: calls
 
 depended_by:
   # Same format as depends_on — filled by enrich.py or manually

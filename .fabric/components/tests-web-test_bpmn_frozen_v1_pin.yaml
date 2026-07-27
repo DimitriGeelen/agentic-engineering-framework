@@ -3,20 +3,26 @@ name: test_bpmn_frozen_v1_pin
 type: test
 subsystem: testing
 location: tests/web/test_bpmn_frozen_v1_pin.py
-tags: [designer, offpage-seam, 832, frozen-v1, kind-marker]
-
-purpose: "T-2556 AC3 absent-marker half: frozen-v1 byte-pin of the compile→stage→reconcile pipeline on a NO-kind-marker diagram (832's byte-pinned pair-draft-3 fixture). Pins manifest sha256 golden + all-NEW reconcile so the post-ratification kind= consumption legs (compile stamps kind:, promote refuses documentation) provably keep unmarked diagrams byte-identical. Harness-first pattern (T-2579/T-2590)."
-
+tags:
+- designer
+- offpage-seam
+- 832
+- frozen-v1
+- kind-marker
+purpose: 'T-2556 AC3 absent-marker half: frozen-v1 byte-pin of the compile→stage→reconcile pipeline on a NO-kind-marker diagram
+  (832''s byte-pinned pair-draft-3 fixture). Pins manifest sha256 golden + all-NEW reconcile so the post-ratification kind=
+  consumption legs (compile stamps kind:, promote refuses documentation) provably keep unmarked diagrams byte-identical. Harness-first
+  pattern (T-2579/T-2590).'
 depends_on:
-  - target: tools/bpmn_to_tasks.py
-    type: calls
-  - target: tools/bpmn_promote.py
-    type: calls
-  - target: tests/fixtures/832/pair-draft-3.bpmn
-    type: reads
-
-depended_by:
-  []
-
+- target: tools/bpmn_to_tasks.py
+  type: calls
+- target: tools/bpmn_promote.py
+  type: calls
+- target: tests/fixtures/832/pair-draft-3.bpmn
+  type: reads
+- target: tests/fixtures/832/pair-draft-3.bpmn
+  type: calls
+depended_by: []
 last_verified: 2026-07-21
 created_by: T-2556
+last_enriched: '2026-07-27'

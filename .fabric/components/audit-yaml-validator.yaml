@@ -58,6 +58,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: tools/corpus_conformance.py
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -132,4 +134,4 @@ depended_by:
   type: called_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-07-07'
+last_enriched: '2026-07-27'

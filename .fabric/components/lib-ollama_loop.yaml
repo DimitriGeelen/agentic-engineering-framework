@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: agents/termlink/termlink.sh
   type: calls
+- target: lib/termlink_worker.py
+  type: calls
 depended_by:
 - target: tests/unit/test_ollama_loop.py
   type: called_by
@@ -15,4 +17,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-09
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-07-27'

@@ -38,7 +38,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-07-27'
 depended_by:
 - target: C-004
   type: called_by
@@ -101,6 +101,8 @@ depended_by:
 - target: tests/unit/recommendation_gate_build_partial.bats
   type: called_by
 - target: tests/unit/recommendation_gate_build_partial.bats
+  type: tests_by
+- target: tests/unit/render_surface_review_state_dup_human.bats
   type: tests_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md

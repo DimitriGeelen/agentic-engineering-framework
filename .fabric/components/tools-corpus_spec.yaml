@@ -4,17 +4,17 @@ type: script
 subsystem: unknown
 location: tools/corpus_spec.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/designer/designer.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: tools/corpus_lint.py
+  type: uses_by
 last_verified: 2026-07-22
 created_by: unknown
+last_enriched: '2026-07-27'

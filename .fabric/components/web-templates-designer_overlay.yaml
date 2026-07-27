@@ -5,7 +5,7 @@ subsystem: watchtower
 location: web/templates/designer_overlay.html
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Standalone overlay wrapper page (T-2630, T-250 seam): full-page iframe of the pinned designer + aef:ready listener that forwards /api/overlay payloads via postMessage"
 
 depends_on:
   # Format: - target: <relative-path>
@@ -14,7 +14,8 @@ depends_on:
 
 depended_by:
   # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: web/blueprints/designer.py
+    type: renders
 
 last_verified: 2026-07-27
 created_by: unknown

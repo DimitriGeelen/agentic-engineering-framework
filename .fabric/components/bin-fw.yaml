@@ -151,9 +151,15 @@ depends_on:
   type: calls
 - target: agents/bpmn/bpmn.sh
   type: calls
+- target: tools/corpus_lint.py
+  type: calls
+- target: tools/corpus_explain.py
+  type: calls
+- target: tools/corpus_spec.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-21'
+last_enriched: '2026-07-27'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -774,4 +780,10 @@ depended_by:
 - target: tools/bpmn_promote.py
   type: called_by
 - target: web/designer_registry.py
+  type: called_by
+- target: tests/unit/designer_sync_from_tag.bats
+  type: tests_by
+- target: tools/corpus_spec.py
+  type: called_by
+- target: web/blueprints/designer.py
   type: called_by

@@ -21,6 +21,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_bvp_estimator.py
   type: called_by
+- target: tests/unit/test_bvp_estimator_v_alias.py
+  type: tests_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-07-27'

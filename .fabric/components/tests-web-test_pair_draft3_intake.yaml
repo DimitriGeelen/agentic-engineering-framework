@@ -3,20 +3,25 @@ name: test_pair_draft3_intake
 type: script
 subsystem: testing
 location: tests/web/test_pair_draft3_intake.py
-tags: [designer, offpage-seam, 832, fixture-pin]
-
-purpose: "T-2590/T-2591 drop-point test for 832's pair-draft #3 byte-fixture: sha-verifies tests/fixtures/832/pair-draft-3.bpmn against its .sha256 pin, compiles via Pass-5, and asserts contract-v0 three-leg taxonomy (RESOLVED silent / GHOST claim-WARN / LEGACY legacy-WARN); skips cleanly while the fixture is absent, with a synthetic three-leg sibling keeping the assertions proven"
-
+tags:
+- designer
+- offpage-seam
+- 832
+- fixture-pin
+purpose: 'T-2590/T-2591 drop-point test for 832''s pair-draft #3 byte-fixture: sha-verifies tests/fixtures/832/pair-draft-3.bpmn
+  against its .sha256 pin, compiles via Pass-5, and asserts contract-v0 three-leg taxonomy (RESOLVED silent / GHOST claim-WARN
+  / LEGACY legacy-WARN); skips cleanly while the fixture is absent, with a synthetic three-leg sibling keeping the assertions
+  proven'
 depends_on:
-  - target: tools/bpmn_to_tasks.py
-    type: calls
-  - target: tests/web/test_designer_registry_ghosts.py
-    type: calls
-  - target: tests/fixtures/832/pair-draft-3.bpmn
-    type: reads
-
-depended_by:
-  []
-
+- target: tools/bpmn_to_tasks.py
+  type: calls
+- target: tests/web/test_designer_registry_ghosts.py
+  type: calls
+- target: tests/fixtures/832/pair-draft-3.bpmn
+  type: reads
+- target: tests/fixtures/832/pair-draft-3.bpmn
+  type: calls
+depended_by: []
 last_verified: 2026-07-21
 created_by: T-2590
+last_enriched: '2026-07-27'

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2639: fabric enrich sweep — clear 12/824 no-edge cards audit WARN
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-27T21:14:25Z
+# ============================================================================
+
+task_id: T-2639
+task_name: "fabric enrich sweep — clear 12/824 no-edge cards audit WARN"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-27T21:07:03Z
+completed: 2026-07-27T21:14:16Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-27T23:13:37+02:00
+last_commit: 2026-07-27T23:13:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrich sweep — recurring 12/824 no-edge WARN cleared to 0/823. fw fabric enrich: 29 cards/49 edges; 3 residuals hand-resolved honest (test_corpus_overlay→depends corpus_overlay.py, designer_overlay.html←rendered-by designer.py, vendored 0.4.0 standalone:true per T-1754)
+
+# Key outcomes
+outcomes:
+  - '`fw fabric enrich` run — 29 cards enriched, 49 edges added (23 forward,'
+  - 'WARN fully cleared: 3 residuals hand-resolved with honest metadata —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-100196-safe-go-live-path-reconciling-fw-go-live.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-27T23:13:37"
+    action: "T-2639: fabric enrich sweep — recurring 12/824 no-edge WARN cleared to 0/823. fw fabric enrich: 29 cards/49 edges; 3 residuals hand-resolved honest (test_corpus_overlay→depends corpus_overlay.py, designer_overlay.html←rendered-by designer.py, vendored 0.4.0 standalone:true per T-1754)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 1
+  lines_added: 1
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2639-fabric-enrich-sweep--clear-12824-no-edge.md
+generated_by: context-agent-hybrid

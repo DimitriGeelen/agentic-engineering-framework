@@ -3,17 +3,21 @@ name: ollama_thin_loop
 type: script
 subsystem: framework-core
 location: lib/ollama_thin_loop.py
-tags: [dispatch, ollama, worker]
-
-purpose: "OllamaThinLoopWorker — direct /v1/messages tool loop for small local models (worker_kind=ollama-thin-loop). Ported from tools/ollama-tool-loop.py after T-2592 proved claude -p drowns 8B models (hermes3 0/9 via claude -p vs 92% here). Sandboxed Read/Bash/Grep, claude-p-shaped events so spawn/_classify_status/harness consume it unchanged."
-
-depends_on: []
-
+tags:
+- dispatch
+- ollama
+- worker
+purpose: OllamaThinLoopWorker — direct /v1/messages tool loop for small local models (worker_kind=ollama-thin-loop). Ported
+  from tools/ollama-tool-loop.py after T-2592 proved claude -p drowns 8B models (hermes3 0/9 via claude -p vs 92% here). Sandboxed
+  Read/Bash/Grep, claude-p-shaped events so spawn/_classify_status/harness consume it unchanged.
+depends_on:
+- target: tools/ollama-tool-loop.py
+  type: calls
 depended_by:
 - target: lib/spawn.py
   type: calls
 - target: tests/unit/test_ollama_thin_loop.py
   type: reads
-
 last_verified: 2026-07-21
 created_by: T-2592
+last_enriched: '2026-07-27'

@@ -26,6 +26,8 @@ depends_on:
   type: registers
 - target: web/blueprints/bvp.py
   type: calls
+- target: web/blueprints/bvp.py
+  type: registers
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -44,6 +46,8 @@ depended_by:
   type: called_by
 - target: web/shared.py
   type: called_by
+- target: tests/unit/approvals_close_ready_arcs.bats
+  type: tests_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-07-27'

@@ -16,6 +16,12 @@ depends_on:
   type: renders
 - target: web/blueprints/designer_api.py
   type: registers
+- target: web/templates/designer_landing.html
+  type: renders
+- target: bin/fw
+  type: calls
+- target: tools/corpus_overlay.py
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -23,4 +29,4 @@ depended_by:
   type: registered_by
 last_verified: 2026-07-10
 created_by: unknown
-last_enriched: '2026-07-21'
+last_enriched: '2026-07-27'

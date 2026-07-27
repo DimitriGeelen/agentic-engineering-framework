@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: agents/termlink/bvp-estimator/estimator.py
   type: calls
+- target: lib/notify.sh
+  type: calls
 depended_by:
 - target: lib/resolver.py
   type: called_by
@@ -19,4 +21,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-07-27'
