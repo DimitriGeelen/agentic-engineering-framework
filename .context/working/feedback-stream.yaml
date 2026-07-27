@@ -23284,3 +23284,21 @@ scan_id: R-5963af5f
 task_id: T-2642
 payload:
   task_file: .tasks/active/T-2642-reviewer-fp-cross-project-blast-domain-v.md
+---
+kind: scan_emitted
+timestamp: '2026-07-27T22:13:32Z'
+scan_id: R-04b87873
+task_id: T-2637
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-27T22:13:32Z'
+scan_id: R-04b87873
+task_id: T-2637
+payload:
+  task_file: .tasks/active/T-2637-vendor-policy-catalogues-with-reviewer-c.md

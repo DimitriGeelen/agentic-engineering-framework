@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2637: vendor policy catalogues with reviewer code (OBS-096, 832 G-011)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-27T22:13:41Z
+# ============================================================================
+
+task_id: T-2637
+task_name: "vendor policy catalogues with reviewer code (OBS-096, 832 G-011)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-27T20:59:16Z
+completed: 2026-07-27T22:13:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-27T23:00:01+02:00
+last_commit: 2026-07-28T00:03:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-096 registered — vendored consumers get lib/reviewer code without policy/ catalogue data, fw reviewer crashes (832 G-011 origin, rail 229); fix task captured horizon:later (vendor the two catalogue YAMLs + fresh-machine-sim reviewer smoke-run). scope narrowed — T-2329 already vendors both reviewer catalogues (.agentic-framework/policy/ exists, push-gate fresh); OBS-096 prevention updated to PARTIAL; remaining legs = verify-upgrade-delivers + fresh-machine reviewer smoke-run
+
+# Key outcomes
+outcomes:
+  - 'upgrade_fresh_machine_simulation.bats gains a test asserting the synthetic consumer''s vendored tree contains `.agentic-framework/policy/anti-patterns.yaml` + `escalation-patterns.yaml` (the code-requires-data pairing that G-011 hit)'
+  - 'The same harness smoke-runs the reviewer catalogue-resolution path in the scrubbed env (`env -i` consumer context) and it finds the vendored catalogues — a missing-policy vendor set fails the simulation (negative-checked: policy/ removed → exit 3 "catalogue not found")'
+  - 'Full bats file green; no existing simulation test regressed (5/5 ok)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'OBS-096 registered — vendored consumers get lib/reviewer code without policy/ catalogue data, fw reviewer crashes (832 G-011 origin, rail 229); fix task captured horizon:later (vendor the two catalogue YAMLs + fresh-machine-sim reviewer smoke-run)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/concerns.yaml'
+  - '.tasks/active/T-2637-vendor-policy-catalogues-with-reviewer-c.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-27T23:00:01"
+    action: "T-2637: OBS-096 registered — vendored consumers get lib/reviewer code without policy/ catalogue data, fw reviewer crashes (832 G-011 origin, rail 229); fix task captured horizon:later (vendor the two catalogue YAMLs + fresh-machine-sim reviewer smoke-run)"
+  - time: "2026-07-28T00:03:53"
+    action: "T-2637: scope narrowed — T-2329 already vendors both reviewer catalogues (.agentic-framework/policy/ exists, push-gate fresh); OBS-096 prevention updated to PARTIAL; remaining legs = verify-upgrade-delivers + fresh-machine reviewer smoke-run"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 73
+  commits: 2
+  files_changed: 2
+  lines_added: 207
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2637-vendor-policy-catalogues-with-reviewer-c.md
+generated_by: context-agent-hybrid

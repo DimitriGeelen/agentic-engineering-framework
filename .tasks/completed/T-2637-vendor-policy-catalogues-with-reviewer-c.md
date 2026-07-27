@@ -9,10 +9,10 @@ description: >
   upgrade_fresh_machine_simulation.bats with a fw reviewer smoke-run so any
   future code-requires-data split fails the simulation. See OBS-096.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-27T20:59:16Z
-last_update: '2026-07-27T21:00:09Z'
-date_finished:
+last_update: 2026-07-27T22:13:06Z
+date_finished: 2026-07-27T22:13:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -73,14 +73,26 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832's G-011 (rail 229): their vendored consumer had lib/reviewer/* but no
+policy/ catalogues — `fw reviewer` crashed on first invocation. Discovery at
+narrowing time (2026-07-28): T-2329 already added `policy` to the vendor
+includes and both catalogue YAMLs to `_self_vendor_policy`, and the
+self-vendor push gate keeps `.agentic-framework/policy/` fresh — 832's
+snapshot simply predates T-2329. What was never added is the *detection*
+leg: the fresh-machine simulation (T-1633/T-1635 harness) never exercises
+`fw reviewer`, so a future code-requires-data split (new catalogue file, new
+data dir) would ship silently again. This task closes that: a reviewer
+smoke-run inside the scrubbed-env consumer simulation, asserting both
+catalogues are present in the synthetic consumer's vendored tree and the
+reviewer resolves them (not the framework developer's policy/).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] upgrade_fresh_machine_simulation.bats gains a test asserting the synthetic consumer's vendored tree contains `.agentic-framework/policy/anti-patterns.yaml` + `escalation-patterns.yaml` (the code-requires-data pairing that G-011 hit)
+- [x] The same harness smoke-runs the reviewer catalogue-resolution path in the scrubbed env (`env -i` consumer context) and it finds the vendored catalogues — a missing-policy vendor set fails the simulation (negative-checked: policy/ removed → exit 3 "catalogue not found")
+- [x] Full bats file green; no existing simulation test regressed (5/5 ok)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,7 +158,31 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q "ok 5" && ! echo "$out" | grep -q "not ok"
+grep -q "G-011 pairing" tests/unit/upgrade_fresh_machine_simulation.bats
+grep -q "G-011 guard" tests/unit/upgrade_fresh_machine_simulation.bats
+
 ## RCA
+
+**Symptom:** 832's first-ever `fw reviewer` invocation on their vendored
+consumer crashed exit 3 ("catalogue not found") — lib/reviewer/* shipped,
+policy/ catalogue data did not (their G-011, rail 229).
+
+**Root cause:** code and the data it hard-requires shipped on different
+criteria in the vendor set. T-2329 later paired them (policy/ in vendor
+includes + _self_vendor_policy + push gate), but no *detection* leg
+existed: the fresh-machine simulation never exercised the reviewer, so the
+class could silently regress with any new code-requires-data split.
+
+**Why structurally allowed:** the T-1633/T-1635 simulation asserted the
+upgrade *mechanics* (version, dry-run, auto-clone plan) but never invoked a
+data-dependent subsystem — the missing-data path had zero coverage.
+
+**Prevention:** simulation tests 4+5 pin the pairing (catalogues present in
+the synthetic consumer's vendored tree) AND smoke-run `fw reviewer` in the
+scrubbed env asserting exit≠3 / no "catalogue not found" / a verdict line.
+Negative-checked manually: removing policy/ from the consumer reproduces
+exit 3 with the exact error — the guard demonstrably bites.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -213,3 +249,24 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2637-vendor-policy-catalogues-with-reviewer-c.md
 - **Context:** Initial task creation
+
+### 2026-07-27T22:10:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-04b87873
+- **Timestamp:** 2026-07-27T22:13:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — upgrade_fresh_machine_simulation.bats gains a test asserting the synthetic consumer's vendored tree contains `.agentic-framework/policy/anti-patterns.yaml` + `escalation-patterns.yaml` (the code-requi
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agentic-framework/policy/anti-patterns.yaml in: upgrade_fresh_machine_simulation.bats gains a test asserting the synthetic consumer's vendored tree contains `.agentic-framework/policy/anti-patterns.`
+
+### 2026-07-27T22:13:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

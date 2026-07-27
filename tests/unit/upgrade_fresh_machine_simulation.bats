@@ -109,6 +109,60 @@ fresh_run() {
     [[ "$output" == *"would clone"* ]] || [[ "$output" == *"would re-invoke"* ]]
 }
 
+# ── T-2637 (OBS-096, 832 G-011): reviewer code-requires-data guard ──────────
+# 832's vendored consumer had lib/reviewer/* but no policy/ catalogues —
+# `fw reviewer` crashed on first invocation (exit 3, "catalogue not found").
+# T-2329 added policy/ to the vendor set; these tests make the pairing a
+# simulation invariant so a future code-requires-data split (new catalogue
+# file, new data dir) fails here instead of shipping silently.
+
+@test "fresh-machine: vendored tree ships reviewer catalogues alongside lib/reviewer (G-011 pairing)" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/proj"
+    make_upstream_bare "$upstream_bare"
+    make_fresh_consumer "$proj" "$upstream_bare"
+
+    [ -d "$proj/.agentic-framework/lib/reviewer" ]
+    [ -f "$proj/.agentic-framework/policy/anti-patterns.yaml" ]
+    [ -f "$proj/.agentic-framework/policy/escalation-patterns.yaml" ]
+}
+
+@test "fresh-machine: fw reviewer smoke-run resolves vendored catalogues in scrubbed env (G-011 guard)" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/proj"
+    make_upstream_bare "$upstream_bare"
+    make_fresh_consumer "$proj" "$upstream_bare"
+
+    mkdir -p "$proj/.tasks/active"
+    cat > "$proj/.tasks/active/T-9999-smoke.md" <<'TASK'
+---
+id: T-9999
+name: reviewer-smoke
+status: started-work
+workflow_type: build
+owner: agent
+---
+
+# T-9999: reviewer smoke
+
+## Acceptance Criteria
+
+### Agent
+- [x] File exists
+
+## Verification
+
+test -f .framework.yaml
+TASK
+
+    run fresh_run "$proj" reviewer T-9999 --no-write
+    # exit 3 = "catalogue not found" — the exact G-011 failure this guards
+    [ "$status" -ne 3 ]
+    [[ "$output" != *"catalogue not found"* ]]
+    # a resolved catalogue produces a verdict line
+    [[ "$output" == *"PASS"* ]] || [[ "$output" == *"Overall"* ]] || [[ "$output" == *"verdict"* ]]
+}
+
 # NOTE on live (non-dry-run) upgrade: the full vendor copy takes ~8 minutes
 # (~65MB rsync of lib/ + docs/ + components regen) — impractical for a unit
 # test gate. The "framework -> consumer" path beyond re-exec is already
