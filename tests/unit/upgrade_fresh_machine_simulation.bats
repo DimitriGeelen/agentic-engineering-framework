@@ -163,6 +163,53 @@ TASK
     [[ "$output" == *"PASS"* ]] || [[ "$output" == *"Overall"* ]] || [[ "$output" == *"verdict"* ]]
 }
 
+# ── T-2647 (832 G-001): vendor payload completeness + no-silent-skip ────────
+# 832's consumer (their F4) committed for weeks with "secret-scan: scanner not
+# found (skipping)" — a security control that silently no-ops. Two guards:
+# payload-completeness (runtime-referenced files exist in the vendored tree)
+# and the no-silent-skip contract (missing scanner warns LOUDLY, strict mode
+# blocks) pinned against the INSTALLED hook, not the template.
+
+@test "fresh-machine: vendored tree ships runtime-referenced git/audit scripts (G-001 payload completeness)" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/proj"
+    make_upstream_bare "$upstream_bare"
+    make_fresh_consumer "$proj" "$upstream_bare"
+
+    # Referenced by the installed pre-commit hook at runtime:
+    [ -f "$proj/.agentic-framework/agents/git/lib/secret-scan.sh" ]
+    [ -f "$proj/.agentic-framework/agents/git/lib/master-guard.sh" ]
+    # Referenced by audit's orchestrator section at runtime:
+    [ -f "$proj/.agentic-framework/agents/audit/orchestrator-mcp-scan.sh" ]
+}
+
+@test "fresh-machine: missing secret-scan is LOUD and strict mode blocks (G-001 no-silent-skip)" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/proj"
+    make_upstream_bare "$upstream_bare"
+    make_fresh_consumer "$proj" "$upstream_bare"
+
+    # Extract the pre-commit template exactly as install-hooks writes it, into
+    # a git repo whose vendored payload LACKS the scanner (the 832 field state).
+    (cd "$proj" && git init --quiet . 2>/dev/null || true)
+    # Install hooks via the vendored fw (consumer-facing path under test).
+    run fresh_run "$proj" git install-hooks
+    [ -f "$proj/.git/hooks/pre-commit" ]
+
+    rm -f "$proj/.agentic-framework/agents/git/lib/secret-scan.sh"
+
+    # Default: fail-open but UNMISSABLE (multi-line warning naming the risk).
+    run bash -c "cd '$proj' && env -i PATH='/usr/local/bin:/usr/bin:/bin' HOME='$TEST_TEMP_DIR/home' bash .git/hooks/pre-commit"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"SECRET SCAN IS NOT RUNNING"* ]]
+    [[ "$output" == *"WITHOUT secret scanning"* ]]
+
+    # Strict: blocks.
+    run bash -c "cd '$proj' && env -i PATH='/usr/local/bin:/usr/bin:/bin' HOME='$TEST_TEMP_DIR/home' FW_SECRET_SCAN_STRICT=1 bash .git/hooks/pre-commit"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Commit blocked"* ]]
+}
+
 # NOTE on live (non-dry-run) upgrade: the full vendor copy takes ~8 minutes
 # (~65MB rsync of lib/ + docs/ + components regen) — impractical for a unit
 # test gate. The "framework -> consumer" path beyond re-exec is already

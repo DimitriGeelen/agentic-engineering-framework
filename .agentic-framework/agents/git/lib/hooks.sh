@@ -271,7 +271,7 @@ HOOK_EOF
 # pre-commit hook - Master-merge-only guard (T-2396) + Secret Scan (T-1844)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.1
+# VERSION=1.2
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -302,8 +302,25 @@ SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
 # vendor copies landed without the exec bit (T-2052 found this hot, 2026-06-08).
 # -f catches the only failure that actually matters here: file missing.
 if [ ! -f "$SCANNER" ]; then
-    # Scanner missing — fail open with a clear message, don't block legitimate work.
-    echo "secret-scan: scanner not found at $SCANNER (skipping)" >&2
+    # T-2647 (832 G-001/F4): a security control that silently no-ops is worse
+    # than one that is absent — the old one-line "(skipping)" note was ignorable
+    # and consumers committed for weeks with no secret scanning. Default stays
+    # fail-open (a missing scanner usually means a stale vendored payload, and
+    # blocking every commit on it would be hostile), but the warning is now
+    # unmissable and names the fix. FW_SECRET_SCAN_STRICT=1 opts into blocking.
+    echo "" >&2
+    echo "WARNING: SECRET SCAN IS NOT RUNNING — scanner missing:" >&2
+    echo "  $SCANNER" >&2
+    echo "Every commit is going through WITHOUT secret scanning." >&2
+    echo "Fix: refresh the vendored framework payload:" >&2
+    echo "  cd $PROJECT_ROOT && .agentic-framework/bin/fw upgrade" >&2
+    echo "  (framework repo: bin/fw vendor self)" >&2
+    echo "Strict mode: set FW_SECRET_SCAN_STRICT=1 to make this block commits." >&2
+    echo "" >&2
+    if [ "${FW_SECRET_SCAN_STRICT:-0}" = "1" ]; then
+        echo "ERROR: Commit blocked — FW_SECRET_SCAN_STRICT=1 and scanner missing." >&2
+        exit 1
+    fi
     exit 0
 fi
 

@@ -44,16 +44,21 @@ TERMLINK_AGENT="${FW_TERMLINK_AGENT:-framework-agent}"
 FRAMEWORK_BASELINE="$FRAMEWORK_ROOT/.context/audits/framework-mcp-baseline.yaml"
 FRAMEWORK_MCP_MANIFEST="${FW_MCP_MANIFEST:-$FRAMEWORK_ROOT/agents/mcp/framework-mcp-manifest.json}"
 
-if [ ! -f "$BASELINE" ]; then
-  echo "ERROR: baseline not found at $BASELINE" >&2
-  echo "Run T-1646 setup: file should ship with the framework." >&2
-  exit 2
-fi
-
-if [ ! -f "$FRAMEWORK_BASELINE" ]; then
-  echo "ERROR: framework-mcp baseline not found at $FRAMEWORK_BASELINE" >&2
-  echo "Run T-2260 activation: strip .draft from framework-mcp-baseline.yaml.draft." >&2
-  exit 2
+# T-2647 (832 G-001/F2): the baselines live under .context/ — per-install STATE
+# that `fw vendor` excludes by design. On a fresh consumer neither file exists,
+# and the old `exit 2` here made the FIRST audit FAIL with a misleading
+# "regression" message. Missing baseline is a first-run condition, not a
+# regression: exit 3 (distinct) so the audit surfaces it as INFO with seed
+# guidance. NOTE: --apply cannot seed from scratch (the updater reads the
+# existing baseline); seeding needs a framework-checkout copy or manual
+# creation until a --seed leg exists.
+if [ ! -f "$BASELINE" ] || [ ! -f "$FRAMEWORK_BASELINE" ]; then
+  [ -f "$BASELINE" ] || echo "NOTE: no orchestrator-mcp baseline at $BASELINE (first run on this install?)" >&2
+  [ -f "$FRAMEWORK_BASELINE" ] || echo "NOTE: no framework-mcp baseline at $FRAMEWORK_BASELINE (first run on this install?)" >&2
+  echo "Drift scan skipped — nothing to diff against yet. Seed by copying the" >&2
+  echo "baseline(s) from a framework checkout's .context/audits/ (or create per" >&2
+  echo "T-1646 / T-2260), then re-run." >&2
+  exit 3
 fi
 
 # Probe /opt/termlink — prefer direct read (no TermLink stale-buffer issues), fall

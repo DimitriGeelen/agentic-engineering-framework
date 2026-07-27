@@ -4789,6 +4789,12 @@ else
             fail "Orchestrator-arc MCP scan: regression — gated tool lost its check_task_governance" \
                  "${ORCH_ERRS:-see $ORCH_LATEST}" \
                  "Restore the gate or update baseline if removal was intentional (commit body must explain)"
+        elif [ "$ORCH_EXIT_CAPTURED" = "3" ]; then
+            # T-2647 (832 G-001/F2): first-run condition — baseline state never
+            # established on this install (fresh consumer; .context is excluded
+            # from the vendor payload by design). INFO, not FAIL: nothing to
+            # diff against is not a regression.
+            info "Orchestrator-arc MCP scan: no baseline on this install yet — drift scan skipped (seed from a framework checkout's .context/audits/ to enable)"
         else
             warn "Orchestrator-arc MCP scan: probe failed (exit $ORCH_EXIT_CAPTURED)" \
                  "Cannot reach /opt/termlink via direct read or termlink interact" \
