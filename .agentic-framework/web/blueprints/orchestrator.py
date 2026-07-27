@@ -32,7 +32,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
 
 bp = Blueprint("orchestrator", __name__)
 
@@ -429,7 +429,9 @@ def _workflow_coverage() -> dict:
     can show an empty state instead of crashing.
     """
     import sys
-    lib_dir = PROJECT_ROOT / "lib"
+    # T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution
+    # silently disabled this panel in split-root consumers (fallback masked it).
+    lib_dir = FRAMEWORK_ROOT / "lib"
     if str(lib_dir) not in sys.path:
         sys.path.insert(0, str(lib_dir))
     try:
