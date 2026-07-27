@@ -2,10 +2,12 @@
 id: T-2637
 name: "vendor policy catalogues with reviewer code (OBS-096, 832 G-011)"
 description: >
-  fw vendor/upgrade ships lib/reviewer/* without policy/ catalogue data — fw reviewer
-  crashes on every vendored consumer (832 G-011, rail 229). Fix: add policy/anti-patterns.yaml
-  + escalation-patterns.yaml to the vendor file set; extend upgrade_fresh_machine_simulation.bats
-  with a fw reviewer smoke-run. See OBS-096 in .context/concerns.yaml
+  SCOPE NARROWED 2026-07-28: T-2329 already vendors both catalogue YAMLs
+  (.agentic-framework/policy/ exists; self-vendor push gate keeps them fresh) —
+  832's G-011 snapshot predates it. Remaining: (1) verify fw upgrade on a legacy
+  consumer actually delivers the catalogues; (2) extend
+  upgrade_fresh_machine_simulation.bats with a fw reviewer smoke-run so any
+  future code-requires-data split fails the simulation. See OBS-096.
 
 status: captured
 workflow_type: build
