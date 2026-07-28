@@ -153,3 +153,30 @@ territory), T-2553 (arc-014 grill), T-2652 (conformance-rail program).
 | T-2670 | inception (rec **DEFER**) | later | Lock 4 Workflow Fabric queryable index |
 
 Gap 7 (P2 consumption weak) is already tracked by active T-2622 — not duplicated.
+
+## 7. SD register — FORMALLY DISPOSED (T-2663 GO, operator via Watchtower, 2026-07-28T17:10Z)
+
+Operator ratified **mirror+rails as the Process layer** (corpus + conformance rails +
+overlay; code is the enforced machine, maps must conform). Per-SD dispositions
+inherited from that keystone:
+
+| SD | Item | Disposition |
+|----|------|-------------|
+| SD-1 | Core concepts identity | **GO** — Governance / Value / Process confirmed; Process = corpus + conformance rails + overlay, mirror-direction |
+| SD-2 | Own layer vs cross-cutting | Disposed by delivery — own surface (designer corpus + `tools/conformance-registry.yaml`), not a repo-root subsystem |
+| SD-3 | Arc↔workflow relation, `workflow:` task binding | **Parked** — mirror direction has no instance semantics; revives only with T-2668 |
+| SD-4 | Normative vs descriptive | Disposed **inverted** — code is normative, maps are descriptive-must-conform; T-2619 transitional rule (prose wins) applies only to unrailed maps |
+| SD-5 | `workflows/` at repo root | **Retired** — designer store (`.context/designer/projects/`) is the home; single stored representation (T-2608) |
+| SD-6 | Ratified immutability | Disposed as delivered — gated promote + version bump + uuid permanence + sha pinning |
+| SD-7 | Arc-scoped BVP driver | Superseded — arc-014's proposed drivers (vocabulary-coverage / corpus-fidelity / seam-fluidity) await approval on /arcs/designer-corpus |
+| SD-8 | Enforcement ladder advisory→guided→strict | **Retired in original form** — replaced by reverse conformance (daily audited rails); guided/strict parked in T-2668 |
+| SD-9 | callActivity node type | Disposed as delivered — collapsed subProcess + cross-map jumps (T-2620 round 3) |
+| SD-10 | Instance state home + cage | **Parked** with T-2668 (Q10 autonomy-integrity constraint noted there) |
+| SD-11 | humanTouchpoint spec | Partial as delivered — lane→owner, O-1/O-3 veto; richer spec only on demonstrated need |
+| SD-12 | Application-practice scope | Retired for now — dogfood only; application rollout unclaimed |
+| SD-13 | Component Fabric linkage | **Parked** — zero `components:` refs today; revisit inside T-2670's fabric question |
+| SD-14 | Pseudocode lens | Routed to T-2669 (rec NO-GO — no read-pull yet; operator may override) |
+| SD-15 | Workflow Fabric | Routed to T-2670 (rec DEFER — no concrete cross-map query need yet) |
+
+With this table the package's register status ("ALL OPEN") is closed: every item is
+now GO-ratified, retired, superseded, or parked in a named governed task.

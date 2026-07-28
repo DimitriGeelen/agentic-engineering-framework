@@ -2354,3 +2354,45 @@ decisions:
     date: 2026-07-26
     task: T-2621
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-339
+    decision: "4 fixed to FRAMEWORK_ROOT (designer.py pin + draft-new fw path, approvals.py batch fw path, cron.py FW_BIN); 4 allowlisted (bvp.py POLICY_PATH+RUBRIC_PATH and resolver.py _BVP_POLICY — per-project policy INSTANCES per the T-2229 `fw bvp driver --init` seeding model, parity with bvp.sh's own PROJECT_ROOT reads; core.py /project agents listing — see next decision)."
+    scope: project
+    date: 2026-07-28
+    task: T-2648
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-340
+    decision: "keep PROJECT_ROOT with an inline `OBS-097-allow:` annotation."
+    scope: project
+    date: 2026-07-28
+    task: T-2648
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-341
+    decision: "allowlist by hit-line content (the two policy-instance filenames) plus an explicit `OBS-097-allow:` in-source annotation that must carry a stated reason."
+    scope: project
+    date: 2026-07-28
+    task: T-2648
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-342
+    decision: "boot the app in a subprocess with PROJECT_ROOT env pointing at a synthetic consumer."
+    scope: project
+    date: 2026-07-28
+    task: T-2650
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-343
+    decision: "minimal relabel (`paused` / `success / error` on the existing two branches) + clarifying notes on the gateway (ADR-0004 classification) and outcome node (error converges into backprop; no structural fork before it)"
+    scope: project
+    date: 2026-07-28
+    task: T-2660
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-344
+    decision: "Process layer ratified as mirror+rails: corpus maps + conformance rails + live overlay ARE the AEF Process layer; code is the enforced machine and maps must conform (reverse of the 2026-07-02 package's guided-mode direction). SD-1..15 register disposed per docs/reports/T-2662-workflow-process-layer-package-review.md §7. Guided mode parked (T-2668), lenses NO-GO-rec (T-2669), fabric index deferred (T-2670)."
+    scope: project
+    date: 2026-07-28
+    task: T-2663
+    rationale: "Not specified"
