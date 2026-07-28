@@ -140,6 +140,22 @@ EOF
     [[ "$output" == "FAIL 1"* ]]
 }
 
+@test "shell-idiom ratchet (T-2649): PROJECT_ROOT framework-asset sites in shell stay at the reviewed baseline" {
+    # T-2649 dispositioned all shell sites resolving framework-owned dirs via
+    # $PROJECT_ROOT: 12 remain, each kept WITH a reason (framework-repo
+    # detection guards, documented fallback chains, per-project policy
+    # instances, documented design choices) — see T-2649 ## Decisions.
+    # The `FRAMEWORK_ROOT:-` exclusion skips the sanctioned fallback shape.
+    # If this count RISES: a new unreviewed site landed — fix it or disposition
+    # it in a task and update this baseline in the same commit.
+    # If it FALLS: a kept site was fixed/removed — just update the baseline.
+    count=$(grep -rnE '\$\{?PROJECT_ROOT\}?/(lib|agents|policy|web)/' \
+                "$REPO_ROOT/agents/" "$REPO_ROOT/lib/" "$REPO_ROOT/bin/fw" 2>/dev/null \
+            | grep -v ".agentic-framework" \
+            | grep -cv "FRAMEWORK_ROOT:-")
+    [ "$count" -eq 12 ]
+}
+
 @test "drift tripwire: audit.sh carries the same pattern core as this replica" {
     # The source file holds the shell-escaped form of the regex, so pin the
     # two invariant cores that define the check: the resolution prefix and

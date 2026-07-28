@@ -587,8 +587,8 @@ arc_tag() {
         echo "Task $tid already has tag $arc_tag — skipping task edit"
     else
         # update-task.sh handles the tag append safely
-        if [ -x "$PROJECT_ROOT/agents/task-create/update-task.sh" ]; then
-            (cd "$PROJECT_ROOT" && ./agents/task-create/update-task.sh "$tid" --add-tag "$arc_tag" >/dev/null) \
+        if [ -x "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/agents/task-create/update-task.sh" ]; then
+            (cd "$PROJECT_ROOT" && "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/agents/task-create/update-task.sh" "$tid" --add-tag "$arc_tag" >/dev/null) \
                 || { echo "Error: update-task.sh failed adding tag" >&2; return 1; }
         else
             python3 - "$tf" "$arc_tag" <<'PY'

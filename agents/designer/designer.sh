@@ -26,7 +26,9 @@
 set -euo pipefail
 
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
-PIN_FILE="$PROJECT_ROOT/policy/designer-pin.yaml"
+# T-2649 (OBS-097): pin is FRAMEWORK-owned (vendored for consumers) —
+# FRAMEWORK_ROOT-first, PROJECT_ROOT fallback for direct invocation.
+PIN_FILE="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/policy/designer-pin.yaml"
 
 _c_red=$'\033[0;31m'; _c_grn=$'\033[0;32m'; _c_yel=$'\033[0;33m'; _c_bold=$'\033[1m'; _c_off=$'\033[0m'
 
@@ -307,9 +309,9 @@ SPEC
     rm -f "$tmp_spec"
     echo "${_c_grn}draft created:${_c_off} $name"
     echo "  edit: $link"
-    if ! type fw_notify >/dev/null 2>&1 && [ -f "$PROJECT_ROOT/lib/notify.sh" ]; then
+    if ! type fw_notify >/dev/null 2>&1 && [ -f "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/notify.sh" ]; then
         # shellcheck disable=SC1091
-        . "$PROJECT_ROOT/lib/notify.sh" 2>/dev/null || true
+        . "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/notify.sh" 2>/dev/null || true
     fi
     if type fw_notify >/dev/null 2>&1; then
         fw_notify "Draft session: $name" "Editor ready — open to start the pair-draft" \

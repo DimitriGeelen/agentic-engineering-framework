@@ -1492,7 +1492,7 @@ else:
     local _pp_src="$PROJECT_ROOT/policy/proxy-policy.yaml"
     if [ -f "$_pp_src" ]; then
         local _pp_state
-        _pp_state=$(PYTHONPATH="$PROJECT_ROOT" python3 -c "import lib.govd_policy as p; print(p.drift_status('$_pp_src')['state'])" 2>/dev/null || echo "err")
+        _pp_state=$(PYTHONPATH="$FRAMEWORK_ROOT" python3 -c "import lib.govd_policy as p; print(p.drift_status('$_pp_src')['state'])" 2>/dev/null || echo "err")
         case "$_pp_state" in
             ok)            echo -e "  ${GREEN}OK${NC}  proxy-policy deployed copy matches source" ;;
             drift)         echo -e "  ${YELLOW}WARN${NC}  proxy-policy.yaml edited but not installed"
@@ -2486,10 +2486,13 @@ do_policy() {
     local _src="${AEF_PROXY_POLICY:-$PROJECT_ROOT/policy/proxy-policy.yaml}"
     case "$action" in
         emit)
-            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" emit --source "$_src" "$@"
+            # T-2649 (OBS-097): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution
+            # dangles in split-root consumers (source _src stays PROJECT_ROOT: the
+            # proxy-policy is a per-project governance instance).
+            PYTHONPATH="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/govd_policy.py" emit --source "$_src" "$@"
             ;;
         status)
-            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" status --source "$_src" "$@"
+            PYTHONPATH="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/govd_policy.py" status --source "$_src" "$@"
             ;;
         install)
             # Lock-1 Part 1 boundary: the agent must NOT deploy its own governance policy.
@@ -2505,7 +2508,7 @@ do_policy() {
                 echo "  Run: sudo fw policy install" >&2
                 return 3
             fi
-            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" install --source "$_src" "$@"
+            PYTHONPATH="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/govd_policy.py" install --source "$_src" "$@"
             ;;
         ""|-h|--help|help)
             echo "Usage: fw policy {emit|status|install}"
@@ -5085,7 +5088,10 @@ EOF
         # T-2265 (arc-010 Slice 2): framework MCP server lifecycle + manifest.
         _mcp_pid_file="$PROJECT_ROOT/.context/working/framework-mcp.pid"
         _mcp_log_file="$PROJECT_ROOT/.context/working/framework-mcp.log"
-        _mcp_manifest="$PROJECT_ROOT/agents/mcp/framework-mcp-manifest.json"
+        # T-2649 (OBS-097): manifest + fragment are framework ASSETS —
+        # manifest.py emits relative to framework_root() (T-2459), so read
+        # them from the same tree, not PROJECT_ROOT.
+        _mcp_manifest="$AGENTS_DIR/mcp/framework-mcp-manifest.json"
         _mcp_server="$AGENTS_DIR/mcp/framework_mcp_server.py"
         _mcp_emitter="$AGENTS_DIR/mcp/manifest.py"
         case "$mcp_subcmd" in
@@ -5107,7 +5113,7 @@ EOF
             wire-fragment)
                 # T-2272: print the .mcp.json fragment operator copies into project .mcp.json.
                 # Contract: agents/mcp/framework-mcp.mcp-fragment.json (static, version-controlled).
-                _frag="$PROJECT_ROOT/agents/mcp/framework-mcp.mcp-fragment.json"
+                _frag="$AGENTS_DIR/mcp/framework-mcp.mcp-fragment.json"
                 if [ ! -f "$_frag" ]; then
                     echo "fragment file missing: $_frag" >&2
                     exit 2

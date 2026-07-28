@@ -54,9 +54,9 @@ watchtower_state="stopped"
 wt_url=$(cat "$PROJECT_ROOT/.context/working/watchtower.url" 2>/dev/null || true)
 if [ -z "$wt_url" ]; then
     wt_port=""
-    if [ -f "$PROJECT_ROOT/lib/config.sh" ]; then
+    if [ -f "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/config.sh" ]; then
         # shellcheck disable=SC1091
-        . "$PROJECT_ROOT/lib/config.sh" 2>/dev/null || true
+        . "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/config.sh" 2>/dev/null || true
         wt_port=$(fw_config "PORT" "" 2>/dev/null || echo "")
     fi
     wt_url="http://localhost:${wt_port:-3000}"
