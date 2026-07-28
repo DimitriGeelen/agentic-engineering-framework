@@ -29,7 +29,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:18:54Z
-last_update: 2026-07-28T16:39:05Z
+last_update: 2026-07-28T17:28:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -132,6 +132,16 @@ per unit time on `check-tier0.sh` / the disposition gateway than the 2026-02→0
 baseline above. If a comparable regression rate recurs after this task ships,
 P4 is disproven for this process — that is the falsifiable prediction, not a
 rhetorical hedge.
+
+## Pair-Round State (2026-07-28)
+
+- Round OPENED with 832 + operator at rail 287; draft raw bytes served at
+  `/api/version?id=draft-tier0-escalation` (shared at rail 290).
+- **832-side pairing article exists:** their corpus already holds
+  `tier0-escalation.workflow.yaml` (their T-025, with friction note) — designated
+  the 832-side pairing article at rail 285/291. 832 may pre-validate our draft via
+  `validate-workflow.py` + mapping-v1 gateway-label checks (their 282 offer) and
+  post findings in-thread; fold any findings into the draft before promotion.
 
 ## Acceptance Criteria
 

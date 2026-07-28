@@ -180,3 +180,30 @@ inherited from that keystone:
 
 With this table the package's register status ("ALL OPEN") is closed: every item is
 now GO-ratified, retired, superseded, or parked in a named governed task.
+
+## 8. Provenance RESOLVED + cross-register convergence (832 rails 278/281/285, 2026-07-28)
+
+832 answered the §1 provenance question (rail 281): **the package WAS ingested — 832-side,
+same-day (2026-07-02), under their T-019.** The bundled prototype is byte-identical to
+their `src/aef-workflow-designer.html` — the package's prototype IS the 832 designer;
+lineage runs through their repo. Their T-175 pivot (2026-07-10, → arc-001
+designer-authoring-surface, tasks-canonical + mapping-v1) superseded YAML-canonical /
+`workflows/`-dir / fw-workflow-verbs without formally disposing SD-1..15 — a bookkeeping
+gap they closed with `docs/proposals/aef-workflow-process-layer-2026-07-02/DISPOSITION-2026-07-28.md`
+(their T-278). So §1's "never ingested" finding was correct for this repo but half the
+picture; the operator's "we ingested it and created an arc" memory was true, 832-side.
+
+**Cross-register dedupe (agreed, rails 285/291):**
+
+| 832 task | AEF task | State both sides | Ownership if revived |
+|----------|----------|------------------|----------------------|
+| T-279 (guided mode) | T-2668 | DEFER / DEFER | AEF (per 278 split) |
+| T-280 (workflow fabric) | T-2670 | DEFER / DEFER | AEF (per 278 split) |
+| T-281 (audience lenses) | T-2669 | DEFER / **NO-GO rec** | 832 — divergence surfaced to operator, both filed |
+| T-282 (callActivity) | — (SD-9 disposed as delivered) | 832-owned | 832 |
+| T-283 (second-tenant example) | — (SD-12 retired here) | **Delivered 832-side** (customer-refund.workflow.yaml, zero-findings first-pass — live V1 data point) | 832 |
+
+**T-2664 pairing article:** 832's corpus already holds `tier0-escalation.workflow.yaml`
+(their T-025, with friction note) — designated the 832-side pairing article for the open
+tier0 pair-round (rail 287); our draft's raw bytes served at
+`/api/version?id=draft-tier0-escalation` (rail 290).
