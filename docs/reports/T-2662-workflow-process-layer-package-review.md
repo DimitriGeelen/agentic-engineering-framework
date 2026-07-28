@@ -138,3 +138,18 @@ direction). Actionable residue:
 
 Related: T-2619 (designer authority model — the de-facto retrospective on this
 territory), T-2553 (arc-014 grill), T-2652 (conformance-rail program).
+
+## 6. Gap tasks filed (2026-07-28, operator-directed, all `arc_id: designer-corpus`)
+
+| Task | Type | Horizon | Gap covered |
+|------|------|---------|-------------|
+| T-2663 | inception (rec **GO**) | now | SD-1..15 register disposition — ratify mirror+rails as the Process layer |
+| T-2664 | build | next | tier0-escalation map + rail — the P4 falsifiability test |
+| T-2665 | build | later | exception-handling map + rail (gated on T-2664 outcome) |
+| T-2666 | build | later | task-creation map + rail (gated on T-2664 outcome) |
+| T-2667 | build | later | knowledge-leveling map + rail (gated on T-2664 outcome) |
+| T-2668 | inception (rec **DEFER**) | later | Lock 6 guided-mode procedural enforcement (P3) |
+| T-2669 | inception (rec **NO-GO**) | later | P1 audience lenses (functional/technical/pseudocode) |
+| T-2670 | inception (rec **DEFER**) | later | Lock 4 Workflow Fabric queryable index |
+
+Gap 7 (P2 consumption weak) is already tracked by active T-2622 — not duplicated.
