@@ -163,6 +163,34 @@ rhetorical hedge.
      T-2557 "decision semantics not representable in task skeletons" WARN —
      same expected class.
 
+## Authority-Collapse Diff vs 832 Pairing Article (2026-07-28, rails 294/295)
+
+832's `tier0-escalation.workflow.yaml` (their T-025, rendered to BPMN, 11 nodes /
+12 flows) vs our `draft-tier0-escalation` v1 (16 nodes / 16 flows). Same
+authority triple, inverted lane stacking (theirs human/framework/agent, ours
+framework/agent/human — presentational only).
+
+**Convergent (independent authorship — itself a P4 data point, 832 concurs):**
+resume topology is identical in both: approve loops back to re-enter the scan,
+approval token consumed at a dedicated pre-auth gateway; disposition gateway
+branches {approved, rejected}-equivalent; boolean gateways labeled yes/no.
+
+**Deltas (ours richer by 5 nodes, each baseline-motivated):**
+1. **Dedupe/idempotency sentinel** (`fw_2_dedupe`) — ours only. Encodes the
+   T-1506/T-1508 regression (duplicate hook registration consumed the one-time
+   approval). The map node exists BECAUSE of the Cluster-A baseline.
+2. **Notify leg** (`fw_5_notify` push + Watchtower) — ours only. The 11-task
+   Cluster-B UX churn lives exactly there; explicit map presence is the P4 bet.
+3. **Audit asymmetry** (`fw_6_audit` on approved leg ONLY) — ours explicit;
+   theirs folds "log approval" into consume. Same semantics, less visible.
+4. **Rejection-side write** — ours has `hum_2_reject` (write resolved(rejected)
+   + feedback, mirrors approvals.py decide_approval which writes resolved files
+   for BOTH outcomes); theirs goes straight to abandoned end with NO
+   resolved(rejected) write — **a code-truth gap in their article** (their own
+   taste note debated our node's lane, but their map omits the write entirely).
+5. **Node typing vocabulary** — theirs `script` for framework nodes, ours
+   `service`. Standard-alignment observation for the eventual shared vocabulary.
+
 ## Acceptance Criteria
 
 ### Agent

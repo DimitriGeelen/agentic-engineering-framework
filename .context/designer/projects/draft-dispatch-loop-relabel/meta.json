@@ -6,9 +6,14 @@
       "v": 1,
       "note": "T-2660 pair-round seed: gateway relabel to enforced outcome vocab (rail T-2659 divergence)",
       "ts": 1785238485
+    },
+    {
+      "v": 2,
+      "note": "agent-normalize per 832 pre-validation (rail 294, W-XML-NODE-UNASSIGNED): agt_7_handoff_back added to agent-lane flowNodeRefs (was in no lane). 832 verdict: promotion candidate after this fix. Round-trip derive/generate/diff IDENTICAL re-verified.",
+      "ts": 1785261324
     }
   ],
   "uuid": "c4486aad-0a0f-49aa-9362-d4651b8c1efd",
-  "latest": 1,
-  "updated": 1785238485
+  "latest": 2,
+  "updated": 1785261324
 }
