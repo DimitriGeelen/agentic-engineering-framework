@@ -339,6 +339,13 @@ do_vendor() {
         .tasks/templates
         FRAMEWORK.md
         metrics.sh
+        # T-2656 (832 T-276 finding 2): secret-scan DATA files. The scanner
+        # script ships in agents/ but reads its pattern catalogue from the
+        # project root with an .agentic-framework/ fallback — without these
+        # two, a vendored consumer's scanner runs patternless (silent no-op
+        # one layer below the T-2647 missing-scanner class).
+        .secret-scan-patterns
+        .secret-scan-allowlist
     )
 
     # What to exclude within copied dirs

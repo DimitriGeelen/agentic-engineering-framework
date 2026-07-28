@@ -1,14 +1,10 @@
 ---
-id: T-2656
-name: "Vendor payload: .secret-scan-patterns missing from do_vendor includes - patternless
-  scanner exits 0 (832 T-276 finding 2)"
+id: T-2661
+name: "self-vendor root-data class + patternless sim tests (T-2656 follow-up)"
 description: >
-  832 finding 2: .secret-scan-patterns (repo root) not in do_vendor includes; vendored
-  scanner runs PATTERNLESS and exits 0 - silent-no-op class one layer below T-2647.
-  Fix: add to includes; extend fresh-machine sim test 6 payload-completeness to script
-  DATA files and test 7 to present-but-644 + patternless cases.
+  T-2656 shipped do_vendor includes (.secret-scan-patterns/.secret-scan-allowlist) + loud patternless warning + direct mirror copy. Structural remainder: (1) _self_vendor_root_data() helper class in lib/upgrade.sh (siblings: libs/templates/policy/shim/agents/web) + audit check_self_vendor_drift parity so the mirrored data files cannot silently drift; (2) fresh-machine sim test 6 extension to script DATA files (patterns present in vendored tree) + test 7 present-but-patternless case (scanner runs, unmissable WARNING fires, FW_SECRET_SCAN_STRICT=1 blocks). GOTCHA: sim tests run against COMMITTED bytes — commit source before verifying. Interplay w/ T-2657: includes added here do not reach consumers via fw update until the chicken-and-egg re-exec lands.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -25,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-28T10:21:29Z
-last_update: 2026-07-28T11:48:59Z
-date_finished:
+created: 2026-07-28T11:51:29Z
+last_update: 2026-07-28T11:51:29Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,56 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-28T10:30:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-28T10:30:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2656: Vendor payload: .secret-scan-patterns missing from do_vendor includes - patternless scanner exits 0 (832 T-276 finding 2)
+# T-2661: self-vendor root-data class + patternless sim tests (T-2656 follow-up)
 
 ## Context
 
-832 T-276 re-vendor finding 2 (rail 269): `.secret-scan-patterns` (repo root)
-is not in `do_vendor`'s include set, so a vendored consumer's scanner runs
-PATTERNLESS and exits 0 — silent-no-op one layer below the T-2647 missing-scanner
-class (scanner present, data absent). Fix: add the patterns file (and check the
-sibling `.secret-scan-allowlist`) to the vendor includes; verify how the scanner
-resolves the patterns path on a consumer; extend fresh-machine sim coverage
-(script DATA files; present-but-patternless) if budget allows — else file the
-sim extension as follow-up.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Resolution confirmed: `_secret_scan_config_dir` (secret-scan.sh:44-56) prefers project root, falls back to `.agentic-framework/` — so vendoring the data files is picked up with zero scanner change. Absent-file behavior WAS a one-line stderr note + `return 0` (secret-scan.sh:82) — the ignorable-note class T-2647 condemned for the missing-scanner case
-- [x] `.secret-scan-patterns` + `.secret-scan-allowlist` (same class) added to `do_vendor` includes; `fw vendor --dry-run` lists both. NB `fw vendor self` uses six separate `_self_vendor_*` class helpers with no root-data class — files mirrored into `.agentic-framework/` directly this task; the structural sync class is T-2661
-- [x] Patternless now fails LOUD (T-2647 contract parity): unmissable multi-line WARNING naming the fix, fail-open by default, `FW_SECRET_SCAN_STRICT=1` blocks (verified: non-strict rc=0 + warning fires; strict rc=1; patterns-present path rc=0 unchanged)
-- [x] Sim-test extension + `_self_vendor_root_data()` class + audit drift parity filed as **T-2661** (rationale: sim tests verify committed bytes + the helper class needs audit-side parity — bounded follow-up, not a rushed tail at urgent budget)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -121,14 +81,6 @@ sim extension as follow-up.
 -->
 
 ## Verification
-
-out=$(bin/fw vendor --dry-run 2>&1); echo "$out" | grep -q "secret-scan-patterns"
-out=$(bin/fw vendor --dry-run 2>&1); echo "$out" | grep -q "secret-scan-allowlist"
-test -f .agentic-framework/.secret-scan-patterns
-test -f .agentic-framework/.secret-scan-allowlist
-rc=0; out=$(FW_SECRET_SCAN_STRICT=1 bash -c 'source agents/git/lib/secret-scan.sh; echo x:1:y | _secret_scan_run_patterns /nonexistent ""' 2>&1) || rc=$?; [ "$rc" -eq 1 ]
-out=$(bash -c 'source agents/git/lib/secret-scan.sh; echo x:1:y | _secret_scan_run_patterns /nonexistent ""' 2>&1); echo "$out" | grep -q "WITHOUT secret pattern"
-ls .tasks/active/ | grep -q T-2661
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -224,10 +176,7 @@ ls .tasks/active/ | grep -q T-2661
 
 ## Updates
 
-### 2026-07-28T10:21:29Z — task-created [task-create-agent]
+### 2026-07-28T11:51:29Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2656-vendor-payload-secret-scan-patterns-miss.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2661-self-vendor-root-data-class--patternless.md
 - **Context:** Initial task creation
-
-### 2026-07-28T11:48:59Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

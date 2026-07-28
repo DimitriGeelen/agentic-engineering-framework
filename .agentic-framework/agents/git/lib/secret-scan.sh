@@ -79,7 +79,27 @@ _secret_scan_is_allowed() {
 # emits hits to stdout. Returns 0 if no hits, 1 if any hit.
 _secret_scan_run_patterns() {
     local patterns_file="$1" allow_re="$2"
-    [ ! -f "$patterns_file" ] && { echo "secret-scan: no patterns file ($patterns_file)" >&2; return 0; }
+    # T-2656 (832 T-276 finding 2, sibling of T-2647): a scanner that runs
+    # with no pattern catalogue is a silent no-op — scanner present, data
+    # absent. Same contract as the missing-scanner case: unmissable warning,
+    # fail-open by default, FW_SECRET_SCAN_STRICT=1 opts into blocking.
+    if [ ! -f "$patterns_file" ]; then
+        {
+            echo ""
+            echo "WARNING: SECRET SCAN IS RUNNING WITHOUT PATTERNS — catalogue missing:"
+            echo "  $patterns_file"
+            echo "Every commit is going through WITHOUT secret pattern matching."
+            echo "Fix: refresh the vendored framework payload (ships .secret-scan-patterns):"
+            echo "  .agentic-framework/bin/fw upgrade   (framework repo: bin/fw vendor self)"
+            echo "Strict mode: set FW_SECRET_SCAN_STRICT=1 to make this block commits."
+            echo ""
+        } >&2
+        if [ "${FW_SECRET_SCAN_STRICT:-0}" = "1" ]; then
+            echo "ERROR: Commit blocked — FW_SECRET_SCAN_STRICT=1 and patterns catalogue missing." >&2
+            return 1
+        fi
+        return 0
+    fi
 
     local _hits=0
     local _input
