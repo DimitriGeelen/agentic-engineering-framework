@@ -4,12 +4,12 @@ name: "dispatch-loop conformance rail (T-2652 slice 3)"
 description: >
   dispatch-loop conformance rail (T-2652 slice 3)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_corpus_conformance_registry.py, tools/conformance-registry.yaml, tools/corpus_conformance.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T11:19:12Z
-last_update: 2026-07-28T11:19:12Z
-date_finished: null
+last_update: 2026-07-28T11:27:04Z
+date_finished: 2026-07-28T11:27:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -219,3 +219,20 @@ python3 -c "import yaml; yaml.safe_load(open('tools/conformance-registry.yaml'))
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2659-dispatch-loop-conformance-rail-t-2652-sl.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-17820f13
+- **Timestamp:** 2026-07-28T11:27:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `rc=0; out=$(python3 tools/corpus_conformance.py --map aef-dispatch-loop 2>&1) || rc=$?; [ "$rc" -eq 1 ] && echo "$out" | grep -q "code-allows/map-lacks:    error"`
+
+### 2026-07-28T11:27:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
