@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2660: seed pair-draft: dispatch-loop relabel round (rail T-2659 divergence)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T11:36:02Z
+# ============================================================================
+
+task_id: T-2660
+task_name: "seed pair-draft: dispatch-loop relabel round (rail T-2659 divergence)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T11:31:30Z
+completed: 2026-07-28T11:35:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-28T13:35:52+02:00
+last_commit: 2026-07-28T13:35:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pair-draft seed — draft-dispatch-loop-relabel v1 (rail T-2659 divergence round): gateway branches relabeled to enforced ADR-0004 outcome vocab (yes—paused / no—success/error), NO error fork (error converges on backprop in code — a drawn fork would be map fiction, recorded in Decisions); rail dry-run GREEN {error,paused,success} w/ promotion-time regex; canonical untouched (v1, sha-pinned); gallery-listed
+
+# Key outcomes
+outcomes:
+  - 'Draft `draft-dispatch-loop-relabel` exists in the designer store (saved v1 via /api/save), seeded from canonical `aef-dispatch-loop` v1 with branches relabeled `yes — paused` / `no — success / error`. **Design deviation from filing, deliberate:** NO separate error end-path — reading the machine showed error and success outcomes both converge on outcome evaluate+backprop (error rows recorded, resolver exits 2 after); a structural error fork would misrepresent the code. Option (a)+notes is the honest shape; recorded in Decisions'
+  - 'Draft round-trips: `parse_map` accepts stored bytes (10 nodes / 10 flows); listed in gallery /api/list'
+  - 'Rail dry-run against draft bytes GREEN with promotion-time entry (branch regex `— ([a-z_/ ]+)` + split `/`): PASS `{error, paused, success}`'
+  - 'Canonical untouched: v1 only, md5 631da974f428c07d592a804dd4b6c233 unchanged; canonical rail still DIVERGENT (pin test enforces)'
+  - 'Deep-link + next-step recorded: open http://192.168.10.107:3001/designer → `draft-dispatch-loop-relabel`; operator (and 832, proposed at rail 274) iterate/approve → follow-up task promotes draft bytes to `aef-dispatch-loop` v2, widens the registry branch regex, flips `test_live_dispatch_loop_divergent_pin` to a PASS pin'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pair-draft seed — draft-dispatch-loop-relabel v1 (rail T-2659 divergence round): gateway branches relabeled to enforced ADR-0004 outcome vocab (yes—paused / no—success/error), NO error fork (error converges on backprop in code — a drawn fork would be map fiction, recorded in Decisions); rail dry-run GREEN {error,paused,success} w/ promotion-time regex; canonical untouched (v1, sha-pinned); gallery-listed'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-28 — no separate error end-path in the seed'
+    chose: 'minimal relabel (`paused` / `success / error` on the existing two branches) + clarifying notes on the gateway (ADR-0004 classification) and outcome node (error converges into backprop; no structural fork before it)'
+    rationale: '`lib/spawn.py _classify_status` + resolver run show error outcomes flow through the same outcome evaluate+backprop node as success (rows recorded for both; error additionally exits 2). A drawn error fork before backprop would assert structure the code doesn''t have — the rail exists to prevent exactly that class of map fiction'
+    alternatives_rejected: ['option (b) (dedicated error branch/end event) from the rail-274 proposal — structurally dishonest for this machine; noted in the draft''s XML comment so the pair-round sees the reasoning']
+  - decision: 'Human'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/designer/projects/draft-dispatch-loop-relabel/meta.json'
+  - '.context/designer/projects/draft-dispatch-loop-relabel/v1.bpmn'
+  - '.tasks/active/T-2660-seed-pair-draft-dispatch-loop-relabel-ro.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-28T13:35:52"
+    action: "T-2660: pair-draft seed — draft-dispatch-loop-relabel v1 (rail T-2659 divergence round): gateway branches relabeled to enforced ADR-0004 outcome vocab (yes—paused / no—success/error), NO error fork (error converges on backprop in code — a drawn fork would be map fiction, recorded in Decisions); rail dry-run GREEN {error,paused,success} w/ promotion-time regex; canonical untouched (v1, sha-pinned); gallery-listed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 396
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2660-seed-pair-draft-dispatch-loop-relabel-ro.md
+generated_by: context-agent-hybrid
