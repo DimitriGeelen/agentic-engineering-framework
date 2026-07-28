@@ -191,6 +191,36 @@ branches {approved, rejected}-equivalent; boolean gateways labeled yes/no.
 5. **Node typing vocabulary** — theirs `script` for framework nodes, ours
    `service`. Standard-alignment observation for the eventual shared vocabulary.
 
+## AC-4 Prep — Proposed Conformance-Rail Entry (apply at promotion, not before)
+
+Vocabulary-set on the disposition gateway vs the ONE enum-validation site
+(`web/blueprints/approvals.py:553` — `if decision not in ("approved", "rejected")`
+inside `decide_approval`). Draft branch labels verified: `approved` (te_f13),
+`rejected` (te_f14) — expect GREEN first-pass. Ready-to-paste entry (same
+split-on-quote shape as the aef-dispatch-loop entry):
+
+```yaml
+# Disposition gateway branches (approved | rejected) vs the decide_approval
+# enum guard — the only place both tier-0 outcomes are validated
+# (web/blueprints/approvals.py decide_approval).
+aef-tier0-escalation:
+  primitive: vocabulary-set
+  source: web/blueprints/approvals.py
+  gateway: "disposition?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    anchor: 'def decide_approval'
+    regex: 'decision not in \(([^)]+)\)'
+    first_only: true
+    split: '"'
+```
+
+Do NOT add to `tools/conformance-registry.yaml` before promotion — the checker
+would load-error on the missing map id. Sequence: operator approves draft →
+promote to `aef-tier0-escalation` → paste entry → run checker + audit section →
+record result honestly (AC-4).
+
 ## Acceptance Criteria
 
 ### Agent
