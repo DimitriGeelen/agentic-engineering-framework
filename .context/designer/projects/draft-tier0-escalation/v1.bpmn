@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-tier0-escalation"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- designer-corpus (arc-014, T-2664): tier-0 escalation as actually operated —
+       the process-layer package's P4 core experiment (T-2662 gap 6), never run
+       until now. Sources of truth: agents/context/check-tier0.sh (trigger/halt/
+       notify/pre-auth), bin/fw tier0 approve|status, web/blueprints/approvals.py
+       decide_approval (disposition — the ONLY place both outcomes {approved,
+       rejected} are validated as an enum), .context/bypass-log.yaml (audit trail,
+       written ONLY on the resume/approved leg — rejections never reach it, an
+       asymmetry worth encoding, not smoothing over). Pair-draft v1 — DRAFT, not
+       promoted. See task body for the regression-history baseline (5 correctness
+       regressions in check-tier0.sh across 2026-02→04, 11-task disposition/
+       notification UX churn in an 18-day window) that makes the P4 claim
+       falsifiable against this process specifically. -->
+
+  <bpmn:collaboration id="Collaboration_draft-tier0-escalation">
+    <bpmn:participant id="Pool_tier0_escalation" name="AEF tier-0 escalation (DRAFT)" processRef="Process_draft-tier0-escalation"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-tier0-escalation" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-tier0-escalation" version="1" schemaVersion="2" title="DRAFT: tier-0 escalation (trigger &#8594; halt &#8594; notify &#8594; disposition &#8594; resume/abort + audit, T-2664)" tier_default="0"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_te">
+      <bpmn:lane id="framework" name="Framework &#183; Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fw" authority="authority" height="260"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fw_1_scan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_trigger</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_allow</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_dedupe</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_preauth</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_consume</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_6_audit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_executed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_halt</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_notify</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent &#183; Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="140"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_command</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_retry</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human &#183; Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_disposition</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_gw_disposition</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_reject</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_end_abandoned</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_0_command" name="agent issues Bash command">
+      <bpmn:extensionElements>
+        <aef:uid value="te_command"/>
+        <aef:position x="120.0" y="340.0"/>
+        <aef:meta note="PreToolUse hook fires on every Bash tool_input.command — this is the trigger surface, not opt-in"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>te_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="fw_1_scan" name="scan command — keyword pre-filter + detailed pattern match">
+      <bpmn:extensionElements>
+        <aef:uid value="te_scan"/>
+        <aef:position x="260.0" y="120.0"/>
+        <aef:meta note="agents/context/check-tier0.sh: bash grep fast-path (95%+ of commands never reach Python) then Python regex match against PATTERNS after heredoc/quote/comment stripping (T-1427 added comment-strip after a false positive)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f1</bpmn:incoming>
+      <bpmn:outgoing>te_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_gw_trigger" name="destructive pattern matched?">
+      <bpmn:extensionElements>
+        <aef:uid value="te_gw_trigger"/>
+        <aef:position x="420.0" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f2</bpmn:incoming>
+      <bpmn:outgoing>te_f3</bpmn:outgoing>
+      <bpmn:outgoing>te_f4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:endEvent id="fw_end_allow" name="command executes — no escalation">
+      <bpmn:extensionElements>
+        <aef:uid value="te_done_allow"/>
+        <aef:position x="580.0" y="40.0"/>
+        <aef:meta terminalKind="success" state="allowed"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="fw_2_dedupe" name="dedupe + pre-auth check — idempotency sentinel, prior approval/resolved-file hash+TTL match">
+      <bpmn:extensionElements>
+        <aef:uid value="te_dedupe"/>
+        <aef:position x="580.0" y="120.0"/>
+        <aef:meta note="T-1508 idempotency sentinel: absorbs duplicate hook firings (dual settings.json registration self-defeated a consumed one-time approval, T-1506 RCA) before the real approval check"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f4</bpmn:incoming>
+      <bpmn:outgoing>te_f5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_gw_preauth" name="valid approval already on file?">
+      <bpmn:extensionElements>
+        <aef:uid value="te_gw_preauth"/>
+        <aef:position x="740.0" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f5</bpmn:incoming>
+      <bpmn:outgoing>te_f6</bpmn:outgoing>
+      <bpmn:outgoing>te_f7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="fw_3_consume" name="consume approval token">
+      <bpmn:extensionElements>
+        <aef:uid value="te_consume"/>
+        <aef:position x="900.0" y="60.0"/>
+        <aef:meta note="single-use: approval file or Watchtower resolved-file is deleted/marked consumed on match (5-min TTL / TIER0_WATCHTOWER_TTL)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f6</bpmn:incoming>
+      <bpmn:outgoing>te_f8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_6_audit" name="write bypass-log.yaml entry — audit trail">
+      <bpmn:extensionElements>
+        <aef:uid value="te_audit"/>
+        <aef:position x="1060.0" y="60.0"/>
+        <aef:meta note="fw audit (agents/audit/audit.sh) later checks bypass-log.yaml entries carry a task ref (tier0_violations count) and that check-tier0.sh stays registered in .claude/settings.json (enforcement baseline). ASYMMETRY: this leg only fires on the approved/resume path — a rejected disposition never writes a bypass-log entry, by design (nothing was bypassed)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f8</bpmn:incoming>
+      <bpmn:outgoing>te_f9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="fw_end_executed" name="command executes — approved &amp; audited">
+      <bpmn:extensionElements>
+        <aef:uid value="te_done_executed"/>
+        <aef:position x="1220.0" y="60.0"/>
+        <aef:meta terminalKind="success" state="executed"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f9</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="fw_4_halt" name="HALT — block tool call (exit 2), write pending approval">
+      <bpmn:extensionElements>
+        <aef:uid value="te_halt"/>
+        <aef:position x="900.0" y="200.0"/>
+        <aef:meta note="writes .tier0-approval.pending + .context/approvals/pending-&lt;hash&gt;.yaml; the destructive command is NOT executed on this turn"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f7</bpmn:incoming>
+      <bpmn:outgoing>te_f10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_5_notify" name="human notification — push + Watchtower surface">
+      <bpmn:extensionElements>
+        <aef:uid value="te_notify"/>
+        <aef:position x="1060.0" y="200.0"/>
+        <aef:meta note="fw_notify (ntfy, T-709/716) push + Watchtower /approvals renders the pending-*.yaml"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f10</bpmn:incoming>
+      <bpmn:outgoing>te_f11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_1_disposition" name="review pending Tier 0 request">
+      <bpmn:extensionElements>
+        <aef:uid value="te_hum_review"/>
+        <aef:position x="1060.0" y="480.0"/>
+        <aef:meta note="fw tier0 approve (CLI, approve-only) OR Watchtower /approvals POST /api/approvals/decide (approve or reject) — the unfakeable human-only surface"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f11</bpmn:incoming>
+      <bpmn:outgoing>te_f12</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="hum_gw_disposition" name="disposition?">
+      <bpmn:extensionElements>
+        <aef:uid value="te_gw_disposition"/>
+        <aef:position x="1220.0" y="480.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f12</bpmn:incoming>
+      <bpmn:outgoing>te_f13</bpmn:outgoing>
+      <bpmn:outgoing>te_f14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="hum_2_reject" name="write resolved(rejected) + feedback">
+      <bpmn:extensionElements>
+        <aef:uid value="te_reject"/>
+        <aef:position x="1380.0" y="560.0"/>
+        <aef:meta note="feedback surfaces on the agent's NEXT attempt at the same command hash (T-641); no bypass-log entry is written — see fw_6_audit asymmetry note"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f14</bpmn:incoming>
+      <bpmn:outgoing>te_f15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="hum_end_abandoned" name="command abandoned">
+      <bpmn:extensionElements>
+        <aef:uid value="te_done_abandoned"/>
+        <aef:position x="1540.0" y="560.0"/>
+        <aef:meta terminalKind="success" state="abandoned"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f15</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="agt_1_retry" name="retry same command">
+      <bpmn:extensionElements>
+        <aef:uid value="te_retry"/>
+        <aef:position x="1380.0" y="340.0"/>
+        <aef:meta note="fresh PreToolUse invocation of the SAME command re-enters the scan from the top; the now-valid approval short-circuits it at fw_gw_preauth"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>te_f13</bpmn:incoming>
+      <bpmn:outgoing>te_f16</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="te_f1" sourceRef="agt_0_command" targetRef="fw_1_scan">
+      <bpmn:extensionElements><aef:uid value="te_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f2" sourceRef="fw_1_scan" targetRef="fw_gw_trigger">
+      <bpmn:extensionElements><aef:uid value="te_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f3" name="no" sourceRef="fw_gw_trigger" targetRef="fw_end_allow">
+      <bpmn:extensionElements><aef:uid value="te_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f4" name="yes" sourceRef="fw_gw_trigger" targetRef="fw_2_dedupe">
+      <bpmn:extensionElements><aef:uid value="te_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f5" sourceRef="fw_2_dedupe" targetRef="fw_gw_preauth">
+      <bpmn:extensionElements><aef:uid value="te_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f6" name="yes" sourceRef="fw_gw_preauth" targetRef="fw_3_consume">
+      <bpmn:extensionElements><aef:uid value="te_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f7" name="no" sourceRef="fw_gw_preauth" targetRef="fw_4_halt">
+      <bpmn:extensionElements><aef:uid value="te_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f8" sourceRef="fw_3_consume" targetRef="fw_6_audit">
+      <bpmn:extensionElements><aef:uid value="te_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f9" sourceRef="fw_6_audit" targetRef="fw_end_executed">
+      <bpmn:extensionElements><aef:uid value="te_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f10" sourceRef="fw_4_halt" targetRef="fw_5_notify">
+      <bpmn:extensionElements><aef:uid value="te_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f11" sourceRef="fw_5_notify" targetRef="hum_1_disposition">
+      <bpmn:extensionElements><aef:uid value="te_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f12" sourceRef="hum_1_disposition" targetRef="hum_gw_disposition">
+      <bpmn:extensionElements><aef:uid value="te_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f13" name="approved" sourceRef="hum_gw_disposition" targetRef="agt_1_retry">
+      <bpmn:extensionElements><aef:uid value="te_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f14" name="rejected" sourceRef="hum_gw_disposition" targetRef="hum_2_reject">
+      <bpmn:extensionElements><aef:uid value="te_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f15" sourceRef="hum_2_reject" targetRef="hum_end_abandoned">
+      <bpmn:extensionElements><aef:uid value="te_e15"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="te_f16" name="resume — re-enter scan" sourceRef="agt_1_retry" targetRef="fw_1_scan">
+      <bpmn:extensionElements><aef:uid value="te_e16"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>
