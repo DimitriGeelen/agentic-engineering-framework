@@ -143,6 +143,26 @@ rhetorical hedge.
   `validate-workflow.py` + mapping-v1 gateway-label checks (their 282 offer) and
   post findings in-thread; fold any findings into the draft before promotion.
 
+## AEF-Side Pre-Validation (2026-07-28, mirror of 832's committed pass)
+
+- **Round-trip clean:** `fw corpus derive` → `generate` → `diff` on
+  `draft-tier0-escalation/v1.bpmn` = IDENTICAL (canonical semantic form). The
+  draft is contract-v0 clean before promotion.
+- **Compile observations (fw bpmn compile, WARN-level, for the pair-round):**
+  1. `hum_2_reject` is a `serviceTask` in the sovereignty lane — lane wins (O-1)
+     so owner derives human, but the node type reads agent-flavored. Polish
+     candidate: retype to `userTask` (rejection IS recorded by the human via
+     /approvals) unless the operator prefers the serviceTask reading (the
+     framework records the rejection mechanically after the human clicks).
+  2. Framework lane carries `authority='authority'` — owner derivation knows
+     only sovereignty→human / initiative→agent (T-2567), so framework-lane
+     nodes fall back to name/type derivation. Expected for a mirror map (it
+     will never be bpmn-promoted into tasks); noted so nobody reads the WARN
+     as a defect later.
+  3. Three gateways (trigger-match / pre-auth / disposition) surface the
+     T-2557 "decision semantics not representable in task skeletons" WARN —
+     same expected class.
+
 ## Acceptance Criteria
 
 ### Agent
