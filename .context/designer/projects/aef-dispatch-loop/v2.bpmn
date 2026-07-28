@@ -4,7 +4,7 @@
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                   xmlns:aef="http://anchorpoint.framework/aef/extensions"
-                  id="Definitions_draft-dispatch-loop-relabel"
+                  id="Definitions_aef-dispatch-loop"
                   targetNamespace="https://aef.anchorpoint.dev/workflows">
 
   <!-- designer-corpus D4 (arc-014, T-2563): the v1 dispatch-orchestration loop as
@@ -16,10 +16,11 @@
        Message flavor: the orchestrator observes worker results via the bus — the one
        honest kind=message typed event. Pair-draft v1.
 
-       DRAFT (T-2660): seed for the relabel pair-round — gateway branches carry the
-       enforced outcome vocabulary {paused, success/error} instead of the event type +
-       informal 'completed' the T-2659 rail flagged. Canonical map untouched; promote
-       via pair-draft ritual, then flip the rail's branch regex + pin test to green. -->
+       v2 (T-2671, promoted from draft-dispatch-loop-relabel — operator GO 2026-07-28,
+       832 pre-validated rail 294): gateway branches carry the enforced outcome
+       vocabulary {paused, success/error} (ADR-0004 lib/spawn.py) instead of the event
+       type + informal 'completed' the T-2659 rail flagged; agt_7_handoff_back lane
+       membership fixed (was unassigned in v1 too). Rail + pin test green as of v2. -->
 
   <bpmn:collaboration id="Collaboration_aef-dispatch-loop">
     <bpmn:participant id="Pool_dispatch_loop" name="AEF dispatch-orchestration loop" processRef="Process_aef-dispatch-loop"/>
@@ -27,7 +28,7 @@
 
   <bpmn:process id="Process_aef-dispatch-loop" isExecutable="true">
     <bpmn:extensionElements>
-      <aef:workflowMeta id="draft-dispatch-loop-relabel" version="1" schemaVersion="2" title="DRAFT: dispatch-loop gateway relabel (T-2660 pair-round seed — rail T-2659 divergence)" tier_default="1"/>
+      <aef:workflowMeta id="aef-dispatch-loop" version="2" schemaVersion="2" title="AEF dispatch-orchestration loop (resolver dispatch → worker → outcome backprop, with pause chain)" tier_default="1"/>
     </bpmn:extensionElements>
     <bpmn:laneSet id="LaneSet_dl">
       <bpmn:lane id="agent" name="Agent · Initiative">

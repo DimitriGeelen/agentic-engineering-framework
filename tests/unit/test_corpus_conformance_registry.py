@@ -293,16 +293,15 @@ def test_live_tier0_escalation_vocab():
     assert "approved" in proc.stdout and "rejected" in proc.stdout
 
 
-def test_live_dispatch_loop_divergent_pin():
-    """T-2659: shipped knowingly DIVERGENT — the map labels its pause gateway
-    with the event type (pause_requested) + informal 'completed' instead of
-    the enforced outcome-status enum {success, error, paused}, and lacks the
-    error path. A pair-draft round relabels the branches; when that lands,
-    flip this pin to a PASS assertion."""
+def test_live_dispatch_loop_vocab():
+    """T-2659 shipped this knowingly DIVERGENT (event-type labels); the T-2660
+    pair-draft relabeled the branches to the enforced ADR-0004 enum and T-2671
+    promoted it (operator GO 2026-07-28, 832 pre-validated rail 294). This pin
+    flipped from the divergence assertion to PASS per its own docstring."""
     proc = _run(FRAMEWORK_ROOT, "--map", "aef-dispatch-loop")
-    assert proc.returncode == 1, proc.stderr + proc.stdout
-    assert "map-asserts/code-refuses: completed" in proc.stdout
-    assert "code-allows/map-lacks:    error" in proc.stdout
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    for tok in ("success", "error", "paused"):
+        assert tok in proc.stdout
 
 
 # ── behavior parity of the migrated leg (live repo) ─────────────────────────
