@@ -284,6 +284,18 @@ def test_live_audit_cron_vocab():
     assert "0, 1, 2" in proc.stdout
 
 
+def test_live_dispatch_loop_divergent_pin():
+    """T-2659: shipped knowingly DIVERGENT — the map labels its pause gateway
+    with the event type (pause_requested) + informal 'completed' instead of
+    the enforced outcome-status enum {success, error, paused}, and lacks the
+    error path. A pair-draft round relabels the branches; when that lands,
+    flip this pin to a PASS assertion."""
+    proc = _run(FRAMEWORK_ROOT, "--map", "aef-dispatch-loop")
+    assert proc.returncode == 1, proc.stderr + proc.stdout
+    assert "map-asserts/code-refuses: completed" in proc.stdout
+    assert "code-allows/map-lacks:    error" in proc.stdout
+
+
 # ── behavior parity of the migrated leg (live repo) ─────────────────────────
 
 def test_live_task_lifecycle_verdict_unchanged():

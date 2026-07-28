@@ -56,6 +56,23 @@ aef-inception-flow:
     first_only: true
     split: "|"
 
+# Worker-paused gateway branches vs the enforced dispatch-outcome status enum
+# (ADR-0004: lib/spawn.py _VALID_OUTCOME_STATUSES = {success, error, paused}).
+# NOTE (T-2659): shipped knowingly DIVERGENT — the map labels its branches
+# with the pause EVENT TYPE (pause_requested) and an informal "completed"
+# (which collapses success+error and hides the error path). The divergence is
+# the finding; a pair-draft round relabels the branches, then this goes green.
+aef-dispatch-loop:
+  primitive: vocabulary-set
+  source: lib/spawn.py
+  gateway: "worker paused?"
+  branch_vocab:
+    regex: '— ([a-z_/]+)'
+  source_vocab:
+    regex: '_VALID_OUTCOME_STATUSES = frozenset\(\{([^}]+)\}'
+    first_only: true
+    split: '"'
+
 # Sweep-result gateway branches (exit 0 | exit 1/2) vs the audit exit-code
 # contract (agents/audit/audit.sh tail block: FAIL>0 → 2, WARN>0 → 1, else 0).
 aef-audit-cron:

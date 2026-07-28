@@ -216,7 +216,12 @@ def _extract_tokens(text: str, spec: dict) -> set:
     tokens = set()
     for raw in matches:
         parts = raw.split(spec["split"]) if spec.get("split") else [raw]
-        tokens.update(p.strip().lower() for p in parts if p.strip())
+        # keep only tokens with real content — splitting on quote/delimiter
+        # chars can leave punctuation-only fragments (", ") behind
+        tokens.update(
+            p for p in (x.strip().lower() for x in parts)
+            if re.search(r"[a-z0-9]", p)
+        )
     return tokens
 
 
