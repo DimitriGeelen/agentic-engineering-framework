@@ -69,20 +69,42 @@ lives here.
 
 ## Evidence — per-map source inventory
 
-(filled during exploration: for each of the 4 maps, the candidate canonical
-source, where it is enforced in code, and whether the T-2621 collapse shape
-fits)
+Read all four maps via `fw corpus explain` (2026-07-28) and verified each
+candidate enforcement point in code.
 
 | Map | Candidate canonical source | Enforced where | Shape fits T-2621 collapse? |
 |-----|---------------------------|----------------|------------------------------|
-| aef-inception-flow | TBD | TBD | TBD |
-| aef-session-lifecycle | TBD | TBD | TBD |
-| aef-dispatch-loop | TBD | TBD | TBD |
-| aef-audit-cron | TBD | TBD | TBD |
+| aef-inception-flow | decision vocabulary {go, no-go, defer} on the `decision?` gateway branches; gate inventory cited in notes (T-2204, T-2194, T-1984, 2-commit block, agent-blocked decide) | `lib/inception.sh:45` (decide verb set), `agents/task-create/update-task.sh` disposition gate, commit-msg hook | **No.** End states (`go`, `closed`) are decision outcomes, not task statuses. Primitive needed: vocabulary-set equality (gateway branches vs decide verbs) + gate-referent reachability |
+| aef-session-lifecycle | budget ladder {ok, warn, urgent, critical} + thresholds 225/255/285K; restart signal contract (TTL, max-5) | `agents/context/budget-gate.sh:327-333` (level enum), `:229` (TTL), checkpoint.sh (T-179) | **No — and the map doesn't structurally carry the machine.** Ladder appears only in a gateway *note* (prose); end states are `restarted`/`closed`. Rail requires an annotation pair-round first (same as T-2621's v5 carrier round) |
+| aef-dispatch-loop | pause chain vocabulary (`pause_requested` terminal event, `retry_of_dispatch_id` linkage); dispatch/outcome JSONL join contract | `lib/resolver.py:107-127` (pause event shape), `:568-597` (retry chain), `:718` (exit contract) | **No.** One end state (`closed`). Primitive: vocabulary/contract-field equality (map's pause-branch structure vs resolver event shapes) |
+| aef-audit-cron | audit exit-code contract {0 pass, 1 warn, 2 fail} on the `sweep result?` gateway; cron drift chain registry→generated→deployed | `agents/audit/audit.sh` exit contract; doctor cron-drift checks (T-1942/T-1771) | **No.** End states `clean`/`triaged` are narrative. Primitive: vocabulary equality (gateway branches vs exit contract). NB: cron drift chain is already independently railed by doctor/audit — the map rail checks the *map* mirrors it, not the chain itself |
+
+**Load-bearing finding:** the T-2621 transition-table collapse fits **zero** of
+the four remaining maps. The generalization is not "point the same collapse at
+different YAML files" — it is a small library of comparison primitives:
+
+1. **transition-table** (task-lifecycle — already shipped)
+2. **vocabulary-set equality** — a gateway's branch set vs an enforced enum
+   (inception decisions, audit exit codes, budget levels, pause events)
+3. **gate-referent reachability** — enforcement points a map's notes cite must
+   resolve to live code (sibling of T-1984 `ships_in` referent checking)
+
+A second finding: `aef:meta state=` is already polysemous in the wild — the
+four maps carry `go/closed/restarted/clean/triaged`, none of which are task
+statuses. The current checker would misread them if pointed at these maps;
+IW-4 is therefore not hypothetical but a latent defect of the existing
+convention.
 
 ## Dialogue Log
 
-(questions posed, answers given, course corrections — the WHY trail)
+- **2026-07-28, rail 268 (AEF → 832):** posted IW-1 (conforms-against
+  declaration: in-map `aef:meta` on the process element vs framework-side
+  registry vs both; asked whether the editor round-trip preserves unknown
+  process-level `aef:meta` attrs — the T-257 eventDef guarantee's sibling) and
+  IW-4 (carrier convention for non-status states: value namespace
+  `state=decision:go` vs second attribute `stateKind=` vs per-extractor
+  interpretation). Stated our lean: registry-operative + optional in-map
+  informational mirror. Await reply; no urgency flagged.
 
 ## Recommendation
 

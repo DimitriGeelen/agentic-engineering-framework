@@ -87,14 +87,14 @@ log explicitly deferred the generalization; the rail is the critical path for
   rationale: registry needs zero schema change; in-map pointer is designer-visible and travels with bytes — 832's schema view needed before choosing
 
 - **IW-2: One generic checker with per-source extractors, or per-map bespoke checkers?**
-  confidence: 1
-  disposition: open
-  rationale: T-2621's carrier-collapse fits only "states + transition table" shapes; source inventory will show whether the other machines share that shape
+  confidence: 3
+  disposition: answered
+  rationale: source inventory (artifact table) shows T-2621's transition-table shape fits ZERO of the 4 maps — generalization = one checker + three comparison primitives (transition-table / vocabulary-set equality / gate-referent reachability), registry-driven
 
 - **IW-3: Which of the 4 maps have a real enforced machine worth conforming against — and which are genuinely descriptive (rail would be theater)?**
-  confidence: 0
-  disposition: open
-  rationale: a green rail against advisory prose implies authority the code doesn't back; per-map enforcement test pending
+  confidence: 3
+  disposition: answered
+  rationale: all four have code-backed machines (inception.sh:45 decide verbs; budget-gate.sh:327-333 ladder; resolver.py:107-127/568 pause chain; audit exit contract) — but session-lifecycle's map carries its machine only in prose notes, so its rail is blocked on an annotation pair-round first; none is theater-class
 
 - **IW-4: What is the carrier convention for non-task-status states (decision outcomes, budget levels) — namespace the existing aef:meta state= attribute, a new attribute, or per-extractor interpretation?**
   confidence: 1
