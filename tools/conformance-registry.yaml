@@ -85,3 +85,20 @@ aef-audit-cron:
   source_vocab:
     anchor: '# Exit code based on findings'
     regex: 'exit (\d)'
+
+# Disposition gateway branches (approved | rejected) vs the decide_approval
+# enum guard — the only place both tier-0 outcomes are validated
+# (web/blueprints/approvals.py decide_approval). Added at promotion of
+# draft-tier0-escalation (operator GO 2026-07-28, T-2664 — the P4
+# falsifiability test map).
+aef-tier0-escalation:
+  primitive: vocabulary-set
+  source: web/blueprints/approvals.py
+  gateway: "disposition?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    anchor: 'def decide_approval'
+    regex: 'decision not in \(([^)]+)\)'
+    first_only: true
+    split: '"'

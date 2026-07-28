@@ -242,12 +242,16 @@ record result honestly (AC-4).
       pair-draft ritual (agent skeleton from the enforced machine: check-tier0.sh
       PreToolUse hook, `fw tier0 approve/status`, approval file semantics; operator
       + 832 iterate in the UI; canonical namespace untouched until approval).
-- [ ] On operator approval: promoted to `aef-tier0-escalation`, corpus lint
-      baseline unchanged, `fw corpus prove` green.
-- [ ] Conformance-rail entry added to `tools/conformance-registry.yaml` (primitive
+- [x] On operator approval: promoted to `aef-tier0-escalation`, corpus lint
+      baseline unchanged, `fw corpus prove` green. (Operator GO in chat
+      2026-07-28 "prmotr both"; uuid carried from draft; lint 2-baseline with 7
+      maps scanned; prove PASS — uuid PRESERVED, canonical IDENTICAL.)
+- [x] Conformance-rail entry added to `tools/conformance-registry.yaml` (primitive
       chosen to fit the machine — likely vocabulary-set on the disposition
       gateway); result recorded honestly (green, or red with a divergent pin test
-      per the T-2659 precedent).
+      per the T-2659 precedent). (vocabulary-set on "disposition?" vs
+      decide_approval enum guard — checker PASS first-run, GREEN; live pin test
+      test_live_tier0_escalation_vocab added; 22/22 registry tests pass.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -312,6 +316,11 @@ record result honestly (AC-4).
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+out=$(bin/fw corpus lint 2>&1); echo "$out" | grep -q "2 finding(s)"
+out=$(python3 tools/corpus_conformance.py --map aef-tier0-escalation 2>&1); echo "$out" | grep -q "PASS"
+out=$(curl -sf "$(bin/fw watchtower url)/api/version?id=aef-tier0-escalation"); echo "$out" | grep -q 'workflowMeta id="aef-tier0-escalation"'
+python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q
 
 ## RCA
 

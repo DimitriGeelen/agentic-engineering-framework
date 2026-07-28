@@ -284,6 +284,15 @@ def test_live_audit_cron_vocab():
     assert "0, 1, 2" in proc.stdout
 
 
+def test_live_tier0_escalation_vocab():
+    """T-2664: promoted with the rail in the same round (operator GO
+    2026-07-28). Disposition gateway branches {approved, rejected} vs the
+    decide_approval enum guard (approvals.py) — green first-pass."""
+    proc = _run(FRAMEWORK_ROOT, "--map", "aef-tier0-escalation")
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert "approved" in proc.stdout and "rejected" in proc.stdout
+
+
 def test_live_dispatch_loop_divergent_pin():
     """T-2659: shipped knowingly DIVERGENT — the map labels its pause gateway
     with the event type (pause_requested) + informal 'completed' instead of

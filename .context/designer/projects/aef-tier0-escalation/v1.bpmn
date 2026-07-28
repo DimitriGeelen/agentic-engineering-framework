@@ -4,7 +4,7 @@
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                   xmlns:aef="http://anchorpoint.framework/aef/extensions"
-                  id="Definitions_draft-tier0-escalation"
+                  id="Definitions_aef-tier0-escalation"
                   targetNamespace="https://aef.anchorpoint.dev/workflows">
 
   <!-- designer-corpus (arc-014, T-2664): tier-0 escalation as actually operated —
@@ -14,22 +14,23 @@
        decide_approval (disposition — the ONLY place both outcomes {approved,
        rejected} are validated as an enum), .context/bypass-log.yaml (audit trail,
        written ONLY on the resume/approved leg — rejections never reach it, an
-       asymmetry worth encoding, not smoothing over). Pair-draft v1 — DRAFT, not
-       promoted. See task body for the regression-history baseline (5 correctness
+       asymmetry worth encoding, not smoothing over). Promoted from draft-tier0-escalation
+       (operator GO 2026-07-28; 832 pre-validated rail 294, pairing article sha
+       93789349f526). See T-2664 body for the regression-history baseline (5 correctness
        regressions in check-tier0.sh across 2026-02→04, 11-task disposition/
        notification UX churn in an 18-day window) that makes the P4 claim
        falsifiable against this process specifically. -->
 
-  <bpmn:collaboration id="Collaboration_draft-tier0-escalation">
-    <bpmn:participant id="Pool_tier0_escalation" name="AEF tier-0 escalation (DRAFT)" processRef="Process_draft-tier0-escalation"/>
+  <bpmn:collaboration id="Collaboration_aef-tier0-escalation">
+    <bpmn:participant id="Pool_tier0_escalation" name="AEF tier-0 escalation" processRef="Process_aef-tier0-escalation"/>
   </bpmn:collaboration>
 
-  <bpmn:process id="Process_draft-tier0-escalation" isExecutable="true">
+  <bpmn:process id="Process_aef-tier0-escalation" isExecutable="true">
     <bpmn:extensionElements>
-      <aef:workflowMeta id="draft-tier0-escalation" version="1" schemaVersion="2" title="DRAFT: tier-0 escalation (trigger &#8594; halt &#8594; notify &#8594; disposition &#8594; resume/abort + audit, T-2664)" tier_default="0"/>
+      <aef:workflowMeta id="aef-tier0-escalation" version="1" schemaVersion="2" title="AEF tier-0 escalation (trigger → halt → notify → disposition → resume/abort + audit)" tier_default="0"/>
     </bpmn:extensionElements>
     <bpmn:laneSet id="LaneSet_te">
-      <bpmn:lane id="framework" name="Framework &#183; Authority">
+      <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="260"/>
         </bpmn:extensionElements>
@@ -44,14 +45,14 @@
         <bpmn:flowNodeRef>fw_4_halt</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_5_notify</bpmn:flowNodeRef>
       </bpmn:lane>
-      <bpmn:lane id="agent" name="Agent &#183; Initiative">
+      <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="140"/>
         </bpmn:extensionElements>
         <bpmn:flowNodeRef>agt_0_command</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_retry</bpmn:flowNodeRef>
       </bpmn:lane>
-      <bpmn:lane id="human" name="Human &#183; Sovereignty">
+      <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
         </bpmn:extensionElements>
@@ -78,6 +79,7 @@
         <aef:meta note="agents/context/check-tier0.sh: bash grep fast-path (95%+ of commands never reach Python) then Python regex match against PATTERNS after heredoc/quote/comment stripping (T-1427 added comment-strip after a false positive)"/>
       </bpmn:extensionElements>
       <bpmn:incoming>te_f1</bpmn:incoming>
+      <bpmn:incoming>te_f16</bpmn:incoming>
       <bpmn:outgoing>te_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
