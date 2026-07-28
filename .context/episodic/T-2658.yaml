@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2658: vocabulary-set primitive + inception-flow/audit-cron rails (T-2652 slice 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T11:16:36Z
+# ============================================================================
+
+task_id: T-2658
+task_name: "vocabulary-set primitive + inception-flow/audit-cron rails (T-2652 slice 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T11:07:51Z
+completed: 2026-07-28T11:16:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-28T13:16:08+02:00
+last_commit: 2026-07-28T13:16:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vocabulary-set primitive + inception-flow/audit-cron rails (T-2652 slice 2) — declarative gateway-branch vs enforced-enum comparison (anchor/regex/split registry keys, third vocab rail = registry entry only); aef-inception-flow PASS {defer,go,no-go} vs lib/inception.sh decide case; aef-audit-cron PASS {0,1,2} vs audit exit contract; stale-anchor extraction = loud load error never trivial pass; 9 new tests (26/26), audit per-map lines live 3/3 PASS
+
+# Key outcomes
+outcomes:
+  - '`vocabulary-set` primitive implemented in `tools/corpus_conformance.py` and registered in `PRIMITIVE_CHECKS`; registering a map with it no longer exits 2'
+  - 'Extraction is declarative via registry keys (gateway selector + enforced-vocab extraction spec), not hard-coded per map — a third vocab rail should need only a registry entry'
+  - '`aef-inception-flow` registry entry lands and the rail passes against the live map + `lib/inception.sh` decide verbs (or surfaces a real divergence, reported honestly) — PASS live: `{defer, go, no-go}`'
+  - '`aef-audit-cron` registry entry lands and the rail passes against the live map + audit exit contract (or surfaces a real divergence, reported honestly) — PASS live: `{0, 1, 2}`'
+  - 'Negative paths tested: missing gateway in map, enforced-vocab extraction failure, and a genuine vocab mismatch each produce actionable non-zero results (no tracebacks)'
+  - 'Audit `check_map_conformance` reports the new entries per-map with PASS/WARN evidence lines; existing `aef-task-lifecycle` verdict unchanged (pass wording made primitive-neutral: "matches its enforced machine")'
+  - 'Unit tests extended (`tests/unit/test_corpus_conformance_registry.py`: 9 new vocab tests incl. 2 live-rail pins) covering the new primitive''s pass/divergent/error paths; full conformance test files green (26/26)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vocabulary-set primitive + inception-flow/audit-cron rails (T-2652 slice 2) — declarative gateway-branch vs enforced-enum comparison (anchor/regex/split registry keys, third vocab rail = registry entry only); aef-inception-flow PASS {defer,go,no-go} vs lib/inception.sh decide case; aef-audit-cron PASS {0,1,2} vs audit exit contract; stale-anchor extraction = loud load error never trivial pass; 9 new tests (26/26), audit per-map lines live 3/3 PASS'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-2658-vocabulary-set-primitive--inception-flow.md'
+  - 'tests/unit/test_corpus_conformance_registry.py'
+  - 'tools/conformance-registry.yaml'
+  - 'tools/corpus_conformance.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-28T13:16:08"
+    action: "T-2658: vocabulary-set primitive + inception-flow/audit-cron rails (T-2652 slice 2) — declarative gateway-branch vs enforced-enum comparison (anchor/regex/split registry keys, third vocab rail = registry entry only); aef-inception-flow PASS {defer,go,no-go} vs lib/inception.sh decide case; aef-audit-cron PASS {0,1,2} vs audit exit contract; stale-anchor extraction = loud load error never trivial pass; 9 new tests (26/26), audit per-map lines live 3/3 PASS"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 6
+  lines_added: 477
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2658-vocabulary-set-primitive--inception-flow.md
+generated_by: context-agent-hybrid
