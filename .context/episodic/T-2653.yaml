@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2653: Designer gallery hygiene — remove t2529-verify and t2530-verify test scratch from live corpus store
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T09:44:40Z
+# ============================================================================
+
+task_id: T-2653
+task_name: "Designer gallery hygiene — remove t2529-verify and t2530-verify test scratch from live corpus store"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T09:41:40Z
+completed: 2026-07-28T09:44:30Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '/api/list no longer returns t2529-verify or t2530-verify; the 5 corpus maps + draft-trigger-handling + t2584-scratch remain'
+  - 'Ghost registry untouched: t2584-ghost-target entry still present with referenced_by t2584-scratch, task T-2585'
+  - 'All 5 corpus maps still parse and explain cleanly after deletion (fw corpus explain, read-only — prove is destructive on the live store per T-2631 lesson)'
+  - 'Deletion done via the designer /api/delete endpoint (not raw rm), both projects removed from .context/designer/projects/'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2653-designer-gallery-hygiene--remove-t2529-v.md
+generated_by: context-agent-hybrid
