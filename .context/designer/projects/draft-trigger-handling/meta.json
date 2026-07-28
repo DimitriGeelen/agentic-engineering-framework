@@ -16,9 +16,14 @@
       "v": 3,
       "note": "agent-normalize: v2 verbatim + eventDef timer/message restored on start+throw (dropped by pre-fix editor save). VERIFIED: lint 2-baseline + derive/canon pass (T-2620 report, re-confirmed T-2644). Round-trip gap WAS flagged to 832 (rail 201), fixed their side (their T-257, rail 218), fix live-verified T-2644: editor resave of these bytes preserves all 3 eventDefs (start/throw/catch, kinds intact; only binding=\"\" normalization + lane-height int rounding)",
       "ts": 1785092600
+    },
+    {
+      "v": 4,
+      "note": "agent: landing-surface bound \u2014 throw+catch eventDef binding=note:inbox (fw note intake, .context/inbox.yaml). Resolves operator flag 'emit trigger signal still points to nothing'. Rationale in node meta: only existing governed intake whose triage verbs match the map's act/dismiss/park downstream; corpus naming scheme bus:task-channel \u2192 note:inbox. Operator may override in editor.",
+      "ts": 1785260885
     }
   ],
   "uuid": "d1682058-fe33-4a3b-b580-0f7b8e09ee60",
-  "latest": 3,
-  "updated": 1785180306
+  "latest": 4,
+  "updated": 1785260885
 }
