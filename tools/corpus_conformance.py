@@ -12,10 +12,15 @@ Primitives:
     same-state pairs ignored) and compare against the source's
     ``transitions:`` list (``legacy: true`` entries excluded). This is the
     unchanged T-2621 behavior.
-  vocabulary-set    — reserved (T-2652 slices 2-3). Registering a map with an
-    unimplemented primitive is a load error (exit 2), not a silent skip: a
-    registry entry is a claim that a rail exists.
-  gate-referent     — reserved (T-2652 slices 2-3).
+  vocabulary-set    — a named gateway's outgoing branch labels, tokenized via
+    the entry's ``branch_vocab`` spec, must equal the enforced enum extracted
+    from the source file via the entry's ``source_vocab`` spec (T-2652
+    slice 2). Extraction is declarative (anchor/regex/split registry keys) so
+    a new vocab rail needs only a registry entry. Empty source extraction is
+    a load error, never a trivial pass — a stale anchor must fail loudly.
+  gate-referent     — reserved (T-2652 slice 5 era). Registering a map with
+    an unimplemented primitive is a load error (exit 2), not a silent skip:
+    a registry entry is a claim that a rail exists.
 
 Modes:
   --map <id>   check one registry entry (default: aef-task-lifecycle,
@@ -40,6 +45,7 @@ a map graduates to detail-authority only when its entry stays green (T-2619).
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -51,7 +57,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import corpus_spec  # noqa: E402
 
 REGISTRY_REL = "tools/conformance-registry.yaml"
-KNOWN_PRIMITIVES = ("transition-table",)  # vocabulary-set / gate-referent: T-2652 slices 2-3
+KNOWN_PRIMITIVES = ("transition-table", "vocabulary-set")  # gate-referent: T-2652 slice 5 era
 
 
 class LoadError(Exception):
@@ -83,6 +89,27 @@ def load_registry(root: Path) -> dict:
             raise LoadError(
                 f"registry entry '{map_id}' source missing: {entry['source']}"
             )
+        if entry["primitive"] == "vocabulary-set":
+            if not entry.get("gateway"):
+                raise LoadError(
+                    f"registry entry '{map_id}' malformed: vocabulary-set "
+                    "needs a gateway key (the gateway node's name)"
+                )
+            for spec_key in ("branch_vocab", "source_vocab"):
+                spec = entry.get(spec_key)
+                if not isinstance(spec, dict) or not spec.get("regex"):
+                    raise LoadError(
+                        f"registry entry '{map_id}' malformed: vocabulary-set "
+                        f"needs {spec_key}.regex (declarative extraction spec)"
+                    )
+                try:
+                    re.compile(spec["regex"])
+                    if spec.get("anchor"):
+                        re.compile(spec["anchor"])
+                except re.error as e:
+                    raise LoadError(
+                        f"registry entry '{map_id}' {spec_key} regex invalid: {e}"
+                    ) from e
     return doc
 
 
@@ -168,8 +195,83 @@ def check_transition_table(root: Path, map_id: str, entry: dict) -> int:
     return 1
 
 
+# ── primitive: vocabulary-set (T-2652 slice 2) ──────────────────────────────
+
+def _extract_tokens(text: str, spec: dict) -> set:
+    """Declarative token extraction: optional anchor narrows the search region,
+    regex finds matches (group 1 if present, else whole match), optional split
+    fans each match out, optional first_only keeps just the first match.
+    Tokens are lowercased and stripped."""
+    if spec.get("anchor"):
+        m = re.search(spec["anchor"], text)
+        if not m:
+            return set()
+        text = text[m.end():]
+    pattern = re.compile(spec["regex"])
+    matches = []
+    for m in pattern.finditer(text):
+        matches.append(m.group(1) if m.groups() else m.group(0))
+        if spec.get("first_only"):
+            break
+    tokens = set()
+    for raw in matches:
+        parts = raw.split(spec["split"]) if spec.get("split") else [raw]
+        tokens.update(p.strip().lower() for p in parts if p.strip())
+    return tokens
+
+
+def check_vocabulary_set(root: Path, map_id: str, entry: dict) -> int:
+    """Returns 0 pass, 1 divergent. Raises LoadError on load problems."""
+    spec = load_latest_spec(root, map_id)
+
+    gateways = {
+        n["name"]: n["id"]
+        for n in spec["nodes"]
+        if n.get("type") == "gateway" and n.get("name")
+    }
+    gw_name = entry["gateway"]
+    if gw_name not in gateways:
+        raise LoadError(
+            f"gateway '{gw_name}' not found in {map_id} "
+            f"(gateways present: {sorted(gateways) or 'none'})"
+        )
+    gw_id = gateways[gw_name]
+
+    branch_labels = [
+        f.get("name") or "" for f in spec["flows"] if f["from"] == gw_id
+    ]
+    asserted = set()
+    for label in branch_labels:
+        asserted |= _extract_tokens(label, entry["branch_vocab"])
+
+    source_text = (root / entry["source"]).read_text()
+    canon = _extract_tokens(source_text, entry["source_vocab"])
+    if not canon:
+        raise LoadError(
+            f"source vocabulary extraction produced nothing from "
+            f"{entry['source']} — anchor/regex stale vs source; a rail that "
+            "cannot read its enforced enum must fail loudly, not pass empty"
+        )
+
+    map_only = sorted(asserted - canon)
+    code_only = sorted(canon - asserted)
+
+    if not map_only and not code_only:
+        print(f"conformance: PASS — {map_id} gateway '{gw_name}' covers "
+              f"exactly the enforced vocabulary {{{', '.join(sorted(canon))}}}")
+        return 0
+
+    print(f"conformance: DIVERGENT — {map_id}")
+    for tok in map_only:
+        print(f"  map-asserts/code-refuses: {tok}")
+    for tok in code_only:
+        print(f"  code-allows/map-lacks:    {tok}")
+    return 1
+
+
 PRIMITIVE_CHECKS = {
     "transition-table": check_transition_table,
+    "vocabulary-set": check_vocabulary_set,
 }
 
 

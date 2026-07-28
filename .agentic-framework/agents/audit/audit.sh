@@ -1894,7 +1894,7 @@ print('\n'.join(doc.keys()))
                 if echo "$_out" | grep -q "SKIP"; then
                     info "Map conformance: $_map has no state-carrier annotations yet (rail dormant)"
                 else
-                    pass "Map conformance: $_map matches enforced transitions"
+                    pass "Map conformance: $_map matches its enforced machine"
                 fi
                 ;;
             1)

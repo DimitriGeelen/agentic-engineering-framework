@@ -40,7 +40,43 @@ _MINIMAL_BPMN = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 
-def _make_root(tmp_path, registry_text, with_map=True, source_text=None):
+# T-2658: gateway map for vocabulary-set — one gateway "verdict?" with two
+# outgoing branches whose labels jointly cover {alpha, beta, gamma}.
+_GATEWAY_BPMN = """<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="https://aef.dev/schema/bpmn/1.0"
+                  id="defs_gw" targetNamespace="https://aef.dev/test">
+  <bpmn:process id="proc_gw" isExecutable="false">
+    <bpmn:startEvent id="g_start" name="start"/>
+    <bpmn:exclusiveGateway id="g_gw" name="verdict?"/>
+    <bpmn:serviceTask id="g_a" name="path a"/>
+    <bpmn:serviceTask id="g_b" name="path b"/>
+    <bpmn:sequenceFlow id="gf0" sourceRef="g_start" targetRef="g_gw"/>
+    <bpmn:sequenceFlow id="gf1" name="ALPHA" sourceRef="g_gw" targetRef="g_a"/>
+    <bpmn:sequenceFlow id="gf2" name="BETA / GAMMA" sourceRef="g_gw" targetRef="g_b"/>
+  </bpmn:process>
+</bpmn:definitions>
+"""
+
+_VOCAB_REGISTRY = """\
+test-map:
+  primitive: vocabulary-set
+  source: machine.sh
+  gateway: "verdict?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    anchor: 'case "\\$verdict" in'
+    regex: '([a-z|-]+)\\)'
+    first_only: true
+    split: "|"
+"""
+
+_VOCAB_SOURCE = 'case "$verdict" in\n    alpha|beta|gamma) ;;\n    *) exit 1 ;;\nesac\n'
+
+
+def _make_root(tmp_path, registry_text, with_map=True, source_text=None,
+               map_xml=_MINIMAL_BPMN, source_name="machine.yaml"):
     root = tmp_path
     (root / "tools").mkdir(exist_ok=True)
     (root / "tools" / "conformance-registry.yaml").write_text(registry_text)
@@ -48,9 +84,9 @@ def _make_root(tmp_path, registry_text, with_map=True, source_text=None):
         d = root / ".context/designer/projects/test-map"
         d.mkdir(parents=True)
         (d / "meta.json").write_text(json.dumps({"latest": 1}))
-        (d / "v1.bpmn").write_text(_MINIMAL_BPMN)
+        (d / "v1.bpmn").write_text(map_xml)
     if source_text is not None:
-        (root / "machine.yaml").write_text(source_text)
+        (root / source_name).write_text(source_text)
     return root
 
 
@@ -159,6 +195,93 @@ def test_all_empty_registry_is_ok(tmp_path):
     proc = _run(root, "--all")
     assert proc.returncode == 0
     assert "registry empty" in proc.stdout
+
+
+# ── vocabulary-set primitive (T-2658, T-2652 slice 2) ───────────────────────
+
+def _vocab_root(tmp_path, registry_text=_VOCAB_REGISTRY, source_text=_VOCAB_SOURCE,
+                map_xml=_GATEWAY_BPMN):
+    return _make_root(tmp_path, registry_text, source_text=source_text,
+                      map_xml=map_xml, source_name="machine.sh")
+
+
+def test_vocab_set_pass(tmp_path):
+    root = _vocab_root(tmp_path)
+    proc = _run(root, "--map", "test-map")
+    assert proc.returncode == 0, proc.stderr
+    assert "PASS" in proc.stdout
+    assert "alpha, beta, gamma" in proc.stdout
+
+
+def test_vocab_set_divergent_both_directions(tmp_path):
+    # Source enforces {alpha, beta, delta}: map's gamma is map-only,
+    # source's delta is code-only.
+    src = 'case "$verdict" in\n    alpha|beta|delta) ;;\nesac\n'
+    root = _vocab_root(tmp_path, source_text=src)
+    proc = _run(root, "--map", "test-map")
+    assert proc.returncode == 1
+    assert "map-asserts/code-refuses: gamma" in proc.stdout
+    assert "code-allows/map-lacks:    delta" in proc.stdout
+
+
+def test_vocab_set_missing_gateway_is_load_error(tmp_path):
+    reg = _VOCAB_REGISTRY.replace('"verdict?"', '"nonexistent?"')
+    root = _vocab_root(tmp_path, registry_text=reg)
+    proc = _run(root, "--map", "test-map")
+    assert proc.returncode == 2
+    assert "gateway 'nonexistent?' not found" in proc.stderr
+    assert "verdict?" in proc.stderr  # lists what IS present
+    assert "Traceback" not in proc.stderr
+
+
+def test_vocab_set_stale_anchor_is_load_error(tmp_path):
+    # Source refactored away the anchor -> extraction empty -> loud failure,
+    # never a trivial pass.
+    root = _vocab_root(tmp_path, source_text="echo nothing enforceable here\n")
+    proc = _run(root, "--map", "test-map")
+    assert proc.returncode == 2
+    assert "extraction produced nothing" in proc.stderr
+
+
+def test_vocab_set_unlabeled_branches_divergent_not_crash(tmp_path):
+    # Gateway exists but branch labels carry no vocabulary -> every enforced
+    # token is code-allows/map-lacks (divergent), not a traceback.
+    xml = _GATEWAY_BPMN.replace(' name="ALPHA"', '').replace(' name="BETA / GAMMA"', '')
+    root = _vocab_root(tmp_path, map_xml=xml)
+    proc = _run(root, "--map", "test-map")
+    assert proc.returncode == 1
+    assert "code-allows/map-lacks:    alpha" in proc.stdout
+    assert "Traceback" not in proc.stderr
+
+
+def test_vocab_set_missing_spec_keys_is_load_error(tmp_path):
+    reg = "test-map:\n  primitive: vocabulary-set\n  source: machine.sh\n  gateway: 'verdict?'\n"
+    root = _vocab_root(tmp_path, registry_text=reg)
+    proc = _run(root, "--map", "test-map")
+    assert proc.returncode == 2
+    assert "branch_vocab.regex" in proc.stderr
+
+
+def test_vocab_set_invalid_regex_is_load_error(tmp_path):
+    reg = _VOCAB_REGISTRY.replace('"[A-Za-z][A-Za-z-]*"', '"[unclosed"')
+    root = _vocab_root(tmp_path, registry_text=reg)
+    proc = _run(root, "--map", "test-map")
+    assert proc.returncode == 2
+    assert "regex invalid" in proc.stderr
+
+
+# ── live rails (T-2658 registry entries against the real repo) ──────────────
+
+def test_live_inception_flow_vocab():
+    proc = _run(FRAMEWORK_ROOT, "--map", "aef-inception-flow")
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert "defer, go, no-go" in proc.stdout
+
+
+def test_live_audit_cron_vocab():
+    proc = _run(FRAMEWORK_ROOT, "--map", "aef-audit-cron")
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    assert "0, 1, 2" in proc.stdout
 
 
 # ── behavior parity of the migrated leg (live repo) ─────────────────────────
