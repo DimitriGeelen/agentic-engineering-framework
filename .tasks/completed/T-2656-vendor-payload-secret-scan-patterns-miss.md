@@ -8,12 +8,12 @@ description: >
   Fix: add to includes; extend fresh-machine sim test 6 payload-completeness to script
   DATA files and test 7 to present-but-644 + patternless cases.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/secret-scan.sh, bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T10:21:29Z
-last_update: 2026-07-28T11:48:59Z
-date_finished:
+last_update: 2026-07-28T11:53:12Z
+date_finished: 2026-07-28T11:53:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -231,3 +231,20 @@ ls .tasks/active/ | grep -q T-2661
 
 ### 2026-07-28T11:48:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b6062a17
+- **Timestamp:** 2026-07-28T11:53:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `ls .tasks/active/ | grep -q T-2661`
+
+### 2026-07-28T11:53:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2656: Vendor payload: .secret-scan-patterns missing from do_vendor includes - patternless
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T11:53:22Z
+# ============================================================================
+
+task_id: T-2656
+task_name: "Vendor payload: .secret-scan-patterns missing from do_vendor includes - patternless"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T10:21:29Z
+completed: 2026-07-28T11:53:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-28T13:53:00+02:00
+last_commit: 2026-07-28T13:53:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  .secret-scan-patterns + allowlist into do_vendor includes (832 T-276 finding 2) — vendored consumers no longer run a patternless scanner; patternless case now fails LOUD (T-2647 contract parity: unmissable WARNING, FW_SECRET_SCAN_STRICT=1 blocks, verified rc 0/1/0); data files mirrored into .agentic-framework/ directly (vendor-self has no root-data class — structural sync class + sim tests filed as T-2661)
+
+# Key outcomes
+outcomes:
+  - 'Resolution confirmed: `_secret_scan_config_dir` (secret-scan.sh:44-56) prefers project root, falls back to `.agentic-framework/` — so vendoring the data files is picked up with zero scanner change. Absent-file behavior WAS a one-line stderr note + `return 0` (secret-scan.sh:82) — the ignorable-note class T-2647 condemned for the missing-scanner case'
+  - '`.secret-scan-patterns` + `.secret-scan-allowlist` (same class) added to `do_vendor` includes; `fw vendor --dry-run` lists both. NB `fw vendor self` uses six separate `_self_vendor_*` class helpers with no root-data class — files mirrored into `.agentic-framework/` directly this task; the structural sync class is T-2661'
+  - 'Patternless now fails LOUD (T-2647 contract parity): unmissable multi-line WARNING naming the fix, fail-open by default, `FW_SECRET_SCAN_STRICT=1` blocks (verified: non-strict rc=0 + warning fires; strict rc=1; patterns-present path rc=0 unchanged)'
+  - 'Sim-test extension + `_self_vendor_root_data()` class + audit drift parity filed as **T-2661** (rationale: sim tests verify committed bytes + the helper class needs audit-side parity — bounded follow-up, not a rushed tail at urgent budget)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/.secret-scan-allowlist'
+  - '.agentic-framework/.secret-scan-patterns'
+  - 'agents/git/lib/secret-scan.sh'
+  - 'bin/fw'
+  - '.tasks/active/T-2656-vendor-payload-secret-scan-patterns-miss.md'
+  - '.tasks/active/T-2661-self-vendor-root-data-class--patternless.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-28T13:53:00"
+    action: "T-2656: .secret-scan-patterns + allowlist into do_vendor includes (832 T-276 finding 2) — vendored consumers no longer run a patternless scanner; patternless case now fails LOUD (T-2647 contract parity: unmissable WARNING, FW_SECRET_SCAN_STRICT=1 blocks, verified rc 0/1/0); data files mirrored into .agentic-framework/ directly (vendor-self has no root-data class — structural sync class + sim tests filed as T-2661)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 91 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 91
+  commits: 1
+  files_changed: 8
+  lines_added: 364
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2656-vendor-payload-secret-scan-patterns-miss.md
+generated_by: context-agent-hybrid
