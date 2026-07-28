@@ -9,8 +9,8 @@ from flask import Blueprint, abort
 from lib.arc_membership import scan_tasks_by_arc_membership
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
 from web.shared import (
-    PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan,
-    parse_frontmatter, load_latest_audit, get_all_task_metadata,
+    FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml as _load_yaml,
+    load_scan, parse_frontmatter, load_latest_audit, get_all_task_metadata,
     _auto_link_files,
 )
 from web.subprocess_utils import run_git_command
@@ -460,9 +460,12 @@ def project():
     categories = {}
     skip = {".git", ".tasks", ".context", "node_modules", ".pytest_cache", ".playwright-mcp", "__pycache__"}
 
-    def _add(cat, path, display_name=None):
-        rel = path.relative_to(PROJECT_ROOT)
-        doc_id = str(rel).replace("/", "--")
+    def _add(cat, path, display_name=None, root=None, id_prefix=""):
+        # T-2651 (OBS-097): framework-owned docs pass root=FRAMEWORK_ROOT and,
+        # in split-root installs, an id_prefix ("fw--") that project_doc routes
+        # back to FRAMEWORK_ROOT. Coincident roots emit no prefix — unchanged.
+        rel = path.relative_to(root or PROJECT_ROOT)
+        doc_id = id_prefix + str(rel).replace("/", "--")
         for suffix in (".md", ".yaml", ".yml"):
             doc_id = doc_id.removesuffix(suffix)
         categories.setdefault(cat, []).append({
@@ -486,16 +489,16 @@ def project():
             if not any(part in skip for part in f.parts):
                 _add("Design", f)
 
-    # Agent docs: agents/*/AGENT.md. OBS-097-allow: the /project surface is
-    # PROJECT_ROOT-relative END-TO-END (this listing's relative_to + the
-    # project_doc server's containment check) — flipping only this line to
-    # FRAMEWORK_ROOT makes relative_to() raise in split-root (500s the whole
-    # page, worse than the current silent omission). Split-root support needs
-    # a paired listing+serving dual-root change — follow-up scope in OBS-097.
-    agents_dir = PROJECT_ROOT / "agents"  # OBS-097-allow: see comment above
+    # Agent docs: agents/*/AGENT.md — FRAMEWORK-owned (T-2651, OBS-097).
+    # Paired with the fw-- routing in project_doc below; in split-root
+    # installs the vendored AGENT.md docs now surface instead of silently
+    # vanishing (T-2648 had allowlisted this site pending exactly this change).
+    agents_dir = FRAMEWORK_ROOT / "agents"
+    _fw_split = FRAMEWORK_ROOT.resolve() != PROJECT_ROOT.resolve()
     if agents_dir.is_dir():
         for f in sorted(agents_dir.glob("*/AGENT.md")):
-            _add("Agents", f)
+            _add("Agents", f, root=FRAMEWORK_ROOT,
+                 id_prefix="fw--" if _fw_split else "")
 
     # Project docs: remaining root .md files
     seen = {d["path"] for cat_docs in categories.values() for d in cat_docs}
@@ -536,22 +539,30 @@ def project_doc(doc):
     if not re_mod.match(r"^[A-Za-z0-9_.-]+$", doc):
         abort(404)
 
+    # T-2651 (OBS-097): fw-- prefixed doc_ids are framework-owned docs listed
+    # from FRAMEWORK_ROOT in split-root installs — route them back to that
+    # root, with containment checked against the SAME root below.
+    base_root = PROJECT_ROOT
+    if doc.startswith("fw--"):
+        base_root = FRAMEWORK_ROOT
+        doc = doc[len("fw--"):]
+
     # Support -- as path separator for subdirectory docs
     rel_base = doc.replace("--", "/")
     doc_path = None
     for ext in (".md", ".yaml", ".yml"):
-        candidate = PROJECT_ROOT / (rel_base + ext)
+        candidate = base_root / (rel_base + ext)
         if candidate.exists():
             doc_path = candidate
             break
     if doc_path is None:
         # Fallback: try direct .md match without -- expansion
-        doc_path = PROJECT_ROOT / f"{doc}.md"
+        doc_path = base_root / f"{doc}.md"
     if not doc_path.exists():
         abort(404)
-    # Ensure path is within PROJECT_ROOT
+    # Ensure path is within the routing root
     try:
-        doc_path.resolve().relative_to(PROJECT_ROOT.resolve())
+        doc_path.resolve().relative_to(base_root.resolve())
     except ValueError:
         abort(404)
 
