@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2650: OBS-097 split-root smoke test: all parameterless blueprint routes render under split PROJECT_ROOT/FRAMEWORK_ROOT
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T08:52:52Z
+# ============================================================================
+
+task_id: T-2650
+task_name: "OBS-097 split-root smoke test: all parameterless blueprint routes render under split PROJECT_ROOT/FRAMEWORK_ROOT"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T08:45:00Z
+completed: 2026-07-28T08:52:27Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'tests/web test exists that runs the app under split roots in a subprocess and asserts every parameterless GET route returns < 500'
+  - 'The test FAILS when the G-004 defect shape is reintroduced (negative check: temporarily resolving framework lib via PROJECT_ROOT in a blueprint makes it red)'
+  - 'Full tests/web suite green including the new test'
+  - 'OBS-097 concern entry updated: CI-smoke leg built (only /project dual-root remains open)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-28 — Subprocess isolation over in-process reload'
+    chose: 'boot the app in a subprocess with PROJECT_ROOT env pointing at a synthetic consumer.'
+    rationale: 'in-process reload of web.shared under a foreign root is the documented OBS-094 tarpit — module-level constants leak into every later test; subprocess sidesteps module identity entirely.'
+    alternatives_rejected: ['conftest-style pop-and-reimport of the web.* namespace.']
+  - decision: '2026-07-28 — Negative-check findings (two course corrections during build)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2650-obs-097-split-root-smoke-test-all-parame.md
+generated_by: context-agent-hybrid

@@ -1,18 +1,13 @@
 ---
-id: T-100196
-name: "Safe go-live path: reconciling fw go-live / integrate auto-merge-back (not
-  raw git merge)"
+id: T-2650
+name: "OBS-097 split-root smoke test: all parameterless blueprint routes render under split PROJECT_ROOT/FRAMEWORK_ROOT"
 description: >
-  Leg 2 of T-100195 (RCA T-100194). Detection now WARNs on a bidirectional fork (diverged-fork).
-  This task adds the reconciling ACTION: either fw integrate auto-merges origin/master
-  back into the working branch after each landing so they never drift, or a guarded
-  fw go-live verb that ff-only-checks and routes a forked branch to the T-2473 union
-  resolver / explicit reset instead of a bare git merge origin/master.
+  OBS-097 split-root smoke test: all parameterless blueprint routes render under split PROJECT_ROOT/FRAMEWORK_ROOT
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -26,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-05T17:29:21Z
-last_update: 2026-07-28T08:52:53Z
-date_finished:
+created: 2026-07-28T08:45:00Z
+last_update: 2026-07-28T08:52:27Z
+date_finished: 2026-07-28T08:52:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,97 +34,29 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-05T17:30:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-07T08:00:01Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-05T17:30:04Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      audit_severity: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-07T08:00:02Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-08T08:00:02Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-100196: Safe go-live path: reconciling fw go-live / integrate auto-merge-back (not raw git merge)
+# T-2650: OBS-097 split-root smoke test: all parameterless blueprint routes render under split PROJECT_ROOT/FRAMEWORK_ROOT
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Final structural leg of OBS-097 (832's split-root CI-smoke proposal, rail 253).
+T-2645/T-2648/T-2649 fixed the known instances and built grep-lints; this task
+adds the CLASS-level behavioral guard: a pytest that boots the Watchtower app
+in a SUBPROCESS with PROJECT_ROOT pointed at a synthetic consumer skeleton
+(FRAMEWORK_ROOT = repo, derived from file location) and GETs every
+parameterless route, failing on any 500/import error. Subprocess isolation
+deliberately avoids the OBS-094 in-process web.shared reload tarpit. This test
+would have caught the original G-004 (review.py import crash) at app-import
+time and the core.py relative_to class at request time.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Design decision recorded in `## Decisions`: which reconciling mechanism ships — (a) `fw integrate` auto-merges origin/master back into the working branch after each landing, (b) a guarded `fw go-live` verb that ff-only-checks and routes a forked branch to reconciliation, or (c) the host session tracks origin/master directly (no per-branch strand). Chosen with rationale vs the T-100194 fork evidence
-- [ ] The chosen mechanism refuses / safely reconciles a bidirectional fork instead of a bare `git merge origin/master` (the T-100194 explosion). Detection already exists (T-100195 `diverged-fork`); this leg consumes that signal to route the action
-- [ ] bats coverage: a forked fixture repo routes to reconciliation (not a raw conflicting merge); an ff-clean repo lands fast-forward; a merely-behind repo lands via one-way integrate — each asserted at the CLI surface
-- [ ] Landed on origin/master via `fw integrate` (the code lives on the trunk, not a stranded branch — the T-100194 meta-lesson), and vendored to `.agentic-framework/`
+- [x] tests/web test exists that runs the app under split roots in a subprocess and asserts every parameterless GET route returns < 500
+- [x] The test FAILS when the G-004 defect shape is reintroduced (negative check: temporarily resolving framework lib via PROJECT_ROOT in a blueprint makes it red)
+- [x] Full tests/web suite green including the new test
+- [x] OBS-097 concern entry updated: CI-smoke leg built (only /project dual-root remains open)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -195,6 +122,9 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/web/test_split_root_smoke.py -q
+out=$(grep -c "OBS-097" tests/web/test_split_root_smoke.py); test "$out" -ge 1
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -237,40 +167,14 @@ bvp_scores_proposed:
 
 ## Decisions
 
-### 2026-07-05 — Mechanism: session tracks origin/master directly (option c)
-- **Chose:** (c) the persistent session runs on `master` — no session branch —
-  with a lightweight `fw go-live` guard from (b) as defense-in-depth. Full design:
-  `docs/reports/T-100196-permanent-branch-hygiene-design.md`.
-- **Why:** only (c) satisfies the target invariant *"the session never holds a
-  commit that isn't on origin/master"* structurally rather than by discipline.
-  Real code already lands via worktree + `fw integrate` (gated), so the session
-  branch carries only governance state — which belongs on master anyway. The
-  session branch is pure liability: the sole source of drift (T-100194 fork,
-  T-100199 strands).
-- **Rejected:** (a) auto-merge-back and (b) go-live-guard-only — both leave a
-  session branch alive, i.e. leave the drift class alive and merely slow it.
+### 2026-07-28 — Subprocess isolation over in-process reload
+- **Chose:** boot the app in a subprocess with PROJECT_ROOT env pointing at a synthetic consumer.
+- **Why:** in-process reload of web.shared under a foreign root is the documented OBS-094 tarpit — module-level constants leak into every later test; subprocess sidesteps module identity entirely.
+- **Rejected:** conftest-style pop-and-reimport of the web.* namespace.
 
-### 2026-07-05 — Slice ordering: additive tooling now, workflow flip on GO
-- **Chose:** ship Slice 2 (`fw worktree gc`) and the guard now (additive,
-  reversible, mechanism-agnostic); hold Slice 1 (flip the live session onto
-  master) and Slice 4 (Tier-0 debris prune) for explicit human GO.
-- **Why:** Slice 1 changes the operator's daily workflow and Slice 4 is
-  destructive (Tier-0) — both require authority, not just initiative
-  (§Autonomous Mode Boundaries). Slice 2/guard need neither.
-
-## Slice status
-- **Slice 2 — `fw worktree gc`:** SHIPPED. `lib/worktree.sh` (`do_worktree_gc`,
-  `_wt_work_landed` content-verify), `bin/fw worktree gc` route,
-  `tests/unit/t100196_worktree_gc.bats` (7/7 green, incl. a control test proving
-  `git cherry` gives the false "unlanded" verdict gc fixes).
-- **Slice 1 — session-on-master (keystone):** SHIPPED (human GO 2026-07-05).
-  `fw sync` (rebase+push trunk reconcile, `bin/fw` sync route, non-master advisory,
-  pipe-status-safe) + CLAUDE.md §Trunk-Based Session Flow codification. Guard
-  (Slice 3) already present via T-100195 `diverged-fork` in doctor. Remaining
-  operator action: the one-time flip of the main checkout to master
-  (`git checkout -B master origin/master` — t2416 is a clean ancestor, FF-safe).
-- **Slice 4 — migrate/prune existing strands:** awaits human Tier-0 approval
-  (`fw worktree gc` classifies; `git push origin <strand>` preserves; Tier-0 `git branch -D`).
+### 2026-07-28 — Negative-check findings (two course corrections during build)
+- **Finding 1 (coverage hole):** first negative run stayed GREEN — the G-004 import is LAZY inside /review/<task_id>'s handler, and the parameterless sweep skips parameterized routes. Fix: seed T-9999 in the consumer skeleton + curated probes (/review, /tasks, /inception) so the lazy paths execute.
+- **Finding 2 (sys.path masking):** second negative run STILL green with only review.py broken — sys.path is process-global, so approvals.py's correct insert covers review.py's broken one. The faithful G-004 reproduction (all three sites broken, the actual origin state) reds correctly on ModuleNotFoundError: dispatch_pause. Limit documented in the test docstring: single-site regressions are the T-2648 grep-lint's layer; this smoke owns whole-class and request-time shapes (relative_to, subprocess paths, templates).
 
 ## Decision
 
@@ -284,15 +188,19 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-07-05T17:29:21Z — task-created [task-create-agent]
+### 2026-07-28T08:45:00Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100196-safe-go-live-path-reconciling-fw-go-live.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2650-obs-097-split-root-smoke-test-all-parame.md
 - **Context:** Initial task creation
 
-### 2026-07-05T17:33:28Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: later → now (auto-sync)
+## Reviewer Verdict (v1.5)
 
-### 2026-07-05T17:36:36Z — status-update [task-update-agent]
-- **Change:** horizon: now → later
-- **Change:** status: started-work → captured (auto-sync)
+- **Scan ID:** R-d5d23327
+- **Timestamp:** 2026-07-28T08:52:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-28T08:52:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
