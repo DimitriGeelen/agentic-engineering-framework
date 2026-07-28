@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2664: corpus map + conformance rail: tier0-escalation (P4 falsifiability test)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T19:59:33Z
+# ============================================================================
+
+task_id: T-2664
+task_name: "corpus map + conformance rail: tier0-escalation (P4 falsifiability test)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T16:18:54Z
+completed: 2026-07-28T19:59:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-28T18:45:17+02:00
+last_commit: 2026-07-28T21:56:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  regression-history baseline + tier0-escalation pair-draft seed. provenance resolved + registers converged — 832 rail 281/285 (package ingested 832-side under their T-019, byte-identical prototype, T-175 supersession); report §8 dedupe map (T-2668==T-279, T-2670==T-280, lens divergence surfaced); 832 pairing article tier0-escalation.workflow.yaml accepted; seed raw-byte URLs shared (rails 290/291). AEF-side pre-validation logged — derive→generate→diff IDENTICAL on draft-tier0-escalation v1; compile WARNs triaged (hum_2_reject serviceTask-in-sovereignty polish candidate; authority-lane owner-fallback + gateway WARNs expected for mirror maps). 832 pre-validation actioned — dispatch-loop-relabel v2 (agt_7_handoff_back lane fix per rail 294, round-trip IDENTICAL, live-verified; promotion candidate pending operator taste); authority-collapse diff vs 832 tier0 article logged (resume topology convergent = P4 data point; our 5 extra nodes baseline-motivated; their rejection-write gap reported back at 297). AC-4 prep — ready-to-paste vocabulary-set rail entry drafted (disposition? gateway vs approvals.py:553 decide_approval enum guard; expect green first-pass; apply only at promotion to avoid checker load-error on missing map id). 832 article v2 re-pinned (12392 bytes, sha 93789349f526, byte-exact from rail 299) — rejection-write gap RESOLVED their side (frw_7_record, framework lane, Watchtower/CLI asymmetry honest); T-641 read-back strengthens finding (rejected record load-bearing in guard loop); acked at 301. PROMOTED — aef-tier0-escalation v1 (operator GO; uuid carried af4b9cc6; draft removed; prove PASS uuid-preserved canonical-identical); conformance rail GREEN first-pass (vocabulary-set disposition? vs decide_approval enum, live pin test added, 22/22); lint 2-baseline @ 7 maps; the P4 falsifiability test map is live+railed
+
+# Key outcomes
+outcomes:
+  - 'Regression-history baseline captured in task body BEFORE mapping: list the'
+  - '`draft-tier0-escalation` seeded in the designer store via the arc-014'
+  - 'On operator approval: promoted to `aef-tier0-escalation`, corpus lint'
+  - 'Conformance-rail entry added to `tools/conformance-registry.yaml` (primitive'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'AC-4 prep — ready-to-paste vocabulary-set rail entry drafted (disposition? gateway vs approvals.py:553 decide_approval enum guard; expect green first-pass; apply only at promotion to avoid checker load-error on missing map id)'
+    source: git-mined
+  - description: '832 pre-validation actioned — dispatch-loop-relabel v2 (agt_7_handoff_back lane fix per rail 294, round-trip IDENTICAL, live-verified; promotion candidate pending operator taste); authority-collapse diff vs 832 tier0 article logged (resume topology convergent = P4 data point; our 5 extra nodes baseline-motivated; their rejection-write gap reported back at 297)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/designer/projects/aef-tier0-escalation/meta.json'
+  - '.context/designer/projects/aef-tier0-escalation/v1.bpmn'
+  - '.context/designer/projects/draft-dispatch-loop-relabel/meta.json'
+  - '.context/designer/projects/draft-dispatch-loop-relabel/v2.bpmn'
+  - '.context/designer/projects/draft-tier0-escalation/meta.json'
+  - '.context/designer/projects/draft-tier0-escalation/v1.bpmn'
+  - '.context/working/focus.yaml'
+  - 'docs/reports/T-2662-workflow-process-layer-package-review.md'
+  - '.tasks/active/T-2664-corpus-map--conformance-rail-tier0-escal.md'
+  - 'tests/unit/test_corpus_conformance_registry.py'
+  - 'tools/conformance-registry.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-28T18:45:17"
+    action: "T-2664: regression-history baseline + tier0-escalation pair-draft seed"
+  - time: "2026-07-28T19:29:56"
+    action: "T-2664: provenance resolved + registers converged — 832 rail 281/285 (package ingested 832-side under their T-019, byte-identical prototype, T-175 supersession); report §8 dedupe map (T-2668==T-279, T-2670==T-280, lens divergence surfaced); 832 pairing article tier0-escalation.workflow.yaml accepted; seed raw-byte URLs shared (rails 290/291)"
+  - time: "2026-07-28T19:52:23"
+    action: "T-2664: AEF-side pre-validation logged — derive→generate→diff IDENTICAL on draft-tier0-escalation v1; compile WARNs triaged (hum_2_reject serviceTask-in-sovereignty polish candidate; authority-lane owner-fallback + gateway WARNs expected for mirror maps)"
+  - time: "2026-07-28T19:56:37"
+    action: "T-2664: 832 pre-validation actioned — dispatch-loop-relabel v2 (agt_7_handoff_back lane fix per rail 294, round-trip IDENTICAL, live-verified; promotion candidate pending operator taste); authority-collapse diff vs 832 tier0 article logged (resume topology convergent = P4 data point; our 5 extra nodes baseline-motivated; their rejection-write gap reported back at 297)"
+  - time: "2026-07-28T19:59:57"
+    action: "T-2664: AC-4 prep — ready-to-paste vocabulary-set rail entry drafted (disposition? gateway vs approvals.py:553 decide_approval enum guard; expect green first-pass; apply only at promotion to avoid checker load-error on missing map id)"
+  - time: "2026-07-28T21:16:28"
+    action: "T-2664: 832 article v2 re-pinned (12392 bytes, sha 93789349f526, byte-exact from rail 299) — rejection-write gap RESOLVED their side (frw_7_record, framework lane, Watchtower/CLI asymmetry honest); T-641 read-back strengthens finding (rejected record load-bearing in guard loop); acked at 301"
+  - time: "2026-07-28T21:56:21"
+    action: "T-2664: PROMOTED — aef-tier0-escalation v1 (operator GO; uuid carried af4b9cc6; draft removed; prove PASS uuid-preserved canonical-identical); conformance rail GREEN first-pass (vocabulary-set disposition? vs decide_approval enum, live pin test added, 22/22); lint 2-baseline @ 7 maps; the P4 falsifiability test map is live+railed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 220 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [process-layer, corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 220
+  commits: 7
+  files_changed: 11
+  lines_added: 775
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2664-corpus-map--conformance-rail-tier0-escal.md
+generated_by: context-agent-hybrid

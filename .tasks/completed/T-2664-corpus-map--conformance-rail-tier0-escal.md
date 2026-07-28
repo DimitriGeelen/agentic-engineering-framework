@@ -10,12 +10,12 @@ description: >
   inside the delivered mirror+rails architecture — the package's core experiment,
   never run (T-2662 gap 6).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [process-layer, corpus]
-components: []
+components: [tests/unit/test_corpus_conformance_registry.py, tools/conformance-registry.yaml]
 related_tasks: [T-2662, T-2652]
 arc_id: designer-corpus
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -29,8 +29,8 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:18:54Z
-last_update: 2026-07-28T17:28:25Z
-date_finished:
+last_update: 2026-07-28T19:59:17Z
+date_finished: 2026-07-28T19:59:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -340,6 +340,27 @@ python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q
 
 ## Evolution
 
+### 2026-07-28 — pair-round produced findings BOTH directions (plan assumed one-way)
+- **Discovery:** The plan framed 832's role as validator of OUR draft. In practice the
+  authority-collapse diff found a code-truth gap in THEIR pairing article (no
+  rejection-side write) which they verified as load-bearing (check-tier0.sh reads the
+  rejected record back on retry, T-641) and shipped as their v2. The P4 experiment's
+  first real yield was a cross-repo map correction, before any rail existed.
+- **Plan impact:** "Pair-draft ritual" undersold — it is a bidirectional review, not a
+  seed-and-approve pipeline. T-2665/66/67 should budget for findings flowing back to 832.
+- **Triggered:** 832's T-288 (their fix) + T-289 (parked vocab question); re-pin of the
+  pairing article (sha 93789349f526).
+
+### 2026-07-28 — promotion is manual; prove rewrites the store file
+- **Discovery:** No `promote` verb exists (T-2623 shipped draft-new only) — promotion is
+  a hand transform (id/title cleanup, uuid carry, draft removal). Also `fw corpus prove`
+  regenerates the store file in generator dialect (uuid preserved, canonical identical) —
+  the committed bytes are prove's output, not the hand-transformed input.
+- **Plan impact:** AC-3's "promoted" step has no tooling; if drafts recur at volume a
+  `fw designer draft promote` verb is the obvious Level-C codification (not filed — two
+  more dogfood maps first, T-2665/66/67 will tell).
+- **Triggered:** nothing yet; noted for the T-2652 slice-5 discussion.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -393,3 +414,20 @@ python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q
 ### 2026-07-28T16:39:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f848084e
+- **Timestamp:** 2026-07-28T19:59:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Conformance-rail entry added to `tools/conformance-registry.yaml` (primitive
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/conformance-registry.yaml in: Conformance-rail entry added to `tools/conformance-registry.yaml` (primitive`
+
+### 2026-07-28T19:59:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
