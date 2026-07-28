@@ -889,6 +889,8 @@ _ELIGIBLE_STATUS = {"started-work", "captured"}
 # parity test (tests/unit/t2497_resolver_bvp_rank.bats). If the F8 cost formula or
 # the driver-weight model changes in bvp.sh, update here too — the parity test is
 # the tripwire.
+# PROJECT_ROOT deliberate (T-2648/OBS-097 allowlist): per-project policy
+# instance (T-2229 --init model), parity with bvp.sh's own PROJECT_ROOT read.
 _BVP_POLICY = PROJECT_ROOT / "policy" / "value-drivers.yaml"
 _TSHIRT_COST = {"S": 2, "M": 4, "L": 6, "XL": 8}
 # Quadrant priority for the picker: HV-LC first, then value-leaning (HV-HC before

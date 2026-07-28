@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2648: OBS-097 grep-lint: audit check blocking PROJECT_ROOT resolution of framework-owned
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T08:28:49Z
+# ============================================================================
+
+task_id: T-2648
+task_name: "OBS-097 grep-lint: audit check blocking PROJECT_ROOT resolution of framework-owned"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T08:07:24Z
+completed: 2026-07-28T08:25:09Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Audit structure check exists that greps framework Python (web/, lib/) for PROJECT_ROOT-resolution of framework-owned asset dirs (lib, agents, policy, bin, web) and reports each offending file:line'
+  - 'The 8 instances found at calibration are each dispositioned: fixed to FRAMEWORK_ROOT, or explicitly allowlisted with a stated reason (per-project-state files are legitimate PROJECT_ROOT)'
+  - 'Audit runs clean (no OBS-097 findings) after dispositions land'
+  - 'A regression test pins the lint: a synthetic offending line is detected; the allowlist suppresses only its stated entries'
+  - 'OBS-097 concern entry updated: prevention leg ''grep-lint'' marked built (CI smoke leg remains open scope)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-28 — Disposition split of the 8 calibration instances'
+    chose: '4 fixed to FRAMEWORK_ROOT (designer.py pin + draft-new fw path, approvals.py batch fw path, cron.py FW_BIN); 4 allowlisted (bvp.py POLICY_PATH+RUBRIC_PATH and resolver.py _BVP_POLICY — per-project policy INSTANCES per the T-2229 `fw bvp driver --init` seeding model, parity with bvp.sh''s own PROJECT_ROOT reads; core.py /project agents listing — see next decision).'
+    rationale: 'lib/bvp.sh lines 159/591 deliberately read PROJECT_ROOT/policy/value-drivers.yaml and --init copies the framework template INTO the project; flipping the web/lib mirrors would break parity and the per-project driver model.'
+    alternatives_rejected: ['blanket-fixing all 8 — would have broken the BVP per-project model and (core.py) crashed /project in split-root.']
+  - decision: '2026-07-28 — core.py agents listing: revert + OBS-097-allow annotation, not fix'
+    chose: 'keep PROJECT_ROOT with an inline `OBS-097-allow:` annotation.'
+    rationale: 'the /project surface is PROJECT_ROOT-relative END-TO-END — the listing''s `relative_to(PROJECT_ROOT)` and the project_doc server''s containment check both assume it. A lone resolution flip makes relative_to() raise in split-root: the whole page 500s, strictly worse than today''s silent omission of agent docs. The paired listing+serving dual-root change is registered as open scope in OBS-097.'
+    alternatives_rejected: ['shipping the flip (initially applied, caught while reading the serving path during live-verify, before commit).']
+  - decision: '2026-07-28 — Allowlist mechanism: semantic content match + inline annotation, not path-prefix'
+    chose: 'allowlist by hit-line content (the two policy-instance filenames) plus an explicit `OBS-097-allow:` in-source annotation that must carry a stated reason.'
+    rationale: 'path-prefix allowlists (T-1881 style) would suppress FUTURE new violations in the same files; content matching keeps the ratchet tight while annotations stay visible in review.'
+    alternatives_rejected: ['file-level exemption table inside the check — drifts from source and hides new violations in exempted files.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2648-obs-097-grep-lint-audit-check-blocking-p.md
+generated_by: context-agent-hybrid

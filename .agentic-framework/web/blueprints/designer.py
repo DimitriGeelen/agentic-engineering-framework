@@ -16,11 +16,13 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, Response, redirect, request
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
 
 bp = Blueprint("designer", __name__)
 
-_PIN_FILE = PROJECT_ROOT / "policy" / "designer-pin.yaml"
+# T-2648 (OBS-097): pin + fw binary are FRAMEWORK-owned (vendored for
+# consumers) — PROJECT_ROOT resolution breaks split-root installs.
+_PIN_FILE = FRAMEWORK_ROOT / "policy" / "designer-pin.yaml"
 
 
 def _pin():
@@ -288,7 +290,7 @@ def designer_draft_new():
         return Response("draft name: 1-48 chars, letters/digits/space/dash only",
                         status=400, mimetype="text/plain")
     r = subprocess.run(
-        [str(PROJECT_ROOT / "bin" / "fw"), "designer", "draft", "new", name],
+        [str(FRAMEWORK_ROOT / "bin" / "fw"), "designer", "draft", "new", name],
         capture_output=True, text=True, timeout=60, cwd=str(PROJECT_ROOT),
     )
     # mirror the CLI's tr 'A-Z _' 'a-z--' normalization

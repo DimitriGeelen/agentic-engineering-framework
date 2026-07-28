@@ -15,7 +15,7 @@ from flask import Blueprint, jsonify, request
 
 logger = logging.getLogger(__name__)
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
 
 bp = Blueprint("cron", __name__)
 
@@ -29,8 +29,9 @@ REGISTRY_PATH = PROJECT_ROOT / ".context" / "cron-registry.yaml"
 # Where cron audit output lands
 AUDIT_CRON_DIR = PROJECT_ROOT / ".context" / "audits" / "cron"
 
-# FW binary for generate command
-FW_BIN = PROJECT_ROOT / "bin" / "fw"
+# FW binary for generate command — FRAMEWORK-owned (T-2648, OBS-097):
+# consumers have no bin/fw at project root, only .agentic-framework/bin/fw.
+FW_BIN = FRAMEWORK_ROOT / "bin" / "fw"
 
 
 # ---------------------------------------------------------------------------

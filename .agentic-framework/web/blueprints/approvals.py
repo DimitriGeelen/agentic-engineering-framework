@@ -683,7 +683,7 @@ def complete_batch():
 
     completed = []
     errors = []
-    fw_path = str(PROJECT_ROOT / "bin" / "fw")
+    fw_path = str(FRAMEWORK_ROOT / "bin" / "fw")
 
     for task_id in ready_tasks:
         try:

@@ -486,8 +486,13 @@ def project():
             if not any(part in skip for part in f.parts):
                 _add("Design", f)
 
-    # Agent docs: agents/*/AGENT.md
-    agents_dir = PROJECT_ROOT / "agents"
+    # Agent docs: agents/*/AGENT.md. OBS-097-allow: the /project surface is
+    # PROJECT_ROOT-relative END-TO-END (this listing's relative_to + the
+    # project_doc server's containment check) — flipping only this line to
+    # FRAMEWORK_ROOT makes relative_to() raise in split-root (500s the whole
+    # page, worse than the current silent omission). Split-root support needs
+    # a paired listing+serving dual-root change — follow-up scope in OBS-097.
+    agents_dir = PROJECT_ROOT / "agents"  # OBS-097-allow: see comment above
     if agents_dir.is_dir():
         for f in sorted(agents_dir.glob("*/AGENT.md")):
             _add("Agents", f)

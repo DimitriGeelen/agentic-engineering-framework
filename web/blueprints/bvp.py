@@ -34,6 +34,9 @@ from web.shared import PROJECT_ROOT
 
 bp = Blueprint("bvp", __name__)
 
+# PROJECT_ROOT deliberate (T-2648/OBS-097 allowlist): value-drivers.yaml is a
+# per-project policy INSTANCE seeded from the framework template by
+# `fw bvp driver --init` (T-2229) — not a framework-owned asset.
 POLICY_PATH = PROJECT_ROOT / "policy" / "value-drivers.yaml"
 PROPOSALS_PATH = PROJECT_ROOT / ".context" / "bvp-driver-proposals.jsonl"
 TSHIRT = {"S": 2, "M": 4, "L": 6, "XL": 8}
@@ -141,6 +144,7 @@ def _driver_names(policy: dict) -> dict[str, str]:
 # (F1+) parsed from policy/value-drivers.yaml `rationale` field which embeds
 # the 0-5 levels inline. Missing rubric → empty list; template renders no
 # expand block for that driver (graceful degrade).
+# PROJECT_ROOT deliberate — per-project instance, seeded by --init (T-2229).
 RUBRIC_PATH = PROJECT_ROOT / "policy" / "bvp-scoring-rubric.md"
 
 

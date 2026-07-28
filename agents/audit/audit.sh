@@ -1161,6 +1161,55 @@ else
          "Migrate to lib/arc_membership.{sh,py} (arc_tasks_for / scan_tasks_by_arc_membership). See T-1880 for pattern. Silent-corpus risk class L-397."
 fi
 
+# T-2648 (OBS-097, 832's G-004 class): split-root asset-resolution lint.
+# Framework-owned dirs (lib/ agents/ policy/ bin/ web/) resolved via
+# PROJECT_ROOT are invisible bugs in this repo (roots coincide) but break
+# every split-root consumer — the failing path structurally cannot fire
+# where the code is developed (same class as OBS-096 / T-1633). Origin:
+# T-2645 fixed 3 sys.path sites 832 reported; T-2648 calibration found 5
+# more live (designer pin, 3× bin/fw subprocess paths, agents/ dir read).
+# Scope: Python under web/ and lib/ (shell uses different resolution
+# idioms — follow-up scope, see OBS-097). Correct resolution is
+# FRAMEWORK_ROOT (web/shared.py) or Path(__file__)-derived in lib/.
+#
+# Semantic allowlist (NOT path-prefix): lines referencing the two
+# per-project policy INSTANCE files (value-drivers.yaml,
+# bvp-scoring-rubric.md — seeded from the framework template by
+# `fw bvp driver --init`, T-2229) are legitimate PROJECT_ROOT reads;
+# parity with lib/bvp.sh's own PROJECT_ROOT resolution. A site may also
+# carry an inline `OBS-097-allow:` annotation WITH a stated reason —
+# for surfaces that are PROJECT_ROOT-relative end-to-end where a lone
+# resolution flip would make things worse (e.g. core.py /project listing,
+# whose relative_to+serving pair both assume PROJECT_ROOT).
+# Failure mode: FAIL — this exact class shipped a dead /review queue to
+# a consumer (832 rail 253) and two silently-dead surfaces.
+splitroot_violations=0
+splitroot_evidence=""
+splitroot_pattern='PROJECT_ROOT[[:space:]]*/[[:space:]]*["'\''](lib|agents|policy|bin|web)["'\'']'
+for scan_dir in web lib; do
+    [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
+    while IFS= read -r hit; do
+        [ -z "$hit" ] && continue
+        case "$hit" in
+            # Per-project policy instances (T-2229 --init model).
+            *value-drivers.yaml*|*bvp-scoring-rubric.md*) continue ;;
+            # Explicit annotated exemption (must carry a reason in-source).
+            *OBS-097-allow:*) continue ;;
+            *tests/*|*docs/*) continue ;;
+        esac
+        splitroot_violations=$((splitroot_violations + 1))
+        splitroot_evidence="$splitroot_evidence$hit\n"
+    done < <(grep -RnE "$splitroot_pattern" --include='*.py' \
+                   "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
+done
+if [ "$splitroot_violations" -eq 0 ]; then
+    pass "No PROJECT_ROOT resolution of framework-owned assets in web/ + lib/ Python (T-2648, OBS-097)"
+else
+    fail "Found $splitroot_violations PROJECT_ROOT resolution(s) of framework-owned assets (breaks split-root consumers)" \
+         "$(printf '%b' "$splitroot_evidence" | head -5)" \
+         "Resolve via FRAMEWORK_ROOT (web/shared.py) or Path(__file__)-derived root in lib/. If the file is genuinely per-project state, extend the allowlist in this check WITH a stated reason. See OBS-097 / T-2645 / T-2648."
+fi
+
 # T-1975 (L-417 prevention): stale-slice-reference scan.
 # When a slice ships, satellite text/tests referencing "ship in T-NNNN"
 # become stale and contradict reality. Origin: T-1971/T-1972/T-1973/T-1974
