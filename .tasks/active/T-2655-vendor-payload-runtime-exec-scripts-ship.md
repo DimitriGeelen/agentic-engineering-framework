@@ -8,7 +8,7 @@ description: >
   scan. Fix: git update-index --chmod=+x on runtime-exec'd scripts; audit for other
   exec'd payload scripts.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T10:20:51Z
-last_update: '2026-07-28T10:30:08Z'
+last_update: 2026-07-28T11:39:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,14 +72,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 T-276 re-vendor finding 1 (rail 269): `secret-scan.sh` + `master-guard.sh`
+are stored 100644 in git, so a fresh vendor/clone delivers them non-executable
+and any `-x`-guarded invocation in the pre-commit chain silently skips them.
+Fix: `git update-index --chmod=+x` on the affected scripts (source + vendored
+copies), after confirming from `agents/git/lib/hooks.sh` which invocations are
+actually mode-sensitive (exec vs `bash script.sh` — the latter ignores mode).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Invocation audit recorded — **KEY FINDING: modes are NOT load-bearing on current source.** T-2061 (2026-06-08) already made both invocations mode-insensitive: hooks.sh gates on `-f` (not `-x`) and invokes via `bash "$SCRIPT"` (hooks.sh:294-299, explicit comments "exec bit irrelevant for vendored copies"). 832's observed skip therefore points at a **stale installed `.git/hooks/pre-commit`** (pre-T-2061 vintage with the old `-x` gate) on their consumer — fix on their side is `fw git install-hooks` re-run (the PL-078 VERSION-marker mechanism exists to redeploy); relayed on the rail
+- [x] Both scripts stored 100755 anyway (source + vendored copies; `git ls-files -s` confirms 4×100755) — defense-in-depth: shebang'd executables should carry the exec bit regardless of the current caller's tolerance
+- [x] Same-class sweep: only `-x` guards remaining in the hook chain are `[ -x "$PROJECT_ROOT/bin/fw" ]` (hooks.sh:709,752) — bin/fw is already 100755. No further mode-sensitive invocations found
+- [x] `git checkout-index` probe: both scripts land `-rwxr-xr-x` from the index
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +119,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(git ls-files -s agents/git/lib/secret-scan.sh agents/git/lib/master-guard.sh .agentic-framework/agents/git/lib/secret-scan.sh .agentic-framework/agents/git/lib/master-guard.sh); [ "$(echo "$out" | grep -c 100755)" -eq 4 ]
+out=$(grep -c 'bash "\$SCANNER"\|bash "\$MASTER_GUARD"' agents/git/lib/hooks.sh); [ "$out" -ge 2 ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -212,3 +221,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2655-vendor-payload-runtime-exec-scripts-ship.md
 - **Context:** Initial task creation
+
+### 2026-07-28T11:39:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
