@@ -21,9 +21,19 @@
       "v": 4,
       "note": "agent: landing-surface bound \u2014 throw+catch eventDef binding=note:inbox (fw note intake, .context/inbox.yaml). Resolves operator flag 'emit trigger signal still points to nothing'. Rationale in node meta: only existing governed intake whose triage verbs match the map's act/dismiss/park downstream; corpus naming scheme bus:task-channel \u2192 note:inbox. Operator may override in editor.",
       "ts": 1785260885
+    },
+    {
+      "v": 5,
+      "note": "operator editor save \u2014 layout moves (fwk_5_emit, agt_6_handoff, anchor ports) BUT from a stale v3-era tab: v4 bindings+notes silently reverted (T-2589 stale-shadow class)",
+      "ts": 1785261078
+    },
+    {
+      "v": 6,
+      "note": "agent-merge: v5 operator layout kept + v4 note:inbox bindings/meta restored on throw+catch. Editor tabs opened before v4 must be reloaded before further edits (T-2589).",
+      "ts": 1785265472
     }
   ],
   "uuid": "d1682058-fe33-4a3b-b580-0f7b8e09ee60",
-  "latest": 4,
-  "updated": 1785260885
+  "latest": 6,
+  "updated": 1785265472
 }
