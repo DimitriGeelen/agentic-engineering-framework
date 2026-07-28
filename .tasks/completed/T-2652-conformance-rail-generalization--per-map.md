@@ -6,16 +6,16 @@ description: >
   Inception: Conformance rail generalization — per-map canonical sources for the 4
   unrailed corpus maps
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-28T09:30:51Z
-last_update: 2026-07-28T09:44:46Z
-date_finished:
+last_update: 2026-07-28T09:51:52Z
+date_finished: 2026-07-28T09:51:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -40,6 +40,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-28T09:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -135,15 +145,15 @@ implementation.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -235,7 +245,25 @@ misread decision outcomes as task statuses.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Both GO criteria are met. (1) All four maps have demonstrably enforced,
+mechanically extractable canonical sources — verified in code, not assumed
+(inception decide verbs, audit exit contract, resolver pause chain, budget
+ladder enum). (2) One generalization shape covers everything with zero
+unilateral schema change: a framework-side registry (`map_id → {primitive,
+source}`) drives one checker with three comparison primitives
+(transition-table — the shipped T-2621 leg; vocabulary-set equality;
+gate-referent reachability). The two 832-facing questions (in-map
+conforms-against mirror, `stateKind` convention) refine slice 5 but do not
+gate the decision: registry-operative + per-extractor state interpretation are
+the working defaults either way. The load-bearing surprise from the inventory
+— T-2621's collapse fits ZERO of the remaining maps, and `aef:meta state=` is
+already polysemous in the wild — makes the registry+primitives design
+necessary, not optional: pointing the current checker at any other map would
+misread decision outcomes as task statuses.
+
+**Date**: 2026-07-28T09:51:52Z
 
 ## Updates
 
@@ -244,3 +272,50 @@ misread decision outcomes as task statuses.
 
 ### 2026-07-28T09:32:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-28T09:51:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Both GO criteria are met. (1) All four maps have demonstrably enforced,
+mechanically extractable canonical sources — verified in code, not assumed
+(inception decide verbs, audit exit contract, resolver pause chain, budget
+ladder enum). (2) One generalization shape covers everything with zero
+unilateral schema change: a framework-side registry (`map_id → {primitive,
+source}`) drives one checker with three comparison primitives
+(transition-table — the shipped T-2621 leg; vocabulary-set equality;
+gate-referent reachability). The two 832-facing questions (in-map
+conforms-against mirror, `stateKind` convention) refine slice 5 but do not
+gate the decision: registry-operative + per-extractor state interpretation are
+the working defaults either way. The load-bearing surprise from the inventory
+— T-2621's collapse fits ZERO of the remaining maps, and `aef:meta state=` is
+already polysemous in the wild — makes the registry+primitives design
+necessary, not optional: pointing the current checker at any other map would
+misread decision outcomes as task statuses.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-77d57a0f
+- **Timestamp:** 2026-07-28T09:51:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b467485f
+- **Timestamp:** 2026-07-28T09:51:53Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `tools/corpus_conformance.py` | file | ✓ pass |
+| `lib/inception.sh` | file | ✓ pass |
+| `lib/resolver.py` | file | ✓ pass |
+| `docs/reports/T-2652-conformance-rail-generalization.md` | file | ✓ pass |
+| `T-2621` | task | ✓ pass |
+
+### 2026-07-28T09:51:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
