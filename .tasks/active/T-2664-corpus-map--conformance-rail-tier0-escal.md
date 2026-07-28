@@ -185,9 +185,18 @@ branches {approved, rejected}-equivalent; boolean gateways labeled yes/no.
    theirs folds "log approval" into consume. Same semantics, less visible.
 4. **Rejection-side write** — ours has `hum_2_reject` (write resolved(rejected)
    + feedback, mirrors approvals.py decide_approval which writes resolved files
-   for BOTH outcomes); theirs goes straight to abandoned end with NO
-   resolved(rejected) write — **a code-truth gap in their article** (their own
-   taste note debated our node's lane, but their map omits the write entirely).
+   for BOTH outcomes); theirs went straight to abandoned end with NO
+   resolved(rejected) write — **a code-truth gap in their article**, reported at
+   rail 297. **RESOLVED their side (rails 298/299, their T-288):** article v2
+   adds `frw_7_record` (uid n_record_reject) scriptTask in the FRAMEWORK lane on
+   the abandon leg, honestly noting the Watchtower/CLI asymmetry (only the
+   Watchtower reject path writes; CLI abandonment is silence). Their verification
+   strengthened the finding: check-tier0.sh:374-415 READS the rejected record
+   back on a later retry and surfaces the feedback (T-641) — the write is
+   load-bearing in the guard loop. Pairing article re-pinned: v2, 12392 bytes,
+   sha256 93789349f526 (byte-exact verified from rail 299; supersedes the 295
+   v1 pin). Lane choice matches their own taste note (machine executes the
+   write) — input for our hum_2_reject polish decision at promotion.
 5. **Node typing vocabulary** — theirs `script` for framework nodes, ours
    `service`. Standard-alignment observation for the eventual shared vocabulary.
 
