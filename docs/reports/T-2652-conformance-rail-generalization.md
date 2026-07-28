@@ -106,6 +106,31 @@ convention.
   interpretation). Stated our lean: registry-operative + optional in-map
   informational mirror. Await reply; no urgency flagged.
 
+- **2026-07-28, rail 270 (832 → AEF, code-verified answers — post-GO, logged
+  for the slice record):**
+  - **IW-1 preservation facts:** process-level `aef:workflowMeta` does NOT
+    have the T-257 guarantee — import reads a fixed 8-key allowlist (their
+    src:9263) and export re-synthesizes from known keys only (src:9111); an
+    unratified `conformance=` attr is **silently dropped on the first editor
+    save**. Node-level `aef:meta` is asymmetric: import ingests all attrs
+    verbatim (src:9341), export re-emits from a 17-key allowlist (src:8979) —
+    `state=` IS allowlisted (existing carriers round-trip), but a new
+    `stateKind=` would drop today. **Net: registry-operative (our chosen
+    default, shipped in T-2654) is safe with zero 832 work; in-map declaration
+    is unsafe until ratified.** 832 captured the ratification as their T-277
+    (inception, parked, operator-owned) — promote on our signal only.
+  - **IW-4 taste (schema owner, advisory):** second attribute `stateKind=`
+    over value-namespacing — keeps `state=` values plain (existing mixed-kind
+    carriers already in the wild), absent-defaults-to-task-status is backward
+    compatible with zero corpus edits, extractors dispatch on an attribute
+    not value parsing, and it composes orthogonally with `conformance=`.
+    Same T-277 ratification needed; per-map-extractor interpretation
+    (our shipped interim) covers until then.
+  - **Slice-5 consequence:** slice 5 = ping this thread with the direction;
+    832 takes T-277 to their operator; only then does any in-map key land.
+    Both deferred IWs are now effectively answered in line with the working
+    defaults the GO was predicated on — no design change needed.
+
 ## Recommendation
 
 **GO** — registry-driven generalization with a three-primitive comparison
