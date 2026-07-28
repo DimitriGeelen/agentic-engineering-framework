@@ -108,5 +108,17 @@ convention.
 
 ## Recommendation
 
-DEFER (filing-time stub) — to be replaced with GO/NO-GO once the source
-inventory and the 832 schema dialogue land.
+**GO** — registry-driven generalization with a three-primitive comparison
+library. Full rationale, slice list, and evidence in the task file
+(`.tasks/active/T-2652`, `## Recommendation`). In brief:
+
+- Both GO criteria met: all four maps have code-verified enforced sources;
+  one shape (framework-side registry → checker with transition-table /
+  vocabulary-set / gate-referent primitives) covers everything with zero
+  unilateral schema change.
+- The 832-facing IWs (in-map mirror, `stateKind`) refine slice 5 only —
+  registry-operative + per-extractor state interpretation are the defaults
+  either way.
+- Slices: (1) registry + primitive-library refactor, (2) inception-flow +
+  audit-cron vocabulary rails, (3) dispatch-loop rail, (4) session-lifecycle
+  annotation pair-round then rail, (5) 832-dependent schema hardening.

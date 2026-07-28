@@ -82,9 +82,9 @@ log explicitly deferred the generalization; the rail is the critical path for
 -->
 
 - **IW-1: Where does the conforms-against declaration live — in the map (aef:meta on the process element), a framework-side registry (map_id → extractor+source), or both?**
-  confidence: 1
-  disposition: open
-  rationale: registry needs zero schema change; in-map pointer is designer-visible and travels with bytes — 832's schema view needed before choosing
+  confidence: 2
+  disposition: deferred
+  rationale: registry-operative chosen as working default (zero schema change, GO does not gate on this); posted to 832 at rail 268 — their answer decides whether slice 5 adds an in-map informational mirror
 
 - **IW-2: One generic checker with per-source extractors, or per-map bespoke checkers?**
   confidence: 3
@@ -97,9 +97,9 @@ log explicitly deferred the generalization; the rail is the critical path for
   rationale: all four have code-backed machines (inception.sh:45 decide verbs; budget-gate.sh:327-333 ladder; resolver.py:107-127/568 pause chain; audit exit contract) — but session-lifecycle's map carries its machine only in prose notes, so its rail is blocked on an annotation pair-round first; none is theater-class
 
 - **IW-4: What is the carrier convention for non-task-status states (decision outcomes, budget levels) — namespace the existing aef:meta state= attribute, a new attribute, or per-extractor interpretation?**
-  confidence: 1
-  disposition: open
-  rationale: inception map already carries state=go/state=closed which the current checker would misread as task statuses if pointed at it
+  confidence: 2
+  disposition: deferred
+  rationale: per-extractor interpretation chosen as working default (registry entry scopes the meaning, so polysemy is contained per-map); posted to 832 at rail 268 — a ratified stateKind=/namespace convention would harden it in slice 5
 
 ## Exploration Plan
 
@@ -181,17 +181,46 @@ implementation.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — registry-driven generalization with a three-primitive comparison library; four slices, one of them gated on a map annotation pair-round.
 
 **Rationale:**
 
-Filing-time stub: evidence gathering starts now (source inventory per map + design dialogue with 832 on a machine-readable conforms-against pointer); recommendation will be replaced with GO/NO-GO before operator handoff.
+Both GO criteria are met. (1) All four maps have demonstrably enforced,
+mechanically extractable canonical sources — verified in code, not assumed
+(inception decide verbs, audit exit contract, resolver pause chain, budget
+ladder enum). (2) One generalization shape covers everything with zero
+unilateral schema change: a framework-side registry (`map_id → {primitive,
+source}`) drives one checker with three comparison primitives
+(transition-table — the shipped T-2621 leg; vocabulary-set equality;
+gate-referent reachability). The two 832-facing questions (in-map
+conforms-against mirror, `stateKind` convention) refine slice 5 but do not
+gate the decision: registry-operative + per-extractor state interpretation are
+the working defaults either way. The load-bearing surprise from the inventory
+— T-2621's collapse fits ZERO of the remaining maps, and `aef:meta state=` is
+already polysemous in the wild — makes the registry+primitives design
+necessary, not optional: pointing the current checker at any other map would
+misread decision outcomes as task statuses.
+
+**Proposed build slices (post-GO, separate tasks):**
+1. Registry + primitive-library refactor of `tools/corpus_conformance.py`
+   (task-lifecycle entry migrates in unchanged; audit loop iterates registry).
+2. Vocabulary-set rails: aef-inception-flow (decision vocab vs
+   `lib/inception.sh`) + aef-audit-cron (exit-code vocab vs audit contract).
+3. aef-dispatch-loop rail (pause-chain vocabulary vs `lib/resolver.py`).
+4. aef-session-lifecycle: annotation pair-round adding budget-ladder carriers
+   (map edit — pair-draft ritual with operator), THEN its rail.
+5. (pending 832's rail answer) in-map conformance mirror + `stateKind`
+   convention, only if they ratify the schema key.
 
 **Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Source inventory table with code-verified enforcement points:
+  `docs/reports/T-2652-conformance-rail-generalization.md`
+  (lib/inception.sh:45; agents/context/budget-gate.sh:327-333;
+  lib/resolver.py:107-127,568-597,718; audit exit contract)
+- All four maps read via `fw corpus explain` — end-state census: go/closed/
+  restarted/clean/triaged, zero task statuses (collapse-shape mismatch proven)
+- IW-1/IW-4 posted to 832 at rail offset 268 (dialogue log in artifact);
+  IW-2/IW-3 disposed answered at confidence 3
 
 ## Decisions
 
