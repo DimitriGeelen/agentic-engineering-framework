@@ -1,0 +1,36 @@
+# Conformance registry — which corpus maps have a conformance rail, and what
+# each conforms against (T-2652 GO, slice 1 / T-2654).
+#
+# This file is the single place a map opts into a rail. The checker
+# (tools/corpus_conformance.py) iterates these entries; the audit section
+# (agents/audit/audit.sh check_map_conformance) reports one line per entry.
+# Maps absent from this registry are descriptive-only by definition — the
+# T-2619 transitional rule (CLAUDE.md prose wins) applies to them until an
+# entry lands AND stays green.
+#
+# Entry shape:
+#   <map_id>:
+#     primitive: transition-table | vocabulary-set | gate-referent
+#     source: <repo-relative path to the enforced canonical artifact>
+#     # primitive-specific keys documented per primitive below.
+#
+# Primitives (see docs/reports/T-2652-conformance-rail-generalization.md):
+#   transition-table — collapse aef:meta state= carrier nodes to transition
+#     pairs (T-2621 walk: through non-carriers, terminate at carriers,
+#     same-state ignored) and compare against the source's `transitions:`
+#     list (entries flagged legacy: true excluded).
+#   vocabulary-set — compare an enforced enum/vocabulary against the map
+#     (slice 2-3 of T-2652; not yet implemented — registering a map with
+#     this primitive before the extractor lands is an error, not a skip).
+#   gate-referent — enforcement points cited by the map must resolve to
+#     live code (T-1984 ships_in sibling; not yet implemented).
+#
+# state= semantics are scoped PER ENTRY by its primitive+source (the T-2652
+# IW-4 working default): aef-task-lifecycle's carriers are task statuses;
+# a future inception-flow entry's carriers are decision outcomes. A ratified
+# designer-schema stateKind= convention (832 dialogue, rail 268) would
+# harden this in slice 5.
+
+aef-task-lifecycle:
+  primitive: transition-table
+  source: status-transitions.yaml

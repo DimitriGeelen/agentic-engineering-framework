@@ -1861,40 +1861,54 @@ PYEOF
 }
 check_designer_ghost_drift
 
-# T-2621: map-conformance rail — task-lifecycle corpus map vs enforced transitions.
-# First selective spec-conformance leg (T-2619 GO). The checker collapses the
-# map's state-carrier nodes (aef:meta state=) to transition pairs and compares
-# against status-transitions.yaml (legacy entries excluded). Divergence is the
-# finding, not a failure of the rail — the map graduates to detail-authority
-# only when this stays green (T-2619 cascading-detail model).
+# T-2621/T-2654: map-conformance rail — corpus maps vs their enforced machines.
+# Which maps have a rail, and what each conforms against, lives in
+# tools/conformance-registry.yaml (T-2652 GO slice 1); the checker dispatches
+# on each entry's primitive. One audit line per registry entry. Divergence is
+# the finding, not a failure of the rail — a map graduates to detail-authority
+# only when its entry stays green (T-2619 cascading-detail model).
 check_map_conformance() {
     local _tool="$PROJECT_ROOT/tools/corpus_conformance.py"
-    local _store="$PROJECT_ROOT/.context/designer/projects/aef-task-lifecycle"
-    if [ ! -f "$_tool" ] || [ ! -d "$_store" ]; then
+    local _registry="$PROJECT_ROOT/tools/conformance-registry.yaml"
+    local _store="$PROJECT_ROOT/.context/designer/projects"
+    if [ ! -f "$_tool" ] || [ ! -f "$_registry" ] || [ ! -d "$_store" ]; then
         return 0  # rail not applicable (consumer project / no corpus)
     fi
-    local _out _rc
-    _out=$(python3 "$_tool" --map aef-task-lifecycle --root "$PROJECT_ROOT" 2>&1)
-    _rc=$?
-    case "$_rc" in
-        0)
-            if echo "$_out" | grep -q "SKIP"; then
-                info "Map conformance: aef-task-lifecycle has no state-carrier annotations yet (rail dormant)"
-            else
-                pass "Map conformance: aef-task-lifecycle matches enforced transitions"
-            fi
-            ;;
-        1)
-            warn "Map conformance: aef-task-lifecycle diverges from enforced transitions (T-2621)" \
-                 "$(echo "$_out" | grep -E 'map-asserts|code-allows' | tr '\n' '; ')" \
-                 "Update the map (pair-draft round adding the missing edges) or fix status-transitions.yaml if the map is right — the rail must be green before the map graduates to detail-authority (T-2619)"
-            ;;
-        *)
-            warn "Map conformance: checker failed to load aef-task-lifecycle (T-2621)" \
-                 "$_out" \
-                 "Inspect .context/designer/projects/aef-task-lifecycle/ and tools/corpus_conformance.py"
-            ;;
-    esac
+    local _maps
+    _maps=$(python3 -c "
+import yaml
+doc = yaml.safe_load(open('$_registry')) or {}
+print('\n'.join(doc.keys()))
+" 2>/dev/null)
+    if [ -z "$_maps" ]; then
+        info "Map conformance: registry empty or unparseable — no maps opted into a rail"
+        return 0
+    fi
+    local _map _out _rc
+    while IFS= read -r _map; do
+        [ -n "$_map" ] || continue
+        _out=$(python3 "$_tool" --map "$_map" --root "$PROJECT_ROOT" 2>&1)
+        _rc=$?
+        case "$_rc" in
+            0)
+                if echo "$_out" | grep -q "SKIP"; then
+                    info "Map conformance: $_map has no state-carrier annotations yet (rail dormant)"
+                else
+                    pass "Map conformance: $_map matches enforced transitions"
+                fi
+                ;;
+            1)
+                warn "Map conformance: $_map diverges from its enforced machine (T-2621/T-2654)" \
+                     "$(echo "$_out" | grep -E 'map-asserts|code-allows' | tr '\n' '; ')" \
+                     "Update the map (pair-draft round) or fix the registry source if the map is right — the rail must be green before the map graduates to detail-authority (T-2619)"
+                ;;
+            *)
+                warn "Map conformance: checker failed to load $_map (T-2621/T-2654)" \
+                     "$_out" \
+                     "Inspect .context/designer/projects/$_map/, tools/conformance-registry.yaml, and tools/corpus_conformance.py"
+                ;;
+        esac
+    done <<< "$_maps"
 }
 check_map_conformance
 

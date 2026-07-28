@@ -106,4 +106,6 @@ def test_canonical_excludes_legacy(tmp_path):
         "  - {from: captured, to: started-work}\n"
         "  - {from: refined, to: started-work, legacy: true}\n"
     )
-    assert cc.canonical_transitions(tmp_path) == {("captured", "started-work")}
+    assert cc.canonical_transitions(tmp_path, "status-transitions.yaml") == {
+        ("captured", "started-work")
+    }
