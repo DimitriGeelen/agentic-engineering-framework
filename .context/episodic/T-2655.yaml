@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2655: Vendor payload: runtime-exec scripts ship 100644 - chmod+x secret-scan.sh master-guard.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-28T11:42:13Z
+# ============================================================================
+
+task_id: T-2655
+task_name: "Vendor payload: runtime-exec scripts ship 100644 - chmod+x secret-scan.sh master-guard.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T10:20:51Z
+completed: 2026-07-28T11:42:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-28T13:41:59+02:00
+last_commit: 2026-07-28T13:41:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  chmod +x secret-scan.sh + master-guard.sh in git (832 T-276 finding 1) — KEY: modes NOT load-bearing on current source (T-2061 already bash-invokes + -f-gates both); 832's skip = stale installed pre-commit (pre-T-2061 -x vintage), their fix = fw git install-hooks re-run; +x stored anyway as defense-in-depth; sweep found no other mode-sensitive hook-chain invocations; checkout-index probe green
+
+# Key outcomes
+outcomes:
+  - 'Invocation audit recorded — **KEY FINDING: modes are NOT load-bearing on current source.** T-2061 (2026-06-08) already made both invocations mode-insensitive: hooks.sh gates on `-f` (not `-x`) and invokes via `bash "$SCRIPT"` (hooks.sh:294-299, explicit comments "exec bit irrelevant for vendored copies"). 832''s observed skip therefore points at a **stale installed `.git/hooks/pre-commit`** (pre-T-2061 vintage with the old `-x` gate) on their consumer — fix on their side is `fw git install-hooks` re-run (the PL-078 VERSION-marker mechanism exists to redeploy); relayed on the rail'
+  - 'Both scripts stored 100755 anyway (source + vendored copies; `git ls-files -s` confirms 4×100755) — defense-in-depth: shebang''d executables should carry the exec bit regardless of the current caller''s tolerance'
+  - 'Same-class sweep: only `-x` guards remaining in the hook chain are `[ -x "$PROJECT_ROOT/bin/fw" ]` (hooks.sh:709,752) — bin/fw is already 100755. No further mode-sensitive invocations found'
+  - '`git checkout-index` probe: both scripts land `-rwxr-xr-x` from the index'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'chmod +x secret-scan.sh + master-guard.sh in git (832 T-276 finding 1) — KEY: modes NOT load-bearing on current source (T-2061 already bash-invokes + -f-gates both); 832''s skip = stale installed pre-commit (pre-T-2061 -x vintage), their fix = fw git install-hooks re-run; +x stored anyway as defense-in-depth; sweep found no other mode-sensitive hook-chain invocations; checkout-index probe green'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/master-guard.sh'
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - 'agents/git/lib/master-guard.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - '.tasks/active/T-2655-vendor-payload-runtime-exec-scripts-ship.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-28T13:41:59"
+    action: "T-2655: chmod +x secret-scan.sh + master-guard.sh in git (832 T-276 finding 1) — KEY: modes NOT load-bearing on current source (T-2061 already bash-invokes + -f-gates both); 832's skip = stale installed pre-commit (pre-T-2061 -x vintage), their fix = fw git install-hooks re-run; +x stored anyway as defense-in-depth; sweep found no other mode-sensitive hook-chain invocations; checkout-index probe green"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 81 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 81
+  commits: 1
+  files_changed: 5
+  lines_added: 18
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2655-vendor-payload-runtime-exec-scripts-ship.md
+generated_by: context-agent-hybrid
