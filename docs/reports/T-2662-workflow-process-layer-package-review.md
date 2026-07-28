@@ -1,0 +1,140 @@
+# T-2662: Workflow Process-Layer Package v1 (2026-07-02) — review vs delivered state
+
+**Reviewed:** `aef-workflow-process-layer-package-v1-2026-07-02.zip` +
+`INGESTION-workflow-process-layer-2026-07-02.md` +
+`INSTRUCTIONS-workflow-process-layer-2026-07-02.md` (r3), supplied by operator from
+`~/Downloads` on 2026-07-28.
+
+**Question asked:** the package was believed ingested with an arc + tasks created
+(including tasks for the AEF agent). Check, review against it, report progress and gaps.
+
+---
+
+## 1. Ingestion trace — the package was NEVER formally ingested into the AEF repo
+
+Searched (2026-07-28):
+
+- No `DISCOVERY-workflow-process-layer-*.md` anywhere in the repo (Step 0 deliverable).
+- No `NOTE-schema-friction-inception-*.md`, no `inception-lifecycle.workflow.yaml`
+  (Step 0.5 deliverables). No `workflows/` directory at repo root (SD-5).
+- No arc in `.context/arcs/` named or describing the process layer; no task in
+  `.tasks/{active,completed}/` referencing the package name, "Q1–Q10", "SD-1..15",
+  "Lock 1..6", or "Workflow Fabric". (The only greps that matched were incidental
+  uses of the words "process layer" in T-2428 and T-962, unrelated.)
+- No mention on the 832 DM rail (searched "process layer", "Lock 1", "SD-", "package"
+  across the full channel history).
+- arc-014's grill artifact (`docs/reports/T-2553-designer-corpus-inception.md`,
+  2026-07-19) does not cite the package.
+
+**Where it likely DID land: 832's side.** The package's prototype
+(`prototype/aef-workflow-designer.html`, single-file, v2 schema, BPMN round-trip,
+`roundtrip.js` test) is recognisably the seed/lineage of 832's product (single-file
+bundle, now 0.7.x; round-trip tests; aef:* BPMN vocabulary). Rail offset 23 shows
+832's canonical corpus is `examples/aef-processes/<id>.workflow.yaml` → rendered
+`.bpmn` — exactly the package's §2.1 file convention (`<name>.workflow.yaml`, YAML
+canonical, BPMN derived). The T-559 project boundary blocks reading `/opt/832`
+directly, so a rail question was posted to 832 (T-2662 AC-2) asking which of their
+arc/tasks trace to the package. Their answer completes this section.
+
+**Net:** the "arc with tasks including for the AEF agent" the operator remembers is
+not in this repo. The AEF-side work that *covers the same ground* — arc-014
+(designer-corpus) and its constituent tasks — was created 2026-07-19 via an
+independent operator grill, without the package as input. The two efforts converged
+on much of the same territory by different routes, and diverged on the architecture
+core (see §3).
+
+## 2. Progress map — package spec item → delivered analogue
+
+| Package item | Status | Delivered analogue (evidence) |
+|---|---|---|
+| **Lock 2** — BPMN interchange, uid-preserving round-trip (V3) | **Delivered** | `fw bpmn compile` + gated promote (T-2531, T-2539, T-2542/T-2543); `aef:uid` identity preserved; live editor round-trip verified via Playwright (T-2644); joint bats `bpmn_promote_e2e.bats` ratified both sides (rail offsets 80/81). |
+| **Lock 5** — dogfood corpus of 5 core processes (V4) | **Delivered, different set** | 5 real AEF maps live in `.context/designer/projects/`: aef-task-lifecycle (v4), aef-inception-flow (v4), aef-dispatch-loop (v3), aef-session-lifecycle (v3), aef-audit-cron (v3). Selection was telemetry-based per explicit operator instruction (T-2553 grill Q7) — NOT the package's regression-history catalog. Overlap with the package's catalog: inception only. |
+| **Lock 3** — governance lifecycle, ratified-immutability, agent gates | **Partial** | Promote is the production-release gate: `FW_TASK_ORIGIN` gate, owner:human + captured-at-gate (T-2542/T-2543); frozen-v1 mapping standard under 832-operator sign-off (832 T-189/T-190); draft tier `draft-` prefix = cheap iteration, promotion = release (T-2623); version bump per promote ≈ SD-6 in spirit. No formal ratify/deprecate verbs or status frontmatter on maps. |
+| **V6** — judge separation (validator catches what the permissive editor allows) | **Delivered, analogue** | `fw corpus lint` (2-finding steady baseline) + `fw corpus prove` (derive-in-memory identity proof, T-2608) + 832's strict-parse (T-2614). |
+| **V9** — drift detection | **Exceeded** | Conformance-rail program (T-2621, T-2652 GO + slices T-2654/T-2658/T-2659): maps audited daily against the ENFORCED machine in code — transition-table + vocabulary-set primitives, `tools/conformance-registry.yaml`, 4 of 5 maps railed (3 green, 1 honestly red). The package only specced component-ref drift reports; the rails check semantic map-vs-code parity. |
+| **V5** — composition (handoff pairs, callActivity) | **Partial** | Cross-map handoff jumps live in corpus v2 (T-2586, T-2613); drill-down settled as generalized sub-workflows via collapsed subProcess + cross-map jumps (T-2620 round 3). No typed input/output contract validation between workflows. |
+| **SD-11** — human touchpoints on userTask | **Partial** | Lane→owner semantics with O-1 Lane-wins and O-3 Human-authority veto (T-2531, T-2540); decisionOwner serialization 832-side. No humanTouchpoint block (surface/contextBundle/timeout), no Watchtower routing from map nodes. |
+| **Live observability** (not in the package!) | **Delivered beyond spec** | Overlay seam: live PROCESS-level state badges projected onto map uids (T-2630/T-2632/T-2634) — answers T-2619's "troubleshoot" gap with map-as-live-mirror. The package's enforcement ladder had no live-mirror rung at all. |
+| **Step 0.5** — inception-lifecycle first article | **Analogue only** | `aef-inception-flow` map exists (v4, conformance-railed green against `lib/inception.sh`). But the paper exercise as specified (draft against v3 YAML schema, determinism status per node, friction note) never ran. |
+
+## 3. Divergence by design — deliberate inversions (not gaps)
+
+1. **Canonical representation inverted.** Package: YAML canonical, BPMN derived, the
+   designer is a view surface. Delivered (AEF side): single stored representation in
+   the designer store with spec derivation in-memory (T-2608, IW-1 dissolved) —
+   BPMN-stored, `fw corpus derive/generate/canon/diff/prove` around it. 832's side
+   retains `.workflow.yaml`-canonical for their examples corpus. Settled decision,
+   not drift.
+2. **Enforcement direction inverted.** Package ladder: advisory → guided → strict —
+   the map progressively constrains execution (`fw workflow advance`, instance
+   files). Delivered: reverse conformance — CODE is the enforced machine, the MAP
+   must match it, audited daily (T-2652 program). T-2619's keystone question ("which
+   direction does authority flow?") was answered mirror+rails, not map-as-spec.
+3. **Dogfood selection basis.** Package: worst-regression-history processes
+   (exception-handling, task-creation, tier0-escalation, knowledge-leveling).
+   Operator instructed telemetry-based selection instead (T-2553 grill Q7).
+4. **Two-agent split.** The package addressed a single framework agent. Reality is a
+   pair: 832 owns the designer product + schema vocabulary (rail ratification loop,
+   frozen-v1 standard), AEF owns corpus content + conformance + serving. The
+   additive-only, fixture-pinned rail protocol substitutes for several of the
+   package's single-repo governance mechanisms.
+
+## 4. Gaps — package items with NO delivered analogue
+
+1. **SD-1..SD-15 register never disposed.** Every disposition remains a design-agent
+   proposal. Some are moot or settled de facto (SD-5 `workflows/` location — moot;
+   SD-6 immutability — promote-versioning in spirit; SD-9 callActivity — subProcess
+   drill-down settled by T-2620). Genuinely open and worth an operator ruling:
+   **SD-1** (is Process the third foundational core concept? never confirmed — the
+   delivered architecture arguably answers "yes, but as mirror+rails, not executable
+   spec"), **SD-3/SD-10** (task↔workflow binding — no `workflow:` key in task
+   frontmatter exists), **SD-13** (Component Fabric linkage — zero `components:`
+   refs on any map), **SD-14** (pseudocode lens).
+2. **Step 0 discovery (Q1–Q10) never ran.** Q5 (fabric ID stability) and Q10
+   (instance-state cage / autonomy-integrity) were flagged highest-consequence and
+   remain unanswered — Q10 becomes load-bearing the moment anything guided-mode-like
+   is attempted.
+3. **P1 lenses: nothing.** No functional/logical/technical per-audience rendering,
+   no pseudocode lens, no business-view filtering (V1, V2, V8 unmeasured/unmet). The
+   overlay is a live-state lens, not an audience lens.
+4. **Lock 6 guided mode: nothing.** No `fw workflow bind/advance`, no instance
+   tracking, no procedure-level human-gate protection (V7 unmet). This is the
+   package's central structural promise — P3, "workflows enforce at the procedure
+   level what verb gates enforce at the action level" — and it is wholly unbuilt.
+   T-2620's trigger-model dialogue (observation layer firing actionable triggers)
+   touches the territory but enforces nothing.
+5. **Lock 4 Workflow Fabric: nothing.** No workflow-entity registry, qualified
+   addressing, or role-level queries ("the Sovereign's workload surface across
+   workflows"). Corpus handoffs exist as map content, not as a queryable index.
+6. **The package's four worst-regression processes remain unmapped**
+   (exception-handling, task-creation, tier0-escalation, knowledge-leveling). P4's
+   falsifiable claim — explicit workflows reduce regression on exactly these — was
+   never tested. arc-014's telemetry selection was a defensible operator call, but
+   it means the package's core experiment never ran.
+7. **P2 consumption is weak** (delivered-but-unused): T-2619's critical review found
+   agents never read the maps during work; CLAUDE.md remains the sole workflow
+   authority; corpus is write-mostly. T-2622 (agent retrieval seam,
+   `fw corpus explain`) is the active counter-measure — in progress.
+
+## 5. Recommendation
+
+The delivered state is not a failed ingestion — it is a sibling architecture that
+reached several of the package's own goals first (interchange, dogfood corpus, drift
+detection) and consciously inverted its two core axes (canonical format, enforcement
+direction). Actionable residue:
+
+1. **Operator: dispose SD-1 explicitly** (one sentence suffices) — "Process layer =
+   corpus + conformance rails + overlay, mirror-direction" ratifies the delivered
+   architecture and formally retires the package's YAML-canonical/guided-mode shape;
+   OR keep guided mode alive as a named future arc. Everything else in the register
+   inherits from this call.
+2. **If P3/P4 still matter:** the cheapest honest test is mapping ONE
+   worst-regression process (tier0-escalation — small, pure governance, human
+   gateways throughout) and railing it — that tests the package's foundational claim
+   inside the delivered architecture without building Lock 6.
+3. **832's answer to the rail question** (posted this session) determines whether an
+   832-side arc already tracks the package's remaining scope — do not duplicate it
+   here until that answer lands.
+
+Related: T-2619 (designer authority model — the de-facto retrospective on this
+territory), T-2553 (arc-014 grill), T-2652 (conformance-rail program).
