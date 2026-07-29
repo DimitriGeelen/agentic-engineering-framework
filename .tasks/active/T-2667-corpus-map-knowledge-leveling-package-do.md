@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: 2026-07-29T13:24:29Z
+last_update: '2026-07-29T16:30:09Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,6 +65,23 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=3 
       (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-29T16:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 4
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=4 (body:cross-machine); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -365,3 +382,16 @@ in learnings.yaml today; 315 dash-form vs 234 legacy-indent entries — mixed fo
   (same stage as sibling T-2665/T-2666: "seed round done, awaiting operator
   taste + promotion"). No agent-only action can progress this without that
   human/external step — declining to fabricate promotion or approval.
+
+### 2026-07-29T18:20:00Z — dispatch check-in [build-worker]
+- **Checked:** git log for this task file since v7 GREEN commit (33a9cf844)
+  — no further commits. `.context/working/feedback-stream.yaml` tail — no
+  verdict/scan entries for T-2667. `fw pause list` — empty, no paused
+  dispatch awaiting operator answer on this task. `fw resume quick` — session
+  focus has since moved to T-2679 (unrelated inception, now GO'd).
+- **Status:** v7 (sha8 0cd8022a) remains the current draft; GREEN verify
+  battery from the prior dispatch stands unchanged. No operator taste signal
+  or promotion GO has arrived since. AC-3 (promote, lint, `fw corpus prove`)
+  and AC-4 (registry entry from the parked AC-4 Prep block, honest
+  green/red recording) stay blocked on that human input — declining to
+  fabricate approval. No further agent-only action available this round.
