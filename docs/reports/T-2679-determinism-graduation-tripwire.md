@@ -31,8 +31,16 @@ Prior art inside the framework:
 - **Conformance rails (T-2621+, arc-014)** — exactly this rule already applied to
   maps-vs-code: a registered reality-check that re-verifies "stabilized" daily. Proven
   pattern; the RED dispatch-loop rail demonstrated loud honest failure.
-- **G-001 loud-fail** (2026-07 upstream drain) — silent-fallback class already
-  recognized and fixed at one site.
+- **Loud-fail already implemented for one probe family** — `tools/conformance-registry.yaml`
+  states it as a rule for `vocabulary-set` source extraction: *"Empty source extraction is
+  a LOAD ERROR (stale anchor must fail loudly)"*, enforced at `tools/corpus_conformance.py`.
+  The doctrine this inception proposes is therefore not novel — it is already law on the
+  maps-vs-code axis and merely unextended to script-vs-world.
+  *(Correction: an earlier draft cited "G-001 loud-fail" as prior art here. That was a
+  cross-register citation error — this repo's G-001 is "Enforcement tiers — Tier 0
+  spec-only", closed; the loud-fail G-001 lives in the upstream/832 gap numbering. Left
+  visible rather than silently deleted, per the same honesty convention the corpus maps
+  use for dead legs.)*
 - **L-291 / T-1501 toolchain-build rule** — same doctrine at the Verification gate:
   "the framework runs only what you write" → forgotten build command ships broken DLLs.
 - **T-1828 / G-040 proxy class** — gates that verify artifact-exists rather than
@@ -120,10 +128,66 @@ Proposed build slices on GO (separate build tasks, not built under this ID):
 ## Assumptions to validate
 
 - A-1: probe vocabulary of ~3 primitives (count-floor, uniqueness, shape-match) covers
-  ≥80% of the known drift class. (Spike 1.)
+  ≥80% of the known drift class. (Spike 1.) — **VALIDATED**, see below.
 - A-2: daily audit cost of running probes is negligible (<2s for ~20 probes). (Spike 3.)
+  — **VALIDATED with a design constraint**, see below.
 - A-3: rail-registry generalization does not collide with T-2652's rail-generalization
-  inception scope — merge, sequence, or independent. (Spike 2 / IW-3.)
+  inception scope — merge, sequence, or independent. (Spike 2 / IW-3.) — **VALIDATED**,
+  no collision: T-2652 is *completed*, and is prior art rather than a competitor.
+
+## Spike Results (run 2026-07-29, pre-decision)
+
+### Spike 1 — probe-vocabulary coverage (IW-1, A-1) · PASS
+
+| Site | Assumption that silently broke | Primitive |
+|------|-------------------------------|-----------|
+| T-2676 harvest.sh | store greps return matches | **count-floor** (≥1) |
+| T-2677 audit counter | learning-ID count is real | **count-floor** (≥ known floor) |
+| T-2672 resolve.sh | appended entry is readable by the canonical reader | **shape-match** (round-trip) |
+| promote.sh rail anchor | anchor string identifies one site | **uniqueness** (== 1) |
+
+4 of 4 known drift sites are expressible in the 3 candidate primitives — no bespoke probe
+needed. One adjacent case does **not** fit and is deliberately excluded: the T-2674
+vendor-includes omission (`status-transitions.yaml` missing from `do_vendor`) is
+*set-completeness*, not assumption-drift — a different class, candidate for a 4th
+primitive later or for its own gap. Recording it here so the scope boundary is explicit
+rather than discovered mid-build.
+
+### Spike 2 — registry collision check (IW-2, IW-3, A-3) · PASS, and it reshapes IW-2
+
+`tools/conformance-registry.yaml` + `tools/corpus_conformance.py` (T-2652 slice 1 /
+T-2654) are **keyed by `map_id`** — the entry contract is "which corpus map has a rail,
+and what it conforms against". A deterministic script with no corpus map has no key in
+that space, so assumption probes are a **sibling registry, not a new primitive inside the
+existing one**: same checker mechanic, same audit-section reporting shape, different key
+space (component/script path instead of map id).
+
+Two consequences worth carrying into the build:
+1. **The loud-fail doctrine is already law on the map axis.** The registry's own comment
+   requires empty source extraction to be a LOAD ERROR, "stale anchor must fail loudly".
+   Slice 2 should reuse that exact stance rather than invent one.
+2. **T-2652 is completed, not in flight** (`.tasks/completed/T-2652-…`), along with
+   T-2654 (primitive library), T-2658/T-2659, T-2664. So there is no scope contention —
+   this is a follow-on that copies a proven pattern onto a second axis.
+
+### Spike 3 — probe cost (A-2) · PASS, with a binding design constraint
+
+Measured on the live stores:
+
+| Probe form | Cost each | 20 probes |
+|------------|-----------|-----------|
+| shell grep against a store | ~6 ms | **~0.12 s** |
+| `python3 -c "yaml.safe_load(...)"` | ~630 ms | **~12.6 s** |
+
+A-2 holds **only** for shell-primitive probes. A per-probe Python interpreter blows the
+budget by 6×. Design constraint for Slice 2: probes are shell primitives, or every
+parse-requiring probe is batched into a **single** interpreter process for the whole run.
+This is exactly the kind of assumption that, left undiscovered, would have made the
+tripwire mechanism itself the next thing quietly disabled for being slow.
+
+### Spike 4 — exception surface (IW-5) · NOT RUN
+Deferred to the build slice; the default (audit WARN section, mirroring
+`check_map_conformance`) is adopted on prior-art grounds. See IW-5 disposition.
 
 ## Open Questions (mirrored from task file — dispositions live there)
 

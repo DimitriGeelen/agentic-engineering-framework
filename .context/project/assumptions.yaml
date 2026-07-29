@@ -450,26 +450,39 @@ assumptions:
 - id: A-047
   statement: A probe vocabulary of ~3 primitives (count-floor, uniqueness, shape-match)
     covers >=80% of the known silent-drift class
-  status: untested
+  status: validated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: 'Spike 1: 4/4 known drift sites expressible with no bespoke probe — T-2676+T-2677=count-floor,
+      T-2672=shape-match round-trip, promote.sh anchor=uniqueness. T-2674 vendor-includes
+      excluded as a different class (set-completeness)'
+    date: '2026-07-29'
   linked_task: T-2679
   created: '2026-07-29'
-  resolved_date: null
+  resolved_date: '2026-07-29'
 - id: A-048
   statement: Running ~20 assumption probes adds <2s to the daily audit
-  status: untested
+  status: validated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: 'Spike 3 measured on live stores: shell grep ~6ms (20 probes = 0.12s,
+      PASS); python3 yaml.safe_load ~630ms (20 probes = 12.6s, FAIL 6x over). A-2
+      holds ONLY for shell-primitive probes — binding design constraint recorded in
+      ## Decisions'
+    date: '2026-07-29'
   linked_task: T-2679
   created: '2026-07-29'
-  resolved_date: null
+  resolved_date: '2026-07-29'
 - id: A-049
   statement: Assumption-rail registry does not collide with T-2652 conformance-rail
     generalization scope
-  status: untested
+  status: validated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: 'Spike 2: no collision — T-2652 is COMPLETED (.tasks/completed/), prior
+      art not competitor. Registry keyed by map_id so scripts have no key there; sibling
+      registry keyed by component path, same checker mechanic (tools/corpus_conformance.py:78-92)'
+    date: '2026-07-29'
   linked_task: T-2679
   created: '2026-07-29'
-  resolved_date: null
+  resolved_date: '2026-07-29'

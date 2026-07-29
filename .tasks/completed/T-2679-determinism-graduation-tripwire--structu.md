@@ -4,16 +4,16 @@ name: "determinism graduation tripwire — structural enforcement inception"
 description: >
   Inception: determinism graduation tripwire — structural enforcement inception
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-29T16:08:10Z
-last_update: '2026-07-29T16:15:05Z'
-date_finished:
+last_update: 2026-07-29T16:42:26Z
+date_finished: 2026-07-29T16:42:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -105,29 +105,29 @@ Registered via `fw assumption add` (see `.context/project/assumptions.yaml`):
 -->
 
 - **IW-1: Does a probe vocabulary of ~3 primitives (count-floor, uniqueness, shape-match) cover the known silent-drift class, or does each site need a bespoke probe?**
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Spike 1 — 4/4 known sites expressible with no bespoke probe (T-2676 + T-2677 = count-floor, T-2672 = shape-match round-trip, promote.sh anchor = uniqueness). Adjacent T-2674 vendor-includes case is set-completeness, a DIFFERENT class — explicitly excluded, candidate for a 4th primitive later. See docs/reports/T-2679-*.md §Spike 1.
 
 - **IW-2: Is the assumption-rail registry a generalization of the existing conformance-rail registry (one registry, two primitive families) or a separate surface?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Spike 2 — SEPARATE surface. tools/conformance-registry.yaml is keyed by map_id (contract: "which corpus map has a rail"); a script with no map has no key in that space. Sibling registry keyed by component/script path, reusing the same checker mechanic + audit-section shape (tools/corpus_conformance.py:78-92).
 
 - **IW-3: Does this collide with or subsume T-2652 (conformance-rail generalization inception, GO'd) — merge, sequence, or independent?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: dissolved
+  rationale: Question presupposed T-2652 was in flight; it is COMPLETED (.tasks/completed/T-2652-conformance-rail-generalization--per-map.md), along with T-2654/T-2658/T-2659/T-2664. No scope contention exists — T-2652 is prior art this follows on from, not a competitor. Bonus finding: its registry already mandates loud-fail ("Empty source extraction is a LOAD ERROR — stale anchor must fail loudly"), so Slice 2 reuses that stance rather than inventing one.
 
 - **IW-4: Should graduation-to-deterministic be gate-enforced (author-time, Candidate B) or adoption-led (register probes voluntarily, audit surfaces unprobed components)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: Adoption-led for Slices 1-2 by decision (a gate before probes exist would enforce a proxy — the T-1828/G-040 class this task exists to counter). Gate decision revisits at Slice 3 with real adoption data; deferral is deliberate sequencing, not an evidence gap. Recorded in ## Decisions.
 
 - **IW-5: What is the operator-facing exception surface for a tripped probe — audit WARN only, Watchtower panel, or ntfy push (stage-4 out-of-band monitoring)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: Audit WARN section, mirroring check_map_conformance — prior art, zero new surface, already on the operator's daily path. Spike 4 (full inventory) not run; escalation to Watchtower panel or ntfy revisits IF WARN-noise proves the channel gets ignored, which is itself the failure mode this task guards against.
 
 ## Exploration Plan
 
@@ -273,6 +273,39 @@ Full candidate analysis, evidence table, and dialogue log: `docs/reports/T-2679-
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-07-29 — Adoption-led before gate-enforced (IW-4)
+
+- **Chose:** Slices 1-2 are adoption-led (components register probes voluntarily; audit
+  reports both tripped probes and, later, unprobed deterministic components). The
+  author-time gate (Candidate B) is deferred to Slice 3, decided on real adoption data.
+- **Why:** a gate shipped *before* probes exist could only check "did this task ship a
+  test file" — verifying an artifact rather than a behaviour, which is precisely the
+  T-1828 / G-040 proxy class this task exists to counter. Once probes exist, "is a probe
+  registered" becomes a legitimate proxy because the probe itself checks reality.
+- **Rejected:** gate-first (proxy-shaped, would re-ship the failure mode under a new
+  name); never-gate (adoption alone decays — the same "someone will remember" assumption
+  that produced the four evidence instances).
+
+### 2026-07-29 — Sibling registry, not a new primitive in the map registry (IW-2)
+
+- **Chose:** a separate registry keyed by component/script path, reusing
+  `corpus_conformance.py`'s checker mechanic and audit-section reporting shape.
+- **Why:** `tools/conformance-registry.yaml` is keyed by `map_id` — its entry contract is
+  "which corpus map has a rail". A deterministic script with no corpus map has no key in
+  that space. Sharing the mechanic gets the proven pattern; sharing the *file* would
+  force map identity onto things that are not maps.
+- **Rejected:** one registry with two primitive families (key-space collision); wholly
+  independent tooling (throws away a working checker + audit integration).
+
+### 2026-07-29 — Probes are shell primitives (Spike 3 constraint)
+
+- **Chose:** probe execution is shell-primitive, or parse-requiring probes are batched
+  into a single interpreter process per run.
+- **Why:** measured 6 ms per shell grep vs 630 ms per `python3 -c yaml.safe_load`. At 20
+  probes that is 0.12 s vs 12.6 s — the latter would get the whole mechanism disabled for
+  being slow, making the tripwire the next thing to quietly die.
+- **Rejected:** per-probe interpreter (blows the audit budget 6× over target).
+
 ## Decision
 
 **Decision**: GO
@@ -301,3 +334,59 @@ Full candidate analysis, evidence table, and dialogue log: `docs/reports/T-2679-
 Candidate A is the only option that checks reality (live behavior) rather than a proxy artifact — it would have caught all four evidence instances, and the rail mechanic is already proven maintainable in this codebase. Candidate C is a cheap same-week win that retires the known grep family while A's probe vocabulary is designed. Candidate B is proxy-shaped (verifies a test exists, not that assumptions still hold) — the T-1828/G-040 class this inception exists to counter — so it is deferred, revisitable once A's probes make registration a legitimate proxy. Candidate D (prose practice in CLAUDE.md) is rejected by the doctrine itself: advisory prose is the failing layer.
 
 Full candidate analysis, evidence table, and dialogue log: `docs/reports/T-2679-determinism-graduation-tripwire.md`
+
+## Build Slices Authorised by the GO (2026-07-29)
+
+- **T-2680** (horizon `now`) — Slice 1 / Candidate C: silent-zero store-grep detector
+  (audit WARN section + reviewer static-scan pattern). Retires the known grep family.
+- **T-2681** (horizon `next`) — Slice 2 / Candidate A keystone: assumption-rail registry
+  keyed by component path + probe runner (count-floor, uniqueness, shape-match), seeded
+  with the four evidence sites. Shell-primitive execution per the Spike 3 constraint;
+  loud-fail stance copied from `tools/conformance-registry.yaml`.
+- **Slice 3** (graduation wiring + author-time gate decision) — deliberately NOT filed
+  yet, gated on Slice 2 adoption data per the IW-4 disposition.
+
+**G-071 stays OPEN** until Slice 2 ships probes that actually fire — per G-019,
+mitigation is not prevention, and an inception GO is not a structural change.
+
+**Spike results (all three assumptions validated pre-decision):** A-047 probe vocabulary
+covers 4/4 known sites; A-048 cost passes for shell-primitive probes only (0.12s vs
+12.6s for per-probe Python); A-049 no T-2652 collision — it is completed prior art whose
+registry already mandates loud-fail. Tables in the artifact §Spike Results.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ac9b4dc2
+- **Timestamp:** 2026-07-29T16:42:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-f03d7baf
+- **Timestamp:** 2026-07-29T16:42:27Z
+- **Overall:** CONFIRMED
+- **Claims:** 10
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2679-determinism-graduation-tripwire.md` | file | ✓ pass |
+| `lib/harvest.sh` | file | ✓ pass |
+| `agents/audit/audit.sh` | file | ✓ pass |
+| `agents/healing/lib/resolve.sh` | file | ✓ pass |
+| `lib/promote.sh` | file | ✓ pass |
+| `T-2672` | task | ✓ pass |
+| `T-2676` | task | ✓ pass |
+| `T-2677` | task | ✓ pass |
+| `T-1828` | task | ✓ pass |
+| `T-2621` | task | ✓ pass |
+
+### 2026-07-29T16:42:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

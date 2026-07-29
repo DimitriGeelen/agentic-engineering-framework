@@ -2396,3 +2396,24 @@ decisions:
     date: 2026-07-28
     task: T-2663
     rationale: "Not specified"
+
+  - id: D-345
+    decision: "Slices 1-2 are adoption-led (components register probes voluntarily; audit"
+    scope: project
+    date: 2026-07-29
+    task: T-2679
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-346
+    decision: "a separate registry keyed by component/script path, reusing"
+    scope: project
+    date: 2026-07-29
+    task: T-2679
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-347
+    decision: "probe execution is shell-primitive, or parse-requiring probes are batched"
+    scope: project
+    date: 2026-07-29
+    task: T-2679
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2679: determinism graduation tripwire — structural enforcement inception
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T16:42:37Z
+# ============================================================================
+
+task_id: T-2679
+task_name: "determinism graduation tripwire — structural enforcement inception"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T16:08:10Z
+completed: 2026-07-29T16:42:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-29T18:14:58+02:00
+last_commit: 2026-07-29T18:37:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  determinism-graduation-tripwire inception filed — operator ladder doctrine (stochastic -> deterministic -> agent-as-out-of-band-exception-manager) requires the deterministic tier to fail LOUDLY; nothing enforces that at graduation. Evidence: 4 silent-drift instances in one week (T-2676 harvest 549:0 miss, T-2677 audit counter dead its entire life, T-2672 resolve.sh, promote.sh 3x-ambiguous rail anchor near-miss). Rec GO: Candidate A assumption-rail registry (reality-check, keystone) + Candidate C silent-zero lint (first slice); B author-time gate deferred as proxy-shaped (T-1828/G-040 class), D prose rejected by the doctrine itself. G-071 registered (register-first, NOT closed until prevention exists per G-019), 5 IWs + 4 spikes + 3 assumptions filed, learning captured. Research artifact w/ full dialogue log. inception body completed — Problem Statement (ladder stage-4 assumes loud failure, nothing enforces it), Assumptions A-1..A-3 wired to spikes, Technical Constraints (portability, audit budget, consumer vendor-freeze class, no-false-loud, 832 boundary), Scope Fence (exploration only; build slices + wholesale retrofit + CLAUDE.md-as-primary-remediation all OUT), Go/No-Go criteria replacing template placeholders (3 of 4 GO criteria already MET on filed evidence, probe cost pending Spike 3). Review page live-verified HTTP 200 w/ recommendation rendering: http://192.168.10.107:3001/inception/T-2679. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-07-29 — Adoption-led before gate-enforced (IW-4)'
+    chose: 'Slices 1-2 are adoption-led (components register probes voluntarily; audit'
+    rationale: 'a gate shipped *before* probes exist could only check "did this task ship a'
+    alternatives_rejected: ['gate-first (proxy-shaped, would re-ship the failure mode under a new']
+  - decision: '2026-07-29 — Sibling registry, not a new primitive in the map registry (IW-2)'
+    chose: 'a separate registry keyed by component/script path, reusing'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/assumptions.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/focus.yaml'
+  - 'docs/reports/T-2679-determinism-graduation-tripwire.md'
+  - '.tasks/active/T-2679-determinism-graduation-tripwire--structu.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-29T18:14:58"
+    action: "T-2679: determinism-graduation-tripwire inception filed — operator ladder doctrine (stochastic -> deterministic -> agent-as-out-of-band-exception-manager) requires the deterministic tier to fail LOUDLY; nothing enforces that at graduation. Evidence: 4 silent-drift instances in one week (T-2676 harvest 549:0 miss, T-2677 audit counter dead its entire life, T-2672 resolve.sh, promote.sh 3x-ambiguous rail anchor near-miss). Rec GO: Candidate A assumption-rail registry (reality-check, keystone) + Candidate C silent-zero lint (first slice); B author-time gate deferred as proxy-shaped (T-1828/G-040 class), D prose rejected by the doctrine itself. G-071 registered (register-first, NOT closed until prevention exists per G-019), 5 IWs + 4 spikes + 3 assumptions filed, learning captured. Research artifact w/ full dialogue log"
+  - time: "2026-07-29T18:16:10"
+    action: "T-2679: inception body completed — Problem Statement (ladder stage-4 assumes loud failure, nothing enforces it), Assumptions A-1..A-3 wired to spikes, Technical Constraints (portability, audit budget, consumer vendor-freeze class, no-false-loud, 832 boundary), Scope Fence (exploration only; build slices + wholesale retrofit + CLAUDE.md-as-primary-remediation all OUT), Go/No-Go criteria replacing template placeholders (3 of 4 GO criteria already MET on filed evidence, probe cost pending Spike 3). Review page live-verified HTTP 200 w/ recommendation rendering: http://192.168.10.107:3001/inception/T-2679"
+  - time: "2026-07-29T18:37:04"
+    action: "T-2679: inception decision GO (via Watchtower)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 34
+  commits: 3
+  files_changed: 6
+  lines_added: 593
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2679-determinism-graduation-tripwire--structu.md
+generated_by: context-agent-hybrid
