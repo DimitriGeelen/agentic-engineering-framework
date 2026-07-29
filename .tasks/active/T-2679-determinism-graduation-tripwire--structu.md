@@ -191,15 +191,15 @@ existing loud signals reach the operator today (audit WARN, doctor, Watchtower
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -275,7 +275,15 @@ Full candidate analysis, evidence table, and dialogue log: `docs/reports/T-2679-
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three proven instances of the silent-drift class in one week (T-2672 resolve.sh, T-2676 harvest greps, T-2677 audit counter — all deterministic scripts silently no-oping for months against a drifted store shape) plus the anchor-ambiguity near-miss; the ladder's stage-4 doctrine (agent as out-of-band exception manager) requires the deterministic tier to fail loudly, and today nothing enforces that at graduation time. Conformance rails already prove the reality-check pattern for maps-vs-code; this extends it to script-vs-world.
+
+Candidate A is the only option that checks reality (live behavior) rather than a proxy artifact — it would have caught all four evidence instances, and the rail mechanic is already proven maintainable in this codebase. Candidate C is a cheap same-week win that retires the known grep family while A's probe vocabulary is designed. Candidate B is proxy-shaped (verifies a test exists, not that assumptions still hold) — the T-1828/G-040 class this inception exists to counter — so it is deferred, revisitable once A's probes make registration a legitimate proxy. Candidate D (prose practice in CLAUDE.md) is rejected by the doctrine itself: advisory prose is the failing layer.
+
+Full candidate analysis, evidence table, and dialogue log: `docs/reports/T-2679-determinism-graduation-tripwire.md`
+
+**Date**: 2026-07-29T16:37:03Z
 
 ## Updates
 
@@ -284,3 +292,12 @@ Full candidate analysis, evidence table, and dialogue log: `docs/reports/T-2679-
 
 ### 2026-07-29T16:10:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-29T16:37:03Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three proven instances of the silent-drift class in one week (T-2672 resolve.sh, T-2676 harvest greps, T-2677 audit counter — all deterministic scripts silently no-oping for months against a drifted store shape) plus the anchor-ambiguity near-miss; the ladder's stage-4 doctrine (agent as out-of-band exception manager) requires the deterministic tier to fail loudly, and today nothing enforces that at graduation time. Conformance rails already prove the reality-check pattern for maps-vs-code; this extends it to script-vs-world.
+
+Candidate A is the only option that checks reality (live behavior) rather than a proxy artifact — it would have caught all four evidence instances, and the rail mechanic is already proven maintainable in this codebase. Candidate C is a cheap same-week win that retires the known grep family while A's probe vocabulary is designed. Candidate B is proxy-shaped (verifies a test exists, not that assumptions still hold) — the T-1828/G-040 class this inception exists to counter — so it is deferred, revisitable once A's probes make registration a legitimate proxy. Candidate D (prose practice in CLAUDE.md) is rejected by the doctrine itself: advisory prose is the failing layer.
+
+Full candidate analysis, evidence table, and dialogue log: `docs/reports/T-2679-determinism-graduation-tripwire.md`
