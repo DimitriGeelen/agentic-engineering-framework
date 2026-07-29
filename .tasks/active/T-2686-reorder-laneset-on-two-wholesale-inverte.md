@@ -4,12 +4,12 @@ name: "reorder laneSet on two wholesale-inverted drafts (832 T-310 race)"
 description: >
   reorder laneSet on two wholesale-inverted drafts (832 T-310 race)
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_t2686_laneset_order.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-29T21:44:11Z
-last_update: 2026-07-29T21:52:30Z
-date_finished:
+last_update: 2026-07-29T22:00:16Z
+date_finished: 2026-07-29T22:00:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -146,9 +146,11 @@ declared lanes; `human` stays third in `draft-task-creation`.
       3 pinned findings, and all 5 conformance rails still PASS (45 corpus tests green)
 - [x] Live-served designer bytes carry the new lane order (fetched from the running
       Watchtower, not read off disk — disk/live md5 match `0aaa69ab` / `538fd01a`)
-- [ ] Result reported to 832 on the DM rail, naming explicitly the one thing only they can
-      verify — that their T-310 importer now reconciles **zero** on these two maps, which
-      needs their `POOL_Y`/`POOL_HEADER`/node-height constants we deliberately do not read
+- [x] Result reported to 832 on the DM rail (offset 336, reply-to 335), naming explicitly
+      the one thing only they can verify — that their T-310 importer now reconciles **zero**
+      on these two maps, which needs their `POOL_Y`/`POOL_HEADER`/node-height constants we
+      deliberately do not read. `draft-task-creation`'s 20px of post-repair slack is
+      flagged to them as the case most likely to still surprise us.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -237,11 +239,11 @@ declared lanes; `human` stays third in `draft-task-creation`.
 # 1. Both repaired drafts are lane-geometry clean (they are drafts, so the default
 #    scan skips them — they must be named explicitly or this proves nothing).
 out=$(bin/fw corpus lint draft-exception-handling draft-task-creation 2>&1); echo "$out" | grep -q "CLEAN"
-# 2. Declared lane order is the drawn order in both.
-head -60 .context/designer/projects/draft-exception-handling/v3.bpmn | grep -A1 '<bpmn:laneSet' | grep -q 'bpmn:lane id="framework"'
-out=$(grep -oE '<bpmn:lane id="[^"]+"' .context/designer/projects/draft-task-creation/v3.bpmn); echo "$out" | head -1 | grep -q 'framework'
-# 3. Reorder is a pure permutation: membership, positions, heights and the
-#    origin-free feasibility interval all re-checked against HEAD's bytes.
+# 2. Declared lane order is the drawn order in both, the repaired maps stay clean, and
+#    some band origin can satisfy each declaration (the pre-state could not, for any
+#    origin). Asserted in one place rather than as grep chains — the multi-stage
+#    `head | grep -A1 | grep -q` form I first wrote here is the exact SIGPIPE shape
+#    L-387/T-2090 warn about, and it duplicated what these tests already prove.
 python3 -m pytest tests/unit/test_t2686_laneset_order.py -q
 # 4. Live corpus baseline unmoved (still exactly the 3 pinned findings) and rails green.
 out=$(bin/fw corpus lint 2>&1); echo "$out" | grep -q "^3 finding(s)"
@@ -288,6 +290,45 @@ python3 -m pytest tests/unit/test_corpus_lint.py tests/unit/test_corpus_lint_lan
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO — the repair is complete and proven; what remains for you is a
+taste re-read, not a correctness check.
+
+**Rationale:** the structural half is closed and independently verified. The two maps now
+declare lane order to match how they are drawn, so the diagram and `flowNodeRef` finally
+agree about who owns each step — and lane membership is the authority axis in this dialect,
+so this was an authority misread, not a cosmetic one. Nothing moved: every node position and
+every lane membership is byte-identical, and the canonical form is unchanged, so the repair
+cannot have altered what the maps *mean*. The reason it needed your eyes at all is queue
+hygiene: you were forming taste verdicts on these two maps while the rendering contradicted
+the declared authority on 12 of 12 and 15 of 16 nodes. 832's position, which I adopted, is
+that such verdicts should be re-collected rather than reinterpreted. Timing was the other
+forcing function — 832 has shipped their half (T-310), and their importer reconciles by
+snapping y to lane centre, which would have flattened both layouts to one row per lane at
+the next designer pin. Reordering first preserved the drawing you actually reviewed.
+
+**Evidence:**
+- `fw corpus lint draft-exception-handling draft-task-creation` → CLEAN (was 12/12 and
+  15/16 nodes on the wrong side of the lane crossing)
+- Zero-semantic proven three independent ways: byte length unchanged (pure permutation),
+  `corpus_spec.canonical()` identical pre/post (sort verified at `corpus_spec.py:470` by
+  reading *and* by measuring), all positions and memberships byte-identical
+- Origin-free feasibility: `[160,-80]` and `[120,-160]` **EMPTY** before (no band origin
+  could satisfy either declaration) → `[-140,80]` and `[-20,0]` after
+- Live baseline unmoved at exactly 3 findings; 5/5 conformance rails PASS; 52 corpus tests
+  green including 7 new regression tests guarding against re-inversion
+- Live-served designer bytes fetched from Watchtower match disk (`0aaa69ab`, `538fd01a`)
+  and carry the new lane order — verified on the served surface, not just on disk
+- Reported to 832 at rail offset 336, including two corrections to figures I had
+  understated to them, and one open item only they can close (whether their importer now
+  reconciles exactly zero — needs their pool constants, which we deliberately do not read)
+
+**What is NOT claimed:** that the other two disagreeing maps are fixed. `aef-session-lifecycle`
+v1 needs positions moved (partial overlap; no lane permutation can fix it) and
+`draft-knowledge-leveling` v8's two nodes are your authority call — both travel with the
+taste round, unchanged by this task.
 
 ## Decisions
 
@@ -349,3 +390,15 @@ python3 -m pytest tests/unit/test_corpus_lint.py tests/unit/test_corpus_lint_lan
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2686-reorder-laneset-on-two-wholesale-inverte.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-67ab0cb9
+- **Timestamp:** 2026-07-29T22:00:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-29T22:00:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

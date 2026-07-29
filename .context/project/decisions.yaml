@@ -2452,3 +2452,24 @@ decisions:
     date: 2026-07-29
     task: T-2684
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-353
+    decision: "swap the declared lane order to match the drawn order, leaving every"
+    scope: project
+    date: 2026-07-29
+    task: T-2686
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-354
+    decision: "implement the origin-free feasibility interval as a test helper in"
+    scope: project
+    date: 2026-07-29
+    task: T-2686
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-355
+    decision: "repair only `draft-exception-handling` and `draft-task-creation`."
+    scope: project
+    date: 2026-07-29
+    task: T-2686
+    rationale: "Auto-captured from task file on completion"
