@@ -159,9 +159,13 @@ harvest_patterns() {
         return
     fi
 
-    # Extract pattern descriptions from project (simple grep approach)
+    # Extract pattern descriptions from project (simple grep approach).
+    # T-2676: indent-agnostic — live files carry entries at 2-space (column-0
+    # list items) AND legacy 4-space; the old '^    pattern:' grep saw only
+    # the legacy form and silently skipped everything else (third instance of
+    # the indentation-assumption class: T-2672 resolve.sh, 832 T-295).
     local project_patterns
-    project_patterns=$(grep "^    pattern:" "$project_file" 2>/dev/null | sed 's/.*pattern:[[:space:]]*//' | tr -d '"' || true)
+    project_patterns=$(grep -E "^[[:space:]]*pattern:" "$project_file" 2>/dev/null | sed 's/.*pattern:[[:space:]]*//' | tr -d '"' || true)
 
     if [ -z "$project_patterns" ]; then
         echo -e "  ${CYAN}SKIP${NC}  No patterns found in project"
@@ -170,7 +174,7 @@ harvest_patterns() {
 
     local framework_patterns=""
     if [ -f "$framework_file" ]; then
-        framework_patterns=$(grep "^    pattern:" "$framework_file" 2>/dev/null | sed 's/.*pattern:[[:space:]]*//' | tr -d '"' || true)
+        framework_patterns=$(grep -E "^[[:space:]]*pattern:" "$framework_file" 2>/dev/null | sed 's/.*pattern:[[:space:]]*//' | tr -d '"' || true)
     fi
 
     while IFS= read -r pattern; do
@@ -270,8 +274,11 @@ harvest_learnings() {
         return
     fi
 
+    # T-2676: indent-agnostic (see harvest_patterns note) — capture writes
+    # 2-space field lines under column-0 list items; the old 4-space grep made
+    # this sub-stage a permanent no-op ("No learnings found in project").
     local project_learnings
-    project_learnings=$(grep "^    learning:" "$project_file" 2>/dev/null | sed 's/.*learning:[[:space:]]*//' | tr -d '"' || true)
+    project_learnings=$(grep -E "^[[:space:]]*learning:" "$project_file" 2>/dev/null | sed 's/.*learning:[[:space:]]*//' | tr -d '"' || true)
 
     if [ -z "$project_learnings" ]; then
         echo -e "  ${CYAN}SKIP${NC}  No learnings found in project"
@@ -280,7 +287,7 @@ harvest_learnings() {
 
     local framework_learnings=""
     if [ -f "$framework_file" ]; then
-        framework_learnings=$(grep "^    learning:" "$framework_file" 2>/dev/null | sed 's/.*learning:[[:space:]]*//' | tr -d '"' || true)
+        framework_learnings=$(grep -E "^[[:space:]]*learning:" "$framework_file" 2>/dev/null | sed 's/.*learning:[[:space:]]*//' | tr -d '"' || true)
     fi
 
     while IFS= read -r learning; do

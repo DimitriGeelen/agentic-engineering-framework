@@ -3910,3 +3910,10 @@ X'` returning empty group."
   date: 2026-07-27
   context: Added via context agent
   application: TBD
+- id: L-512
+  learning: "Grep-by-shape against framework YAML stores must be indent-agnostic: three instances of the indentation-assumption class (T-2672 resolve.sh emit-indent, T-2676 harvest.sh dead learnings/patterns sub-stages, audit.sh graduation counter — surfaced by T-2667 baseline) all silently no-op'd because fixed-indent greps matched a file shape the store no longer uses. A SKIP/zero-count output indistinguishable from legitimately-empty hides the death indefinitely — pair any such grep with a bats test covering both file shapes."
+  source: T-2676
+  task: T-2667
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD
