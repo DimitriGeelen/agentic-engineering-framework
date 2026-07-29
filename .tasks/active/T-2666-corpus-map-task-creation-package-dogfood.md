@@ -7,10 +7,10 @@ description: >
   conformance rail. Third of the package's four worst-regression processes (T-2662
   gap 6). Gated on the tier0-escalation P4 test outcome.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [process-layer, corpus]
 components: []
 related_tasks: [T-2662]
@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:18Z
-last_update: '2026-07-28T16:30:09Z'
+last_update: 2026-07-29T06:47:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,6 +65,23 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-29T06:47:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -124,6 +141,46 @@ dogfood outcome; (2) `workflow_type` — 3-site enumeration incl. Watchtower for
 - [ ] On approval: promoted, corpus lint baseline unchanged, `fw corpus prove` green.
 - [ ] Conformance-rail entry added to `tools/conformance-registry.yaml`; result
       recorded honestly (green, or red with divergent pin test per T-2659 precedent).
+
+## Pair-Round State
+
+- **2026-07-29** — v2 seeded (14 nodes / 20 flows / 3 lanes incl. Human·Sovereignty
+  for the Watchtower-form entry — the human ACTION earning the lane per 832's rule
+  from the T-2665 round). Dialect lessons applied AT SEED: no merge gateways
+  (multi-incoming implicit XOR), agent-lane steps serviceTask, advisory-ness in
+  aef:meta notes. Rail dry-run PASS: 7 tokens {specification, design, build, test,
+  refactor, decommission, inception} vs status-transitions.yaml workflow_types block
+  (block-bounded regex, verified no leak into horizons/owners). Lint baseline 2.
+  Round-trip 14/20. Live-verified served v2. Open taste questions posed to round:
+  (a) two start events (agent CLI + human form) OK in dialect? (b) fork an
+  "activation?" gateway for the bare-create-ends-captured path, or keep note?
+  (c) owner/status creation-hole: wire predicates (Level C fix task) or pin the
+  hole in the map note?
+
+## AC-4 Prep (ready to paste at promotion)
+
+Registry entry (dry-run verified PASS against draft v2 on 2026-07-29):
+
+```yaml
+# Workflow-type gateway branches (7-way fan; inception forks through the
+# T-2204 recommendation gate before converging) vs the canonical enum in
+# status-transitions.yaml workflow_types block (read by lib/enums.sh
+# is_valid_type, enforced at create-task.sh:176). Block-bounded regex —
+# capture group spans only the workflow_types items, so horizons/owners
+# below it cannot leak in. Added at promotion of draft-task-creation (T-2666).
+aef-task-creation:
+  primitive: vocabulary-set
+  source: status-transitions.yaml
+  gateway: "workflow type?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    regex: 'workflow_types:\n((?:[ ]*- [a-z]+\n)+)'
+    first_only: true
+    split: "- "
+```
+
+Pin test: rc==0 and all 7 type tokens in stdout.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,3 +313,7 @@ dogfood outcome; (2) `workflow_type` — 3-site enumeration incl. Watchtower for
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2666-corpus-map-task-creation-package-dogfood.md
 - **Context:** Initial task creation
+
+### 2026-07-29T06:47:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

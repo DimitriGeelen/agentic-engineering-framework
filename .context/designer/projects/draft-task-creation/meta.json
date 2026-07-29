@@ -1,0 +1,19 @@
+{
+  "id": "draft-task-creation",
+  "title": "draft-task-creation",
+  "versions": [
+    {
+      "v": 1,
+      "note": "draft seeded by fw designer draft new (T-2623)",
+      "ts": 1785307740
+    },
+    {
+      "v": 2,
+      "note": "T-2666 pair-draft seed: full task-creation ceremony (intent -> work-on -> exists? -> template+name -> ID keylock -> 7-way workflow-type gateway (enforced enum) w/ inception rec-gate branch -> write (owner/status hole noted) -> focus -> estimator -> G-020 -> ACs); dialect lessons from T-2665 round applied at seed (no merge gateways, serviceTask typing); 2 entry surfaces incl. human Watchtower-form lane",
+      "ts": 1785308400
+    }
+  ],
+  "uuid": "88eb47bd-f40a-4592-bb26-649322eb530b",
+  "latest": 2,
+  "updated": 1785308400
+}

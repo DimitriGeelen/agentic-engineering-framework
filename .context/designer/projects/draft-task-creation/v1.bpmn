@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-task-creation"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- DRAFT — pair-draft session seed (fw designer draft new). Agent seeds,
+operator edits in the UI, agent re-reads + normalizes. Promotion to a
+production id pays the full ceremony (T-2623). -->
+
+  <bpmn:collaboration id="Collaboration_draft-task-creation">
+    <bpmn:participant id="Pool_draft_task_creation" name="draft-task-creation (DRAFT)" processRef="Process_draft-task-creation"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-task-creation" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-task-creation" version="1" schemaVersion="2" title="draft-task-creation (DRAFT)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_dt">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>d_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>d_sketch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>d_end</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="200"/>
+        </bpmn:extensionElements>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="d_start" name="session opens">
+      <bpmn:extensionElements>
+        <aef:uid value="d_start"/>
+        <aef:position x="160.0" y="100.0"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>d_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="d_sketch" name="sketch the flow here — every node/flow is a proposal">
+      <bpmn:extensionElements>
+        <aef:uid value="d_sketch"/>
+        <aef:position x="320.0" y="100.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>d_f1</bpmn:incoming>
+      <bpmn:outgoing>d_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="d_end" name="settled — ready for promotion ceremony">
+      <bpmn:extensionElements>
+        <aef:uid value="d_end"/>
+        <aef:position x="560.0" y="100.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>d_f2</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="d_f1" sourceRef="d_start" targetRef="d_sketch">
+      <bpmn:extensionElements><aef:uid value="d_f1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="d_f2" sourceRef="d_sketch" targetRef="d_end">
+      <bpmn:extensionElements><aef:uid value="d_f2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>
