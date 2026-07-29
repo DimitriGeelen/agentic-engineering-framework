@@ -72,13 +72,50 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Third dogfood round of the package's four worst-regression processes (T-2662 gap 6).
+Baseline pre-mined 2026-07-29 while T-2665's pair round was in flight — see below.
+
+## Regression-History Baseline (AC-1)
+
+Mined 2026-07-29 (git log all branches, concerns.yaml, learnings.yaml, episodics):
+
+- **Churn volume:** ~206 commits across the four surfaces with ~40% pure-fix ratio —
+  create-task.sh 34 (17 fix-shaped), check-active-task.sh 36 (17), update-task.sh
+  100 (37; the script is 102KB, largest in the machine), templates 36.
+- **create-task.sh fix chain (~10 consecutive defect commits):** T-141 wrong
+  template, T-143 unquoted name → YAML break, T-165 20 broken links same bug,
+  T-297 --start didn't set focus, T-555 placeholder names accepted, T-1279
+  ID-allocation race, T-1424 keylock silent fail, T-1687 revert of fake-prevention
+  chain, T-100160 non-tty hang, T-100202 worktree duplicate IDs (2 commits).
+- **ID-race class hit 3×:** T-1279/L-338 (4 parallel work-on → all minted T-1278),
+  T-1345 (single pickup_process minted SEVEN tasks numbered T-1345 — flock protected
+  across invocations, not within one; concerns.yaml:1401), T-100202 (stale worktree
+  re-opened the hole after T-1279's fix).
+- **Template/gate classes:** T-471 = G-020 origin (built on `[First criterion]` ACs,
+  3 human interventions); OBS-041 duplicate `### Human` headings recurred across 5
+  tasks; T-1941→T-1967 sed comment-strip swallowed 7 ticked ACs (same class re-fired
+  T-2554 in check-active-task.sh).
+- **Live conformance holes (rail-grade):** `owner` — predicate `is_valid_owner`
+  (lib/enums.sh:103) EXISTS but create-task.sh:50 never calls it, accepts any string;
+  Watchtower hard-whitelists {human, claude-code} → `--owner orchestrator` renders
+  broken (concerns.yaml:1151). `status`-at-creation — no validation path at all.
+  `workflow_type` — a THIRD parallel enumeration lives in the Watchtower creation
+  form (concerns.yaml:1094; new type silently breaks the web form).
+- **Canonical vocab source:** status-transitions.yaml (types :17-24, statuses :7-15,
+  horizons :26-29, owners :31-33, transitions :35+) read by lib/enums.sh — which
+  itself carries hardcoded fallback duplicates at :62-77 (second drift surface).
+
+**Rail candidates (strongest first):** (1) `owner` at creation — provable hole, the
+rail would go in knowingly RED per T-2659 precedent, which is the more interesting
+dogfood outcome; (2) `workflow_type` — 3-site enumeration incl. Watchtower form;
+(3) `status`-at-creation. Note the machine already HAS a transition-table rail
+(aef-task-lifecycle) — this map covers the creation ceremony upstream of it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Regression-history baseline captured in task body before mapping (episodic +
+- [x] Regression-history baseline captured in task body before mapping (episodic +
       concerns evidence for task-creation reiterations).
 - [ ] `draft-task-creation` seeded via the arc-014 pair-draft ritual from the
       enforced machine (create-task.sh flags/gates incl. inception-recommendation
