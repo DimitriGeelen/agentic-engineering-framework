@@ -8,10 +8,10 @@ description: >
   processes (T-2662 gap 6). Gated on the tier0-escalation P4 test outcome — promote
   horizon only after that lands.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [process-layer, corpus]
 components: []
 related_tasks: [T-2662]
@@ -27,7 +27,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:19:32Z
-last_update: '2026-07-28T16:30:09Z'
+last_update: 2026-07-29T05:29:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,13 +73,54 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Second dogfood round of the process-layer package's four worst-regression processes
+(T-2662 gap 6). Maps the exception-handling machine: status:issues trigger →
+auto-diagnose (update-task.sh Trigger 1) → keyword classification → pattern lookup →
+Error Escalation Ladder suggestions → fix → resolve (FP + L capture). Rail candidate:
+vocabulary-set on the "failure type?" gateway vs the enforced classification enum in
+`agents/healing/lib/diagnose.sh` (CLASSIFY_ORDER 5 types + the `unknown` fallback = 6
+outcomes; extraction regex `(?:FAILURE_KEYWORDS_|best_type=")([a-z]+)` verified to
+yield exactly those 6 tokens).
+
+## Regression-History Baseline (AC-1)
+
+Mined 2026-07-29 (episodics, concerns.yaml, learnings.yaml, git log, prior audits):
+
+- **Code churn:** 14 commits on `agents/healing/` — 1 implementation (T-007) + 13
+  touches, including a 4-commit consecutive pure-fix cluster (T-796, T-868, T-871,
+  T-1076) plus T-872 re-applying T-871's fix to the vendored copy (fix regressed
+  across the copy boundary → duplicate learnings L-213/L-214).
+- **Multi-defect incident:** T-028 found THREE simultaneous healing defects in one
+  pass — classifier ordering (generic `code` matched before specific types → L-003),
+  pattern lookup dumping all patterns, wrong section boundaries.
+- **Loop legs empirically broken:** G-016 (mitigated) — 72% of bugfix tasks (31/43)
+  produced zero learnings; the "log resolution" leg simply didn't fire. G-019 (still
+  `watching`) — Level D self-escalation never fires on its own; two bolt-ons (T-1550
+  RCA gate, T-1555 cron scanner) exist, no map. T-1767 — the escalation drift scanner
+  itself shipped undeployed (detector for escalation failures silently failed).
+- **Structural verdicts on record:** T-629 governance self-audit ranks self-healing
+  #3 among failures — "zero proactive detection, zero auto-recovery, zero
+  self-triggering... a knowledge base with a CLI, not a self-healing system"
+  (docs/reports/fw-agent-t629-03-healing.md:39). T-580: retry-based recovery
+  suggested for ALL failure types, no permanent-vs-transient distinction.
+- **Status-flow blindness:** 61 episodic files mention `healing`, only 2 mention
+  `status: issues` — the code churns constantly while the flow is never narrated.
+  G-041: the status enum is re-enumerated at duplicate sites with no rail.
+- **Pre-existing corpus hooks:** T-2551/T-2559 BPMN fixtures already carry
+  `binding=status:issues` error-event annotations that nothing consumes yet.
+
+Six concrete instances: T-028 (3 defects), T-871→T-872 (vendored regression),
+T-868 (suggest.sh crash under set -e), T-580 (blanket retry advice), T-629/G-019
+(Level D never self-fires), T-1767 (scanner undeployed). Baseline verdict: highest
+defect density per line of any agent this size, and the process it implements is
+the framework's declared "antifragile immune system" (T-396) — exactly the P4 claim's
+target class.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Regression-history baseline captured in task body before mapping (episodic +
+- [x] Regression-history baseline captured in task body before mapping (episodic +
       concerns evidence for exception-handling reiterations).
 - [ ] `draft-exception-handling` seeded via the arc-014 pair-draft ritual from the
       enforced machine (status:issues flow, healing agent classify→lookup→suggest→
@@ -220,3 +261,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2665-corpus-map-exception-handling-package-do.md
 - **Context:** Initial task creation
+
+### 2026-07-29T05:29:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

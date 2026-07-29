@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-exception-handling"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- DRAFT (pair-draft session, T-2665, arc-014): exception-handling as actually
+       operated — third of the package's four worst-regression processes (T-2662
+       gap 6). Sources of truth: agents/task-create/update-task.sh Trigger 1
+       (issues/blocked auto-invokes healing diagnose), agents/healing/lib/diagnose.sh
+       (classify_failure — CLASSIFY_ORDER most-specific-first keyword scoring, 5
+       types + `unknown` fallback when zero keywords match; the enforced enum this
+       map's "failure type?" gateway rails against), find_similar_patterns (semantic
+       search via lib/ask.py, T-270), the Error Escalation Ladder A-D suggestion
+       block, and agents/healing/lib/resolve.sh (FP-XXX to patterns.yaml + L-XXX to
+       learnings.yaml + task Updates entry). HONESTY NOTES for the pair round:
+       (1) the loop is entirely advisory after the auto-diagnose — nothing enforces
+       that the agent applies suggestions, resumes, or ever calls resolve (G-016:
+       72% of bugfix tasks produced zero learnings; G-019: Level D never self-fires);
+       (2) human escalation (max-3-hypotheses rule) is CLAUDE.md prose, not machine —
+       deliberately NOT drawn as a lane; (3) `blocked` enters the same trigger as
+       `issues` though the status enum churn (G-002) makes it near-dead in practice.
+       Regression baseline in T-2665 body. -->
+
+  <bpmn:collaboration id="Collaboration_draft-exception-handling">
+    <bpmn:participant id="Pool_draft_exception_handling" name="draft-exception-handling (DRAFT)" processRef="Process_draft-exception-handling"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-exception-handling" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-exception-handling" version="2" schemaVersion="2" title="AEF exception handling (issues trigger &#8594; diagnose &#8594; classify &#8594; ladder &#8594; resolve &#8594; learn) — DRAFT" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_eh">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_error</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_flag</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_resume</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_resolve</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fw" authority="authority" height="300"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fw_1_diagnose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_classify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_type</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_join</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_lookup</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_suggest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_record</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_learned</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_0_error" name="error / unexpected behavior during task work">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_error"/>
+        <aef:position x="120.0" y="380.0"/>
+        <aef:meta note="CLAUDE.md: NEVER silently work around — stop and investigate. The governed entry into the machine is the status flip, not the error itself"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>eh_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="agt_1_flag" name="set status: issues — fw task update T-XXX --status issues">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_flag"/>
+        <aef:position x="280.0" y="380.0"/>
+        <aef:meta note="update-task.sh Trigger 1: issues OR blocked auto-invokes healing diagnose (agents/task-create/update-task.sh:1714). The latest ## Updates entry becomes the failure text diagnose classifies — a thin update here degrades everything downstream"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f1</bpmn:incoming>
+      <bpmn:outgoing>eh_f2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="fw_1_diagnose" name="healing diagnose — auto-triggered">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_diagnose"/>
+        <aef:position x="440.0" y="140.0"/>
+        <aef:meta note="agents/healing/healing.sh diagnose T-XXX; reads the task's latest Updates entry as the symptom text. Also invocable manually — the auto-trigger is best-effort (prints 'Run manually' fallback when the agent script is missing)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f2</bpmn:incoming>
+      <bpmn:outgoing>eh_f3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_2_classify" name="classify failure — keyword scoring, most-specific-first">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_classify"/>
+        <aef:position x="600.0" y="140.0"/>
+        <aef:meta note="diagnose.sh classify_failure: CLASSIFY_ORDER=(dependency external environment design code) — specific types ordered before generic `code` (L-003/T-028: original ordering matched `error` before `missing.module`). Zero keyword hits &#8594; unknown"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f3</bpmn:incoming>
+      <bpmn:outgoing>eh_f4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_gw_type" name="failure type?">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_gw_type"/>
+        <aef:position x="760.0" y="140.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f4</bpmn:incoming>
+      <bpmn:outgoing>eh_f5</bpmn:outgoing>
+      <bpmn:outgoing>eh_f6</bpmn:outgoing>
+      <bpmn:outgoing>eh_f7</bpmn:outgoing>
+      <bpmn:outgoing>eh_f8</bpmn:outgoing>
+      <bpmn:outgoing>eh_f9</bpmn:outgoing>
+      <bpmn:outgoing>eh_f10</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="fw_gw_join">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_gw_join"/>
+        <aef:position x="920.0" y="140.0"/>
+        <aef:meta note="converging only — the type parameterizes downstream suggestions (Ladder B is type-specific), it does not fork distinct procedures. T-580 finding: v1 suggestions are blanket retry-flavored regardless of type; the merge is honest about that"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f5</bpmn:incoming>
+      <bpmn:incoming>eh_f6</bpmn:incoming>
+      <bpmn:incoming>eh_f7</bpmn:incoming>
+      <bpmn:incoming>eh_f8</bpmn:incoming>
+      <bpmn:incoming>eh_f9</bpmn:incoming>
+      <bpmn:incoming>eh_f10</bpmn:incoming>
+      <bpmn:outgoing>eh_f11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="fw_3_lookup" name="lookup similar failure patterns — semantic search">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_lookup"/>
+        <aef:position x="1080.0" y="140.0"/>
+        <aef:meta note="find_similar_patterns via lib/ask.py --concise (T-270 replaced 80 lines of keyword matching). Degrades honestly: 'Semantic search unavailable' when Ollama/index down — the loop continues without pattern recall"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f11</bpmn:incoming>
+      <bpmn:outgoing>eh_f12</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_4_suggest" name="emit recovery suggestions — Error Escalation Ladder A&#8594;D">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_suggest"/>
+        <aef:position x="1240.0" y="140.0"/>
+        <aef:meta note="A don't-repeat (patterns.yaml), B improve technique (type-specific block), C improve tooling (audit check), D change ways of working (practice). ADVISORY output — nothing enforces application; G-019 (watching): Level D never self-fires"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f12</bpmn:incoming>
+      <bpmn:outgoing>eh_f13</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="agt_2_fix" name="apply fix per suggestions">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_fix"/>
+        <aef:position x="1240.0" y="380.0"/>
+        <aef:meta note="hypothesis-driven debugging (CLAUDE.md): one hypothesis, one test, max 3 before escalating to the human — prose-governed, not machine-enforced"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f13</bpmn:incoming>
+      <bpmn:outgoing>eh_f14</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="agt_3_resume" name="status back to started-work">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_resume"/>
+        <aef:position x="1400.0" y="380.0"/>
+        <aef:meta note="fw task update T-XXX --status started-work (auto-sets horizon: now, T-1068). issues &#8596; started-work is the two-way edge aef-task-lifecycle rails at the transition-table level"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f14</bpmn:incoming>
+      <bpmn:outgoing>eh_f15</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="agt_4_resolve" name="fw healing resolve T-XXX --mitigation '…'">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_resolve"/>
+        <aef:position x="1560.0" y="380.0"/>
+        <aef:meta note="THE LEAKY LEG: entirely voluntary — G-016 measured 72% of bugfix tasks producing zero learnings before mitigation. Mitigation text is mandatory once invoked; pattern name defaults to resolved-issue-T-XXX"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f15</bpmn:incoming>
+      <bpmn:outgoing>eh_f16</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="fw_5_record" name="record pattern FP-XXX + learning L-XXX + task update entry">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_record"/>
+        <aef:position x="1720.0" y="140.0"/>
+        <aef:meta note="resolve.sh: FP appended to patterns.yaml (before success_patterns:), L appended to learnings.yaml (source: healing-loop), resolution entry appended to task ## Updates. These records are what fw_3_lookup recalls next time — the antifragile feedback edge"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f16</bpmn:incoming>
+      <bpmn:outgoing>eh_f17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="fw_end_learned" name="resolved — pattern available for future diagnosis">
+      <bpmn:extensionElements>
+        <aef:uid value="eh_done_learned"/>
+        <aef:position x="1880.0" y="140.0"/>
+        <aef:meta terminalKind="success" state="resolved"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>eh_f17</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="eh_f1" sourceRef="agt_0_error" targetRef="agt_1_flag">
+      <bpmn:extensionElements><aef:uid value="eh_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f2" sourceRef="agt_1_flag" targetRef="fw_1_diagnose">
+      <bpmn:extensionElements><aef:uid value="eh_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f3" sourceRef="fw_1_diagnose" targetRef="fw_2_classify">
+      <bpmn:extensionElements><aef:uid value="eh_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f4" sourceRef="fw_2_classify" targetRef="fw_gw_type">
+      <bpmn:extensionElements><aef:uid value="eh_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f5" name="dependency" sourceRef="fw_gw_type" targetRef="fw_gw_join">
+      <bpmn:extensionElements><aef:uid value="eh_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f6" name="external" sourceRef="fw_gw_type" targetRef="fw_gw_join">
+      <bpmn:extensionElements><aef:uid value="eh_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f7" name="environment" sourceRef="fw_gw_type" targetRef="fw_gw_join">
+      <bpmn:extensionElements><aef:uid value="eh_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f8" name="design" sourceRef="fw_gw_type" targetRef="fw_gw_join">
+      <bpmn:extensionElements><aef:uid value="eh_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f9" name="code" sourceRef="fw_gw_type" targetRef="fw_gw_join">
+      <bpmn:extensionElements><aef:uid value="eh_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f10" name="unknown" sourceRef="fw_gw_type" targetRef="fw_gw_join">
+      <bpmn:extensionElements><aef:uid value="eh_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f11" sourceRef="fw_gw_join" targetRef="fw_3_lookup">
+      <bpmn:extensionElements><aef:uid value="eh_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f12" sourceRef="fw_3_lookup" targetRef="fw_4_suggest">
+      <bpmn:extensionElements><aef:uid value="eh_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f13" sourceRef="fw_4_suggest" targetRef="agt_2_fix">
+      <bpmn:extensionElements><aef:uid value="eh_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f14" sourceRef="agt_2_fix" targetRef="agt_3_resume">
+      <bpmn:extensionElements><aef:uid value="eh_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f15" sourceRef="agt_3_resume" targetRef="agt_4_resolve">
+      <bpmn:extensionElements><aef:uid value="eh_e15"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f16" sourceRef="agt_4_resolve" targetRef="fw_5_record">
+      <bpmn:extensionElements><aef:uid value="eh_e16"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="eh_f17" sourceRef="fw_5_record" targetRef="fw_end_learned">
+      <bpmn:extensionElements><aef:uid value="eh_e17"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

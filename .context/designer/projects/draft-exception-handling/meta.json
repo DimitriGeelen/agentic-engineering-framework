@@ -1,0 +1,19 @@
+{
+  "id": "draft-exception-handling",
+  "title": "draft-exception-handling",
+  "versions": [
+    {
+      "v": 1,
+      "note": "draft seeded by fw designer draft new (T-2623)",
+      "ts": 1785303090
+    },
+    {
+      "v": 2,
+      "note": "T-2665 pair-draft seed: full exception-handling machine (issues trigger -> auto-diagnose -> classify (6-way enforced enum) -> pattern lookup -> Ladder A-D -> fix/resume/resolve -> FP+L capture); honesty notes on advisory legs (G-016/G-019)",
+      "ts": 1785303600
+    }
+  ],
+  "uuid": "001362d7-966d-4d14-9dfd-84d938e3791a",
+  "latest": 2,
+  "updated": 1785303600
+}
