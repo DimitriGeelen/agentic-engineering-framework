@@ -3,6 +3,8 @@
 > blast-radius foresight, value scoring, audit, and cross-agent coordination —
 > wrapped around any CLI agent you already use. Coordinates, does not execute.
 
+**▶ New here? Watch the instruction / explainer video first:** https://youtu.be/qyjFjMHLWxM
+
 ## Garbage in, garbage out?
 
 It is true — for many input/output processes, in biological life and in
