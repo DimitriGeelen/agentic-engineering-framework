@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2673: designer 0.8.0 re-pin (pull-at-tag) — closes operator T-293 pin-lag retest gap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T06:41:37Z
+# ============================================================================
+
+task_id: T-2673
+task_name: "designer 0.8.0 re-pin (pull-at-tag) — closes operator T-293 pin-lag retest gap"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T06:33:16Z
+completed: 2026-07-29T06:41:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-29T08:38:06+02:00
+last_commit: 2026-07-29T08:38:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  designer 0.8.0 re-pinned (pull-at-tag, sha cab3c7518397 verified vs MANIFEST+pin; 4 zero-seam fixes incl. T-293 endpoint-handle layer; closes operator pin-lag retest gap; served /designer live-verified byte-exact, no restart needed)
+
+# Key outcomes
+outcomes:
+  - 'Pin updated from the rail-308 announce (version/sha256/bytes/tag/artifact/'
+  - '`fw doctor` designer-pin line OK against the new pin ("designer vendored'
+  - '832 acked on the rail with the re-pin verdict — offset 313, verdict PASS,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'designer 0.8.0 re-pinned (pull-at-tag, sha cab3c7518397 verified vs MANIFEST+pin; 4 zero-seam fixes incl. T-293 endpoint-handle layer; closes operator pin-lag retest gap; served /designer live-verified byte-exact, no restart needed)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-2673-designer-080-re-pin-pull-at-tag--closes-.md'
+  - 'vendor/designer/aef-workflow-designer-0.8.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-29T08:38:06"
+    action: "T-2673: designer 0.8.0 re-pinned (pull-at-tag, sha cab3c7518397 verified vs MANIFEST+pin; 4 zero-seam fixes incl. T-293 endpoint-handle layer; closes operator pin-lag retest gap; served /designer live-verified byte-exact, no restart needed)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 3
+  lines_added: 10026
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2673-designer-080-re-pin-pull-at-tag--closes-.md
+generated_by: context-agent-hybrid

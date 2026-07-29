@@ -4,10 +4,10 @@ name: "designer 0.8.0 re-pin (pull-at-tag) — closes operator T-293 pin-lag ret
 description: >
   designer 0.8.0 re-pin (pull-at-tag) — closes operator T-293 pin-lag retest gap
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-29T06:33:16Z
-last_update: 2026-07-29T06:33:16Z
-date_finished: null
+last_update: 2026-07-29T06:41:27Z
+date_finished: 2026-07-29T06:41:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,13 +56,17 @@ resolves_workflow_ref expected retained.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Pin updated from the rail-308 announce (version/sha256/bytes/tag/artifact/
+- [x] Pin updated from the rail-308 announce (version/sha256/bytes/tag/artifact/
       vendored_path + 0.8.0 history note); intake via `fw designer sync --from-tag`
       succeeds with independent sha256 matching BOTH the MANIFEST at the tag AND
-      the pin.
-- [ ] `fw doctor` designer-pin line OK against the new pin; served /designer
-      live-verified as 0.8.0 bytes (watchtower restarted if needed).
-- [ ] 832 acked on the rail with the re-pin verdict (their requested handshake).
+      the pin — "MANIFEST anchor: sha+bytes self-consistent" + "pin anchor: sha
+      matches pin (0.8.0)", vendored read-only.
+- [x] `fw doctor` designer-pin line OK against the new pin ("designer vendored
+      build matches pin (cab3c7518397...)"); served /designer/app live-verified
+      byte-exact (903600 B, sha prefix cab3c75183979b0e) — no restart needed,
+      blueprint reads per-request.
+- [x] 832 acked on the rail with the re-pin verdict — offset 313, verdict PASS,
+      commit 173edccf7 (reply-to their 308 announce).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -96,6 +100,9 @@ resolves_workflow_ref expected retained.
 -->
 
 ## Verification
+
+out=$(bin/fw designer status 2>&1); echo "$out" | grep -q "sha256 matches pin"
+out=$(curl -s "$(bin/fw watchtower url)/designer/app" | sha256sum); echo "$out" | grep -q "cab3c75183979b0e15e23192518f9360ea12fe33b6a4f78641d7e264f6110935"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -195,3 +202,15 @@ resolves_workflow_ref expected retained.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2673-designer-080-re-pin-pull-at-tag--closes-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c1299a4a
+- **Timestamp:** 2026-07-29T06:41:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-29T06:41:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
