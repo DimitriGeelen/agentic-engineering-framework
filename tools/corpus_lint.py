@@ -53,6 +53,27 @@ discipline: no speculative rules — each one has a task-traceable origin).
                           deliberately origin-free (see lane_geometry). Origin: T-2684
                           / 832 T-310 — survey found 4 of 11 store maps disagreeing,
                           incl. one promoted map and two drafts in the taste queue.
+  lane-overflow           a lane's own member y-span meets or exceeds its declared
+                          aef:laneMeta height, so the band cannot contain its content
+                          and the render spills past the band edge. Sibling to
+                          lane-geometry and deliberately orthogonal to it:
+                          lane-geometry compares lanes AGAINST EACH OTHER and is
+                          therefore structurally blind to this class — ordering can be
+                          perfectly correct while a single lane overflows. Proven by
+                          construction in T-2687 (a lane spanning 190px inside
+                          height=100 is CLEAN under lane-geometry, caught here).
+                          Origin: T-2687 GO / T-2688 — draft-knowledge-leveling's agent
+                          lane spans 513px inside height=260, a 253px overflow on the
+                          v8 promotion candidate that lane-geometry never named.
+                          CONSERVATIVE SUBSET, deliberately: every measurement is on
+                          node top-y, which understates overflow by the node box height
+                          H (full-box containment needs span + H < height). H is a
+                          renderer constant we do not read (T-559); asked of 832 at
+                          rail 338, unanswered. The top-y form cannot false-positive —
+                          node height only ever makes overflow worse — so it ships,
+                          while H-dependent tight-lane detection waits for the real
+                          constant rather than a guessed one (T-2684's band model is
+                          what guessing costs).
 
 Exit codes: 0 clean, 1 findings, 2 usage/environment error.
 
@@ -235,6 +256,7 @@ def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set,
                     })
 
     findings.extend(lane_geometry(map_name, xml_text))
+    findings.extend(lane_overflow(map_name, xml_text))
     return findings, typed
 
 
@@ -314,6 +336,77 @@ def lane_geometry(map_name: str, xml_text: str) -> list:
                       f"membership, so the diagram and fw corpus explain disagree "
                       f"about who owns these steps",
             "origin": "T-2684 / 832 T-310",
+        })
+    return findings
+
+
+def lane_overflow(map_name: str, xml_text: str) -> list:
+    """lane-overflow: a lane's declared height must be able to contain its own members.
+
+    Orthogonal to lane_geometry, not a stronger version of it. lane_geometry compares
+    lanes against EACH OTHER (are their spans ordered and disjoint?), which makes it
+    structurally blind to a single lane whose content does not fit: ordering can be
+    perfectly correct while one band overflows. T-2687 proved the blindness by
+    construction — a lane spanning 190px inside height=100 is CLEAN under
+    lane_geometry and caught here.
+
+    **The threshold is derived, not chosen.** Under half-open bands ``[O, O+h)`` —
+    the semantics T-2687 settled on after finding that closed containment lets a node
+    on a shared boundary belong to both adjacent bands — containing a lane's members
+    needs ``O <= min_y`` and ``max_y < O + h``, which is satisfiable exactly when
+    ``span < h``. So overflow is ``span >= h``. The equality case is a genuine
+    overflow: a node whose top sits exactly on the band's bottom edge is already
+    outside a half-open band.
+
+    **Conservative subset, on purpose.** Every measurement here is node top-y, so it
+    understates overflow by the node box height H — full-box containment would need
+    ``span + H < h``, i.e. overflow at ``span >= h - H``. H is a renderer constant we
+    do not read (T-559 boundary); it was asked of 832 at rail 338 and is unanswered.
+    The top-y form cannot produce a false positive, because node height only ever
+    makes overflow worse, never better — so this ships while the H-dependent
+    tight-lane leg waits for the real constant. Shipping on a guessed H is exactly
+    the T-2684 band-model error (a guessed renderer constant produced 7 phantom
+    findings on a clean map).
+
+    Evaluates and skips PER LANE, not per map: one lane with an unpositioned member
+    does not blind the rule to the others. An unevaluable lane skips rather than
+    passing — a silent pass on something never checked is the G-071 shape.
+    """
+    try:
+        spec = parse_map(xml_text)
+    except Exception:
+        return []  # malformed XML is already reported by lint_map
+    members: dict = {}
+    for n in spec.get("nodes") or []:
+        members.setdefault(n.get("lane"), []).append(n)
+    findings = []
+    for lane in spec.get("lanes") or []:
+        lane_id = lane.get("id")
+        nodes = members.get(lane_id) or []
+        height = lane.get("height")
+        # skip-not-pass: nothing to contain, no declared height, or an unplaced member
+        if not nodes or not height or any(not n.get("pos") for n in nodes):
+            continue
+        height = float(height)
+        top = min(nodes, key=lambda n: n["pos"][1])
+        bottom = max(nodes, key=lambda n: n["pos"][1])
+        span = bottom["pos"][1] - top["pos"][1]
+        if span < height:
+            continue
+        findings.append({
+            "rule": "lane-overflow", "map": map_name,
+            "node": f'{top["id"]}, {bottom["id"]}',
+            "detail": f'lane "{lane_id}" declares height={height:.0f} but its own members '
+                      f'span {span:.0f}px (from {top["id"]} at y={top["pos"][1]:.0f} to '
+                      f'{bottom["id"]} at y={bottom["pos"][1]:.0f}), exceeding it by '
+                      f'{span - height:.0f}px. The band cannot contain its content, '
+                      f"so the render spills past the band edge while flowNodeRef still "
+                      f"claims every node. Two fixes, and choosing between them is an "
+                      f'authoring call: raise "{lane_id}" height to more than {span:.0f}, '
+                      f"or compress the node placement so the span fits. Measured on "
+                      f"node top-y, so the real overflow is larger by the node box "
+                      f"height",
+            "origin": "T-2687 GO / T-2688",
         })
     return findings
 
