@@ -5254,3 +5254,27 @@ Verified v8.bpmn byte-ident'
 git add .tasks/active/T-2667-corpus-map-knowledge-leveling-package-do.md
 FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
 T-2667: dispatch check-in — v8 promo'
+- timestamp: '2026-07-29T22:11:56Z'
+  task: 'T-2667'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2687'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+export FW_SWITCH_FOCUS=1
+git add docs/reports/T-2687-band-feasibility-lint.md .tasks/active/T-2687-promote-origin-free-band-feasibility-to-.md .context/inbox.'
+- timestamp: '2026-07-29T22:14:46Z'
+  task: 'T-2667'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2687'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+timeout 200 bin/fw context add-learning "Closed-interval containment silently admits boundary cases: a geometric check written as lo <= y <= hi lets a point'
+- timestamp: '2026-07-29T22:15:45Z'
+  task: 'T-2667'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2687'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+export FW_SWITCH_FOCUS=1
+git add -A .context/project/learnings.yaml .context/working/ 2>/dev/null
+timeout 280 bin/fw git commit -m "T-2687: two learnings — '

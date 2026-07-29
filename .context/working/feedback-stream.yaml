@@ -23866,3 +23866,75 @@ scan_id: R-0c7c543e
 task_id: T-2682
 payload:
   task_file: .tasks/active/T-2682-corpusspec-doc-extraction-adopts-generat.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T20:54:39Z'
+scan_id: R-a62eb901
+task_id: T-2683
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T20:54:39Z'
+scan_id: R-a62eb901
+task_id: T-2683
+payload:
+  task_file: .tasks/active/T-2683-restore-laundered-doc-comments-on-two-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T21:10:34Z'
+scan_id: R-53fbd53b
+task_id: T-2684
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T21:10:34Z'
+scan_id: R-53fbd53b
+task_id: T-2684
+payload:
+  task_file: .tasks/active/T-2684-corpus-lint-lane-membership-vs-node-geom.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T21:19:31Z'
+scan_id: R-5bbfbe87
+task_id: T-2685
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T21:19:31Z'
+scan_id: R-5bbfbe87
+task_id: T-2685
+payload:
+  task_file: .tasks/active/T-2685-fix-corpus-explain-rail-arity-drift-sile.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T22:00:20Z'
+scan_id: R-67ab0cb9
+task_id: T-2686
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T22:00:20Z'
+scan_id: R-67ab0cb9
+task_id: T-2686
+payload:
+  task_file: .tasks/active/T-2686-reorder-laneset-on-two-wholesale-inverte.md

@@ -3945,3 +3945,17 @@ X'` returning empty group."
   date: 2026-07-29
   context: Added via context agent
   application: TBD
+- id: L-517
+  learning: "Closed-interval containment silently admits boundary cases: a geometric check written as 'lo <= y <= hi' lets a point on a shared boundary satisfy BOTH adjacent regions, so it passes the exact defect a stricter ordering check catches. T-2687 found this in the band-feasibility check — aef-session-lifecycle's only 'feasible' origin put the band boundary exactly on y=100 where all three contested nodes sat. The claim 'this check is strictly stronger' had already been written into T-2686's Decisions and sent to a peer project before measurement falsified it. Rule: when a region-containment check spans adjacent regions that share a boundary, half-open ([lo, hi)) is almost always the correct semantics because it matches what a reader sees; and never claim one check subsumes another without running BOTH over the whole corpus."
+  source: P-001
+  task: T-2687
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD
+- id: L-518
+  learning: "When a peer project reports a defect class in THEIR code, sweep OUR equivalent surface instead of assuming immunity. 832's T-311 reported that preserving doc comments put prose into exported bytes and broke two of their harnesses by counting element names quoted inside doc blocks, with false-GREEN as the dangerous half. Sweeping our side found BPMN checks immune (they parse structure, never regex document text) but 2 of 4 conformance vocabulary rails exposed one layer over — they regex our own SOURCE with no comment stripping, and comment-only injection admits phantom enum tokens ('maybe' into inception-flow, '3' into audit-cron). The separating property is regex shape: rails anchored on structural literals are prose-immune, rails matching loose word patterns are not. OBS-103. A peer's bug report is a free test case for your own analogous surface — the class travels even when the code does not."
+  source: P-001
+  task: T-2687
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD
