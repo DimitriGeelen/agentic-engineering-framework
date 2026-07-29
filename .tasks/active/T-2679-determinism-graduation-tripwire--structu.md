@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-29T16:08:10Z
-last_update: 2026-07-29T16:10:57Z
+last_update: '2026-07-29T16:15:05Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -39,17 +39,52 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-29T16:15:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2679: determinism graduation tripwire — structural enforcement inception
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+The framework's maturity ladder moves work from **stochastic** (agent initiative,
+exploration, judgement) to **deterministic** (scripts, gates, cron). The terminal stage
+inverts roles: the framework does the work, and the agent becomes an out-of-band monitor
+and **exception manager**. That inversion assumes the deterministic tier **fails loudly**.
+
+Nothing enforces this. A deterministic component encodes a world-assumption at authoring
+time — store shape, indentation, anchor uniqueness, file layout — and when the world
+drifts it keeps executing the stale assumption, exiting 0 with plausible output. Silent
+zero is indistinguishable from legitimately empty, so no exception ever reaches the
+exception manager, and the monitoring stage has nothing to monitor.
+
+**For whom:** the operator (whose ladder depends on the deterministic tier being
+trustworthy) and every future agent session (which will trust exit-0 output as ground
+truth, because it has no way not to).
+
+**Why now:** four instances surfaced in a single week (T-2676, T-2677, T-2672, plus the
+promote.sh anchor near-miss). T-2677 establishes the severity ceiling — a component dead
+for its entire lifetime with zero signal. The per-site fixes were *mitigation*; per G-019
+the gap is not closed until *prevention* exists. Registered as **G-071**.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Registered via `fw assumption add` (see `.context/project/assumptions.yaml`):
+
+- **A-1** — a probe vocabulary of ~3 primitives (count-floor, uniqueness, shape-match)
+  covers ≥80% of the known silent-drift class. *Validated by Spike 1.*
+- **A-2** — running ~20 assumption probes adds <2s to the daily audit. *Validated by
+  Spike 3.*
+- **A-3** — the assumption-rail registry does not collide with T-2652's conformance-rail
+  generalization scope. *Validated by Spike 2.*
 
 ## Open Questions
 
@@ -118,15 +153,39 @@ existing loud signals reach the operator today (audit WARN, doctor, Watchtower
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- **Portability (D4)** — probes must run in POSIX shell / python3 already required by
+  the framework. No new runtime dependency, no per-host install.
+- **Audit budget** — the daily audit is already multi-section and cron-driven; probe
+  execution must stay negligible (A-2, <2s for ~20 probes) or it will be silenced.
+- **Consumer safety** — probes ship through `fw vendor`, so a probe that assumes
+  framework-repo layout will break consumers (the exact freeze class from T-2674's
+  status-transitions.yaml omission). Probes must resolve paths via FRAMEWORK_ROOT /
+  PROJECT_ROOT conventions (T-2648 / OBS-097 rule).
+- **No false-loud** — a tripwire that WARNs on a legitimately-empty store trains the
+  operator to ignore the channel. Probes must distinguish "empty because nothing to
+  find" from "empty because the pattern no longer matches"; that distinction is the
+  whole design problem (count-floor primitive exists for exactly this).
+- **832 boundary** — if the registry generalization touches the shared map-rail
+  contract, coordinate via the DM rail; do not edit any cross-repo file.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope for this exploration:**
+- The enforceable *form* of the graduation-tripwire rule (registry vs gate vs lint).
+- Probe-vocabulary design sufficient to express the 5 known drift sites.
+- Where the loud signal surfaces to the operator (IW-5).
+- Sequencing against T-2652 (merge / sequence / independent).
+
+**OUT of scope (explicitly):**
+- Building any of the three candidates — build slices are separate tasks post-GO.
+- Retrofitting probes across the whole `lib/` + `agents/` surface. Seeding the 4-5
+  evidence sites is Slice 2; wholesale adoption is a later, separately-scoped effort.
+- Re-litigating the per-site fixes already shipped (T-2672/T-2676/T-2677 are closed
+  mitigation; this task is the prevention leg only).
+- Changing the maturity ladder itself or the map-rail (maps-vs-code) contract. This
+  inception adds an axis; it does not redefine existing ones.
+- Any change to CLAUDE.md prose as the *primary* remediation (Candidate D — rejected by
+  the doctrine). Documentation follows a structural mechanism; it does not substitute.
 
 ## Acceptance Criteria
 
@@ -152,12 +211,24 @@ existing loud signals reach the operator today (audit WARN, doctor, Watchtower
 
 <!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- The drift class is shown to be recurring and structurally unpreventable today — **MET**:
+  4 instances in one week, 3 of them months-long blind spots, zero detection surface.
+- At least one candidate checks *reality* rather than a proxy artifact — **MET**:
+  Candidate A (runtime probes against live state), pattern already proven by the
+  conformance rails on the maps-vs-code axis.
+- A first slice exists that is small, testable, reversible, and delivers value even if
+  the keystone is later reshaped — **MET**: Candidate C (silent-zero lint) retires the
+  known grep family standalone.
+- Probe cost stays negligible in the daily audit (A-2) — *pending Spike 3*.
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- The class turns out to be one-off rather than systemic (it is not — see evidence).
+- Every candidate reduces to a proxy check (artifact-exists rather than behaviour-fires),
+  i.e. we would be re-shipping the T-1828/G-040 failure mode under a new name.
+- Probe design cannot distinguish "legitimately empty" from "pattern no longer matches",
+  making every tripwire a false-loud that trains the operator to ignore the channel.
+- Scope collides irreconcilably with T-2652 such that two registries would compete for
+  the same authority (Spike 2 — expected independent, different axis).
 
 ## Verification
 
