@@ -39,6 +39,20 @@ discipline: no speculative rules — each one has a task-traceable origin).
                           this while the pin flag is false), or flip the pin flag
                           after a T-240-capable re-pin. Ghost refs are exempt (no
                           store slug exists to bind).
+  lane-geometry           declared lane membership (flowNodeRef) contradicts node
+                          geometry (aef:position y). The designer draws lane bands in
+                          laneSet document order and places nodes at their stored
+                          position without reconciling the two, so a disagreeing map
+                          renders one authority assignment while flowNodeRef — what
+                          `fw corpus explain` and every conformance rail read — reports
+                          another. Lane membership is the authority axis in this
+                          dialect, so that is a "who owns this step" misread, not a
+                          cosmetic one. It also arms the write side: laneAtY(centerY)
+                          rewrites membership from pixels on drag (832 T-310), so
+                          touching a disagreeing map silently rewrites it. Detection is
+                          deliberately origin-free (see lane_geometry). Origin: T-2684
+                          / 832 T-310 — survey found 4 of 11 store maps disagreeing,
+                          incl. one promoted map and two drafts in the taste queue.
 
 Exit codes: 0 clean, 1 findings, 2 usage/environment error.
 
@@ -53,7 +67,9 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from corpus_spec import BPMN_NS, STORE, UUID_RE, _ext, _q, store_index  # noqa: E402
+from corpus_spec import (  # noqa: E402
+    BPMN_NS, STORE, UUID_RE, _ext, _q, parse_map, store_index,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -217,7 +233,89 @@ def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set,
                                   f"T-2614 parse data-loss class)",
                         "origin": "T-2614",
                     })
+
+    findings.extend(lane_geometry(map_name, xml_text))
     return findings, typed
+
+
+def lane_geometry(map_name: str, xml_text: str) -> list:
+    """lane-geometry: declared lane membership must agree with node geometry.
+
+    The invariant, stated so it needs nothing the map does not carry: for lanes in
+    laneSet **declaration order**, the y-ranges of their member nodes must be
+    strictly ordered and non-overlapping. Declaration order is what the designer
+    draws top-to-bottom, so an out-of-order or overlapping range means at least one
+    node renders in a band other than the lane that claims it.
+
+    Deliberately does NOT compute band boundaries from lane heights. That needs a
+    band origin the map does not store, and guessing one (e.g. the topmost node)
+    produces phantom findings — validated during T-2684 against the origin-free
+    check, which it contradicted on draft-trigger-handling (7 phantom mismatches on
+    a map whose spans are cleanly ordered). Heights tile the *canvas*, not
+    necessarily the nodes.
+
+    Reports one finding per violating lane pair, naming the **extremal witness
+    pair**: the upper lane's lowest-drawn node and the lower lane's highest-drawn
+    node. Those two are the minimal provable witness of the crossing under this
+    invariant — no origin needed. On draft-knowledge-leveling v8 the pair resolves
+    to exactly kl_healing + kl_dormant, independently matching 832's account of the
+    two nodes their operator never dragged.
+
+    Skips (rather than passing) when the invariant is not evaluable: fewer than two
+    populated lanes, or any node missing a position. A silent pass on an
+    unevaluable map is the G-071 failure shape this rule exists to avoid.
+    """
+    try:
+        spec = parse_map(xml_text)
+    except Exception:
+        return []  # malformed XML is already reported by lint_map
+    all_nodes = spec.get("nodes") or []
+    lanes = [l.get("id") for l in (spec.get("lanes") or []) if l.get("id")]
+    placed = [n for n in all_nodes if n.get("pos")]
+    if len(lanes) < 2 or not placed or len(placed) != len(all_nodes):
+        return []
+
+    by_lane: dict = {}
+    for n in placed:
+        by_lane.setdefault(n.get("lane"), []).append(n)
+    ordered = [l for l in lanes if by_lane.get(l)]
+    if len(ordered) < 2:
+        return []
+
+    findings = []
+    for upper, lower in zip(ordered, ordered[1:]):
+        up, lo = by_lane[upper], by_lane[lower]
+        u_last = max(up, key=lambda n: n["pos"][1])   # upper lane, drawn lowest
+        l_first = min(lo, key=lambda n: n["pos"][1])  # lower lane, drawn highest
+        if u_last["pos"][1] < l_first["pos"][1]:
+            continue
+        n_up = sum(1 for n in up if n["pos"][1] >= l_first["pos"][1])
+        n_lo = sum(1 for n in lo if n["pos"][1] <= u_last["pos"][1])
+        wholesale = n_up == len(up) and n_lo == len(lo)
+        shape = (
+            " Every node on both sides is on the wrong side — this is a wholesale "
+            "inversion, so the likely defect is laneSet ordering, not node placement "
+            "(reordering the laneSet is zero-semantic: canonical compare sorts lanes "
+            "by id)." if wholesale else
+            " A subset crosses, so the likely defect is node placement or a stale "
+            "membership on the named nodes — that is an authority call, not a layout "
+            "one."
+        )
+        findings.append({
+            "rule": "lane-geometry", "map": map_name,
+            "node": f'{u_last["id"]}, {l_first["id"]}',
+            "detail": f'lane "{upper}" is declared above "{lower}" but their node '
+                      f'geometry crosses: {u_last["id"]} (y={u_last["pos"][1]:.0f}, '
+                      f'declared {upper}) is drawn at/below {l_first["id"]} '
+                      f'(y={l_first["pos"][1]:.0f}, declared {lower}). '
+                      f"{n_up}/{len(up)} {upper}-nodes and {n_lo}/{len(lo)} "
+                      f"{lower}-nodes sit on the wrong side of the crossing.{shape} "
+                      f"The render follows geometry while flowNodeRef follows "
+                      f"membership, so the diagram and fw corpus explain disagree "
+                      f"about who owns these steps",
+            "origin": "T-2684 / 832 T-310",
+        })
+    return findings
 
 
 def cross_map_typed_events(typed: list) -> list:

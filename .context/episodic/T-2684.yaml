@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2684: corpus lint: lane membership vs node geometry disagreement detector
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T21:10:44Z
+# ============================================================================
+
+task_id: T-2684
+task_name: "corpus lint: lane membership vs node geometry disagreement detector"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T21:00:40Z
+completed: 2026-07-29T21:10:30Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Band model validated before being relied on, and the outcome acted on: cross-checked'
+  - 'Detection invariant is origin-free and height-free: for lanes in laneSet declaration'
+  - 'New `corpus_lint` rule `lane-geometry` flags a map whose declared lane membership'
+  - 'Finding detail is actionable without over-claiming: one finding per violating lane'
+  - 'Degrades honestly rather than guessing: maps with <2 populated lanes, or any node'
+  - 'Unit tests cover clean, wholesale-inversion, subset-crossing, equal-y, three-lane,'
+  - 'Live-store detection matches the survey exactly, with the draft split made explicit:'
+  - '`fw corpus lint` exit contract unchanged (0 clean / 1 findings / 2 usage); both'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-07-29 — reject the band model; detect on an origin-free invariant'
+    chose: 'detect disagreement purely from the ordering of per-lane node y-ranges against'
+    rationale: 'the band model looked strictly better — it names the exact offending nodes — so I'
+    alternatives_rejected: ['(a) band arithmetic as primary — false positives, as measured; (b) band']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2684-corpus-lint-lane-membership-vs-node-geom.md
+generated_by: context-agent-hybrid

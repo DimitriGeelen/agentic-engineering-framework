@@ -2431,3 +2431,24 @@ decisions:
     date: 2026-07-29
     task: T-2683
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-350
+    decision: "detect disagreement purely from the ordering of per-lane node y-ranges against"
+    scope: project
+    date: 2026-07-29
+    task: T-2684
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-351
+    decision: "name the upper lane's lowest-drawn node and the lower lane's highest-drawn node,"
+    scope: project
+    date: 2026-07-29
+    task: T-2684
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-352
+    decision: "ship the detector alone; do not repair the 4 disagreeing maps in this task."
+    scope: project
+    date: 2026-07-29
+    task: T-2684
+    rationale: "Auto-captured from task file on completion"

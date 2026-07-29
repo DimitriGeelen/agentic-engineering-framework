@@ -244,6 +244,7 @@ def test_live_corpus_current_findings():
     pinned = sorted((f["rule"], f["map"].split("@")[0]) for f in findings)
     assert pinned == [
         ("emitterless-typed-event", "aef-dispatch-loop"),
+        ("lane-geometry", "aef-session-lifecycle"),
         ("legacy-ref", "t2584-scratch"),
     ], (
         "live-corpus lint drifted from the T-2609 post-rollout baseline — a new "
@@ -251,3 +252,11 @@ def test_live_corpus_current_findings():
         "finding means t2584-scratch or T-2551 moved (update deliberately)",
         findings,
     )
+    # T-2684 deliberate baseline move (2 → 3): the lane-geometry rule shipped and
+    # immediately found a real disagreement in a PROMOTED map — aef-session-lifecycle
+    # declares `human` above `agent` while 3 agent-declared nodes are drawn inside the
+    # human band, so the diagram and flowNodeRef disagree about who owns those steps.
+    # Reconciling it is an authority call reserved for the operator (see T-2684
+    # Context), so this entry is expected to stand until that decision lands — at
+    # which point it should DISAPPEAR, not be re-pinned. The default scan skips
+    # `draft-*`; three drafts also disagree and surface when named explicitly.
