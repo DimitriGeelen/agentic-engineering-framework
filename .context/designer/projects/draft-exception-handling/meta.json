@@ -11,9 +11,14 @@
       "v": 2,
       "note": "T-2665 pair-draft seed: full exception-handling machine (issues trigger -> auto-diagnose -> classify (6-way enforced enum) -> pattern lookup -> Ladder A-D -> fix/resume/resolve -> FP+L capture); honesty notes on advisory legs (G-016/G-019)",
       "ts": 1785303600
+    },
+    {
+      "v": 3,
+      "note": "832 validator round (rail 306): E1 fixed — XOR-merge gateway dropped, 6 branch edges run directly into lookup (multi-incoming = implicit XOR merge, mapping-v1 dialect); W1-4 fixed — agent-lane userTasks -> serviceTask (O-1: lane wins, type = real performer; advisory-ness stays in aef:meta notes)",
+      "ts": 1785304500
     }
   ],
   "uuid": "001362d7-966d-4d14-9dfd-84d938e3791a",
-  "latest": 2,
-  "updated": 1785303600
+  "latest": 3,
+  "updated": 1785304500
 }
