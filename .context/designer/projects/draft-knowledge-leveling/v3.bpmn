@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-knowledge-leveling"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- DRAFT (pair-draft session, T-2667, arc-014): knowledge-leveling as actually
+       operated — fourth and LAST of the package's four worst-regression processes
+       (T-2662 gap 6). Sources of truth: agents/context/lib/learning.sh
+       (do_add_learning writes .context/project/learnings.yaml, L-/PL- ids),
+       bin/fw fix-learned (G-016 shortcut, hardcoded P-001), lib/promote.sh
+       (graduation: application counting by string-match, readiness enum
+       promoted|ready|almost|building at :202-208 — the enforced enum this map's
+       "promotion readiness?" gateway rails against), lib/harvest.sh
+       (project-to-framework, NEW/DUP/SKIP/NOTE dispositions), and
+       agents/context/consolidate.py (scan/apply/report, Jaccard 0.35).
+       v3 (832 round-4 verdict, rail 324 — v2 was VALID zero findings at seed):
+       fw_end_already gains terminalKind="error" (corpus precedent: exit-1
+       refusal = error-class terminal, 7 instances); dead-leg notes adopt the
+       grep-able DEAD: token (832 Q3 — no visual marker convention, tooling can
+       census dead legs); the two legs fixed mid-round are flipped LIVE
+       (T-2676 harvest learnings/patterns greps, T-2677 audit graduation
+       counter — first fire ever, live audit now WARNs 550 learnings);
+       consolidate claim tightened per 832 nit: manual-only (CLI route exists,
+       bin/fw exec consolidate.py), no PROGRAMMATIC caller. Still-dead count
+       drops 5 -> 4: DEAD: 2+/3+ classification; DEAD: candidates tier;
+       DEAD: programmatic consolidate; DEAD: ratification. Four strands stay
+       ONE map (832 Q1: the disconnection IS the finding — no automatic path
+       from captured to promoted; 4 starts = new corpus max, structurally
+       sanctioned). Promotion threshold remains ADVISORY (warns below 3 and
+       proceeds); practices land status:active immediately.
+       Regression baseline in T-2667 body. -->
+
+  <bpmn:collaboration id="Collaboration_draft-knowledge-leveling">
+    <bpmn:participant id="Pool_draft_knowledge_leveling" name="draft-knowledge-leveling (DRAFT)" processRef="Process_draft-knowledge-leveling"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-knowledge-leveling" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-knowledge-leveling" version="3" schemaVersion="2" title="AEF knowledge leveling (capture &#8594; graduation &#8594; practice; harvest + consolidate strands) — DRAFT" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_kl">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_insight</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_capture</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_0_promote</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_0_harvest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_0_consolidate</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fw" authority="authority" height="380"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fw_1_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_captured</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_count</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_already</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_practice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_active</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_harvest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_harvest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_consolidate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_consolidate</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_0_insight" name="learning-worthy moment during task work">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_insight"/>
+        <aef:position x="120.0" y="440.0"/>
+        <aef:meta note="Triggers: bug found by someone other than the agent (Bug-Fix Learning Checkpoint), healing resolve, or organic insight. G-016: the completion-time learning prompt is ADVISORY — 72% of bugfix tasks produced zero learnings before mitigation, and no audit checks the bugfix-to-learning ratio (gap explicitly still open in the register)"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>kl_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_1_capture" name="fw context add-learning / fw fix-learned T-XXX">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_capture"/>
+        <aef:position x="280.0" y="440.0"/>
+        <aef:meta note="fix-learned is the G-016 shortcut (bin/fw:5216, hardcoded --source P-001). Both route to do_add_learning (agents/context/lib/learning.sh)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f1</bpmn:incoming>
+      <bpmn:outgoing>kl_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_1_write" name="write L-/PL- entry to learnings.yaml">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_write"/>
+        <aef:position x="440.0" y="100.0"/>
+        <aef:meta note="learning.sh:94-101 — fixed fields incl. application: TBD which NOTHING ever updates (promote re-derives counts by grepping task files instead). File is mixed-format (316 dash-form vs 234 legacy-indent, T-1369 scar) with 24 duplicate L-IDs (G-055 accepted-risk). DEAD: candidates tier — insertion anchor does not exist so the EOF fallback always runs, and the fw learnings candidates list renders empty forever"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f2</bpmn:incoming>
+      <bpmn:outgoing>kl_f3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="fw_end_captured" name="learning stored — awaits applications">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_done_captured"/>
+        <aef:position x="600.0" y="100.0"/>
+        <aef:meta terminalKind="success" state="captured" note="The audit graduation nudge (audit.sh section 9: learnings &gt;=20 &#8594; fw promote suggest) is LIVE since T-2677 — the shape-agnostic counter fired the branch for the first time in its life (550 entries counted, audit now WARNs with the promote-suggest nudge). Graduation itself still only proceeds when someone manually enters the promote strand below"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:startEvent id="agt_0_promote" name="fw promote L-XXX invoked (manual)">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_promote_entry"/>
+        <aef:position x="120.0" y="560.0"/>
+        <aef:meta note="Only ever manually initiated — the one programmatic caller (audit &gt;=20 branch) is dead. fw promote suggest / status are the read-side companions"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>kl_f4</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="fw_2_count" name="count applications — string-match across task files">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_count"/>
+        <aef:position x="440.0" y="220.0"/>
+        <aef:meta note="promote.sh:103-131 — deliberate grep of the L-ID across .tasks/ and patterns.yaml; the application: TBD field in the learning entry is ignored entirely"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f4</bpmn:incoming>
+      <bpmn:outgoing>kl_f5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_gw_ready" name="promotion readiness?">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_gw_ready"/>
+        <aef:position x="600.0" y="220.0"/>
+        <aef:meta note="Enforced enum promote.sh:202-208: promoted (already a practice, refused exit 1) | ready (&gt;=3 applications) | almost (2) | building (&lt;2). THRESHOLD IS ADVISORY on the write path: promote.sh:262-265 warns below 3 and proceeds anyway — so ready, almost AND building all reach the practice write; only promoted terminates"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f5</bpmn:incoming>
+      <bpmn:outgoing>kl_f6</bpmn:outgoing>
+      <bpmn:outgoing>kl_f7</bpmn:outgoing>
+      <bpmn:outgoing>kl_f8</bpmn:outgoing>
+      <bpmn:outgoing>kl_f9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:endEvent id="fw_end_already" name="refused — already promoted">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_done_already"/>
+        <aef:position x="760.0" y="100.0"/>
+        <aef:meta terminalKind="error" state="already-promoted" note="promote.sh:255-257 exit 1 — the only hard refusal in the whole machine. terminalKind=error per corpus precedent (832 round-4 Q2: exit-1 refusal = error-class terminal, 7 prior instances; no typed errorEndEvent exists in corpus)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="fw_3_practice" name="write practice P-/PP- to practices.yaml — status: active immediately">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_practice"/>
+        <aef:position x="760.0" y="220.0"/>
+        <aef:meta note="promote.sh:295-316 atomic write (tmp + os.replace, T-100191 L-493 class). DEAD: ratification — no review/approval state exists between promote and active; the practice is live governance the moment the verb returns. derived_from defaults to D1; 5 of 12 live practices carry no directive at all. Multi-incoming = implicit XOR merge (mapping-v1 dialect): ready/almost/building parameterize the warning, they do not fork procedure"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f7</bpmn:incoming>
+      <bpmn:incoming>kl_f8</bpmn:incoming>
+      <bpmn:incoming>kl_f9</bpmn:incoming>
+      <bpmn:outgoing>kl_f10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="fw_end_active" name="practice active — surfaces in fw practices">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_done_active"/>
+        <aef:position x="920.0" y="220.0"/>
+        <aef:meta terminalKind="success" state="active" note="The feedback edge: active practices (and the learnings beneath them) are what fw recall / fw ask surface into future sessions — the antifragile loop this whole machine exists to close"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f10</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:startEvent id="agt_0_harvest" name="fw harvest invoked (project &#8594; framework)">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_harvest_entry"/>
+        <aef:position x="120.0" y="680.0"/>
+        <aef:meta note="Cross-project leveling entry: pulls consumer-project knowledge up into the framework repo. Manual only"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>kl_f11</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="fw_4_harvest" name="harvest patterns/learnings/decisions/practices/episodics — NEW/DUP/SKIP dispositions">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_harvest"/>
+        <aef:position x="440.0" y="340.0"/>
+        <aef:meta note="lib/harvest.sh. Learnings/patterns extraction LIVE since T-2676 (indent-agnostic greps; the old 4-space greps made the learnings sub-stage a permanent no-op — third instance of the T-2672/T-295 indentation class). DEAD: the documented 2+-projects=candidate / 3+-projects=practice classification is UNIMPLEMENTED — no cross-project counting, no universal-vs-framework field anywhere; everything appends 'as candidate' after substring dedup"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f11</bpmn:incoming>
+      <bpmn:outgoing>kl_f12</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="fw_end_harvest" name="framework candidates appended">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_done_harvest"/>
+        <aef:position x="600.0" y="340.0"/>
+        <aef:meta state="harvested" note="Since T-2676 all five sub-stages land: patterns/learnings/decisions/practices/episodics (learnings were silently dropped for the sub-stage's entire prior life)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f12</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:startEvent id="agt_0_consolidate" name="fw consolidate scan/apply invoked (manual)">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_consolidate_entry"/>
+        <aef:position x="120.0" y="800.0"/>
+        <aef:meta note="Manual-only: fw consolidate IS a CLI route (bin/fw exec consolidate.py) — DEAD: no PROGRAMMATIC caller exists (no hook, cron, or skill), so the store's only merge/prune actuator runs solely on operator initiative (832 round-4 precision nit)"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>kl_f13</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="fw_5_consolidate" name="cluster duplicates (Jaccard 0.35) — merge / enrich_or_prune recommendations">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_consolidate"/>
+        <aef:position x="440.0" y="460.0"/>
+        <aef:meta note="agents/context/consolidate.py — scan is dry-run default; apply is the only merge/prune actuator the knowledge store has, and it has never been wired into any schedule. The 24 duplicate L-IDs (G-055) sit exactly in this strand's blind spot"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f13</bpmn:incoming>
+      <bpmn:outgoing>kl_f14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="fw_end_consolidate" name="consolidation report / applied merges">
+      <bpmn:extensionElements>
+        <aef:uid value="kl_done_consolidate"/>
+        <aef:position x="600.0" y="460.0"/>
+        <aef:meta state="consolidated"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>kl_f14</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="kl_f1" sourceRef="agt_0_insight" targetRef="agt_1_capture">
+      <bpmn:extensionElements><aef:uid value="kl_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f2" sourceRef="agt_1_capture" targetRef="fw_1_write">
+      <bpmn:extensionElements><aef:uid value="kl_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f3" sourceRef="fw_1_write" targetRef="fw_end_captured">
+      <bpmn:extensionElements><aef:uid value="kl_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f4" sourceRef="agt_0_promote" targetRef="fw_2_count">
+      <bpmn:extensionElements><aef:uid value="kl_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f5" sourceRef="fw_2_count" targetRef="fw_gw_ready">
+      <bpmn:extensionElements><aef:uid value="kl_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f6" name="promoted" sourceRef="fw_gw_ready" targetRef="fw_end_already">
+      <bpmn:extensionElements><aef:uid value="kl_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f7" name="ready" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+      <bpmn:extensionElements><aef:uid value="kl_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f8" name="almost" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+      <bpmn:extensionElements><aef:uid value="kl_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f9" name="building" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+      <bpmn:extensionElements><aef:uid value="kl_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f10" sourceRef="fw_3_practice" targetRef="fw_end_active">
+      <bpmn:extensionElements><aef:uid value="kl_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f11" sourceRef="agt_0_harvest" targetRef="fw_4_harvest">
+      <bpmn:extensionElements><aef:uid value="kl_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f12" sourceRef="fw_4_harvest" targetRef="fw_end_harvest">
+      <bpmn:extensionElements><aef:uid value="kl_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f13" sourceRef="agt_0_consolidate" targetRef="fw_5_consolidate">
+      <bpmn:extensionElements><aef:uid value="kl_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="kl_f14" sourceRef="fw_5_consolidate" targetRef="fw_end_consolidate">
+      <bpmn:extensionElements><aef:uid value="kl_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

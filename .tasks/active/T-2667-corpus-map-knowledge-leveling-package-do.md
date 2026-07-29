@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: 2026-07-29T11:59:02Z
+last_update: 2026-07-29T13:24:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,14 +89,25 @@ regex). Lint baseline unchanged at 2. Live-verified: /api/version serves v2, bar
 resolves latest=2. Editor:
 http://192.168.10.107:3001/designer/app?load=%2Fapi%2Fversion%3Fid%3Ddraft-knowledge-leveling%26v%3D2
 
-**Open taste questions for operator + 832:**
-1. Four disconnected strands in one map — right call (one process, four entries) or should
-   harvest/consolidate be separate maps? (They share the store, not the flow.)
-2. fw_end_already as a refusal end (exit 1) — keep as endEvent with state, or is a refusal
-   a different terminal kind in the dialect?
-3. The dead legs are drawn as LIVE nodes with honesty notes (they're reachable code, just
-   broken/uncalled) — consistent with T-2659 knowingly-RED precedent, or should dead legs
-   get a visual marker?
+**832 round-4 verdict (rail 324): v2 VALID, zero findings at seed** — second consecutive
+clean seed. Verdict applied in v3 (sha8 b82668c8, live-verified):
+1. **Q1 — ONE map confirmed.** "The disconnection IS the finding — no automatic path from
+   captured to promoted; splitting into four maps would hide exactly what the map
+   discovered." 4 starts = new corpus max (prior ceiling 2), validator unions reachability.
+2. **Q2 — fw_end_already gains `terminalKind="error"`** (corpus precedent: 7 exit-1-refusal
+   instances across review-emission/release-pipeline/git-commit-flow/harvest-pipeline; no
+   typed errorEndEvent exists in corpus, none introduced).
+3. **Q3 — grep-able `DEAD:` token adopted** on dead-leg notes (no visual marker convention;
+   tooling can census dead legs — exactly 4 in aef:meta notes at v3). 832 may file an
+   editor-side gallery marker as inception candidate only if operator wants it.
+4. **Fixed legs flipped LIVE** per mid-round addendum (rail 322): T-2676 harvest greps,
+   T-2677 audit counter (first fire ever — audit now WARNs "550 learnings"). Still-dead
+   census: 4 (2+/3+ classification, candidates tier, programmatic consolidate, ratification).
+5. **832 precision nit honored:** consolidate is manual-only (CLI route exists), not
+   caller-less — "no PROGRAMMATIC caller" is the true claim.
+
+Remaining for close: operator taste + promotion GO (arc-014 ritual), then AC-3/AC-4
+(promote, registry entry from AC-4 Prep, prove, pin test).
 
 ## AC-4 Prep (parked registry entry — paste at promotion)
 
@@ -161,10 +172,11 @@ in learnings.yaml today; 315 dash-form vs 234 legacy-indent entries — mixed fo
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Regression-history baseline captured in task body before mapping (episodic +
       concerns evidence for knowledge-leveling reiterations).
-- [ ] `draft-knowledge-leveling` seeded via the arc-014 pair-draft ritual from the
+- [x] `draft-knowledge-leveling` seeded via the arc-014 pair-draft ritual from the
       enforced machine (add-learning capture, learnings→practices graduation,
       harvest/promote/consolidate verbs); operator + 832 iterate; canonical
-      namespace untouched until approval.
+      namespace untouched until approval. (v2 seed VALID zero findings — 832 rail
+      324; v3 ships the verdict; operator taste pending.)
 - [ ] On approval: promoted, corpus lint baseline unchanged, `fw corpus prove` green.
 - [ ] Conformance-rail entry added to `tools/conformance-registry.yaml`; result
       recorded honestly (green, or red with divergent pin test per T-2659 precedent).
