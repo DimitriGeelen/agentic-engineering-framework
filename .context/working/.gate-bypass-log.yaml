@@ -5278,3 +5278,12 @@ timeout 200 bin/fw context add-learning "Closed-interval containment silently ad
 export FW_SWITCH_FOCUS=1
 git add -A .context/project/learnings.yaml .context/working/ 2>/dev/null
 timeout 280 bin/fw git commit -m "T-2687: two learnings — '
+- timestamp: '2026-07-29T22:42:46Z'
+  task: 'T-2687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2688'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+export FW_SWITCH_FOCUS=1
+git add -A .context/project/learnings.yaml .context/working/ 2>/dev/null
+timeout 280 bin/fw git commit -m "T-2688: L-519 — text-mat'

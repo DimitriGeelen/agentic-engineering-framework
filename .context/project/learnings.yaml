@@ -3959,3 +3959,10 @@ X'` returning empty group."
   date: 2026-07-29
   context: Added via context agent
   application: TBD
+- id: L-519
+  learning: "Text-matching a section boundary can match the boundary named inside prose. Splicing a task file on t.index('## Verification') matched that literal inside the Human-AC TEMPLATE COMMENT, which quotes the heading as guidance — so the comment's remainder leaked into the document as a bogus heading plus 23 orphaned lines, and shipped; caught only on read-back. Same class as OBS-103 (doc-comment prose entering a conformance rail's enforced vocabulary) and 832's T-311 finding (doc blocks quoting element names breaking presence-count harnesses): a text match cannot distinguish prose that MENTIONS a structure from the structure itself. Rule: when splicing on a structural marker, assert the exact boundary lines first or parse — never trust the first match, and expect templates and docs to quote the very markers you match on."
+  source: P-001
+  task: T-2688
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD
