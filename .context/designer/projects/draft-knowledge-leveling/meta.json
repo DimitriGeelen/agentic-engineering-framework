@@ -29,16 +29,21 @@
     },
     {
       "v": 6,
-      "note": "operator pair-round (designer UI save, note backfilled by agent at normalize): first taste pass on the v5 lifecycle rework — layout + lane iteration, semantics untouched (same 12 uids/13 flows/names/notes). Intermediate state superseded by v7 twenty minutes later",
+      "note": "operator pair-round (designer UI save, note backfilled by agent at normalize): first taste pass on the v5 lifecycle rework \u2014 layout + lane iteration, semantics untouched (same 12 uids/13 flows/names/notes). Intermediate state superseded by v7 twenty minutes later",
       "ts": 1785337493
     },
     {
       "v": 7,
-      "note": "operator pair-round 2 (designer UI save, note backfilled by agent at normalize): final layout — chain on top row, three capture channels bottom-left converging; edge port anchors added (aef:anchors). Lane membership flipped on 10/12 nodes vs v5 (capture starts+fw verbs → Framework, append/count/gateway/write/terminals → Agent; only kl_dormant stayed Framework and kl_healing stayed Agent — exactly the two where geometry and authority disagree). Agent verify battery GREEN: XML parse, corpus lint baseline 2 (untyped intermediateCatchEvent does NOT fire T-2551 emitterless lint), rail dry-run MATCH {promoted,ready,almost,building}, DEAD census 2 per contains-contract, /api/version serves these bytes (sha 0cd8022a). Open pair questions: workflowMeta uuid attr (d7c7cfc0) ≠ project uuid (906e14cc); workflowMeta version attr stuck at 5; lane-membership-vs-position semantics",
+      "note": "operator pair-round 2 (designer UI save, note backfilled by agent at normalize): final layout \u2014 chain on top row, three capture channels bottom-left converging; edge port anchors added (aef:anchors). Lane membership flipped on 10/12 nodes vs v5 (capture starts+fw verbs \u2192 Framework, append/count/gateway/write/terminals \u2192 Agent; only kl_dormant stayed Framework and kl_healing stayed Agent \u2014 exactly the two where geometry and authority disagree). Agent verify battery GREEN: XML parse, corpus lint baseline 2 (untyped intermediateCatchEvent does NOT fire T-2551 emitterless lint), rail dry-run MATCH {promoted,ready,almost,building}, DEAD census 2 per contains-contract, /api/version serves these bytes (sha 0cd8022a). Open pair questions: workflowMeta uuid attr (d7c7cfc0) \u2260 project uuid (906e14cc); workflowMeta version attr stuck at 5; lane-membership-vs-position semantics",
       "ts": 1785338875
+    },
+    {
+      "v": 8,
+      "note": "REPAIR (T-2682): v7 topology byte-for-byte, with the leading doc comment RESTORED from v5. The designer's save path drops the leading XML comment child (confirmed twice: this project v5->v6, and draft-trigger-handling v1->v2), and corpus_spec's position-blind doc reader then adopted the generator's trailing 'BPMN DI (visual layout) omitted' boilerplate in its place \u2014 so the loss read as plausible-and-wrong rather than empty. Both sides fixed: reader now takes a LEADING, non-boilerplate comment only (T-2682, 17 tests); save path is 832's leg (rail 332). Semantic diff v7->v8 is exactly one key: doc. Round-trip derive->generate->diff IDENTICAL. This is the promotion candidate.",
+      "ts": 1785347728
     }
   ],
   "uuid": "906e14cc-60fb-413d-9fda-4cce6cb80a42",
-  "latest": 7,
-  "updated": 1785338875
+  "latest": 8,
+  "updated": 1785347728
 }

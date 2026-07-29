@@ -148,15 +148,42 @@ def _ext_raw(el) -> list:
             if isinstance(c.tag, str) and c.tag.split("}")[-1] not in _KNOWN_EXT]
 
 
+#: The emitter's own trailer, present in every generated file. Never a map's doc —
+#: matched on a stable prefix so wording drift in the tail does not reopen the hole.
+_DI_TRAILER_PREFIX = "BPMN DI (visual layout) omitted"
+
+
+def _is_boilerplate_comment(text: str) -> bool:
+    """True when a comment is the generator's DI trailer rather than authored doc.
+
+    Needed in addition to the positional guard because the position-blind reader
+    laundered the trailer into the doc slot: derive adopted the trailing comment,
+    generate re-emitted it in LEADING position, and the corruption became
+    indistinguishable from an authored doc on the next read (observed on
+    aef-audit-cron and aef-session-lifecycle, both already promoted). T-2682.
+    """
+    return text.strip().startswith(_DI_TRAILER_PREFIX)
+
+
 def parse_map(xml_text: str) -> dict:
     parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
     root = ET.fromstring(xml_text, parser=parser)
 
+    # The doc comment is LEADING only — it must precede the first real element,
+    # mirroring where generate() emits it (before <bpmn:collaboration>). Any later
+    # comment is a trailer, not the map's doc: every generated file ends with the
+    # "BPMN DI (visual layout) omitted" boilerplate, so a position-blind reader
+    # silently adopts that string whenever the real doc is missing — the field then
+    # reads plausible-and-wrong instead of empty, which is exactly what hid the
+    # designer save path destroying doc comments (T-2682, G-071 class).
     doc = None
     for c in root:
-        if c.tag is ET.Comment:
-            doc = "\n".join(line.rstrip() for line in c.text.strip("\n").split("\n"))
+        if c.tag is not ET.Comment:
             break
+        cand = "\n".join(line.rstrip() for line in c.text.strip("\n").split("\n"))
+        if not _is_boilerplate_comment(cand):
+            doc = cand
+        break
 
     proc = root.find(_q("process"))
     wm = _ext(proc).get("workflowMeta", {})

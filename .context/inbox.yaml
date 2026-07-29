@@ -809,3 +809,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-100
+  text: "add"
+  captured: 2026-07-29T17:56:09Z
+  context_task: T-2682
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-101
+  text: "aef-audit-cron v1 and aef-session-lifecycle v1 (both PROMOTED corpus maps) carry no doc comment: their leading comment was the generator's DI boilerplate, laundered into the doc slot by the pre-T-2682 position-blind reader and re-emitted leading on a later generate. Post-T-2682 they correctly derive with no doc — honest, but the maps still lack documentation the other 4 promoted maps have. Needs real doc text authored (what the map means, source-of-truth files, arc/task provenance); NOT auto-fixable. Candidate: small authoring task or fold into each map's next pair-round."
+  captured: 2026-07-29T17:56:26Z
+  context_task: T-2682
+  tags: [docs]
+  status: pending
+  promoted_to: null
