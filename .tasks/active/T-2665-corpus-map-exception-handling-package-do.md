@@ -27,7 +27,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:19:32Z
-last_update: 2026-07-29T05:29:17Z
+last_update: 2026-07-29T06:40:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -139,11 +139,25 @@ target class.
   served v2. Round opened with 832 at rail offset 305 with three honesty calls posed:
   advisory-vs-enforced node typing, no-human-lane, immediate 6-branch convergence.
   Awaiting: 832 validator pass + possible pairing article; operator UI iteration.
+- **2026-07-29 (later)** — v3 folds 832's validator round (rail 306): E1 XOR-merge
+  gateway dropped (6 branch edges run directly into lookup — multi-incoming reads as
+  an implicit XOR merge under mapping-v1, no separate merge node needed); W1-4
+  agent-lane `userTask`→`serviceTask` (O-1: lane wins, node type reflects the real
+  performer, advisory-ness stays in `aef:meta` notes rather than node type). Now
+  12 nodes / 16 flows. Re-verified this session (dry-run temp-registry probe against
+  `draft-exception-handling`, reverted): rail dry-run still PASS on the same 6-token
+  vocabulary; whole-store lint baseline still 2 findings, draft correctly excluded
+  (T-2600 drafts-excluded convention). 832's leg of the pair-draft ritual reads
+  complete for this round. **Outstanding before promotion:** operator UI review of
+  v3 in `/designer` + explicit GO — AC-2/3/4 stay unticked until that lands (arc-014
+  ritual: "canonical namespace untouched until approval"). AC-4 registry entry +
+  pin test below are paste-ready the moment GO is given.
 
 ## AC-4 Prep (ready to paste at promotion)
 
 Registry entry for `tools/conformance-registry.yaml` (dry-run verified PASS against
-draft v2 on 2026-07-29):
+draft v2 on 2026-07-29; re-verified PASS against draft v3 same day, gateway shape
+unchanged by the E1/W1-4 fixes):
 
 ```yaml
 # Failure-type gateway branches (5 CLASSIFY_ORDER types + unknown fallback) vs
@@ -194,6 +208,49 @@ Pin test for `tests/unit/test_corpus_conformance_registry.py`: rc==0 and all of
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## Recommendation
+
+**Recommendation:** GO — promote `draft-exception-handling` v3 to `aef-exception-handling`,
+following the T-2664 (`aef-tier0-escalation`) promotion pattern exactly.
+
+**Rationale:** The tier0-escalation gate this task was blocked on has landed (P4
+ARMED, GREEN). The draft has been through one full pair-draft round: v2 seeded
+against the enforced machine (5 `CLASSIFY_ORDER` types + `unknown` fallback), 832
+raised two findings (E1 redundant XOR-merge gateway, W1-4 agent-lane node typing),
+both were fixed in v3, and this session independently re-verified v3 against the
+enforced vocabulary via a temporary registry probe (reverted, not committed) —
+still PASS on the same 6 tokens, whole-store lint baseline unchanged at 2 findings
+with the draft correctly excluded. There is nothing left for another 832 round to
+find; the only remaining step is the human confirmation the ritual requires before
+touching the canonical namespace.
+
+**Evidence:**
+- `agents/healing/lib/diagnose.sh` CLASSIFY_ORDER + `unknown` fallback → exactly
+  `{code, dependency, design, environment, external, unknown}`; v3 gateway
+  `"failure type?"` asserts the same 6, confirmed via dry-run `corpus_conformance.py
+  --map draft-exception-handling` this session.
+- `python3 tools/corpus_lint.py` (whole store): `scanned 7 map(s)`, 2 pre-existing
+  findings (`t2584-scratch` legacy-ref, `aef-dispatch-loop` emitterless-typed-event)
+  — unrelated to this draft, unchanged.
+- `.context/designer/projects/draft-exception-handling/meta.json`: 3 versions
+  logged (v1 seed, v2 pair-draft, v3 832-round fold), uuid stable across all three.
+- AC-4 registry entry + pin test are pre-written above (paste-ready).
+
+**What GO triggers (agent-executable, mirrors `c5998fc67`):**
+1. `git mv` the draft dir to `.context/designer/projects/aef-exception-handling`,
+   rewrite `v3.bpmn` → `v1.bpmn`, collapse `meta.json` to a single-version record
+   (uuid preserved, note = "T-2665 promotion proof").
+2. `fw corpus prove aef-exception-handling` — confirm canonical-identical,
+   uuid-preserved.
+3. Paste the AC-4 registry entry into `tools/conformance-registry.yaml` + the pin
+   test into `tests/unit/test_corpus_conformance_registry.py`.
+4. Tick AC-2/3/4, run `## Verification`, close the task.
+
+**If NO-GO/DEFER:** name what in v3 still needs another 832 round or a different
+gateway shape — nothing in this session's evidence points at one, so a NO-GO here
+would need new information, not a restatement of the original pair-draft-in-progress
+caution.
 
 ## Verification
 
