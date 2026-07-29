@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: '2026-07-29T16:30:09Z'
+last_update: 2026-07-29T18:01:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -153,8 +153,27 @@ sharpened unique anchor — see AC-4 Prep comment: the original 3-occurrence anc
 extracts zero tokens); DEAD census == 2 per the contains-once-per-note contract;
 /api/version serves v7 bytes exactly (sha8 0cd8022a).
 
-Remaining for close: operator taste + promotion GO on v7 (arc-014 ritual), then AC-3/AC-4
-(promote, registry entry from AC-4 Prep, prove, pin test).
+**v8 IS THE PROMOTION CANDIDATE (T-2682 repair, not a design change).** Risk-checking v7
+before promotion surfaced silent data loss across the designer↔corpus seam: the designer's
+save path drops the leading doc comment (confirmed twice — this project v5→v6, and
+draft-trigger-handling v1→v2), and our own `parse_map` masked it by adopting the emitter's
+trailing `BPMN DI (visual layout) omitted…` boilerplate as the map's semantic doc. The
+field read plausible-and-wrong, never empty, so every check passed. Worse, `generate`
+re-emitted the adopted trailer in *leading* position, laundering corruption into
+indistinguishable-from-authored doc — that is how aef-audit-cron and aef-session-lifecycle
+reached the promoted corpus doc-less (OBS-101).
+
+v8 = v7 topology byte-for-byte + the v5 doc restored. Semantic diff v7→v8 is exactly one
+key (`doc`); round-trip derive→generate→diff IDENTICAL; live-serve confirmed (sha8
+5594f6aa). Reader fixed in T-2682 (leading + non-boilerplate only, 9 tests); save path is
+832's leg, reported rail 332 with the schema alternative (carry doc as an `aef:` attr on
+`workflowMeta`, which survives any DOM round-trip).
+
+**Promote v8, not v7** — promoting v7 would have shipped the map with the generator's
+boilerplate standing in for its rationale block.
+
+Remaining for close: operator taste + promotion GO on **v8** (arc-014 ritual), then
+AC-3/AC-4 (promote, registry entry from AC-4 Prep, prove, pin test).
 
 ## AC-4 Prep (parked registry entry — paste at promotion)
 

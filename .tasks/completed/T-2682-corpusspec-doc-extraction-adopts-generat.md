@@ -8,12 +8,12 @@ description: >
   comment, so the field reads plausible-and-wrong instead of empty. 5 of 11 maps affected,
   2 already promoted. G-071 silent-wrong-value class, found same-day.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_corpus_spec_doc_guard.py, tools/corpus_spec.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-29T17:51:07Z
-last_update: 2026-07-29T17:52:45Z
-date_finished:
+last_update: 2026-07-29T18:00:56Z
+date_finished: 2026-07-29T18:00:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,6 +55,16 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-29T18:00:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -312,3 +322,20 @@ one.
 
 ### 2026-07-29T17:52:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0c7c543e
+- **Timestamp:** 2026-07-29T18:01:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
+     - evidence: `out=$(python3 tools/corpus_spec.py derive .context/designer/projects/draft-trigger-handling/v6.bpmn); ! echo "$out" | grep -q "BPMN DI (visual layout) omitted"`
+
+### 2026-07-29T18:00:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

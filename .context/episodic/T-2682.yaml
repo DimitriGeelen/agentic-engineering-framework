@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2682: corpus_spec doc extraction adopts generator boilerplate as semantic doc
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T18:01:10Z
+# ============================================================================
+
+task_id: T-2682
+task_name: "corpus_spec doc extraction adopts generator boilerplate as semantic doc"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T17:51:07Z
+completed: 2026-07-29T18:00:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-29T19:58:32+02:00
+last_commit: 2026-07-29T19:58:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doc extraction adopted generator boilerplate as the map's semantic doc — silent data loss across the designer/corpus seam.
+
+# Key outcomes
+outcomes:
+  - '`parse_map` accepts a comment as `doc` only in LEADING position (before the first'
+  - 'Loud-fail rather than silent-wrong: when a map has no leading doc comment, `doc`'
+  - '`draft-knowledge-leveling` v7 and `draft-trigger-handling` v6 derive with NO `doc`'
+  - '`draft-exception-handling` v3 and `aef-task-lifecycle` v1 still derive their real'
+  - 'Round-trip identity preserved: `derive → generate → diff` remains IDENTICAL for a'
+  - 'Unit tests pin all four shapes (leading doc, trailing-only comment, both, neither).'
+  - 'Corpus lint baseline unchanged at 2 findings.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/designer/projects/draft-knowledge-leveling/meta.json'
+  - '.context/designer/projects/draft-knowledge-leveling/v8.bpmn'
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - '.fabric/components/tests-unit-test_corpus_spec_doc_guard.yaml'
+  - '.tasks/active/T-2682-corpusspec-doc-extraction-adopts-generat.md'
+  - 'tests/unit/test_corpus_spec_doc_guard.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-29T19:58:32"
+    action: "T-2682: doc extraction adopted generator boilerplate as the map's semantic doc — silent data loss across the designer/corpus seam."
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 8
+  lines_added: 769
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2682-corpusspec-doc-extraction-adopts-generat.md
+generated_by: context-agent-hybrid
