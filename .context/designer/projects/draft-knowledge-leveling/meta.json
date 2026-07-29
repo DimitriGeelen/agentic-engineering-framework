@@ -1,0 +1,19 @@
+{
+  "id": "draft-knowledge-leveling",
+  "title": "draft-knowledge-leveling",
+  "versions": [
+    {
+      "v": 1,
+      "note": "draft seeded by fw designer draft new (T-2623)",
+      "ts": 1785325678
+    },
+    {
+      "v": 2,
+      "note": "T-2667 pair-draft seed: full knowledge-leveling machine (capture -> learnings.yaml write -> captured end; manual promote entry -> application count -> 4-way 'promotion readiness?' gateway (enforced enum promote.sh:202-208, threshold ADVISORY on write path) -> practice active w/ NO ratification; harvest strand w/ 2 dead/hollow legs noted; consolidate strand w/ no-caller note). 16 nodes/14 flows/2 lanes, four manual entry strands. Dialect: T-2665/T-2666 lessons applied at seed (no merge gateways, serviceTask typing, multi-incoming implicit XOR, dead legs as honesty notes not fiction)",
+      "ts": 1785326400
+    }
+  ],
+  "uuid": "906e14cc-60fb-413d-9fda-4cce6cb80a42",
+  "latest": 2,
+  "updated": 1785326400
+}

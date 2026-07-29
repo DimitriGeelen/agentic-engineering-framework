@@ -7,10 +7,10 @@ description: >
   as a corpus map + conformance rail. Fourth of the package's four worst-regression
   processes (T-2662 gap 6). Gated on the tier0-escalation P4 test outcome.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [process-layer, corpus]
 components: []
 related_tasks: [T-2662]
@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: '2026-07-28T16:30:09Z'
+last_update: 2026-07-29T11:43:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,13 +72,94 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Fourth and last of the package's worst-regression dogfood rounds (T-2662 gap 6), following
+T-2664 (tier0-escalation, P4 armed), T-2665 (exception-handling, validator-clean v3), and
+T-2666 (task-creation, v3 GO'd at seed round). Pair-draft ritual per arc-014.
+
+## Pair-Round State (arc-014 ritual)
+
+**Round opened 2026-07-29.** `draft-knowledge-leveling` v2 seeded (16 nodes/14 flows/2 lanes,
+four manual entry strands: capture, promote, harvest, consolidate). Dialect lessons from
+T-2665/T-2666 applied at seed: no merge gateways (multi-incoming implicit XOR into
+fw_3_practice), serviceTask typing throughout the agent lane, dead legs carried as aef:meta
+honesty notes (audit nudge dead, harvest learnings leg dead, consolidate caller-less, no
+ratification step). Rail dry-run PASS: gateway "promotion readiness?" branch tokens
+{almost, building, promoted, ready} == source extraction from lib/promote.sh (anchored
+regex). Lint baseline unchanged at 2. Live-verified: /api/version serves v2, bare-id
+resolves latest=2. Editor:
+http://192.168.10.107:3001/designer/app?load=%2Fapi%2Fversion%3Fid%3Ddraft-knowledge-leveling%26v%3D2
+
+**Open taste questions for operator + 832:**
+1. Four disconnected strands in one map — right call (one process, four entries) or should
+   harvest/consolidate be separate maps? (They share the store, not the flow.)
+2. fw_end_already as a refusal end (exit 1) — keep as endEvent with state, or is a refusal
+   a different terminal kind in the dialect?
+3. The dead legs are drawn as LIVE nodes with honesty notes (they're reachable code, just
+   broken/uncalled) — consistent with T-2659 knowingly-RED precedent, or should dead legs
+   get a visual marker?
+
+## AC-4 Prep (parked registry entry — paste at promotion)
+
+```yaml
+# Promotion-readiness gateway branches (promoted | ready | almost | building)
+# vs the promote.sh status ladder — the only place graduation readiness is
+# computed (lib/promote.sh:202-208). Threshold advisory on the write path
+# (warns <3 and proceeds) — the rail asserts vocabulary, not enforcement.
+# Added at promotion of draft-knowledge-leveling (T-2667).
+aef-knowledge-leveling:
+  primitive: vocabulary-set
+  source: lib/promote.sh
+  gateway: "promotion readiness?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    anchor: 'if lid in promoted_ids:'
+    regex: "status = f?'(?:\\{[A-Z]+\\})?([a-z]+)(?:\\{NC\\})?'"
+```
+
+## Regression-History Baseline (AC-1)
+
+**The enforced machine** (mined 2026-07-29): capture `fw context add-learning` →
+`agents/context/lib/learning.sh:do_add_learning` writes `.context/project/learnings.yaml`
+(L-/PL- ids; every entry gets `application: TBD` — never updated by anything, learning.sh:100);
+bugfix shortcut `fw fix-learned` (bin/fw:5216, hardcoded P-001, "G-016 shortcut"); graduation
+`fw promote` (lib/promote.sh) — threshold 3 applications counted by string-match across task
+files (promote.sh:103-131), readiness enum `promoted|ready|almost|building` (promote.sh:202-208),
+**advisory-only** (warns below 3 and proceeds, promote.sh:262-265); practice write to
+practices.yaml is atomic (T-100191 scar) and lands `status: active` immediately — **no
+ratification step exists**; harvest `lib/harvest.sh` (project→framework, NEW/DUP/SKIP/NOTE
+dispositions); consolidate `agents/context/consolidate.py` (scan/apply/report, Jaccard 0.35).
+
+**Regression counts:** learning.sh 10 commits/5 fix-titled (50%); pattern.sh 6/2; promote.sh
+6/3 (50%); harvest.sh 3/1; consolidate.py 2/0. Fix clusters all in capture+promote. In-code
+scars: T-1369 (ID allocator dual-format grep), T-1543 (awk backslash collapse), T-100191
+(atomic write, L-493 class). Register: G-005 closed (T-087 built fw promote); G-016
+**mitigated only** (72% of bugfix tasks produce zero learnings; prompt is advisory; "no audit
+check for bugfix-to-learning ratio" still open); G-055 accepted-risk (24 duplicate L-IDs live
+in learnings.yaml today; 315 dash-form vs 234 legacy-indent entries — mixed formats).
+
+**Live holes (candidates for post-round Level-C tasks, T-2674/T-2675 rhythm):**
+1. **Audit graduation counter DEAD** — audit.sh:2720 greps `^  - id: L-` → 0 against the real
+   file; the ≥20 branch never fires; audit forever reports "0 learnings". Same stale pattern
+   enshrined in G-005's trigger_check.
+2. **Harvest learnings sub-stage DEAD** — harvest.sh:274,283 grep `^    learning:` (4-space)
+   but capture writes 2-space (549 matches at 2sp, 0 at 4sp) → "No learnings found in project"
+   always. Same indentation-assumption class as T-2672 (resolve.sh, 832 field report). Sibling
+   at harvest.sh:173 (`^    pattern:`).
+3. **Harvest 2+/3+ project classification documented but unimplemented** — no cross-project
+   counting, no universal-vs-framework field anywhere (0 `scope:`/`universal` occurrences in
+   learnings.yaml).
+4. **Candidates tier vestigial** — insertion anchor `^candidates:` doesn't exist (EOF fallback
+   always runs); `fw learnings` renders a candidates list that is always empty.
+5. **No ratification + consolidate orphaned** — practices go `active` with no review state;
+   `consolidate apply` (the only merge/prune actuator) has NO caller anywhere (no hook, cron,
+   or skill) — only the dead audit branch would ever invoke `promote suggest` programmatically.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Regression-history baseline captured in task body before mapping (episodic +
+- [x] Regression-history baseline captured in task body before mapping (episodic +
       concerns evidence for knowledge-leveling reiterations).
 - [ ] `draft-knowledge-leveling` seeded via the arc-014 pair-draft ritual from the
       enforced machine (add-learning capture, learnings→practices graduation,
@@ -219,3 +300,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2667-corpus-map-knowledge-leveling-package-do.md
 - **Context:** Initial task creation
+
+### 2026-07-29T11:43:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
