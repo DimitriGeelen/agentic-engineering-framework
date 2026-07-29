@@ -23714,3 +23714,155 @@ scan_id: R-606c88a2
 task_id: T-2672
 payload:
   task_file: .tasks/active/T-2672-healing-resolvesh-append-breaks-on-colum.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T06:41:29Z'
+scan_id: R-c1299a4a
+task_id: T-2673
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T06:41:29Z'
+scan_id: R-c1299a4a
+task_id: T-2673
+payload:
+  task_file: .tasks/active/T-2673-designer-080-re-pin-pull-at-tag--closes-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T11:34:25Z'
+scan_id: R-94459766
+task_id: T-2674
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T11:34:25Z'
+scan_id: R-94459766
+task_id: T-2674
+payload:
+  task_file: .tasks/active/T-2674-wire-isvalidowner-predicate-at-task-crea.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T11:40:34Z'
+scan_id: R-78170bc0
+task_id: T-2675
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T11:40:34Z'
+scan_id: R-78170bc0
+task_id: T-2675
+payload:
+  task_file: .tasks/active/T-2675-wire-status-value-predicate-at-task-crea.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T11:57:49Z'
+scan_id: R-61d92a1f
+task_id: T-2676
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T11:57:49Z'
+scan_id: R-61d92a1f
+task_id: T-2676
+payload:
+  task_file: .tasks/active/T-2676-fix-harvestsh-indent-assumption-greps-de.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T12:07:15Z'
+scan_id: R-ddfab90b
+task_id: T-2677
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T12:07:15Z'
+scan_id: R-ddfab90b
+task_id: T-2677
+payload:
+  task_file: .tasks/active/T-2677-fix-dead-audit-graduation-counter-learni.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T12:36:16Z'
+scan_id: R-c21cd0cc
+task_id: T-2678
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T12:36:16Z'
+scan_id: R-c21cd0cc
+task_id: T-2678
+payload:
+  task_file: .tasks/active/T-2678-add-explainer-video-link-to-readme-top.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T16:42:27Z'
+scan_id: R-ac9b4dc2
+task_id: T-2679
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T16:42:27Z'
+scan_id: R-ac9b4dc2
+task_id: T-2679
+payload:
+  task_file: .tasks/active/T-2679-determinism-graduation-tripwire--structu.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-29T16:42:27Z'
+scan_id: RC-f03d7baf
+task_id: T-2679
+payload:
+  overall: CONFIRMED
+  claim_count: 10
+---
+kind: scan_emitted
+timestamp: '2026-07-29T18:01:00Z'
+scan_id: R-0c7c543e
+task_id: T-2682
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T18:01:00Z'
+scan_id: R-0c7c543e
+task_id: T-2682
+payload:
+  task_file: .tasks/active/T-2682-corpusspec-doc-extraction-adopts-generat.md

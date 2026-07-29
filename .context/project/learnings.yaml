@@ -3924,3 +3924,10 @@ X'` returning empty group."
   date: 2026-07-29
   context: Added via context agent
   application: TBD
+- id: L-514
+  learning: "Position-blind extraction laundered into permanence: corpus_spec took the FIRST XML comment as a map's semantic doc, so when the designer's save path dropped the real leading doc comment it adopted the generator's own trailing boilerplate — then generate re-emitted that boilerplate in LEADING position, making corruption indistinguishable from authored content on the next read. Two promoted maps reached the corpus that way. When a reader and a writer disagree about POSITION, one round-trip can turn a wrong read into permanent wrong data — guard on both position and content, and prefer absence over a placeholder so the loss stays detectable"
+  source: P-001
+  task: T-2682
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD
