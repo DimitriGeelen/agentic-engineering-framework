@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: 2026-07-29T21:00:00Z
+last_update: 2026-07-29T21:23:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -180,6 +180,43 @@ committed candidate (f74de5257); no new feedback-stream entries, paused dispatch
 or commits against this task since T-2683's OBS-101 repair landed. No operator GO
 signal found. AC-3/AC-4 remain blocked on operator taste + promotion GO —
 declining to fabricate approval.
+
+**Dispatch check-in (2026-07-30) — new evidence changes the promotion picture.**
+T-2684 (sibling task, landed since the prior check-in) shipped a `lane-geometry`
+corpus lint rule and its live survey named `draft-knowledge-leveling` v8 by id:
+exactly `kl_dormant`/`kl_healing` disagree between declared lane membership
+(`flowNodeRef`) and rendered node position — independently confirming this
+task's own open pair question (a) from the v6/v7 round ("is lane membership
+operator intent, or a designer-save-side position-derivation artifact?").
+Live-verified this session: `bin/fw corpus lint draft-knowledge-leveling` →
+1 finding, exit 1 (reproduced below). T-2686 (also landed since) fixed the
+*other* two disagreeing drafts (exception-handling, task-creation — wholesale
+inversions, zero-semantic laneSet reorders) but explicitly left this map's
+2-node case as "an authority call for the operator" (T-2686 body, both
+occurrences) — same call this task already had open, now structurally
+detected rather than just observed in the designer UI.
+
+```
+[lane-geometry] draft-knowledge-leveling@v8 :: agt_1_healing, fw_5_dormant —
+lane "agent" is declared above "framework" but their node geometry crosses:
+agt_1_healing (y=600, declared agent) is drawn at/below fw_5_dormant (y=140,
+declared framework). 2/7 agent-nodes and 5/5 framework-nodes sit on the wrong
+side of the crossing.
+```
+
+**Why this matters for AC-3 ("corpus lint baseline unchanged"):** promoting
+v8 as-is would not leave the baseline unchanged — it would introduce this
+finding into the live corpus (the rule currently skips `draft-*` by default,
+so it's invisible until promotion flips the map out of draft tier). The
+reconciliation choice (keep the drawn geometry and flip declared membership,
+or keep declared membership and move the two nodes) is the same authority
+call flagged in the v6/v7 notes and explicitly deferred to the operator by
+T-2686 — declining to make it unilaterally. Recommend folding this into the
+same operator round that decides taste + promotion GO on v8, rather than a
+separate cycle: **operator should look at v8 in the designer, decide whether
+kl_dormant/kl_healing's *drawn position* or their *declared lane* is the
+intended one, and say so** — the fix itself (laneSet reorder for 2 nodes, or
+a small node move) is small either way.
 
 ## AC-4 Prep (parked registry entry — paste at promotion)
 
