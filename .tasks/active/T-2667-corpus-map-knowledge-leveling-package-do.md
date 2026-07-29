@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: 2026-07-29T21:23:24Z
+last_update: 2026-07-30T00:00:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -217,6 +217,30 @@ separate cycle: **operator should look at v8 in the designer, decide whether
 kl_dormant/kl_healing's *drawn position* or their *declared lane* is the
 intended one, and say so** — the fix itself (laneSet reorder for 2 nodes, or
 a small node move) is small either way.
+
+**Dispatch check-in (2026-07-30, later) — second defect now lint-confirmed, still no GO.**
+Since the prior check-in, T-2687 GO'd a *different* rule than it set out to validate
+(`lane-overflow`, not band-model), and T-2688 shipped it live. `bin/fw corpus lint
+draft-knowledge-leveling` now reports **two** findings against v8, not one:
+
+```
+[lane-geometry] draft-knowledge-leveling@v8 :: agt_1_healing, fw_5_dormant — ...
+  (T-2684 finding, unchanged — the two-node membership authority call)
+[lane-overflow] draft-knowledge-leveling@v8 :: agt_7_refused, agt_1_healing — lane
+  "agent" declares height=260 but its own members span 513px, exceeding it by 253px
+  (T-2687 GO / T-2688 finding, new this cycle)
+```
+
+T-2687's own scope note explicitly named this: repairing `draft-knowledge-leveling` v8
+is "two-node membership call plus the newly-found overflow, both awaiting operator
+taste GO" — i.e. the operator authority call this task already had open didn't shrink,
+it grew a sibling. No new feedback-stream entry, commit, or Watchtower decision against
+T-2667 or `draft-knowledge-leveling` since the prior check-in (b0e5410dc). AC-3/AC-4
+remain blocked on operator taste + promotion GO — declining to fabricate approval, and
+declining to unilaterally pick a fix for either finding (both are named authority calls,
+not layout ones, per T-2684/T-2687). Recommend the operator resolve all three open
+questions (2-node membership, 253px overflow, promotion taste) in one pass on v8 in
+the designer, since fixing them separately means re-verifying the lint baseline twice.
 
 ## AC-4 Prep (parked registry entry — paste at promotion)
 
