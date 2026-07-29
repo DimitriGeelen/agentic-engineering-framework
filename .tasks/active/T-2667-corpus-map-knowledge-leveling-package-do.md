@@ -106,7 +106,37 @@ clean seed. Verdict applied in v3 (sha8 b82668c8, live-verified):
 5. **832 precision nit honored:** consolidate is manual-only (CLI route exists), not
    caller-less — "no PROGRAMMATIC caller" is the true claim.
 
-Remaining for close: operator taste + promotion GO (arc-014 ritual), then AC-3/AC-4
+**v5 LIFECYCLE REWORK (operator single-chain doctrine, 2026-07-29 late).** Operator
+rejected the four-disjoint-strand shape ("a workflow should contain a single chain of
+cause and effect; different start points only when they converge"). 832 conceded fully
+(rail 329): "your operator's token test is the better razor; my one-map ruling conflated
+shared SUBSTRATE (learnings.yaml) with shared TOKEN. Split by token, not by verb."
+v5 (647133ebe): token = ONE LEARNING; 3 converging capture channels → append →
+fw_wait_dormant intermediateCatchEvent (FIRST mid-chain wait in corpus, gap finding
+embodied ON the wait) → count → readiness gateway (rail anchor unchanged) →
+practice-active / already-promoted error terminal. Harvest + consolidate OUT (different
+token: whole store) → pointer note on the success terminal, separate-map candidates.
+12 nodes/13 flows. DEAD census 4 → 2 (candidates tier, ratification).
+
+**Operator pair-rounds v6 + v7 (designer UI saves, 17:04 + 17:27).** Semantics untouched
+(same 12 uids/13 flows/names/notes); layout finalized (chain top row, channels bottom-left
+converging, edge port anchors added). Lane membership flipped on 10/12 nodes vs v5 —
+only kl_dormant stayed Framework and kl_healing stayed Agent. Open pair questions for
+next round (flagged, not patched): (a) lane-membership-vs-position semantics — is
+membership operator intent (promote leg = initiative-driven) or a designer save-side
+position-derivation artifact?; (b) v7 workflowMeta gained uuid d7c7cfc0-… ≠ project uuid
+906e14cc-… (single-uuid-namespace contract, T-2571); (c) workflowMeta version attr stuck
+at "5" across v6/v7 saves.
+
+**v7 verify battery GREEN (2026-07-29 17:4x, this session):** XML parse OK; corpus lint
+baseline 2 (v7's untyped intermediateCatchEvent correctly does NOT fire the T-2551
+emitterless-typed-event lint — the watch item from the v5 commit resolved clean);
+rail dry-run MATCH {promoted, ready, almost, building} vs promote.sh ladder (with the
+sharpened unique anchor — see AC-4 Prep comment: the original 3-occurrence anchor
+extracts zero tokens); DEAD census == 2 per the contains-once-per-note contract;
+/api/version serves v7 bytes exactly (sha8 0cd8022a).
+
+Remaining for close: operator taste + promotion GO on v7 (arc-014 ritual), then AC-3/AC-4
 (promote, registry entry from AC-4 Prep, prove, pin test).
 
 ## AC-4 Prep (parked registry entry — paste at promotion)
@@ -124,7 +154,11 @@ aef-knowledge-leveling:
   branch_vocab:
     regex: "[A-Za-z][A-Za-z-]*"
   source_vocab:
-    anchor: 'if lid in promoted_ids:'
+    # anchor sharpened 2026-07-29: 'if lid in promoted_ids:' occurs 3x in
+    # promote.sh (lines 144/155/201) — the ladder is the 3rd; an occurrence-1
+    # anchor extracts ZERO tokens (verified live). This anchor is unique (1x)
+    # and inclusive-forward extraction yields all 4 tokens (verified MATCH).
+    anchor: "status = f'{GREEN}promoted{NC}'"
     regex: "status = f?'(?:\\{[A-Z]+\\})?([a-z]+)(?:\\{NC\\})?'"
 ```
 
