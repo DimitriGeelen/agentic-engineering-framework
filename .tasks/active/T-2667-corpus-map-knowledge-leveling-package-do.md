@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: 2026-07-29T11:43:54Z
+last_update: 2026-07-29T11:59:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -304,3 +304,18 @@ in learnings.yaml today; 315 dash-form vs 234 legacy-indent entries — mixed fo
 ### 2026-07-29T11:43:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-29T12:09:55Z — dispatch check-in [build-worker]
+- **Checked:** AC-4 prep vocabulary anchor (`if lid in promoted_ids:` →
+  `status = f?'...'`) re-verified against current `lib/promote.sh` — single
+  matching block at lines 202-208, tokens {promoted, ready, almost, building}
+  unchanged. No drift since baseline capture.
+- **Checked:** no 832-side pairing article for knowledge-leveling exists yet
+  (grep of this repo found none; cross-repo read into `/opt/832-Workflow-designer`
+  is blocked by the project-boundary hook — correctly so, per T-559/feedback
+  no-cross-repo-edits). No mirror-sync signal of a peer draft either.
+- **Status:** draft-knowledge-leveling v2 (seeded prior session) is unchanged.
+  AC-2/3/4 remain genuinely blocked on the operator + 832 pair-draft ritual
+  (same stage as sibling T-2665/T-2666: "seed round done, awaiting operator
+  taste + promotion"). No agent-only action can progress this without that
+  human/external step — declining to fabricate promotion or approval.
