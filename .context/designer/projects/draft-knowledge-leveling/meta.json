@@ -24,8 +24,14 @@
       "note": "operator taste round: layout fix — v2/v3 stacked the four strands vertically with agent nodes at y=560/680/800, far outside the lane bands (agent band starts ~380), so the render was broken. v4 lays the strands out horizontally left-to-right (capture x120-600, promote x800-1440 incl. gateway fork up/down, harvest x1640-1960, consolidate x2160-2480), all 16 nodes inside the two bands (fw y=60-260, agent y=460). No semantic changes — nodes/flows/notes identical to v3",
       "ts": 1785332600
     }
+,
+    {
+      "v": 5,
+      "note": "LIFECYCLE REWORK (operator single-chain principle, rail 328; 832 concession + vote, rail 329 'split by token not by verb'): token = ONE LEARNING per aef-task-lifecycle precedent. Single connected chain: 3 converging capture channels (insight/add-learning, bugfix-prompt/fix-learned, healing-resolve direct write) -> fw_1_write -> fw_wait_dormant intermediateCatchEvent (FIRST mid-chain wait in corpus, state=dormant, gap finding embodied ON the wait: nothing automatic crosses, audit nudge advises only) -> count -> 4-way readiness gateway (rail anchor unchanged) -> practice-active / already-promoted error terminal. Harvest+consolidate OUT (different token: whole store) -> pointer note on fw_end_active, candidates for separate maps. 12 nodes/13 flows/2 lanes. DEAD: census drops 4 -> 2 (candidates tier, ratification)",
+      "ts": 1785336900
+    }
   ],
   "uuid": "906e14cc-60fb-413d-9fda-4cce6cb80a42",
-  "latest": 4,
-  "updated": 1785332600
+  "latest": 5,
+  "updated": 1785336900
 }
