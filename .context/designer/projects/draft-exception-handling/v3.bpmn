@@ -36,16 +36,6 @@
       <aef:workflowMeta id="draft-exception-handling" version="3" schemaVersion="2" title="AEF exception handling (issues trigger &#8594; diagnose &#8594; classify &#8594; ladder &#8594; resolve &#8594; learn) — DRAFT" tier_default="1"/>
     </bpmn:extensionElements>
     <bpmn:laneSet id="LaneSet_eh">
-      <bpmn:lane id="agent" name="Agent · Initiative">
-        <bpmn:extensionElements>
-          <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
-        </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_error</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_1_flag</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_fix</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_resume</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_resolve</bpmn:flowNodeRef>
-      </bpmn:lane>
       <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="300"/>
@@ -57,6 +47,16 @@
         <bpmn:flowNodeRef>fw_4_suggest</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_5_record</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_end_learned</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_error</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_flag</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_resume</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_resolve</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 

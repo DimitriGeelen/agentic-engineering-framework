@@ -47,14 +47,6 @@
       <aef:workflowMeta id="draft-task-creation" version="3" schemaVersion="2" title="AEF task creation (intent &#8594; template &#8594; ID &#8594; type gates &#8594; write &#8594; activation? &#8594; focus &#8594; estimator &#8594; G-020) — DRAFT" tier_default="1"/>
     </bpmn:extensionElements>
     <bpmn:laneSet id="LaneSet_tc">
-      <bpmn:lane id="agent" name="Agent · Initiative">
-        <bpmn:extensionElements>
-          <aef:laneMeta abbr="agt" authority="initiative" height="200"/>
-        </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_intent</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_1_workon</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_acs</bpmn:flowNodeRef>
-      </bpmn:lane>
       <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="320"/>
@@ -71,6 +63,14 @@
         <bpmn:flowNodeRef>fw_7_g020</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_end_ready</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_end_captured</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_intent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_workon</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_acs</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
