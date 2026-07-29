@@ -11,16 +11,16 @@ description: >
   ordered non-overlapping spans are necessary for feasibility but not sufficient,
   so maps currently clean under lane-geometry may fail this.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-29T21:58:24Z
-last_update: 2026-07-29T22:02:31Z
-date_finished:
+last_update: 2026-07-29T22:24:31Z
+date_finished: 2026-07-29T22:24:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -207,15 +207,15 @@ different fix, and it is latent).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -311,7 +311,22 @@ from the two-node authority call already routed to you.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: the original premise failed both ways under measurement — feasibility was
+*weaker* than the shipped rule under closed boundary semantics (it passes
+`aef-session-lifecycle`, which `lane-geometry` correctly flags, because a node on a shared
+band boundary satisfies both adjacent bands), and *redundant* under half-open semantics (the
+two rules agree on all 11 maps). What survived is orthogonal and real: the ordering rule
+compares lanes against each other and is therefore structurally blind to a lane whose own
+members span more than its declared height. Proven on a synthetic map, and the corpus already
+holds an instance — `draft-knowledge-leveling`'s agent lane overflows by **253px**, on the v8
+promotion candidate, a defect the ordering rule never named because it cannot see it. All
+three GO criteria are met; the one open input (node box height) has a named owner and is
+already asked. This is GO on completed evidence, not a hedge — the class is proven by
+construction, the instance measured, the unknown isolated.
+
+**Date**: 2026-07-29T22:24:30Z
 
 ## Updates
 
@@ -321,3 +336,54 @@ from the two-node authority call already routed to you.
 ### 2026-07-29T22:01:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-07-29T22:24:30Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** the original premise failed both ways under measurement — feasibility was
+*weaker* than the shipped rule under closed boundary semantics (it passes
+`aef-session-lifecycle`, which `lane-geometry` correctly flags, because a node on a shared
+band boundary satisfies both adjacent bands), and *redundant* under half-open semantics (the
+two rules agree on all 11 maps). What survived is orthogonal and real: the ordering rule
+compares lanes against each other and is therefore structurally blind to a lane whose own
+members span more than its declared height. Proven on a synthetic map, and the corpus already
+holds an instance — `draft-knowledge-leveling`'s agent lane overflows by **253px**, on the v8
+promotion candidate, a defect the ordering rule never named because it cannot see it. All
+three GO criteria are met; the one open input (node box height) has a named owner and is
+already asked. This is GO on completed evidence, not a hedge — the class is proven by
+construction, the instance measured, the unknown isolated.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fed61ef3
+- **Timestamp:** 2026-07-29T22:24:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b66ae6d2
+- **Timestamp:** 2026-07-29T22:24:32Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2687-band-feasibility-lint.md` | file | ✓ pass |
+| `T-311` | task | ✓ pass |
+| `T-312` | task | ✓ pass |
+
+### 2026-07-29T22:24:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

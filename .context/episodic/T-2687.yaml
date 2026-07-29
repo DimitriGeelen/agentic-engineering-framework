@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2687: promote origin-free band-feasibility to a corpus lint rule
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T22:24:42Z
+# ============================================================================
+
+task_id: T-2687
+task_name: "promote origin-free band-feasibility to a corpus lint rule"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T21:58:24Z
+completed: 2026-07-29T22:24:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-30T00:02:30+02:00
+last_commit: 2026-07-30T00:15:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file follow-up inception with 4 open questions; T-2686 partial-complete (5/5 verification, owner->human). exploration complete — premise falsified, different rule recommended GO. two learnings — closed-interval boundary trap; sweep our surface when a peer reports a class
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/T-2687-band-feasibility-lint.md'
+  - '.tasks/active/T-2686-reorder-laneset-on-two-wholesale-inverte.md'
+  - '.tasks/active/T-2687-promote-origin-free-band-feasibility-to-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-30T00:02:30"
+    action: "T-2687: file follow-up inception with 4 open questions; T-2686 partial-complete (5/5 verification, owner->human)"
+  - time: "2026-07-30T00:11:56"
+    action: "T-2687: exploration complete — premise falsified, different rule recommended GO"
+  - time: "2026-07-30T00:15:45"
+    action: "T-2687: two learnings — closed-interval boundary trap; sweep our surface when a peer reports a class"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 3
+  files_changed: 19
+  lines_added: 1223
+  lines_removed: 79
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2687-promote-origin-free-band-feasibility-to-.md
+generated_by: context-agent-hybrid
