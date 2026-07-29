@@ -3931,3 +3931,17 @@ X'` returning empty group."
   date: 2026-07-29
   context: Added via context agent
   application: TBD
+- id: L-515
+  learning: "Broad 'except Exception' around a cross-module call converts OUR OWN programming errors into legitimate-looking return values. T-2685: corpus explain caught a TypeError from an arity drift (T-2654 added a param) and rendered it as 'rail unreadable', downgrading the rail-anchor map's authority stage to transitional-subordinate — a value that is CORRECT for most maps, so the wrong answer was indistinguishable from a right one. Undetected for the whole T-2654..T-2685 window despite 3 red tests, because nothing runs a suite at task close unless that task's own Verification block names it. Rule: narrow the catch to the module's declared load-error type, and pin the SWALLOWING property (non-load errors must propagate) rather than the current signature shape — a signature assert only restates today's arity."
+  source: P-001
+  task: T-2685
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD
+- id: L-516
+  learning: "Validate a detection model BEFORE building the rule on it — the more precise model is not automatically the correct one. T-2684: band-reconstruction (cumulative lane heights) named the exact offending nodes, versus a coarser origin-free span-ordering check. Cross-checking both across 11 live maps showed the band model needs a band origin the map does not store; anchoring it at the topmost node produced 7 phantom mismatches on a map that is clean. Shipped the coarser sound check. Generalisable: when a candidate check requires a value the artifact does not carry, any default you pick is a guess, and a rule that reports precise-but-wrong is worse than one reporting a coarser truth — precise-and-wrong is exactly what gets past reviewers."
+  source: P-001
+  task: T-2684
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD

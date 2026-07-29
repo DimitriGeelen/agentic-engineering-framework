@@ -5235,3 +5235,22 @@ Co-Authored-By: Claude Fable 5 <noreply@anthro'
   caller: 'check-active-task focus-drift'
   target: 'T-2682'
   command: 'bin/fw context add-learning "Position-blind extraction laundered into permanence: corpus_spec took the FIRST XML comment as a maps semantic doc, so when the designers save path dropped the real lead'
+- timestamp: '2026-07-29T21:08:51Z'
+  task: 'T-2684'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2667'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2667: dispatch check-in — v8 promotion candidate unchanged, no operator GO yet
+
+Verified v8.bpmn byte-ident'
+- timestamp: '2026-07-29T21:09:02Z'
+  task: 'T-2684'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2667'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/active/T-2667-corpus-map-knowledge-leveling-package-do.md
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2667: dispatch check-in — v8 promo'
