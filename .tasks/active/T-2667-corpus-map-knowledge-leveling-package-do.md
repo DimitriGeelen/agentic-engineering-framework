@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: 2026-07-29T18:01:39Z
+last_update: 2026-07-29T21:00:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -174,6 +174,12 @@ boilerplate standing in for its rationale block.
 
 Remaining for close: operator taste + promotion GO on **v8** (arc-014 ritual), then
 AC-3/AC-4 (promote, registry entry from AC-4 Prep, prove, pin test).
+
+**Dispatch check-in (2026-07-29 late):** v8.bpmn confirmed byte-identical to the
+committed candidate (f74de5257); no new feedback-stream entries, paused dispatches,
+or commits against this task since T-2683's OBS-101 repair landed. No operator GO
+signal found. AC-3/AC-4 remain blocked on operator taste + promotion GO —
+declining to fabricate approval.
 
 ## AC-4 Prep (parked registry entry — paste at promotion)
 
