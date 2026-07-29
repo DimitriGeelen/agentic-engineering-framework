@@ -27,7 +27,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:19:32Z
-last_update: 2026-07-29T06:44:04Z
+last_update: '2026-07-29T16:30:09Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,23 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-29T16:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -375,3 +392,15 @@ caution.
 ### 2026-07-29T05:29:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-29T20:07:00Z — dispatch-recheck [worker]
+- **Action:** Re-verified draft state, no operator GO issued since last session.
+- **Output:** `corpus_lint.py` still reports 2 pre-existing findings unrelated to
+  this draft; `draft-exception-handling` meta.json still at v3 (uuid
+  `001362d7-966d-4d14-9dfd-84d938e3791a`, unchanged). No promotion executed —
+  `fw task review T-2665` shows 0/0 Human ACs (no structural gate), but the
+  arc-014 ritual text in this task's own Recommendation still says "canonical
+  namespace untouched until approval," and no such approval is recorded in git
+  log, `.gate-bypass-log.yaml`, or the latest handover. Deferring the promotion
+  to an explicit human GO rather than treating an unblocking recommendation as
+  self-authorizing.
