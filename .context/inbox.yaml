@@ -821,12 +821,12 @@ observations:
   captured: 2026-07-29T17:56:26Z
   context_task: T-2682
   tags: [docs]
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-102
   text: "corpus explain calls conformance.canonical_transitions(root) with 1 arg but T-2654 changed the signature to (root, source). The TypeError is caught and rendered as 'rail: rail unreadable', which silently downgrades every map's authority stage to transitional-subordinate — including aef-task-lifecycle, whose rail actually PASSES. So the flagship map has been denied the detail-authority it earned since T-2654, and the failure mode is a legitimate-looking value rather than an error. Textbook G-071 (deterministic component, frozen world-assumption, plausible-and-wrong output). 3 tests in test_corpus_explain.py have been red. Fix: pass the registry source through."
   captured: 2026-07-29T21:09:13Z
   context_task: T-2684
   tags: []
-  status: pending
+  status: dismissed
   promoted_to: null

@@ -66,13 +66,42 @@ def flow_order(spec: dict) -> list:
 
 
 def authority_stage(root: Path, map_id: str) -> tuple:
-    """(stage, rail_state) per the T-2619 cascading-detail model."""
-    if map_id != "aef-task-lifecycle":
+    """(stage, rail_state) per the T-2619 cascading-detail model.
+
+    Reads the conformance registry rather than naming a map: the registry is the
+    single rail opt-in surface, so a literal map id here goes stale the moment a map
+    gains or loses a rail.
+
+    The exception handling is deliberately narrow (LoadError only). Origin T-2685:
+    this function used to call ``canonical_transitions(root)`` — an arity that
+    T-2654's registry refactor had already changed — inside a bare
+    ``except Exception``. The TypeError was caught and rendered as
+    "rail unreadable: ...", which downgraded the stage to a value that is perfectly
+    legitimate for other maps. Result: aef-task-lifecycle's rail passed while explain
+    reported it as descriptive-only, on every invocation, undetected from T-2654 to
+    T-2685. Every genuine unreadable-rail condition already raises LoadError, so a
+    broad catch buys nothing here except the ability to hide our own bugs.
+    """
+    try:
+        registry = conformance.load_registry(root)
+    except conformance.LoadError as e:
+        return ("transitional-subordinate", f"rail unreadable: {e}")
+    entry = registry.get(map_id)
+    if entry is None:
         return ("transitional-subordinate", "no conformance rail exists for this map")
+    if entry.get("primitive") != "transition-table":
+        # A rail exists but the T-2619 authority model is written against transition
+        # parity. Say so rather than claiming no rail exists — whether a green
+        # vocabulary-set rail should confer detail-authority is an open design
+        # question, not something to decide by silence.
+        return ("transitional-subordinate",
+                f"rail present ({entry['primitive']}) but authority staging is defined "
+                f"for transition-table only (T-2619); this rail is judged by "
+                f"fw corpus conformance, not by explain")
     try:
         spec = conformance.load_latest_spec(root, map_id)
-        canon = conformance.canonical_transitions(root)
-    except Exception as e:  # noqa: BLE001
+        canon = conformance.canonical_transitions(root, entry["source"])
+    except conformance.LoadError as e:
         return ("transitional-subordinate", f"rail unreadable: {e}")
     if conformance.carrier_count(spec) == 0:
         return ("transitional-subordinate", "rail dormant: map has no state-carrier annotations")
