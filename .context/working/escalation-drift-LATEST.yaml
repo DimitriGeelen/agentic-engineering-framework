@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-07-27T03:23:02.281343+00:00
-corpus_total: 2349
-bug_class_total: 470
-bug_class_pct: 20
-h1_flagged: 349
+generated: 2026-07-29T03:23:02.008656+00:00
+corpus_total: 2380
+bug_class_total: 471
+bug_class_pct: 19
+h1_flagged: 350
 h1_pct_of_bug_class: 74
 h2_repeat_patterns: 127
 h3_flagged: 265
 h3_pct_of_bug_class: 56
-recent_30d_flagged: 8
+recent_30d_flagged: 9
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-100202-task-id-allocator-inflation--split-view-"
@@ -28,17 +28,19 @@ recent_sample:
     name: "aef-audit-cron warn/fail connector unwired — corpus sweep for unlinked handoff-i"
   - tid: "T-2615-re-pin-designer-032-t-240-uuid-auto-reso"
     name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias"
+  - tid: "T-2628-corpus-squash-burst-rca--operator-delete"
+    name: "Corpus squash burst RCA — operator delete-all+resave regressed task-lifecycle"
 h2_top:
   - learning: "P-011"
-    task_count: 1236
+    task_count: 1295
   - learning: "L-387"
-    task_count: 1068
+    task_count: 1124
   - learning: "L-291"
-    task_count: 681
+    task_count: 712
   - learning: "L-398"
-    task_count: 460
+    task_count: 488
   - learning: "P-010"
-    task_count: 244
+    task_count: 255
   - learning: "L-006"
     task_count: 54
   - learning: "L-399"

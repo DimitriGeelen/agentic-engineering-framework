@@ -2,7 +2,10 @@
 id: T-2670
 name: "workflow fabric: queryable cross-map index (package Lock 4 / SD-15)"
 description: >
-  Should cross-map structure (handoffs, sub-process calls, lane/role participation) be indexed into a queryable registry supporting role-level queries (e.g. the operator's decision-surface across all maps), per the package's Workflow Fabric spec? Handoffs exist as map content (T-2586/T-2613) but nothing is queryable (T-2662 gap 5).
+  Should cross-map structure (handoffs, sub-process calls, lane/role participation)
+  be indexed into a queryable registry supporting role-level queries (e.g. the operator's
+  decision-surface across all maps), per the package's Workflow Fabric spec? Handoffs
+  exist as map content (T-2586/T-2613) but nothing is queryable (T-2662 gap 5).
 
 status: captured
 workflow_type: inception
@@ -13,8 +16,8 @@ components: []
 related_tasks: [T-2662]
 arc_id: designer-corpus
 created: 2026-07-28T16:23:14Z
-last_update: 2026-07-28T16:23:14Z
-date_finished: null
+last_update: '2026-07-28T16:30:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -23,6 +26,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-07-28T16:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-28T16:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2670: workflow fabric: queryable cross-map index (package Lock 4 / SD-15)

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2672: healing resolve.sh: append breaks on column-0 YAML + max-id scan misses unindented ids (832 field T-295)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T06:27:34Z
+# ============================================================================
+
+task_id: T-2672
+task_name: "healing resolve.sh: append breaks on column-0 YAML + max-id scan misses unindented ids (832 field T-295)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T06:20:16Z
+completed: 2026-07-29T06:27:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-29T08:26:54+02:00
+last_commit: 2026-07-29T08:26:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  healing resolve.sh — emit at detected indent + widen max-id scans to any indent (832 field T-295, 3rd vendor-boundary instance; L+FP paths; 4 new bats both file shapes; vendored copy synced same commit)
+
+# Key outcomes
+outcomes:
+  - 'Learnings path: max-id scan widened to match any indent; append emits at the'
+  - 'Patterns (FP) path: same treatment for the awk insert + FP max-id scan.'
+  - 'Bats regression test covering both file shapes for both paths (yaml-parses'
+  - '832 informed on the rail that the fix is upstream, with commit ref, so their'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/healing/lib/resolve.sh'
+  - 'agents/healing/lib/resolve.sh'
+  - '.tasks/active/T-2672-healing-resolvesh-append-breaks-on-colum.md'
+  - 'tests/unit/healing_resolve_indent.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-29T08:26:54"
+    action: "T-2672: healing resolve.sh — emit at detected indent + widen max-id scans to any indent (832 field T-295, 3rd vendor-boundary instance; L+FP paths; 4 new bats both file shapes; vendored copy synced same commit)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 4
+  lines_added: 424
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2672-healing-resolvesh-append-breaks-on-colum.md
+generated_by: context-agent-hybrid

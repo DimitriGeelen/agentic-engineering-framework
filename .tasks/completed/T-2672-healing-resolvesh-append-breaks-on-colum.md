@@ -4,12 +4,12 @@ name: "healing resolve.sh: append breaks on column-0 YAML + max-id scan misses u
 description: >
   healing resolve.sh: append breaks on column-0 YAML + max-id scan misses unindented ids (832 field T-295)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/healing/lib/resolve.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-29T06:20:16Z
-last_update: 2026-07-29T06:20:16Z
-date_finished: null
+last_update: 2026-07-29T06:27:22Z
+date_finished: 2026-07-29T06:27:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -66,8 +66,9 @@ existing `- id:` entry and emit at that indent; widen scans to
       after append, id increments instead of re-minting) —
       tests/unit/healing_resolve_indent.bats, 4/4 green; sibling healing bats
       suites still green (35 ok, 0 fail); vendored copy synced (fw vendor self).
-- [ ] 832 informed on the rail that the fix is upstream, with commit ref, so their
-      next re-vendor doesn't regress their in-tree T-295 fix.
+- [x] 832 informed on the rail that the fix is upstream, with commit ref, so their
+      next re-vendor doesn't regress their in-tree T-295 fix — rail offset 309,
+      commit 806577d24 (reply-to their 306).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,3 +228,15 @@ vendored copy).
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2672-healing-resolvesh-append-breaks-on-colum.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-606c88a2
+- **Timestamp:** 2026-07-29T06:27:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-29T06:27:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -2,7 +2,15 @@
 id: T-2661
 name: "self-vendor root-data class + patternless sim tests (T-2656 follow-up)"
 description: >
-  T-2656 shipped do_vendor includes (.secret-scan-patterns/.secret-scan-allowlist) + loud patternless warning + direct mirror copy. Structural remainder: (1) _self_vendor_root_data() helper class in lib/upgrade.sh (siblings: libs/templates/policy/shim/agents/web) + audit check_self_vendor_drift parity so the mirrored data files cannot silently drift; (2) fresh-machine sim test 6 extension to script DATA files (patterns present in vendored tree) + test 7 present-but-patternless case (scanner runs, unmissable WARNING fires, FW_SECRET_SCAN_STRICT=1 blocks). GOTCHA: sim tests run against COMMITTED bytes — commit source before verifying. Interplay w/ T-2657: includes added here do not reach consumers via fw update until the chicken-and-egg re-exec lands.
+  T-2656 shipped do_vendor includes (.secret-scan-patterns/.secret-scan-allowlist)
+  + loud patternless warning + direct mirror copy. Structural remainder: (1) _self_vendor_root_data()
+  helper class in lib/upgrade.sh (siblings: libs/templates/policy/shim/agents/web)
+  + audit check_self_vendor_drift parity so the mirrored data files cannot silently
+  drift; (2) fresh-machine sim test 6 extension to script DATA files (patterns present
+  in vendored tree) + test 7 present-but-patternless case (scanner runs, unmissable
+  WARNING fires, FW_SECRET_SCAN_STRICT=1 blocks). GOTCHA: sim tests run against COMMITTED
+  bytes — commit source before verifying. Interplay w/ T-2657: includes added here
+  do not reach consumers via fw update until the chicken-and-egg re-exec lands.
 
 status: captured
 workflow_type: build
@@ -22,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T11:51:29Z
-last_update: 2026-07-28T11:51:29Z
-date_finished: null
+last_update: '2026-07-28T12:00:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +42,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-28T12:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-28T12:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2661: self-vendor root-data class + patternless sim tests (T-2656 follow-up)

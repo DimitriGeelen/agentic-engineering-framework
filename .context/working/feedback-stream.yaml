@@ -23392,3 +23392,325 @@ scan_id: R-78733209
 task_id: T-2647
 payload:
   task_file: .tasks/active/T-2647-fw-vendor-payload-gaps-secret-scansh-sil.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T08:28:41Z'
+scan_id: R-03d59098
+task_id: T-2648
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T08:28:41Z'
+scan_id: R-03d59098
+task_id: T-2648
+payload:
+  task_file: .tasks/active/T-2648-obs-097-grep-lint-audit-check-blocking-p.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T08:38:25Z'
+scan_id: R-cd31ad2c
+task_id: T-2649
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T08:38:25Z'
+scan_id: R-cd31ad2c
+task_id: T-2649
+payload:
+  task_file: .tasks/active/T-2649-obs-097-shell-idiom-sweep-disposition-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T08:52:44Z'
+scan_id: R-d5d23327
+task_id: T-2650
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T08:52:44Z'
+scan_id: R-d5d23327
+task_id: T-2650
+payload:
+  task_file: .tasks/active/T-2650-obs-097-split-root-smoke-test-all-parame.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T09:02:46Z'
+scan_id: R-ff07ae94
+task_id: T-2651
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T09:02:46Z'
+scan_id: R-ff07ae94
+task_id: T-2651
+payload:
+  task_file: .tasks/active/T-2651-obs-097-final-leg-project-docs-surface-d.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T09:44:32Z'
+scan_id: R-f31eb8a2
+task_id: T-2653
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T09:44:32Z'
+scan_id: R-f31eb8a2
+task_id: T-2653
+payload:
+  task_file: .tasks/active/T-2653-designer-gallery-hygiene--remove-t2529-v.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T09:51:53Z'
+scan_id: R-77d57a0f
+task_id: T-2652
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T09:51:53Z'
+scan_id: R-77d57a0f
+task_id: T-2652
+payload:
+  task_file: .tasks/active/T-2652-conformance-rail-generalization--per-map.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-28T09:51:53Z'
+scan_id: RC-b467485f
+task_id: T-2652
+payload:
+  overall: CONFIRMED
+  claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-07-28T10:16:34Z'
+scan_id: R-c41adf39
+task_id: T-2654
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T10:16:34Z'
+scan_id: R-c41adf39
+task_id: T-2654
+payload:
+  task_file: .tasks/active/T-2654-conformance-registry--primitive-library-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T11:16:27Z'
+scan_id: R-ce665690
+task_id: T-2658
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T11:16:27Z'
+scan_id: R-ce665690
+task_id: T-2658
+payload:
+  task_file: .tasks/active/T-2658-vocabulary-set-primitive--inception-flow.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T11:27:09Z'
+scan_id: R-17820f13
+task_id: T-2659
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T11:27:09Z'
+scan_id: R-17820f13
+task_id: T-2659
+payload:
+  task_file: .tasks/active/T-2659-dispatch-loop-conformance-rail-t-2652-sl.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T11:35:54Z'
+scan_id: R-5c0fa79f
+task_id: T-2660
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T11:35:54Z'
+scan_id: R-5c0fa79f
+task_id: T-2660
+payload:
+  task_file: .tasks/active/T-2660-seed-pair-draft-dispatch-loop-relabel-ro.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T11:42:05Z'
+scan_id: R-957a094b
+task_id: T-2655
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T11:42:05Z'
+scan_id: R-957a094b
+task_id: T-2655
+payload:
+  task_file: .tasks/active/T-2655-vendor-payload-runtime-exec-scripts-ship.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T11:53:14Z'
+scan_id: R-b6062a17
+task_id: T-2656
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T11:53:14Z'
+scan_id: R-b6062a17
+task_id: T-2656
+payload:
+  task_file: .tasks/active/T-2656-vendor-payload-secret-scan-patterns-miss.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T15:01:24Z'
+scan_id: R-e53687e7
+task_id: T-2662
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T15:01:24Z'
+scan_id: R-e53687e7
+task_id: T-2662
+payload:
+  task_file: .tasks/active/T-2662-review-workflow-process-layer-package-v1.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T17:10:43Z'
+scan_id: R-4e6b06a1
+task_id: T-2663
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T17:10:43Z'
+scan_id: R-4e6b06a1
+task_id: T-2663
+payload:
+  task_file: .tasks/active/T-2663-dispose-workflow-process-layer-sd-regist.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-28T17:10:43Z'
+scan_id: RC-1ca289a3
+task_id: T-2663
+payload:
+  overall: CONFIRMED
+  claim_count: 6
+---
+kind: scan_emitted
+timestamp: '2026-07-28T19:59:23Z'
+scan_id: R-f848084e
+task_id: T-2664
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T19:59:23Z'
+scan_id: R-f848084e
+task_id: T-2664
+payload:
+  task_file: .tasks/active/T-2664-corpus-map--conformance-rail-tier0-escal.md
+---
+kind: scan_emitted
+timestamp: '2026-07-28T20:06:03Z'
+scan_id: R-3f384270
+task_id: T-2671
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-28T20:06:03Z'
+scan_id: R-3f384270
+task_id: T-2671
+payload:
+  task_file: .tasks/active/T-2671-promote-dispatch-loop-relabel--flip-t-26.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T06:27:24Z'
+scan_id: R-606c88a2
+task_id: T-2672
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T06:27:24Z'
+scan_id: R-606c88a2
+task_id: T-2672
+payload:
+  task_file: .tasks/active/T-2672-healing-resolvesh-append-breaks-on-colum.md
