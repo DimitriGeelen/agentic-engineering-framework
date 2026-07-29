@@ -19,7 +19,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-29T21:58:24Z
-last_update: 2026-07-29T22:01:07Z
+last_update: 2026-07-29T22:02:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,11 +62,30 @@ bvp_scores_proposed:
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Full artifact: `docs/reports/T-2687-band-feasibility-lint.md`.
+
+T-2686 wrote an origin-free "does any band origin satisfy this declaration" check as a
+repair oracle, and it produced the best evidence in that task (an EMPTY interval proves the
+declaration unsatisfiable for *every* origin — the evidence class T-2684's rejected band
+model could not produce). It currently benefits only two draft maps. Should it graduate into
+a `fw corpus lint` rule, and in what relationship to the shipped `lane-geometry` rule?
+
+Why now: 832 said at rail 335 they intend to mirror a geometry-vs-declaration check and want
+it to be "a first-class check, not a rendering of the existing rule set". The shape settled
+here is the shape handed to them (their T-312).
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- **A-1 (FALSIFIED):** feasibility is strictly stronger than the shipped ordering rule.
+  Disproven by measurement — `aef-session-lifecycle` is ordering-DIRTY and
+  closed-feasibility-CLEAN, because closed-interval containment lets a node on a shared band
+  boundary belong to both adjacent bands. This assumption had already been stated in
+  T-2686's Decisions and to 832 at rail 336; both are now retracted (rail 338).
+- **A-2 (held):** the check needs no renderer constant. True for the *ordering* rule; **not**
+  true for the capacity rule the exploration actually recommends, which needs the node box
+  height. That is why the recommendation is gated on 832 rather than on us.
+- **A-3 (held):** a corpus-wide survey before relying on a geometric result is worth its
+  cost. Second consecutive task where it caught a wrong-but-convincing model.
 
 ## Open Questions
 
@@ -92,39 +111,85 @@ bvp_scores_proposed:
   feasibility interval without emptying a non-empty one, so it cannot flip a PASS to a
   FAIL — but it can change *which* origins are feasible, and it matters if the rule ever
   reports the interval to a human as advice.
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: dissolved
+  rationale: reframed by F1 — centre-vs-top is a uniform offset and cannot flip a verdict;
+    the verdict-changing choice is open-vs-half-open boundary semantics, which I had not
+    considered at filing. The live unknown is node height H (F4), asked of 832 at rail 338.
 
 - **IW-2: how many currently-clean corpus maps fail the stricter check?** Ordered
   non-overlapping spans are necessary for feasibility but not sufficient, so this rule is
   a superset of `lane-geometry`. The survey is cheap (11 maps) and decides whether this is
   a drop-in tightening or a re-baselining exercise with its own repair backlog.
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: zero — half-open feasibility and ordering agree on all 11 store maps (F2:
+    9 clean/feasible, 2 dirty/infeasible). No re-baseline, no repair backlog, and no
+    detection gain on the crossing class either.
 
 - **IW-3: does feasibility replace `lane-geometry` or sit beside it?** They report
   different things: `lane-geometry` names an extremal witness *pair* of nodes (actionable —
   it is what resolved v8 to exactly two nodes), while feasibility yields an *interval* and
   no witness. Strictly stronger detection with strictly weaker diagnostics is a real
   trade-off, not an obvious upgrade.
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: sit beside, as a distinct rule (proposed `lane-overflow`). Replacement is
+    disproven — it gains nothing on the crossing class (F2) and would trade an actionable
+    witness pair for a bare interval. The value is the orthogonal capacity class (F3).
 
 - **IW-4: is a lane-height defect distinguishable from a node-placement defect?** An empty
   interval says the declaration is unsatisfiable but not *why* — a wrong
   `aef:laneMeta height` and a mis-placed node produce the same emptiness. If the rule
   cannot separate them it will point authors at the wrong fix, which is worse than the
   ordering rule's narrower but correctly-aimed finding.
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: partly, and better than feared — a per-lane span-vs-height comparison
+    localises the defect to one lane and states the shortfall in pixels (−253 on
+    draft-knowledge-leveling agent), which points at the height. It cannot decide between
+    a taller lane and tighter placement, so the message must name both and prescribe
+    neither.
+
+- **IW-5 (raised during exploration, not at filing): is our own detection layer exposed to
+  the prose-in-bytes class 832 hit in their T-311?** They preserved doc comments, which put
+  prose into exported bytes for the first time, and two of their harnesses broke by counting
+  element names quoted inside doc blocks — with the false-GREEN half being the real danger.
+  confidence: 3
+  disposition: answered
+  rationale: BPMN-side checks are immune (corpus_lint and the transition-table rail parse
+    via parse_map/ET.fromstring, never regex document text). But 2 of 4 vocabulary-set
+    rails admit comment prose into the enforced enum — measured by comment-only injection:
+    aef-inception-flow admits 'maybe', aef-audit-cron admits '3'. Latent today, preventive,
+    registered as OBS-103. Separating property: immune rails anchor on structural literals,
+    exposed rails match loose word patterns.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+All four spikes ran; results in the artifact's Findings section.
+
+1. **Corpus survey** (done) — run ordering vs feasibility over all 11 store maps. Produced
+   F1 (the falsification) and F2 (the agreement table).
+2. **Boundary-semantics comparison** (done) — closed vs half-open containment across the same
+   11 maps. Isolated the mechanism at a specific coordinate rather than inferring it.
+3. **Blindness proof** (done) — construct a map the ordering rule cannot see and confirm
+   feasibility catches it. Produced F3 plus the live −253px instance.
+4. **Constant audit** (done) — enumerate every renderer constant the rule would need. Produced
+   F4 and the single question to 832 at rail 338.
+
+Unplanned fifth spike, prompted by 832's T-311 report mid-exploration: audit our own
+detection layer for the prose-in-bytes class. Produced IW-5 and OBS-103.
+
+## Scope Fence
+
+**IN:** whether the feasibility check becomes a corpus rule; what its boundary semantics must
+be; its relationship to `lane-geometry`; what constants it needs and from whom.
+
+**OUT:** implementing the rule (a GO authorises a separate build slice); repairing
+`aef-session-lifecycle` (positions, needs an authority call); repairing
+`draft-knowledge-leveling` v8 (two-node membership call plus the newly-found overflow, both
+the operator's); fixing OBS-103's vocabulary-rail exposure (own task — different subsystem,
+different fix, and it is latent).
 
 ## Technical Constraints
 
@@ -160,14 +225,61 @@ bvp_scores_proposed:
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- The check detects a defect class the shipped `lane-geometry` rule is structurally unable to
+  see — proven by construction, not argued
+- At least one real instance of that class exists in the corpus (otherwise it is a rule
+  looking for a problem)
+- Its verdict does not depend on any renderer constant we would have to guess, or the
+  constant has a named owner who can state it
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- It merely re-detects what `lane-geometry` already catches (redundant), or catches less
+  (regressive)
+- It requires guessing a renderer constant — that is the exact T-2684 band-model error and
+  the reason 7 phantom findings nearly shipped
+- Its findings cannot be localised well enough for an author to act on
+
+## Recommendation
+
+**Recommendation:** GO — for a **different rule than this task proposed.** Not "promote
+feasibility as a stronger `lane-geometry`" (that premise is dead) but "ship a new
+`lane-overflow` rule for the capacity class, half-open, once 832 states the node height."
+
+**Rationale:** the original premise failed both ways under measurement — feasibility was
+*weaker* than the shipped rule under closed boundary semantics (it passes
+`aef-session-lifecycle`, which `lane-geometry` correctly flags, because a node on a shared
+band boundary satisfies both adjacent bands), and *redundant* under half-open semantics (the
+two rules agree on all 11 maps). What survived is orthogonal and real: the ordering rule
+compares lanes against each other and is therefore structurally blind to a lane whose own
+members span more than its declared height. Proven on a synthetic map, and the corpus already
+holds an instance — `draft-knowledge-leveling`'s agent lane overflows by **253px**, on the v8
+promotion candidate, a defect the ordering rule never named because it cannot see it. All
+three GO criteria are met; the one open input (node box height) has a named owner and is
+already asked. This is GO on completed evidence, not a hedge — the class is proven by
+construction, the instance measured, the unknown isolated.
+
+**Evidence:**
+- Artifact `docs/reports/T-2687-band-feasibility-lint.md` — F1 falsification traced to a
+  specific coordinate (band boundary at `y=100`, three nodes on it, bands computed not
+  inferred), F2 full 11-map agreement table across both boundary conventions, F3 synthetic
+  blindness proof plus the −253px live instance, F4 the single unknown constant
+- 5 open questions disposed (1 dissolved with a reframe, 4 answered), including IW-5 raised
+  mid-exploration from 832's T-311 report
+- OBS-103 registered: 2 of 4 vocabulary-set rails admit comment prose into the enforced enum
+  (measured by comment-only injection), the same authority-lie shape one layer over
+- Rail traffic: retraction sent at 338 with the counterexample; lane predicate handed to 832
+  for their T-312 at 339
+
+**What a GO authorises:** one build slice implementing `lane-overflow` (half-open, per-lane
+span-vs-height, message naming the shortfall and both fix options), blocked until 832 answers
+the node-height question. It does **not** authorise touching the two maps with live findings —
+both are your calls.
+
+**Operator-facing consequence you may want before the promotion decision:**
+`draft-knowledge-leveling` v8's agent lane overflows its declared height by 253px. That is a
+second, previously unnamed defect on the map awaiting your taste GO, and it is a different fix
+from the two-node authority call already routed to you.
 
 ## Verification
 

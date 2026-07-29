@@ -830,3 +830,10 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-103
+  text: "Conformance vocabulary rails admit COMMENT PROSE into the enforced vocabulary on 2 of 4 vocabulary-set entries. corpus_conformance._extract_tokens regexes raw source text with no comment stripping. Measured with comment-only injections: aef-inception-flow (regex '([a-z|-]+)\\)') admits 'maybe' from a comment reading '# maybe) is not handled here'; aef-audit-cron (regex 'exit (\\d)') admits '3' from '# exit 3 is reserved, not used'. aef-dispatch-loop and aef-tier0-escalation are prose-immune because their regexes anchor on structural literals (_VALID_OUTCOME_STATUSES = frozenset({...}) / decision not in (...)) rather than loose word patterns. Harm direction: a phantom token normally inflates canon and yields a FALSE RED (noisy, safe). The dangerous case is FALSE GREEN — if a map's gateway declares a branch the code does not implement but a comment mentions it, asserted==canon and the rail reports PASS while enforcement lacks that branch. That is the T-2685 authority-lie class in the rail layer. Currently latent: all 4 rails pass today with correct vocabularies, so this is preventive, not an active lie. Discovered via 832's T-311 warning (rail 337): preserving doc comments put prose into exported bytes and broke two of their harnesses by element-name counting, with the false-green half being the real risk. Our BPMN-side checks are structurally safe (corpus_lint and the transition-table rail parse XML via parse_map/ET.fromstring, never regex document text) — the exposure is one layer over, in rails that scan our own source. Fix direction: make source_vocab regexes structural rather than loose, or strip comments before extraction; note aef-audit-cron's ANCHOR is itself a comment line, so comment-stripping needs care there (it fails loud via the not-canon LoadError guard rather than silently, which is correct)."
+  captured: 2026-07-29T22:09:20Z
+  context_task: T-2687
+  tags: []
+  status: pending
+  promoted_to: null
