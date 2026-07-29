@@ -18,8 +18,14 @@
       "note": "832 round-4 verdict applied (rail 324, v2 VALID zero findings at seed): Q1 one-map-four-strands confirmed (disconnection IS the finding; 4 starts = new corpus max, sanctioned); Q2 fw_end_already gains terminalKind=error (corpus precedent, 7 exit-1-refusal instances); Q3 grep-able DEAD: token adopted on dead-leg notes (no visual marker); T-2676/T-2677 fixed legs flipped LIVE (harvest greps, audit counter first-fire); consolidate claim tightened to manual-only-no-programmatic-caller per 832 nit. Still-dead census: 4 (2+/3+ classification, candidates tier, programmatic consolidate, ratification)",
       "ts": 1785328200
     }
+,
+    {
+      "v": 4,
+      "note": "operator taste round: layout fix — v2/v3 stacked the four strands vertically with agent nodes at y=560/680/800, far outside the lane bands (agent band starts ~380), so the render was broken. v4 lays the strands out horizontally left-to-right (capture x120-600, promote x800-1440 incl. gateway fork up/down, harvest x1640-1960, consolidate x2160-2480), all 16 nodes inside the two bands (fw y=60-260, agent y=460). No semantic changes — nodes/flows/notes identical to v3",
+      "ts": 1785332600
+    }
   ],
   "uuid": "906e14cc-60fb-413d-9fda-4cce6cb80a42",
-  "latest": 3,
-  "updated": 1785328200
+  "latest": 4,
+  "updated": 1785332600
 }
