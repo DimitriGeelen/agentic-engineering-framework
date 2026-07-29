@@ -3917,3 +3917,10 @@ X'` returning empty group."
   date: 2026-07-29
   context: Added via context agent
   application: TBD
+- id: L-513
+  learning: "Determinism is a timestamp, not a state: a deterministic component encodes a world-assumption at authoring time and keeps executing it silently (exit 0, plausible output) after the world drifts — so promotion to the deterministic tier must ship a tripwire (assumption probe + loud-fail path) in the same commit, or the out-of-band exception manager never receives an exception"
+  source: P-001
+  task: T-2679
+  date: 2026-07-29
+  context: Added via context agent
+  application: TBD

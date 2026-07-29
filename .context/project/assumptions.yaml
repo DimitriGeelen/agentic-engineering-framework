@@ -447,3 +447,29 @@ assumptions:
   linked_task: T-2571
   created: '2026-07-20'
   resolved_date: null
+- id: A-047
+  statement: A probe vocabulary of ~3 primitives (count-floor, uniqueness, shape-match)
+    covers >=80% of the known silent-drift class
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2679
+  created: '2026-07-29'
+  resolved_date: null
+- id: A-048
+  statement: Running ~20 assumption probes adds <2s to the daily audit
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2679
+  created: '2026-07-29'
+  resolved_date: null
+- id: A-049
+  statement: Assumption-rail registry does not collide with T-2652 conformance-rail
+    generalization scope
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2679
+  created: '2026-07-29'
+  resolved_date: null

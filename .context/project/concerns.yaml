@@ -2325,3 +2325,67 @@ concerns:
   status: open
   created: 2026-07-11
   related_tasks: [T-2523, T-2522]
+
+- id: G-071
+  type: gap
+  title: "Deterministic tier has no graduation tripwire — components ship with frozen world-assumptions and fail silently (exit 0), starving the stage-4 exception manager"
+  description: |
+    The framework's maturity ladder moves work from stochastic (agent
+    initiative) to deterministic (scripts, gates, cron). The terminal
+    stage inverts roles: the framework does the work, the agent becomes
+    an out-of-band monitor and exception manager. That inversion assumes
+    the deterministic tier FAILS LOUDLY. Nothing enforces this.
+
+    A deterministic component encodes a world-assumption at authoring
+    time (store shape, indentation, anchor uniqueness, file layout).
+    When the world drifts, the component keeps executing the stale
+    assumption and exits 0 with plausible output. Silent-zero is
+    indistinguishable from legitimately-empty, so no exception ever
+    reaches the exception manager. "Proven, tested, stabilized" is a
+    TIMESTAMP, not a state.
+
+    Four instances inside one week (2026-07-29 window):
+      - T-2676  lib/harvest.sh — 4-space greps vs 2-space live store;
+                "No learnings found" on every run for months (549:0).
+      - T-2677  agents/audit/audit.sh §9 — counted 0 of 550 learnings;
+                the >=20 promote-suggest branch (the ONLY programmatic
+                caller of `fw promote suggest`) never fired in its life.
+      - T-2672  agents/healing/lib/resolve.sh — same class, 3rd site.
+      - near-miss: rail registry anchor 'if lid in promoted_ids:' is
+                3x-ambiguous in lib/promote.sh; occurrence-1 extraction
+                yields ZERO tokens. Caught only because an operator
+                pair-round forced re-derivation (fixed in 33a9cf844).
+
+    Sibling classes already recognised: G-001 (loud-fail), T-1828/G-040
+    (gates verifying artifact-exists rather than behaviour-fires),
+    L-291/T-1501 (framework runs only what you write). The conformance
+    rails (arc-014) already implement the remediation pattern for the
+    maps-vs-code axis; no equivalent exists for the script-vs-world axis.
+  spec_reference: "lib/*.sh, agents/**/*.sh (deterministic tier); .context/rails/ registry (pattern prior art); agents/audit/audit.sh"
+  severity: high
+  trigger_fired: true
+  trigger_event: |
+    2026-07-29 — operator challenged why drift persists despite pinned
+    deterministic tooling ("we had deterministic scripts"), then named
+    the stochastic->deterministic ladder and the stage-4 monitoring /
+    out-of-band exception-management role. Agent's finding: all three
+    of the week's corpses failed silently, so the exception manager had
+    no exception to manage. Filed alongside inception T-2679.
+  resolution_path: |
+    Inception T-2679 explores the enforceable form. Recommended shape
+    (operator GO pending):
+      1. Silent-zero / fixed-indent-store-grep static detector (cheap,
+         retires the known family).
+      2. Assumption-rail registry: deterministic components register
+         world-assumption probes (count-floor, uniqueness, shape-match);
+         audit runs them daily; failure = loud WARN/FAIL = the stage-4
+         exception feed.
+      3. Graduation wiring so new deterministic components ship a probe
+         with the work (one commit, L-399 producer/consumer parity).
+    NOT CLOSED until prevention exists — the T-2672/T-2676/T-2677 fixes
+    are mitigation (each site cleaned), not prevention (the next site
+    can still ship assumption-frozen and silent). Per G-019.
+  status: open
+  created: 2026-07-29
+  related_task: T-2679
+  related_tasks: [T-2679, T-2672, T-2676, T-2677, T-2652]
