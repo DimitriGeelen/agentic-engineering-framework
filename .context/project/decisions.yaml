@@ -2417,3 +2417,17 @@ decisions:
     date: 2026-07-29
     task: T-2679
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-348
+    decision: "add the `doc` key back to the *current* promoted `v1.bpmn` of each map, leaving"
+    scope: project
+    date: 2026-07-29
+    task: T-2683
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-349
+    decision: "treat comment preservation as the immediate fix and keep \"carry doc as an `aef:`"
+    scope: project
+    date: 2026-07-29
+    task: T-2683
+    rationale: "Auto-captured from task file on completion"

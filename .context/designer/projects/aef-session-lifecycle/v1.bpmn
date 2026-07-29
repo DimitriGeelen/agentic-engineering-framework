@@ -7,6 +7,13 @@
                   id="Definitions_aef-session-lifecycle"
                   targetNamespace="https://aef.anchorpoint.dev/workflows">
 
+  <!-- designer-corpus D3 (arc-014, T-2561): the AEF session lifecycle as actually
+       operated. Sources of truth: CLAUDE.md §Session Start Protocol, §Context Budget
+       Management (P-009, 225K/255K/285K ladder), §Session End Protocol, §Auto-Restart
+       (T-179: signal file → wrapper sleep 3 → claude -c), T-1277 push-verify.
+       Telemetry pick #3: handover ran 1387×. Timer flavor: the auto-restart cancel
+       window is the one honest kind=timer in this process. Pair-draft v1. -->
+
   <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
 
   <bpmn:collaboration id="Collaboration_aef-session-lifecycle">

@@ -7,6 +7,14 @@
                   id="Definitions_aef-audit-cron"
                   targetNamespace="https://aef.anchorpoint.dev/workflows">
 
+  <!-- designer-corpus D5 (arc-014, T-2565): the daily audit cron as actually operated.
+       Sources of truth: fw audit (exit 0/1/2 = pass/warn/fail), .context/audits/ store,
+       fw audit ..emit-tasks (T-100146: emitted tasks are captured/later and NEVER steal
+       focus), cron registry chain (registry → generated → deployed, T-1942). The cron
+       schedule itself lives in .context/cron-registry.yaml — the timer binding here is
+       representative, the registry is the source of truth. New detector shape vs D3/D4:
+       the typed event rides a START event, not an intermediate one. Pair-draft v1. -->
+
   <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
 
   <bpmn:collaboration id="Collaboration_aef-audit-cron">
