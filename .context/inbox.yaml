@@ -802,3 +802,10 @@ observations:
   tags: [bug]
   status: promoted
   promoted_to: task
+- id: OBS-099
+  text: "fw vendor self has no leg for root-level data files (status-transitions.yaml): _self_vendor_* helpers cover lib/agents/web/templates/policy only, so the framework repo's own .agentic-framework/status-transitions.yaml drifts until someone cp's it manually (T-2674 did). Consumer path is fixed (do_vendor includes now lists it) — this is the in-repo self-vendor sibling. Candidate: _self_vendor_rootfiles helper wired into the same 'would sync' pre-push gate regex."
+  captured: 2026-07-29T11:34:09Z
+  context_task: T-2674
+  tags: []
+  status: pending
+  promoted_to: null

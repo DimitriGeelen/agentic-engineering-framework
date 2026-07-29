@@ -243,7 +243,7 @@
             <span id="status-result" class="detail-inline-result"></span>
         </td></tr>
         <tr><th>Owner</th><td>
-            {{ inline_select(task_id, 'owner', ['human','claude-code'], task.owner, hx_target='#owner-result', form_class='inline-flex-center gap-md') }}
+            {{ inline_select(task_id, 'owner', enum_owners, task.owner, hx_target='#owner-result', form_class='inline-flex-center gap-md') }}
             <span id="owner-result" class="detail-inline-result"></span>
         </td></tr>
         <tr><th>Horizon</th><td>

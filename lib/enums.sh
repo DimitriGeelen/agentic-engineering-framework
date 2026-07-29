@@ -38,7 +38,7 @@ try:
     print('ALL_STATUSES=\"%s\"' % ' '.join(active + legacy))
     print('VALID_TYPES=\"%s\"' % ' '.join(types))
     print('VALID_HORIZONS=\"%s\"' % ' '.join(horizons))
-    owners = d.get('owners', ['human', 'claude-code'])
+    owners = d.get('owners', ['human', 'claude-code', 'agent'])
     print('VALID_OWNERS=\"%s\"' % ' '.join(owners))
 
     # Build transition pairs for array
@@ -64,7 +64,7 @@ if ! _enums_load_yaml "$_ENUMS_YAML" 2>/dev/null; then
     ALL_STATUSES="$VALID_STATUSES $LEGACY_STATUSES"
     VALID_TYPES="specification design build test refactor decommission inception"
     VALID_HORIZONS="now next later"
-    VALID_OWNERS="human claude-code"
+    VALID_OWNERS="human claude-code agent"
     VALID_TRANSITIONS=(
         "captured:started-work"
         "started-work:captured"

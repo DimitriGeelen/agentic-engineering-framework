@@ -190,6 +190,14 @@ if ! is_valid_horizon "$HORIZON"; then
     die "Valid horizons: $VALID_HORIZONS"
 fi
 
+# Validate owner (T-2674, closes the residual G-040 creation-side hole: the
+# predicate existed since T-1180 but was never called here — any --owner string
+# was written verbatim while Watchtower's dropdowns whitelist the enum).
+if ! is_valid_owner "$OWNER"; then
+    error "Invalid owner '$OWNER'"
+    die "Valid owners: $VALID_OWNERS (enum source: status-transitions.yaml)"
+fi
+
 # T-100202 AC4 (recursion guard): refuse names carrying the self-feeding
 # audit-emitter signature — a WARN task named after another WARN task, e.g.
 # "Audit WARN — Task T-2488-audit-warn--task-t-2462-…". The emitter itself is

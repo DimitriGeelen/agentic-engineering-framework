@@ -1164,9 +1164,12 @@ concerns:
   trigger: Any addition of a new owner type (e.g., `orchestrator`, `reviewer`) or any refactor that changes the owner whitelist.
   status: resolved
   resolution: 'T-1180 — owners: section added to status-transitions.yaml. Python side reads via _load_enums(), bash side exports VALID_OWNERS + is_valid_owner(). Template dropdowns use Jinja loops. Single
-    canonical source.'
+    canonical source. RESIDUAL HOLE closed by T-2674 (2026-07-29, surfaced via T-2666 task-creation corpus map + 832 rail-316 verdict): T-1180 shipped the predicate but create-task.sh never CALLED it —
+    any --owner string was still written verbatim at creation. T-2674 wires is_valid_owner into create-task.sh (die with valid list), reconciles the enum with live reality (agent added — fw work-on default,
+    500+ live tasks), fixes the last hard-coded dropdown (task_detail.html:246), and adds status-transitions.yaml to do_vendor includes (vendored consumers read the vendored copy via enums.sh; it was frozen
+    at seed time — T-2656 enumeration-divergence class). Pinned by tests/unit/create_task_owner_gate.bats.'
   created: 2026-04-11
-  last_reviewed: 2026-04-12
+  last_reviewed: 2026-07-29
   related_task: T-1180
 - id: G-041
   type: gap

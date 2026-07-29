@@ -172,7 +172,7 @@ def _load_enums():
         _ENUM_CACHE["workflow_types"] = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
         _ENUM_CACHE["horizons"] = ["now", "next", "later"]
         _ENUM_CACHE["statuses"] = ["captured", "started-work", "issues", "work-completed"]
-        _ENUM_CACHE["owners"] = ["human", "claude-code"]
+        _ENUM_CACHE["owners"] = ["human", "claude-code", "agent"]
     return _ENUM_CACHE
 
 
@@ -846,6 +846,7 @@ def task_detail(task_id):
         episodic=episodic,
         task_id=task_id,
         status_options=status_options,
+        enum_owners=_load_enums()["owners"],
         ac_items=ac_items,
         artifacts=artifacts,
         can_complete=can_complete,

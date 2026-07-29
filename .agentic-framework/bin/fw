@@ -346,6 +346,13 @@ do_vendor() {
         # one layer below the T-2647 missing-scanner class).
         .secret-scan-patterns
         .secret-scan-allowlist
+        # T-2674: enum single-source-of-truth. Consumers' FRAMEWORK_ROOT is
+        # .agentic-framework/, so lib/enums.sh reads THIS vendored copy —
+        # omitting it froze consumer enums at vendor-seed time (same
+        # enumeration-divergence class as T-2656). Surfaced when adding
+        # `agent` to owners: a stale vendored copy would make the new
+        # creation-side owner gate reject fw work-on's default owner.
+        status-transitions.yaml
     )
 
     # What to exclude within copied dirs

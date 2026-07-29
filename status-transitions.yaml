@@ -31,6 +31,7 @@ horizons:
 owners:
   - human
   - claude-code
+  - agent
 
 transitions:
   # from → to (each entry is an allowed state transition)
