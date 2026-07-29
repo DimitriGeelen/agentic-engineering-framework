@@ -23938,3 +23938,47 @@ scan_id: R-67ab0cb9
 task_id: T-2686
 payload:
   task_file: .tasks/active/T-2686-reorder-laneset-on-two-wholesale-inverte.md
+---
+kind: scan_emitted
+timestamp: '2026-07-29T22:24:32Z'
+scan_id: R-fed61ef3
+task_id: T-2687
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T22:24:32Z'
+scan_id: R-fed61ef3
+task_id: T-2687
+payload:
+  task_file: .tasks/active/T-2687-promote-origin-free-band-feasibility-to-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-29T22:24:32Z'
+scan_id: RC-b66ae6d2
+task_id: T-2687
+payload:
+  overall: CONFIRMED
+  claim_count: 3
+---
+kind: scan_emitted
+timestamp: '2026-07-29T22:39:15Z'
+scan_id: R-63c199d5
+task_id: T-2688
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-29T22:39:15Z'
+scan_id: R-63c199d5
+task_id: T-2688
+payload:
+  task_file: .tasks/active/T-2688-lane-overflow-lint-rule--declared-height.md

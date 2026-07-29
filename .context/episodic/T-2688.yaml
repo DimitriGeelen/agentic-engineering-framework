@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2688: lane-overflow lint rule — declared height cannot contain lane members
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T22:39:24Z
+# ============================================================================
+
+task_id: T-2688
+task_name: "lane-overflow lint rule — declared height cannot contain lane members"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T22:29:42Z
+completed: 2026-07-29T22:39:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-30T00:35:47+02:00
+last_commit: 2026-07-30T00:39:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lane-overflow lint rule — a lane whose declared height cannot contain its own members. repair task file — my own splice cut on a substring that appears in prose
+
+# Key outcomes
+outcomes:
+  - '`lane-overflow` rule in `tools/corpus_lint.py` fires when a lane''s member y-span is'
+  - 'Threshold correctness pinned both ways: `span == height` fires (half-open boundary is'
+  - 'Finding names the lane, the span, the declared height, the shortfall in pixels, and'
+  - 'Message names **both** fix options (raise the declared height / compress node'
+  - 'Skips per-lane (not per-map) when that lane is unpopulated or has an unpositioned'
+  - 'Fires on `draft-knowledge-leveling` naming its agent lane and the 253px shortfall;'
+  - 'Live default-scan baseline unchanged at exactly 3 findings (drafts are skipped by the'
+  - 'Rule documented in the module docstring rule catalogue with its T-2687 origin, and the'
+  - '5/5 conformance rails still PASS and the corpus suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-test_corpus_lint_lane_overflow.yaml'
+  - '.tasks/active/T-2688-lane-overflow-lint-rule--declared-height.md'
+  - 'tests/unit/test_corpus_lint_lane_overflow.py'
+  - 'tools/corpus_lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-30T00:35:47"
+    action: "T-2688: lane-overflow lint rule — a lane whose declared height cannot contain its own members"
+  - time: "2026-07-30T00:39:05"
+    action: "T-2688: repair task file — my own splice cut on a substring that appears in prose"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 4
+  lines_added: 548
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2688-lane-overflow-lint-rule--declared-height.md
+generated_by: context-agent-hybrid
