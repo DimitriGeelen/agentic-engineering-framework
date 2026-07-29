@@ -130,6 +130,40 @@ target class.
 - [ ] Conformance-rail entry added to `tools/conformance-registry.yaml`; result
       recorded honestly (green, or red with divergent pin test per T-2659 precedent).
 
+## Pair-Round State
+
+- **2026-07-29** — v2 seeded (13 nodes / 17 flows / 2 lanes: Agent·Initiative +
+  Framework·Authority; deliberately NO human lane — max-3-hypotheses escalation is
+  prose, not machine). Rail dry-run PASS pre-seed: 6 tokens {code, dependency,
+  design, environment, external, unknown}. Lint baseline untouched (2). Live-verified
+  served v2. Round opened with 832 at rail offset 305 with three honesty calls posed:
+  advisory-vs-enforced node typing, no-human-lane, immediate 6-branch convergence.
+  Awaiting: 832 validator pass + possible pairing article; operator UI iteration.
+
+## AC-4 Prep (ready to paste at promotion)
+
+Registry entry for `tools/conformance-registry.yaml` (dry-run verified PASS against
+draft v2 on 2026-07-29):
+
+```yaml
+# Failure-type gateway branches (5 CLASSIFY_ORDER types + unknown fallback) vs
+# the enforced classification enum in the healing diagnose agent. The regex
+# captures BOTH the FAILURE_KEYWORDS_<type> declarations AND best_type="unknown"
+# — the fallback is a real machine outcome, encoded as a labeled branch rather
+# than hidden. Added at promotion of draft-exception-handling (T-2665).
+aef-exception-handling:
+  primitive: vocabulary-set
+  source: agents/healing/lib/diagnose.sh
+  gateway: "failure type?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    regex: '(?:FAILURE_KEYWORDS_|best_type=")([a-z]+)'
+```
+
+Pin test for `tests/unit/test_corpus_conformance_registry.py`: rc==0 and all of
+{dependency, external, environment, design, code, unknown} in stdout.
+
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
