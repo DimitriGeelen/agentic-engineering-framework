@@ -157,9 +157,100 @@ dogfood outcome; (2) `workflow_type` — 3-site enumeration incl. Watchtower for
   (c) owner/status creation-hole: wire predicates (Level C fix task) or pin the
   hole in the map note?
 
+- **2026-07-29 (round #3 verdict, rail 316)** — 832: draft-task-creation v2 VALID,
+  ZERO findings at seed (independent structure recount matched our manifest
+  exactly: 14 nodes / 20 flows / 2 starts / 1 end / fw_gw_type 7-way). Taste
+  answers, all evidence-cited: **Q1 dual-start** — YES, canonical (mapping-v1 has
+  no start-cardinality rule; validator unions reachability from all startEvents;
+  2 of their 24 shipped maps are already dual-start). **Q2 activation** — FORK
+  THE GATEWAY, not an aef:meta note: a bare `fw task create` (no --start) is a
+  real divergent code path, not annotation. Bonus: their task-lifecycle article's
+  startEvent ("Task captured (filed)") is literally this map's missing second
+  end — cross-article handoff (F5 class). Cost estimate: +1 gw +1 end +2 flows.
+  **Q3 conformance hole** — BOTH, in sequence: pin the hole in the article (done
+  in v2) AND wire the predicates as their OWN Level-C bug-class task(s) — owner-
+  validation and status-predicate called out explicitly as TWO independent holes
+  with separate root causes (one bug = one task). G-019 applies: concerns:1151
+  stays open until the predicate is CALLED, not just registered. Pairing: their
+  catalog has no task-creation article — this draft fills a genuine upstream hole;
+  two seam notes recorded (both ends feed their task-lifecycle start; this map's
+  G-020 node overlaps their task-gate article — cross-reference, don't merge).
+
+- **2026-07-29 (v3, this session)** — Applied Q2 exactly as specced: forked
+  `fw_gw_activation` ("activation?") after `fw_4_write`; the work-on/--start
+  branch continues unchanged into `fw_5_focus`; the bare-create branch now ends
+  at a new `fw_end_captured` event carrying the cross-article-handoff note
+  verbatim. Landed at EXACTLY 832's cost estimate: 16 nodes / 22 flows (+2/+2).
+  Q1: no change (already correct). Q3: hole stays pinned in the v3 header
+  comment (unchanged content, reworded to cite the round-#3 verdict); predicates
+  filed as two separate Level-C tasks per the one-bug-one-task instruction —
+  **T-2674** (owner — live-reachable via `--owner`, concerns:1151) and **T-2675**
+  (status — structural-only today, no `--status` CLI flag exists yet so not
+  currently exploitable, but the missing guard is the same class). Re-verified
+  this session: `python3 tools/corpus_lint.py .../v3.bpmn` CLEAN; whole-store
+  `fw corpus lint` unchanged at 2 pre-existing findings (draft excluded, T-2600
+  convention); AC-4 registry entry dry-run PASS via temp registry probe against
+  v3 (reverted, not committed — same pattern as T-2665); served live at
+  `192.168.10.107:3001/api/version?id=draft-task-creation`, `fw_gw_activation`/
+  `fw_end_captured` confirmed present in the response body. Reported to 832 at
+  DM offset 318 (`dm:0e7ee6cad65137fc:6a646ce8b1bc6560`), closing our side of
+  round #3 — nothing left for another 832 round to find. **Remaining: operator
+  taste/iteration in the editor + promotion GO** (arc-014 ritual: canonical
+  namespace untouched until approval) — same gate T-2665 is waiting on.
+
+## Recommendation
+
+**Recommendation:** GO — promote `draft-task-creation` v3 to `aef-task-creation`,
+following the T-2664/T-2665 promotion pattern.
+
+**Rationale:** This draft went through exactly one pair-draft round and came back
+clean — 832's independent validator found ZERO findings against the v2 seed (the
+first of the four package maps to do so), meaning the only round-#3 work was
+taste (Q1/Q2/Q3), not defect-fixing. All three taste calls are now resolved and
+implemented: Q1 required no change, Q2's gateway fork is live in v3 (structure
+matches 832's cost estimate exactly — 16 nodes/22 flows), and Q3's "pin AND wire
+separately" instruction is satisfied both ways (hole stays honestly pinned in the
+article; T-2674/T-2675 file the predicate fixes as independent Level-C tasks so
+promotion isn't blocked on unrelated bugfix work). There is nothing left for
+another 832 round to find; the only remaining step is the human confirmation the
+ritual requires before touching the canonical namespace.
+
+**Evidence:**
+- 832 round-#3 verdict (DM offset 316): "draft-task-creation v2 VALID, ZERO
+  findings at seed" — independent structural recount matched our manifest exactly.
+- v3 structure: 16 nodes / 22 flows, landing exactly at 832's stated cost
+  (+1 gw/+1 end/+2 flows over v2's 14/20).
+- `python3 tools/corpus_lint.py .context/designer/projects/draft-task-creation/v3.bpmn`
+  → CLEAN. Whole-store `fw corpus lint` → 2 findings, unchanged, unrelated to
+  this draft (`t2584-scratch`, `aef-dispatch-loop`).
+- AC-4 registry entry re-verified PASS against v3 via a temporary registry probe
+  (added, run, reverted — no diff left in `tools/conformance-registry.yaml`):
+  `conformance: PASS — draft-task-creation gateway 'workflow type?' covers
+  exactly the enforced vocabulary {build, decommission, design, inception,
+  refactor, specification, test}`.
+- Served live: `curl http://192.168.10.107:3001/api/version?id=draft-task-creation`
+  contains both new node ids (`fw_gw_activation`, `fw_end_captured`).
+- Follow-up tasks filed and linked: T-2674 (owner-validation predicate),
+  T-2675 (status-value predicate) — both `related: [T-2666, ...]`, `horizon: later`.
+
+**What GO triggers (agent-executable, mirrors T-2664/T-2665):**
+1. `git mv` the draft dir to `.context/designer/projects/aef-task-creation`,
+   rewrite `v3.bpmn` → `v1.bpmn`, collapse `meta.json` to a single-version record
+   (uuid preserved, note = "T-2666 promotion proof").
+2. `fw corpus prove aef-task-creation` — confirm canonical-identical, uuid-preserved.
+3. Paste the AC-4 registry entry (below) into `tools/conformance-registry.yaml` +
+   the pin test into `tests/unit/test_corpus_conformance_registry.py`.
+4. Tick AC-2/3/4, run `## Verification`, close the task.
+
+**If NO-GO/DEFER:** name what in v3 still needs another 832 round or a different
+gateway shape — nothing in this session's evidence points at one.
+
 ## AC-4 Prep (ready to paste at promotion)
 
-Registry entry (dry-run verified PASS against draft v2 on 2026-07-29):
+Registry entry (dry-run verified PASS against draft v2 on 2026-07-29; re-verified
+PASS against draft v3 same day via temp registry probe, reverted — gateway shape
+unchanged by the Q2 activation-fork fix, which touched `fw_4_write`/`fw_5_focus`
+downstream of `fw_gw_type`, not the gateway itself):
 
 ```yaml
 # Workflow-type gateway branches (7-way fan; inception forks through the

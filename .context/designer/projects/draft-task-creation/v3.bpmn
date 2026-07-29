@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-task-creation"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- DRAFT (pair-draft session, T-2666, arc-014): task-creation ceremony as
+       actually operated — fourth of the package's four worst-regression
+       processes (T-2662 gap 6); highest churn of them all (~206 commits / ~40%
+       pure-fix ratio across create-task.sh, check-active-task.sh,
+       update-task.sh, templates). Sources of truth: agents/task-create/
+       create-task.sh (template instantiation, T-555 name validation, keylock ID
+       allocation), lib/enums.sh reading status-transitions.yaml (the canonical
+       vocabulary this map's "workflow type?" gateway rails against),
+       T-2204/T-2207 inception recommendation-completeness gate, lib/bvp.sh
+       estimator worker, agents/context/check-active-task.sh (task gate + G-020
+       build-readiness). HONESTY NOTES: (1) TWO entry surfaces — agent CLI
+       (fw work-on) and operator Watchtower form; the form carries a THIRD
+       parallel workflow_type enumeration (concerns:1094) the rail cannot see;
+       832 round-#3 verdict (rail 316) confirms dual-start is canonical under
+       mapping-v1 (no start-cardinality rule, validator unions reachability
+       from all startEvents) and that the Watchtower-form start earns the
+       Sovereignty lane via the filing ACTION; (2) owner and status are
+       accepted UNVALIDATED at creation — is_valid_owner exists
+       (lib/enums.sh:103) but is never called (concerns:1151). 832 round-#3
+       verdict: pin the hole in the article (done, this note) AND wire the
+       predicates as their OWN Level-C bug-class task(s) — owner-validation and
+       status-predicate are two independent holes with separate root causes,
+       so file separately (one bug = one task); (3) v3 forks the
+       "activation?" gateway per 832 round-#3 Q2 — a bare `fw task create`
+       (no work-on/start flag) is a real divergent code path, not mere
+       annotation, so it now earns its own endEvent (`fw_end_captured`) rather than an aef:meta
+       footnote. This is also the seam 832 flagged: their task-lifecycle
+       article's startEvent ("Task captured (filed)") is this map's missing
+       second end — cross-article handoff, F5 class (no-callActivity gap both
+       catalogs track). Regression baseline in T-2666 body. -->
+
+  <bpmn:collaboration id="Collaboration_draft-task-creation">
+    <bpmn:participant id="Pool_draft_task_creation" name="draft-task-creation (DRAFT)" processRef="Process_draft-task-creation"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-task-creation" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-task-creation" version="3" schemaVersion="2" title="AEF task creation (intent &#8594; template &#8594; ID &#8594; type gates &#8594; write &#8594; activation? &#8594; focus &#8594; estimator &#8594; G-020) — DRAFT" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_tc">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_intent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_workon</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_acs</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fw" authority="authority" height="320"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fw_gw_exists</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_1_create</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_id</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_type</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_recgate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_activation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_focus</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_6_estimator</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_7_g020</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_captured</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="140"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_0_form</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_0_intent" name="work intent — nothing gets done without a task">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_intent"/>
+        <aef:position x="120.0" y="320.0"/>
+        <aef:meta note="the Core Principle as entry condition: the task gate (check-active-task.sh) blocks Write/Edit without an active task, so intent MUST pass through this ceremony"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>tc_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_1_workon" name="fw work-on &lt;name|T-XXX&gt;">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_workon"/>
+        <aef:position x="280.0" y="320.0"/>
+        <aef:meta note="the one-step gate: create + focus + started-work in a single verb. T-297 regression: --start once didn't set focus — the seam between create and activate is where it broke"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f1</bpmn:incoming>
+      <bpmn:outgoing>tc_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:startEvent id="hum_0_form" name="operator files task via Watchtower form">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_form"/>
+        <aef:position x="280.0" y="640.0"/>
+        <aef:meta note="the human ACTION that earns this lane (832 lane rule). CAVEAT: the form carries a THIRD parallel workflow_type enumeration (concerns:1094) — a new type silently breaks the web form; the rail below cannot see this surface"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>tc_f5</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:exclusiveGateway id="fw_gw_exists" name="existing task?">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_gw_exists"/>
+        <aef:position x="440.0" y="140.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f2</bpmn:incoming>
+      <bpmn:outgoing>tc_f3</bpmn:outgoing>
+      <bpmn:outgoing>tc_f4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="fw_1_create" name="instantiate template + validate name">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_create"/>
+        <aef:position x="600.0" y="140.0"/>
+        <aef:meta note="zzz-default.md template; T-555 placeholder-name reject (create-task.sh:138-144); T-143/T-165 unquoted-name YAML break (2 regressions, same bug). Template ships placeholder AC block — OBS-041 class: agents insert a NEW ### Human heading above it instead of editing in place"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f4</bpmn:incoming>
+      <bpmn:incoming>tc_f5</bpmn:incoming>
+      <bpmn:outgoing>tc_f6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_2_id" name="allocate task ID — keylock + union scan">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_id"/>
+        <aef:position x="760.0" y="140.0"/>
+        <aef:meta note="THE hottest step in the baseline — 3 independent regressions: T-1279 TOCTOU (4 parallel work-on all minted T-1278), T-1345 (one pickup run minted SEVEN T-1345s — flock protected across invocations, not within), T-100202 (stale worktree re-opened the hole). Current: keylock + union scan over active/+completed/ anchored at the main checkout"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f6</bpmn:incoming>
+      <bpmn:outgoing>tc_f7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_gw_type" name="workflow type?">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_gw_type"/>
+        <aef:position x="920.0" y="140.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f7</bpmn:incoming>
+      <bpmn:outgoing>tc_f8</bpmn:outgoing>
+      <bpmn:outgoing>tc_f9</bpmn:outgoing>
+      <bpmn:outgoing>tc_f10</bpmn:outgoing>
+      <bpmn:outgoing>tc_f11</bpmn:outgoing>
+      <bpmn:outgoing>tc_f12</bpmn:outgoing>
+      <bpmn:outgoing>tc_f13</bpmn:outgoing>
+      <bpmn:outgoing>tc_f14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="fw_3_recgate" name="inception recommendation-completeness gate">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_recgate"/>
+        <aef:position x="1080.0" y="240.0"/>
+        <aef:meta note="T-2204 4-producer-leg gate: under $CLAUDECODE=1 the filing refuses without --recommendation GO|NO-GO|DEFER + --rationale. Bypass FW_ALLOW_EMPTY_RECOMMENDATION=1 (logged Tier-2); trusted-caller FW_INCEPTION_PRE_GATED=1 routes work-on&#8594;create without double-firing; hourly cron backstop injects DEFER stubs into anything that slips past"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f14</bpmn:incoming>
+      <bpmn:outgoing>tc_f15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_4_write" name="write task file — frontmatter status:captured, horizon, owner">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_write"/>
+        <aef:position x="1240.0" y="140.0"/>
+        <aef:meta note="LIVE CONFORMANCE HOLE: owner is accepted unvalidated — is_valid_owner exists (lib/enums.sh:103) but create-task.sh never calls it; Watchtower whitelists {human, claude-code} so a free-form owner renders broken (concerns:1151). status has no creation-side predicate either (implicit captured). workflow_type IS validated (is_valid_type, create-task.sh:176). This round should decide: wire the predicates, or pin the hole"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f8</bpmn:incoming>
+      <bpmn:incoming>tc_f9</bpmn:incoming>
+      <bpmn:incoming>tc_f10</bpmn:incoming>
+      <bpmn:incoming>tc_f11</bpmn:incoming>
+      <bpmn:incoming>tc_f12</bpmn:incoming>
+      <bpmn:incoming>tc_f13</bpmn:incoming>
+      <bpmn:incoming>tc_f15</bpmn:incoming>
+      <bpmn:outgoing>tc_f16</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_5_focus" name="set focus + status started-work">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_focus"/>
+        <aef:position x="1400.0" y="140.0"/>
+        <aef:meta note="work-on path: focus.yaml written, captured&#8594;started-work (T-1068 auto-sets horizon:now — the transition aef-task-lifecycle rails)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f3</bpmn:incoming>
+      <bpmn:incoming>tc_f21</bpmn:incoming>
+      <bpmn:outgoing>tc_f17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_gw_activation" name="activation?">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_gw_activation"/>
+        <aef:position x="1320.0" y="140.0"/>
+        <aef:meta note="forked per 832 round-#3 verdict (Q2, rail 316): a bare `fw task create` (no --start) is a real divergent code path, not annotation — it earns its own edges rather than an aef:meta footnote"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f16</bpmn:incoming>
+      <bpmn:outgoing>tc_f21</bpmn:outgoing>
+      <bpmn:outgoing>tc_f22</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="fw_6_estimator" name="BVP estimator worker proposes scores (async)">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_estimator"/>
+        <aef:position x="1560.0" y="140.0"/>
+        <aef:meta note="T-1922 heuristic estimator writes bvp_scores_proposed/cost_estimate_proposed into frontmatter MINUTES after creation — the re-add-before-commit gotcha; proposals persist on &#8805;2 delta (M3); confirmed scores are a sovereignty boundary (fw bvp confirm only)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f17</bpmn:incoming>
+      <bpmn:outgoing>tc_f18</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_7_g020" name="G-020 build-readiness gate armed">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_g020"/>
+        <aef:position x="1720.0" y="140.0"/>
+        <aef:meta note="check-active-task.sh:557-588 — build/refactor/test/decommission tasks with [First criterion] placeholders (or zero checkboxes) block Bash/Write/Edit until real ACs land. Origin T-471 (agent built pages on placeholder ACs, 3 human interventions). Fires conservatively — even read-only Bash"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f18</bpmn:incoming>
+      <bpmn:outgoing>tc_f19</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_2_acs" name="author real ACs — replace template placeholders">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_acs"/>
+        <aef:position x="1720.0" y="320.0"/>
+        <aef:meta note="progressive AC discipline (T-1831): tick as work lands, not at gate-fire. Edit the placeholder block IN PLACE — inserting a fresh ### Human heading above it is the OBS-041 duplicate-heading class (recurred across 5 tasks)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f19</bpmn:incoming>
+      <bpmn:outgoing>tc_f20</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="fw_end_ready" name="task active — work may begin">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_done_ready"/>
+        <aef:position x="1880.0" y="140.0"/>
+        <aef:meta terminalKind="success" state="started-work"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f20</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="fw_end_captured" name="task captured — no focus (bare fw task create)">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_done_captured"/>
+        <aef:position x="1320.0" y="40.0"/>
+        <aef:meta terminalKind="partial" state="captured" note="the cross-article handoff 832 flagged (rail 316): their task-lifecycle article's startEvent (&#34;Task captured (filed)&#34;) is this map's missing second end. No callActivity link yet — F5 class gap both catalogs track"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>tc_f22</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="tc_f1" sourceRef="agt_0_intent" targetRef="agt_1_workon">
+      <bpmn:extensionElements><aef:uid value="tc_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f2" sourceRef="agt_1_workon" targetRef="fw_gw_exists">
+      <bpmn:extensionElements><aef:uid value="tc_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f3" name="resume — T-XXX" sourceRef="fw_gw_exists" targetRef="fw_5_focus">
+      <bpmn:extensionElements><aef:uid value="tc_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f4" name="new" sourceRef="fw_gw_exists" targetRef="fw_1_create">
+      <bpmn:extensionElements><aef:uid value="tc_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f5" sourceRef="hum_0_form" targetRef="fw_1_create">
+      <bpmn:extensionElements><aef:uid value="tc_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f6" sourceRef="fw_1_create" targetRef="fw_2_id">
+      <bpmn:extensionElements><aef:uid value="tc_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f7" sourceRef="fw_2_id" targetRef="fw_gw_type">
+      <bpmn:extensionElements><aef:uid value="tc_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f8" name="specification" sourceRef="fw_gw_type" targetRef="fw_4_write">
+      <bpmn:extensionElements><aef:uid value="tc_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f9" name="design" sourceRef="fw_gw_type" targetRef="fw_4_write">
+      <bpmn:extensionElements><aef:uid value="tc_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f10" name="build" sourceRef="fw_gw_type" targetRef="fw_4_write">
+      <bpmn:extensionElements><aef:uid value="tc_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f11" name="test" sourceRef="fw_gw_type" targetRef="fw_4_write">
+      <bpmn:extensionElements><aef:uid value="tc_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f12" name="refactor" sourceRef="fw_gw_type" targetRef="fw_4_write">
+      <bpmn:extensionElements><aef:uid value="tc_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f13" name="decommission" sourceRef="fw_gw_type" targetRef="fw_4_write">
+      <bpmn:extensionElements><aef:uid value="tc_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f14" name="inception" sourceRef="fw_gw_type" targetRef="fw_3_recgate">
+      <bpmn:extensionElements><aef:uid value="tc_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f15" sourceRef="fw_3_recgate" targetRef="fw_4_write">
+      <bpmn:extensionElements><aef:uid value="tc_e15"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f16" sourceRef="fw_4_write" targetRef="fw_gw_activation">
+      <bpmn:extensionElements><aef:uid value="tc_e16"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f21" name="work-on / --start" sourceRef="fw_gw_activation" targetRef="fw_5_focus">
+      <bpmn:extensionElements><aef:uid value="tc_e21"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f22" name="bare create (no --start)" sourceRef="fw_gw_activation" targetRef="fw_end_captured">
+      <bpmn:extensionElements><aef:uid value="tc_e22"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f17" sourceRef="fw_5_focus" targetRef="fw_6_estimator">
+      <bpmn:extensionElements><aef:uid value="tc_e17"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f18" sourceRef="fw_6_estimator" targetRef="fw_7_g020">
+      <bpmn:extensionElements><aef:uid value="tc_e18"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f19" sourceRef="fw_7_g020" targetRef="agt_2_acs">
+      <bpmn:extensionElements><aef:uid value="tc_e19"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="tc_f20" sourceRef="agt_2_acs" targetRef="fw_end_ready">
+      <bpmn:extensionElements><aef:uid value="tc_e20"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>
