@@ -404,3 +404,14 @@ caution.
   log, `.gate-bypass-log.yaml`, or the latest handover. Deferring the promotion
   to an explicit human GO rather than treating an unblocking recommendation as
   self-authorizing.
+
+### 2026-07-29T20:38:31Z — dispatch-recheck [worker]
+- **Action:** Re-verified draft state again this dispatch; no operator GO
+  recorded since the prior recheck.
+- **Output:** `corpus_lint.py` unchanged (2 pre-existing findings, unrelated to
+  this draft); `draft-exception-handling` meta.json still `v3`, uuid unchanged
+  (`001362d7-966d-4d14-9dfd-84d938e3791a`); no new entries for T-2665 in
+  `.gate-bypass-log.yaml` or `.context/handovers/LATEST.md` beyond the routine
+  status line. No promotion executed. Also fixed a stale `focus.yaml` pointing
+  at T-2683 (a different task) that was blocking read-only Bash via G-020 —
+  re-focused to T-2665 via `fw context focus` before re-running verification.
