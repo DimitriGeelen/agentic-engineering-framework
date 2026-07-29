@@ -433,3 +433,21 @@ caution.
   recheck changes the standing Recommendation (GO, blocked on human review per
   the arc-014 ritual); not self-authorizing on a broad/absent directive per
   CLAUDE.md §Autonomous Mode Boundaries.
+
+### 2026-07-30T04:00:00Z — dispatch-recheck [worker]
+- **Action:** Fourth consecutive dispatch of this task, fourth identical finding:
+  no operator GO recorded anywhere (git log, `.gate-bypass-log.yaml`,
+  `.context/handovers/LATEST.md`); `draft-exception-handling` meta.json still
+  `v3`, uuid unchanged; task file itself has no pending diff. Skipped re-running
+  the full lint/dry-run cycle since the prior three rechecks already confirmed
+  it stable and nothing in the repo suggests it changed.
+- **Flag (new this dispatch):** this is the 4th resolver dispatch in a row that
+  produces zero new evidence — the task is fully blocked on a human GO
+  (§Autonomous Mode Boundaries forbids self-authorizing it) and has nothing
+  further an agent can verify or advance. Recommend the resolver/cron stop
+  re-dispatching T-2665 until either (a) the operator records a GO/NO-GO via
+  `fw task review T-2665`, or (b) the task is set to a horizon/status that
+  excludes it from the dispatch pool. Continuing to redispatch an
+  already-fully-verified, human-blocked task burns dispatch cycles for no
+  gain — this is a candidate for a `concerns.yaml` entry if the pattern
+  repeats on other pair-draft tasks awaiting promotion GO.
