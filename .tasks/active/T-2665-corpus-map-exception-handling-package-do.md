@@ -415,3 +415,21 @@ caution.
   status line. No promotion executed. Also fixed a stale `focus.yaml` pointing
   at T-2683 (a different task) that was blocking read-only Bash via G-020 —
   re-focused to T-2665 via `fw context focus` before re-running verification.
+
+### 2026-07-30T00:00:00Z — dispatch-recheck [worker]
+- **Action:** Third recheck of draft state; still no operator GO recorded for
+  T-2665 anywhere (git log, `.gate-bypass-log.yaml`, `.context/handovers/LATEST.md`
+  UNREAD-INBOUND section — which instead names T-2686/T-2687/T-2688 as the
+  active operator queue, not T-2665).
+- **Output:** whole-store `corpus_lint.py` now reports 3 findings (was 2) —
+  the new one is `[lane-geometry] aef-session-lifecycle` from the concurrent
+  T-2684/832-T-310 lane-authority work; unrelated to this draft, which is still
+  excluded from lint scan (draft-prefixed, T-2600 convention). Re-ran the
+  temp-registry dry-run against the paste-ready AC-4 entry (registry restored
+  after, `git diff` clean): `conformance: PASS — draft-exception-handling
+  gateway 'failure type?' covers exactly the enforced vocabulary {code,
+  dependency, design, environment, external, unknown}`. `draft-exception-handling`
+  meta.json still `v3`, uuid unchanged. No promotion executed — nothing in this
+  recheck changes the standing Recommendation (GO, blocked on human review per
+  the arc-014 ritual); not self-authorizing on a broad/absent directive per
+  CLAUDE.md §Autonomous Mode Boundaries.
