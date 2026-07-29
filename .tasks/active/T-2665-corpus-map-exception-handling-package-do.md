@@ -27,7 +27,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:19:32Z
-last_update: 2026-07-29T06:40:25Z
+last_update: 2026-07-29T06:44:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -138,7 +138,26 @@ target class.
   design, environment, external, unknown}. Lint baseline untouched (2). Live-verified
   served v2. Round opened with 832 at rail offset 305 with three honesty calls posed:
   advisory-vs-enforced node typing, no-human-lane, immediate 6-branch convergence.
-  Awaiting: 832 validator pass + possible pairing article; operator UI iteration.
+- **2026-07-29 (validator round, rails 306/309/310/311)** — 832 validator on v2:
+  1 error (E1 XOR-merge gateway — no exclusive-merge vocabulary in mapping-v1;
+  fix = multi-incoming implicit merge) + 4 warns (userTask in initiative lane —
+  O-1 lane-wins, type is presentational). v3 shipped both fixes (12 nodes /
+  16 flows); **832 verdict: v3 VALIDATOR CLEAN, zero findings** (rail 311, sha
+  7d54fcba95ee41b7…). Their honesty-call answers recorded: (1) advisory-ness in
+  aef:meta notes, not task typing; (2) human lane earns its place only when a
+  human ACTION exists in-process (their healing-loop article HAS one — rung
+  choice; our agent-side slice doesn't — both honest, seam documented);
+  (3) labeled fan incl. fallback-as-branch endorsed.
+- **Cross-validation yield (both directions again):** their code-truth trace of
+  OUR machine ✓ everywhere; they found 2 honesty bugs in THEIR OWN article
+  (classify wrongly tagged stochastic — it's pure keyword-regex, deterministic;
+  apply→resolve drawn unconditional — reality leaks, now marked
+  x-advisory-reachability citing our G-016 72%) → their healing-loop v2. Side
+  yield: their T-295 field report → our T-2672 resolve.sh fix (both paths,
+  4 bats, vendored sync). Healing-loop pairing leg CLOSED both sides (their
+  T-297); error-escalation-ladder leg queued their T-298.
+- **Remaining:** operator taste/iteration in the editor + promotion GO. On GO:
+  promote to `aef-exception-handling`, paste AC-4 registry entry, prove, pin test.
 - **2026-07-29 (later)** — v3 folds 832's validator round (rail 306): E1 XOR-merge
   gateway dropped (6 branch edges run directly into lookup — multi-incoming reads as
   an implicit XOR merge under mapping-v1, no separate merge node needed); W1-4
