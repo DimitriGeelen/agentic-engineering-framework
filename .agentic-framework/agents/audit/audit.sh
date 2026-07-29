@@ -2717,7 +2717,12 @@ echo "=== GRADUATION PIPELINE CHECKS ==="
 
 LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
 if [ -f "$LEARNINGS_FILE" ]; then
-    learning_count=$(grep -c '^  - id: L-' "$LEARNINGS_FILE" 2>/dev/null) || learning_count=0
+    # T-2677: shape-agnostic count. The old '^  - id: L-' (2-space only) grep
+    # returned 0 against the real file (column-0 list items dominant), so the
+    # >=20 branch — the ONLY programmatic caller of `fw promote suggest` —
+    # never fired in the counter's entire life. Same file-shape-blindness
+    # family as T-2676 (harvest) and T-2672 (resolve.sh).
+    learning_count=$(grep -cE '^[[:space:]]*(- )?id: P?L-' "$LEARNINGS_FILE" 2>/dev/null) || learning_count=0
 
     if [ "$learning_count" -ge 20 ]; then
         # Check for promotion candidates using fw promote
