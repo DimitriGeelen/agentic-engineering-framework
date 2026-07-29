@@ -2,12 +2,20 @@
 id: T-2675
 name: "wire status-value predicate at task creation"
 description: >
-  create-task.sh has no creation-side predicate call for status at all (is_recognized_status exists, lib/enums.sh, never invoked in create-task.sh). Currently not live-reachable (status is only ever internally set to captured/started-work -- no --status CLI flag exists), but the missing guard is structural: any future path that derives TC_STATUS from less-trusted input (promote/ghost origins, a future --status flag) would write an unvalidated value with no gate to catch it, same class as the owner hole. Surfaced via T-2666's task-creation corpus map + 832's round-#3 pair-draft verdict (rail 316): 'owner-validation and status-predicate are two independent holes with separate root causes -- file separately'. Companion to T-2674 (owner leg).
+  create-task.sh has no creation-side predicate call for status at all (is_recognized_status
+  exists, lib/enums.sh, never invoked in create-task.sh). Currently not live-reachable
+  (status is only ever internally set to captured/started-work -- no --status CLI
+  flag exists), but the missing guard is structural: any future path that derives
+  TC_STATUS from less-trusted input (promote/ghost origins, a future --status flag)
+  would write an unvalidated value with no gate to catch it, same class as the owner
+  hole. Surfaced via T-2666's task-creation corpus map + 832's round-#3 pair-draft
+  verdict (rail 316): 'owner-validation and status-predicate are two independent holes
+  with separate root causes -- file separately'. Companion to T-2674 (owner leg).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [process-layer, corpus, healing-class]
 components: []
 related_tasks: [T-2666, T-2674]
@@ -22,8 +30,8 @@ related_tasks: [T-2666, T-2674]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-29T10:14:23Z
-last_update: 2026-07-29T10:14:23Z
-date_finished: null
+last_update: 2026-07-29T11:40:31Z
+date_finished: 2026-07-29T11:40:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +42,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-29T10:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-29T10:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2675: wire status-value predicate at task creation
@@ -45,9 +81,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] create-task.sh asserts `is_valid_status "$STATUS"` immediately after the START_WORK status determination and before any file write — invalid value dies loudly naming the valid list (structural invariant: fires only if a future path derives STATUS from less-trusted input)
+- [x] Both live paths pinned by bats: create without `--start` writes `status: captured`; with `--start` writes `status: started-work`
+- [x] Guard presence + predicate reject pinned: grep for the guard call in create-task.sh; `is_valid_status bogus` returns non-zero under sourced enums
+- [x] Vendored copy `.agentic-framework/agents/task-create/create-task.sh` synced same commit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +149,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+out=$(bats tests/unit/create_task_status_guard.bats 2>&1); echo "$out" | grep -q "^ok 5" && ! echo "$out" | grep -q "^not ok"
+grep -q 'is_valid_status "$STATUS"' agents/task-create/create-task.sh
+diff -q agents/task-create/create-task.sh .agentic-framework/agents/task-create/create-task.sh
 
 ## RCA
 
@@ -180,3 +221,19 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2675-wire-status-value-predicate-at-task-crea.md
 - **Context:** Initial task creation
+
+### 2026-07-29T11:38:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-78170bc0
+- **Timestamp:** 2026-07-29T11:40:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-29T11:40:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

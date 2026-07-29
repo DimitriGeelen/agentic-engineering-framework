@@ -398,6 +398,17 @@ else
     STATUS="captured"
 fi
 
+# Validate status before write (T-2675, companion to T-2674's owner leg —
+# 832 rail-316: "two independent holes with separate root causes"). Today
+# STATUS is only ever the two internal constants above, so this guard is a
+# never-fires invariant; it exists so any FUTURE path that derives STATUS
+# from less-trusted input (promote/ghost origins, a --status flag) dies
+# here instead of writing an unvalidated value.
+if ! is_valid_status "$STATUS"; then
+    error "Invalid initial status '$STATUS'"
+    die "Valid statuses: $VALID_STATUSES (enum source: status-transitions.yaml)"
+fi
+
 # Format tags and related_tasks as YAML arrays
 format_yaml_array() {
     local input="$1"

@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2675: wire status-value predicate at task creation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-29T11:40:43Z
+# ============================================================================
+
+task_id: T-2675
+task_name: "wire status-value predicate at task creation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-29T10:14:23Z
+completed: 2026-07-29T11:40:31Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'create-task.sh asserts `is_valid_status "$STATUS"` immediately after the START_WORK status determination and before any file write — invalid value dies loudly naming the valid list (structural invariant: fires only if a future path derives STATUS from less-trusted input)'
+  - 'Both live paths pinned by bats: create without `--start` writes `status: captured`; with `--start` writes `status: started-work`'
+  - 'Guard presence + predicate reject pinned: grep for the guard call in create-task.sh; `is_valid_status bogus` returns non-zero under sourced enums'
+  - 'Vendored copy `.agentic-framework/agents/task-create/create-task.sh` synced same commit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 86 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [process-layer, corpus, healing-class]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 86
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2675-wire-status-value-predicate-at-task-crea.md
+generated_by: context-agent-hybrid
