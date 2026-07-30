@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2689: lane-overflow full-occupancy leg: per-type botOf from 832 rail-340 NODE_DEFAULTS
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-30T20:27:41Z
+# ============================================================================
+
+task_id: T-2689
+task_name: "lane-overflow full-occupancy leg: per-type botOf from 832 rail-340 NODE_DEFAULTS"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-30T20:16:57Z
+completed: 2026-07-30T20:27:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-30T22:26:49+02:00
+last_commit: 2026-07-30T22:26:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lane-overflow occupancy leg — 832 rail-340 botOf replaces the top-y approximation
+
+# Key outcomes
+outcomes:
+  - 'AC-1 `NODE_OCCUPANCY` table in `tools/corpus_lint.py` encodes 832''s rail-340'
+  - 'AC-2 All 9 types in `corpus_spec.TYPE_TO_TAG` have an occupancy entry (no silent'
+  - 'AC-3 Threshold is `extent > height` where `extent = max(botOf) - min(y)`, and the'
+  - 'AC-4 The new predicate is a provable strict superset of the shipped one, pinned by'
+  - 'AC-5 Unknown node type in a lane -> that lane SKIPS (skip-not-pass, per-lane), and'
+  - 'AC-6 Finding message names: declared height, content extent, spill px, the lowest'
+  - 'AC-7 The 15 existing `test_corpus_lint_lane_overflow.py` tests are re-based, and'
+  - 'AC-8 Live sweep recorded: 3 lanes spill across 2 maps (`draft-knowledge-leveling`'
+  - 'AC-9 The two lanes that fail 832''s Clean fixpoint while still CONTAINING their'
+  - 'AC-10 832 told at the rail with our recomputed per-lane numbers and the explicit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2689-lane-overflow-full-occupancy-leg-per-typ.md'
+  - 'tests/unit/test_corpus_lint_lane_overflow.py'
+  - 'tests/unit/test_corpus_lint.py'
+  - 'tools/corpus_lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-30T22:26:49"
+    action: "T-2689: lane-overflow occupancy leg — 832 rail-340 botOf replaces the top-y approximation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 5
+  lines_added: 565
+  lines_removed: 103
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2689-lane-overflow-full-occupancy-leg-per-typ.md
+generated_by: context-agent-hybrid

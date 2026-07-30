@@ -23982,3 +23982,21 @@ scan_id: R-63c199d5
 task_id: T-2688
 payload:
   task_file: .tasks/active/T-2688-lane-overflow-lint-rule--declared-height.md
+---
+kind: scan_emitted
+timestamp: '2026-07-30T20:27:32Z'
+scan_id: R-542a6ecc
+task_id: T-2689
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-30T20:27:32Z'
+scan_id: R-542a6ecc
+task_id: T-2689
+payload:
+  task_file: .tasks/active/T-2689-lane-overflow-full-occupancy-leg-per-typ.md

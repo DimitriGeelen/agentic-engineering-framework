@@ -5287,3 +5287,48 @@ timeout 280 bin/fw git commit -m "T-2687: two learnings — '
 export FW_SWITCH_FOCUS=1
 git add -A .context/project/learnings.yaml .context/working/ 2>/dev/null
 timeout 280 bin/fw git commit -m "T-2688: L-519 — text-mat'
+- timestamp: '2026-07-30T00:41:23Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2665'
+  command: 'export FW_SWITCH_FOCUS=1
+git add .tasks/active/T-2665-corpus-map-exception-handling-package-do.md .context/project/concerns.yaml
+bin/fw git commit -m "$(cat <<EOF
+T-2665: break redispatch loop — G'
+- timestamp: '2026-07-30T00:41:38Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2665'
+  command: 'export FW_SWITCH_FOCUS=1
+git add .tasks/active/T-2665-corpus-map-exception-handling-package-do.md
+bin/fw git commit -m "T-2665: last_update timestamp sync (post-commit hook)" 2>&1 | tail -10'
+- timestamp: '2026-07-30T01:10:28Z'
+  task: 'T-1062'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2667'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bin/fw task update T-2667 --horizon later --switch-focus 2>&1 | tail -30'
+- timestamp: '2026-07-30T01:10:44Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2667'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+export FW_SWITCH_FOCUS=1
+timeout 280 bin/fw git commit -m "$(cat <<EOF
+T-2667: rail 340 read — third defect surfaces (framework-lane occupancy), break red'
+- timestamp: '2026-07-30T01:39:00Z'
+  task: 'T-1062'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2666'
+  command: 'bin/fw task update T-2666 --horizon later --switch-focus 2>&1'
+- timestamp: '2026-07-30T01:39:22Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2666'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2666-corpus-map-task-creation-package-dogfood.md && FW_SWITCH_FOCUS=1 git commit -m "T-2666: dispatch check-in — break redispatch loop via G-072 (mirrors T-'

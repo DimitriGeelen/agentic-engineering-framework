@@ -4,12 +4,12 @@ name: "lane-overflow full-occupancy leg: per-type botOf from 832 rail-340 NODE_D
 description: >
   lane-overflow full-occupancy leg: per-type botOf from 832 rail-340 NODE_DEFAULTS
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_corpus_lint_lane_overflow.py, tools/corpus_lint.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-30T20:16:57Z
-last_update: 2026-07-30T20:16:57Z
-date_finished: null
+last_update: 2026-07-30T20:27:23Z
+date_finished: 2026-07-30T20:27:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -164,7 +164,9 @@ python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py -q >/dev/null 2>&
 python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py tests/unit/test_corpus_lint.py -q >/dev/null 2>&1
 out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -qc "lane-overflow"
 out=$(python3 tools/corpus_lint.py draft-knowledge-leveling 2>&1); echo "$out" | grep -q "spilling"
-out=$(python3 tools/corpus_conformance.py --all 2>&1); echo "$out" | grep -q "5/5"
+# 5 rails, all PASS, and no FAIL line — the tool prints one line per rail with no
+# summary, so assert the count rather than a summary string that does not exist.
+out=$(python3 tools/corpus_conformance.py --all 2>&1); [ "$(echo "$out" | grep -c 'conformance: PASS')" = 5 ] && ! echo "$out" | grep -q "FAIL"
 
 ## RCA
 
@@ -233,3 +235,24 @@ out=$(python3 tools/corpus_conformance.py --all 2>&1); echo "$out" | grep -q "5/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2689-lane-overflow-full-occupancy-leg-per-typ.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-542a6ecc
+- **Timestamp:** 2026-07-30T20:27:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 32
+     - evidence: `python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py -q >/dev/null 2>&1`
+  2. **empty-output-success** (partial, heuristic) @ Verification:line 33
+     - evidence: `python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py tests/unit/test_corpus_lint.py -q >/dev/null 2>&1`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 38
+     - evidence: `out=$(python3 tools/corpus_conformance.py --all 2>&1); [ "$(echo "$out" | grep -c 'conformance: PASS')" = 5 ] && ! echo "$out" | grep -q "FAIL"`
+
+### 2026-07-30T20:27:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

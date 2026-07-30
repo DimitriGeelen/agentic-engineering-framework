@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-07-29T03:23:02.008656+00:00
-corpus_total: 2380
-bug_class_total: 471
+generated: 2026-07-30T03:23:02.777334+00:00
+corpus_total: 2393
+bug_class_total: 474
 bug_class_pct: 19
-h1_flagged: 350
+h1_flagged: 353
 h1_pct_of_bug_class: 74
 h2_repeat_patterns: 127
 h3_flagged: 265
-h3_pct_of_bug_class: 56
-recent_30d_flagged: 9
+h3_pct_of_bug_class: 55
+recent_30d_flagged: 12
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-100202-task-id-allocator-inflation--split-view-"
@@ -30,23 +30,25 @@ recent_sample:
     name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias"
   - tid: "T-2628-corpus-squash-burst-rca--operator-delete"
     name: "Corpus squash burst RCA — operator delete-all+resave regressed task-lifecycle"
+  - tid: "T-2676-fix-harvestsh-indent-assumption-greps-de"
+    name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
 h2_top:
   - learning: "P-011"
-    task_count: 1295
+    task_count: 1319
   - learning: "L-387"
-    task_count: 1124
+    task_count: 1146
   - learning: "L-291"
-    task_count: 712
+    task_count: 725
   - learning: "L-398"
-    task_count: 488
+    task_count: 499
   - learning: "P-010"
-    task_count: 255
+    task_count: 258
   - learning: "L-006"
     task_count: 54
-  - learning: "L-399"
-    task_count: 39
   - learning: "L-001"
-    task_count: 38
+    task_count: 40
+  - learning: "L-399"
+    task_count: 40
   - learning: "L-364"
     task_count: 38
   - learning: "L-332"
