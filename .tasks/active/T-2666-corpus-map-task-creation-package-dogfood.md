@@ -7,10 +7,10 @@ description: >
   conformance rail. Third of the package's four worst-regression processes (T-2662
   gap 6). Gated on the tier0-escalation P4 test outcome.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [process-layer, corpus]
 components: []
 related_tasks: [T-2662]
@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:18Z
-last_update: 2026-07-29T11:37:19Z
+last_update: 2026-07-30T01:39:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -408,3 +408,30 @@ Pin test: rc==0 and all 7 type tokens in stdout.
 ### 2026-07-29T06:47:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-30T00:00:00Z — dispatch-recheck [worker]
+- **Action:** First resolver dispatch since round #3 closed (66d782e39).
+  Re-verified nothing changed: `draft-task-creation` v3 still lints CLEAN
+  (`python3 tools/corpus_lint.py .../v3.bpmn`), meta.json still `latest: 3`
+  (uuid `88eb47bd-f40a-4592-bb26-649322eb530b` unchanged), no operator GO
+  recorded anywhere (`.gate-bypass-log.yaml` has no decision entry for
+  T-2666, `.context/handovers/LATEST.md` still shows "no operator taste
+  signal" as the last action). The only intervening commit touching the
+  draft (bbe9e1de4, T-2686) was an unrelated laneSet-order repair, not a
+  promotion or operator decision.
+- **Applied the G-072 mitigation directly** rather than repeating the
+  4-5 identical redispatch cycles T-2665/T-2667 went through before
+  registering the gap: this task is in the exact state G-072 describes
+  (fully agent-verified, blocked only on human GO) and the gap is already
+  registered — no need to re-accumulate evidence of the loop before
+  breaking it. Ran `fw task update T-2666 --horizon later` (auto-synced
+  `status: started-work → captured`), excluding T-2666 from the dispatch
+  pool without touching the standing **Recommendation: GO** or any of the
+  evidence/paste-ready AC-4 prep above, which remain intact for the
+  operator's decision via `fw task review T-2666`.
+- **Not done:** did not promote the draft or self-authorize any GO — that
+  stays a human decision per §Autonomous Mode Boundaries.
+
+### 2026-07-30T01:39:01Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
