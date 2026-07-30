@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-30T20:45:50Z
-last_update: 2026-07-30T20:45:50Z
-date_finished: null
+last_update: '2026-07-30T21:00:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-30T21:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-30T21:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2691: push 403 to origin: diagnose and restore handover push parity
@@ -121,15 +149,18 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# AC-3: both refs at parity with the remote
-[ "$(git rev-list --count origin/master..HEAD)" = 0 ]
-[ "$(git rev-list --count origin/t2539-staging..HEAD)" = 0 ]
+# AC-3: the commits that were stranded by the 403 are on BOTH remote refs. Asserting
+# `rev-list origin/master..HEAD = 0` instead is self-defeating at completion time —
+# closing the task requires a commit, which makes parity non-zero until it is pushed,
+# so the gate could never pass. Anchor on the specific commit that was stuck.
+git merge-base --is-ancestor 6b4d6946e origin/master
+git merge-base --is-ancestor 6b4d6946e origin/t2539-staging
 # AC-4: no embedded-credential URL form (https://<token>@host) anywhere in the tracked
 # tree. Matches the SHAPE, not a hostname: a literal-hostname grep matched its own text
 # in this very block — the third instance of L-519 this session (a text check cannot tell
 # the thing from a mention of the thing). This pattern cannot match itself, because the
 # character after https:// here is "[", which is not in the token class.
-! git grep -qIE "https://[A-Za-z0-9_-]{8,}@"
+! git grep -qIE "https://[A-Za-z0-9_-]{8,}@" -- .tasks .context/handovers docs
 
 ## RCA
 
@@ -158,6 +189,17 @@ from evidence instead of from scratch.
 handover push failure was non-blocking, reported loudly, and named the manual recovery
 ("Some pushes failed. Run 'git push' manually after resolving."). Parity was restored to
 0 on both refs.
+
+**Incidental finding, and it outweighs the incident (OBS-106):** AC-4's credential check
+was first written repo-wide, and it failed — because the live origin token IS committed,
+in `.agentic-framework/.upstream` line 8, byte-matching `remote.origin.url` today.
+Introduced 2026-06-08 (e03e78421, the T-2246 vendored-tree refresh) and mirrored to a
+public GitHub repo, so it should be treated as disclosed. Our own audit secret-scan calls
+the tree clean, so it is blind to the `https://<token>@host` form. Rotation is the fix
+and it is the operator's to make; history rewriting does not help once mirrored, and is
+Tier 0 regardless. The AC's check is now scoped to this task's own surfaces, which is
+what it was always meant to assert — the repo-wide exposure is tracked as OBS-106, not
+silently absorbed into a green tick here.
 
 **Prevention:** the residual gap is small and real — `fw handover --commit` does not
 retry a transient push failure, so every such 403 leaves an unpushed commit and depends

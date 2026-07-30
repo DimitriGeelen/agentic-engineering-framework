@@ -851,3 +851,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-106
+  text: "SECURITY — live origin credential is committed in the tracked tree. .agentic-framework/.upstream line 8 stores the framework git origin URL verbatim at vendor-time, INCLUDING the embedded auth token, and it byte-matches the credential in the live remote.origin.url today. Introduced 2026-06-08 by e03e78421 (T-2246 vendored-tree refresh, 1034 files) — exposed ~7 weeks. This repo is mirrored to the PUBLIC github.com/DimitriGeelen/agentic-engineering-framework via OneDev PushRepository, so treat it as publicly disclosed. Our own audit secret-scan reports 'tracked tree clean', so it has a blind spot for the credential-in-URL form (https://TOKEN@host) — that is a second, structural finding. THREE separate actions, only the first is urgent and only the human can do it: (1) ROTATE the OneDev token, then update remote.origin.url — history rewrite does not help once mirrored, rotation does; (2) forward fix: strip credentials before writing .upstream at vendor-time (lib/consumer-recover.sh already has a redaction routine for exactly this shape, so the capability exists and is simply not applied on the write path); (3) extend the audit secret scan to match https://<token>@host. Found incidentally by a T-2691 verification command; do NOT rewrite history unilaterally (Tier 0)."
+  captured: 2026-07-30T21:01:43Z
+  context_task: T-2691
+  tags: []
+  status: pending
+  promoted_to: null
