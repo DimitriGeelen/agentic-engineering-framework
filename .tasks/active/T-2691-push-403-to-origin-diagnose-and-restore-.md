@@ -124,8 +124,12 @@ date_finished: null
 # AC-3: both refs at parity with the remote
 [ "$(git rev-list --count origin/master..HEAD)" = 0 ]
 [ "$(git rev-list --count origin/t2539-staging..HEAD)" = 0 ]
-# AC-4: no credential material committed anywhere in this task's changes
-! git grep -qI "onedev.docker.ring20" -- .tasks/active/T-2691-push-403-to-origin-diagnose-and-restore-.md
+# AC-4: no embedded-credential URL form (https://<token>@host) anywhere in the tracked
+# tree. Matches the SHAPE, not a hostname: a literal-hostname grep matched its own text
+# in this very block — the third instance of L-519 this session (a text check cannot tell
+# the thing from a mention of the thing). This pattern cannot match itself, because the
+# character after https:// here is "[", which is not in the token class.
+! git grep -qIE "https://[A-Za-z0-9_-]{8,}@"
 
 ## RCA
 
