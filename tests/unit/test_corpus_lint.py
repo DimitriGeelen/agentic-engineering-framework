@@ -245,6 +245,7 @@ def test_live_corpus_current_findings():
     assert pinned == [
         ("emitterless-typed-event", "aef-dispatch-loop"),
         ("lane-geometry", "aef-session-lifecycle"),
+        ("lane-overflow", "aef-session-lifecycle"),
         ("legacy-ref", "t2584-scratch"),
     ], (
         "live-corpus lint drifted from the T-2609 post-rollout baseline — a new "
@@ -260,3 +261,14 @@ def test_live_corpus_current_findings():
     # Context), so this entry is expected to stand until that decision lands — at
     # which point it should DISAPPEAR, not be re-pinned. The default scan skips
     # `draft-*`; three drafts also disagree and surface when named explicitly.
+    #
+    # T-2689 deliberate baseline move (3 → 4): the lane-overflow rule's occupancy leg
+    # landed and found a SECOND, independent defect in the same promoted map. Same map,
+    # different class — lane-geometry (above) says human/agent membership and geometry
+    # disagree; this one says the agent band is 6px too short to contain its own
+    # content, measured with 832's own botOf (rail 340). A 6px spill is small enough to
+    # read as noise, which is exactly why it is pinned: it is a real render defect by
+    # the renderer's own containment function, and the lowest node is a gateway (66px
+    # occupancy, more than a 64px task), so neither the top-y form nor a height-only
+    # table would have found it. Also expected to stand until the operator's authority
+    # call on this map, and to DISAPPEAR then rather than be re-pinned.

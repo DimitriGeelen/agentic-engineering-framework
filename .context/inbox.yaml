@@ -837,3 +837,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-104
+  text: "lane-overflow margin-advisory class: 2 lanes CONTAIN their content but fall short of 832's Clean fixpoint (height == extent + 24, LANE_FIT_MARGIN 12 at both edges) — aef-task-lifecycle agent (extent 194, height 200, fixpoint wants 218, slack 6) and aef-inception-flow agent (extent 204, height 220, fixpoint 228, slack 16). T-2689 deliberately did NOT gate on this: these lanes are one Clean away from tidy, not spilling, and firing would report tidiness as breakage. Open question if we ever want it: corpus_lint findings have no severity dimension, so an advisory tier needs that first. This is also the exact reason our spill count (3) differs from 832's rail-340 estimate (4-5) — they counted fixpoint failures, we gate on containment."
+  captured: 2026-07-30T20:25:43Z
+  context_task: T-2689
+  tags: []
+  status: pending
+  promoted_to: null

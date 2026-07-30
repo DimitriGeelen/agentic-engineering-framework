@@ -53,9 +53,9 @@ discipline: no speculative rules — each one has a task-traceable origin).
                           deliberately origin-free (see lane_geometry). Origin: T-2684
                           / 832 T-310 — survey found 4 of 11 store maps disagreeing,
                           incl. one promoted map and two drafts in the taste queue.
-  lane-overflow           a lane's own member y-span meets or exceeds its declared
-                          aef:laneMeta height, so the band cannot contain its content
-                          and the render spills past the band edge. Sibling to
+  lane-overflow           a lane's own members occupy more vertical room than its
+                          declared aef:laneMeta height, so the band cannot contain its
+                          content and the render spills past the band edge. Sibling to
                           lane-geometry and deliberately orthogonal to it:
                           lane-geometry compares lanes AGAINST EACH OTHER and is
                           therefore structurally blind to this class — ordering can be
@@ -65,15 +65,19 @@ discipline: no speculative rules — each one has a task-traceable origin).
                           Origin: T-2687 GO / T-2688 — draft-knowledge-leveling's agent
                           lane spans 513px inside height=260, a 253px overflow on the
                           v8 promotion candidate that lane-geometry never named.
-                          CONSERVATIVE SUBSET, deliberately: every measurement is on
-                          node top-y, which understates overflow by the node box height
-                          H (full-box containment needs span + H < height). H is a
-                          renderer constant we do not read (T-559); asked of 832 at
-                          rail 338, unanswered. The top-y form cannot false-positive —
-                          node height only ever makes overflow worse — so it ships,
-                          while H-dependent tight-lane detection waits for the real
-                          constant rather than a guessed one (T-2684's band model is
-                          what guessing costs).
+                          FULL-OCCUPANCY since T-2689: measures the drawn extent
+                          max(botOf) - min(y) against the declared height, using 832's
+                          own per-type constants (rail 340, answering our rail-338
+                          question) rather than a guessed uniform box height. Occupancy
+                          is events 54, gateways 66, tasks 64 — note that a gateway
+                          takes more room than a task despite the smaller shape, so the
+                          lowest node is not always the largest-y one. Supersedes the
+                          T-2688 top-y form, which asked a MEMBERSHIP question
+                          (span >= height) of a CONTAINMENT problem and was silent on
+                          tight lanes; strictly stronger by arithmetic, pinned as a
+                          test. A lane holding a type with no occupancy entry SKIPS
+                          rather than defaulting — guessing a renderer constant is what
+                          T-2684's band model cost (7 phantom findings on a clean map).
 
 Exit codes: 0 clean, 1 findings, 2 usage/environment error.
 
@@ -340,6 +344,40 @@ def lane_geometry(map_name: str, xml_text: str) -> list:
     return findings
 
 
+# 832 rail 340 (2026-07-30), answering the question we asked at rail 338. These are
+# the designer's own constants and its own containment function, quoted rather than
+# inferred — src/aef-workflow-designer.html NODE_DEFAULTS (1759) and botOf (6975):
+#
+#   botOf(n)      = n.y + h(type) + (labelBelow(type) ? 18 : 0)
+#   labelBelow(t) = startEvent | endEvent | linkEventThrow | linkEventCatch
+#                   | t.startsWith('event') | t.endsWith('Gateway')
+#   h(type)       = events 36 | gateways 48 | tasks and subProcess 64
+#
+# Keyed by OUR spec type (the left-hand side of corpus_spec.TYPE_TO_TAG), because
+# 832's palette keys are not our BPMN tag names: our `catch`/`throw` serialise to
+# intermediateCatchEvent/intermediateThrowEvent, which are their linkEventCatch /
+# eventTimer / eventError family. Collapsing that family is safe for occupancy
+# specifically — every event kind in their table is 36px with labelBelow true, so
+# each occupies 54 regardless of which one a given node actually is.
+#
+# The inversion 832 flagged is exactly why this table stores occupancy and not h:
+# a 36px EVENT occupies 54 and a 48px GATEWAY occupies 66, which is MORE than a
+# 64px task. The smallest shapes are not the smallest occupants, so a per-type
+# table built from h alone gets tight lanes wrong in the unsafe direction.
+NODE_OCCUPANCY = {
+    "start": 36 + 18, "end": 36 + 18,                  # events: name renders below
+    "catch": 36 + 18, "throw": 36 + 18,
+    "gateway": 48 + 18, "parallel-gateway": 48 + 18,   # *Gateway: name renders below
+    "service": 64, "user": 64, "script": 64, "subprocess": 64,   # name inside the box
+}
+
+# 832: LANE_FIT_MARGIN = 12, applied at BOTH edges, so the height at which a lane is
+# exactly Clean-fitted is content extent + 24. Advisory, deliberately NOT the
+# threshold: a lane with less margin than this is not spilling, it is one Clean away
+# from tidy. Gating on it would report tidiness as breakage.
+LANE_FIT_MARGIN_BOTH_EDGES = 24
+
+
 def lane_overflow(map_name: str, xml_text: str) -> list:
     """lane-overflow: a lane's declared height must be able to contain its own members.
 
@@ -350,27 +388,43 @@ def lane_overflow(map_name: str, xml_text: str) -> list:
     construction — a lane spanning 190px inside height=100 is CLEAN under
     lane_geometry and caught here.
 
-    **The threshold is derived, not chosen.** Under half-open bands ``[O, O+h)`` —
-    the semantics T-2687 settled on after finding that closed containment lets a node
-    on a shared boundary belong to both adjacent bands — containing a lane's members
-    needs ``O <= min_y`` and ``max_y < O + h``, which is satisfiable exactly when
-    ``span < h``. So overflow is ``span >= h``. The equality case is a genuine
-    overflow: a node whose top sits exactly on the band's bottom edge is already
-    outside a half-open band.
+    **The basis changed in T-2689, and the reason matters more than the change.**
+    T-2688 shipped this rule on node top-y with threshold ``span >= h``, derived from
+    half-open band MEMBERSHIP: which lane does ``laneAtY(y)`` put a node in. That is
+    the right question for ordering, and the wrong one here. What this rule actually
+    claims is that the band cannot CONTAIN its content — a render question, answered
+    by where the drawn box ends, not where its top-left corner sits. With 832's
+    ``botOf`` (rail 340) that question is answerable exactly:
 
-    **Conservative subset, on purpose.** Every measurement here is node top-y, so it
-    understates overflow by the node box height H — full-box containment would need
-    ``span + H < h``, i.e. overflow at ``span >= h - H``. H is a renderer constant we
-    do not read (T-559 boundary); it was asked of 832 at rail 338 and is unanswered.
-    The top-y form cannot produce a false positive, because node height only ever
-    makes overflow worse, never better — so this ships while the H-dependent
-    tight-lane leg waits for the real constant. Shipping on a guessed H is exactly
-    the T-2684 band-model error (a guessed renderer constant produced 7 phantom
-    findings on a clean map).
+        extent = max(botOf(n)) - min(n.y)        overflow iff  extent > h
+
+    Strict ``>``: a box whose bottom edge lands exactly on the band's bottom edge is
+    contained, not spilling. This is the containment boundary, not the membership
+    boundary — different question, different comparison, and conflating them is what
+    made the first version conservative.
+
+    **Strictly stronger, and this time by arithmetic rather than by survey.** Every
+    map the top-y form caught is still caught: ``span >= h`` implies
+    ``extent > h``, since ``extent = span + occupancy(lowest)`` and occupancy is
+    always positive. The converse fails — a lane with ``span = h - 10`` and a 64px
+    task at the bottom spills 54px and the old form was silent. T-2687 is the reason
+    that sentence is phrased carefully: the identical "strictly stronger" claim about
+    the ordering rule was FALSE, went out to 832 before it was checked, and had to be
+    retracted at rail 338. The difference is that this one is a one-line proof over
+    positive numbers, and it is pinned as a test rather than asserted in a docstring.
+
+    **Occupancy is per-type and the ordering is not intuitive.** Events are 36px
+    shapes that occupy 54 (their name renders below); gateways are 48px shapes that
+    occupy 66; tasks are 64px shapes that occupy 64. So a gateway takes MORE vertical
+    room than a task despite being the smaller shape, and the lowest-sitting node in a
+    lane is not always the largest-y one. See NODE_OCCUPANCY above.
 
     Evaluates and skips PER LANE, not per map: one lane with an unpositioned member
     does not blind the rule to the others. An unevaluable lane skips rather than
-    passing — a silent pass on something never checked is the G-071 shape.
+    passing — a silent pass on something never checked is the G-071 shape. A node type
+    with no occupancy entry is unevaluable for the same reason: we would have to guess
+    its height, and guessing a renderer constant is the T-2684 band-model error that
+    produced 7 phantom findings on a clean map.
     """
     try:
         spec = parse_map(xml_text)
@@ -387,26 +441,40 @@ def lane_overflow(map_name: str, xml_text: str) -> list:
         # skip-not-pass: nothing to contain, no declared height, or an unplaced member
         if not nodes or not height or any(not n.get("pos") for n in nodes):
             continue
-        height = float(height)
-        top = min(nodes, key=lambda n: n["pos"][1])
-        bottom = max(nodes, key=lambda n: n["pos"][1])
-        span = bottom["pos"][1] - top["pos"][1]
-        if span < height:
+        # ...or a type whose occupancy we do not know. Skipping is the loud option:
+        # the alternative is a default height, which is a guessed renderer constant.
+        if any(n.get("type") not in NODE_OCCUPANCY for n in nodes):
             continue
+        height = float(height)
+
+        def _bot(n):
+            return n["pos"][1] + NODE_OCCUPANCY[n["type"]]
+
+        top = min(nodes, key=lambda n: n["pos"][1])
+        # the LOWEST node by drawn bottom edge, which a largest-y sort would get wrong
+        # whenever the bottom of the lane holds a task and a gateway sits just above it
+        lowest = max(nodes, key=_bot)
+        extent = _bot(lowest) - top["pos"][1]
+        if extent <= height:
+            continue
+        fitted = extent + LANE_FIT_MARGIN_BOTH_EDGES
         findings.append({
             "rule": "lane-overflow", "map": map_name,
-            "node": f'{top["id"]}, {bottom["id"]}',
+            "node": f'{top["id"]}, {lowest["id"]}',
             "detail": f'lane "{lane_id}" declares height={height:.0f} but its own members '
-                      f'span {span:.0f}px (from {top["id"]} at y={top["pos"][1]:.0f} to '
-                      f'{bottom["id"]} at y={bottom["pos"][1]:.0f}), exceeding it by '
-                      f'{span - height:.0f}px. The band cannot contain its content, '
-                      f"so the render spills past the band edge while flowNodeRef still "
-                      f"claims every node. Two fixes, and choosing between them is an "
-                      f'authoring call: raise "{lane_id}" height to more than {span:.0f}, '
-                      f"or compress the node placement so the span fits. Measured on "
-                      f"node top-y, so the real overflow is larger by the node box "
-                      f"height",
-            "origin": "T-2687 GO / T-2688",
+                      f'occupy {extent:.0f}px — from {top["id"]} at y={top["pos"][1]:.0f} '
+                      f'down to the bottom edge of {lowest["id"]} '
+                      f'({lowest["type"]}, y={lowest["pos"][1]:.0f} + '
+                      f'{NODE_OCCUPANCY[lowest["type"]]}px occupancy) — spilling '
+                      f'{extent - height:.0f}px past the band edge. flowNodeRef still '
+                      f"claims every node, so membership reads correct while the render "
+                      f"does not. Occupancy is per-type and not ordered by shape size "
+                      f"(events 54, gateways 66, tasks 64), so the lowest node is not "
+                      f"always the largest-y one. Two fixes, and choosing between them "
+                      f'is an authoring call: raise "{lane_id}" height to {fitted:.0f} '
+                      f"(content + the designer's 12px fit margin at both edges), or "
+                      f"compress the node placement",
+            "origin": "T-2687 GO / T-2688, occupancy leg T-2689 (832 rail 340)",
         })
     return findings
 
