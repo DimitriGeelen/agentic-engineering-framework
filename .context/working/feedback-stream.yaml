@@ -24000,3 +24000,21 @@ scan_id: R-542a6ecc
 task_id: T-2689
 payload:
   task_file: .tasks/active/T-2689-lane-overflow-full-occupancy-leg-per-typ.md
+---
+kind: scan_emitted
+timestamp: '2026-07-30T20:41:17Z'
+scan_id: R-710fa47e
+task_id: T-2690
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-30T20:41:17Z'
+scan_id: R-710fa47e
+task_id: T-2690
+payload:
+  task_file: .tasks/active/T-2690-832-rail-342-pair-round-respond-to-occup.md

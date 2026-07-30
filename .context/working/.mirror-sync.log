@@ -4517,3 +4517,9 @@ error: failed to push some refs to 'https://github.com/DimitriGeelen/agentic-eng
 2026-07-30T19:45:02Z	github	in-sync	442582a240bd439ef639f2530352148b0e6cf3aa	442582a240bd439ef639f2530352148b0e6cf3aa
 2026-07-30T20:00:02Z	github	in-sync	442582a240bd439ef639f2530352148b0e6cf3aa	442582a240bd439ef639f2530352148b0e6cf3aa
 2026-07-30T20:15:03Z	github	in-sync	60d61b484a15b48be6b49e83a140256e96d9919f	60d61b484a15b48be6b49e83a140256e96d9919f
+2026-07-30T20:32:13Z	github	push-failed	60d61b484a15b48be6b49e83a140256e96d9919f	38c46424e458dd2a6c339917cb8354b5f75e9031
+##PUSH-FAILED-STDERR remote=github ts=2026-07-30T20:32:13Z
+To https://github.com/DimitriGeelen/agentic-engineering-framework.git
+ ! [remote rejected]     t2539-staging -> t2539-staging (cannot lock ref 'refs/heads/t2539-staging': is at 38c46424e458dd2a6c339917cb8354b5f75e9031 but expected 60d61b484a15b48be6b49e83a140256e96d9919f)
+error: failed to push some refs to 'https://github.com/DimitriGeelen/agentic-engineering-framework.git'
+##END

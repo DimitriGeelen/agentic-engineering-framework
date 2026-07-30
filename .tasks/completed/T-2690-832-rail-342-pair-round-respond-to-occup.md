@@ -4,12 +4,12 @@ name: "832 rail 342 pair-round: respond to occupancy-leg reply, land any resulti
 description: >
   832 rail 342 pair-round: respond to occupancy-leg reply, land any resulting corpus fix
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_corpus_lint_lane_overflow.py, tools/corpus_lint.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-30T20:32:49Z
-last_update: 2026-07-30T20:32:49Z
-date_finished: null
+last_update: 2026-07-30T20:41:11Z
+date_finished: 2026-07-30T20:41:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -137,6 +137,36 @@ python3 -c "import sys;sys.path.insert(0,'tools');import corpus_lint;assert call
 
 ## RCA
 
+**Symptom:** `lane_overflow` skipped any lane it could not evaluate and said nothing.
+From outside, a run printing `CLEAN` or `4 finding(s)` was indistinguishable from a run
+where lanes were never judged at all. 832 hit the same class on their side first and
+named it at rail 342.
+
+**Root cause:** the rule had exactly two observable outcomes — a finding, or no finding
+— and used a bare `continue` for three structurally different conditions: out of scope
+(no members / no declared height), unevaluable (unpositioned member, unknown node type),
+and evaluated-and-clean. Absence of a finding collapsed all three into one signal.
+
+**Why structurally allowed:** nothing asserted anything about skipped lanes, in either
+direction, so the conflation was untestable by construction. The live corpus happens to
+have zero unevaluable lanes, so the hole never produced a wrong answer — only the
+standing capacity for one, which is invisible precisely because it looks like success.
+The skip branches were also authored in the same commit as the rule (T-2688), so there
+was never a moment where someone read the rule from outside and asked what a skip looks
+like. This is the G-071 shape: a deterministic component whose silence is
+indistinguishable from its success. Our own T-2689 note (OBS-104) had already observed
+that findings carry no severity dimension, and stopped at observing it.
+
+**Prevention:** `lane_overflow_skips()` emits the skip as an exit-code-neutral NOTE on
+every run, unconditionally rather than behind a flag — the point is that a clean run
+must not be readable as a complete one. 832's scope guard is kept so the note cannot
+become permanent noise (two empty lanes in `t2584-scratch` would otherwise print
+forever, and unresolvable notes train people to ignore the channel). Six tests pin both
+directions, and `test_live_corpus_has_no_unjudged_lanes` pins the live ZERO, so the day
+a map lands an unpositioned member the count stops being invisible. Recorded as L-520
+for the wider class — the sibling defect, that the rule was conservative because it
+answered the wrong question rather than because it lacked a constant.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -202,3 +232,22 @@ python3 -c "import sys;sys.path.insert(0,'tools');import corpus_lint;assert call
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2690-832-rail-342-pair-round-respond-to-occup.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-710fa47e
+- **Timestamp:** 2026-07-30T20:41:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 32
+     - evidence: `python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py tests/unit/test_corpus_lint.py -q >/dev/null 2>&1`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+     - evidence: `out=$(python3 tools/corpus_conformance.py --all 2>&1); [ "$(echo "$out" | grep -c 'conformance: PASS')" = 5 ] && ! echo "$out" | grep -q "FAIL"`
+
+### 2026-07-30T20:41:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

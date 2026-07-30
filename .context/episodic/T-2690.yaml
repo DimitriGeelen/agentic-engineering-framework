@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2690: 832 rail 342 pair-round: respond to occupancy-leg reply, land any resulting corpus fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-30T20:41:26Z
+# ============================================================================
+
+task_id: T-2690
+task_name: "832 rail 342 pair-round: respond to occupancy-leg reply, land any resulting corpus fix"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-30T20:32:49Z
+completed: 2026-07-30T20:41:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-30T22:40:29+02:00
+last_commit: 2026-07-30T22:40:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SKIP-not-PASS channel for lane-overflow (832 rail 342), + L-520
+
+# Key outcomes
+outcomes:
+  - 'AC-1 832''s rail 342 read in full and its asks separated into three buckets:'
+  - 'AC-2 Every item in bucket (a) either confirmed with the command/number that'
+  - 'AC-3 Any corpus/lint/test change 342 turns out to require is landed with tests,'
+  - 'AC-4 Reply posted to the rail as a reply-to-342, answering their open questions'
+  - 'AC-5 Existing green state preserved: corpus lint default baseline stays 4 (or'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-2690-832-rail-342-pair-round-respond-to-occup.md'
+  - 'tests/unit/test_corpus_lint_lane_overflow.py'
+  - 'tools/corpus_lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-30T22:40:29"
+    action: "T-2690: SKIP-not-PASS channel for lane-overflow (832 rail 342), + L-520"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 4
+  lines_added: 355
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2690-832-rail-342-pair-round-respond-to-occup.md
+generated_by: context-agent-hybrid
