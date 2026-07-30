@@ -8,10 +8,10 @@ description: >
   processes (T-2662 gap 6). Gated on the tier0-escalation P4 test outcome — promote
   horizon only after that lands.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [process-layer, corpus]
 components: []
 related_tasks: [T-2662]
@@ -27,7 +27,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:19:32Z
-last_update: '2026-07-29T16:30:09Z'
+last_update: 2026-07-30T00:39:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -451,3 +451,29 @@ caution.
   already-fully-verified, human-blocked task burns dispatch cycles for no
   gain — this is a candidate for a `concerns.yaml` entry if the pattern
   repeats on other pair-draft tasks awaiting promotion GO.
+
+### 2026-07-30T00:39:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+
+### 2026-07-30T04:30:00Z — dispatch-recheck [worker]
+- **Action:** Fifth consecutive dispatch, same finding as the prior four: no
+  operator GO recorded (git log, `.gate-bypass-log.yaml`,
+  `.context/handovers/LATEST.md`) — this is the repeat the 4th dispatch
+  predicted. Per its recommendation, acted on both of its named exits
+  instead of adding a 6th identical recheck:
+  1. Registered **G-072** in `.context/project/concerns.yaml` — the
+     resolver/cron dispatch pool has no exit for "task fully
+     agent-verified, blocked only on human GO," so it keeps redispatching
+     an unchanged task indefinitely.
+  2. Demoted `horizon: later` via `fw task update T-2665 --horizon later`
+     (auto-synced `status: started-work → captured` per the
+     horizon/status invariant) — this excludes T-2665 from the dispatch
+     pool and Suggested First Action without touching the standing
+     **Recommendation: GO** or any of the evidence/paste-ready AC-4 prep
+     above, which remain intact for the operator's decision via
+     `fw task review T-2665`.
+- **Not done:** did not promote the draft or self-authorize any GO —
+  that stays a human decision per §Autonomous Mode Boundaries. This is a
+  "choose what to work on next" initiative (stop wasted redispatch), not
+  a sovereignty action.
+- **Change:** status: started-work → captured (auto-sync)

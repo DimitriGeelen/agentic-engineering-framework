@@ -2389,3 +2389,63 @@ concerns:
   created: 2026-07-29
   related_task: T-2679
   related_tasks: [T-2679, T-2672, T-2676, T-2677, T-2652]
+
+- id: G-072
+  type: gap
+  title: "Resolver/cron dispatch pool has no fully-verified-blocked-on-human exit — a task can be redispatched indefinitely once all agent-executable evidence is exhausted"
+  description: |
+    A build task (T-2665, corpus-map pair-draft awaiting promotion GO) reached
+    a state where every agent-verifiable step was complete: draft v3 validator
+    round CLEAN, dry-run conformance PASS re-verified twice independently,
+    lint baseline unchanged, Recommendation section filed as GO, and the only
+    remaining action gated behind an explicit human decision
+    (`fw task review T-2665` / arc-014 ritual — "canonical namespace untouched
+    until approval"). §Autonomous Mode Boundaries correctly forbids the agent
+    from self-authorizing the promotion on a broad/absent directive.
+
+    Nothing in the dispatch pool recognises this terminal state. The task
+    stayed `status: started-work`, `horizon: now`, `owner: agent` — all
+    conditions that keep it eligible for redispatch — and the resolver/cron
+    redispatched it 5 times in a row (2026-07-29T20:07 through
+    2026-07-30T04:00+), each producing an identical "no operator GO, nothing
+    new to verify" finding logged to the task's Updates section. The 4th
+    dispatch explicitly flagged the loop and recommended a concerns.yaml
+    entry if it repeated; the 5th dispatch (this one) is the repeat.
+
+    This is the dispatch-loop sibling of G-071's silent-zero class: a
+    deterministic pool (resolver/cron pick logic) keeps re-selecting a task
+    whose world-assumption ("this task still has agent-actionable work") went
+    stale the moment the Recommendation was filed, and nothing detects the
+    drift — it just burns dispatch cycles quietly, each one indistinguishable
+    from a legitimate recheck until a human reads the accumulating Updates
+    entries.
+  spec_reference: "agents/resolver (dispatch pick logic), .context/cron-registry.yaml (dispatch cron cadence), CLAUDE.md §Autonomous Mode Boundaries, §Presenting Work for Human Review"
+  severity: medium
+  trigger_fired: true
+  trigger_event: |
+    2026-07-30 — 5th consecutive resolver dispatch of T-2665 in ~8 hours,
+    zero new evidence produced, following the 4th dispatch's explicit flag
+    of the pattern and recommendation to register it if repeated.
+  resolution_path: |
+    Not yet designed; candidates to weigh in a follow-up task (not filed
+    yet — file as build/inception once triaged, don't build ad hoc here):
+      1. Dispatch-pool pre-check: skip re-selecting a task whose most recent
+         Updates entry is itself a "no new evidence, blocked on human GO"
+         recheck — require either a state change (git log, gate-bypass-log,
+         handover) or a minimum backoff interval before redispatching.
+      2. Structural horizon/status signal an agent can set for exactly this
+         case (e.g. a `blocked_on_human` marker distinct from `later`) that
+         the dispatch pool excludes without losing the task's `now` priority
+         for a human reading the board.
+      3. Cheapest interim mitigation: the dispatched worker itself flips
+         `horizon: later` (or an equivalent pool-exclusion signal) once it
+         detects a repeat-recheck-with-no-new-evidence, since "choose what
+         to work on next" is delegated initiative, not a completion or
+         sovereignty action.
+    NOT CLOSED until a prevention mechanism exists — logging the pattern
+    here is the register-first half of "register first, fix second"; the
+    fix is still open.
+  status: open
+  created: 2026-07-30
+  related_task: T-2665
+  related_tasks: [T-2665, G-071]
