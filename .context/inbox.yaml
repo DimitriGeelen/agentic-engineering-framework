@@ -844,3 +844,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-105
+  text: "fw handover --commit does not retry a transient push failure. T-2691: origin returned HTTP 403 on write while authenticated read (ls-remote) and the server root (200) were both fine; the next attempt ~90s later succeeded with nothing changed. Handover correctly reported it non-blockingly and named the manual recovery, so nothing was lost — but the standing rule is 'never end a session with unpushed commits', and that currently depends on the agent reading the output. A bounded retry (2 attempts, short backoff) in the handover push path would close the gap. Untested hypothesis for the 403 itself: OneDev runs a PushRepository mirror job for this repo, and a concurrent mirror/GC write lock presents exactly as read-OK/write-403 — confirming needs server logs, which are outside this repo."
+  captured: 2026-07-30T20:52:31Z
+  context_task: T-2691
+  tags: []
+  status: pending
+  promoted_to: null
