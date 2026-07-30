@@ -3966,3 +3966,10 @@ X'` returning empty group."
   date: 2026-07-29
   context: Added via context agent
   application: TBD
+- id: L-520
+  learning: "A lint rule can be conservative because it answers the WRONG QUESTION, not because it lacks a constant. T-2688's lane-overflow gated on span >= height, derived from half-open band MEMBERSHIP (which lane laneAtY assigns a node to) — correct for the ordering rule, wrong for a rule whose claim is that the band cannot CONTAIN its content, which is about where the drawn box ends. The missing renderer constant (node box height) looked like the blocker and was recorded as such in the docstring, the task, the rail and the handover; the real defect was that the containment question had been silently substituted with the membership question, so even WITH the constant the old comparison would have stayed wrong in kind. Diagnostic: when a rule is documented as a 'conservative subset', check whether the conservatism comes from a missing INPUT or from a substituted QUESTION — the first is unblocked by data, the second is not, and only the first is safe to park. Sibling: the T-2687 retraction was the same substitution in reverse (closed-vs-half-open containment)."
+  source: P-001
+  task: unknown
+  date: 2026-07-30
+  context: Added via context agent
+  application: TBD

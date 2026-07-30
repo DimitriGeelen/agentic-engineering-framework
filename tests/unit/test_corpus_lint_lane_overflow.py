@@ -241,6 +241,82 @@ def test_malformed_xml_defers_to_lint_map():
     assert corpus_lint.lane_overflow("fixture@v1", "<not-xml") == []
 
 
+# ── skips are VISIBLE, not silent (T-2690, 832 rail 342) ─────────────────────
+
+def _skips(lanes, nodes, spec_mutator=None):
+    spec = _spec(lanes, nodes)
+    if spec_mutator:
+        spec_mutator(spec)
+    return corpus_lint.lane_overflow_skips("fixture@v1", corpus_spec.emit_map(spec))
+
+
+def test_unpositioned_member_produces_a_visible_skip():
+    """Without this channel, "evaluated and clean" and "never evaluated" look
+    identical from outside — the false green the rule exists to prevent."""
+    def drop_pos(spec):
+        del spec["nodes"][0]["pos"]
+    s = _skips([("agent", 50)], [("a1", "agent", 0), ("a2", "agent", 400)],
+               spec_mutator=drop_pos)
+    assert len(s) == 1
+    assert s[0]["lane"] == "agent"
+    assert "a1" in s[0]["detail"]
+    assert "SKIPPED by lane-overflow, not passed by it" in s[0]["detail"]
+
+
+def test_unknown_type_skip_names_the_type():
+    """The reader has to know WHICH type is unmapped, or the note is unactionable."""
+    from unittest.mock import patch
+    table = {k: v for k, v in corpus_lint.NODE_OCCUPANCY.items() if k != "user"}
+    with patch.object(corpus_lint, "NODE_OCCUPANCY", table):
+        s = _skips([("agent", 50)],
+                   [("a1", "agent", 0, "user"), ("a2", "agent", 400, "user")])
+    assert len(s) == 1
+    assert "no occupancy entry (user)" in s[0]["detail"]
+
+
+def test_unpopulated_lane_is_out_of_scope_not_skipped():
+    """832's scope guard, kept: a lane with no members makes no containment claim, so
+    reporting it would be permanent noise rather than a warning. Two live lanes
+    (t2584-scratch) sit here — if this ever starts reporting, every scan gains two
+    notes that can never be resolved."""
+    assert _skips([("agent", 100), ("empty", 50)], [("a1", "agent", 0)]) == []
+
+
+def test_lane_without_declared_height_is_out_of_scope_not_skipped():
+    def drop_height(spec):
+        spec["lanes"][0]["height"] = None
+    assert _skips([("agent", 100)], [("a1", "agent", 0), ("a2", "agent", 400)],
+                  spec_mutator=drop_height) == []
+
+
+def test_a_skipped_lane_produces_no_finding():
+    """The two channels must not double-report: a skip is an absence of judgement."""
+    def drop_pos(spec):
+        del spec["nodes"][0]["pos"]
+    args = ([("agent", 50)], [("a1", "agent", 0), ("a2", "agent", 400)])
+    assert _findings(*args, spec_mutator=drop_pos) == []
+    assert len(_skips(*args, spec_mutator=drop_pos)) == 1
+
+
+def test_live_corpus_has_no_unjudged_lanes():
+    """Pins the zero. 832's point about their own 24-map run — "24 evaluated clean,
+    0 skipped", because 24/24 quietly resting on maps the rule declined to judge is
+    not the same result. If a future map lands unpositioned members, this fails and
+    the number stops being invisible."""
+    import json
+    store = REPO_ROOT / ".context/designer/projects"
+    skips = []
+    for d in sorted(store.iterdir()):
+        meta = d / "meta.json"
+        if not meta.exists():
+            continue
+        latest = json.loads(meta.read_text())["latest"]
+        f = d / f"v{latest}.bpmn"
+        if f.exists():
+            skips.extend(corpus_lint.lane_overflow_skips(d.name, f.read_text()))
+    assert skips == [], f"lanes claiming a height that lane-overflow cannot judge: {skips}"
+
+
 # ── the superset proof (T-2689 AC-4) ─────────────────────────────────────────
 
 def test_occupancy_form_is_a_strict_superset_of_the_shipped_top_y_form():

@@ -78,6 +78,12 @@ discipline: no speculative rules — each one has a task-traceable origin).
                           test. A lane holding a type with no occupancy entry SKIPS
                           rather than defaulting — guessing a renderer constant is what
                           T-2684's band model cost (7 phantom findings on a clean map).
+                          Those skips are PRINTED as exit-code-neutral NOTE lines
+                          (T-2690, adopting 832's SKIP-not-PASS severity from rail 342):
+                          with only present/absent, "evaluated and clean" reads exactly
+                          like "never evaluated", which is the G-071 false green. Lanes
+                          with no members or no declared height make no containment
+                          claim and stay silent — out of scope, not unevaluable.
 
 Exit codes: 0 clean, 1 findings, 2 usage/environment error.
 
@@ -426,24 +432,66 @@ def lane_overflow(map_name: str, xml_text: str) -> list:
     its height, and guessing a renderer constant is the T-2684 band-model error that
     produced 7 phantom findings on a clean map.
     """
+    return _lane_overflow_scan(map_name, xml_text)[0]
+
+
+def lane_overflow_skips(map_name: str, xml_text: str) -> list:
+    """Lanes that make a containment claim this rule could not judge.
+
+    T-2690, adopting 832's SKIP-not-PASS severity (their rail 342): with only
+    "finding" and "no finding", *evaluated and clean* is indistinguishable from
+    *never evaluated* — the false green the rule exists to prevent, and the G-071
+    shape exactly. They hit it first because their validator had only ERROR/WARN;
+    ours has only present/absent, which is the same hole one notch narrower.
+
+    Scope guard, also theirs and worth keeping: a lane with no members or no declared
+    height makes NO containment claim, so it is out of scope rather than unevaluable
+    and must not become permanent noise. Only a lane that claims a height AND holds
+    content we cannot measure is reported here.
+
+    Reported as exit-code-neutral notes, never as findings — a skip is an absence of
+    judgement, and counting it as a defect would be its own kind of false signal.
+    """
+    return _lane_overflow_scan(map_name, xml_text)[1]
+
+
+def _lane_overflow_scan(map_name: str, xml_text: str) -> tuple[list, list]:
     try:
         spec = parse_map(xml_text)
     except Exception:
-        return []  # malformed XML is already reported by lint_map
+        return [], []  # malformed XML is already reported by lint_map
     members: dict = {}
     for n in spec.get("nodes") or []:
         members.setdefault(n.get("lane"), []).append(n)
-    findings = []
+    findings: list = []
+    skips: list = []
     for lane in spec.get("lanes") or []:
         lane_id = lane.get("id")
         nodes = members.get(lane_id) or []
         height = lane.get("height")
-        # skip-not-pass: nothing to contain, no declared height, or an unplaced member
-        if not nodes or not height or any(not n.get("pos") for n in nodes):
+        # out of scope, not unevaluable: no members or no declared height means the
+        # map makes no claim about this band's capacity. Silent on purpose.
+        if not nodes or not height:
             continue
-        # ...or a type whose occupancy we do not know. Skipping is the loud option:
-        # the alternative is a default height, which is a guessed renderer constant.
-        if any(n.get("type") not in NODE_OCCUPANCY for n in nodes):
+        # unevaluable WITH a claim -> visible skip, never a silent pass
+        unplaced = [n["id"] for n in nodes if not n.get("pos")]
+        unknown = sorted({n.get("type") for n in nodes
+                          if n.get("pos") and n.get("type") not in NODE_OCCUPANCY})
+        if unplaced or unknown:
+            why = []
+            if unplaced:
+                why.append(f"{len(unplaced)} member(s) without aef:position "
+                           f"({', '.join(unplaced[:3])}{'…' if len(unplaced) > 3 else ''})")
+            if unknown:
+                # a guessed default height is the T-2684 band-model error; skip instead
+                why.append(f"node type(s) with no occupancy entry ({', '.join(unknown)})")
+            skips.append({
+                "rule": "lane-overflow-skip", "map": map_name, "lane": lane_id,
+                "detail": f'lane "{lane_id}" declares height={height} but ' +
+                          " and ".join(why) +
+                          f" — this lane is SKIPPED by lane-overflow, not passed by it",
+                "origin": "T-2690 (832 rail 342 SKIP-not-PASS)",
+            })
             continue
         height = float(height)
 
@@ -476,7 +524,7 @@ def lane_overflow(map_name: str, xml_text: str) -> list:
                       f"compress the node placement",
             "origin": "T-2687 GO / T-2688, occupancy leg T-2689 (832 rail 340)",
         })
-    return findings
+    return findings, skips
 
 
 def cross_map_typed_events(typed: list) -> list:
@@ -551,21 +599,31 @@ def main(argv=None):
 
     findings = []
     typed_all = []
+    skips = []
     for name, xml_text in targets:
         f, typed = lint_map(name, xml_text, idx, ghost_uuids)
         findings.extend(f)
         typed_all.extend(typed)
+        skips.extend(lane_overflow_skips(name, xml_text))
     findings.extend(cross_map_typed_events(typed_all))
 
     if args.json:
         print(json.dumps({"scanned": [n for n, _ in targets],
-                          "findings": findings}, indent=2))
+                          "findings": findings, "skips": skips}, indent=2))
     else:
         print(f"corpus lint: scanned {len(targets)} map(s)")
         for f in findings:
             print(f"  [{f['rule']}] {f['map']} :: {f['node']} — {f['detail']} "
                   f"(origin {f['origin']})")
-        print(f"{'CLEAN' if not findings else f'{len(findings)} finding(s)'}")
+        # NOTE lines, deliberately after the findings and outside the count: a skip is
+        # an absence of judgement, not a defect. Printed unconditionally rather than
+        # behind a flag, because the whole point is that it must not be possible to
+        # read a clean run as a complete one (832 rail 342, G-071 shape).
+        for s in skips:
+            print(f"  NOTE [{s['rule']}] {s['map']} :: {s['detail']} "
+                  f"(origin {s['origin']})")
+        print(f"{'CLEAN' if not findings else f'{len(findings)} finding(s)'}"
+              f"{f' — {len(skips)} lane(s) skipped, not judged' if skips else ''}")
     return 1 if findings else 0
 
 
