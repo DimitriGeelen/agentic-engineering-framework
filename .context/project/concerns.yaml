@@ -2412,6 +2412,22 @@ concerns:
     dispatch explicitly flagged the loop and recommended a concerns.yaml
     entry if it repeated; the 5th dispatch (this one) is the repeat.
 
+    **Second instance confirmed (T-2667, same package, 2026-07-30):** sibling
+    corpus-map task, same arc-014 pair-draft ritual, same terminal shape —
+    v8 promotion candidate fully agent-verified (byte-identical re-check,
+    two independent lint findings surfaced and recorded), blocked only on
+    operator taste + promotion GO. 6 consecutive dispatches
+    (2026-07-29T11:43 through 2026-07-30, this one) without a GO signal;
+    dispatches 3-5 each produced a genuinely new finding (T-2684's
+    lane-geometry defect, T-2687/2688's lane-overflow defect, this one's
+    832 rail-340 occupancy-formula intel) so "zero new evidence" is not
+    quite the right predicate for this instance — the loop persists even
+    when dispatches ARE individually productive, because productivity on
+    investigation doesn't relieve the terminal human-GO blocker. That
+    widens the gap's scope: the dispatch pool needs an exit for "blocked on
+    human GO" independent of whether the agent still finds incidental
+    things to record.
+
     This is the dispatch-loop sibling of G-071's silent-zero class: a
     deterministic pool (resolver/cron pick logic) keeps re-selecting a task
     whose world-assumption ("this task still has agent-actionable work") went
@@ -2448,4 +2464,4 @@ concerns:
   status: open
   created: 2026-07-30
   related_task: T-2665
-  related_tasks: [T-2665, G-071]
+  related_tasks: [T-2665, T-2667, G-071]

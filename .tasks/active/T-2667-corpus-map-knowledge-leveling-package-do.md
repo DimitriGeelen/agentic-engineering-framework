@@ -7,10 +7,10 @@ description: >
   as a corpus map + conformance rail. Fourth of the package's four worst-regression
   processes (T-2662 gap 6). Gated on the tier0-escalation P4 test outcome.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [process-layer, corpus]
 components: []
 related_tasks: [T-2662]
@@ -26,7 +26,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:20:57Z
-last_update: 2026-07-30T00:00:00Z
+last_update: 2026-07-30T01:10:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -241,6 +241,46 @@ declining to unilaterally pick a fix for either finding (both are named authorit
 not layout ones, per T-2684/T-2687). Recommend the operator resolve all three open
 questions (2-node membership, 253px overflow, promotion taste) in one pass on v8 in
 the designer, since fixing them separately means re-verifying the lint baseline twice.
+
+**Dispatch check-in (2026-07-30, this session) — rail 340 read, a THIRD defect surfaces,
+loop broken via G-072.** The prior session's handover flagged an unread 832 rail
+(offset 340, answering the H-height question from rail 338); read it live this
+dispatch:
+
+```
+termlink channel state --hub 192.168.10.107:9100 "dm:0e7ee6cad65137fc:6a646ce8b1bc6560" | awk '/\[340\]/,0'
+```
+
+832's finding: **H is not uniform** (events 36px, gateways 48px, tasks 64px) and a
+label-below allowance adds 18px to events/gateways at render time, giving *effective*
+occupancy of 54px (events), 66px (gateways), 64px (tasks) — the inversion means a
+36px event occupies more than a 48px gateway does not, but a 48px gateway occupies
+more than a 64px task's raw height suggests. Applied to this map's own headroom table:
+**`draft-knowledge-leveling`'s `framework` lane (headroom 18) overflows against ANY
+node type**, since the smallest possible occupancy (54px, events) already exceeds 18.
+This is distinct from the already-recorded `agent`-lane 253px overflow (T-2687/2688)
+and the `kl_dormant`/`kl_healing` membership call (T-2684) — a third, independent
+finding against v8, though not yet lint-enforced: the shipped `lane-overflow` rule
+(T-2688) is deliberately conservative (top-y-only) pending this exact per-type table,
+so `bin/fw corpus lint draft-knowledge-leveling` still reports only 2 findings, not 3.
+Implementing the occupancy-aware version is out of scope for this task (T-2667 promotes
+the map; it does not own `tools/corpus_lint.py`) — noting it here so the operator's
+eventual v8 round accounts for it rather than promoting into a rule that tightens out
+from under it. 832 also confirmed the render-defect mechanism likely behind their own
+T-310 origin screenshot (capacity, not just ordering) and is filing that as a separate
+task on their side; no action needed here.
+
+**Loop-breaking action taken:** this is the 6th consecutive dispatch of T-2667 without
+an operator GO signal (11:43, 18:20, 7b1b4b66f, b0e5410dc, 65a12af40, this one) — the
+same terminal shape G-072 registered for sibling T-2665 (all agent-verifiable work
+exhausted, blocked purely on human taste + promotion decision). Unlike T-2665's
+trigger, dispatches 3-5 here each surfaced a genuinely new finding, so this instance
+widens G-072 rather than repeating it verbatim (see concerns.yaml G-072 update).
+Applying the same interim mitigation as T-2665: **`horizon: later`** (auto-syncs
+`status: started-work → captured`), removing T-2667 from the dispatch pool without
+touching the Recommendation, evidence, or AC-4 Prep block above — operator decision
+via `fw task review T-2667` is unaffected. Not a completion or sovereignty action;
+"stop wasted redispatch" is delegated initiative per §Autonomous Mode Boundaries.
 
 ## AC-4 Prep (parked registry entry — paste at promotion)
 
@@ -481,3 +521,7 @@ in learnings.yaml today; 315 dash-form vs 234 legacy-indent entries — mixed fo
   and AC-4 (registry entry from the parked AC-4 Prep block, honest
   green/red recording) stay blocked on that human input — declining to
   fabricate approval. No further agent-only action available this round.
+
+### 2026-07-30T01:10:28Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
