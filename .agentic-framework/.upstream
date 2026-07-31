@@ -1,8 +1,11 @@
 # Vendored Agentic Engineering Framework — upstream sentinel (T-2232).
-# Records the framework's git origin URL at vendor-time so an in-consumer
+# Records the framework's upstream git URL at vendor-time so an in-consumer
 # `fw upgrade` can self-recover when .framework.yaml has no upstream_repo:.
+# Credential-free by construction (T-2693): resolved via
+# lib/url-credentials.sh, which prefers the public mirror and strips any
+# URL userinfo. Never hand-edit a credential back into this file.
 # Resolution precedence (in lib/upgrade.sh): --from-upstream flag, then
 # .framework.yaml upstream_repo:, then this sentinel. After a successful
 # sentinel-driven recovery, upgrade.sh persists the URL to .framework.yaml
 # so subsequent upgrades skip this fallback. Do not edit by hand.
-https://Ev5yUXablprdayFAXMsQN4K2y2k9bURUsem7hLsT@onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git
+https://github.com/DimitriGeelen/agentic-engineering-framework.git

@@ -468,18 +468,38 @@ GITIGNORE
     # vendored-without-sentinel is a legitimate state (file:// checkouts,
     # detached forks). Origin: ring20-dashboard .121do field failure
     # (T-2231), durable fix for the in-consumer upgrade path class.
+    #
+    # T-2693 / OBS-106: this used to read `origin` verbatim. A credentialed
+    # origin then wrote a live token into a TRACKED file (and echoed it to
+    # stdout below). Resolution now prefers the credential-free public mirror
+    # and strips userinfo regardless — see lib/url-credentials.sh for why the
+    # preference order is load-bearing rather than cosmetic.
     local _vendor_origin=""
     if [ -d "$vendor_source/.git" ]; then
-        _vendor_origin=$(git -C "$vendor_source" remote get-url origin 2>/dev/null) || true
-        if [ -z "$_vendor_origin" ]; then
-            _vendor_origin=$(git -C "$vendor_source" remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}') || true
+        # FW_LIB_DIR is set unconditionally at top level, but this function is
+        # also reachable from the early init path — resolve defensively.
+        local _urlcred_lib="${FW_LIB_DIR:-$FRAMEWORK_ROOT/lib}/url-credentials.sh"
+        if [ -f "$_urlcred_lib" ]; then
+            # shellcheck source=lib/url-credentials.sh
+            source "$_urlcred_lib"
+            _vendor_origin=$(fw_preferred_upstream_url "$vendor_source") || true
+        else
+            # Fail SAFE, not open. Falling back to a raw `remote get-url origin`
+            # here is precisely how OBS-106 happened, and it would do so
+            # silently. No sentinel is a legitimate state (consumers fall back
+            # to .framework.yaml); a leaked credential is not.
+            echo -e "  ${YELLOW}!${NC} .upstream sentinel skipped — lib/url-credentials.sh not found" >&2
+            echo -e "    Refusing to record an unredacted remote URL (T-2693 / OBS-106)." >&2
         fi
     fi
     if [ -n "$_vendor_origin" ]; then
         cat > "$dest/.upstream" <<UPSTREAM
 # Vendored Agentic Engineering Framework — upstream sentinel (T-2232).
-# Records the framework's git origin URL at vendor-time so an in-consumer
+# Records the framework's upstream git URL at vendor-time so an in-consumer
 # \`fw upgrade\` can self-recover when .framework.yaml has no upstream_repo:.
+# Credential-free by construction (T-2693): resolved via
+# lib/url-credentials.sh, which prefers the public mirror and strips any
+# URL userinfo. Never hand-edit a credential back into this file.
 # Resolution precedence (in lib/upgrade.sh): --from-upstream flag, then
 # .framework.yaml upstream_repo:, then this sentinel. After a successful
 # sentinel-driven recovery, upgrade.sh persists the URL to .framework.yaml

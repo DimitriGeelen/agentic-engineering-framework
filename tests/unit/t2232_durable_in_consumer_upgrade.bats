@@ -47,6 +47,11 @@ make_synthetic_framework_src() {
     touch "$src/FRAMEWORK.md" "$src/metrics.sh"
     cp "$FRAMEWORK_ROOT/bin/fw" "$src/bin/fw"
     chmod +x "$src/bin/fw"
+    # T-2693: do_vendor resolves the sentinel URL via lib/url-credentials.sh
+    # (credential stripping + public-mirror preference). Without it the vendor
+    # step deliberately refuses to write a sentinel at all, so the fixture must
+    # carry the dependency a real framework tree always has.
+    cp "$FRAMEWORK_ROOT/lib/url-credentials.sh" "$src/lib/url-credentials.sh"
     # Minimal git repo so do_vendor's `git -C remote get-url origin` works.
     (cd "$src" && git init -q 2>/dev/null && \
         git -c user.email=t@t -c user.name=t add FRAMEWORK.md && \
