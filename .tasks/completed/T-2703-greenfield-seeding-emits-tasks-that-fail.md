@@ -6,16 +6,16 @@ description: >
   Inception: Greenfield seeding emits tasks that fail the framework's own audit (CTL-027
   + missing Updates)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-31T11:09:08Z
-last_update: '2026-07-31T11:15:06Z'
-date_finished:
+last_update: 2026-07-31T12:16:21Z
+date_finished: 2026-07-31T12:16:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -132,7 +132,7 @@ test are in `docs/reports/T-2703-greenfield-seed-audit-failure.md`.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -213,7 +213,24 @@ detail: `docs/reports/T-2703-greenfield-seed-audit-failure.md`.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: RCA complete and reproduced independently of /opt/2026-Mehdi-demo (fresh seed
+in a throwaway scratch dir). Root cause: two unsynchronized sources of truth
+for inception task section-structure (`.tasks/templates/inception.md` vs
+`lib/seeds/tasks/greenfield/T-002-*.md`), the latter untouched since its
+authoring commit (T-460, 2026-03-13) despite CTL-027 landing 6+ weeks later
+(T-1263, 2026-04-25) and requiring exactly the sections it lacks. No test
+exercises `fw audit` against a freshly seeded project, so the drift was
+invisible for 3+ months. Recommend: (a) patch the seed templates to add the
+missing sections now (small, safe, fixes the live FAIL); (b) scope a follow-on
+build task to derive seeds from `.tasks/templates/` so this class cannot
+recur; reject changing CTL-027's scope (hides the failure, `fw inception
+decide` genuinely needs those sections) and reject weakening T-001's
+Verification gate (removes the only signal a fresh install is broken). Full
+detail: `docs/reports/T-2703-greenfield-seed-audit-failure.md`.
+
+**Date**: 2026-07-31T12:16:21Z
 
 ## Updates
 
@@ -222,3 +239,52 @@ detail: `docs/reports/T-2703-greenfield-seed-audit-failure.md`.
 
 ### 2026-07-31T11:12:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-31T12:16:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** RCA complete and reproduced independently of /opt/2026-Mehdi-demo (fresh seed
+in a throwaway scratch dir). Root cause: two unsynchronized sources of truth
+for inception task section-structure (`.tasks/templates/inception.md` vs
+`lib/seeds/tasks/greenfield/T-002-*.md`), the latter untouched since its
+authoring commit (T-460, 2026-03-13) despite CTL-027 landing 6+ weeks later
+(T-1263, 2026-04-25) and requiring exactly the sections it lacks. No test
+exercises `fw audit` against a freshly seeded project, so the drift was
+invisible for 3+ months. Recommend: (a) patch the seed templates to add the
+missing sections now (small, safe, fixes the live FAIL); (b) scope a follow-on
+build task to derive seeds from `.tasks/templates/` so this class cannot
+recur; reject changing CTL-027's scope (hides the failure, `fw inception
+decide` genuinely needs those sections) and reject weakening T-001's
+Verification gate (removes the only signal a fresh install is broken). Full
+detail: `docs/reports/T-2703-greenfield-seed-audit-failure.md`.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-31782ef8
+- **Timestamp:** 2026-07-31T12:16:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-944117ac
+- **Timestamp:** 2026-07-31T12:16:22Z
+- **Overall:** CONFIRMED
+- **Claims:** 8
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `.tasks/templates/inception.md` | file | ✓ pass |
+| `docs/reports/T-2703-greenfield-seed-audit-failure.md` | file | ✓ pass |
+| `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` | file | ✓ pass |
+| `tests/unit/greenfield_seed_audit_prototype.bats` | file | ✓ pass |
+| `T-002` | task | ✓ pass |
+| `T-460` | task | ✓ pass |
+| `T-1263` | task | ✓ pass |
+| `T-001` | task | ✓ pass |
+
+### 2026-07-31T12:16:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

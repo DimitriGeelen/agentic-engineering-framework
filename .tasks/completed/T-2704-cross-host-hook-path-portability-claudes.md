@@ -6,16 +6,16 @@ description: >
   Inception: Cross-host hook path portability: .claude/settings.json bakes absolute
   fw path (25/25)
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-31T11:14:07Z
-last_update: '2026-07-31T11:15:09Z'
-date_finished:
+last_update: 2026-07-31T12:16:28Z
+date_finished: 2026-07-31T12:16:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -101,15 +101,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -166,9 +166,47 @@ Directly verified in this repo: 25/25 hook entries in .claude/settings.json carr
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Directly verified in this repo: 25/25 hook entries in .claude/settings.json carry the absolute path /opt/999-Agentic-Engineering-Framework/bin/fw and 0 use ${CLAUDE_PROJECT_DIR}. docs/claude-code-settings.md documents the opposite as achieved intent (citing T-496/T-498), so doc and artifact disagree. Any host whose checkout path differs gets a doctor FAIL on all 25 hooks — i.e. governance silently off on every host but this one. GO is on fixing the GENERATOR (bin/hook-enable.sh, lib/init.sh, possibly lib/upgrade.sh), not the artifact; the open questions are the framework-vs-consumer path split and whether exec form is required.
+
+**Date**: 2026-07-31T12:16:27Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-07-31T12:16:27Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Directly verified in this repo: 25/25 hook entries in .claude/settings.json carry the absolute path /opt/999-Agentic-Engineering-Framework/bin/fw and 0 use ${CLAUDE_PROJECT_DIR}. docs/claude-code-settings.md documents the opposite as achieved intent (citing T-496/T-498), so doc and artifact disagree. Any host whose checkout path differs gets a doctor FAIL on all 25 hooks — i.e. governance silently off on every host but this one. GO is on fixing the GENERATOR (bin/hook-enable.sh, lib/init.sh, possibly lib/upgrade.sh), not the artifact; the open questions are the framework-vs-consumer path split and whether exec form is required.
+
+### 2026-07-31T12:16:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8e6f2f9a
+- **Timestamp:** 2026-07-31T12:16:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-986b491c
+- **Timestamp:** 2026-07-31T12:16:29Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-496` | task | ✓ pass |
+| `T-498` | task | ✓ pass |
+
+### 2026-07-31T12:16:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
