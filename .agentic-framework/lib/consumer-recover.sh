@@ -41,10 +41,14 @@ _cr_log() {
 # Strip embedded user[:password]@ from an HTTPS URL.
 # https://TOKEN@host/path  → https://host/path
 # Leaves SSH-style URLs (git@host:path) untouched.
+#
+# T-2693: the implementation moved to lib/url-credentials.sh so the vendor
+# write path in bin/fw uses the SAME transformation instead of a second sed
+# dialect. This stays as the local name so existing callers here are unchanged.
+# shellcheck source=url-credentials.sh
+source "$(dirname "${BASH_SOURCE[0]}")/url-credentials.sh"
 _cr_strip_credentials() {
-    local url="$1"
-    # Match https://anything@host pattern (PAT or user:pass) and remove the anything@
-    echo "$url" | sed -E 's|^(https?://)[^/@]+@|\1|'
+    fw_strip_url_credentials "$1"
 }
 
 # Resolve the canonical upstream URL.
