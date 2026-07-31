@@ -87,6 +87,48 @@ Note this is *not* an argument for rewriting history. Old versions are immutable
       T-2623 excluded them from the *baseline* for a good reason; that reason may or may not
       extend to a census that does not feed the gate
 
+## First census — run before building anything
+
+`corpus lint` already accepts raw file paths, so the whole-history answer needs no code
+change; only the *addressing* and the *sweep* do. Running it first means the tool gets built
+against a known-correct expected output instead of the tool defining its own truth.
+
+**28 stored versions judged, 14 carry findings.** The default sweep reports 4.
+
+| map@version | findings | rules |
+|---|---|---|
+| aef-session-lifecycle@v1 | 2 | lane-geometry, lane-overflow |
+| aef-dispatch-loop@v1, @v2 | 1 each | emitterless-typed-event (known, T-2659 rail RED) |
+| draft-knowledge-leveling@v2, v3, v6, v7, **v8** | 3 each | lane-geometry ×1, lane-overflow ×2 |
+| draft-knowledge-leveling@v4, v5 | 1 each | lane-geometry only — **no spill** |
+| draft-knowledge-leveling@v1 | 0 | — |
+| draft-exception-handling@v2 | 1 | lane-geometry (v1, v3 clean) |
+| draft-task-creation@v2 | 1 | lane-geometry (v1, v3 clean) |
+| draft-trigger-handling@v1 | 1 | lane-overflow (v2–v6 clean — later authoring fixed it) |
+| t2584-scratch@v1 | 1 | legacy-ref (known ghost referent) |
+
+**Independent confirmation of the 832 exchange.** `draft-knowledge-leveling@v3` returns
+exactly 1 lane-geometry + 2 lane-overflow — the same shape reported at rail 343 (wholesale
+inversion 5/5 and 11/11, plus agent 194px and framework 44px spills). Two different runs,
+same witnesses.
+
+**★ The finding worth acting on: the spill entered at v6 and was carried forward.**
+v5 has the inversion but **no** overflow; v6 adds both spills (agent 262px, framework 130px)
+and v7/v8 inherit them. Node ids change across that boundary (`agt_0_healing` →
+`agt_2_healing`, `fw_end_already` → `fw_7_refused`), so v5→v6 was a substantial
+re-authoring that grew content past the declared bands. Nobody saw it because the sweep
+only ever judged `latest` **and** the overflow rule did not exist yet — T-2688/T-2689
+shipped afterwards. This is precisely the blind spot this task describes, caught in its
+own first census.
+
+That is decision-relevant for the pending v8 promotion: the spill is not inherent to the
+map, it is a regression from one authoring step, and v4/v5 show the same content fitting.
+
+**Caveat, stated rather than buried:** a finding count is not a classification. v3 and v8
+both report "3 findings", but v3 is a wholesale inversion and v8 is the two-node authority
+call — the detail distinguishes them, the count does not. This is the same imprecision I
+made at rail 339 and is why the third AC above requires findings to carry their version.
+
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
