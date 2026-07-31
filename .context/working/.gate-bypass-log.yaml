@@ -5454,3 +5454,10 @@ Both fixtures re-pinned to 832s '
 FW_SWITCH_FOCUS=1 git add docs/context-compaction.md agents/context/checkpoint.sh CLAUDE.md .tasks/active/T-2705-*.md
 git diff --cached --name-only
 FW_SWITCH_'
+- timestamp: '2026-07-31T12:11:51Z'
+  task: 'T-2705'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-319'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+timeout 200 bin/fw note "Dialect divergence with 832 on exclusiveGateway branch conditions: AEF corpus carries 0 conditionExpression across 381 sequenceFlows '

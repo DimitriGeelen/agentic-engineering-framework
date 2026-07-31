@@ -872,3 +872,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-109
+  text: "Dialect divergence with 832 on exclusiveGateway branch conditions: AEF corpus carries 0 conditionExpression across 381 sequenceFlows (128 of 129 gateway-outgoing edges are named-without-condition); 832 measured 0 of 113 named-without-condition on theirs. 832 settled the shared-dialect question by measuring one side and concluded named-without-condition was an outlier -- on our side it is the only form. Consequence: their W-XML-GW-AMBIGUOUS rule fires on 47 of our 48 gateways, so on our dialect it reports a dialect boundary as a defect (L-527 tune-out risk). Also measured for their T-319: strict identical-targetRef reconvergence = 2 instances, both already caught by W-XML-GW-AMBIGUOUS, T-319-unique = 0; recommended DECLINE. Rail 356."
+  captured: 2026-07-31T12:11:51Z
+  context_task: T-2705
+  tags: []
+  status: pending
+  promoted_to: null
