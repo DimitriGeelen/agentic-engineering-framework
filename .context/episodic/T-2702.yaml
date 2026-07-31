@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2702: Gate deadlock: budget-gate blocks the fw context focus that check-active-task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T11:43:35Z
+# ============================================================================
+
+task_id: T-2702
+task_name: "Gate deadlock: budget-gate blocks the fw context focus that check-active-task"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T11:01:31Z
+completed: 2026-07-31T11:43:15Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T13:06:13+02:00
+last_commit: 2026-07-31T13:06:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  gate deadlock — budget-gate refused the 'fw context focus' that check-active-task prescribes
+
+# Key outcomes
+outcomes:
+  - '`fw context focus T-XXX` is permitted by `budget-gate.sh` at critical, so the'
+  - 'The block message and the allowlist are pinned to each other by a test — any'
+  - 'Negative-controlled: test proven RED when the allowlist entry is removed'
+  - 'No new red in `bin/fw test invariants` (T-2698/T-2699 remain the only reds)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - 'agents/context/budget-gate.sh'
+  - '.fabric/components/tests-lint-prescribed-commands-are-allowed.yaml'
+  - '.tasks/active/T-2702-gate-deadlock-budget-gate-blocks-the-fw-.md'
+  - 'tests/lint/prescribed-commands-are-allowed.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T13:06:13"
+    action: "T-2702: gate deadlock — budget-gate refused the 'fw context focus' that check-active-task prescribes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 41
+  commits: 1
+  files_changed: 5
+  lines_added: 373
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2702-gate-deadlock-budget-gate-blocks-the-fw-.md
+generated_by: context-agent-hybrid
