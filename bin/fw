@@ -3978,7 +3978,7 @@ for job in jobs:
 
     # T-1249: Resolve ALL occurrences of bare 'fw' (not just leading)
     # T-1720: cd into PROJECT_ROOT for fw commands too — fw subcommands that
-    # invoke `python3 -m lib.X` need cwd=PROJECT_ROOT (cron's default cwd is
+    # invoke 'python3 -m lib.X' need cwd=PROJECT_ROOT (cron's default cwd is
     # HOME). Without this the module import fails and the line silently no-ops.
     if 'fw ' in command:
         resolved = re.sub(r'\bfw\b', f'\"{fw_path}\"', command)
