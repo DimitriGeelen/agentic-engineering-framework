@@ -1,13 +1,16 @@
 ---
 id: T-2694
-name: "corpus lint judges latest only — stored versions never re-judged when rules strengthen"
+name: "corpus lint judges latest only — stored versions never re-judged when rules
+  strengthen"
 description: >
-  Default sweep resolves meta['latest'] per project, so a map that passed under a weaker rule set is never re-examined when the rules improve. Named targets resolve to latest too; there is no map@vN addressing. Surfaced by 832 rail 342.
+  Default sweep resolves meta['latest'] per project, so a map that passed under a
+  weaker rule set is never re-examined when the rules improve. Named targets resolve
+  to latest too; there is no map@vN addressing. Surfaced by 832 rail 342.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T08:16:01Z
-last_update: 2026-07-31T08:16:01Z
-date_finished: null
+last_update: 2026-07-31T08:45:15Z
+date_finished: 2026-07-31T08:45:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +37,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-31T08:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-31T08:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2694: corpus lint judges latest only — stored versions never re-judged when rules strengthen
@@ -68,22 +99,22 @@ Note this is *not* an argument for rewriting history. Old versions are immutable
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `map@vN` is addressable as a lint target, so any stored version can be named directly
+- [x] `map@vN` is addressable as a lint target, so any stored version can be named directly
       rather than reached by raw file path
-- [ ] A sweep mode judges **every stored version**, not just `latest` — off by default so
+- [x] A sweep mode judges **every stored version**, not just `latest` — off by default so
       the standing baseline and its pinned count do not move
-- [ ] Findings carry the version they came from, so a v3 finding is never mistaken for a
+- [x] Findings carry the version they came from, so a v3 finding is never mistaken for a
       finding against the promotion candidate (my own rail-339 imprecision: knowledge-leveling
       is a two-node authority call at v8 and a wholesale inversion at v3 — the version *is*
       the finding)
-- [ ] Running the all-versions sweep over the live store produces a per-version report, and
+- [x] Running the all-versions sweep over the live store produces a per-version report, and
       its output is recorded here as the first census — including `draft-knowledge-leveling v3`,
       whose expected result is already known independently from 832's run
-- [ ] The default sweep's finding count is **unchanged** (baseline 4), proven by test, so
+- [x] The default sweep's finding count is **unchanged** (baseline 4), proven by test, so
       this adds a lens without moving the gate
-- [ ] Tests pin: `map@vN` resolution, an unknown version failing loudly rather than falling
+- [x] Tests pin: `map@vN` resolution, an unknown version failing loudly rather than falling
       back to latest, and the all-versions mode finding something the default sweep does not
-- [ ] Whether drafts join the all-versions sweep is decided explicitly and written down —
+- [x] Whether drafts join the all-versions sweep is decided explicitly and written down —
       T-2623 excluded them from the *baseline* for a good reason; that reason may or may not
       extend to a census that does not feed the gate
 
@@ -193,6 +224,10 @@ made at rail 339 and is why the third AC above requires findings to carry their 
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_corpus_lint.py -q
+out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "^4 finding(s)"
+out=$(python3 tools/corpus_lint.py --all-versions 2>&1); echo "$out" | grep -q "^25 finding(s)"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -244,6 +279,23 @@ made at rail 339 and is why the third AC above requires findings to carry their 
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-07-31 — drafts join the all-versions sweep
+- **Chose:** `collect_all_versions` includes `draft-*` projects. `--all-versions`
+  is the only mode that scans them; the default (latest-only) sweep still skips
+  them exactly as before.
+- **Why:** T-2623 excluded drafts from the *baseline* so sketch churn never moves
+  the gate — that is a baseline-stability decision, not a judgment-scope one. The
+  first census's headline finding (the v6 lane-overflow regression carried forward
+  into the v8 promotion candidate) lives entirely inside a draft project.
+  Excluding drafts from the all-versions lens would hide exactly the version-scope
+  blind spot this task exists to close. The census count (28 scanned, 14 with
+  findings) only holds with drafts included — without them the corpus is 11
+  versions, all clean or unremarkable.
+- **Rejected:** excluding drafts from all-versions too, for symmetry with the
+  baseline. Rejected because "symmetry with the baseline" isn't a reason on its
+  own — the baseline's exclusion reason (stability of a pinned gate count) doesn't
+  apply to a mode that isn't a gate and exists specifically to surface history.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -260,3 +312,18 @@ made at rail 339 and is why the third AC above requires findings to carry their 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2694-corpus-lint-judges-latest-only--stored-v.md
 - **Context:** Initial task creation
+
+### 2026-07-31T08:41:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0e02de44
+- **Timestamp:** 2026-07-31T08:45:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-31T08:45:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

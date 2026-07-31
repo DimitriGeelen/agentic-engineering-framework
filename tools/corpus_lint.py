@@ -88,7 +88,13 @@ discipline: no speculative rules — each one has a task-traceable origin).
 Exit codes: 0 clean, 1 findings, 2 usage/environment error.
 
 Scans the live store's latest versions by default; pass map ids and/or .bpmn
-file paths to scan a subset. Read-only — never writes the store.
+file paths to scan a subset, `map@vN` to name a specific stored version
+directly (unknown version fails loudly, never falls back to latest), or
+--all-versions to sweep every stored version of every project (including
+drafts) — off by default so the standing baseline never moves. Read-only —
+never writes the store. Origin: T-2694 — the default sweep only ever judges
+`latest`, so a version that passed under a weaker rule set is never
+re-examined when the rules get stronger.
 """
 
 import argparse
@@ -547,8 +553,43 @@ def cross_map_typed_events(typed: list) -> list:
     return findings
 
 
+def _stored_versions(d: Path, meta: dict) -> list:
+    """Sorted version ints this map has a .bpmn file for. Prefers the meta
+    `versions` ledger; falls back to 1..latest for older meta shapes that
+    predate it."""
+    vs = sorted({int(e["v"]) for e in meta.get("versions") or [] if e.get("v")})
+    if not vs:
+        vs = list(range(1, int(meta.get("latest") or 0) + 1))
+    return [v for v in vs if (d / f"v{v}.bpmn").is_file()]
+
+
+def _resolve_versioned_target(t: str, store: Path):
+    """`map@vN` → (name, xml_text), or None if `t` isn't that shape at all.
+
+    Unknown version fails loudly (SystemExit(2)) rather than falling back to
+    latest — that silent fallback is exactly the version-scope blind spot
+    this addressing exists to close (T-2694)."""
+    map_id, sep, vstr = t.rpartition("@v")
+    if not sep or not vstr.isdigit():
+        return None
+    d = store / map_id
+    mp = d / "meta.json"
+    if not (d.is_dir() and mp.is_file()):
+        print(f"corpus lint: not a file and not a store map id: {t}", file=sys.stderr)
+        raise SystemExit(2)
+    meta = json.loads(mp.read_text())
+    v = int(vstr)
+    available = _stored_versions(d, meta)
+    if v not in available:
+        print(f"corpus lint: {map_id} has no version v{v} — stored versions are "
+              f"{available or '(none)'}", file=sys.stderr)
+        raise SystemExit(2)
+    return f"{map_id}@v{v}", (d / f"v{v}.bpmn").read_text()
+
+
 def collect_targets(args_targets: list, store: Path) -> list:
-    """[(name, xml_text)] — store map ids at latest version, or file paths."""
+    """[(name, xml_text)] — store map ids at latest version, `map@vN` at a
+    named version, or file paths."""
     out = []
     if not args_targets:
         if not store.is_dir():
@@ -573,6 +614,10 @@ def collect_targets(args_targets: list, store: Path) -> list:
         if p.is_file():
             out.append((str(p), p.read_text()))
             continue
+        versioned = _resolve_versioned_target(t, store)
+        if versioned is not None:
+            out.append(versioned)
+            continue
         d = store / t
         if d.is_dir():
             meta = json.loads((d / "meta.json").read_text())
@@ -584,18 +629,53 @@ def collect_targets(args_targets: list, store: Path) -> list:
     return out
 
 
+def collect_all_versions(store: Path) -> list:
+    """[(name@vN, xml_text)] for EVERY stored version of EVERY project.
+
+    Includes drafts (T-2694 decision, recorded in the task's Decisions
+    section): T-2623 excluded drafts from the default latest-only baseline so
+    sketch churn never moves the gate — that is a baseline-stability
+    decision. This mode is not the gate; it is an off-by-default lens for
+    judging the corpus's whole history, and the census that motivated this
+    function found its headline finding (the v6 lane-overflow regression)
+    inside a draft project. Excluding drafts here would hide exactly the
+    blind spot this mode exists to close, so they stay in scope."""
+    out = []
+    if not store.is_dir():
+        raise SystemExit(2)
+    for d in sorted(store.iterdir()):
+        mp = d / "meta.json"
+        if not (d.is_dir() and mp.is_file()):
+            continue
+        meta = json.loads(mp.read_text())
+        for v in _stored_versions(d, meta):
+            out.append((f"{d.name}@v{v}", (d / f"v{v}.bpmn").read_text()))
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="fw corpus lint")
     ap.add_argument("targets", nargs="*",
                     help="map ids and/or .bpmn files (default: whole store, latest versions)")
     ap.add_argument("--store", default=None, help="override store path (tests)")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--all-versions", action="store_true",
+                    help="judge EVERY stored version of every project (incl. drafts), "
+                         "not just latest — off by default, whole-store only "
+                         "(T-2694; does not combine with explicit targets)")
     args = ap.parse_args(argv)
 
     store = Path(args.store) if args.store else STORE
     idx = store_index(store)
     ghost_uuids = _registry_ghost_uuids(store)
-    targets = collect_targets(args.targets, store)
+    if args.all_versions:
+        if args.targets:
+            print("corpus lint: --all-versions sweeps the whole store; it does not "
+                  "combine with explicit targets", file=sys.stderr)
+            raise SystemExit(2)
+        targets = collect_all_versions(store)
+    else:
+        targets = collect_targets(args.targets, store)
 
     findings = []
     typed_all = []

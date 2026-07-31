@@ -65,6 +65,22 @@ def _store(tmp_path, registry_ghosts=()):
     return store
 
 
+def _store_multi(tmp_path):
+    """Store with one map whose v1 carries a legacy-ref finding and whose
+    latest (v2) is clean — so all-versions mode sees a finding the default
+    (latest-only) sweep does not."""
+    store = tmp_path / "projects"
+    d = store / "multi-map"
+    d.mkdir(parents=True)
+    (d / "meta.json").write_text(json.dumps({
+        "id": "multi-map", "uuid": LIVE_UUID, "latest": 2,
+        "versions": [{"v": 1}, {"v": 2}],
+    }))
+    (d / "v1.bpmn").write_text(HEAD + _throw("n1", 'targetWorkflow="live-map" linkId=""') + TAIL)
+    (d / "v2.bpmn").write_text(HEAD + TAIL)
+    return store
+
+
 def _lint(xml_body, store, name="m", editor_resolves_uuid=True):
     # editor_resolves_uuid=True keeps the pre-T-2612 rule fixtures hermetic from
     # the repo's live pin state; the editor-unbindable tests pass False explicitly.
@@ -207,6 +223,87 @@ def test_ghost_ref_silent_on_registered_ghost(tmp_path):
     assert f == [], f
 
 
+# ── map@vN addressing + all-versions sweep (origin T-2694) ────────────────────
+
+def test_versioned_target_resolves_named_version(tmp_path):
+    store = _store_multi(tmp_path)
+    targets = corpus_lint.collect_targets(["multi-map@v1"], store)
+    assert [n for n, _ in targets] == ["multi-map@v1"]
+    idx = corpus_lint.store_index(store)
+    ghosts = corpus_lint._registry_ghost_uuids(store)
+    findings, _ = corpus_lint.lint_map("multi-map@v1", targets[0][1], idx, ghosts)
+    assert _rules(findings) == ["legacy-ref"], findings
+
+
+def test_versioned_target_resolves_a_different_version_than_latest(tmp_path):
+    store = _store_multi(tmp_path)
+    v1 = corpus_lint.collect_targets(["multi-map@v1"], store)[0][1]
+    v2 = corpus_lint.collect_targets(["multi-map@v2"], store)[0][1]
+    assert v1 != v2
+
+
+def test_versioned_target_unknown_version_fails_loudly(tmp_path):
+    import pytest
+    store = _store_multi(tmp_path)
+    with pytest.raises(SystemExit) as exc:
+        corpus_lint.collect_targets(["multi-map@v99"], store)
+    assert exc.value.code == 2
+
+
+def test_versioned_target_unknown_map_fails_loudly(tmp_path):
+    import pytest
+    store = _store_multi(tmp_path)
+    with pytest.raises(SystemExit) as exc:
+        corpus_lint.collect_targets(["nope@v1"], store)
+    assert exc.value.code == 2
+
+
+def test_default_sweep_excludes_versioned_form_findings(tmp_path):
+    """The default (latest-only) sweep must not see the v1-only finding —
+    proves the two modes are genuinely separate lenses, not one relabeled."""
+    store = _store_multi(tmp_path)
+    targets = corpus_lint.collect_targets([], store)
+    assert [n for n, _ in targets] == ["multi-map@v2"]
+
+
+def test_all_versions_finds_what_default_sweep_does_not(tmp_path):
+    store = _store_multi(tmp_path)
+    default_targets = corpus_lint.collect_targets([], store)
+    all_targets = corpus_lint.collect_all_versions(store)
+    assert [n for n, _ in all_targets] == ["multi-map@v1", "multi-map@v2"]
+
+    idx = corpus_lint.store_index(store)
+    ghosts = corpus_lint._registry_ghost_uuids(store)
+
+    default_findings = []
+    for name, xml_text in default_targets:
+        f, _ = corpus_lint.lint_map(name, xml_text, idx, ghosts)
+        default_findings.extend(f)
+    assert default_findings == []
+
+    all_findings = []
+    for name, xml_text in all_targets:
+        f, _ = corpus_lint.lint_map(name, xml_text, idx, ghosts)
+        all_findings.extend(f)
+    assert _rules(all_findings) == ["legacy-ref"]
+    assert all_findings[0]["map"] == "multi-map@v1"
+
+
+def test_all_versions_includes_drafts(tmp_path):
+    store = tmp_path / "projects"
+    d = store / "draft-x"
+    d.mkdir(parents=True)
+    (d / "meta.json").write_text(json.dumps({
+        "id": "draft-x", "uuid": LIVE_UUID, "latest": 1, "versions": [{"v": 1}],
+    }))
+    (d / "v1.bpmn").write_text(HEAD + TAIL)
+    # excluded from the default sweep (T-2623)...
+    assert corpus_lint.collect_targets([], store) == []
+    # ...but included in the all-versions sweep (T-2694 decision — see
+    # collect_all_versions docstring + task Decisions section)
+    assert [n for n, _ in corpus_lint.collect_all_versions(store)] == ["draft-x@v1"]
+
+
 # ── live-corpus expectations (as-served today; updated by T-2605 recreate) ────
 
 def test_live_corpus_current_findings():
@@ -272,3 +369,32 @@ def test_live_corpus_current_findings():
     # occupancy, more than a 64px task), so neither the top-y form nor a height-only
     # table would have found it. Also expected to stand until the operator's authority
     # call on this map, and to DISAPPEAR then rather than be re-pinned.
+
+
+def test_live_corpus_all_versions_census():
+    """T-2694 first census, pinned: 28 stored versions across the live store
+    (including drafts), 14 carrying findings — the default (latest-only)
+    sweep above sees only 4. This is the count that motivated the task: most
+    of the 14 were never judged by the current rule set before this mode
+    existed. Update deliberately when the store grows or a rule changes."""
+    store = REPO_ROOT / ".context" / "designer" / "projects"
+    idx = corpus_lint.store_index(store)
+    ghosts = corpus_lint._registry_ghost_uuids(store)
+    targets = corpus_lint.collect_all_versions(store)
+    assert len(targets) == 28, [n for n, _ in targets]
+
+    findings, typed = [], []
+    for name, xml_text in targets:
+        f, t = corpus_lint.lint_map(name, xml_text, idx, ghosts)
+        findings.extend(f)
+        typed.extend(t)
+    findings.extend(corpus_lint.cross_map_typed_events(typed))
+
+    versions_with_findings = sorted({f["map"] for f in findings})
+    assert len(versions_with_findings) == 14, versions_with_findings
+    # the independently-confirmed headline witness (832 rail 342/343): the
+    # pinned promotion candidate's v3 ancestor was never judged by us before
+    # this mode existed, and reproduces their wholesale-inversion report
+    # witness-for-witness.
+    v3 = sorted(f["rule"] for f in findings if f["map"] == "draft-knowledge-leveling@v3")
+    assert v3 == ["lane-geometry", "lane-overflow", "lane-overflow"], v3

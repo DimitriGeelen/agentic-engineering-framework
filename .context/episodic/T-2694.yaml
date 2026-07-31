@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2694: corpus lint judges latest only — stored versions never re-judged when rules
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T08:45:28Z
+# ============================================================================
+
+task_id: T-2694
+task_name: "corpus lint judges latest only — stored versions never re-judged when rules"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T08:16:01Z
+completed: 2026-07-31T08:45:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-31T10:17:10+02:00
+last_commit: 2026-07-31T10:20:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file version-scope blind spot — corpus lint judges latest only. first all-versions census — 28 judged, 14 with findings (default sweep sees 4)
+
+# Key outcomes
+outcomes:
+  - '`map@vN` is addressable as a lint target, so any stored version can be named directly'
+  - 'A sweep mode judges **every stored version**, not just `latest` — off by default so'
+  - 'Findings carry the version they came from, so a v3 finding is never mistaken for a'
+  - 'Running the all-versions sweep over the live store produces a per-version report, and'
+  - 'The default sweep''s finding count is **unchanged** (baseline 4), proven by test, so'
+  - 'Tests pin: `map@vN` resolution, an unknown version failing loudly rather than falling'
+  - 'Whether drafts join the all-versions sweep is decided explicitly and written down —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-07-31 — drafts join the all-versions sweep'
+    chose: '`collect_all_versions` includes `draft-*` projects. `--all-versions`'
+    rationale: 'T-2623 excluded drafts from the *baseline* so sketch churn never moves'
+    alternatives_rejected: ['excluding drafts from all-versions too, for symmetry with the']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2694-corpus-lint-judges-latest-only--stored-v.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T10:17:10"
+    action: "T-2694: file version-scope blind spot — corpus lint judges latest only"
+  - time: "2026-07-31T10:20:59"
+    action: "T-2694: first all-versions census — 28 judged, 14 with findings (default sweep sees 4)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 29
+  commits: 2
+  files_changed: 1
+  lines_added: 262
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2694-corpus-lint-judges-latest-only--stored-v.md
+generated_by: context-agent-hybrid
