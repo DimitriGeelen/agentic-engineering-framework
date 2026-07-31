@@ -1,8 +1,15 @@
 ---
 id: T-2699
-name: "fw help omits 21 router commands including arc, corpus, designer, integrate, sync"
+name: "fw help omits 21 router commands including arc, corpus, designer, integrate,
+  sync"
 description: >
-  tests/lint/help-router-parity.bats (red, unrun until T-2697): the router accepts arc bpmn bvp corpus designer gpu integrate mirror orchestrator outcome pause pending policy release resolver reviewer sync ux-review watchtower worktree write-set, none of which show_help lists. Discoverability drift — an agent or operator reading 'fw help' cannot find half the framework. Decide per command whether it belongs in the top-level help or in a documented second tier, then make show_help and the test agree.
+  tests/lint/help-router-parity.bats (red, unrun until T-2697): the router accepts
+  arc bpmn bvp corpus designer gpu integrate mirror orchestrator outcome pause pending
+  policy release resolver reviewer sync ux-review watchtower worktree write-set, none
+  of which show_help lists. Discoverability drift — an agent or operator reading 'fw
+  help' cannot find half the framework. Decide per command whether it belongs in the
+  top-level help or in a documented second tier, then make show_help and the test
+  agree.
 
 status: captured
 workflow_type: build
@@ -22,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T09:21:57Z
-last_update: 2026-07-31T09:21:57Z
-date_finished: null
+last_update: '2026-07-31T09:30:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +41,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-31T09:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-31T09:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2699: fw help omits 21 router commands including arc, corpus, designer, integrate, sync

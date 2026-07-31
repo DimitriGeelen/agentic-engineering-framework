@@ -4015,3 +4015,10 @@ X'` returning empty group."
   date: 2026-07-31
   context: Added via context agent
   application: TBD
+- id: L-527
+  learning: "A guard with a high false-positive rate is not a weaker guard, it is an unusable one — the honest response to it is to ignore it. The no-bare-fw detector held three variants of one confusion: it matched `fw` inside `bin/fw` (a `/` is a word boundary, so it fired on the exact form it wanted), it could not tell a command from prose naming the command (\"Works for: fw task update\"), and after the first rewrite it matched a `case` dispatch pattern. Satisfying it would have meant degrading real messages. Fix is POSITIONAL not lexical: within an EMITTED string, after whitespace, a list marker and any ENV=value prefixes, does the command position start with `fw `? L-519 generalises — a text match cannot tell code from prose about code IN EITHER DIRECTION: prose can satisfy an assertion it should fail, and violate one it should pass."
+  source: P-001
+  task: unknown
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD

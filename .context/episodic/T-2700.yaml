@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2700: bare fw in block messages of update-task.sh and check-active-task.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T09:40:37Z
+# ============================================================================
+
+task_id: T-2700
+task_name: "bare fw in block messages of update-task.sh and check-active-task.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T09:22:42Z
+completed: 2026-07-31T09:40:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-31T11:37:36+02:00
+last_commit: 2026-07-31T11:37:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  two bare-fw commands fixed; the detector that found them was wrong three ways. refresh vendored update-task.sh
+
+# Key outcomes
+outcomes:
+  - 'The two real offenders emit `bin/fw`, so every command in a block message is'
+  - 'The detector no longer flags `bin/fw` — matching inside the very form it wants is a'
+  - 'The detector distinguishes a **command** from **prose about a command**: it fires only'
+  - '**Negative controls, run:** re-introducing a bare `fw` command turns the test red, and'
+  - '`bats tests/lint/no-bare-fw-in-gate-scripts.bats` is 14/14 (13 original + a self-test'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'two bare-fw commands fixed; the detector that found them was wrong three ways'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.tasks/active/T-2700-bare-fw-in-block-messages-of-update-task.md'
+  - 'tests/lint/no-bare-fw-in-gate-scripts.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T11:37:36"
+    action: "T-2700: two bare-fw commands fixed; the detector that found them was wrong three ways"
+  - time: "2026-07-31T11:37:59"
+    action: "T-2700: refresh vendored update-task.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 2
+  files_changed: 4
+  lines_added: 175
+  lines_removed: 52
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2700-bare-fw-in-block-messages-of-update-task.md
+generated_by: context-agent-hybrid

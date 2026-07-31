@@ -5395,3 +5395,19 @@ Co-Authored-By: Claude Opus 5 (1M'
   command: 'FW_SWITCH_FOCUS=1 git add -A .context/ .tasks/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2697: close — L-526 captured (orphaned guard suite + shape-pinned tests)
 
 Co-Authored-By: Claude Opus 5 (1M co'
+- timestamp: '2026-07-31T09:35:25Z'
+  task: 'T-2700'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1'
+  command: 'cat > /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/946b63a3-8120-46ff-aafa-bfbd30b1e1dc/scratchpad/helper.txt <<HELPEREOF
+#!/usr/bin/env bats
+# Invariant: gate scripts must not emit bare fw'
+- timestamp: '2026-07-31T09:41:40Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2700'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .context/ .tasks/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2700: close — L-527 captured (unusable guards, positional not lexical)
+
+Co-Authored-By: Claude Opus 5 (1M cont'
