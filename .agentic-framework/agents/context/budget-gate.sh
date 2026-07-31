@@ -89,9 +89,12 @@ SIGNAL_EOF
 # 350K bug). This makes that state LOUD at every warn/urgent/critical surface so
 # it can never silently disarm the loop again. Emits nothing when supervised.
 _supervision_notice() {
+    # Agent-facing status line + a suggestion to relay to the operator: only a
+    # human can type 'claude-fw' or '/compact' (T-2143 audience axis) — the
+    # agent cannot invoke either as a tool call, so pass it along in prose.
     if [ "${FW_CLAUDE_FW_SUPERVISED:-0}" != "1" ]; then
         echo "  ⚠ Unsupervised session (not under claude-fw): the budget auto-restart loop will NOT fire." >&2
-        echo "    Relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before you hit critical." >&2
+        echo "    Tell the operator: relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before critical (see docs/context-compaction.md)." >&2
     fi
 }
 
@@ -149,10 +152,15 @@ if os.path.exists(status_file):
 import re
 # T-2587: git push/fetch must be allowed at critical — commit-only wrap-up
 # strands handover commits locally (session can commit but never land).
-# T-2702: `fw context focus` must be allowed for the same reason, one level up.
+# T-2702: 'fw context focus' must be allowed for the same reason, one level up.
 # check-active-task.sh blocks when focus is empty (the state a just-completed task
-# leaves behind) and PRINTS `fw context focus T-XXX` as the remedy — which this
-# allowlist then refused, because it carried `context init` and not `context focus`.
+# leaves behind) and PRINTS 'fw context focus T-XXX' as the remedy — which this
+# allowlist then refused, because it carried 'context init' and not 'context focus'.
+# (T-2705 note: this comment previously used backticks, which bash command-substitutes
+# INSIDE the double-quoted python3 -c "..." string this comment lives in — every
+# invocation was silently shelling out to 'fw context focus'/'context init'/'context
+# focus' and printing "command not found" for the ones without an 'fw' prefix. Plain
+# quotes avoid the bash reparse; this is a comment-only fix, no regex/logic change.)
 # One gate prescribing the command another gate denies is a hard deadlock at
 # exactly the moment the session is trying to wrap up. Reported by a consumer
 # (832) who could not file it: filing required the blocked path.
@@ -219,6 +227,7 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             echo "  BLOCKED: Write/Edit to source files, Bash (except commit/push/handover)" >&2
             echo "" >&2
             echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
+            echo "  Details: docs/context-compaction.md (budget ladder, what handover/compact capture)" >&2
             _supervision_notice
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
