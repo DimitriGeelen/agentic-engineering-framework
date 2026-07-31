@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2708: Watchtower decision commit guard self-blocks on batched decisions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T12:44:57Z
+# ============================================================================
+
+task_id: T-2708
+task_name: "Watchtower decision commit guard self-blocks on batched decisions"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T12:19:16Z
+completed: 2026-07-31T12:44:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T14:21:51+02:00
+last_commit: 2026-07-31T14:44:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  commit operator GO decisions for T-2703 and T-2704 (unblocking). RCA — decision-commit guard self-blocks on batched operator decisions. fix decision commit guard self-blocking on batched decisions
+
+# Key outcomes
+outcomes:
+  - 'Mechanism proven arithmetically against the REAL predicate'
+  - 'The operator''s two GO decisions (T-2703, T-2704) committed and pushed, so the'
+  - 'Fix implemented so a decision commit cannot be blocked by, or leave behind,'
+  - 'Regression test: two consecutive decisions in one batch both commit, proven by'
+  - 'Regression test: a decision commit that FAILS leaves the index exactly as it'
+  - 'Pre-existing unrelated staged work is still not swept into a decision commit —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix decision commit guard self-blocking on batched decisions'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2708-watchtower-decision-commit-guard-self-bl.md'
+  - '.tasks/completed/T-2703-greenfield-seeding-emits-tasks-that-fail.md'
+  - '.tasks/completed/T-2704-cross-host-hook-path-portability-claudes.md'
+  - 'tests/unit/test_decide_commit.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T14:21:51"
+    action: "T-2708: commit operator GO decisions for T-2703 and T-2704 (unblocking)"
+  - time: "2026-07-31T14:25:34"
+    action: "T-2708: RCA — decision-commit guard self-blocks on batched operator decisions"
+  - time: "2026-07-31T14:44:03"
+    action: "T-2708: fix decision commit guard self-blocking on batched decisions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25
+  commits: 3
+  files_changed: 4
+  lines_added: 557
+  lines_removed: 63
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2708-watchtower-decision-commit-guard-self-bl.md
+generated_by: context-agent-hybrid
