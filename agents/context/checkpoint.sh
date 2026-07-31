@@ -142,6 +142,7 @@ warn_by_tokens() {
         echo "===========================================" >&2
         echo "Session wrapping up: ${tokens} tokens (~${pct}% of context window)." >&2
         echo "Task files have all essential state. Commit and handover." >&2
+        echo "Details: docs/context-compaction.md (budget ladder, what handover/compact capture)" >&2
         echo "===========================================" >&2
         echo "" >&2
 
@@ -263,7 +264,12 @@ detect_compaction() {
             echo "===========================================" >&2
             echo "COMPACTION DETECTED: Tokens dropped ${prev} -> ${tokens}." >&2
             echo "Context was summarized — working memory is lost." >&2
-            echo "ACTION: Run '$(_fw_cmd) resume status' then '$(_fw_cmd) resume sync'." >&2
+            echo "The auto-injected recovery banner you may have seen is a ~2KB PREVIEW of a" >&2
+            echo "much larger (30-50KB) payload — most of it never reached you. Do not treat" >&2
+            echo "that banner as complete." >&2
+            echo "ACTION: Run '$(_fw_cmd) resume status' then '$(_fw_cmd) resume sync' — these" >&2
+            echo "read the full state from disk, not the truncated preview." >&2
+            echo "Details: docs/context-compaction.md" >&2
             echo "===========================================" >&2
             echo "" >&2
         fi
