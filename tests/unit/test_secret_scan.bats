@@ -180,3 +180,96 @@ fake_body
     [ "$status" -ne 0 ]
     [[ "$output" == *"AWS Access Key"* ]]
 }
+
+# =====================================================================
+# T-2692 — POSITIONAL credentials (URL userinfo).
+#
+# OBS-106: a live token lived at .agentic-framework/.upstream:8 for 7 weeks
+# while `fw audit` reported "Secret scan: tracked tree clean". TWO independent
+# causes, either alone sufficient to hide it:
+#
+#   1. The catalogue was entirely ISSUER-INDEXED (AKIA, ghp_, sk-ant-, xox…).
+#      A credential in URL userinfo carries no issuer marker — it is identified
+#      by POSITION, so no issuer prefix can reach it.
+#   2. The allowlist blanket-exempted `^\.agentic-framework/` on the rationale
+#      that vendored files are duplicates scanned at their real source. True for
+#      COPIED payload, false for files the vendor step GENERATES — `.upstream`
+#      exists nowhere else, so it was scanned nowhere at all.
+#
+# Fixing only (1) still yielded a clean scan. These tests pin both legs.
+#
+# The fixture tokens below are synthesized, not real.
+# =====================================================================
+
+@test "T-2692: catalogue carries both positional URL-credential entries" {
+    run grep -q "URL Basic-Auth Credential" "$FRAMEWORK_ROOT/.secret-scan-patterns"
+    [ "$status" -eq 0 ]
+    run grep -q "URL Embedded Token" "$FRAMEWORK_ROOT/.secret-scan-patterns"
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2692: bare opaque token as URL userinfo is blocked (the OBS-106 shape)" {
+    run _stage_and_scan "upstream.txt" "https://Aa0Bb1Cc2Dd3Ee4Ff5Gg6@git.example.com/repo.git"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"URL Embedded Token"* ]]
+}
+
+@test "T-2692: user:password URL userinfo is blocked" {
+    run _stage_and_scan "basicauth.txt" "clone from https://deploybot:hunter2secret@git.example.com/repo.git"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"URL Basic-Auth"* ]]
+}
+
+@test "T-2692: benign short userinfo does not fire" {
+    # `git@` and `user@` are ordinary usernames, not credentials. If these fired,
+    # every ssh remote in the tree would be a finding and the scan would be
+    # trained-to-ignore within a day.
+    run _stage_and_scan "remotes.txt" "ssh://git@github.com/o/r.git and https://user@example.com/x"
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2692: a URL with no userinfo at all does not fire" {
+    run _stage_and_scan "plainurl.txt" "see https://onedev.example.com/agentic-engineering-framework.git"
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2692: the positional patterns do not match their own catalogue definitions (L-519)" {
+    # A text match cannot distinguish a structure from prose describing that
+    # structure. If a pattern matched its own definition line, the catalogue
+    # would be a permanent self-inflicted finding — and the usual repair
+    # (allowlist the catalogue) is what re-creates the blind spot.
+    local pat_file="$FRAMEWORK_ROOT/.secret-scan-patterns"
+    local name re
+    while IFS=$'\t' read -r name re; do
+        case "$name" in ''|\#*) continue ;; esac
+        case "$name" in URL*) ;; *) continue ;; esac
+        [ -z "$re" ] && continue
+        run grep -cE -e "$re" "$pat_file"
+        # grep exits 1 with count 0 when nothing matches; that is the pass.
+        [ "$output" = "0" ]
+    done < "$pat_file"
+}
+
+@test "T-2692: vendored .upstream is NOT allowlisted, vendored payload still is" {
+    # The regression guard for the allowlist narrowing. If someone restores the
+    # blanket `^\.agentic-framework/`, the first assertion fails — which is the
+    # whole point, because the blanket is what made cause (1) unobservable.
+    mkdir -p "$TEST_REPO/.agentic-framework/lib"
+    local tok="https://Aa0Bb1Cc2Dd3Ee4Ff5Gg6@git.example.com/repo.git"
+
+    # Generated-at-vendor-time file: MUST be scanned.
+    printf '%s\n' "$tok" > "$TEST_REPO/.agentic-framework/.upstream"
+    git -C "$TEST_REPO" add .agentic-framework/.upstream
+    run bash -c "PROJECT_ROOT=$TEST_REPO $SCANNER scan-staged"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"URL Embedded Token"* ]]
+
+    # Copied payload file: still exempt (the original rationale still holds —
+    # the parent project scans the real source).
+    git -C "$TEST_REPO" rm -q --cached .agentic-framework/.upstream
+    rm -f "$TEST_REPO/.agentic-framework/.upstream"
+    printf '%s\n' "$tok" > "$TEST_REPO/.agentic-framework/lib/vendored.sh"
+    git -C "$TEST_REPO" add .agentic-framework/lib/vendored.sh
+    run bash -c "PROJECT_ROOT=$TEST_REPO $SCANNER scan-staged"
+    [ "$status" -eq 0 ]
+}
