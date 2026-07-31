@@ -49,6 +49,20 @@ def main() -> int:
     except (OSError, json.JSONDecodeError):
         return 0
 
+    # T-2709: Claude Code sets CLAUDE_PROJECT_DIR before invoking any hook, and
+    # the portable hook form (${CLAUDE_PROJECT_DIR}/bin/fw hook <name>) depends on
+    # it. This probe exists to mimic Claude Code invoking hooks from a foreign CWD,
+    # so it must mimic the variable too. Without it the placeholder expands to the
+    # empty string, every command degrades to /bin/fw, and a healthy config reports
+    # 21/21 resolution failures — a false FAIL that would push an operator to
+    # "fix" correct settings back into non-portable absolute paths.
+    #
+    # Derived from the settings file's own location (<root>/.claude/settings.json),
+    # NOT from os.getcwd(): being independent of CWD is this probe's entire point,
+    # so reintroducing a CWD dependency here would defeat T-1626's witness.
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(settings_file)))
+    probe_env = dict(os.environ, CLAUDE_PROJECT_DIR=project_dir)
+
     # Scope to gate-style events. PreCompact / SessionStart legitimately
     # run heavy work (full handover, context resume) that exceeds the 5s
     # probe budget; their failure modes are different and out of scope
@@ -74,6 +88,7 @@ def main() -> int:
                         capture_output=True,
                         text=True,
                         cwd="/tmp",
+                        env=probe_env,
                         timeout=5,
                     )
                 except subprocess.TimeoutExpired:

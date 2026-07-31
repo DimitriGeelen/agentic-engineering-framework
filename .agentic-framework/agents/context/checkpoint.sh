@@ -240,11 +240,12 @@ SIGNAL_EOF
         echo "WARNING: Context at ${tokens} tokens (~${pct}% of context window)." >&2
         echo "BUDGET: Do not start new implementation work. Commit and handover." >&2
         echo "ACTION: Commit work, then '$(_fw_cmd) handover --checkpoint'" >&2
+        echo "Details: docs/context-compaction.md (budget ladder, what to do at each level)" >&2
         echo "" >&2
     elif [ "$tokens" -ge "$TOKEN_WARN" ]; then
         echo "" >&2
         echo "Note: Context at ${tokens} tokens (~${pct}%)." >&2
-        echo "BUDGET: Propose only small, bounded tasks. Commit before starting new work." >&2
+        echo "BUDGET: Propose only small, bounded tasks. Commit before starting new work. (docs/context-compaction.md)" >&2
         echo "" >&2
     fi
 }

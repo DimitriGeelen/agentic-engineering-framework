@@ -1132,6 +1132,14 @@ for event, entries in data.get('hooks', {}).items():
         for hook in entry.get('hooks', []):
             cmd = hook.get('command', '')
             total += 1
+            # T-2709: Claude Code expands \${CLAUDE_PROJECT_DIR} at hook-INVOCATION
+            # time, so the literal string never exists on disk. doctor must expand it
+            # the same way before statting, or every correctly-portable hook is
+            # counted 'broken' and doctor emits a 25/25 FAIL over a healthy config
+            # (plus contradictory advice: one remedy line says make paths portable,
+            # the next says make them absolute). L-399 producer/consumer parity --
+            # the generator learned the placeholder, this validator had not.
+            cmd = cmd.replace('\${CLAUDE_PROJECT_DIR}', '$PROJECT_ROOT')
             parts = cmd.split()
             # Check for portable 'fw hook' format (bare fw in PATH)
             if len(parts) >= 2 and parts[0] == 'fw':
@@ -1166,6 +1174,16 @@ print(f'{total},{broken},{stale_paths}')
         hook_total=$(echo "$hook_validation" | cut -d, -f1)
         hook_broken=$(echo "$hook_validation" | cut -d, -f2)
         hook_stale=$(echo "$hook_validation" | cut -d, -f3)
+
+        # T-2709 (T-2704 RCA): host-portability is a SEPARATE question from the two
+        # above. `broken` asks "does this file exist?" — on the generating host it
+        # always does, by construction, forever. `stale_paths` looks for the
+        # pre-T-496 defect shape. Neither can see a baked-in absolute checkout path,
+        # so doctor printed "all portable" over a 25/25 non-portable state for months.
+        # Shared predicate (same module as lib/upgrade.sh's regenerate trigger).
+        local hook_portability hook_nonportable
+        hook_portability=$(python3 "$FRAMEWORK_ROOT/lib/hook_portability.py" "$settings_file" 2>/dev/null || echo "0|0|0|")
+        hook_nonportable=$(echo "$hook_portability" | cut -d'|' -f2)
         if [ "${hook_broken:-0}" -gt 0 ]; then
             echo -e "  ${RED}FAIL${NC}  Hook path validation: $hook_broken/$hook_total hooks have broken paths"
             echo -e "        Run: fw upgrade (regenerates hooks with portable paths)"
@@ -1173,6 +1191,11 @@ print(f'{total},{broken},{stale_paths}')
         elif [ "${hook_stale:-0}" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Hook path isolation: $hook_stale/$hook_total hooks use hardcoded paths (works here, breaks on clone)"
             echo -e "        Run: fw upgrade (migrates to portable 'fw hook' format)"
+            warnings=$((warnings + 1))
+        elif [ "${hook_nonportable:-0}" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Hook path portability: $hook_nonportable/$hook_total hooks hardcode this host's checkout path (governance is OFF on any other host)"
+            echo -e "        Expected: \${CLAUDE_PROJECT_DIR}/bin/fw hook <name>  (absolute after expansion, host-portable)"
+            echo -e "        Run: fw upgrade (regenerates hooks from the fixed generator), then fw enforcement baseline"
             warnings=$((warnings + 1))
         elif [ "${hook_total:-0}" -ge 10 ]; then
             echo -e "  ${GREEN}OK${NC}  Hook path validation: $hook_total hooks, all portable"
@@ -1687,8 +1710,14 @@ for event_type, hook_list in hooks.items():
                         issues.append(f'{event_type}: fw not found in PATH (install framework or add to PATH)')
                         continue
                 else:
+                    # T-2709: expand the portable placeholder the way Claude Code
+                    # does at hook-invocation time. Left literal it is neither
+                    # absolute nor resolvable, so a correct config reports every
+                    # hook as a missing fw binary (third instance of this same
+                    # parity gap in one check-run: static validator, /tmp probe,
+                    # and here).
+                    resolved = script_path.replace('\${CLAUDE_PROJECT_DIR}', os.environ.get('PROJECT_ROOT', ''))
                     # Resolve relative paths against PROJECT_ROOT
-                    resolved = script_path
                     if not os.path.isabs(resolved):
                         resolved = os.path.join(os.environ.get('PROJECT_ROOT', ''), resolved)
                     if not os.path.exists(resolved):

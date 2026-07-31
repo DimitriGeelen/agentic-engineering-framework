@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook pre-compact"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook pre-compact"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook post-compact-resume"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook post-compact-resume"
           }
         ]
       },
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook post-compact-resume"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook post-compact-resume"
           }
         ]
       },
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook post-compact-resume"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook post-compact-resume"
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook block-plan-mode"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook block-plan-mode"
           }
         ]
       },
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-active-task"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-active-task"
           }
         ]
       },
@@ -64,27 +64,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-human-ac-tick"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-human-ac-tick"
           },
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-arc-id"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-active-completed-dup"
           },
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-inception-decisions"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-arc-id"
           },
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-heredoc-cmd-sub"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-heredoc-cmd-sub"
           },
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-inception-schema"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-inception-decisions"
           },
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-active-completed-dup"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-inception-schema"
           }
         ]
       },
@@ -93,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-tier0"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-tier0"
           }
         ]
       },
@@ -102,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-agent-dispatch"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-agent-dispatch"
           }
         ]
       },
@@ -111,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-project-boundary"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-project-boundary"
           }
         ]
       },
@@ -120,7 +120,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook budget-gate"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook budget-gate"
           }
         ]
       },
@@ -129,7 +129,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook block-task-tools"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook block-task-tools"
           }
         ]
       }
@@ -140,7 +140,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook checkpoint post-tool"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook checkpoint post-tool"
           }
         ]
       },
@@ -149,7 +149,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook error-watchdog"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook error-watchdog"
           }
         ]
       },
@@ -158,7 +158,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-dispatch"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-dispatch"
           }
         ]
       },
@@ -167,7 +167,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook loop-detect"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook loop-detect"
           }
         ]
       },
@@ -176,7 +176,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-fabric-new-file"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-fabric-new-file"
           }
         ]
       },
@@ -185,7 +185,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook commit-cadence"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook commit-cadence"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-settings-edit"
           }
         ]
       },
@@ -194,16 +198,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook audit-task-tools"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-settings-edit"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook audit-task-tools"
           }
         ]
       }

@@ -609,14 +609,26 @@ generate_claude_code_config() {
     # --- .claude/settings.json (PostToolUse hook for context protection) ---
     mkdir -p "$dir/.claude/commands"
 
-    # T-663/T-662: Detect framework-mode vs consumer-mode for fw path
-    # T-1364 (G-053-A): Emit ABSOLUTE paths — Claude Code resolves hook commands
-    # against CWD, and CWD drift (test fixtures, subdir navigation) otherwise
-    # cascades into hook-cannot-find-fw tool-blocks. $dir is canonicalized by
-    # the caller (init.sh line 58, upgrade.sh line 58 via `cd && pwd`).
-    local fw_prefix="$dir/.agentic-framework/bin/fw"
+    # T-663/T-662: Detect framework-mode vs consumer-mode for fw path.
+    # T-1364 (G-053-A): hook commands must NOT be CWD-relative — Claude Code
+    # resolves them against the session CWD, and CWD drift (test fixtures, subdir
+    # navigation) cascades into hook-cannot-find-fw tool-blocks (680 silent
+    # failures at 003-NTB-ATC-Plugin, see T-1504).
+    # T-2709 (from T-2704 RCA): the fix for that was baking $dir — the GENERATING
+    # host's checkout path — into the emitted string, which breaks on every other
+    # host. ${CLAUDE_PROJECT_DIR} is expanded by Claude Code to the project root
+    # before the hook runs, so it is absolute-after-expansion (T-1364's constraint
+    # is fully kept) AND host-portable. Detection below still inspects the REAL
+    # filesystem via $dir — only the emitted prefix is a placeholder.
+    #
+    # The literal must be SINGLE-quoted: the heredoc below is intentionally
+    # unquoted so "$fw_prefix" expands, and heredoc expansion is a single pass —
+    # so the placeholder survives verbatim into settings.json. Double-quoting here
+    # would let the generating shell eat it. Pinned by
+    # tests/unit/hook_absolute_paths.bats + tests/lint/hook-paths-portable.bats.
+    local fw_prefix='${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw'
     if [ -x "$dir/bin/fw" ] && [ -f "$dir/FRAMEWORK.md" ]; then
-        fw_prefix="$dir/bin/fw"
+        fw_prefix='${CLAUDE_PROJECT_DIR}/bin/fw'
     fi
 
     if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then

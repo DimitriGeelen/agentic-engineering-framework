@@ -1363,9 +1363,22 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
         stale_hooks=$(echo "$hook_analysis" | cut -d'|' -f4)
         missing_names=$(echo "$hook_analysis" | cut -d'|' -f5)
 
+        # T-2709 (T-2704 §5.1 — "this is the trap"): the two predicates above are
+        # blind to a hook command carrying the GENERATING host's absolute checkout
+        # path. Such a command contains 'fw hook' (so not non_framework), is not
+        # bare-relative (so not stale), and its hook NAME matches (so missing = 0)
+        # — reason never fires, no regeneration, and the consumer stays broken
+        # across every `fw upgrade`. Same shared predicate as bin/fw doctor Check 6;
+        # one module, two call sites (L-399: a contract shipped on one side only is
+        # how this class recurs).
+        local hook_nonportable
+        hook_nonportable=$(python3 "$FRAMEWORK_ROOT/lib/hook_portability.py" "$settings_file" 2>/dev/null | cut -d'|' -f2)
+        [ -z "$hook_nonportable" ] && hook_nonportable=0
+
         local needs_regen=false
         [ "$missing_count" -gt 0 ] && needs_regen=true
         [ "${stale_hooks:-0}" -gt 0 ] && needs_regen=true
+        [ "${hook_nonportable:-0}" -gt 0 ] && needs_regen=true
 
         if [ "$needs_regen" = true ]; then
             changes=$((changes + 1))
@@ -1376,6 +1389,10 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
             if [ "${stale_hooks:-0}" -gt 0 ]; then
                 [ -n "$reason" ] && reason="$reason + "
                 reason="${reason}${stale_hooks} hardcoded paths"
+            fi
+            if [ "${hook_nonportable:-0}" -gt 0 ]; then
+                [ -n "$reason" ] && reason="$reason + "
+                reason="${reason}${hook_nonportable} non-portable path(s) (host checkout baked in; expected \${CLAUDE_PROJECT_DIR})"
             fi
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  $reason"

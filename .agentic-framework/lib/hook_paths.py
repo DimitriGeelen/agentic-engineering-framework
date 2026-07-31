@@ -1,11 +1,19 @@
 """Python-side hook project-root resolver — parity with lib/paths.sh:fw_reanchor_from_cwd.
 
-T-2468 (generalizes T-2465 / OBS-080 to the python hooks): every framework hook is
-wired into Claude Code settings.json by MAIN's absolute path (`<main>/bin/fw hook …`).
-When a hook fires inside a git-worktree (or spawned) session, bin/fw resolves
-`PROJECT_ROOT` from the hook's process cwd / inherited env — the MAIN repo — so a hook
-that reads `os.environ['PROJECT_ROOT']` inspects main's `.context/arcs` / `.tasks` /
-bypass-log, not the worktree the tool actually ran in.
+T-2468 (generalizes T-2465 / OBS-080 to the python hooks): when a hook fires inside a
+git-worktree (or spawned) session, `bin/fw` resolves `PROJECT_ROOT` from the hook's
+process cwd / inherited env, so a hook that reads `os.environ['PROJECT_ROOT']` can
+inspect the wrong tree's `.context/arcs` / `.tasks` / bypass-log.
+
+T-2709 UPDATE — this docstring previously asserted "every framework hook is wired into
+Claude Code settings.json by MAIN's absolute path (`<main>/bin/fw hook …`)". That
+premise is now FALSE. Both generators emit `${CLAUDE_PROJECT_DIR}/bin/fw hook …`, which
+Claude Code expands to the session's project root — the WORKTREE root in a worktree
+session, so the worktree's own `bin/fw` executes rather than main's. Legacy
+settings.json files still carrying the baked absolute path retain the old main-anchored
+behaviour, so both shapes exist in the wild. The re-derivation below is correct under
+either, and is a no-op when the anchoring is already right. See
+docs/reports/T-2704-hook-path-portability.md §8.
 
 Claude Code passes the authoritative per-call working directory as the top-level `cwd`
 key on the hook's stdin JSON ("working directory when the event fired"). This module

@@ -104,18 +104,25 @@ if [ ! -f "$settings_file" ]; then
     exit 3
 fi
 
-# T-1504: emit ABSOLUTE path. Claude Code's hook runner (POSIX sh -c) does
-# not chdir to the project root, so a relative path like
+# T-1504: the emitted path must NOT be CWD-relative. Claude Code's hook runner
+# (POSIX sh -c) does not chdir to the project root, so a relative path like
 # `.agentic-framework/bin/fw` only resolves when the parent shell happens
 # to be at project root — rarely true after any cd/subshell/pipeline.
 # Downstream 003-NTB-ATC-Plugin observed 680 silent failures in one session.
-# Mirrors init.sh:584 (T-1364 G-053-A) which already emits absolute paths
-# at init/upgrade time; this closes the second code path used by custom
-# `fw hook-enable` registrations.
+#
+# T-2709 (from the T-2704 RCA): T-1504 satisfied that by baking $project_dir —
+# the GENERATING host's checkout path — into the string, so the hook resolves
+# only on the host that generated it. ${CLAUDE_PROJECT_DIR} is expanded by
+# Claude Code to the project root before the hook runs: absolute after
+# expansion (T-1504's constraint kept in full) and host-portable.
+# SINGLE-quoted so the generating shell does not expand it.
+# Detection still inspects the real filesystem via $project_dir — only the
+# emitted prefix is a placeholder. Mirrors lib/init.sh:generate_claude_code_config;
+# both sites must change together (L-399 producer/consumer parity).
 project_dir="$(cd "$(dirname "$settings_file")/.." && pwd)"
-fw_prefix="$project_dir/.agentic-framework/bin/fw"
+fw_prefix='${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw'
 if [ -x "$project_dir/bin/fw" ] && [ -f "$project_dir/FRAMEWORK.md" ]; then
-    fw_prefix="$project_dir/bin/fw"
+    fw_prefix='${CLAUDE_PROJECT_DIR}/bin/fw'
 fi
 if [ -n "$script" ]; then
     command_str="$script"

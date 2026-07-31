@@ -78,11 +78,26 @@ export _FW_PATHS_DERIVED_BY
 # root that <cwd> resolves to (walking up for .framework.yaml / .tasks), when it
 # differs from the current PROJECT_ROOT. Always returns 0 (no-op cases included).
 #
-# T-2465 (generalizes T-2463 / OBS-080): every framework hook is wired into
-# Claude Code settings.json by MAIN's absolute path (`<main>/bin/fw hook …`). When
-# that hook fires inside a git-worktree (or spawned) session, bin/fw resolves
-# PROJECT_ROOT from the hook's process cwd / inherited env — the MAIN repo — so the
-# hook reads main's focus.yaml / tasks / context, NOT the worktree the tool ran in.
+# T-2465 (generalizes T-2463 / OBS-080): a framework hook can execute a `bin/fw`
+# other than the one belonging to the tree the tool actually ran in, so it reads the
+# wrong focus.yaml / tasks / context.
+#
+# T-2709 UPDATE — the original wording here said "every framework hook is wired into
+# settings.json by MAIN's absolute path (`<main>/bin/fw hook …`)". That premise is now
+# FALSE: both generators emit `${CLAUDE_PROJECT_DIR}/bin/fw hook …`, which Claude Code
+# expands to the session's project root. In a worktree session that resolves to the
+# WORKTREE root, so the worktree's own bin/fw executes — the opposite of main-anchoring.
+# The mismatch this function corrects therefore has two possible shapes now:
+#   (a) legacy settings.json still carrying main's baked absolute path  → main's fw runs
+#   (b) placeholder form                                                → worktree's fw runs
+# In (b) the anchoring is usually already correct and this function degrades to a no-op
+# (it compares against the resolved root and returns unchanged on a match). Note a
+# worktree may carry a different framework VERSION than main, so under (b) the executing
+# fw can differ in behaviour from main's — directionally an improvement (the tool runs
+# the code of the tree it acted on), but worth knowing when debugging.
+#
+# Either way, bin/fw may still resolve PROJECT_ROOT from the hook's process cwd /
+# inherited env rather than from the tree the tool ran in — which is what this fixes.
 # Claude Code passes the authoritative per-call working dir as top-level `cwd` on
 # the hook's stdin JSON ("working directory when the event fired"); this re-anchors
 # to it. Per-call stdin cwd is FRESH (not inherited), so it is immune to the
