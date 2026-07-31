@@ -121,3 +121,98 @@ def test_commit_decision_failure_graceful(tmp_path, monkeypatch):
     # HEAD is untouched — still the baseline commit.
     head = _git("log", "-1", "--pretty=%s", cwd=tmp_path).stdout.strip()
     assert head == "baseline"
+
+
+def test_commit_decision_batched_decisions_both_commit(tmp_path, monkeypatch):
+    """T-2708 regression: two decisions recorded seconds apart in one operator
+    batch must both commit. Reproduces the RCA's failure mode deterministically:
+    T-9101's decision files are already staged in the REAL index (standing in
+    for a concurrent Watchtower request's `git add`, or residue from a prior
+    failed attempt — see RCA "Why it cannot self-clear") when T-9100's decision
+    is committed. The pre-fix implementation reads/writes the real index, so it
+    sees T-9101's staged files as "foreign" and refuses T-9100 — leaving only
+    one of the two decisions committed. The fix never reads the real index, so
+    T-9100 commits regardless of what's staged there."""
+    active_a = _init_repo(tmp_path)
+    active_b = tmp_path / ".tasks" / "active" / "T-9101-y.md"
+    active_b.write_text("---\nid: T-9101\nstatus: started-work\n---\n# T-9101\n")
+    _git("add", "-A", cwd=tmp_path)
+    _git("commit", "-q", "-m", "baseline-2", cwd=tmp_path)
+
+    _simulate_decide(tmp_path, active_a)
+    completed_b = tmp_path / ".tasks" / "completed" / "T-9101-y.md"
+    active_b.rename(completed_b)
+    completed_b.write_text(completed_b.read_text() + "\n## Decision\n\n**Decision**: GO\n")
+    (tmp_path / ".context" / "episodic" / "T-9101.yaml").write_text("id: T-9101\n")
+
+    # Stand in for the other decision's in-flight `git add` landing first.
+    _git("add", "--", ".tasks/completed/T-9101-y.md", ".context/episodic/T-9101.yaml",
+         cwd=tmp_path)
+
+    inc = _load_inception(tmp_path, monkeypatch)
+
+    committed_a, msg_a = inc._commit_decision("T-9100", "go")
+    committed_b, msg_b = inc._commit_decision("T-9101", "go")
+
+    assert committed_a is True, msg_a
+    assert committed_b is True, msg_b
+
+    log = _git("log", "--oneline", cwd=tmp_path).stdout
+    assert "T-9100:" in log
+    assert "T-9101:" in log
+    # Two decision commits landed on top of the two baseline commits.
+    assert len(log.strip().splitlines()) == 4
+
+
+def test_commit_decision_failure_leaves_index_untouched(tmp_path, monkeypatch):
+    """T-2708 regression: a decision commit that fails must leave the operator's
+    real index exactly as it found it — no staged residue that would poison the
+    next decision. Pin this by pre-staging unrelated work, failing a decision
+    commit, and asserting the real index's staged set is byte-identical after."""
+    active = _init_repo(tmp_path)
+    hookdir = tmp_path / ".git" / "hooks"
+    hookdir.mkdir(parents=True, exist_ok=True)
+    hook = hookdir / "commit-msg"
+    hook.write_text("#!/bin/sh\necho 'blocked by test hook' >&2\nexit 1\n")
+    hook.chmod(0o755)
+
+    _simulate_decide(tmp_path, active)
+
+    # Pre-existing unrelated staged work, as an agent session mid-commit-cadence
+    # would leave behind.
+    (tmp_path / "agent-in-progress.txt").write_text("agent session work in flight\n")
+    _git("add", "agent-in-progress.txt", cwd=tmp_path)
+    before = _git("diff", "--cached", "--name-only", cwd=tmp_path).stdout
+
+    inc = _load_inception(tmp_path, monkeypatch)
+    committed, msg = inc._commit_decision("T-9100", "go")
+    assert committed is False
+    assert msg
+
+    after = _git("diff", "--cached", "--name-only", cwd=tmp_path).stdout
+    assert after == before  # real index byte-identical: no residue from the failed attempt
+    assert after.strip() == "agent-in-progress.txt"
+
+
+def test_commit_decision_ignores_preexisting_staged_work(tmp_path, monkeypatch):
+    """T-2708 regression: the property the old foreign-staged guard protected
+    must survive the fix — pre-existing unrelated staged work is never swept
+    into a decision commit, now enforced by construction (scratch index only
+    ever receives `wanted` paths) rather than by refusal."""
+    active = _init_repo(tmp_path)
+    _simulate_decide(tmp_path, active)
+
+    (tmp_path / "agent-in-progress.txt").write_text("agent session work in flight\n")
+    _git("add", "agent-in-progress.txt", cwd=tmp_path)
+
+    inc = _load_inception(tmp_path, monkeypatch)
+    committed, msg = inc._commit_decision("T-9100", "go")
+    assert committed is True, msg
+
+    files = _git("show", "--no-renames", "--name-only", "--pretty=format:", "HEAD",
+                 cwd=tmp_path).stdout.split()
+    assert "agent-in-progress.txt" not in files
+
+    # The unrelated file is still staged in the real index — untouched, not committed.
+    staged = _git("diff", "--cached", "--name-only", cwd=tmp_path).stdout
+    assert "agent-in-progress.txt" in staged

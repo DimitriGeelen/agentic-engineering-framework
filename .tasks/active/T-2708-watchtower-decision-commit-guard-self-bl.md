@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T12:19:16Z
-last_update: 2026-07-31T12:19:16Z
-date_finished: null
+last_update: '2026-07-31T12:30:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-31T12:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-31T12:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2708: Watchtower decision commit guard self-blocks on batched decisions
@@ -50,14 +78,14 @@ date_finished: null
       decision's "1 unrelated staged file" is shown to be the OTHER decision's file
 - [x] The operator's two GO decisions (T-2703, T-2704) committed and pushed, so the
       recorded-but-uncommitted state is cleared rather than left for later
-- [ ] Fix implemented so a decision commit cannot be blocked by, or leave behind,
+- [x] Fix implemented so a decision commit cannot be blocked by, or leave behind,
       staged state — build a commit from a temporary index (`GIT_INDEX_FILE`) so the
       operator's real index is never read and never written
-- [ ] Regression test: two consecutive decisions in one batch both commit, proven by
+- [x] Regression test: two consecutive decisions in one batch both commit, proven by
       driving `_commit_decision` twice and asserting two commits exist
-- [ ] Regression test: a decision commit that FAILS leaves the index exactly as it
+- [x] Regression test: a decision commit that FAILS leaves the index exactly as it
       found it (no staged residue to poison the next decision)
-- [ ] Pre-existing unrelated staged work is still not swept into a decision commit —
+- [x] Pre-existing unrelated staged work is still not swept into a decision commit —
       the property the current guard was protecting must survive the fix
 
 ### Human
@@ -95,6 +123,7 @@ date_finished: null
 
 test -f web/blueprints/inception.py
 git log --oneline -20 | grep -q "T-2708"
+python3 -m pytest tests/unit/test_decide_commit.py -q
 
 
 # Shell commands that MUST pass before work-completed. One per line.

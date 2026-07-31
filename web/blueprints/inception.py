@@ -713,17 +713,25 @@ def _commit_decision(task_id: str, decision: str):
     Watchtower path has no agent follow-up, so without this the decision is left
     as uncommitted working-tree changes (T-2030).
 
-    Stages ONLY the decision's own files (matched by `_is_decision_file`) — never
-    `git add -A`, which would sweep unrelated churn — and commits with an explicit
-    pathspec so any pre-staged churn is left out. Graceful: returns
-    `(committed: bool, message: str)`; a commit failure (e.g. a commit-msg hook
-    rejecting a DEFER without a research artifact) is non-fatal.
+    T-2708: built entirely against a SCRATCH index (`GIT_INDEX_FILE` seeded from
+    `git read-tree HEAD`), never the operator's real `.git/index`. Two decisions
+    recorded seconds apart in one operator batch are, to each other, the "foreign
+    staged file" a same-index guard would refuse — the old implementation staged
+    into the real index and self-blocked on exactly that (T-2708 RCA). Building
+    off-index removes the shared channel: only `wanted` paths are ever added to
+    the scratch index, so unrelated work (including another in-flight decision)
+    can never leak in — by construction, not by refusal — and a failed commit
+    leaves the real index untouched because it was never written to.
+
+    Graceful: returns `(committed: bool, message: str)`; a commit failure (e.g. a
+    commit-msg hook rejecting a DEFER without a research artifact) is non-fatal.
 
     The active→completed move is a filesystem `mv` (not `git mv`), so git sees a
     delete + an untracked add (two porcelain lines, no rename arrow).
     """
     import subprocess
     import os  # T-2509: needed for the FW_ALLOW_MASTER_COMMIT env below
+    import tempfile
     try:
         status = subprocess.run(
             ["git", "status", "--porcelain", "--untracked-files=all"],
@@ -747,33 +755,6 @@ def _commit_decision(task_id: str, decision: str):
             # Nothing of ours to commit (already committed, or no files found).
             return True, "nothing to commit"
 
-        # Guard against bundling unrelated work: if the index already has staged
-        # changes that aren't this decision's files (e.g. an agent session staged
-        # a commit concurrently), skip rather than sweep them into the decision
-        # commit. Graceful — the decision stays on disk for a later commit.
-        pre = subprocess.run(
-            ["git", "diff", "--cached", "--name-only"],
-            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
-        )
-        foreign = [
-            p for p in pre.stdout.splitlines()
-            if p.strip() and not _is_decision_file(task_id, p.strip())
-        ]
-        if foreign:
-            return False, f"index has {len(foreign)} unrelated staged file(s); skipped to avoid bundling"
-
-        add = subprocess.run(
-            ["git", "add", "--"] + wanted,
-            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
-        )
-        if add.returncode != 0:
-            return False, (add.stderr or add.stdout or "git add failed").strip()[:200]
-
-        # Commit the index — now exactly this decision's files, including the
-        # active→completed deletion (a `git commit -- pathspec` cannot capture a
-        # deletion once the path is gone from the working tree; the foreign-staged
-        # guard above keeps a whole-index commit scoped).
-        #
         # T-2509: when the Watchtower serves from a checkout that sits on master
         # with PROTECT_MASTER=1 (the T-100196 trunk-based flow), the T-2394
         # master-guard pre-commit hook BLOCKS this direct commit ("master is
@@ -786,16 +767,47 @@ def _commit_decision(task_id: str, decision: str):
         # commit. Scoped to THIS subprocess only (not os.environ) so agent/session
         # commits on master stay guarded. Off master / on a feature branch the
         # guard exits before the bypass matters, so this is a safe no-op there.
-        _commit_env = {**os.environ, "FW_ALLOW_MASTER_COMMIT": "1"}
-        msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
-        commit = subprocess.run(
-            ["git", "commit", "-m", msg],
-            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
-            env=_commit_env,
-        )
-        if commit.returncode != 0:
-            return False, (commit.stderr or commit.stdout or "git commit failed").strip()[:200]
-        return True, msg
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            scratch_index = os.path.join(tmp_dir, "index")
+            _env = {
+                **os.environ,
+                "GIT_INDEX_FILE": scratch_index,
+                "FW_ALLOW_MASTER_COMMIT": "1",
+            }
+
+            # Seed the scratch index from HEAD — NOT from the operator's real
+            # index — so nothing pre-staged there (by an agent session, or by
+            # another decision landed a moment ago) is ever visible to us.
+            read_tree = subprocess.run(
+                ["git", "read-tree", "HEAD"],
+                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+                env=_env,
+            )
+            if read_tree.returncode != 0:
+                return False, (read_tree.stderr or read_tree.stdout
+                               or "git read-tree failed").strip()[:200]
+
+            # `git add` on the scratch index reads the working tree (shared) but
+            # writes only to GIT_INDEX_FILE (not shared) — an explicit pathspec
+            # here stages the active→completed deletion too (git treats a named,
+            # now-missing path as "remove it", unlike a glob).
+            add = subprocess.run(
+                ["git", "add", "--"] + wanted,
+                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+                env=_env,
+            )
+            if add.returncode != 0:
+                return False, (add.stderr or add.stdout or "git add failed").strip()[:200]
+
+            msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
+            commit = subprocess.run(
+                ["git", "commit", "-m", msg],
+                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+                env=_env,
+            )
+            if commit.returncode != 0:
+                return False, (commit.stderr or commit.stdout or "git commit failed").strip()[:200]
+            return True, msg
     except Exception as e:  # never let a commit problem break the decision response
         return False, str(e)[:200]
 
