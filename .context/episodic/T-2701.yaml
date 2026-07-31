@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2701: Orphaned test dirs: py variant + tests/web unwired + 832 fixture re-pin
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T11:11:55Z
+# ============================================================================
+
+task_id: T-2701
+task_name: "Orphaned test dirs: py variant + tests/web unwired + 832 fixture re-pin"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T10:49:48Z
+completed: 2026-07-31T11:11:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T12:57:30+02:00
+last_commit: 2026-07-31T12:57:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  orphan guard covers pytest dirs — tests/web (32 files, incl. designer-seam API contracts) was collected by no runner
+
+# Key outcomes
+outcomes:
+  - '`no-orphaned-test-dirs.bats` detects orphaned dirs holding `*.py` as well as'
+  - 'The extended guard is negative-controlled: proven RED against a synthetic'
+  - '`tests/web/` reachable from a runner, with its pass/fail state established'
+  - '`tests/scripts/` dispositioned explicitly (wired, moved, or removed) — not'
+  - 'Both pytest call sites (`fw test web` and `fw test all` stage 3) name the'
+  - '`bin/fw test invariants` red count does not increase (T-2698/T-2699 remain'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-2701-orphaned-test-dirs-py-variant--testsweb-.md'
+  - 'tests/lint/no-orphaned-test-dirs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T12:57:30"
+    action: "T-2701: orphan guard covers pytest dirs — tests/web (32 files, incl. designer-seam API contracts) was collected by no runner"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 1
+  files_changed: 4
+  lines_added: 321
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2701-orphaned-test-dirs-py-variant--testsweb-.md
+generated_by: context-agent-hybrid

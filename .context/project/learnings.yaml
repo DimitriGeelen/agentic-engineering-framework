@@ -4022,3 +4022,10 @@ X'` returning empty group."
   date: 2026-07-31
   context: Added via context agent
   application: TBD
+- id: L-528
+  learning: "Backticks inside a double-quoted python3 -c \"...\" block are command substitution performed by bash before python starts: bash runs each backticked string and splices its STDOUT into the python source, so multi-line output turns the next line into bare python and the whole block dies with SyntaxError. In a PreToolUse hook that means the gate fails open while still exiting 0. The trap is that shell comments and python comments look identical, but only the quoting context decides whether the text is inert. Guard: tests/lint/no-backticks-in-inline-python.bats — backticks only, escaped backticks excluded, $() left alone because it is nearly always deliberate interpolation."
+  source: P-001
+  task: T-2707
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD

@@ -24162,3 +24162,75 @@ scan_id: R-ad8c9efd
 task_id: T-2700
 payload:
   task_file: .tasks/active/T-2700-bare-fw-in-block-messages-of-update-task.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T11:11:45Z'
+scan_id: R-aafd5497
+task_id: T-2701
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T11:11:45Z'
+scan_id: R-aafd5497
+task_id: T-2701
+payload:
+  task_file: .tasks/active/T-2701-orphaned-test-dirs-py-variant--testsweb-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T11:43:26Z'
+scan_id: R-68a96ed6
+task_id: T-2702
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T11:43:26Z'
+scan_id: R-68a96ed6
+task_id: T-2702
+payload:
+  task_file: .tasks/active/T-2702-gate-deadlock-budget-gate-blocks-the-fw-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T11:48:02Z'
+scan_id: R-15a7318b
+task_id: T-2706
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T11:48:02Z'
+scan_id: R-15a7318b
+task_id: T-2706
+payload:
+  task_file: .tasks/active/T-2706-re-pin-832-shared-bpmn-fixtures-to-t-314.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T12:01:31Z'
+scan_id: R-da67543e
+task_id: T-2707
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T12:01:31Z'
+scan_id: R-da67543e
+task_id: T-2707
+payload:
+  task_file: .tasks/active/T-2707-t-2702-backticks-in-inline-python-disarm.md

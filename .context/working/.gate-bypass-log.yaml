@@ -5411,3 +5411,46 @@ Co-Authored-By: Claude Opus 5 (1M co'
   command: 'FW_SWITCH_FOCUS=1 git add -A .context/ .tasks/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2700: close — L-527 captured (unusable guards, positional not lexical)
 
 Co-Authored-By: Claude Opus 5 (1M cont'
+- timestamp: '2026-07-31T11:30:45Z'
+  task: 'T-2705'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2706'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2706: re-pin BLOCKED — neither channel carried 832s repaired fixture bytes
+
+832 asked for independent digest confirmation and said explicitly: on mismatch,
+do '
+- timestamp: '2026-07-31T11:42:53Z'
+  task: 'T-2706'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2702'
+  command: 'bin/fw task update T-2702 --status work-completed --switch-focus 2>&1 | tail -60'
+- timestamp: '2026-07-31T11:44:12Z'
+  task: 'T-2706'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2702'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2702: close — verification threshold de-staled, task moved to completed/
+
+The `-le 4` red-count check went stale: T-2704 (hook-path portability) adde'
+- timestamp: '2026-07-31T11:57:24Z'
+  task: 'T-2707'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2706'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -F - <<MSG 2>&1 | tail -8
+T-2706: re-pin 832 shared BPMN fixtures to T-314 repaired bytes
+
+Both fixtures re-pinned to 832s '
+- timestamp: '2026-07-31T11:58:35Z'
+  task: 'T-2707'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2705'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add docs/context-compaction.md agents/context/checkpoint.sh CLAUDE.md .tasks/active/T-2705-*.md
+git diff --cached --name-only
+FW_SWITCH_'
