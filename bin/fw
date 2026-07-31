@@ -7517,6 +7517,30 @@ PYPREDICT
                     echo "  No governance tests found."
                 fi
                 ;;
+            --invariants|invariants)
+                # T-2697: tests/lint/ — the structural guards (router/help parity,
+                # config-registry parity, single-vendor-writer, no-bare-fw). This
+                # directory was globbed by NO runner from its creation until
+                # 2026-07-31, because the obvious verb name was already taken:
+                # `fw test lint` means shellcheck. A guard suite that nothing runs
+                # reports success by silence, which is the failure mode these very
+                # tests exist to catch. Named `invariants` rather than `lint` so the
+                # collision cannot recur.
+                if ! command -v bats >/dev/null 2>&1; then
+                    echo -e "${RED}ERROR: bats is not installed${NC}" >&2
+                    exit 1
+                fi
+                shift
+                [ "${1:-}" = "--" ] && shift
+                echo -e "${BOLD}=== Bats Invariant Tests (tests/lint/) ===${NC}"
+                if [ "$#" -gt 0 ]; then
+                    bats "$@" || _test_exit=1
+                elif [ -d "$FRAMEWORK_ROOT/tests/lint/" ] && ls "$FRAMEWORK_ROOT/tests/lint/"*.bats >/dev/null 2>&1; then
+                    bats "$FRAMEWORK_ROOT/tests/lint/" || _test_exit=1
+                else
+                    echo "  No invariant tests found."
+                fi
+                ;;
             --web|web)
                 # Pytest web tests
                 if ! python3 -c "import pytest" 2>/dev/null; then
@@ -7584,6 +7608,15 @@ PYPREDICT
                     if [ -d "$FRAMEWORK_ROOT/tests/governance/" ] && ls "$FRAMEWORK_ROOT/tests/governance/"*.bats >/dev/null 2>&1; then
                         echo -e "${BOLD}--- Bats Governance Tests (red-team harness) ---${NC}"
                         bats "$FRAMEWORK_ROOT/tests/governance/" || _test_exit=1
+                        echo ""
+                    fi
+                fi
+
+                # 2c. Bats invariant tests (T-2697 — tests/lint/, previously orphaned)
+                if command -v bats >/dev/null 2>&1; then
+                    if [ -d "$FRAMEWORK_ROOT/tests/lint/" ] && ls "$FRAMEWORK_ROOT/tests/lint/"*.bats >/dev/null 2>&1; then
+                        echo -e "${BOLD}--- Bats Invariant Tests (tests/lint/) ---${NC}"
+                        bats "$FRAMEWORK_ROOT/tests/lint/" || _test_exit=1
                         echo ""
                     fi
                 fi

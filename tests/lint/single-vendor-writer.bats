@@ -81,11 +81,35 @@ _step_4b() {
     [ "$status" -eq 0 ]
 }
 
-@test "lib/upgrade.sh self-vendor syncs lib/*.sh via glob not hardcoded list" {
-    # Must use glob pattern (lib/"*.sh), not enumerated file names
-    # The self-vendor block (T-1217) loops over _sv_src in lib/*.sh
-    run grep '_sv_src.*lib/.*\*\.sh' lib/upgrade.sh
-    [ "$status" -eq 0 ]
+@test "lib/upgrade.sh self-vendor derives its file set, not a hardcoded list" {
+    # T-2697: was red from 2026-06-10 to 2026-07-31, in a directory no runner
+    # globbed. Not a regression — the OPPOSITE. It asserted the literal shape
+    # `_sv_src ... lib/*.sh`, and T-2307/T-2455 replaced that non-recursive glob
+    # with a recursive find covering *.sh + *.py + *.md, because the old glob
+    # silently skipped 33 .md siblings and 40 .py files. The implementation got
+    # strictly better and the test went red for it.
+    #
+    # So this now asserts the INVARIANT — the file set is derived mechanically,
+    # never enumerated — rather than the mechanism that happens to derive it.
+    # A test pinned to a shape punishes the refactor it should be protecting.
+    # Comments are stripped INLINE, not just whole-line. The first cut of this
+    # test used `grep -vE '^\s*#'` and its own negative control came back green:
+    # the mutation left `# was: find "$FRAMEWORK_ROOT/lib"` trailing on the
+    # replacement line, and that comment satisfied the assertion. L-519 does not
+    # only apply to comment LINES (T-2697).
+    local code
+    code=$(sed -n '/_self_vendor_libs()/,/^}/p' lib/upgrade.sh | sed 's/#.*//')
+    [ -n "$code" ]
+
+    # Derived: a find or a glob supplies the loop.
+    echo "$code" | grep -qE 'find [^|]*/lib|for _sv_src in [^;]*\*'
+
+    # Not enumerated: two or more literal .sh paths on one line is a list.
+    local enumerated
+    # `|| true`: grep -c exits 1 on zero matches and bats runs under set -e,
+    # so the passing case would fail the test. Recurring shell gotcha.
+    enumerated=$(echo "$code" | grep -cE '/[a-z0-9_-]+\.sh["'"'"' ].*/[a-z0-9_-]+\.sh' || true)
+    [ "$enumerated" -eq 0 ]
 }
 
 @test "lib/upgrade.sh self-vendor targets .agentic-framework" {
