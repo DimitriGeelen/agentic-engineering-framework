@@ -28,12 +28,6 @@
       <aef:workflowMeta id="two-lane-joint" version="1" schemaVersion="2" title="two-lane joint promote seam (human + agent owner-bearing)" tier_default="1"/>
     </bpmn:extensionElements>
     <bpmn:laneSet id="LaneSet_1">
-      <bpmn:lane id="human" name="Human · Sovereignty">
-        <bpmn:extensionElements>
-          <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
-        </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_1_inception</bpmn:flowNodeRef>
-      </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="160"/>
@@ -41,6 +35,12 @@
         <bpmn:flowNodeRef>agt_0_request</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_2_plan</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_3_outcome</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_inception</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 

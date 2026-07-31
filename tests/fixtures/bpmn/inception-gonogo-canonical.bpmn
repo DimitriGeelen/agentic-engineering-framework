@@ -23,18 +23,18 @@
       <aef:workflowMeta id="inception-gonogo" version="1" schemaVersion="2" title="inception go/no-go (minimal)" tier_default="1"/>
     </bpmn:extensionElements>
     <bpmn:laneSet id="LaneSet_1">
-      <bpmn:lane id="human" name="Human · Sovereignty">
-        <bpmn:extensionElements>
-          <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
-        </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_1_inception</bpmn:flowNodeRef>
-      </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="160"/>
         </bpmn:extensionElements>
         <bpmn:flowNodeRef>agt_1_request</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_2_outcome</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_inception</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 

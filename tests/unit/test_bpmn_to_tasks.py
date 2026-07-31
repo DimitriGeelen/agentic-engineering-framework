@@ -40,7 +40,16 @@ FIXTURE_NAMEONLY = os.path.join(
 FIXTURE_CANONICAL = os.path.join(
     REPO_ROOT, "tests", "fixtures", "bpmn", "inception-gonogo-canonical.bpmn"
 )
-CANONICAL_SHA256 = "093858400716a0c5dd4e6676ad96b1564e47980527a15028fd08242df1c7041e"
+# T-2706: re-pinned to 832's T-314 laneSet-order repair. Bytes re-derived
+# independently from the PUBLIC mirror (github.com/DimitriGeelen/workflow-designer)
+# at commit e133cf9 — confirmed an ancestor of origin/master, identical there and at
+# github/master. NOT taken from a file transfer: OBS-108 (replay starvation) makes
+# that channel unable to deliver anything after the first-ever transfer while still
+# reporting "SHA-256 verified" and exit 0. Refs only for seam bytes.
+# Zero-semantic re-derived here, not inherited: element census, id set and
+# flowNodeRef multiset all identical pre/post; the sole change is the `human` lane
+# block moving from first to last within the laneSet.
+CANONICAL_SHA256 = "bbfbc5ec48356c3a643efa21e37912994a3fff56532b7e0ef4815f91fbed00ab"
 # 832's byte-exact canonical NEGATIVE fixture (resume-status.bpmn, delivered over
 # the DM rail at offset 45, T-2535). frw_7_gather is a <subProcess> WITH
 # <aef:constituents> but NO workflowType="inception" -> plain composition, must
