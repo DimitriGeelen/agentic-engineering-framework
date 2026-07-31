@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2707: T-2702 backticks in inline python disarmed the budget gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T12:01:40Z
+# ============================================================================
+
+task_id: T-2707
+task_name: "T-2702 backticks in inline python disarmed the budget gate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T11:53:50Z
+completed: 2026-07-31T12:01:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T13:57:48+02:00
+last_commit: 2026-07-31T13:58:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  backticks in inline python silently disarmed the budget gate. refresh vendored copies after budget-gate/checkpoint/fw changes
+
+# Key outcomes
+outcomes:
+  - 'Substitution proven EMPIRICALLY, not argued: a stubbed `fw` on PATH is shown to'
+  - 'Root cause traced to the exact commit and lines (T-2702,'
+  - 'Comment-only fix applied: plain quotes replace backticks. No regex, threshold or'
+  - 'Tree swept for the same class and every genuine remaining instance fixed'
+  - 'Guard `tests/lint/no-backticks-in-inline-python.bats` proven RED against the'
+  - 'Guard carries negative controls in BOTH directions: it detects a planted'
+  - 'Guard''s own first draft false-positived (line-based bounding leaked into shell'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/bin/fw'
+  - 'agents/context/budget-gate.sh'
+  - 'bin/fw'
+  - '.fabric/components/tests-lint-no-backticks-in-inline-python.yaml'
+  - '.tasks/active/T-2707-t-2702-backticks-in-inline-python-disarm.md'
+  - 'tests/lint/no-backticks-in-inline-python.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T13:57:48"
+    action: "T-2707: backticks in inline python silently disarmed the budget gate"
+  - time: "2026-07-31T13:58:45"
+    action: "T-2707: refresh vendored copies after budget-gate/checkpoint/fw changes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 8
+  lines_added: 441
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2707-t-2702-backticks-in-inline-python-disarm.md
+generated_by: context-agent-hybrid
