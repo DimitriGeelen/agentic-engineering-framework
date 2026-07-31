@@ -5,12 +5,12 @@ name: "Compaction UX: budget messages don't explain pre-compact hooks or post-co
 description: >
   Compaction UX: budget messages don't explain pre-compact hooks or post-compact /resume
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-007, C-008, bin/fw, tests/lint/no-backticks-in-inline-python.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T11:18:50Z
-last_update: 2026-07-31T11:49:15Z
-date_finished:
+last_update: 2026-07-31T16:12:12Z
+date_finished: 2026-07-31T16:12:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -69,27 +69,85 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Budget-gate/checkpoint messages told the operator to run `/resume` after compaction
+but never explained what the PreCompact hook captures, what the auto-injected
+SessionStart:compact banner actually delivers (a truncated preview, not full
+recovery — measured in `docs/context-compaction.md`), or what each budget level
+means. `docs/context-compaction.md` now carries that explanation; the gate/checkpoint
+messages point at it.
+
+**Audience split (T-2143 routing):** the budget-ladder and compaction-recovery
+strings emitted by `budget-gate.sh`/`checkpoint.sh` are **agent-facing** — they are
+read by the agent mid-tool-call and tell it what it may still do and where to read
+more. `_supervision_notice()` is the one exception: its content is meant for the
+**operator** (only a human can type `claude-fw` or `/compact`), so it is phrased as
+an instruction to the agent to *relay* the message rather than an attempt to act on
+it directly — the agent has no tool call that types a slash command or relaunches
+its own process.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The claim "`/resume` after compaction is essential" is TESTED against what
+- [x] The claim "`/resume` after compaction is essential" is TESTED against what
       `post-compact-resume.sh` already auto-injects, and the shipped wording states
       whatever turns out to be true — including "additive, not essential" if that is
       the finding
-- [ ] `docs/context-compaction.md` exists and covers: D-027 (auto-compaction
+- [x] `docs/context-compaction.md` exists and covers: D-027 (auto-compaction
       disabled by design), what the PreCompact hook does, what SessionStart:compact
       injects, the budget ladder with thresholds read from source not guessed, and
       how to check current usage
-- [ ] Budget warn/urgent/critical messages point the operator at the article and say
+- [x] Budget warn/urgent/critical messages point the operator at the article and say
       what to do; the `warn` message stays short (it fires often)
-- [ ] Operator-facing and agent-facing strings are separated deliberately, with the
+- [x] Operator-facing and agent-facing strings are separated deliberately, with the
       audience named in this task file (T-2143 routing)
-- [ ] Rendered message output is captured from a REAL invocation of
+- [x] Rendered message output is captured from a REAL invocation of
       `budget-gate.sh`, pasted into this task file — not reconstructed by hand
-- [ ] No change to budget thresholds or allowlist logic (this task is what the
+- [x] No change to budget thresholds or allowlist logic (this task is what the
       messages SAY, not what the gate DOES)
+
+**Real invocation output (2026-07-31, this session)** — `.context/working/.budget-status`
+seeded with synthetic level/token values, then `budget-gate.sh` run directly with a
+JSON stdin payload; file restored to its prior contents immediately after capture.
+
+```
+--- warn (tokens=230000, tool=Read) ---
+Note: Context at ~230000 tokens (~76%). Commit before starting new work. (docs/context-compaction.md)
+  ⚠ Unsupervised session (not under claude-fw): the budget auto-restart loop will NOT fire.
+    Tell the operator: relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before critical (see docs/context-compaction.md).
+exit=0
+
+--- urgent (tokens=260000, tool=Read) ---
+WARNING: Context at ~260000 tokens (~86%). Do not start new work. Commit and handover.
+  Details: docs/context-compaction.md (budget ladder, what to do at each level)
+  ⚠ Unsupervised session (not under claude-fw): the budget auto-restart loop will NOT fire.
+    Tell the operator: relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before critical (see docs/context-compaction.md).
+exit=0
+
+--- critical (tokens=290000, tool=Bash "echo hi", blocked) ---
+
+══════════════════════════════════════════════════════════
+  SESSION WRAPPING UP (~290000 tokens)
+══════════════════════════════════════════════════════════
+
+  Context is at ~96% of context window.
+  Task files already have all essential state. Time to wrap up.
+
+  ALLOWED: git commit/push, bin/fw handover, reading files,
+           Write/Edit to .context/ .tasks/ .claude/
+  BLOCKED: Write/Edit to source files, Bash (except commit/push/handover)
+
+  Action: Commit your work, then run 'bin/fw handover'
+  Details: docs/context-compaction.md (budget ladder, what handover/compact capture)
+  ⚠ Unsupervised session (not under claude-fw): the budget auto-restart loop will NOT fire.
+    Tell the operator: relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before critical (see docs/context-compaction.md).
+══════════════════════════════════════════════════════════
+
+exit=2
+```
+
+The `warn` line stays a single short line (docs pointer inline); `urgent` and
+`critical` add a one-line "Details:" pointer since those fire less often and
+warrant a beat more guidance.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -123,6 +181,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+test -f docs/context-compaction.md
+bash -n agents/context/budget-gate.sh
+bash -n agents/context/checkpoint.sh
+grep -q "docs/context-compaction.md" agents/context/budget-gate.sh
+grep -q "docs/context-compaction.md" agents/context/checkpoint.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -222,3 +286,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2705-compaction-ux-budget-messages-dont-expla.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7ed95896
+- **Timestamp:** 2026-07-31T16:12:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-31T16:12:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
