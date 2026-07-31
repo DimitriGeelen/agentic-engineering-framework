@@ -1,0 +1,20 @@
+id: tests/lint/prescribed-commands-are-allowed.bats
+name: prescribed-commands-are-allowed
+type: script
+subsystem: unknown
+location: tests/lint/prescribed-commands-are-allowed.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-07-31
+created_by: unknown

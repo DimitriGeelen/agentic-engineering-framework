@@ -149,7 +149,14 @@ if os.path.exists(status_file):
 import re
 # T-2587: git push/fetch must be allowed at critical — commit-only wrap-up
 # strands handover commits locally (session can commit but never land).
-is_allowed_cmd = bool(re.search(r'(git\s+commit|git\s+add|git\s+push|git\s+fetch|git\s+(status|log|diff)|fw\s+(handover|git|context\s+init|resume|task)|context\.sh\s+init|resume\.sh|checkpoint\.sh|budget-gate\.sh|handover\.sh|update-task\.sh|echo\s+0\s*>)', command)) if command else False
+# T-2702: `fw context focus` must be allowed for the same reason, one level up.
+# check-active-task.sh blocks when focus is empty (the state a just-completed task
+# leaves behind) and PRINTS `fw context focus T-XXX` as the remedy — which this
+# allowlist then refused, because it carried `context init` and not `context focus`.
+# One gate prescribing the command another gate denies is a hard deadlock at
+# exactly the moment the session is trying to wrap up. Reported by a consumer
+# (832) who could not file it: filing required the blocked path.
+is_allowed_cmd = bool(re.search(r'(git\s+commit|git\s+add|git\s+push|git\s+fetch|git\s+(status|log|diff)|fw\s+(handover|git|context\s+(init|focus)|resume|task)|context\.sh\s+init|resume\.sh|checkpoint\.sh|budget-gate\.sh|handover\.sh|update-task\.sh|echo\s+0\s*>)', command)) if command else False
 is_read_tool = tool_name in ('Read', 'Glob', 'Grep')
 
 # At critical, allow Write/Edit to wrap-up paths (handover, tasks, context)
