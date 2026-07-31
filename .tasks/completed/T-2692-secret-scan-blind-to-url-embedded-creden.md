@@ -4,12 +4,12 @@ name: "secret-scan blind to URL-embedded credentials (positional, not issuer-pre
 description: >
   secret-scan blind to URL-embedded credentials (positional, not issuer-prefixed)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/consumer-recover.sh, lib/url-credentials.sh, tests/unit/test_secret_scan.bats, tests/unit/test_url_credentials.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T07:43:43Z
-last_update: '2026-07-31T07:45:09Z'
-date_finished:
+last_update: 2026-07-31T08:07:06Z
+date_finished: 2026-07-31T08:07:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -320,3 +320,20 @@ un-disclose a mirrored secret.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2692-secret-scan-blind-to-url-embedded-creden.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-73a6d4bf
+- **Timestamp:** 2026-07-31T08:07:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
+     - evidence: ``bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.`
+
+### 2026-07-31T08:07:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

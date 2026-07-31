@@ -4001,3 +4001,10 @@ X'` returning empty group."
   date: 2026-07-31
   context: Added via context agent
   application: TBD
+- id: L-525
+  learning: "A correct tool with an unchecked narration layer is a false green with extra steps. T-2694's all-versions census reported every version accurately; the hand-composed prose summary of it claimed the lane-overflow spill entered at v6, one paragraph below a table showing v2/v3 already carrying it. The prose — not the tool output — is what reached the peer rail and the operator's promotion decision. Fix: make the tool emit the summary (corpus_lint --summary), print CLEAN rows so an ABSENCE is representable (v4/v5 overflow-free is what makes v6 a regression rather than a property of the map), and carry witnesses rather than tallies. Every rule shipped this week judges bytes; nothing judged the narration of those bytes."
+  source: P-001
+  task: unknown
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD

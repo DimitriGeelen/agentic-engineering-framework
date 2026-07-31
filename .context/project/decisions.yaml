@@ -2473,3 +2473,10 @@ decisions:
     date: 2026-07-29
     task: T-2686
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-356
+    decision: "`collect_all_versions` includes `draft-*` projects. `--all-versions`"
+    scope: project
+    date: 2026-07-31
+    task: T-2694
+    rationale: "Auto-captured from task file on completion"

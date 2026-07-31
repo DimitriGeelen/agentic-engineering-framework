@@ -24036,3 +24036,75 @@ scan_id: R-a81a2ae2
 task_id: T-2691
 payload:
   task_file: .tasks/active/T-2691-push-403-to-origin-diagnose-and-restore-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T08:07:10Z'
+scan_id: R-73a6d4bf
+task_id: T-2692
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T08:07:10Z'
+scan_id: R-73a6d4bf
+task_id: T-2692
+payload:
+  task_file: .tasks/active/T-2692-secret-scan-blind-to-url-embedded-creden.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T08:08:20Z'
+scan_id: R-c815c749
+task_id: T-2693
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T08:08:20Z'
+scan_id: R-c815c749
+task_id: T-2693
+payload:
+  task_file: .tasks/active/T-2693-vendor-time-upstream-sentinel-must-not-c.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T08:45:18Z'
+scan_id: R-0e02de44
+task_id: T-2694
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T08:45:18Z'
+scan_id: R-0e02de44
+task_id: T-2694
+payload:
+  task_file: .tasks/active/T-2694-corpus-lint-judges-latest-only--stored-v.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T08:59:27Z'
+scan_id: R-135f4470
+task_id: T-2695
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T08:59:27Z'
+scan_id: R-135f4470
+task_id: T-2695
+payload:
+  task_file: .tasks/active/T-2695-census-narrative-contradicted-its-own-da.md
