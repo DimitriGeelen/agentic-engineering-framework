@@ -398,3 +398,73 @@ def test_live_corpus_all_versions_census():
     # witness-for-witness.
     v3 = sorted(f["rule"] for f in findings if f["map"] == "draft-knowledge-leveling@v3")
     assert v3 == ["lane-geometry", "lane-overflow", "lane-overflow"], v3
+
+
+def test_knowledge_leveling_overflow_was_repaired_then_regressed():
+    """T-2695 — pins the CORRECTED timeline, because the first narrative
+    written from this data was wrong in a way the data itself refutes.
+
+    Rail 344 reported the spill as entering at v6 and being inherited
+    unchanged by v7/v8. Both halves are false: v2/v3 already spill, v4/v5 are
+    overflow-free, and v7/v8 spill at different magnitudes than v6. 832
+    caught it at rail 345 from the numbers we had reported to them.
+
+    The absence at v4/v5 is the load-bearing assertion. It is what makes v6 a
+    REGRESSION — someone fixed this once and the fix did not survive a
+    re-authoring — rather than a property the map has always had. That
+    distinction is what the operator's pending v8 promotion turns on, so a
+    future re-narration that contradicts it should go red here.
+    """
+    store = REPO_ROOT / ".context" / "designer" / "projects"
+    idx = corpus_lint.store_index(store)
+    ghosts = corpus_lint._registry_ghost_uuids(store)
+
+    def rules_at(v):
+        name = f"draft-knowledge-leveling@v{v}"
+        xml = (store / "draft-knowledge-leveling" / f"v{v}.bpmn").read_text()
+        f, _ = corpus_lint.lint_map(name, xml, idx, ghosts)
+        return sorted(x["rule"] for x in f)
+
+    overflow = {v: rules_at(v).count("lane-overflow") for v in range(2, 9)}
+    assert overflow == {2: 2, 3: 2, 4: 0, 5: 0, 6: 2, 7: 2, 8: 2}, overflow
+
+    # v7/v8 do not "inherit" v6's spill — different witnesses, so a reader
+    # comparing only counts would call these the same defect.
+    def overflow_witnesses(v):
+        name = f"draft-knowledge-leveling@v{v}"
+        xml = (store / "draft-knowledge-leveling" / f"v{v}.bpmn").read_text()
+        f, _ = corpus_lint.lint_map(name, xml, idx, ghosts)
+        return sorted(x["node"] for x in f if x["rule"] == "lane-overflow")
+
+    assert overflow_witnesses(6) != overflow_witnesses(7), overflow_witnesses(6)
+
+    # …and the geometry finding changes CLASS at v7: wholesale inversion
+    # through v6, two-node subset call at v7/v8. Same rule, different repair,
+    # different owner — this is the axis the operator is being asked about.
+    def geometry_detail(v):
+        name = f"draft-knowledge-leveling@v{v}"
+        xml = (store / "draft-knowledge-leveling" / f"v{v}.bpmn").read_text()
+        f, _ = corpus_lint.lint_map(name, xml, idx, ghosts)
+        return next(x["detail"] for x in f if x["rule"] == "lane-geometry")
+
+    assert "wholesale inversion" in geometry_detail(6)
+    assert "wholesale inversion" not in geometry_detail(8)
+    assert "subset crosses" in geometry_detail(8)
+
+
+def test_census_summary_prints_clean_versions_and_carries_witnesses():
+    """T-2695 — the summary must express an ABSENCE and an IDENTITY.
+
+    Absence: if clean versions were omitted, the roll-up could not say
+    "repaired at v4", which is the whole finding. Identity: a tally cannot
+    tell v3's wholesale inversion from v8's authority call (832 rail 345), so
+    every row carries its witness.
+    """
+    targets = [("m@v1", ""), ("m@v2", "")]
+    findings = [{"map": "m@v2", "rule": "lane-overflow", "node": "a, b"}]
+    skips = [{"map": "m@v1", "rule": "lane-overflow-skip", "detail": "x"}]
+    rows = corpus_lint.census_rows(targets, findings, skips)
+
+    assert [r["map"] for r in rows] == ["m@v1", "m@v2"]
+    assert rows[0]["rules"] == [] and rows[0]["skipped_lanes"] == 1
+    assert rows[1]["rules"] == [{"rule": "lane-overflow", "witness": "a, b"}]

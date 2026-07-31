@@ -637,8 +637,8 @@ def collect_all_versions(store: Path) -> list:
     sketch churn never moves the gate — that is a baseline-stability
     decision. This mode is not the gate; it is an off-by-default lens for
     judging the corpus's whole history, and the census that motivated this
-    function found its headline finding (the v6 lane-overflow regression)
-    inside a draft project. Excluding drafts here would hide exactly the
+    function found its headline finding (a lane-overflow repair at v4 that
+    regressed at v6 — see census_rows) inside a draft project. Excluding drafts here would hide exactly the
     blind spot this mode exists to close, so they stay in scope."""
     out = []
     if not store.is_dir():
@@ -653,6 +653,61 @@ def collect_all_versions(store: Path) -> list:
     return out
 
 
+def census_rows(targets: list, findings: list, skips: list) -> list:
+    """One row per scanned version: its rule classes, each with its witness.
+
+    Why this is machine-generated rather than written by hand (T-2695): the
+    first all-versions census (T-2694) was correct, and the prose summary
+    composed from scrolling its output was not. It claimed the
+    knowledge-leveling spill "entered at v6", one paragraph below a table
+    showing v2 and v3 already carrying it. The peer caught the contradiction
+    from the numbers we had ourselves reported. Nothing could disagree with
+    that summary because no summary existed except the sentence.
+
+    Two shape decisions, both load-bearing:
+
+    * Rows carry the WITNESS, not just a count. A tally cannot distinguish
+      v3's wholesale inversion from v8's two-node authority call — both
+      report 3 findings (832, rail 345).
+    * Clean versions are PRINTED, not omitted. The census's most
+      decision-relevant result was an absence: v4/v5 carry no overflow, which
+      is what makes v6 a regression rather than an inherent property of the
+      map. A summary that lists only offenders cannot express "repaired
+      here", and repair-then-regress is a different conversation from
+      never-fixed.
+
+    Skips are carried per row for the same reason they are printed in the
+    detail output (T-2690): a roll-up that silently drops them would rebuild
+    the false green the skip channel exists to prevent.
+    """
+    by_map, skips_by_map = {}, {}
+    for f in findings:
+        by_map.setdefault(f["map"], []).append(f)
+    for s in skips:
+        skips_by_map[s["map"]] = skips_by_map.get(s["map"], 0) + 1
+    rows = []
+    for name, _ in targets:
+        rows.append({
+            "map": name,
+            "rules": [{"rule": f["rule"], "witness": f["node"]}
+                      for f in by_map.get(name, [])],
+            "skipped_lanes": skips_by_map.get(name, 0),
+        })
+    return rows
+
+
+def _print_census(rows: list) -> None:
+    with_findings = sum(1 for r in rows if r["rules"])
+    print(f"corpus lint: census — {len(rows)} version(s), "
+          f"{with_findings} with finding(s)")
+    width = max((len(r["map"]) for r in rows), default=0)
+    for r in rows:
+        parts = [f"{d['rule']}[{d['witness']}]" for d in r["rules"]] or ["clean"]
+        if r["skipped_lanes"]:
+            parts.append(f"+{r['skipped_lanes']} lane(s) skipped, not judged")
+        print(f"  {r['map']:<{width}}  {'  '.join(parts)}")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="fw corpus lint")
     ap.add_argument("targets", nargs="*",
@@ -663,6 +718,10 @@ def main(argv=None):
                     help="judge EVERY stored version of every project (incl. drafts), "
                          "not just latest — off by default, whole-store only "
                          "(T-2694; does not combine with explicit targets)")
+    ap.add_argument("--summary", action="store_true",
+                    help="print one machine-generated row per scanned version "
+                         "(rule classes + witnesses, clean versions included) "
+                         "instead of the per-finding detail — T-2695")
     args = ap.parse_args(argv)
 
     store = Path(args.store) if args.store else STORE
@@ -687,9 +746,18 @@ def main(argv=None):
         skips.extend(lane_overflow_skips(name, xml_text))
     findings.extend(cross_map_typed_events(typed_all))
 
+    rows = census_rows(targets, findings, skips)
+
     if args.json:
-        print(json.dumps({"scanned": [n for n, _ in targets],
-                          "findings": findings, "skips": skips}, indent=2))
+        payload = {"scanned": [n for n, _ in targets],
+                   "findings": findings, "skips": skips}
+        if args.summary:
+            payload["census"] = rows
+        print(json.dumps(payload, indent=2))
+    elif args.summary:
+        _print_census(rows)
+        print(f"{'CLEAN' if not findings else f'{len(findings)} finding(s)'}"
+              f"{f' — {len(skips)} lane(s) skipped, not judged' if skips else ''}")
     else:
         print(f"corpus lint: scanned {len(targets)} map(s)")
         for f in findings:

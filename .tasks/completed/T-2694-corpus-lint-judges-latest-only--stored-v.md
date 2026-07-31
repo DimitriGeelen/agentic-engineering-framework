@@ -143,17 +143,33 @@ exactly 1 lane-geometry + 2 lane-overflow — the same shape reported at rail 34
 inversion 5/5 and 11/11, plus agent 194px and framework 44px spills). Two different runs,
 same witnesses.
 
-**★ The finding worth acting on: the spill entered at v6 and was carried forward.**
-v5 has the inversion but **no** overflow; v6 adds both spills (agent 262px, framework 130px)
-and v7/v8 inherit them. Node ids change across that boundary (`agt_0_healing` →
-`agt_2_healing`, `fw_end_already` → `fw_7_refused`), so v5→v6 was a substantial
-re-authoring that grew content past the declared bands. Nobody saw it because the sweep
-only ever judged `latest` **and** the overflow rule did not exist yet — T-2688/T-2689
-shipped afterwards. This is precisely the blind spot this task describes, caught in its
-own first census.
+**★ CORRECTED 2026-07-31 (T-2695) — the original headline here was false, and the table
+directly above it says so.** It read "the spill entered at v6 and was carried forward",
+while row 133 lists v2 and v3 at 3 findings each. 832 caught the contradiction at rail 345
+from the numbers reported to them at rail 344. Corrected timeline:
 
-That is decision-relevant for the pending v8 promotion: the spill is not inherent to the
-map, it is a regression from one authoring step, and v4/v5 show the same content fitting.
+| version | lane-geometry | lane-overflow |
+|---------|---------------|---------------|
+| v2, v3 | wholesale inversion | agent 194px, framework 44px |
+| v4, v5 | wholesale inversion | **none — repaired** |
+| v6 | wholesale inversion | agent 262px, framework 130px |
+| v7, v8 | **subset** crossing (2/7) | agent 307px, framework 36px |
+
+The spill did not *enter* at v6 — it was **repaired at v4 and regressed at v6**. And v7/v8
+do not *inherit* v6's spill: different magnitudes, different witnesses (`agt_4_write` →
+`agt_7_refused`, `fw_2_fw` → `fw_1_bugfix`). v7 is also where the geometry finding changes
+class from wholesale inversion to the two-node subset call, so v7 was a partial repair of a
+*different* axis.
+
+Nobody saw any of it because the sweep only ever judged `latest` **and** the overflow rule
+did not exist yet (T-2688/T-2689 shipped afterwards) — the blind spot this task describes,
+caught in its own first census.
+
+Decision-relevance for the pending v8 promotion, stated correctly: the spill is not inherent
+to the map, **someone already fixed it once and the fix did not survive a re-authoring**. No
+stored version is clean on both axes. The operator's question is not "raise the bands or
+compress" and not "what did v6 do that v5 did not" — it is "what did v4 do that v3 did not,
+and why did it not stick".
 
 **Caveat, stated rather than buried:** a finding count is not a classification. v3 and v8
 both report "3 findings", but v3 is a wholesale inversion and v8 is the two-node authority
