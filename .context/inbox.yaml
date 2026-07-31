@@ -858,3 +858,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-107
+  text: "Post-compaction recovery injection is truncated: post-compact-resume.sh builds a 33-38KB additionalContext payload and the harness delivers only a ~2KB preview into model context, persisting the rest to tool-results/hook-*-additionalContext.txt. ~95% of recovery context silently never arrives. Observed verbatim: 'Output too large (37KB) ... Preview (first 2KB)'. Presents as success (header reads 'Post-Compaction Context Recovery (automatic)'), which is why /resume is REQUIRED not additive. Surfaced during T-2705; separate defect from the message-wording work."
+  captured: 2026-07-31T11:24:47Z
+  context_task: T-2705
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-108
+  text: "termlink file receive --replay starves: it re-serves the SAME earliest historical transfer on every invocation rather than advancing through the queue. Verified 4 consecutive calls against session 'workflow-designer' — all returned escalation-patterns.yaml (4957B, cli-1302751) while two later BPMN transfers remained unreachable. Consequence: any transfer after the first is permanently unfetchable via replay, and the failure is silent (each call reports a successful receive with SHA verified). Blocked T-2706 fixture re-pin. Workaround used: pull-at-tag from the peer's published repo."
+  captured: 2026-07-31T11:29:42Z
+  context_task: T-2705
+  tags: []
+  status: pending
+  promoted_to: null
