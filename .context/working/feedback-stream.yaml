@@ -24108,3 +24108,39 @@ scan_id: R-135f4470
 task_id: T-2695
 payload:
   task_file: .tasks/active/T-2695-census-narrative-contradicted-its-own-da.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T09:13:29Z'
+scan_id: R-48e241fa
+task_id: T-2696
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T09:13:29Z'
+scan_id: R-48e241fa
+task_id: T-2696
+payload:
+  task_file: .tasks/active/T-2696-span-extracting-invariant-test-goes-vacu.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T09:27:50Z'
+scan_id: R-4b07b6f9
+task_id: T-2697
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T09:27:50Z'
+scan_id: R-4b07b6f9
+task_id: T-2697
+payload:
+  task_file: .tasks/active/T-2697-testslint-is-wired-into-no-runner-and-7-.md

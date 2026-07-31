@@ -5387,3 +5387,11 @@ Default sweep still resolves meta[latest] only '
   command: 'FW_SWITCH_FOCUS=1 git add -A .context/ .tasks/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2695: close — L-525 captured (narration layer unjudged), episodic generated
 
 Co-Authored-By: Claude Opus 5 (1M'
+- timestamp: '2026-07-31T09:29:10Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2697'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .context/ .tasks/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2697: close — L-526 captured (orphaned guard suite + shape-pinned tests)
+
+Co-Authored-By: Claude Opus 5 (1M co'

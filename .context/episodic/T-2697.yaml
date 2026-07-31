@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2697: tests/lint/ is wired into no runner and 7 of its invariant tests are red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T09:27:59Z
+# ============================================================================
+
+task_id: T-2697
+task_name: "tests/lint/ is wired into no runner and 7 of its invariant tests are red"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T09:13:51Z
+completed: 2026-07-31T09:27:45Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T11:24:39+02:00
+last_commit: 2026-07-31T11:25:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tests/lint/ was wired into no runner — 7 invariant tests red, one for 51 days. register orphan-guard fabric card + refresh vendored bin/fw
+
+# Key outcomes
+outcomes:
+  - '`tests/lint/` runs from a framework verb, and the verb''s name does not collide with an'
+  - 'Each of the 7 red tests is triaged into exactly one of: **real drift** (the invariant'
+  - 'Stale assertions are re-pointed at the **invariant**, not at the current shape, so the'
+  - 'Real drifts are filed as their own tasks with evidence — not fixed inline here, and not'
+  - 'The suite is green **or** its remaining reds are traceable to a filed task, so wiring'
+  - 'A guard catches the next orphaned test directory: adding `tests/<new>/` without a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.fabric/components/tests-lint-no-orphaned-test-dirs.yaml'
+  - '.tasks/active/T-2697-testslint-is-wired-into-no-runner-and-7-.md'
+  - '.tasks/active/T-2698-config-registry-drift-2-keys-missing-fro.md'
+  - '.tasks/active/T-2699-fw-help-omits-21-router-commands-includi.md'
+  - '.tasks/active/T-2700-bare-fw-in-block-messages-of-update-task.md'
+  - '.tasks/completed/T-2696-span-extracting-invariant-test-goes-vacu.md'
+  - 'tests/lint/no-orphaned-test-dirs.bats'
+  - 'tests/lint/single-vendor-writer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T11:24:39"
+    action: "T-2697: tests/lint/ was wired into no runner — 7 invariant tests red, one for 51 days"
+  - time: "2026-07-31T11:25:14"
+    action: "T-2697: register orphan-guard fabric card + refresh vendored bin/fw"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 3
+  files_changed: 11
+  lines_added: 1331
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2697-testslint-is-wired-into-no-runner-and-7-.md
+generated_by: context-agent-hybrid

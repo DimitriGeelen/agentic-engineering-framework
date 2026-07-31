@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2696: span-extracting invariant test goes vacuous on a rename (832 T-312 class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T09:13:39Z
+# ============================================================================
+
+task_id: T-2696
+task_name: "span-extracting invariant test goes vacuous on a rename (832 T-312 class)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T09:03:16Z
+completed: 2026-07-31T09:13:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T11:11:01+02:00
+last_commit: 2026-07-31T11:11:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  span-extracting invariant test went vacuous on a rename (832 T-312 class)
+
+# Key outcomes
+outcomes:
+  - 'The 4b span is bounded on a **structural** terminator (the next step header of any'
+  - 'A guard asserts the extracted span stays plausibly sized, so total-vacuity (range'
+  - 'The test asserts **both** directions its name claims: `do_vendor` present AND no'
+  - 'Comments are excluded before matching, so the assertion cannot be satisfied by prose'
+  - '**Negative control:** the corrected test goes red when step 4b''s `do_vendor` call is'
+  - 'The rest of the span-extracting scans in the repo are checked and the result recorded'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2696-span-extracting-invariant-test-goes-vacu.md'
+  - 'tests/lint/single-vendor-writer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T11:11:01"
+    action: "T-2696: span-extracting invariant test went vacuous on a rename (832 T-312 class)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 2
+  lines_added: 320
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2696-span-extracting-invariant-test-goes-vacu.md
+generated_by: context-agent-hybrid

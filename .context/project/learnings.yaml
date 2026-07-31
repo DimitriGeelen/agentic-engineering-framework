@@ -4008,3 +4008,10 @@ X'` returning empty group."
   date: 2026-07-31
   context: Added via context agent
   application: TBD
+- id: L-526
+  learning: "A guard suite that no runner globs reports success by silence, and a verb-name collision makes that silence reassuring: tests/lint/ (7 invariant files) was in no runner from creation, while `fw test lint` ran shellcheck — so the command anyone would reach for returned green output about a different thing. 7 tests were red, one for 51 days. Two generalisations. (1) Test-orphaning fails toward green, so it needs a directory-level guard, not vigilance: assert every tests/<dir>/ holding .bats is referenced by a runner. (2) A test pinned to an implementation SHAPE punishes the refactor it exists to protect — single-vendor-writer went red because T-2307/T-2455 improved a non-recursive lib/*.sh glob into a recursive find; re-point such tests at the invariant (derived, never enumerated)."
+  source: P-001
+  task: unknown
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD
