@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2693: vendor-time upstream sentinel must not carry credentials
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T08:08:30Z
+# ============================================================================
+
+task_id: T-2693
+task_name: "vendor-time upstream sentinel must not carry credentials"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T07:52:36Z
+completed: 2026-07-31T08:07:26Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T10:02:40+02:00
+last_commit: 2026-07-31T10:04:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vendor-time upstream sentinel is credential-free by construction. register test_url_credentials fabric card. refresh vendored copies (url-credentials.sh, bin/fw, consumer-recover.sh)
+
+# Key outcomes
+outcomes:
+  - '`bin/fw` redacts URL userinfo before writing `.upstream`, reusing the same'
+  - 'The confirmation line printed at vendor-time shows the redacted URL, not the raw one'
+  - 'The live `.agentic-framework/.upstream` in this repo no longer contains a credential,'
+  - '`secret-scan.sh scan-tree` returns exit 0 with zero findings across the tracked tree'
+  - '`fw audit` no longer reports a secret-scan failure, so the push gate clears'
+  - 'A test pins the redaction at the write path: a credentialed origin yields a'
+  - 'The scrubbed sentinel is still functional for its one purpose — resolution'
+  - 'Resolution **prefers the credential-free public mirror** over `origin`, matching the'
+  - 'When the helper lib is absent the vendor step **refuses to write a sentinel** and says'
+  - '`.secret-scan-allowlist` names the new fixture file individually rather than'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/consumer-recover.sh'
+  - '.agentic-framework/lib/url-credentials.sh'
+  - '.agentic-framework/.upstream'
+  - 'bin/fw'
+  - '.fabric/components/lib-url-credentials.yaml'
+  - '.fabric/components/tests-unit-test_url_credentials.yaml'
+  - 'lib/consumer-recover.sh'
+  - 'lib/url-credentials.sh'
+  - '.secret-scan-allowlist'
+  - '.tasks/active/T-2693-vendor-time-upstream-sentinel-must-not-c.md'
+  - 'tests/unit/t2232_durable_in_consumer_upgrade.bats'
+  - 'tests/unit/test_url_credentials.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T10:02:40"
+    action: "T-2693: vendor-time upstream sentinel is credential-free by construction"
+  - time: "2026-07-31T10:03:42"
+    action: "T-2693: register test_url_credentials fabric card"
+  - time: "2026-07-31T10:04:24"
+    action: "T-2693: refresh vendored copies (url-credentials.sh, bin/fw, consumer-recover.sh)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 3
+  files_changed: 13
+  lines_added: 716
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2693-vendor-time-upstream-sentinel-must-not-c.md
+generated_by: context-agent-hybrid

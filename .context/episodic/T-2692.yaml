@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2692: secret-scan blind to URL-embedded credentials (positional, not issuer-prefixed)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T08:07:20Z
+# ============================================================================
+
+task_id: T-2692
+task_name: "secret-scan blind to URL-embedded credentials (positional, not issuer-prefixed)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T07:43:43Z
+completed: 2026-07-31T08:07:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T09:52:23+02:00
+last_commit: 2026-07-31T09:52:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  secret-scan sees positional URL credentials — two causes, not one
+
+# Key outcomes
+outcomes:
+  - '`.secret-scan-patterns` gains a positional URL-credential class covering **both**'
+  - '`secret-scan.sh scan-tree` exits non-zero on the live exposure and names'
+  - 'The new pattern texts do **not** match their own definition lines in the catalogue'
+  - 'No false positives: the tracked-tree finding set for the new class is exactly the'
+  - 'Benign short userinfo (short `git@` / `user@` remotes) does not fire'
+  - 'A unit test pins all of the above and fails the day the class regresses'
+  - 'The audit-horizon consequence is established and stated before shipping: whether'
+  - '**Second cause found mid-build and closed:** the allowlist blanket'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.secret-scan-allowlist'
+  - '.secret-scan-patterns'
+  - '.tasks/active/T-2692-secret-scan-blind-to-url-embedded-creden.md'
+  - 'tests/unit/test_secret_scan.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T09:52:23"
+    action: "T-2692: secret-scan sees positional URL credentials — two causes, not one"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 23
+  commits: 1
+  files_changed: 4
+  lines_added: 445
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2692-secret-scan-blind-to-url-embedded-creden.md
+generated_by: context-agent-hybrid

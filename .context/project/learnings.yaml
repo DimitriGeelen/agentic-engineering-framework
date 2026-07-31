@@ -3973,3 +3973,31 @@ X'` returning empty group."
   date: 2026-07-30
   context: Added via context agent
   application: TBD
+- id: L-521
+  learning: "A detector's INDEXING STRATEGY, not its pattern count, determines what it can never see. The secret-scan catalogue was entirely issuer-indexed (AKIA, ghp_, sk-ant-, xox) and so could not reach credentials identified by POSITION rather than shape: a token in a URL userinfo field carries no issuer marker at all. The catalogue header codified the exclusion as policy ('prefer specific over generic'). When auditing any detector ask what its indexing strategy excludes BY CONSTRUCTION, not merely which patterns are missing — the second question finds gaps, the first finds blind spots."
+  source: P-001
+  task: unknown
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD
+- id: L-522
+  learning: "A blanket path allowlist rots the moment that directory gains GENERATED files. '^\\.agentic-framework/' was exempted because vendored files are duplicates scanned at their real source — true for files the vendor step COPIES, false for files it WRITES. '.upstream' exists nowhere else, so 'scanned at its real source' resolved to scanned nowhere. Two independent causes hid OBS-106 and fixing only the pattern still returned exit 0; had I trusted the pattern instead of re-running the scan, the task would have shipped a fix that changed nothing. Rule: exempt by enumeration, not by directory prefix, so a NEW entry is scanned until someone deliberately exempts it."
+  source: P-001
+  task: unknown
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD
+- id: L-523
+  learning: "L-519 recurrence (5th and 6th instances, both self-inflicted in one task): a text-matching guard cannot tell a structure from prose describing that structure. The secret scan tripped on lib/url-credentials.sh's own doc comment illustrating the credential form, and the regression guard tripped on a bin/fw COMMENT naming the very call it bans. Correct repairs are (a) reword the prose, and (b) strip comment lines before matching — NOT allowlist the file, which is the repair that rebuilds the blind spot the guard exists to prevent. Any structural grep-guard over source should exclude comments, and should carry a negative control proving it goes red when the banned construct is actually reintroduced."
+  source: P-001
+  task: unknown
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD
+- id: L-524
+  learning: "Producer/consumer split, L-399 family, security variant: the framework ALREADY knew remote-origin URLs carry PATs — lib/consumer-recover.sh both strips URL userinfo and prefers the public 'github' remote over 'origin', with a comment saying so. That knowledge was applied where credentials were DISPLAYED and never where they were WRITTEN, so bin/fw put a live token into a tracked file for 7 weeks. Before writing a new redaction, grep for an existing one: if the codebase already solved the hazard on one side, the task is to share the implementation (one dialect, both callers source it), not to copy it. Also: strip alone would have left a private URL no outside consumer can clone — preferring the public mirror keeps the artefact both credential-free and usable."
+  source: P-001
+  task: unknown
+  date: 2026-07-31
+  context: Added via context agent
+  application: TBD
