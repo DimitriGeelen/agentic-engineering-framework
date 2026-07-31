@@ -302,7 +302,7 @@ PYREC
             echo "  1. Add the Recommendation block, then retry" >&2
             echo "  2. Bypass via flag (logged Tier 2): --skip-recommendation" >&2
             echo "  3. Bypass via env var (logged Tier 2, T-1890 parity):" >&2
-            echo "       FW_ALLOW_EMPTY_RECOMMENDATION=1 fw task update T-XXX --status work-completed" >&2
+            echo "       FW_ALLOW_EMPTY_RECOMMENDATION=1 bin/fw task update T-XXX --status work-completed" >&2
             exit 1
             ;;
     esac
@@ -549,7 +549,7 @@ check_inception_decision() {
     echo "decision queue and loses visibility into pending exploration outcomes." >&2
     echo "" >&2
     echo "Options:" >&2
-    echo "  1. Record the decision: fw inception decide $(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') go|no-go|defer --rationale '...'" >&2
+    echo "  1. Record the decision: bin/fw inception decide $(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') go|no-go|defer --rationale '...'" >&2
     echo "  2. Use --skip-inception-decision to bypass (logged, T-1626)" >&2
     exit 1
 }

@@ -2,9 +2,13 @@
 id: T-2700
 name: "bare fw in block messages of update-task.sh and check-active-task.sh"
 description: >
-  tests/lint/no-bare-fw-in-gate-scripts.bats tests 1 and 8 (red, unrun until T-2697): both scripts emit bare 'fw ...' in agent-facing block messages, violating CLAUDE.md Copy-Pasteable Commands (bare fw may resolve to a stale global shim; framework repo wants bin/fw, consumers .agentic-framework/bin/fw). check-active-task.sh is the gate agents trip most often, so its message is the most-read text in the framework.
+  tests/lint/no-bare-fw-in-gate-scripts.bats tests 1 and 8 (red, unrun until T-2697):
+  both scripts emit bare 'fw ...' in agent-facing block messages, violating CLAUDE.md
+  Copy-Pasteable Commands (bare fw may resolve to a stale global shim; framework repo
+  wants bin/fw, consumers .agentic-framework/bin/fw). check-active-task.sh is the
+  gate agents trip most often, so its message is the most-read text in the framework.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T09:22:42Z
-last_update: 2026-07-31T09:22:42Z
-date_finished: null
+last_update: 2026-07-31T09:33:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +38,89 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-31T09:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-31T09:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2700: bare fw in block messages of update-task.sh and check-active-task.sh
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filed from the T-2697 triage: two tests in `tests/lint/no-bare-fw-in-gate-scripts.bats` are
+red, having never run. Inspecting the six flagged lines splits them three ways:
+
+| line | flagged as | actually |
+|------|-----------|----------|
+| `update-task.sh:305` `FW_…=1 fw task update …` | bare fw | **real** — a copy-pasteable command |
+| `update-task.sh:552` `fw inception decide …` | bare fw | **real** — a copy-pasteable command |
+| `update-task.sh:164`, `:1377` | bare fw | **false positive** — already `bin/fw`; `\bfw\b` matches inside `bin/fw` because `/` is a word boundary |
+| `update-task.sh:681`, `:683`, `check-active-task.sh:366`, `:367` | bare fw | **false positive** — prose *about* the command ("Works for: fw task update, fw context add-*"), not a command to run |
+
+So the invariant is right and the detector is wrong in two independent ways. The second is
+L-519 from the other side: this time a text match flagged prose *describing* a command as if
+it were the command. Same root inability, opposite sign.
+
+Two real offenders is a genuine hygiene defect — CLAUDE.md §Copy-Pasteable Commands exists
+because bare `fw` may resolve to a stale global shim, and `update-task.sh` messages are read
+mid-gate when the reader is already blocked.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The two real offenders emit `bin/fw`, so every command in a block message is
+      copy-pasteable in the framework repo
+- [x] The detector no longer flags `bin/fw` — matching inside the very form it wants is a
+      false positive that makes the guard un-actionable
+- [x] The detector distinguishes a **command** from **prose about a command**: it fires only
+      when the message's command position starts with `fw`, not when a sentence mentions a
+      verb. Prose stays prose; the four prose lines above are not rewritten to satisfy a
+      scanner
+- [x] **Negative controls, run:** re-introducing a bare `fw` command turns the test red, and
+      adding a prose mention of `fw task update` does not
+- [x] `bats tests/lint/no-bare-fw-in-gate-scripts.bats` is 14/14 (13 original + a self-test
+      for the command-vs-prose distinction, which is the guard's whole value)
+
+## Third confusion, found by running it
+
+After fixing the two known false-positive classes, the detector still flagged
+`check-active-task.sh`. The hit was `case "fw hook "*|"bin/fw hook "*)` — a **dispatch
+pattern matching an incoming command line**, not a message telling anyone to run anything.
+The rewrite had widened extraction to every quoted string in the file; the original at least
+scoped to lines containing `echo`.
+
+So one detector held three variants of the same confusion: it must not merely find the text
+`fw`, it must find it **where a human is being told to type it**. Extraction is now scoped to
+emitting lines, comments excluded, and the match is positional.
+
+Left deliberately unflagged: `echo "  1. Run this: fw task update …"` — a command preceded by
+prose in the same string. Weaker form, not chased, because the fix would be to over-match
+sentences again.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,7 +186,32 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+test "$(timeout 90 bats tests/lint/no-bare-fw-in-gate-scripts.bats 2>&1 | grep -c '^not ok')" = "0"
+out=$(timeout 90 bats tests/lint/no-bare-fw-in-gate-scripts.bats 2>&1); echo "$out" | grep -q "distinguishes a command from prose"
+bash -n agents/task-create/update-task.sh
+
 ## RCA
+
+**Symptom:** two red tests asserting no bare `fw` in gate-script messages — red, and unrun
+until T-2697 wired the directory in.
+
+**Root cause, two independent halves.** The *invariant* was being violated: two block
+messages in `update-task.sh` emitted pasteable commands starting with bare `fw`, which may
+resolve to a stale global shim. The *detector* was also wrong, and in three ways — it matched
+`fw` inside `bin/fw` (`/` is a word boundary, so it flagged the exact form it wanted), it
+could not tell a command from a sentence mentioning one, and after the first rewrite it
+matched a `case` dispatch pattern.
+
+**Why structurally allowed:** a guard with a high false-positive rate is not a weaker guard,
+it is an *unusable* one — the only way to satisfy it was to stop mentioning `fw` in prose, so
+the honest response to it was to ignore it. That it was also unrun (T-2697) meant nobody had
+to decide.
+
+**Prevention:** the rule is positional rather than lexical — within an emitted string, after
+whitespace, a list marker and any `ENV=value` prefixes, does the *command position* start
+with `fw `? Prose is left alone. The distinction carries a self-test in the same file, since
+it is the guard's entire value, plus negative controls verifying a bare command goes red and
+a prose mention does not.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -180,3 +278,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2700-bare-fw-in-block-messages-of-update-task.md
 - **Context:** Initial task creation
+
+### 2026-07-31T09:33:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
