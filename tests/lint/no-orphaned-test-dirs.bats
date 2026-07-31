@@ -13,11 +13,29 @@
 FW="$BATS_TEST_DIRNAME/../../bin/fw"
 TESTS_ROOT="$BATS_TEST_DIRNAME/.."
 
-@test "every tests/<dir>/ with .bats files is referenced by bin/fw" {
+# T-2701: the file predicate must match what a RUNNER WOULD COLLECT, and nothing
+# else. bats runs *.bats; pytest collects test_*.py and *_test.py. Anything under
+# tests/ that no runner would collect is not an orphaned test — it is a helper,
+# and flagging it is a false positive. `tests/scripts/yaml_parse_all_tasks.py` is
+# the live example: a verification helper called from task `## Verification`
+# blocks, deliberately not collected, correctly not flagged. Per L-527, a guard
+# with false positives is not a weaker guard, it is one that gets ignored.
+#
+# The original cut of this guard globbed *.bats ONLY, which is why it passed
+# tests/web/ (32 pytest files, referenced by no runner — `fw test web` runs
+# web/test_app.py, a different directory). Same shape as the trailing-comment
+# miss in the same batch: the instance in front of me got fixed, not the class.
+# 832 found the identical class their side (rail 348, their T-316) by running
+# this guard's check against a tree it was never written for.
+_collectable() {
+    ls "$1"*.bats "$1"test_*.py "$1"*_test.py 2>/dev/null | head -1
+}
+
+@test "every tests/<dir>/ with collectable test files is referenced by bin/fw" {
     local orphans=()
     for d in "$TESTS_ROOT"/*/; do
         local name; name=$(basename "$d")
-        ls "$d"*.bats >/dev/null 2>&1 || continue
+        [ -n "$(_collectable "$d")" ] || continue
         # Comments stripped: a comment mentioning the path is not a wiring
         # (L-519 — this guard would otherwise pass on the note explaining an
         # orphan, which is exactly the reassurance that let the original hide).
@@ -26,10 +44,36 @@ TESTS_ROOT="$BATS_TEST_DIRNAME/.."
         fi
     done
     [ "${#orphans[@]}" -eq 0 ] || {
-        echo "Test directories with .bats files that no runner globs:"
+        echo "Test directories holding collectable tests that no runner globs:"
         printf '  tests/%s/\n' "${orphans[@]}"
         echo ""
         echo "Add a branch under \`fw test\` (see the 'invariants' branch, T-2697)."
+        false
+    }
+}
+
+@test "the standalone web branch and the all-suite name the same pytest targets" {
+    # The dir-level guard above proves a directory is REACHABLE from bin/fw. It
+    # does not prove every runner path reaches it: one mention anywhere turns it
+    # green. T-2701 hit exactly that — `fw test web` and stage 3 of `fw test all`
+    # each named the pytest target explicitly, so wiring tests/web/ into the first
+    # left the second, the suite that actually gates, still blind.
+    #
+    # Comments stripped before matching: a comment naming a path is prose about
+    # the wiring, not the wiring (L-519 — which has now caught this codebase's
+    # guards three times, twice in trailing position).
+    # The invariant, stated narrowly enough to mean something: any pytest call
+    # that runs the web APP test file must also run the web TEST DIRECTORY.
+    # (A first cut compared every pytest target list in the file and swept in the
+    # playwright branch — over-matching, caught by running it rather than reading.)
+    local app_calls dir_calls
+    app_calls=$(sed 's/#.*//' "$FW" | grep -c 'python3 -m pytest.*web/test_app\.py' || true)
+    dir_calls=$(sed 's/#.*//' "$FW" | grep -c 'python3 -m pytest.*web/test_app\.py.*tests/web/' || true)
+    [ "$app_calls" -gt 0 ]  # the app test file is still wired at all
+    [ "$app_calls" -eq "$dir_calls" ] || {
+        echo "pytest runs web/test_app.py at $app_calls site(s) but tests/web/ at only $dir_calls."
+        echo "A runner path names the app file without the test directory — tests/web/ is"
+        echo "invisible in that path (T-2701)."
         false
     }
 }

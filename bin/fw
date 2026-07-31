@@ -7553,7 +7553,11 @@ PYPREDICT
                 if [ "$#" -gt 0 ]; then
                     cd "$FRAMEWORK_ROOT" && python3 -m pytest "$@" -v || _test_exit=1
                 else
-                    cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                    # T-2701: tests/web/ (32 files) was collected by NO runner —
+                    # this branch named web/test_app.py, a single file in the
+                    # APPLICATION directory, so the test directory with the
+                    # matching name was never reached. Both are run now.
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py tests/web/ -v || _test_exit=1
                 fi
                 ;;
             --playwright|playwright|ui)
@@ -7624,7 +7628,10 @@ PYPREDICT
                 # 3. Pytest web tests
                 if python3 -c "import pytest" 2>/dev/null; then
                     echo -e "${BOLD}--- Web Tests (pytest) ---${NC}"
-                    cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                    # T-2701: keep in step with the `web)` branch above — both name
+                    # the target explicitly, so a directory added to one and not the
+                    # other stays invisible in the suite that matters most.
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py tests/web/ -v || _test_exit=1
                     echo ""
                 else
                     echo -e "${YELLOW}SKIP: pytest not installed${NC}"
