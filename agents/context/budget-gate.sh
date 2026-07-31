@@ -156,11 +156,15 @@ import re
 # check-active-task.sh blocks when focus is empty (the state a just-completed task
 # leaves behind) and PRINTS 'fw context focus T-XXX' as the remedy — which this
 # allowlist then refused, because it carried 'context init' and not 'context focus'.
-# (T-2705 note: this comment previously used backticks, which bash command-substitutes
-# INSIDE the double-quoted python3 -c "..." string this comment lives in — every
-# invocation was silently shelling out to 'fw context focus'/'context init'/'context
-# focus' and printing "command not found" for the ones without an 'fw' prefix. Plain
-# quotes avoid the bash reparse; this is a comment-only fix, no regex/logic change.)
+# (T-2705 note: this comment previously used backticks, then literal double quotes —
+# both break out of the double-quoted python3 -c '...' string this comment lives
+# inside of. Backticks command-substitute; literal doublequote prematurely closes the outer
+# bash string, silently truncating this whole python block and leaving RESULT
+# empty on every invocation (verified: forces every call through the slow path,
+# and RECHECK_INTERVAL then skips 4 of every 5 slow-path checks entirely — found
+# while capturing real budget-gate.sh output for T-2705's AC5). Plain single
+# quotes only in this comment block, no exceptions — this is a comment-only fix,
+# no regex/logic change.)
 # One gate prescribing the command another gate denies is a hard deadlock at
 # exactly the moment the session is trying to wrap up. Reported by a consumer
 # (832) who could not file it: filing required the blocked path.
@@ -201,12 +205,13 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             exit 0
             ;;
         warn)
-            echo "Note: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work." >&2
+            echo "Note: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work. (docs/context-compaction.md)" >&2
             _supervision_notice
             exit 0
             ;;
         urgent)
             echo "WARNING: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
+            echo "  Details: docs/context-compaction.md (budget ladder, what to do at each level)" >&2
             _supervision_notice
             exit 0
             ;;
@@ -368,12 +373,13 @@ case "$LEVEL" in
         exit 0
         ;;
     warn)
-        echo "Note: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work." >&2
+        echo "Note: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work. (docs/context-compaction.md)" >&2
         _supervision_notice
         exit 0
         ;;
     urgent)
         echo "WARNING: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
+        echo "  Details: docs/context-compaction.md (budget ladder, what to do at each level)" >&2
         _supervision_notice
         exit 0
         ;;
@@ -394,6 +400,7 @@ case "$LEVEL" in
         echo "  BLOCKED: Write/Edit to source files, Bash (except commit/push/handover)" >&2
         echo "" >&2
         echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
+        echo "  Details: docs/context-compaction.md (budget ladder, what handover/compact capture)" >&2
         _supervision_notice
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
