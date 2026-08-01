@@ -102,14 +102,14 @@
       <bpmn:outgoing>flow_6</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:linkEventThrow id="agt_5_resolved" name="&#8594; aef-task-lifecycle (resolved)">
+    <bpmn:intermediateThrowEvent id="agt_5_resolved" name="&#8594; aef-task-lifecycle (resolved)">
       <bpmn:extensionElements>
         <aef:uid value="n_4d5e6f70"/>
         <aef:position x="740.0" y="330.0"/>
         <aef:link workflowRef="1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7" name="aef-task-lifecycle"/>
       </bpmn:extensionElements>
       <bpmn:incoming>flow_4</bpmn:incoming>
-    </bpmn:linkEventThrow>
+    </bpmn:intermediateThrowEvent>
 
     <bpmn:scriptTask id="frw_6_mint" name="Mint ghost uuid + doc task (FW_TASK_ORIGIN=designer-ghost)">
       <bpmn:extensionElements>
@@ -143,23 +143,23 @@
       <bpmn:outgoing>flow_8</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:linkEventThrow id="agt_8_ghost" name="&#8594; publish-map (ghost)">
+    <bpmn:intermediateThrowEvent id="agt_8_ghost" name="&#8594; publish-map (ghost)">
       <bpmn:extensionElements>
         <aef:uid value="n_70819203"/>
         <aef:position x="1040.0" y="430.0"/>
         <aef:link workflowRef="22222222-2222-4222-8222-222222222222" name="publish-map"/>
       </bpmn:extensionElements>
       <bpmn:incoming>flow_8</bpmn:incoming>
-    </bpmn:linkEventThrow>
+    </bpmn:intermediateThrowEvent>
 
-    <bpmn:linkEventThrow id="agt_9_legacy" name="&#8594; review-map (legacy slug)">
+    <bpmn:intermediateThrowEvent id="agt_9_legacy" name="&#8594; review-map (legacy slug)">
       <bpmn:extensionElements>
         <aef:uid value="n_81920314"/>
         <aef:position x="740.0" y="540.0"/>
         <aef:link targetWorkflow="review-map"/>
       </bpmn:extensionElements>
       <bpmn:incoming>flow_6</bpmn:incoming>
-    </bpmn:linkEventThrow>
+    </bpmn:intermediateThrowEvent>
 
     <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_start" targetRef="agt_2_draft">
       <bpmn:extensionElements>
