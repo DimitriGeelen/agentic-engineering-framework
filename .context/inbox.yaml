@@ -879,3 +879,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-110
+  text: "bin/fw:1756 doctor prints 'Hook configuration valid (19 hooks across 4 events)' but sum(len(v) for v in hooks.values()) counts MATCHER ENTRIES, not hooks. Live: 19 entries / 25 hook commands. Same doctor run also prints '25 hooks, all portable' and '23/23 hooks' — three different numbers for one settings.json. Misleading exactly where an operator checks whether hooks survived a regenerate (T-2710 class). One-word label fix; found while verifying T-2710."
+  captured: 2026-08-01T07:51:25Z
+  context_task: T-2710
+  tags: []
+  status: pending
+  promoted_to: null
