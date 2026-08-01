@@ -940,5 +940,5 @@ observations:
   captured: 2026-08-01T22:50:58Z
   context_task: T-2715
   tags: []
-  status: pending
+  status: dismissed
   promoted_to: null
