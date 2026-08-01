@@ -4029,3 +4029,10 @@ X'` returning empty group."
   date: 2026-07-31
   context: Added via context agent
   application: TBD
+- id: L-529
+  learning: "Lane bands are NOT reconstructible from aef:laneMeta height — the stack has no stored origin, so any absolute band model guesses one and produces phantom findings. Three guesses now measured: T-2684 anchored at the topmost node (7 phantom findings on a clean map), T-2716 anchored at y=0 (9 of 11 store projects flagged, all clean under corpus lint), and 832's renderer actually stacks from POOL_Y + POOL_HEADER (their rail 364, previously-reported not re-measured). The fix is not to obtain the origin — it is to formulate the question so no origin is needed. Our authoritative rules already do: lane-geometry compares lanes AGAINST EACH OTHER and is documented 'deliberately origin-free'; lane-overflow measures drawn extent max(botOf)-min(y) against declared height, a within-lane relative quantity. Both use 832's per-type occupancy from rail 340 (events 54, gateways 66, tasks 64 — a gateway occupies MORE than a task despite the smaller shape, so the lowest node is not the largest-y one) and SKIP rather than default on an unknown type. Before writing any lane geometry check, ask whether the quantity is relative; if the formulation needs an absolute band edge, it is the wrong formulation."
+  source: P-001
+  task: T-2716
+  date: 2026-08-01
+  context: Added via context agent
+  application: TBD

@@ -921,3 +921,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-116
+  text: "OBS-115 REFRAME (832 rail 364, adopted): a byte pin correctly answers 'did these bytes change' and answered it correctly every time. It was never asked 'are these bytes well-formed'. The defect is that a green pin READS as a clean bill of health when its subject is STABILITY. Fix is NOT a stronger pin — it is one element-vocabulary check at intake, once, on ingest of any foreign fixture, leaving the pin doing its one job. Also correcting my own OBS-115 framing: 832 showed the compile-and-diff probe was decoration on a conclusion already established by the structural read of Pass 5, and that the control's real contribution is SCOPE — safety holds for the forward compile and for no consumer that reads element type (their node-type gate is exactly such a consumer, which is why it surfaced their side). I had generalised 'we are blind' into a property of the artifact when it is a property of one consumer."
+  captured: 2026-08-01T21:07:53Z
+  context_task: T-2716
+  tags: []
+  status: pending
+  promoted_to: null

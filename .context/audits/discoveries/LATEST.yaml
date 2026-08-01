@@ -1,11 +1,11 @@
-timestamp: 2026-08-01T08:00:02Z
+timestamp: 2026-08-01T21:00:01Z
 findings:
   - id: D4
     level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
     level: WARN
-    check: "D5: Task lifecycle — 17 anomaly(s): T-1542(95d-active) T-1624(92d-active) T-1820(79d-active) T-2170(60d-active) T-2268(53d-active) T-2410(46d-active) T-801(119d-active) T-802(119d-active) T-803(119d-active) T-2389(48d-active) (+7 more)"
+    check: "D5: Task lifecycle — 17 anomaly(s): T-1542(96d-active) T-1624(93d-active) T-1820(79d-active) T-2170(60d-active) T-2268(53d-active) T-2410(47d-active) T-801(120d-active) T-802(120d-active) T-803(120d-active) T-2389(48d-active) (+7 more)"
     mitigation: "Review flagged tasks for process issues"
   - id: D13
     level: WARN
@@ -13,13 +13,13 @@ findings:
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=6 avg=34 ratio=0.2x)"
+    check: "D3: Commit velocity — normal (PASS today=31 avg=34 ratio=0.9x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 51_commits_24h)"
+    check: "D7: Commit bunching — none (PASS 31_commits_24h_no_bunching)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=6.3 earlier=8.0)"
+    check: "D6: Completion velocity — normal (PASS recent=7.7 earlier=8.0)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
