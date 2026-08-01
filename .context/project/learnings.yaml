@@ -4036,3 +4036,10 @@ X'` returning empty group."
   date: 2026-08-01
   context: Added via context agent
   application: TBD
+- id: L-530
+  learning: "Teeth prove a guard is IMPLEMENTED, never that it is CORRECT. A teeth test (mutate, assert the mutation landed, confirm red) proves the guard fires; it says nothing about WHAT the guard discriminates. Both can be true at once — the instrument is live AND it measures something other than the property you are about to claim. Worked instance: the 832 fixture pin was given teeth (reverted one host element, confirmed 1 failed + 3 errors, restored) and went red on the SHA, not on the element vocabulary — so it proves byte-stability while being cited for well-formedness, and would go green again on an announced sha for malformed bytes. Four instances of this shape across the AEF/832 arc, four different mechanisms: a negative control that agreed with a wrong rule, a probe that passed for any element name, a polarity probe that passed with the label flipped, and this pin. Rule: after teeth go red, read WHY they went red before banking the green."
+  source: P-001
+  task: T-2716
+  date: 2026-08-01
+  context: Added via context agent
+  application: TBD

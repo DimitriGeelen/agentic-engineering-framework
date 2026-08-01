@@ -928,3 +928,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-117
+  text: "OBS-116 design warning from 832 rail 368: an intake element-vocabulary check must include the emitter's SCAFFOLDING literals, not just node types. 832 measured 20 distinct element names in their harness code; most are document skeleton (definitions, process, lane, laneSet, sequenceFlow). A guard of 'every synthesised tag must be a known node type' would flag <bpmn:process> in every harness and get switched off within a day — L-527, a rule that gets tuned out is weaker than no rule because its silence stops meaning anything. Their permitted set = 11 node types (derived from both emitters) UNION 12 scaffolding literals. Also: scan non-docstring string literals via tokenize+ast, NOT text grep — several of our own files now name <bpmn:linkEventThrow> in prose explaining T-324, so a text-level scan would be satisfied by its own explanation."
+  captured: 2026-08-01T21:46:52Z
+  context_task: T-2715
+  tags: []
+  status: pending
+  promoted_to: null
