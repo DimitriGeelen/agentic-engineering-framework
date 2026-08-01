@@ -89,6 +89,42 @@ Separately a seeded onboarding scenario already exists (`T-001..T-006`, plus
 skipped. **Open empirical question:** has any user ever completed the seeded onboarding tasks, or
 does everyone skip?
 
+### F-7 — the onboarding scenario teaches the AGENT, not the human
+
+`lib/seeds/tasks/greenfield/T-001-orientation-and-framework-health.md`:
+
+```
+owner: agent
+### Agent
+- [ ] Read CLAUDE.md — understand core principle, task system, enforcement tiers
+- [ ] Run `fw doctor` — all checks pass
+- [ ] Run `fw audit` — note current state
+- [ ] Install git hooks: `fw git install-hooks`
+```
+
+**Four ACs, all `### Agent`. Zero `### Human` ACs in the orientation task.** The criterion that
+carries the actual education — *understand core principle, task system, enforcement tiers* — is
+assigned to the agent. The human's onboarding consists of watching an agent tick four boxes.
+
+This is the likeliest explanation for the skip verb existing: if the human is taught nothing, then
+skipping costs the human nothing. The scenario is not failing to teach well — it is not aimed at
+the human at all. Same audience-axis error CLAUDE.md already codifies for AC routing (T-2143).
+
+### F-8 — the bypass exists but is undiscoverable
+
+`fw onboarding skip` is implemented (`bin/fw:6284`, writes `.onboarding-complete` with a reason)
+but appears **nowhere** in `README.md`, `lib/init.sh`, or `docs/*.md`. So "add a hard bypass" may
+be substantially a *discoverability* problem rather than a missing capability. Needs confirming
+with the operator (what specifically is deficient — undiscoverable, not hard enough, or wrong
+granularity?).
+
+### F-9 — the existing-codebase path has no onboarding scenario at all
+
+`lib/seeds/tasks/greenfield/` holds 5 tasks (T-001..T-005). `lib/seeds/tasks/existing/` is
+**empty**. README offers two entry paths (A greenfield, B existing codebase); only A has a seeded
+scenario. Option B users get no onboarding at all — a gap directly under the "frictionless
+onboarding" goal.
+
 ### F-6 — coverage limit that no isolation choice fixes
 
 README STEP 1's self-heal targets **macOS bash 3.2**. Untestable on Linux, container or VM. If Mac
@@ -134,6 +170,27 @@ users are in scope, that path stays unverified regardless of what we build here.
   a machine defined by not having any.
 - **Known tradeoff, accepted knowingly:** places a live OAuth token inside a throwaway container.
   Local and ephemeral; flagged rather than discovered later.
+
+### D-4 (2026-08-01) — Keep and improve the onboarding scenario; add a hard bypass AND deepen the education
+
+- **Chose (operator):** do not throw out the current onboarding scenario. Test it, review it,
+  reflect on it, improve it. Add a hard bypass option. Separately enrich it so it explains the
+  workings of AEF step by step. Target properties: *frictionless onboarding* plus *gradual
+  deepening discovery of capabilities, workings and functionality*.
+- **Why (agent reading):** the two halves are complements, not a tradeoff. Friction only hurts
+  when it is inescapable — a discoverable, honest bypass is precisely what makes richer education
+  safe to add. That is why "bypass" and "more teaching" belong in the same decision.
+- **Consequences not yet settled** (see IW-13..IW-16): whether the student is the human or the
+  agent (F-7 says the current answer is "agent", which is likely wrong); whether the scenario stays
+  a *prologue* or becomes a curriculum *interleaved* with real work — "gradual deepening" is
+  structurally incompatible with a front-loaded block; whether education is *contained in* the
+  scenario or *routed to* existing detail (operator's own T-2622 precedence decision says MD thins
+  to principles + pointers, detail lives in the maps — embedding explanations here would create a
+  second source of truth that drifts); and whether option B (existing codebase, F-9) gets a
+  scenario too.
+- **Supersedes:** the agent's earlier framing that the skip-rate data would decide keep-vs-replace.
+  Keep is decided. The data now serves a different and better purpose — locating *where* the
+  scenario loses people, as input to the improvement.
 
 ## 4. Open questions
 

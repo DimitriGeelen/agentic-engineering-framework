@@ -13,7 +13,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-01T10:01:22Z
-last_update: 2026-08-01T10:03:35Z
+last_update: '2026-08-01T10:15:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -39,6 +39,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-01T10:15:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -131,6 +141,31 @@ Full context, findings and dialogue log: `docs/reports/T-2715-first-run-experien
   confidence: 1
   disposition:
   rationale: without a taxonomy (installer bug / prompt ambiguity / environment / agent error) runs produce anecdotes rather than evidence
+
+- **IW-13: Who is the student — the human or the agent?**
+  confidence: 2
+  disposition:
+  rationale: F-7 — T-001 is owner:agent with 4/4 Agent ACs and zero Human ACs; the AC carrying the education ("understand core principle, task system, enforcement tiers") is assigned to the agent, so the human currently learns nothing
+
+- **IW-14: Prologue or interleaved curriculum?**
+  confidence: 2
+  disposition:
+  rationale: operator wants "gradual deepening discovery", which is structurally incompatible with 5 front-loaded tasks completed before real work begins
+
+- **IW-15: Does the scenario CONTAIN explanations or ROUTE to them?**
+  confidence: 2
+  disposition:
+  rationale: operator's own T-2622 precedence decision (MD thins to principles+pointers, detail lives in maps) implies routing; embedding creates a second source of truth that drifts from CLAUDE.md/FRAMEWORK.md
+
+- **IW-16: What exactly is deficient about the existing `fw onboarding skip`?**
+  confidence: 2
+  disposition:
+  rationale: F-8 — the verb exists (bin/fw:6284) but is absent from README, lib/init.sh and docs/*.md; may be a discoverability fix rather than a new capability
+
+- **IW-17: Does the existing-codebase path (README option B) get a scenario too?**
+  confidence: 3
+  disposition:
+  rationale: F-9 — lib/seeds/tasks/existing/ is empty while greenfield/ has 5 tasks; option B users get no onboarding at all
 
 ## Exploration Plan
 
