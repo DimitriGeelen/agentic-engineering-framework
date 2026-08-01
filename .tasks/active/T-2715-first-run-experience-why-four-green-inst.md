@@ -138,14 +138,19 @@ Full context, findings and dialogue log: `docs/reports/T-2715-first-run-experien
   rationale: completing every HV task could be entirely substrate; §ACD names substrate-vs-deliverable conflation as the failure. Agent position: they COMPOSE — HV-complete says when to close, the demo says what proves it
 
 - **IW-19: Under file-and-continue, is "all HV complete" measured against the task set at arc start, or as it evolves?**
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — EVOLVING, bounded by QUADRANT not by snapshot. Every newly discovered task/bug is BVP-estimated on arc assignment; HV/HC or HV/LC → in scope for this arc, anything else → does not gate closure. Arc-next stepping (BVP-ordered) manages the remainder. Intent: important bugs and high-value features get executed, low-value discovery never blocks. Coherent with IW-3: heal mode walks the whole chain per run, so HV-dryness is meaningful rather than an artifact of stopping at defect one. **Derived requirement (see IW-21): the estimation must be WIRED IN at arc-assignment time, not left to discipline**
+
+- **IW-21: How is BVP estimation wired in at arc-assignment time?**
   confidence: 1
   disposition:
-  rationale: arc A files new tasks as runs surface defects, so an evolving HV set makes closure recede — the same unfalsifiable criterion IW-9 was meant to prevent, relocated
+  rationale: operator named this the key challenge for D-5/IW-19 — an unestimated task assigned to an arc is invisible to the quadrant filter and silently never gates closure. Current estimator (T-1922) fires at task CREATION, before arc_id is set and before the body exists; nothing re-fires on arc assignment. Candidate seam: the existing PreToolUse `check-arc-id` hook already intercepts arc_id writes on `.tasks/{active,completed}/T-*.md`
 
 - **IW-20: Who scores, given zero tasks currently carry confirmed bvp_scores?**
   confidence: 2
   disposition:
-  rationale: `fw bvp rank` reports no confirmed scores corpus-wide; `fw bvp confirm` is a sovereignty boundary (T-1924, human-only), so arc progression now depends on per-task human confirmation. Estimator (T-1922) proposes automatically but fires at task CREATION before the body is written — T-2715 got all-2s "no-signal" at 10:03 while its body was still template
+  rationale: operator 2026-08-01 — PROPOSED (estimator) scores drive quadrant placement; human confirms EXCEPTIONS only (boundary cases, agent-flagged disputes, on-sight disagreement). Keeps arc progression unblocked without retiring the T-1924 sovereignty boundary. Known trade: execution order is effectively set by an estimator whose output is weak on thin bodies (T-2715 all-2s "no-signal" at 10:03 on a template body) — reinforces IW-21, estimation must re-fire once the body exists
 
 - **IW-11: Which persona — agent-assisted only, or also a human typing README commands by hand?**
   confidence: 1
