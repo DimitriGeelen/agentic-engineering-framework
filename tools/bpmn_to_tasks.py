@@ -69,6 +69,20 @@ INCEPTION_WORKFLOW_TYPE = "inception"
 # Lane authority-of-record (aef:laneMeta authority=...) -> owner. Explicit and
 # authoritative; preferred over the lane-name heuristic in _lane_owner.
 AUTHORITY_OWNER = {"sovereignty": "human", "initiative": "agent"}
+# OBS-118 / T-2717: values that ARE part of the AEF lane dialect but legitimately carry
+# no owner. "authority" is the Framework lane (CLAUDE.md authority model:
+# Framework=AUTHORITY / Agent=INITIATIVE / Human=SOVEREIGNTY) — the framework is the
+# executor, so there is no human/agent owner to derive.
+#
+# BEHAVIOUR IS UNCHANGED from T-2567 (agent fallback, 832-ratified rail offset 95:
+# "the executor is still the agent; what's lost is provenance"; no synthetic "framework"
+# owner). Only the REPORTING splits. Before this, a known dialect value and a typo
+# ("overlord") produced the same word — "unrecognized" — at the same severity, so the
+# line fired on EVERY compile of any map with a Framework lane and could no longer
+# distinguish anything (L-527: a signal that always fires stops meaning anything).
+AUTHORITY_NO_OWNER = {"authority"}
+# The full dialect, so an out-of-dialect value can be told what the valid set is.
+AUTHORITY_DIALECT = set(AUTHORITY_OWNER) | AUTHORITY_NO_OWNER
 
 
 class MalformedInceptionError(ValueError):
@@ -480,14 +494,31 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
         )
         uid_by_node[node_id] = uid
 
+    # OBS-118 / T-2717: split the ONE channel T-2567 created into two messages. A
+    # dialect value with no owner is EXPECTED; a value outside the dialect is a defect.
+    # Both stay in `warnings` (signature unchanged, "surfaced not silent" preserved) —
+    # what changes is that they no longer read identically.
     for (auth_val, lname), entries in unknown_auth.items():
-        warnings.append(
-            f"lane {lname!r} carries unrecognized aef:laneMeta authority={auth_val!r} — "
-            f"AEF owner derivation knows sovereignty→human / initiative→agent only; "
-            f"affected nodes fell back to name/type derivation: {', '.join(entries)} "
-            f"(T-2567) — authority provenance is not representable in task skeletons; "
-            f"surfaced here, not folded silently"
-        )
+        if auth_val in AUTHORITY_NO_OWNER:
+            warnings.append(
+                f"lane {lname!r} carries aef:laneMeta authority={auth_val!r} — the "
+                f"framework is the executor, so there is no human/agent owner to derive "
+                f"(expected, not a defect). Nodes fall back to name/type derivation: "
+                f"{', '.join(entries)} (T-2567 behaviour, 832-ratified rail 95; message "
+                f"split OBS-118/T-2717) — authority provenance is not representable in "
+                f"task skeletons; surfaced here, not folded silently"
+            )
+        else:
+            valid = ", ".join(sorted(AUTHORITY_DIALECT))
+            warnings.append(
+                f"lane {lname!r} carries unrecognized aef:laneMeta authority={auth_val!r} "
+                f"— not a value in the AEF lane dialect ({valid}); this is very likely a "
+                f"typo or an out-of-band value. AEF owner derivation knows "
+                f"sovereignty→human / initiative→agent only; affected nodes fell back to "
+                f"name/type derivation: {', '.join(entries)} (T-2567) — authority "
+                f"provenance is not representable in task skeletons; surfaced here, not "
+                f"folded silently"
+            )
 
     task_ids = set(uid_by_node)
 

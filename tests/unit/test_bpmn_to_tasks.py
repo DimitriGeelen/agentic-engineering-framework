@@ -612,7 +612,11 @@ def test_832_handover_authority_lane_warns_not_silent():
     assert by_uid["n_pickup"]["owner"] == "human"
     for uid in ("n_resume", "n_gate", "n_persist"):
         assert by_uid[uid]["owner"] == "agent"
-    auth_warns = [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
+    # OBS-118/T-2717: the message SPLIT — "authority" is a known dialect value with no
+    # owner, so it reports as expected-and-explained rather than "unrecognized". Intent
+    # from T-2567 is preserved verbatim: still ONE aggregated message per lane, still
+    # naming the lane, the value, and every affected uid→owner pair.
+    auth_warns = [w for w in warnings if "framework is the executor" in w]
     assert len(auth_warns) == 1, warnings
     w = auth_warns[0]
     assert "authority='authority'" in w
@@ -620,6 +624,8 @@ def test_832_handover_authority_lane_warns_not_silent():
     for pair in ("n_resume→agent", "n_gate→agent", "n_persist→agent"):
         assert pair in w
     assert "T-2567" in w
+    # A legitimate dialect value must NOT be reported as unrecognized (the OBS-118 defect)
+    assert "unrecognized" not in w
     # sovereignty/initiative lanes stay silent — additive-only
     assert "Sovereignty" not in w and "Initiative" not in w
     # back-edge through the gateway resolves to the DISTINCT gate node — no self-ref
@@ -632,6 +638,46 @@ def test_recognized_authority_lanes_emit_no_t2567_warn():
     for fixture in (FIXTURE_832_TYPED, FIXTURE_832_BOUNDARY):
         _, warnings = bpmn_to_tasks.parse_bpmn(fixture)
         assert not [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
+
+
+def test_obs118_dialect_value_and_typo_are_distinguishable(tmp_path):
+    """OBS-118/T-2717: a KNOWN dialect value with no owner ("authority", the Framework
+    lane) and a value OUTSIDE the dialect ("overlord") must not read identically.
+
+    Origin: 832 rail 370 E-AUTHORITY. Before the split both emitted "unrecognized
+    aef:laneMeta authority=..." at the same severity, so the line fired on every compile
+    of any map carrying a Framework lane and could no longer distinguish anything
+    (L-527). Behaviour is unchanged either way — this pins the REPORTING only.
+    """
+    src = FIXTURE_832_HANDOVER.read_text() if hasattr(FIXTURE_832_HANDOVER, "read_text") \
+        else open(FIXTURE_832_HANDOVER).read()
+
+    # Framework lane, untouched: expected-fold wording, never "unrecognized".
+    _, w_known = bpmn_to_tasks.parse_bpmn(FIXTURE_832_HANDOVER)
+    known = [w for w in w_known if "aef:laneMeta authority='authority'" in w]
+    assert len(known) == 1, w_known
+    assert "framework is the executor" in known[0]
+    assert "unrecognized" not in known[0]
+
+    # Out-of-dialect value: still "unrecognized", AND names the valid set so the
+    # diagram author can self-correct without reading the compiler.
+    mutated = src.replace('authority="authority"', 'authority="overlord"', 1)
+    assert mutated != src, "MUTATION DID NOT LAND — fixture no longer has a Framework lane"
+    p = tmp_path / "overlord.bpmn"
+    p.write_text(mutated)
+    _, w_typo = bpmn_to_tasks.parse_bpmn(str(p))
+    typo = [w for w in w_typo if "authority='overlord'" in w]
+    assert len(typo) == 1, w_typo
+    assert "unrecognized" in typo[0]
+    assert "framework is the executor" not in typo[0]
+    for valid in ("authority", "initiative", "sovereignty"):
+        assert valid in typo[0], f"valid dialect set must name {valid!r}"
+
+    # The point of the split: no single substring matches both.
+    assert not (
+        "framework is the executor" in known[0]
+        and "framework is the executor" in typo[0]
+    )
 
 
 # ------------------------------- 832 pair-draft #2: dispatch-loop (T-2568)
@@ -696,9 +742,12 @@ def test_832_dispatch_warn_set_pin():
     assert "dependent · sequential → agt_9_seq" in mode
     complete = next(w for w in gw if "agt_13_complete" in w)
     assert "more · re-dispatch → agt_2_scope" in complete
-    auth = [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
+    # OBS-118/T-2717: a Framework lane is a KNOWN dialect value with no owner, so it
+    # takes the expected-fold branch and no longer says "unrecognized".
+    auth = [w for w in warnings if "framework is the executor" in w]
     assert len(auth) == 1
     assert "n_3c4d5e6f→agent" in auth[0] and "n_47586970→agent" in auth[0]
+    assert not [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
 
 
 # ------------------------------- D3 corpus: self-loop related_tasks (T-2562)
