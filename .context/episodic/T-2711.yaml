@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2711: fw vendor self --check cannot see drift the audit reports
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-01T08:35:08Z
+# ============================================================================
+
+task_id: T-2711
+task_name: "fw vendor self --check cannot see drift the audit reports"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-01T07:22:27Z
+completed: 2026-08-01T08:34:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-01T10:34:36+02:00
+last_commit: 2026-08-01T10:34:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  self-vendor bin/ by enumeration — 4 files were gated by audit and synced by nobody
+
+# Key outcomes
+outcomes:
+  - '`_self_vendor_shim` selects files by enumerating `bin/` with the same filter the audit uses, instead of a hardcoded name list; adding a new `bin/*.sh` requires no edit to the helper.'
+  - '`bin/hook-enable.sh` (the observed miss) is synced by `fw vendor self` — verified by deliberately dirtying the vendored copy, running `fw vendor self`, and confirming `cmp` equality.'
+  - '`fw vendor self --check` and `agents/audit/audit.sh check_self_vendor_drift` agree on every file in `bin/`: a scripted comparison of the two scan sets reports zero files present in one and absent from the other.'
+  - 'The sync-count message reports the real number: `_self_vendor_shim` currently prints a hardcoded `1 file(s)` regardless of how many it copied.'
+  - 'Regression test `tests/unit/self_vendor_parity.bats` green, including a negative control that adds a new `bin/*.sh` fixture and fails if the helper''s set does not pick it up.'
+  - '`bin/fw audit` reports no `Self-vendor drift` FAIL, and `git push` is not blocked by the T-2240 gate.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-01 — enumerate rather than add the missing name'
+    chose: 'replace the hardcoded list with a `find` matching the audit''s filter.'
+    rationale: 'the two prior instances were both closed by adding a name. That is what'
+    alternatives_rejected: ['add `hook-enable.sh` to the list — would have shipped green today and']
+  - decision: '2026-08-01 — match the gate''s traversal, not just its current results'
+    chose: 'recursive `find`, though `bin/` is flat.'
+    rationale: '`-maxdepth 1` passes today purely because no one has made a subdirectory. That'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-self_vendor_parity.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2711-fw-vendor-self---check-cannot-see-drift-.md'
+  - 'tests/unit/self_vendor_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-01T10:34:36"
+    action: "T-2711: self-vendor bin/ by enumeration — 4 files were gated by audit and synced by nobody"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 72 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [vendor, audit, parity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 72
+  commits: 1
+  files_changed: 5
+  lines_added: 302
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2711-fw-vendor-self---check-cannot-see-drift-.md
+generated_by: context-agent-hybrid

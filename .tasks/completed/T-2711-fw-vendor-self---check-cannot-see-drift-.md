@@ -10,12 +10,12 @@ description: >
   of T-2502 (claude-fw missed by the same helper). L-399 producer/consumer parity:
   the pre-verifier and the gate must scan the same set.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [vendor, audit, parity]
-components: []
+components: [lib/upgrade.sh, tests/unit/self_vendor_parity.bats]
 related_tasks: [T-2709, T-2502, T-2244]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: [T-2709, T-2502, T-2244]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T07:22:27Z
-last_update: 2026-08-01T08:29:56Z
-date_finished:
+last_update: 2026-08-01T08:34:52Z
+date_finished: 2026-08-01T08:34:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -71,10 +71,6 @@ bvp_scores_proposed:
 ---
 
 # T-2711: fw vendor self --check cannot see drift the audit reports
-
-## Context
-
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Context
 
@@ -298,3 +294,25 @@ helper from a broken one, since the set-equality tests pass either way.
 ### 2026-08-01T08:29:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b5098072
+- **Timestamp:** 2026-08-01T08:34:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `bin/hook-enable.sh` (the observed miss) is synced by `fw vendor self` — verified by deliberately dirtying the vendored copy, running `fw vendor self`, and confirming `cmp` equality.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/hook-enable.sh in: `bin/hook-enable.sh` (the observed miss) is synced by `fw vendor self` — verified by deliberately dirtying the vendored copy, running `fw vendor self``
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 33
+     - evidence: `out=$(bin/fw vendor self --check 2>&1); echo "$out" | grep -qv "would sync" || true`
+
+### 2026-08-01T08:34:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

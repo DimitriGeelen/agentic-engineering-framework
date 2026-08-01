@@ -2536,3 +2536,17 @@ decisions:
     date: 2026-08-01
     task: T-2713
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-365
+    decision: "replace the hardcoded list with a `find` matching the audit's filter."
+    scope: project
+    date: 2026-08-01
+    task: T-2711
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-366
+    decision: "recursive `find`, though `bin/` is flat."
+    scope: project
+    date: 2026-08-01
+    task: T-2711
+    rationale: "Auto-captured from task file on completion"

@@ -24376,3 +24376,21 @@ scan_id: R-4487c84f
 task_id: T-2713
 payload:
   task_file: .tasks/active/T-2713-consumer-staleness-decided-by-a-version-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-01T08:34:56Z'
+scan_id: R-b5098072
+task_id: T-2711
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-01T08:34:56Z'
+scan_id: R-b5098072
+task_id: T-2711
+payload:
+  task_file: .tasks/active/T-2711-fw-vendor-self---check-cannot-see-drift-.md
