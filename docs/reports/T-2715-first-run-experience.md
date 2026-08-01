@@ -280,13 +280,28 @@ arc exit workflow:
   task, or tasks re-scoped out of the arc, trigger nothing — so `fw arc close` must re-run the same
   check as backstop.
 
-**Companion decision (IW-22) — the priority flag replaces confirmed scores.** Scoring becomes always
-agent-driven; the human raises a flag ("treat as high value / do this now") instead of setting
-per-driver numbers. This removes the confirmed-score short-circuit entirely, and moves sovereignty
-from *arithmetic* to *intent* — the axis humans are actually reliable on. It retires something
-already dead: `fw bvp rank` reports **zero** confirmed scores corpus-wide. Two additions the flag
-needs: a **direction** (a push-*down* too, or an over-scoring estimator holds an arc open forever
-with `--force` the only escape) and a **rationale field** (so a blocked arc can say why).
+**Companion decision (IW-22) — the priority flag replaces confirmed scores.**
+
+**Scope, stated precisely, because loose wording here reads as something far larger.** BVP scoring is
+NOT being retired — it becomes *more* load-bearing, since under this decision the estimator's score is
+the only score and is always fresh. Exactly one field is replaced: `bvp_scores:`, the **human-confirmed**
+per-driver 0-5 map set by hand via `fw bvp confirm` (T-1924). Untouched: the estimator,
+`bvp_scores_proposed:`, `cost_estimate:`, the value drivers, arc-scoped drivers, the quadrants,
+`fw bvp rank`, auto-promote.
+
+| Field | What it is | Tasks carrying it (2026-08-01, active+completed) |
+|---|---|---|
+| `bvp_scores_proposed:` | agent estimator output | **2519** |
+| `bvp_scores:` | human hand-set 0-5 per driver | **0** |
+
+Scoring becomes always agent-driven; the human raises a flag ("treat as high value / do this now")
+instead of setting per-driver numbers. This removes the confirmed-score short-circuit entirely, and
+moves sovereignty from *arithmetic* to *intent* — the axis humans are actually reliable on. The
+replaced field is unused in practice, but not harmless: the moment anyone *did* set `bvp_scores:`,
+`if fm.get("bvp_scores"): continue` would freeze that task's score permanently. The flag delivers the
+same override without freezing anything. Two additions the flag needs: a **direction** (a push-*down*
+too, or an over-scoring estimator holds an arc open forever with `--force` the only escape) and a
+**rationale field** (so a blocked arc can say why).
 
 **Placement (IW-23, open):** this is arc-*running* infrastructure — it applies to all three arcs and
 every arc after them, so it does not belong inside the install-testing arc. Candidate shape: an
