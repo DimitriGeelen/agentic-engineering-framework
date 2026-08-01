@@ -220,6 +220,80 @@ users are in scope, that path stays unverified regardless of what we build here.
 - **Note:** the loader verbs `fw bvp driver suggest|create` are deferred (T-2245 IW-3); the
   arc-scoped driver protocol is invoked manually from `policy/prompts/bvp-driver-session.md`.
 
+### D-6 (2026-08-01) — Arc exit is a recalc gate, not a snapshot lookup
+
+**The risk, in the operator's words:** *"tasks are scored at a point in time, and their actual score
+(now) vs recorded score (last calculation) can be different and land in a different quadrant — this
+could lead to arc exit criteria checks"* being wrong. D-5 makes the quadrant the scope decision, so
+a stale quadrant means an arc can read *"no HV tasks left"* when the truth is *"no HV tasks by
+yesterday's arithmetic."* The arc closes green while carrying unfinished high-value work, and no
+component reports an error, because each did its job correctly with the inputs it had. **Same defect
+class as §1** — a check reporting success about the wrong object.
+
+**Two premise corrections during the grill (agent had it wrong twice):**
+
+1. The estimator is **already arc-aware** — T-2357 `_arc_scoped_drivers_for_task()`
+   (`agents/termlink/bvp-estimator/estimator.py:125`) resolves `arc_id:` → arc YAML → **approved**
+   `scoped_drivers:` (proposed ones deliberately do not fire). D-5's "scoped drivers upfront"
+   already has a consumer.
+2. Re-estimation **already exists and runs** — `bvp-estimator-sweep-15m` (T-1923), deployed at
+   `/etc/cron.d/agentic-audit-999-*`, last fired 21:00 on 2026-08-01. The agent's first check used
+   `crontab -l`, which shows nothing because the framework deploys to `/etc/cron.d`. **Wrong object,
+   clean report, false drift finding narrowly avoided** — the inception's own thesis, self-inflicted.
+
+**The actual gap:** the sweep triggers on **age** (`_proposed_is_stale`, >24h), not on arc
+assignment. A task assigned to an arc while its score is fresh is *skipped* — arc-scoped scoring
+arrives up to a day late. Two further holes: `if fm.get("bvp_scores"): continue` means a
+human-confirmed task moved between arcs never re-scores; and `rubric_sha` hashes the rubric *file*
+(module-cached, identical for every task), so nothing records **which drivers a proposal was
+computed against** — there is no stored evidence of arc drift to detect.
+
+**Decision — recompute at the decision point.** Adopted over all four agent-proposed trigger seams
+(PreToolUse hook / `fw arc tag` / staleness-gate removal / close-gate-only). Rationale: it compares
+**state** rather than subscribing to **events**, so it is indifferent to how `arc_id` was set — hook,
+verb, or hand-edited frontmatter. Every event-based option had a bypass path.
+
+```
+on agent completion of an arc task:
+    recalc all arc tasks (arc-scoped drivers included)
+    pick next HV/HC or HV/LC
+        found  -> work it
+        empty  -> invoke arc exit workflow
+
+arc exit workflow:
+    1. recalc all arc tasks
+    2. any task in HV/HC or HV/LC?
+         yes -> RETURN TO ARC, do not close, report which + why
+         no  -> proceed to G-062 close gates
+```
+
+- **`recalc-then-pick` is one primitive.** The pick must recalc first or it reads the same stale
+  scores. Empty result *is* the exit condition — no close-readiness heuristic, no polling. It also
+  subsumes the operator's proposed `/resume` recalc: session start is another *"what's next in this
+  arc?"*.
+- **Exit is a gate, not a formality.** Recalc can *promote* an LV task to HV, at which point the arc
+  is not done. Re-entrant and convergent: a score only moves when the task body or the arc's drivers
+  actually change, so it cannot oscillate.
+- **The bounce-back must be explained** — which tasks re-surfaced, which driver moved them, from
+  what. An unexplained refusal to close trains `--force`, which defeats the mechanism.
+- **Named gap:** the completion trigger fires only on *agent* completion. A human closing the last HV
+  task, or tasks re-scoped out of the arc, trigger nothing — so `fw arc close` must re-run the same
+  check as backstop.
+
+**Companion decision (IW-22) — the priority flag replaces confirmed scores.** Scoring becomes always
+agent-driven; the human raises a flag ("treat as high value / do this now") instead of setting
+per-driver numbers. This removes the confirmed-score short-circuit entirely, and moves sovereignty
+from *arithmetic* to *intent* — the axis humans are actually reliable on. It retires something
+already dead: `fw bvp rank` reports **zero** confirmed scores corpus-wide. Two additions the flag
+needs: a **direction** (a push-*down* too, or an over-scoring estimator holds an arc open forever
+with `--force` the only escape) and a **rationale field** (so a blocked arc can say why).
+
+**Placement (IW-23, open):** this is arc-*running* infrastructure — it applies to all three arcs and
+every arc after them, so it does not belong inside the install-testing arc. Candidate shape: an
+`aef-arc-exit` designer-corpus map plus a conformance rail against the implementing code, mirroring
+`aef-task-lifecycle` (T-2624). Sequencing note: it gates the closure of the very arcs D-5 creates,
+so it plausibly ships first.
+
 ## 4. Open questions
 
 Filed as IW-1..IW-12 in the task file (disposition gate T-2190/G-067 tracks them).
@@ -239,6 +313,9 @@ Summary of what remains the operator's call:
 | IW-10 | Definition of done | loop-until-dry |
 | IW-11 | Persona — agent-assisted, or by-hand reader? | open |
 | IW-12 | Failure taxonomy | needed before runs start |
+| IW-21 | BVP wire-in at arc assignment | **answered** → D-6 (recalc-then-pick + exit gate) |
+| IW-22 | Priority flag replaces confirmed scores | **answered** → D-6 companion (needs direction + rationale) |
+| IW-23 | Where the arc-exit mechanism lives | open — agent lean: standalone, corpus map, ships first |
 
 ## 5. Proposed arc
 
