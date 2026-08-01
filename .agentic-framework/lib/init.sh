@@ -632,6 +632,16 @@ generate_claude_code_config() {
     fi
 
     if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
+        # T-2710: the heredoc below is a fixed template, but the on-disk file is the
+        # real source of truth — `fw hook-enable` adds hooks the template never knew
+        # about (6 of them in this repo). Overwriting unconditionally deletes them
+        # and takes their gates down silently. Snapshot first, merge back after.
+        local prev_settings=""
+        if [ -f "$dir/.claude/settings.json" ]; then
+            prev_settings=$(mktemp)
+            cp "$dir/.claude/settings.json" "$prev_settings"
+        fi
+
         # Use unquoted heredoc so $fw_prefix expands (T-663: framework-aware hook paths)
         cat > "$dir/.claude/settings.json" << SJSON
 {
@@ -818,6 +828,24 @@ generate_claude_code_config() {
   }
 }
 SJSON
+        # T-2710: fold the snapshot's non-template hooks back in. Template wins for
+        # names it defines, so path fixes (T-2709) still propagate on upgrade; hooks
+        # only the snapshot has are carried forward and REPORTED, not dropped mute.
+        if [ -n "$prev_settings" ]; then
+            local merge_py="${FW_LIB_DIR:-$(dirname "${BASH_SOURCE[0]}")}/settings_merge.py"
+            if [ -f "$merge_py" ] && command -v python3 >/dev/null 2>&1; then
+                if ! python3 "$merge_py" "$dir/.claude/settings.json" "$prev_settings"; then
+                    echo -e "  ${YELLOW}WARN${NC}  settings.json merge failed — hooks added via 'fw hook-enable' may have been dropped; previous copy: $prev_settings"
+                    prev_settings=""   # keep the snapshot for recovery
+                fi
+            else
+                echo -e "  ${YELLOW}WARN${NC}  settings_merge.py or python3 unavailable — non-template hooks not preserved; previous copy: $prev_settings"
+                prev_settings=""
+            fi
+            if [ -n "$prev_settings" ]; then
+                rm -f "$prev_settings"
+            fi
+        fi
         echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, loop-detect, fabric new-file, project-boundary, commit-cadence)"
     else
         # T-677: Pre-existing settings.json — back up and overwrite with framework hooks
