@@ -935,3 +935,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-118
+  text: "AUTHORITY ENUM GAP (from 832 rail 370 E-AUTHORITY): our dialect has THREE authority values but tools/bpmn_to_tasks.py AUTHORITY_OWNER knows only TWO — {sovereignty: human, initiative: agent}. The third, authority='authority' (the Framework lane, mirroring CLAUDE.md Framework=AUTHORITY), is unrecognized. Measured: aef-tier0-escalation is the only promoted map with a Framework lane; its 6 framework nodes (te_scan, te_dedupe, te_consume, te_audit, te_halt, te_notify) fall back to name/type derivation and ALL become owner=agent. Framework-ENFORCED steps attributed to the AGENT. draft-arc-lifecycle v3 (T-2716) has the same 3-lane shape and the same gap. The T-2567 warning fires correctly but describes the CAUSE ('unrecognized value') not the CONSEQUENCE (governance data silently degraded to a name heuristic) — and because it fires on our own legitimate third value, a genuinely bogus value (probe: authority='overlord' compiles rc=0) produces a warning indistinguishable in kind from the routine one. That is L-527: a warning that always fires stops meaning anything. Fix direction: give 'authority' an explicit third mapping (framework, or explicit no-owner) so the warning is reserved for genuinely unknown values."
+  captured: 2026-08-01T22:50:58Z
+  context_task: T-2715
+  tags: []
+  status: pending
+  promoted_to: null
