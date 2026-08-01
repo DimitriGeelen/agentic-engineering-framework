@@ -12,12 +12,12 @@ description: >
   the ordering). T-2290 already solved this shape once by replacing an mtime check
   with a content compare; same medicine applies.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [consumer, version, doctor, upgrade]
-components: []
+components: [bin/fw, lib/upgrade.sh, lib/version-relation.sh, tests/unit/version_relation.bats]
 related_tasks: [T-1828, T-1838, T-2290]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: [T-1828, T-1838, T-2290]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T07:23:44Z
-last_update: 2026-08-01T07:58:54Z
-date_finished:
+last_update: 2026-08-01T08:26:06Z
+date_finished: 2026-08-01T08:26:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -194,9 +194,6 @@ bats tests/unit/version_relation.bats
 bats tests/unit/upgrade_fresh_machine_simulation.bats
 diff lib/version-relation.sh .agentic-framework/lib/version-relation.sh
 diff lib/upgrade.sh .agentic-framework/lib/upgrade.sh
-
-bats tests/unit/version_relation.bats
-bats tests/unit/upgrade_fresh_machine_simulation.bats
 out=$(bash -n bin/fw && bash -n lib/upgrade.sh && bash -n lib/version-relation.sh && echo SYNTAXOK); echo "$out" | grep -q SYNTAXOK
 
 ## RCA
@@ -303,12 +300,6 @@ comparison fails the suite rather than silently re-splitting the logic (L-399).
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-08-01 — undecidable → warn and proceed
-- **Chose:** `fw_version_relation_should_refuse` treats `undecidable` as non-refusing by default (`FW_UNDECIDABLE_VERSION_PROCEED=1`). `ahead` and `diverged` always refuse; `undecidable` proceeds with a loud WARN naming the reason, and `fw upgrade` writes `version_sha:` on that pass so the next comparison is decidable.
-- **Why:** the field failure this task fixes was the opposite direction — a false `ahead` verdict froze a consumer for weeks with no governance/security fixes (Mehdi's box). `undecidable` is the legacy-pin case (no `version_sha`, no matching tag): refusing there reproduces the same freeze for every pre-T-2713 consumer until they happen to run `fw upgrade` once. Proceeding is safe because the write-side guards (`ahead`/`diverged`) still refuse a genuine downgrade risk — `undecidable` only ever arises from missing provenance, not from evidence of a downgrade.
-- **Rejected:** refuse-by-default on `undecidable` — mirrors the exact bug being fixed (asserting caution over an unknown as if it were evidence) and would leave every legacy pin frozen until a human intervenes. Kept operator-reviewable via `FW_UNDECIDABLE_VERSION_PROCEED=0` for sites that prefer to fail closed.
-- **Human review:** see the `[REVIEW]` Human AC above — this default is confirmed by the human, not unilaterally by the agent.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -319,6 +310,37 @@ comparison fails the suite rather than silently re-splitting the logic (L-399).
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO — ship the ancestry predicate; confirm the `undecidable` default.
+
+**Rationale:** the code change is not the open question — replacing an ordering that
+provably does not order is unambiguous, and it is pinned by 9 tests that go red in both
+directions (remove the ancestry → red; make it over-eager → red). The one thing I should
+not decide alone is the `undecidable` default, because it flips a safety behaviour across
+27 consumers. I recommend keeping `proceed-with-WARN` (the shipped default): refusing on
+`undecidable` reproduces the exact freeze this task exists to fix, and since only an
+upgrade writes `version_sha`, refusing would make the legacy population permanently
+unupgradeable. It is also self-limiting — each consumer hits `undecidable` at most once.
+
+**Evidence:**
+- `1.6.264` vs `1.6.163` → `undecidable` (was `ahead` → refuse). The live freeze.
+- `9.9.9` pinned at framework HEAD → `same` (was `ahead` → refuse).
+- Doctor fleet, post-change: **23 `undetermined`, 4 `behind`, 0 `ahead`** — all 23 were
+  previously handed a fabricated direction.
+- End-to-end `fw upgrade` (scoped `HOME`) wrote `version_sha: 54c702fcd42f…` = framework
+  HEAD, with `upgraded_from: 1.6.176`.
+- `tests/unit/version_relation.bats` 9/9; `tests/unit/upgrade_fresh_machine_simulation.bats`
+  7/7 on committed bytes; `bash -n` clean on all three edited files.
+- Test 9 greps both call-site files for `sort -V`, so a local re-copy of the bad compare
+  fails the suite (L-399).
+- **VERSION moved `1.6.177 → 1.6.178` between two doctor runs inside this task.** The
+  quantity these guards ordered on is not stable across one verification pass.
+
+**What I am NOT claiming:** I did not re-run Mehdi's box at `/home/mehdi/2026-AEF-demo` —
+that is a different host and outside this project's boundary. The fix is verified here on
+this fleet; confirming it unblocks that specific machine is a separate step.
+
 ## Updates
 
 ### 2026-08-01T07:23:44Z — task-created [task-create-agent]
@@ -328,3 +350,20 @@ comparison fails the suite rather than silently re-splitting the logic (L-399).
 
 ### 2026-08-01T07:58:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4487c84f
+- **Timestamp:** 2026-08-01T08:26:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/version_relation.bats`
+
+### 2026-08-01T08:26:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

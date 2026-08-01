@@ -2480,3 +2480,59 @@ decisions:
     date: 2026-07-31
     task: T-2694
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-357
+    decision: "make regenerate a merge (snapshot → template → fold non-template hooks back)."
+    scope: project
+    date: 2026-08-01
+    task: T-2710
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-358
+    decision: "preserve top-level keys the template does not emit (`permissions`, `env`, …)."
+    scope: project
+    date: 2026-08-01
+    task: T-2710
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-359
+    decision: "carry forward only commands matching `fw hook <name>`."
+    scope: project
+    date: 2026-08-01
+    task: T-2710
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-360
+    decision: "a new python module `lib/hook_portability.py`, shelled out to from both"
+    scope: project
+    date: 2026-08-01
+    task: T-2709
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-361
+    decision: "placeholder-OR-literal-absolute, never bare-relative — so the live (still"
+    scope: project
+    date: 2026-08-01
+    task: T-2709
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-362
+    decision: "when the relation cannot be computed, emit a loud WARN naming the reason and"
+    scope: project
+    date: 2026-08-01
+    task: T-2713
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-363
+    decision: "leave VERSION alone; add `version_sha:` beside it."
+    scope: project
+    date: 2026-08-01
+    task: T-2713
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-364
+    decision: "`fw_record_version_sha` sits in `lib/version-relation.sh`, not in `upgrade.sh`."
+    scope: project
+    date: 2026-08-01
+    task: T-2713
+    rationale: "Auto-captured from task file on completion"
