@@ -10,10 +10,10 @@ description: >
   of T-2502 (claude-fw missed by the same helper). L-399 producer/consumer parity:
   the pre-verifier and the gate must scan the same set.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [vendor, audit, parity]
 components: []
 related_tasks: [T-2709, T-2502, T-2244]
@@ -28,7 +28,7 @@ related_tasks: [T-2709, T-2502, T-2244]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T07:22:27Z
-last_update: '2026-08-01T07:30:09Z'
+last_update: 2026-08-01T08:29:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,12 +76,47 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+## Context
+
+`agents/audit/audit.sh:1752` (the **gate**) scans
+`.agentic-framework/{bin,lib,agents,web}` for
+`*.sh -o *.py -o fw -o claude-fw -o *.md` and `cmp`s each against source.
+
+Four helpers in `lib/upgrade.sh` are the **producers** meant to satisfy it:
+
+| Helper | Covers | Selection |
+|--------|--------|-----------|
+| `_self_vendor_libs` | `lib/` | find + filter |
+| `_self_vendor_agents` | `agents/` | find + filter |
+| `_self_vendor_web` | `web/` | find + filter |
+| `_self_vendor_shim` | `bin/` | **hardcoded `for _shim in fw claude-fw`** |
+
+Three producers enumerate; the fourth names two files. So every other file in
+`bin/` matching the audit filter — `bin/hook-enable.sh` is the observed case — is
+**gated by audit but synced by nobody**. `fw vendor self` reports success, `--check`
+reports in-sync, and the push gate still refuses, pointing at a verb that cannot
+fix it.
+
+This is the third instance of the same shape: T-2266 (`agents/` scanned, unsynced),
+T-2502 (`claude-fw` scanned, unsynced), now `bin/*.sh`. Each was fixed by adding the
+missing *name* rather than removing the naming. L-399: the pre-verifier and the gate
+must derive their file set from one place.
+
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_self_vendor_shim` selects files by enumerating `bin/` with the same filter the audit uses, instead of a hardcoded name list; adding a new `bin/*.sh` requires no edit to the helper.
+- [x] `bin/hook-enable.sh` (the observed miss) is synced by `fw vendor self` — verified by deliberately dirtying the vendored copy, running `fw vendor self`, and confirming `cmp` equality.
+- [x] `fw vendor self --check` and `agents/audit/audit.sh check_self_vendor_drift` agree on every file in `bin/`: a scripted comparison of the two scan sets reports zero files present in one and absent from the other.
+- [x] The sync-count message reports the real number: `_self_vendor_shim` currently prints a hardcoded `1 file(s)` regardless of how many it copied.
+- [x] Regression test `tests/unit/self_vendor_parity.bats` green, including a negative control that adds a new `bin/*.sh` fixture and fails if the helper's set does not pick it up.
+- [x] `bin/fw audit` reports no `Self-vendor drift` FAIL, and `git push` is not blocked by the T-2240 gate.
+
+**Evidence (live, 2026-08-01):**
+- Gated-but-unsynced set measured at **4 files**, not 1: `hook-enable.sh`, `integrate-go-live.sh`, `migrate-horizon-null-completed.sh`, `watchtower.sh`.
+- Dirtied two vendored copies → `fw vendor self` → `synced 2 file(s) to .agentic-framework/bin/` (previously would have printed `1`, and synced neither), all four `cmp`-identical after.
+- Falsification: restoring the name-list turns tests 1, 2 and **6** red. Tests 3 and 4 stay green — they compare the two *trees*, which were already equal, so they would have been decorative on their own. Test 6 (run the producer against real drift) is the one with teeth.
+- `-maxdepth 1` was replaced with the audit's recursive traversal: `bin/` is flat today so both pass, but the first `bin/<subdir>/foo.sh` would have re-opened the identical hole.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,7 +182,52 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/self_vendor_parity.bats
+out=$(bin/fw vendor self --check 2>&1); echo "$out" | grep -qv "would sync" || true
+bash -n lib/upgrade.sh
+
 ## RCA
+
+**Symptom:** `fw vendor self` reported success and `--check` reported in-sync while
+`.agentic-framework/bin/hook-enable.sh` still differed from source. The T-2240 pre-push
+gate refused the push and its remediation line named `fw vendor self` — the verb that
+could not fix it.
+
+**Root cause:** `_self_vendor_shim` selected files by a hardcoded list
+(`for _shim in fw claude-fw`) while the audit gate enumerates all of
+`.agentic-framework/bin` with a filter. Its three sibling helpers already enumerate. Four
+files sat in the difference: `hook-enable.sh`, `integrate-go-live.sh`,
+`migrate-horizon-null-completed.sh`, `watchtower.sh` — gated by the audit, synced by
+nobody.
+
+**Why structurally allowed:** this is the third instance of the shape — T-2266 (`agents/`
+scanned, unsynced), T-2502 (`claude-fw` scanned, unsynced), now `bin/*.sh`. Each of the
+first two was closed by **adding the missing name**, which left the mechanism that
+generates the gap fully intact. A name list and a filter cannot stay in agreement by
+maintenance; there had to be a third instance, and there would have been a fourth. The
+recurrence is the finding, not the individual file.
+
+**Prevention:** the helper now derives its set from the same traversal + filter the gate
+uses, so parity is mechanical rather than remembered. `self_vendor_parity.bats` test 6
+runs the producer against real drift — the only check here that distinguishes a working
+helper from a broken one, since the set-equality tests pass either way.
+
+## Decisions
+
+### 2026-08-01 — enumerate rather than add the missing name
+
+- **Chose:** replace the hardcoded list with a `find` matching the audit's filter.
+- **Why:** the two prior instances were both closed by adding a name. That is what
+  produced this instance. The gap is generated by having two independent definitions of
+  "which files matter"; only removing one of them closes the class.
+- **Rejected:** add `hook-enable.sh` to the list — would have shipped green today and
+  re-opened on the next `bin/` script.
+
+### 2026-08-01 — match the gate's traversal, not just its current results
+
+- **Chose:** recursive `find`, though `bin/` is flat.
+- **Why:** `-maxdepth 1` passes today purely because no one has made a subdirectory. That
+  is a coincidence, and coincidences are what this task is about.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -214,3 +294,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2711-fw-vendor-self---check-cannot-see-drift-.md
 - **Context:** Initial task creation
+
+### 2026-08-01T08:29:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

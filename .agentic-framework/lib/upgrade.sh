@@ -334,32 +334,50 @@ _self_vendor_shim() {
     if [ ! -d "$_self_vendor/bin" ]; then
         return 0
     fi
-    # T-2502: sync BOTH bin shims (fw + claude-fw). Pre-T-2502 this synced
-    # bin/fw only, so the vendored claude-fw (operator auto-restart wrapper)
-    # drifted undetected — the in-repo sibling of the on-PATH wrapper drift
-    # T-2501 caught in `fw doctor`. audit.sh check_self_vendor_drift now scans
-    # `claude-fw` in its find filter too, so filter+helper parity holds (L-399:
-    # widening the audit filter without extending this helper would FAIL with
-    # nothing to clear via `fw vendor self`).
+    # T-2711: ENUMERATE bin/, do not name files.
+    #
+    # This helper used to carry a hardcoded list — `for _shim in fw claude-fw` —
+    # while the audit gate (agents/audit/audit.sh check_self_vendor_drift) scans
+    # ALL of .agentic-framework/bin for `*.sh + *.py + fw + claude-fw + *.md`.
+    # Everything in bin/ outside those two names was therefore gated by the audit
+    # and synced by nobody: `fw vendor self` reported success, `--check` reported
+    # in-sync, and the T-2240 pre-push gate still refused — pointing the operator
+    # at a verb that could not fix it. Four files were in that hole:
+    # hook-enable.sh, integrate-go-live.sh, migrate-horizon-null-completed.sh,
+    # watchtower.sh.
+    #
+    # Third instance of the shape (T-2266 agents/, T-2502 claude-fw, now bin/*.sh).
+    # The first two were closed by adding the missing NAME. Naming is the defect —
+    # each new bin/ script silently re-opened the hole. The three sibling helpers
+    # (_self_vendor_libs / _agents / _web) already enumerate; this one now matches
+    # them, so the set is derived, not maintained (L-399).
     local _svs_updated=0
-    local _shim _svs_src _svs_dst
-    for _shim in fw claude-fw; do
-        _svs_src="$FRAMEWORK_ROOT/bin/$_shim"
-        _svs_dst="$_self_vendor/bin/$_shim"
+    local _svs_src _svs_rel _svs_dst
+    while IFS= read -r _svs_src; do
         [ -f "$_svs_src" ] || continue
+        _svs_rel="${_svs_src#$FRAMEWORK_ROOT/bin/}"
+        _svs_dst="$_self_vendor/bin/$_svs_rel"
         if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
+                mkdir -p "$(dirname "$_svs_dst")"
                 cp "$_svs_src" "$_svs_dst"
                 [ -x "$_svs_src" ] && chmod +x "$_svs_dst"
             fi
             _svs_updated=$((_svs_updated + 1))
         fi
-    done
+    # Recursive, matching the audit's own scan. bin/ is flat today, so -maxdepth 1
+    # would pass right now — and would silently re-open this exact hole the first
+    # time someone adds bin/<subdir>/foo.sh. Parity means matching the gate's
+    # traversal, not just its current results.
+    done < <(find "$FRAMEWORK_ROOT/bin" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) -print 2>/dev/null)
     if [ "$_svs_updated" -gt 0 ]; then
+        # T-2711: report the real count. This printed a hardcoded "1 file(s)"
+        # regardless of how many were copied — a status line that agreed with
+        # reality only by coincidence.
         if [ "$dry_run" = true ]; then
-            echo -e "  ${GREEN}Self-vendor:${NC} would sync 1 file(s) to .agentic-framework/bin/"
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svs_updated file(s) to .agentic-framework/bin/"
         else
-            echo -e "  ${GREEN}Self-vendor:${NC} synced 1 file(s) to .agentic-framework/bin/"
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svs_updated file(s) to .agentic-framework/bin/"
         fi
     fi
     return 0
