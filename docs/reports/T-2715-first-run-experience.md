@@ -197,6 +197,55 @@ The subject axis is the one this inception's own evidence demands. It is also th
 running through every method failure on the 832 rail and in this session — a measurement that ran,
 returned, and whose subject was not the thing named in the sentence.
 
+### D-8 — the teach-alongside mechanism: useful yes, transparent with a trap, consistent only if registry-backed (operator proposal, 2026-08-02)
+
+Operator proposed three parts: (a) print help/teaching alongside a command, (b) a flag to
+enable/disable the printing, (c) a uniform verb to print the teach info. Asked whether this is a
+useful, transparent and consistent mechanism. Reflected below against measured state.
+
+**Measured first.** 19 PreToolUse gate scripts exist (`agents/context/{check,block}-*.sh`). **3**
+emit a `Policy: T-XXX` line naming the rule they enforce — T-532, T-559, T-560, T-1730, T-2194,
+T-533 across those 3 files. The other 16 block without naming anything. No `--teach` / `--explain`
+/ `TEACH` mechanism exists anywhere in `bin/fw` or `lib/*.sh`. `fw ask` and `fw docs` exist but are
+pull-only.
+
+**The precedent already teaches — but only on the failure path.** The T-532 block message names the
+policy, lists remaining tasks, and gives two exact commands. That IS the proposed mechanism,
+working, today. What is missing is teaching on the SUCCESS path: today you learn the framework
+exclusively by being blocked by it.
+
+**USEFUL — yes, on one condition.** The teaching must be about what just happened *in this
+project*, not a restatement of generic docs. `fw help` / `fw docs` / CLAUDE.md already carry
+generic. The value-add is contextual and it also inverts F-8: capabilities announce themselves
+instead of waiting to be discovered.
+
+**TRANSPARENT — yes, but there is a self-reference trap.** Off by default → the teach flag is
+itself undiscoverable, which is F-8 recursion. On by default → output is noisy, humans silence it
+permanently, and it is off by default again but silently. **Therefore a single global on/off is the
+wrong unit.** The right unit is *per-topic first-encounter*: once the operator has seen the Tier-0
+note they never need it again, but they still get the arc-closure note the first time. Precedent
+exists in-framework — the reviewer auto-tick (T-1985) uses digest-keyed entries in
+`feedback-stream.yaml` so a thing fires once and does not re-fire. Same shape, reusable.
+
+**CONSISTENT — this is the weak point, and it is measurable rather than speculative.** 3 of 19
+gates carry the existing teaching convention. If teaching notes are hand-authored per command, they
+will land on a handful and the silence everywhere else will read as "nothing to know here" — which
+is L-527 (a rule that gets tuned out is weaker than no rule, because its silence stops meaning
+anything) and is the same decay that killed the Escalation Ladder (IW-12a). **Consistency therefore
+requires a central registry (topic → note) plus an audit check that flags gates/commands with no
+registered note.** Per-command prose is discipline; registry + audit is structure. The framework's
+own D-step doctrine says pick the second.
+
+**Fourth risk the proposal does not yet cover: content drift.** Teaching text describes behaviour
+and will drift from it. Cheap mitigation with in-framework precedent: require each note to name a
+referent (a policy `T-XXX`, a command, a file) and validate the referent resolves — exactly the
+`ships_in:` reachability check used for `inception_decisions`. That catches the note that still
+explains a flag which no longer exists.
+
+**Net verdict: adopt (a) and (c) as proposed; replace (b).** The flag should not be a global
+boolean but per-topic seen-state with a global mute as an escape hatch. Add the registry + audit
+rail, without which this becomes the seventh mechanism in this artifact that exists and is not used.
+
 ### F-6 — coverage limit that no isolation choice fixes
 
 README STEP 1's self-heal targets **macOS bash 3.2**. Untestable on Linux, container or VM. If Mac
