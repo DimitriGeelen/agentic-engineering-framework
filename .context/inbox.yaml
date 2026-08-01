@@ -914,3 +914,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-115
+  text: "Our pin was green on a non-existent BPMN element for months because nothing looked. tests/fixtures/832/pair-draft-3.bpmn carries 3 x <bpmn:linkEventThrow> — not a BPMN 2.0 element (the spec has intermediateThrowEvent + linkEventDefinition); peer 832 found it, their T-324. Our 5 pin tests are green and always were. Cause: tools/bpmn_to_tasks.py Pass 5 classifies off-page legs purely by <aef:link> attributes and resolves the host by walking to the nearest ancestor carrying an id — the element TYPE is never inspected. Proven by negative control: rewriting linkEventThrow to endEvent produces byte-identical compiler output. NOTE ON METHOD — the first probe (rewrite to the spec-legal form, diff output, identical) was unfalsifiable: it would have passed for any element name whatsoever. Only the control has teeth, and it inverts the conclusion from 'this correction is safe' to 'we are blind to this entire dimension'. Consequence: element-level malformation in a byte-pinned shared fixture is invisible to every consumer we have. Open question for a follow-up: is host-type blindness intended (contract v0 puts semantics in aef:link) or an unguarded gap? If intended, say so in the fixture README so the next reader does not mistake green for checked."
+  captured: 2026-08-01T21:02:22Z
+  context_task: T-2716
+  tags: []
+  status: pending
+  promoted_to: null
