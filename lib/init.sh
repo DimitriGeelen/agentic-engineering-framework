@@ -466,9 +466,24 @@ CYAML
     local has_code=false
 
     # Skip if tasks already exist (idempotent on --force re-init)
-    if [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
-        has_existing_tasks=true
-    fi
+    #
+    # T-2712: check completed/ TOO. Completing a task moves it out of active/, so a
+    # project that finished its onboarding presented an empty active/, was judged
+    # fresh, and had T-001..T-005 re-seeded over IDs it had already used and
+    # committed against — a duplicate-ID generator aimed squarely at the projects
+    # that made progress. The `check-active-completed-dup` hook defends this class
+    # downstream; this guard was manufacturing it upstream.
+    #
+    # The question is "has this project ever had tasks", so it must consider every
+    # directory an ID can live in, not just the one holding open work.
+    local _seed_dir_probe
+    for _seed_dir_probe in active completed; do
+        if [ -d "$target_dir/.tasks/$_seed_dir_probe" ] \
+           && ls "$target_dir/.tasks/$_seed_dir_probe/"T-*.md >/dev/null 2>&1; then
+            has_existing_tasks=true
+            break
+        fi
+    done
 
     if [ "$has_existing_tasks" = false ]; then
         # Detect if project has existing code

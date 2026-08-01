@@ -10,10 +10,10 @@ description: >
   the existence of the check-active-completed-dup hook shows the class is already
   known. Consumer-facing: fires hardest on new projects.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [onboarding, consumer, task-id]
 components: []
 related_tasks: [T-460, T-2709]
@@ -28,7 +28,7 @@ related_tasks: [T-460, T-2709]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T07:23:05Z
-last_update: '2026-08-01T07:30:09Z'
+last_update: 2026-08-01T08:47:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,14 +74,41 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`lib/init.sh:469` decides whether a project is fresh:
+
+```bash
+if [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
+    has_existing_tasks=true
+fi
+```
+
+It looks only in `active/`. Completing a task **moves it to `completed/`**, so a project
+that finished its onboarding tasks presents an empty `active/`, is judged fresh, and gets
+`T-001`..`T-005` (greenfield) or `T-001`..`T-006` (existing-project) written over IDs it
+has already used and committed against.
+
+The guard's own comment says "idempotent on `--force` re-init" — that is the intent it
+fails to deliver, and it fails precisely for projects that made progress.
+
+The existence of the `check-active-completed-dup` PreToolUse hook shows this duplicate-ID
+class is already known and defended elsewhere; the seeder creates it upstream of that hook.
+
+**Fix:** the freshness test must consider every place a task ID can live — `active/`
+**and** `completed/`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `has_existing_tasks` is true when `.tasks/completed/` holds `T-*.md` and `active/` is empty — the exact state of a project that finished onboarding.
+- [x] Re-running `fw init` on a project whose onboarding tasks are all completed seeds **zero** new tasks and does not recreate `T-001`.
+- [x] The existing behaviours are unchanged: a genuinely empty project still seeds, and a project with tasks in `active/` still skips.
+- [x] Regression test `tests/unit/init_seed_guard.bats` green, including a negative control that fails if the guard reverts to checking `active/` only.
+
+**Evidence (live end-to-end, 2026-08-01):** `fw init` on a fresh dir seeded 5 tasks →
+moved all 5 to `completed/` (simulating finished onboarding) → `fw init --force` again →
+**0 tasks in `active/`**. Pre-fix that second init re-seeded all 5 over already-committed
+IDs. Suite 6/6; test 4 runs the pre-fix guard against the same fixture and confirms it
+reports `false`, so the fixture genuinely reproduces the defect.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,7 +174,42 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/init_seed_guard.bats
+bash -n lib/init.sh
+
 ## RCA
+
+**Symptom:** `fw init` on a project whose onboarding tasks were all completed re-seeded
+`T-001`..`T-005` over IDs the project had already used and committed against.
+
+**Root cause:** the freshness test asked "are there tasks in `active/`?" when the question
+it needed to answer was "has this project ever had tasks?". Completing a task moves it to
+`completed/`, so the two questions diverge exactly when a project makes progress — the
+guard was most wrong about the projects that had done the most.
+
+**Why structurally allowed:** the guard was written alongside the seeder, when `active/`
+was the only directory that existed in the author's mental model of "tasks". Nothing tied
+it to the lifecycle that moves files out of `active/`. And the failure is invisible at the
+moment it happens: re-seeding produces valid-looking task files with plausible IDs, so
+there is no error, no warning, and no output that differs from a legitimate first init.
+The duplicate only surfaces later, as an ID collision, far from its cause — which is why
+`check-active-completed-dup` exists to catch it downstream while the seeder kept
+manufacturing it upstream.
+
+**Prevention:** the guard now iterates the directories a task ID can occupy rather than
+naming one — the same correction as T-2711 in a different file. `init_seed_guard.bats`
+test 4 keeps the pre-fix predicate as a live negative control, so reverting the guard fails
+the suite instead of quietly re-arming the seeder.
+
+## Decisions
+
+### 2026-08-01 — iterate the lifecycle directories, don't add `completed/` as a second test
+
+- **Chose:** `for _seed_dir_probe in active completed`.
+- **Why:** the question is "any task, anywhere". A second hardcoded branch would answer it
+  correctly today and be wrong again the moment the lifecycle grows a directory.
+- **Rejected:** `[ -d active ] && ... || [ -d completed ] && ...` — same answer now, same
+  naming-not-deriving defect this session has already hit twice (T-2711, T-2710).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -214,3 +276,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2712-initsh-seed-guard-checks-only-active-and.md
 - **Context:** Initial task creation
+
+### 2026-08-01T08:37:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-08-01T08:39:59Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-08-01T08:47:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
