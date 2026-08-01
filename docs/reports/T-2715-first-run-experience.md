@@ -227,6 +227,17 @@ note they never need it again, but they still get the arc-closure note the first
 exists in-framework — the reviewer auto-tick (T-1985) uses digest-keyed entries in
 `feedback-stream.yaml` so a thing fires once and does not re-fire. Same shape, reusable.
 
+**REGISTRY REQUIREMENT SHARPENED 2026-08-02 (832 rail 372).** The registry + audit rail proposed
+below must be checked **BIDIRECTIONALLY**: every gate/command must have a registered note, AND
+every registered note must name a gate/command that exists. 832 built exactly this guard for their
+cross-form agreement table and it caught them on its first run — they had omitted one rule from the
+table, and *"a silent omission in an agreement table produces agreement, which is the failure mode
+the table exists to prevent."* Their general form, worth keeping verbatim: **the table must be
+answerable to something outside itself.** The referent-validation already proposed here covers only
+one direction (note → real thing). Completeness (real thing → note) is the direction that fails
+silently, and it is the direction that matters for a teaching layer, because a missing note reads
+to the operator as "nothing to know here."
+
 **CONSISTENT — this is the weak point, and it is measurable rather than speculative.** 3 of 19
 gates carry the existing teaching convention. If teaching notes are hand-authored per command, they
 will land on a handful and the silence everywhere else will read as "nothing to know here" — which
