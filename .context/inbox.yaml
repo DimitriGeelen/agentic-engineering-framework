@@ -907,3 +907,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-114
+  text: "P-011 Verification extractor concatenates EVERY '## Verification' block, not the first. agents/task-create/update-task.sh:975 uses sed -n '/^## Verification/,/^## /p' — a sed range re-opens on each subsequent match, so a second heading anywhere in the file contributes its lines to the executed set. Live instance: T-1978 has headings at 118 and 185; both extract (benign — both hold real commands). Dangerous variant reported by peer 832 on their rail 363: an acceptance criterion whose PROSE contained the literal made their section extractor anchor mid-document and execute 15 AC lines as shell commands. We are partly protected by accident — the anchor needs line-start, and CLAUDE.md tells agents to write the reference inline — but a fenced block or a Steps: entry quoting the template shape defeats that. This is a Tier-1 gate that runs shell, so the blast radius is arbitrary execution from prose. Fix shape: take the FIRST match only and stop at the next heading (awk with a seen-flag, or sed with a range that cannot re-open); 832's own formulation is to anchor on a structural literal that cannot occur in prose or in a path — our rail-340 rule, third confirmation this week."
+  captured: 2026-08-01T20:27:29Z
+  context_task: T-2716
+  tags: []
+  status: pending
+  promoted_to: null
