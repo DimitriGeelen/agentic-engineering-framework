@@ -431,7 +431,7 @@ bash -n lib/paths.sh
 python3 -c "import ast,sys; ast.parse(open('lib/hook_paths.py').read())"
 grep -q 'CLAUDE_PROJECT_DIR' .claude/settings.json
 out=$(grep -cE '"command": "/' .claude/settings.json || true); test "$out" = "0"
-out=$(bin/fw doctor 2>&1); echo "$out" | grep -qv "Hook path validation.*broken"
+out=$(bin/fw doctor --quick 2>&1); echo "$out" | grep -q "Hook path validation: 25 hooks, all portable"
 
 # T-2709 build-worker state, 2026-07-31 — block run as written, NOT weakened.
 # 8 of 11 PASS. The 3 that FAIL are exactly the ones that read this repo's
@@ -444,6 +444,16 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -qv "Hook path validation.*broken"
 # against a scratch dir. They are left failing here on purpose: passing them
 # requires mutating the live enforcement surface of the running session.
 # Do NOT weaken these lines; run the supervised step instead.
+#
+# 2026-08-01 supervised regeneration executed (see A4 evidence) — all three now
+# PASS for real. The `bin/fw doctor` line was changed to `bin/fw doctor --quick`
+# and its assertion tightened to a positive match on the exact OK line: plain
+# `bin/fw doctor` (no --quick) hangs for minutes on an UNRELATED pre-existing bug
+# (OBS-111: web/smoke_test.py probes ~62 routes serially, 5s urlopen timeout
+# each, no overall cap) — nothing to do with hook-path portability. --quick
+# skips only that host/network probe section; the Hook path validation check
+# itself (A2's deliverable) is NOT skipped under --quick — confirmed by direct
+# run. Registered separately as OBS-111, not fixed here (one bug = one task).
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
