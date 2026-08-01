@@ -143,6 +143,60 @@ and existing-project adds fabric registration + a learning-capture task. Whether
 separate *scenario* (as distinct from its already-existing seed tasks) is a real open question —
 that is what IW-17 now asks, on corrected ground.
 
+### D-7 — the classification axis is SUBJECT, not cause (IW-12, elaborated 2026-08-01)
+
+The proposed taxonomy (installer bug / prompt ambiguity / environment / agent error) was invented
+without checking it against the findings this inception has already produced. Tested against all
+eight live findings, **it classifies zero of them cleanly**:
+
+| Finding | Proposed bucket | Actual nature |
+|---|---|---|
+| F-1 install.sh hard-resets `$HOME` by default | "installer bug"? | Not a bug — works as designed, warns first. An **unsafe default** / blast-radius call |
+| F-2 deleting the project dir leaves the install → runs 2..N are upgrades mislabelled greenfield | none | **The scenario does not measure what it claims** |
+| F-3 the prompt instructs self-repair, so a run measures agent recovery not installer correctness | none | **The metric collapses two questions** |
+| F-4 `fw doctor` is both judge and system-under-test | none | **The oracle is the component under suspicion** |
+| F-5 goals 2 and 3 may be the same object | none | A **scope question**, not a defect |
+| F-6 macOS bash 3.2 untestable on Linux | "environment"? | Not a failure caused by environment — a **coverage limit**, we cannot test it at all |
+| F-7 10 of 11 seeded onboarding tasks are `owner: agent` | none | **Product design defect** |
+| F-8 `fw onboarding skip` exists at bin/fw:6284, absent from README/docs | none | **Discoverability** — a fifth category the taxonomy lacked |
+
+**What the findings actually cluster into, and the dominant cluster is the surprise:**
+
+1. **Product defects** — F-1, F-7 (2 of 8)
+2. **Discoverability** — F-8 (1 of 8)
+3. **Instrument / methodology defects** — F-2, F-3, F-4, and retracted F-9 (**4 of 8**)
+4. **Scope questions** — F-5 (1 of 8)
+5. **Coverage limits** — F-6 (1 of 8)
+
+**Half this inception's findings are about the scenario's own instruments, not about the
+framework.** The proposed taxonomy had no bucket for that at all — every cause-category presumes
+the finding is about the system under test.
+
+**Why that is dangerous rather than merely untidy.** With no "instrument" bucket, an instrument
+defect must be filed as something else, and it will be filed as a product defect. F-9 is the
+worked proof: the check read `lib/seeds/tasks/existing/` — a path that has never existed — and the
+finding was filed as a **product capability gap** ("option B users get no onboarding at all") at
+confidence 3. The real defect was in the check. A cause-only taxonomy converts instrument errors
+into phantom product findings, and phantom product findings get fixed, which means writing code to
+close a gap that was never open.
+
+**The `agent error` bucket is a second hazard.** It is the classification equivalent of `--force`:
+every finding can be relabelled into it, and once relabelled the framework is never wrong. F-3
+already shows the pressure — a run that succeeds after nine self-heals can be read either as
+"installer needs nine fixes" or as "agent handled it", and only the first is actionable.
+
+**Proposed shape: two-level, subject first.**
+
+```
+subject   : system-under-test | instrument | scope-question
+  then, only for system-under-test:
+cause     : product-defect | discoverability | unsafe-default | environment | coverage-limit
+```
+
+The subject axis is the one this inception's own evidence demands. It is also the same distinction
+running through every method failure on the 832 rail and in this session — a measurement that ran,
+returned, and whose subject was not the thing named in the sentence.
+
 ### F-6 — coverage limit that no isolation choice fixes
 
 README STEP 1's self-heal targets **macOS bash 3.2**. Untestable on Linux, container or VM. If Mac
