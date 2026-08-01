@@ -1,0 +1,20 @@
+id: tests/unit/doctor_hook_counters.bats
+name: doctor_hook_counters
+type: script
+subsystem: unknown
+location: tests/unit/doctor_hook_counters.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-01
+created_by: unknown

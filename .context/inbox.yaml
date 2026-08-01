@@ -893,3 +893,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-112
+  text: "bin/fw:2072 consumer-fleet doctor line prints 'agentic-engineering-framework (v, 23/23 hooks)' — empty version string where $cversion should be, and a FOURTH hook denominator (23 = distinct fw hook names; post-compact-resume is wired 3x so 25 commands collapse to 23 names). Sibling to OBS-110 (T-2714) which fixed the other two counters; scoped out as one-bug-one-task. Empty version is the more serious half — it is the line an operator reads to check a consumer's pinned version."
+  captured: 2026-08-01T09:25:18Z
+  context_task: T-2714
+  tags: []
+  status: pending
+  promoted_to: null

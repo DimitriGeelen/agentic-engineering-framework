@@ -1280,7 +1280,12 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                 echo -e "        Run: fw upgrade (regenerates hook paths to absolute form)"
                 issues=$((issues + 1))
             elif [ "${hex_total:-0}" -gt 0 ]; then
-                echo -e "  ${GREEN}OK${NC}  Hook exercise from /tmp: $hex_total hook(s) resolve from foreign CWD"
+                # T-2714 (OBS-110): name the scope. The probe deliberately covers
+                # PreToolUse+PostToolUse only (see lib/doctor-hook-exercise.py —
+                # PreCompact/SessionStart run heavy work past the 5s budget), so its
+                # total is legitimately lower than the whole-file counts above. Unstated,
+                # the gap reads as hooks that silently failed to be tested.
+                echo -e "  ${GREEN}OK${NC}  Hook exercise from /tmp: $hex_total PreToolUse/PostToolUse hook(s) resolve from foreign CWD"
             fi
         fi
     fi
@@ -1760,7 +1765,15 @@ if issues:
 elif warnings:
     print('WARN|' + '; '.join(warnings))
 else:
-    print(f'OK|Hook configuration valid ({sum(len(v) for v in hooks.values())} hooks across {len(hooks)} events)')
+    # T-2714 (OBS-110): count COMMANDS, not matcher entries. Each entry in an
+    # event's list carries a 'hooks' array of 1..n commands, so summing the entry
+    # lists counts matchers and calling them hooks. Live: 19 entries / 25 commands.
+    # The old number also contradicted 'Hook path validation' three lines up, which
+    # counts commands correctly — leaving an operator no way to tell which lied.
+    # State all three denominators so the numbers reconcile instead of competing.
+    entry_count = sum(len(v) for v in hooks.values())
+    cmd_count = sum(len(e.get('hooks') or []) for v in hooks.values() for e in v)
+    print(f'OK|Hook configuration valid ({cmd_count} hooks in {entry_count} matchers across {len(hooks)} events)')
 " 2>/dev/null || echo "WARN|Python3 not available for hook validation")
         local hook_status hook_msg
         hook_status=$(echo "$hook_result" | cut -d'|' -f1)
