@@ -246,6 +246,37 @@ explains a flag which no longer exists.
 boolean but per-topic seen-state with a global mute as an escape hatch. Add the registry + audit
 rail, without which this becomes the seventh mechanism in this artifact that exists and is not used.
 
+**CORRECTION 2026-08-02 (operator): once-only is wrong, and it is wrong on AUTHORITY grounds, not
+just pedagogical ones.** Operator: *"1 time is not enough, we should show until user says stop, at
+the same time it should be very easy for user to switch off — or maybe do 5 times and then suggest
+to switch off unless user tells otherwise."* Accepted, and the agent's once-only design carried a
+defect the agent did not see when proposing it:
+
+> **A "seen once → suppress" rule makes the FRAMEWORK the judge of when the HUMAN has learned
+> something.** That is a sovereignty-class judgment inferred from a counter. The authority model
+> says Framework=AUTHORITY (enforces rules), Human=SOVEREIGNTY (decides). "You know this now" is a
+> decision about the human's own state, and only the human can make it.
+
+Same class as the `[REVIEW]` audience-axis error (T-2143) — a mechanism quietly answering a
+question that belongs to someone else. The operator's version keeps the decision where it belongs:
+the note persists until the human silences it.
+
+**Resulting design:**
+- **Persist by default.** The note shows every time until explicitly silenced. No auto-suppression.
+- **Per-topic counter, and at N (≈5) the note itself offers the off-switch.** A suggestion, not an
+  action — showing continues unless the human says stop. Default on the prompt is CONTINUE.
+- **The silence command is printed INLINE in the note, every time.** Not in docs, not in `--help`.
+  F-8's whole lesson: an escape hatch that must be discovered is not easy to switch off.
+- **Un-mute must be as discoverable as mute** — `fw teach status` lists silenced topics, or the
+  mute is worthless the first time the operator changes their mind or hands the project to someone
+  new.
+
+**Agent refinement offered on top (not a correction of the operator's shape): decay the VERBOSITY,
+not the PRESENCE.** Full explanation for the first N encounters, then a one-line reminder carrying
+the silence command and a pointer. This satisfies "show until the user says stop" while removing the
+fatigue argument for muting at all — the note stops costing screen space long before it stops being
+available. Muting then becomes a genuine preference rather than a defence against noise.
+
 ### F-6 — coverage limit that no isolation choice fixes
 
 README STEP 1's self-heal targets **macOS bash 3.2**. Untestable on Linux, container or VM. If Mac
