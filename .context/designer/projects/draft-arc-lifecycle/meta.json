@@ -1,0 +1,14 @@
+{
+  "id": "draft-arc-lifecycle",
+  "title": "draft-arc-lifecycle",
+  "versions": [
+    {
+      "v": 1,
+      "note": "pair-draft v1 skeleton seeded by agent (T-2716). Arc lifecycle end-to-end: open with headline mechanic -> agent proposes scoped drivers -> operator approves -> recalc-then-pick work loop -> exit recalc gate (can RETURN TO ARC) -> G-062 close gates -> operator closes via Watchtower. Encodes T-2715 D-6/IW-21/IW-22: recompute at the decision point (state, not events); exit is a gate not a formality; priority flag with direction + rationale replaces human-confirmed bvp_scores:. Open decision points carried in node meta: recalc placement (drop sweep staleness gate vs inline on completion trigger vs both), and the agent-completion-only trigger gap requiring an fw arc close backstop.",
+      "ts": 1785613487
+    }
+  ],
+  "uuid": "e57f66fe-f169-4a91-85fa-dde63809a9ce",
+  "latest": 1,
+  "updated": 1785613487
+}

@@ -900,3 +900,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-113
+  text: "corpus lint misses nodes assigned to NO lane. Probe (T-2716): deleting a single <bpmn:flowNodeRef> line from draft-arc-lifecycle/v1.bpmn leaves the node in the process but in no lane — corpus lint reports CLEAN. Sibling probes are caught correctly: a dangling targetRef fires dangling-flow-ref, and a node shoved out of its band fires lane-geometry + lane-overflow. Lane membership is semantic in this dialect (authority lane = who acts), so an unlaned node has no authority assignment at all and renders unplaced. Suggested rule: every flow node id must appear in exactly one laneSet flowNodeRef (also catches the double-assignment case)."
+  captured: 2026-08-01T19:52:21Z
+  context_task: T-2716
+  tags: []
+  status: pending
+  promoted_to: null

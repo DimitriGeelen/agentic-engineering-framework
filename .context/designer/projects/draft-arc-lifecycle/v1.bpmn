@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-arc-lifecycle"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_draft-arc-lifecycle">
+    <bpmn:participant id="Pool_draft_arc_lifecycle" name="DRAFT arc lifecycle" processRef="Process_draft-arc-lifecycle"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-arc-lifecycle" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-arc-lifecycle" uuid="e57f66fe-f169-4a91-85fa-dde63809a9ce" version="1" schemaVersion="2" title="DRAFT — arc lifecycle + exit workflow (open → drivers → recalc-then-pick loop → exit gate → close)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fwk" authority="authority" height="240"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fwk_1_recalc</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_2_exit_recalc</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_3_resurfaced</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_4_report</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_5_close_gates</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_6_gates_pass</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="240"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_propose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_pick</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_hv</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_file</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="320"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_open</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_approve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_3_flag</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_4_close</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_5_closed</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="hum_1_open" name="operator opens an arc — fw arc create --headline-mechanic">
+      <bpmn:extensionElements>
+        <aef:uid value="al_open"/>
+        <aef:position x="100.0" y="575.0"/>
+        <aef:meta note="G-062: --headline-mechanic is mandatory and must name who does what and what user-visible result is observed. Substrate-only phrasing is rejected at the verb."/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_1_propose" name="propose scoped drivers — 2-3 candidates, each naming what it distinguishes that D1-D4 do not">
+      <bpmn:extensionElements>
+        <aef:uid value="al_propose_drivers"/>
+        <aef:position x="260.0" y="320.0"/>
+        <aef:meta note="Workflow A, T-1925 5-step protocol (policy/prompts/bvp-driver-session.md). Writes proposed_scoped_drivers: only — scoped_drivers: mutates solely via fw arc approve-driver. R5: manufacturing drivers to look thorough is worse than proposing zero and recommending --none."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_2_approve" name="approve scoped drivers (max 3, weight ≤6) or --none with justification">
+      <bpmn:extensionElements>
+        <aef:uid value="al_approve_drivers"/>
+        <aef:position x="440.0" y="560.0"/>
+        <aef:meta note="Approving zero is a valid outcome — such arcs rank on global D1-D4 only. Only APPROVED scoped_drivers: reach the estimator (T-2357); proposed ones deliberately do not fire."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="fwk_1_recalc" name="recalc — score every arc task against global + approved arc-scoped drivers">
+      <bpmn:extensionElements>
+        <aef:uid value="al_recalc"/>
+        <aef:position x="640.0" y="110.0"/>
+        <aef:meta note="DRAFT DECISION POINT (IW-21). Recompute at the decision point rather than subscribing to write events — indifferent to whether arc_id was set by hook, by fw arc tag, or by hand-editing frontmatter, because it compares STATE not EVENTS. Every event-based alternative had a bypass path. Open: does this drop the sweep's 24h staleness gate outright, or run inline on the completion trigger, or both?"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:incoming>flow_16</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_2_pick" name="pick next — highest-ranked HV/HC or HV/LC task in this arc">
+      <bpmn:extensionElements>
+        <aef:uid value="al_pick"/>
+        <aef:position x="840.0" y="320.0"/>
+        <aef:meta note="recalc-then-pick is ONE primitive — the pick must recalc first or it reads the same stale scores the mechanism exists to escape. Split across lanes deliberately: AUTHORITY computes the score, INITIATIVE chooses from what is offered. Also the /resume entry point — session start is another 'what is next in this arc?'."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:incoming>flow_13</bpmn:incoming>
+      <bpmn:incoming>flow_19</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="agt_3_hv" name="HV/HC or HV/LC task available?">
+      <bpmn:extensionElements>
+        <aef:uid value="al_gw_hv"/>
+        <aef:position x="1030.0" y="335.0"/>
+        <aef:meta note="D-5: the quadrant IS the scope decision. LV/HC and LV/LC tasks stay filed and do not hold the arc open — arc-next BVP ordering picks them up later."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="agt_4_work" name="work the task — full task lifecycle">
+      <bpmn:extensionElements>
+        <aef:uid value="al_work"/>
+        <aef:position x="1160.0" y="290.0"/>
+        <aef:meta note="Drills into aef-task-lifecycle (captured → started-work ↔ issues → work-completed). Completion is the trigger that re-enters recalc — named gap: fires on AGENT completion only, so a human closing the last HV task triggers nothing and fw arc close must re-run the same check as backstop."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_5_file" name="file discovered task — set arc_id, do not fix now">
+      <bpmn:extensionElements>
+        <aef:uid value="al_file"/>
+        <aef:position x="1160.0" y="390.0"/>
+        <aef:meta note="IW-9 file-and-continue. No separate arc-assignment event is needed: the newly filed task simply appears in the next recalc, which is the whole point of comparing state instead of watching writes."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fwk_2_exit_recalc" name="exit recalc — re-score every arc task before believing the arc is dry">
+      <bpmn:extensionElements>
+        <aef:uid value="al_exit_recalc"/>
+        <aef:position x="1180.0" y="110.0"/>
+        <aef:meta note="The fixpoint check. 'No HV tasks left' computed from stale scores means 'no HV tasks by yesterday arithmetic' — the arc closes green while carrying unfinished high-value work, and nothing reports an error because every component did its job with the inputs it had."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fwk_3_resurfaced" name="any task re-surfaced in HV/HC or HV/LC?">
+      <bpmn:extensionElements>
+        <aef:uid value="al_gw_resurfaced"/>
+        <aef:position x="1360.0" y="125.0"/>
+        <aef:meta note="Exit is a GATE, not a formality — if the recalc promotes an LV task to HV, the arc is not done and this must be able to say so. Convergent: a score only moves when the task body or the arc drivers actually change, so it cannot oscillate."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="fwk_4_report" name="report bounce-back — which tasks re-surfaced, which driver moved them, from what">
+      <bpmn:extensionElements>
+        <aef:uid value="al_report"/>
+        <aef:position x="1490.0" y="110.0"/>
+        <aef:meta note="Mandatory, not cosmetic. An unexplained refusal to close trains --force, which defeats the mechanism — the same pressure that breached G-062 four times (T-1626, T-1633, T-1641, T-1670)."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_3_flag" name="raise or lower priority flag — direction + mandatory rationale">
+      <bpmn:extensionElements>
+        <aef:uid value="al_flag"/>
+        <aef:position x="1490.0" y="560.0"/>
+        <aef:meta note="IW-22 — replaces the human-confirmed bvp_scores: field (0 tasks corpus-wide vs 2519 carrying proposed scores). Sovereignty moves from ARITHMETIC to INTENT. Needs BOTH directions: without a push-down, an over-scoring estimator holds the arc open forever with --force the only escape. Rationale is what lets a blocked arc answer 'why is this blocking?'."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_15</bpmn:incoming>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="fwk_5_close_gates" name="G-062 close gates — headline mechanic fired? demo artefact captured?">
+      <bpmn:extensionElements>
+        <aef:uid value="al_close_gates"/>
+        <aef:position x="1660.0" y="110.0"/>
+        <aef:meta note="HV-completeness is a PROGRESS criterion, not a closure criterion — every HV task can complete and still be pure substrate. --demo takes a wire-level artefact traceable to the arc, or none with a justification logged to .context/audits/arc-bypass.jsonl."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_14</bpmn:incoming>
+      <bpmn:outgoing>flow_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fwk_6_gates_pass" name="close gates satisfied?">
+      <bpmn:extensionElements>
+        <aef:uid value="al_gw_gates"/>
+        <aef:position x="1850.0" y="125.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_17</bpmn:incoming>
+      <bpmn:outgoing>flow_18</bpmn:outgoing>
+      <bpmn:outgoing>flow_19</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="hum_4_close" name="close the arc — Watchtower /arcs/&lt;slug&gt;/close">
+      <bpmn:extensionElements>
+        <aef:uid value="al_close"/>
+        <aef:position x="1850.0" y="560.0"/>
+        <aef:meta note="T-1671: fw arc close refuses under $CLAUDECODE=1 — closure is the operator's, via the Watchtower form (T-2347: surface the URL, not the CLI)."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_18</bpmn:incoming>
+      <bpmn:outgoing>flow_20</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="hum_5_closed" name="arc closed — headline mechanic demonstrated">
+      <bpmn:extensionElements>
+        <aef:uid value="al_done_closed"/>
+        <aef:position x="2030.0" y="575.0"/>
+        <aef:meta terminalKind="success" state="closed"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_20</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="hum_1_open" targetRef="agt_1_propose">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e1"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_1_propose" targetRef="hum_2_approve">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e2"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="hum_2_approve" targetRef="fwk_1_recalc">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e3"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="fwk_1_recalc" targetRef="agt_2_pick">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e4"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" sourceRef="agt_2_pick" targetRef="agt_3_hv">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e5"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" name="yes — in scope" sourceRef="agt_3_hv" targetRef="agt_4_work">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e6"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" name="none left — candidate for exit" sourceRef="agt_3_hv" targetRef="fwk_2_exit_recalc">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e7"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" name="task completed — completion trigger" sourceRef="agt_4_work" targetRef="fwk_1_recalc">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e8"/>
+        <aef:anchors sourcePort="N" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" name="bug or task discovered mid-work" sourceRef="agt_4_work" targetRef="agt_5_file">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e9"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" name="appears in next recalc" sourceRef="agt_5_file" targetRef="fwk_1_recalc">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e10"/>
+        <aef:anchors sourcePort="W" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_11" sourceRef="fwk_2_exit_recalc" targetRef="fwk_3_resurfaced">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e11"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_12" name="yes — arc is not done" sourceRef="fwk_3_resurfaced" targetRef="fwk_4_report">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e12"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_13" name="RETURN TO ARC — work the re-surfaced task" sourceRef="fwk_4_report" targetRef="agt_2_pick">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e13"/>
+        <aef:anchors sourcePort="S" targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_14" name="no — genuinely dry" sourceRef="fwk_3_resurfaced" targetRef="fwk_5_close_gates">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e14"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_15" name="operator disputes the promotion" sourceRef="fwk_4_report" targetRef="hum_3_flag">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e15"/>
+        <aef:anchors sourcePort="S" targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_16" name="flag applied — re-place" sourceRef="hum_3_flag" targetRef="fwk_1_recalc">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e16"/>
+        <aef:anchors sourcePort="W" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_17" sourceRef="fwk_5_close_gates" targetRef="fwk_6_gates_pass">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e17"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_18" name="yes — headline mechanic demonstrated" sourceRef="fwk_6_gates_pass" targetRef="hum_4_close">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e18"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_19" name="no — substrate only, back to work" sourceRef="fwk_6_gates_pass" targetRef="agt_2_pick">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e19"/>
+        <aef:anchors sourcePort="S" targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_20" sourceRef="hum_4_close" targetRef="hum_5_closed">
+      <bpmn:extensionElements>
+        <aef:uid value="al_e20"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted; AEF generates it from node coordinates -->
+</bpmn:definitions>
