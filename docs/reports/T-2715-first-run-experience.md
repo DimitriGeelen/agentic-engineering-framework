@@ -118,12 +118,30 @@ be substantially a *discoverability* problem rather than a missing capability. N
 with the operator (what specifically is deficient — undiscoverable, not hard enough, or wrong
 granularity?).
 
-### F-9 — the existing-codebase path has no onboarding scenario at all
+### F-9 — RETRACTED 2026-08-01: the existing-codebase path DOES have a scenario
 
-`lib/seeds/tasks/greenfield/` holds 5 tasks (T-001..T-005). `lib/seeds/tasks/existing/` is
-**empty**. README offers two entry paths (A greenfield, B existing codebase); only A has a seeded
-scenario. Option B users get no onboarding at all — a gap directly under the "frictionless
-onboarding" goal.
+**Original claim (false):** *"`lib/seeds/tasks/greenfield/` holds 5 tasks. `lib/seeds/tasks/existing/`
+is empty. Option B users get no onboarding at all."*
+
+**What is actually there:** the directory is `lib/seeds/tasks/existing-project/` — not `existing/` —
+and it holds **6** tasks (orientation, first governed commit, register key components in fabric,
+complete a task lifecycle, generate first handover, record first project learning).
+`lib/init.sh:507` selects it by that name. The original check looked at a path that has never
+existed, found nothing, and reported a capability gap.
+
+**Same defect class as the inception's own thesis, fifth instance this session** — a check that
+reports confidently about the wrong object. The four prior instances (the `crontab -l` false
+drift finding, two wrong premises on IW-21, the lane-band checker that disagreed with
+`corpus lint` on 9 of 11 projects) were all caught before shipping. This one was written INTO the
+findings at confidence 3 and survived until IW-11's premise check. It is the strongest single piece
+of evidence in this artifact that the scenario needs to exist: the mechanism under investigation
+failed inside the investigation of it.
+
+**What survives of the finding:** the two seed sets are not equivalent in *content* — greenfield's
+T-002 is "define project goals" (`owner: human`), which existing-project has no analogue for,
+and existing-project adds fabric registration + a learning-capture task. Whether option B needs a
+separate *scenario* (as distinct from its already-existing seed tasks) is a real open question —
+that is what IW-17 now asks, on corrected ground.
 
 ### F-6 — coverage limit that no isolation choice fixes
 

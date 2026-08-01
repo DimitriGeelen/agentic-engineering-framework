@@ -186,7 +186,7 @@ Full context, findings and dialogue log: `docs/reports/T-2715-first-run-experien
 - **IW-13: Who is the student — the human or the agent?**
   confidence: 2
   disposition:
-  rationale: F-7 — T-001 is owner:agent with 4/4 Agent ACs and zero Human ACs; the AC carrying the education ("understand core principle, task system, enforcement tiers") is assigned to the agent, so the human currently learns nothing
+  rationale: F-7 — T-001 is owner:agent with 4/4 Agent ACs and zero Human ACs; the AC carrying the education ("understand core principle, task system, enforcement tiers") is assigned to the agent, so the human currently learns nothing. **Evidence widened 2026-08-01 (from the IW-17 retraction):** across BOTH seed sets, **10 of 11** onboarding tasks are `owner: agent` — greenfield is 4/5 (only T-002 "define project goals" is human), existing-project is **6/6**. So option B's onboarding has no human-owned task at all. The pattern is not one mis-assigned task; it is the default.
 
 - **IW-14: Prologue or interleaved curriculum?**
   confidence: 2
@@ -206,7 +206,7 @@ Full context, findings and dialogue log: `docs/reports/T-2715-first-run-experien
 - **IW-17: Does the existing-codebase path (README option B) get a scenario too?**
   confidence: 3
   disposition:
-  rationale: F-9 — lib/seeds/tasks/existing/ is empty while greenfield/ has 5 tasks; option B users get no onboarding at all
+  rationale: **F-9 RETRACTED 2026-08-01 — the original premise was false.** The directory is `lib/seeds/tasks/existing-project/` (not `existing/`) and holds **6** tasks; `lib/init.sh:507` selects it by that name. The check looked at a path that never existed and reported a capability gap. Fifth instance this session of the inception's own thesis — a check reporting confidently about the wrong object — and the only one that reached the findings at confidence 3. What survives: the two seed sets differ in CONTENT (greenfield has "define project goals" `owner: human`; existing-project has fabric registration + learning capture and no human-owned task at all), so the question is whether option B needs a distinct SCENARIO on top of seeds it already has.
 
 ## Exploration Plan
 
