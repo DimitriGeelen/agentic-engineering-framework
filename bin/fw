@@ -680,6 +680,13 @@ FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
 # --- Cross-platform helpers ---
 source "$FW_LIB_DIR/compat.sh" 2>/dev/null || true
 
+# --- Version ordering (T-2713) ---
+# Shared predicate for consumer-vs-framework version relation. Sourced here so
+# both doctor's consumer-fleet check and lib/upgrade.sh's two downgrade guards
+# resolve the SAME function — VERSION is a resetting tag counter, so `sort -V`
+# cannot order it and must not be re-derived per site.
+source "$FW_LIB_DIR/version-relation.sh" 2>/dev/null || true
+
 # --- Help ---
 
 show_help() {
@@ -2008,14 +2015,22 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
             # T-1828 scenario: framework VERSION can be rolled back (tag-counter reset),
             # producing consumer > framework. Suggesting `fw upgrade` in that direction
             # would silently downgrade the consumer's pinned version.
+            # T-2713: relation comes from git ancestry via the shared predicate,
+            # never from `sort -V` — VERSION is a counter that resets, so a
+            # bigger number does not mean newer code.
             local version_ok=true
             local version_relation="match"
             if [ -n "$cversion" ] && [ "$cversion" != "$FW_VERSION" ]; then
-                version_ok=false
-                if [ "$(printf '%s\n%s\n' "$cversion" "$FW_VERSION" | sort -V | tail -1)" = "$cversion" ]; then
-                    version_relation="ahead"
+                local csha
+                csha=$(grep "^version_sha:" "$fw_yaml" 2>/dev/null | sed 's/^version_sha:[[:space:]]*//' || true)
+                # Bare call, NOT $(...): the reason is returned via a global and
+                # a subshell would silently blank it (see lib/version-relation.sh).
+                fw_version_relation "$cversion" "$FW_VERSION" "$csha" "$FRAMEWORK_ROOT" >/dev/null
+                version_relation="$FW_VERSION_RELATION"
+                if [ "$version_relation" = "same" ]; then
+                    version_relation="match"
                 else
-                    version_relation="behind"
+                    version_ok=false
                 fi
             fi
             # Check hooks by type (reuse T-615 logic)
@@ -2057,22 +2072,33 @@ else:
                 echo -e "  ${GREEN}OK${NC}  $cname (v$cversion, $hook_counts hooks)"
             else
                 local reasons=""
-                if [ "$version_relation" = "behind" ]; then
-                    reasons="v$cversion → v$FW_VERSION"
-                elif [ "$version_relation" = "ahead" ]; then
-                    reasons="v$cversion is AHEAD of framework v$FW_VERSION"
-                fi
+                case "$version_relation" in
+                    behind)      reasons="v$cversion → v$FW_VERSION" ;;
+                    ahead)       reasons="v$cversion is AHEAD of framework v$FW_VERSION" ;;
+                    diverged)    reasons="v$cversion has DIVERGED from framework v$FW_VERSION" ;;
+                    undecidable) reasons="v$cversion vs v$FW_VERSION — relation undetermined" ;;
+                esac
                 if [[ "$hook_info" == missing* ]]; then
                     [ -n "$reasons" ] && reasons="$reasons, "
                     reasons="$reasons$hook_info"
                 fi
                 echo -e "  ${YELLOW}WARN${NC}  $cname ($reasons)"
-                if [ "$version_relation" = "ahead" ]; then
-                    echo -e "         DO NOT run \`fw upgrade $consumer_dir\` — would downgrade v$cversion → v$FW_VERSION."
-                    echo -e "         Framework VERSION likely rolled back (see T-1828). Wait for framework to catch up."
-                else
-                    echo -e "         Run: fw upgrade $consumer_dir"
-                fi
+                case "$version_relation" in
+                    ahead|diverged)
+                        echo -e "         DO NOT run \`fw upgrade $consumer_dir\` — ${FW_VERSION_RELATION_REASON}."
+                        echo -e "         Upgrading would move the consumer onto code it does not contain."
+                        ;;
+                    undecidable)
+                        # T-2713: this is where the old `sort -V` fabricated "ahead"
+                        # and froze consumers. State the ignorance, don't dress it up.
+                        echo -e "         Cannot order these: ${FW_VERSION_RELATION_REASON}."
+                        echo -e "         Upgrade is NOT blocked on this — it records version_sha, making the next check decidable."
+                        echo -e "         Run: fw upgrade $consumer_dir"
+                        ;;
+                    *)
+                        echo -e "         Run: fw upgrade $consumer_dir"
+                        ;;
+                esac
                 warnings=$((warnings + 1))
                 consumer_issues=$((consumer_issues + 1))
             fi

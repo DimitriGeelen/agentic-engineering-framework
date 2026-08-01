@@ -12,7 +12,7 @@ description: >
   the ordering). T-2290 already solved this shape once by replacing an mtime check
   with a content compare; same medicine applies.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: [T-1828, T-1838, T-2290]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T07:23:44Z
-last_update: '2026-08-01T07:30:09Z'
+last_update: 2026-08-01T07:58:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,17 +76,58 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Three sites decided "is this consumer ahead or behind?" by `sort -V` over the VERSION
+string:
+
+| Site | Guard | Origin |
+|------|-------|--------|
+| `bin/fw:2015` | doctor consumer-fleet badge | T-1838 |
+| `lib/upgrade.sh:849` | pre-step-1 runtime downgrade guard | T-1912 |
+| `lib/upgrade.sh:1742` | pin-rewrite downgrade guard | T-1839 |
+
+VERSION is a **tag counter that resets**. Tags run `v1.6.763, v1.6.762, v1.6.761,
+v1.6.10, v1.6.9`; VERSION went `1.6.354 → 1.6.121 → 1.6.176`. A resetting counter does
+not order, so all three "ahead" verdicts were guesses shaped like comparisons.
+
+The guards are not wrong — refusing to downgrade a consumer is right. They were handed an
+ordering that does not exist. Measured blast radius: **23 of 27 consumers** in this fleet
+carry a version with no corresponding tag, so every one of them was receiving a fabricated
+direction, and any that sorted high were frozen out of upgrades entirely.
+
+**Fix:** git ancestry, which cannot reset. `fw upgrade` now records `version_sha:` next to
+`version:`; the relation is computed by `git merge-base --is-ancestor`. Where no commit is
+resolvable the answer is `undecidable` — reported as such, never dressed up as `ahead`.
+Same medicine as T-2290 (replace an untrustworthy proxy with the real object).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A single shared predicate `fw_version_relation` exists in one place and returns exactly one of `same|behind|ahead|diverged|undecidable`; all three decision sites (`bin/fw:2015`, `lib/upgrade.sh:849`, `lib/upgrade.sh:1742`) call it instead of open-coding `sort -V`.
+- [x] The predicate never derives `ahead` or `behind` from version-string ordering. It uses git ancestry on the recorded SHA, falls back to ancestry on the version tag when that tag exists, and returns `undecidable` otherwise.
+- [x] `fw upgrade` records `version_sha:` (framework HEAD SHA) in the consumer's `.framework.yaml` next to `version:`, so the next comparison is decidable. Verified by running upgrade against a scratch consumer and grepping the field.
+- [x] `undecidable` never renders as `ahead`: with no `version_sha` and no matching tag, doctor's consumer line and both upgrade guards say the relation is undetermined and name the reason, rather than asserting a direction.
+- [x] Empirical non-monotonicity is pinned as a test fixture: a case asserting `1.6.264` vs `1.6.163` does NOT resolve to `ahead` on version strings alone (this is the live freeze at `/home/mehdi/2026-AEF-demo`).
+- [x] Regression suite `tests/unit/version_relation.bats` green, including a negative control that fails if the predicate silently falls back to `sort -V`.
+- [x] `bats tests/unit/upgrade_fresh_machine_simulation.bats` stays green (consumer-facing command hygiene, T-1633).
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+- [ ] [REVIEW] Confirm the default for the `undecidable` case.
+  **Steps:**
+  1. Read the `## Decisions` entry "undecidable → warn and proceed" in this task file.
+  2. Consider the two failure directions: refusing on a false `ahead` freezes a consumer indefinitely (observed: Mehdi's box, weeks stale, no governance/security fixes); proceeding could overwrite a consumer that genuinely does hold newer local runtime.
+  3. Decide whether `undecidable` should proceed with a loud WARN (implemented default) or keep refusing.
+  **Expected:** an explicit call on which direction the framework should fail toward for consumers whose pin predates SHA recording.
+  **If not:** flip `FW_UNDECIDABLE_VERSION_PROCEED` default in the predicate and re-run `tests/unit/version_relation.bats`.
+
+**Evidence (live, 2026-08-01):**
+- Predicate: `1.6.264` vs `1.6.163` → `undecidable` (was `ahead` → refuse). `9.9.9` at framework HEAD → `same` (was `ahead` → refuse). Ancestor SHA at version `1.0.0` → `behind`.
+- End-to-end `fw upgrade` (scoped `HOME`) wrote `version_sha: 54c702fcd42f…` = framework HEAD, alongside `version: 1.6.178`, `upgraded_from: 1.6.176`.
+- Doctor fleet after the change: **23 consumers report `relation undetermined`, 4 report `behind`, 0 report `ahead`.** Every one of the 23 previously received a fabricated direction.
+- Falsification: restoring the `sort -V` fallback turns tests 1 and 4 red.
+- **The counter moved mid-measurement** — two doctor runs minutes apart reported framework `v1.6.177` then `v1.6.178`. The quantity these guards were ordering on is not stable across the length of a single verification.
+
+<!-- Template Human-AC guidance retained below for reference.
+     Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
 
@@ -149,7 +190,41 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/version_relation.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
+diff lib/version-relation.sh .agentic-framework/lib/version-relation.sh
+diff lib/upgrade.sh .agentic-framework/lib/upgrade.sh
+
+bats tests/unit/version_relation.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
+out=$(bash -n bin/fw && bash -n lib/upgrade.sh && bash -n lib/version-relation.sh && echo SYNTAXOK); echo "$out" | grep -q SYNTAXOK
+
 ## RCA
+
+**Symptom:** consumers frozen out of `fw upgrade`. A project pinned `1.6.264` against a
+framework at `1.6.163` was told it was AHEAD and that upgrading would downgrade it, so it
+sat weeks without governance or security fixes. 23 of 27 consumers in this fleet were
+being given a direction that had no basis.
+
+**Root cause:** `sort -V` answers "which string sorts higher". Three call sites read that
+answer as "which code is newer". Those are the same question only if the version number is
+monotonic, and this one is not — it is a tag counter that resets, observed going
+`1.6.354 → 1.6.121 → 1.6.176`, and observed moving `1.6.177 → 1.6.178` *between two doctor
+runs during this task's own verification*.
+
+**Why structurally allowed:** the pin recorded no fact capable of deciding the question.
+`.framework.yaml` held `version:` and nothing else — no commit, no timestamp, no content
+hash. So there was never a correct implementation available at those three sites; the only
+data present was the counter, and the counter cannot answer. T-1828/T-1838/T-1839/T-1912
+each hardened the *consequence* (do not downgrade) across four tasks without anyone asking
+whether the input supported the inference. Four rounds of defending a conclusion drawn from
+an unusable premise.
+
+**Prevention:** three parts. (1) `version_sha:` is now written at upgrade time, so the
+question becomes answerable at all. (2) The predicate returns `undecidable` rather than
+guessing — the failure mode is now visible instead of confidently wrong. (3) `version_relation.bats`
+test 9 greps the call sites for `sort -V`, so re-introducing a local copy of the bad
+comparison fails the suite rather than silently re-splitting the logic (L-399).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -191,6 +266,34 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-08-01 — undecidable → warn and proceed (operator-reviewable)
+
+- **Chose:** when the relation cannot be computed, emit a loud WARN naming the reason and
+  continue. Knob: `FW_UNDECIDABLE_VERSION_PROCEED` (default `1`).
+- **Why:** the observed harm is the freeze. Refusing on `undecidable` reproduces exactly
+  the behaviour that stranded 23 consumers, just with better wording. And it is
+  self-healing: the upgrade that proceeds writes `version_sha`, so the case occurs at most
+  once per consumer.
+- **Rejected:** keep refusing — safest-sounding, but it makes the legacy-pin population
+  permanently unupgradeable, since nothing else ever writes the SHA.
+- **Flagged for human:** this flips a safety default and its blast radius is the whole
+  consumer fleet. Raised as the `[REVIEW]` Human AC rather than settled by me.
+
+### 2026-08-01 — record a SHA rather than fix the counter
+
+- **Chose:** leave VERSION alone; add `version_sha:` beside it.
+- **Why:** VERSION is used for display, release naming and consumer-visible identity.
+  Making it monotonic is a separate, larger change with its own blast radius. The
+  ordering question needs a commit, not a prettier number.
+- **Rejected:** content-hashing the vendored tree — tells you files *differ*, not which is
+  *newer*, so it cannot answer the ahead/behind question at all.
+
+### 2026-08-01 — writer lives beside reader
+
+- **Chose:** `fw_record_version_sha` sits in `lib/version-relation.sh`, not in `upgrade.sh`.
+- **Why:** the pin format is a producer/consumer contract and L-399 is the standing lesson
+  about shipping one half of one. Both halves are now in the same file and the same diff.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -199,6 +302,12 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-08-01 — undecidable → warn and proceed
+- **Chose:** `fw_version_relation_should_refuse` treats `undecidable` as non-refusing by default (`FW_UNDECIDABLE_VERSION_PROCEED=1`). `ahead` and `diverged` always refuse; `undecidable` proceeds with a loud WARN naming the reason, and `fw upgrade` writes `version_sha:` on that pass so the next comparison is decidable.
+- **Why:** the field failure this task fixes was the opposite direction — a false `ahead` verdict froze a consumer for weeks with no governance/security fixes (Mehdi's box). `undecidable` is the legacy-pin case (no `version_sha`, no matching tag): refusing there reproduces the same freeze for every pre-T-2713 consumer until they happen to run `fw upgrade` once. Proceeding is safe because the write-side guards (`ahead`/`diverged`) still refuse a genuine downgrade risk — `undecidable` only ever arises from missing provenance, not from evidence of a downgrade.
+- **Rejected:** refuse-by-default on `undecidable` — mirrors the exact bug being fixed (asserting caution over an unknown as if it were evidence) and would leave every legacy pin frozen until a human intervenes. Kept operator-reviewable via `FW_UNDECIDABLE_VERSION_PROCEED=0` for sites that prefer to fail closed.
+- **Human review:** see the `[REVIEW]` Human AC above — this default is confirmed by the human, not unilaterally by the agent.
 
 ## Decision
 
@@ -216,3 +325,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2713-consumer-staleness-decided-by-a-version-.md
 - **Context:** Initial task creation
+
+### 2026-08-01T07:58:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

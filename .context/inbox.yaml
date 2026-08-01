@@ -886,3 +886,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-111
+  text: "web/smoke_test.py iterates ~62 Flask routes with a 5s urlopen timeout each and no overall cap — worst case >5min, observed real hangs of 60-250s+ under bin/fw doctor's Watchtower smoke-test check. Not related to hook-path portability (T-2709); discovered while verifying that task. Needs an overall timeout/parallelism or a per-run budget."
+  captured: 2026-08-01T08:03:32Z
+  context_task: T-2709
+  tags: [bug]
+  status: pending
+  promoted_to: null
