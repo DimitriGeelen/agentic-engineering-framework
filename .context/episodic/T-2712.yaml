@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2712: init.sh seed guard checks only active/ and re-seeds over completed onboarding
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-01T08:50:40Z
+# ============================================================================
+
+task_id: T-2712
+task_name: "init.sh seed guard checks only active/ and re-seeds over completed onboarding"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-01T07:23:05Z
+completed: 2026-08-01T08:50:28Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-08-01T10:47:58+02:00
+last_commit: 2026-08-01T10:47:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  init seed guard scans completed/ too — stop re-seeding T-001..T-005 over used IDs
+
+# Key outcomes
+outcomes:
+  - '`has_existing_tasks` is true when `.tasks/completed/` holds `T-*.md` and `active/` is empty — the exact state of a project that finished onboarding.'
+  - 'Re-running `fw init` on a project whose onboarding tasks are all completed seeds **zero** new tasks and does not recreate `T-001`.'
+  - 'The existing behaviours are unchanged: a genuinely empty project still seeds, and a project with tasks in `active/` still skips.'
+  - 'Regression test `tests/unit/init_seed_guard.bats` green, including a negative control that fails if the guard reverts to checking `active/` only.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-01 — iterate the lifecycle directories, don''t add `completed/` as a second test'
+    chose: '`for _seed_dir_probe in active completed`.'
+    rationale: 'the question is "any task, anywhere". A second hardcoded branch would answer it'
+    alternatives_rejected: ['`[ -d active ] && ... || [ -d completed ] && ...` — same answer now, same']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.fabric/components/tests-unit-init_seed_guard.yaml'
+  - 'lib/init.sh'
+  - '.tasks/active/T-2712-initsh-seed-guard-checks-only-active-and.md'
+  - 'tests/unit/init_seed_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-01T10:47:58"
+    action: "T-2712: init seed guard scans completed/ too — stop re-seeding T-001..T-005 over used IDs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 87 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [onboarding, consumer, task-id]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 87
+  commits: 1
+  files_changed: 5
+  lines_added: 221
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2712-initsh-seed-guard-checks-only-active-and.md
+generated_by: context-agent-hybrid

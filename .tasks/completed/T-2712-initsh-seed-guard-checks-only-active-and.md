@@ -10,12 +10,12 @@ description: >
   the existence of the check-active-completed-dup hook shows the class is already
   known. Consumer-facing: fires hardest on new projects.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [onboarding, consumer, task-id]
-components: []
+components: [lib/init.sh, tests/unit/init_seed_guard.bats]
 related_tasks: [T-460, T-2709]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: [T-460, T-2709]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T07:23:05Z
-last_update: 2026-08-01T08:47:25Z
-date_finished:
+last_update: 2026-08-01T08:50:28Z
+date_finished: 2026-08-01T08:50:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -288,3 +288,20 @@ the suite instead of quietly re-arming the seeder.
 ### 2026-08-01T08:47:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c8c8c8f0
+- **Timestamp:** 2026-08-01T08:50:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/init_seed_guard.bats`
+
+### 2026-08-01T08:50:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

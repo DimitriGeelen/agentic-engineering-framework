@@ -24394,3 +24394,21 @@ scan_id: R-b5098072
 task_id: T-2711
 payload:
   task_file: .tasks/active/T-2711-fw-vendor-self---check-cannot-see-drift-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-01T08:50:30Z'
+scan_id: R-c8c8c8f0
+task_id: T-2712
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-01T08:50:30Z'
+scan_id: R-c8c8c8f0
+task_id: T-2712
+payload:
+  task_file: .tasks/active/T-2712-initsh-seed-guard-checks-only-active-and.md

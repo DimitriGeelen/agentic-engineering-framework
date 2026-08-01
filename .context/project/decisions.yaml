@@ -2550,3 +2550,10 @@ decisions:
     date: 2026-08-01
     task: T-2711
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-367
+    decision: "`for _seed_dir_probe in active completed`."
+    scope: project
+    date: 2026-08-01
+    task: T-2712
+    rationale: "Auto-captured from task file on completion"
