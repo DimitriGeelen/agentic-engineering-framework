@@ -192,6 +192,34 @@ users are in scope, that path stays unverified regardless of what we build here.
   Keep is decided. The data now serves a different and better purpose — locating *where* the
   scenario loses people, as input to the improvement.
 
+### D-5 (2026-08-01) — BVP-gated serial arc progression
+
+- **Chose (operator):** three arcs worked **serially**. Work arc A until all **HV/HC and HV/LC**
+  tasks are complete, then arc B on the same criterion, then arc C. Requires **arc-scoped value
+  drivers created upfront**. Purpose: incremental delivery with a learn-and-iterate boundary
+  between arcs.
+- **Why this is better than the four options offered:** all four tied arc closure to a property of
+  the *installer* (clean runs, findings dryness) or of the *instrument*. None used value. Gating on
+  "all high-value work done, regardless of cost" is falsifiable, already instrumented, and does not
+  couple arc A's closure to fix work it does not own (IW-9).
+- **Machinery verified live 2026-08-01:** `fw arc approve-driver|remove-driver|set-scoped-weight|
+  show-suggestions` (T-1926/T-1976/T-1977); global drivers D1 Antifragility 9, D2 Reliability 7,
+  D3 Usability 5, D4 Portability 3, plus free drivers incl. F-RECALL 6, F-AUTONOMY 4,
+  V_PROMPT_QUALITY 7, V_CONTEXT_FABRIC 7, V_COMPONENT_FABRIC 6.
+- **Cost this introduces (IW-20):** `fw bvp rank` reports **zero tasks corpus-wide carry confirmed
+  `bvp_scores:`**. Confirmation is a sovereignty boundary (`fw bvp confirm --i-am-human`, T-1924) —
+  so arc progression now depends on per-task human scoring. The estimator (T-1922) proposes
+  automatically, but fires at task *creation*, before the body is written: T-2715's proposal at
+  10:03 was all-2s with "no-signal" on every driver because the body was still template at that
+  moment. Confirming those would be rubber-stamping noise; proposals want re-running once bodies exist.
+- **Residual risks:** (a) HV-complete is a *progress* criterion — G-062 still demands the headline
+  mechanic fire with a demo artefact, and completing every HV task could be pure substrate (IW-18);
+  (b) under file-and-continue the HV set *grows*, so "all HV complete" can recede indefinitely
+  unless snapshotted (IW-19); (c) three arcs × up to 3 scoped drivers = up to 9 — R5 applies:
+  *manufacturing drivers to look thorough is worse than proposing zero and recommending `--none`*.
+- **Note:** the loader verbs `fw bvp driver suggest|create` are deferred (T-2245 IW-3); the
+  arc-scoped driver protocol is invoked manually from `policy/prompts/bvp-driver-session.md`.
+
 ## 4. Open questions
 
 Filed as IW-1..IW-12 in the task file (disposition gate T-2190/G-067 tracks them).

@@ -88,49 +88,64 @@ Full context, findings and dialogue log: `docs/reports/T-2715-first-run-experien
   rationale: D-1 — two tiers, Docker (fast loop) + VirtualBox (release gate); host verified 2026-08-01 (Docker 29.6.2, VBox 7.0.16 with vboxdrv loaded alongside kvm_amd, /dev/kvm present)
 
 - **IW-2: Which install path do we exercise — greenfield only, or also upgrade of a legacy vendored consumer?**
-  confidence: 1
-  disposition:
-  rationale: greenfield is cheap but is NOT the path that blocked Mehdi (frozen pre-T-2232 sentinel); agent leans both, operator call
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — BOTH, greenfield first (prove the harness on the cheap path, then add the legacy-consumer upgrade that actually blocked Mehdi); needs a fixture consumer frozen pre-T-2232
 
 - **IW-3: Does the worker self-heal, or halt on first error?**
-  confidence: 1
-  disposition:
-  rationale: prompt instructs repair, so a healing run measures agent resilience not installer correctness (F-3); agent leans both modes, halt-first
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — BOTH modes, HEAL-first (agent had leaned halt-first and was wrong: with rigorous repair capture, heal walks the whole chain and surfaces every defect in one run, while halt stops at the first; halt's virtue is unambiguous attribution, which matters when confirming fixes, not when finding bugs). Metric is repair count, not pass/fail (F-3)
 
 - **IW-4: What is the pass oracle, given doctor cannot judge itself?**
-  confidence: 2
-  disposition:
-  rationale: F-4 — doctor lied twice this week (OBS-110/T-2714, T-2713); agent proposes "first governed commit exists + gate demonstrably blocks an ungoverned edit"
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — BEHAVIOURAL verdict decides (first governed commit exists AND gate demonstrably refuses an ungoverned edit), doctor captured ADVISORY-only alongside. Stronger than the agent's proposal: doctor disagreeing with observed reality becomes a finding rather than a silent pass. Fails correctly in the T-2709 case (hooks resolving to nothing while doctor reported "25 hooks, all portable")
 
 - **IW-5: Is fix-the-installer and improve-the-prompt one arc or two?**
-  confidence: 1
-  disposition:
-  rationale: shell/deterministic/exit-codes vs English/non-deterministic/taste; agent leans one arc fenced paste → first governed commit
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — THREE arcs: (A) harness + installer correctness, (B) README prompt quality, (C) onboarding scenario redesign. Each needs its own G-062 headline mechanic and demo artefact; agent had leaned one/two, operator took the cleanest closure criteria over lowest ceremony
 
 - **IW-6: What is the run budget, serial or parallel?**
-  confidence: 0
-  disposition:
-  rationale: prompt behaviour is non-deterministic so single runs prove nothing; operator's call, drives whether Tier 1 alone suffices
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — 1 run per configuration first (4 runs: 2 paths × 2 modes), then scale on what the findings show. Rationale: the first round will hit reproduce-every-time defects, and statistical power buys nothing until we know whether failures are deterministic or variable
 
 - **IW-7: Who answers the prompt's `[ASK]` points in an unattended run?**
-  confidence: 1
-  disposition:
-  rationale: STEP 2 (piped installer) and STEP 3 (dir + provider) both block; auto-confirm stops testing the [ASK] design, blocking hangs the run
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — SCRIPTED RESPONDER with the answering policy as an explicit test variable (always-yes / wrong-directory-name / clarifying-question-back). Keeps runs unattended while making [ASK] behaviour measured rather than bypassed. Rejected auto-confirm specifically because STEP 2's [ASK] guards a piped installer and waving it through trains the harness to treat a safety gate as noise
 
 - **IW-8: Which ref does the worker install from — public GitHub mirror or local master?**
-  confidence: 2
-  disposition:
-  rationale: install.sh clones the public mirror (what users hit); mirror lag is a known condition (T-1594), so local master tests bytes no user can obtain
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — PUBLIC MIRROR always (user's actual reality, staleness included); local master available as a manual debug override for fix-confirmation but never a test configuration, keeping the matrix at 4. Each run MUST record the mirror-served SHA so propagation lag (T-1594) is distinguishable from regression
 
 - **IW-9: When a run surfaces a bug, does this arc fix it or file it?**
-  confidence: 2
-  disposition:
-  rationale: scope fence — fixing inline grows the arc without bound; agent leans file-and-continue with fixes as separate tasks
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-08-01 — FILE AND CONTINUE. Every finding becomes its own task with ACs, RCA and regression test, homed to whichever of the three arcs owns it. Keeps the harness arc fenced at "build the instrument, produce the diagnosis" so it can actually close. Evidence: today's four defects each got their own task/RCA, which is the only reason T-2711 was recognisable as a THIRD instance of its shape
 
 - **IW-10: What ends the arc — N consecutive clean runs, or a fixed run count?**
+  confidence: 2
+  disposition: answered
+  rationale: operator 2026-08-01 — NEITHER. Use the BVP mechanism: work arc A until all HV/HC and HV/LC tasks are complete, then move to arc B, then C. Requires arc-scoped value drivers created UPFRONT (operator acknowledged). Enables incremental delivery + learn/iterate between arcs. See D-5. Residual: this is a PROGRESS criterion — G-062 still requires the headline mechanic to fire with a demo artefact (IW-18), and the HV set grows under file-and-continue (IW-19)
+
+- **IW-18: Does HV-complete substitute for, or compose with, the G-062 headline-mechanic demo?**
+  confidence: 2
+  disposition:
+  rationale: completing every HV task could be entirely substrate; §ACD names substrate-vs-deliverable conflation as the failure. Agent position: they COMPOSE — HV-complete says when to close, the demo says what proves it
+
+- **IW-19: Under file-and-continue, is "all HV complete" measured against the task set at arc start, or as it evolves?**
   confidence: 1
   disposition:
-  rationale: loop-until-dry suits unknown-size discovery; fixed count risks stopping while the tail is still producing
+  rationale: arc A files new tasks as runs surface defects, so an evolving HV set makes closure recede — the same unfalsifiable criterion IW-9 was meant to prevent, relocated
+
+- **IW-20: Who scores, given zero tasks currently carry confirmed bvp_scores?**
+  confidence: 2
+  disposition:
+  rationale: `fw bvp rank` reports no confirmed scores corpus-wide; `fw bvp confirm` is a sovereignty boundary (T-1924, human-only), so arc progression now depends on per-task human confirmation. Estimator (T-1922) proposes automatically but fires at task CREATION before the body is written — T-2715 got all-2s "no-signal" at 10:03 while its body was still template
 
 - **IW-11: Which persona — agent-assisted only, or also a human typing README commands by hand?**
   confidence: 1
