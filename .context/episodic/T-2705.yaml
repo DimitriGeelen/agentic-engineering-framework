@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2705: Compaction UX: budget messages don't explain pre-compact hooks or post-compact
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-31T16:12:23Z
+# ============================================================================
+
+task_id: T-2705
+task_name: "Compaction UX: budget messages don't explain pre-compact hooks or post-compact"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T11:18:50Z
+completed: 2026-07-31T16:12:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-31T13:58:35+02:00
+last_commit: 2026-07-31T14:11:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  document compaction/recovery and point budget messages at it (WIP). OBS — AEF/832 gateway-condition dialect divergence measured (rail 356)
+
+# Key outcomes
+outcomes:
+  - 'The claim "`/resume` after compaction is essential" is TESTED against what'
+  - '`docs/context-compaction.md` exists and covers: D-027 (auto-compaction'
+  - 'Budget warn/urgent/critical messages point the operator at the article and say'
+  - 'Operator-facing and agent-facing strings are separated deliberately, with the'
+  - 'Rendered message output is captured from a REAL invocation of'
+  - 'No change to budget thresholds or allowlist logic (this task is what the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/checkpoint.sh'
+  - 'CLAUDE.md'
+  - '.context/audits/2026-07-31.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.session-metrics.yaml'
+  - 'docs/context-compaction.md'
+  - '.tasks/active/T-2705-compaction-ux-budget-messages-dont-expla.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T13:58:35"
+    action: "T-2705: document compaction/recovery and point budget messages at it (WIP)"
+  - time: "2026-07-31T14:11:51"
+    action: "T-2705: OBS — AEF/832 gateway-condition dialect divergence measured (rail 356)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 293 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 293
+  commits: 2
+  files_changed: 14
+  lines_added: 263
+  lines_removed: 58
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2705-compaction-ux-budget-messages-dont-expla.md
+generated_by: context-agent-hybrid

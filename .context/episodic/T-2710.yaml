@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2710: Naive settings.json regenerate drops 6 non-template hooks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-01T07:56:07Z
+# ============================================================================
+
+task_id: T-2710
+task_name: "Naive settings.json regenerate drops 6 non-template hooks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-01T07:21:48Z
+completed: 2026-08-01T07:55:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-01T09:52:03+02:00
+last_commit: 2026-08-01T09:52:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  settings.json regenerate merges instead of overwriting — 6 hook-enable gates no longer silently dropped. register settings_merge + regression suite in component fabric. refresh vendored copies — settings_merge.py + init.sh merge logic
+
+# Key outcomes
+outcomes:
+  - 'Forced regenerate preserves non-template hooks: given a settings.json containing all 6 hooks above, `force=true generate_claude_code_config` emits a file that still contains all 6, at their original events.'
+  - 'Forced regenerate still refreshes template-defined hooks: given a settings.json whose `check-active-task` command is a stale hardcoded absolute path, regenerate rewrites it to the `${CLAUDE_PROJECT_DIR}` form (T-2709''s fix must keep propagating).'
+  - 'Carry-forward is reported, not silent: regenerate prints one line per preserved non-template hook (name + event) to stdout.'
+  - 'Regenerating this repo is hook-count-preserving: 25 hooks before, 25 after, 0 containing a hardcoded `/opt/` path (`lib/hook_portability.py` reports `25|0|0`).'
+  - 'Regression test `tests/unit/settings_regenerate_preserves_hooks.bats` pins all three behaviours above and is green, including a negative control that fails if the merge is removed.'
+  - '`bin/fw doctor` reports no new hook or enforcement-baseline FAIL after regenerate.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-01 — merge, not "add the 6 to the template"'
+    chose: 'make regenerate a merge (snapshot → template → fold non-template hooks back).'
+    rationale: 'the on-disk file, not the heredoc, is the real source of truth once `fw hook-enable`'
+    alternatives_rejected: ['adding the 6 hooks to the template — closes this instance, leaves the class open.']
+    alternatives_rejected: ['preferring the on-disk copy wholesale — would have frozen every consumer at its']
+  - decision: '2026-08-01 — carry non-`hooks` top-level keys too'
+    chose: 'preserve top-level keys the template does not emit (`permissions`, `env`, …).'
+    rationale: 'identical defect — the template was being treated as a complete description of the'
+  - decision: '2026-08-01 — foreign hooks still dropped'
+    chose: 'carry forward only commands matching `fw hook <name>`.'
+    rationale: 'T-677 deliberately replaces third-party hooks from other tooling ("not compatible,'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/settings_merge.py'
+  - '.context/inbox.yaml'
+  - '.fabric/components/lib-settings_merge.yaml'
+  - '.fabric/components/tests-unit-settings_regenerate_preserves_hooks.yaml'
+  - 'lib/init.sh'
+  - 'lib/settings_merge.py'
+  - '.tasks/active/T-2710-naive-settingsjson-regenerate-drops-6-no.md'
+  - 'tests/unit/settings_regenerate_preserves_hooks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-01T09:52:03"
+    action: "T-2710: settings.json regenerate merges instead of overwriting — 6 hook-enable gates no longer silently dropped"
+  - time: "2026-08-01T09:52:21"
+    action: "T-2710: register settings_merge + regression suite in component fabric"
+  - time: "2026-08-01T09:52:57"
+    action: "T-2710: refresh vendored copies — settings_merge.py + init.sh merge logic"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [hooks, upgrade, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 34
+  commits: 3
+  files_changed: 9
+  lines_added: 658
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2710-naive-settingsjson-regenerate-drops-6-no.md
+generated_by: context-agent-hybrid

@@ -2,7 +2,15 @@
 id: T-2713
 name: "Consumer staleness decided by a VERSION counter that does not order"
 description: >
-  VERSION is a tag counter that resets: this repo went 1.6.354 (2026-07-07) then 1.6.121 (2026-07-30), a 233-point regression. bin/fw:2001 compares consumer vs framework with sort -V and classifies ahead/behind. A consumer pinned 1.6.264 therefore reads as 'ahead' of a framework at 1.6.163 and the upgrade path is deliberately withheld (bin/fw:1994-1996, correctly, to avoid downgrading the pin) — so the consumer is frozen on old code while wearing a high number. Live instance: /home/mehdi/2026-AEF-demo. T-1828 defended the symptom (do not downgrade) rather than the cause (stop trusting the ordering). T-2290 already solved this shape once by replacing an mtime check with a content compare; same medicine applies.
+  VERSION is a tag counter that resets: this repo went 1.6.354 (2026-07-07) then 1.6.121
+  (2026-07-30), a 233-point regression. bin/fw:2001 compares consumer vs framework
+  with sort -V and classifies ahead/behind. A consumer pinned 1.6.264 therefore reads
+  as 'ahead' of a framework at 1.6.163 and the upgrade path is deliberately withheld
+  (bin/fw:1994-1996, correctly, to avoid downgrading the pin) — so the consumer is
+  frozen on old code while wearing a high number. Live instance: /home/mehdi/2026-AEF-demo.
+  T-1828 defended the symptom (do not downgrade) rather than the cause (stop trusting
+  the ordering). T-2290 already solved this shape once by replacing an mtime check
+  with a content compare; same medicine applies.
 
 status: captured
 workflow_type: build
@@ -22,8 +30,8 @@ related_tasks: [T-1828, T-1838, T-2290]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T07:23:44Z
-last_update: 2026-08-01T07:23:44Z
-date_finished: null
+last_update: '2026-08-01T07:30:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +42,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-01T07:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-01T07:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2713: Consumer staleness decided by a VERSION counter that does not order

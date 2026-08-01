@@ -5461,3 +5461,60 @@ FW_SWITCH_'
   target: 'T-319'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 timeout 200 bin/fw note "Dialect divergence with 832 on exclusiveGateway branch conditions: AEF corpus carries 0 conditionExpression across 381 sequenceFlows '
+- timestamp: '2026-07-31T12:16:21Z'
+  task: 'T-2703'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-31T12:16:28Z'
+  task: 'T-2704'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-07-31T12:44:45Z'
+  task: 'T-2708'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: Change is confined to _commit_decision''s internal git subprocess logic (scratch-index commit build) — no template, HTML, CSS, or JS output touched; nothing rendered to the operator changed'
+  reason: ''
+- timestamp: '2026-07-31T12:45:17Z'
+  task: 'T-2709'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2708'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2708: mark work-completed — decision commit guard fixed"'
+- timestamp: '2026-07-31T16:12:12Z'
+  task: 'T-2709'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2705'
+  command: 'bin/fw task update T-2705 --status work-completed --switch-focus 2>&1 | tail -60'
+- timestamp: '2026-07-31T16:12:55Z'
+  task: 'T-2709'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2705'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2705: point budget-gate/checkpoint messages at compaction article; capture live output
+
+Completes the WIP fro'
+- timestamp: '2026-07-31T16:13:17Z'
+  task: 'T-2709'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2705'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2705: point budget-gate/checkpoint messages at compaction article
+
+budget-gate.shs warn/urgent/critical mess'
+- timestamp: '2026-07-31T16:13:37Z'
+  task: 'T-2709'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2705'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/completed/T-2705-compaction-ux-budget-messages-dont-expla.md
+git diff --cached --stat
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2705: ma'

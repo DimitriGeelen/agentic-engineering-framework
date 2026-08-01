@@ -24234,3 +24234,109 @@ scan_id: R-da67543e
 task_id: T-2707
 payload:
   task_file: .tasks/active/T-2707-t-2702-backticks-in-inline-python-disarm.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T12:16:22Z'
+scan_id: R-31782ef8
+task_id: T-2703
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T12:16:22Z'
+scan_id: R-31782ef8
+task_id: T-2703
+payload:
+  task_file: .tasks/active/T-2703-greenfield-seeding-emits-tasks-that-fail.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-31T12:16:22Z'
+scan_id: RC-944117ac
+task_id: T-2703
+payload:
+  overall: CONFIRMED
+  claim_count: 8
+---
+kind: scan_emitted
+timestamp: '2026-07-31T12:16:29Z'
+scan_id: R-8e6f2f9a
+task_id: T-2704
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T12:16:29Z'
+scan_id: R-8e6f2f9a
+task_id: T-2704
+payload:
+  task_file: .tasks/active/T-2704-cross-host-hook-path-portability-claudes.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-07-31T12:16:29Z'
+scan_id: RC-986b491c
+task_id: T-2704
+payload:
+  overall: CONFIRMED
+  claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-07-31T12:44:46Z'
+scan_id: R-60eb5b12
+task_id: T-2708
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T12:44:46Z'
+scan_id: R-60eb5b12
+task_id: T-2708
+payload:
+  task_file: .tasks/active/T-2708-watchtower-decision-commit-guard-self-bl.md
+---
+kind: scan_emitted
+timestamp: '2026-07-31T16:12:14Z'
+scan_id: R-7ed95896
+task_id: T-2705
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-31T16:12:14Z'
+scan_id: R-7ed95896
+task_id: T-2705
+payload:
+  task_file: .tasks/active/T-2705-compaction-ux-budget-messages-dont-expla.md
+---
+kind: scan_emitted
+timestamp: '2026-08-01T07:55:57Z'
+scan_id: R-d5c55c11
+task_id: T-2710
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-01T07:55:57Z'
+scan_id: R-d5c55c11
+task_id: T-2710
+payload:
+  task_file: .tasks/active/T-2710-naive-settingsjson-regenerate-drops-6-no.md
