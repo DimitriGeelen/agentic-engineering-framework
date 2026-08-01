@@ -1,0 +1,122 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2709: Hook path portability: emit CLAUDE_PROJECT_DIR placeholder from both generators
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-01T08:08:52Z
+# ============================================================================
+
+task_id: T-2709
+task_name: "Hook path portability: emit CLAUDE_PROJECT_DIR placeholder from both generators"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-31T12:34:57Z
+completed: 2026-08-01T08:06:24Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-07-31T14:36:51+02:00
+last_commit: 2026-08-01T10:06:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  build task off T-2704 GO — four slices specified with ACs. A1-A4 hook path portability — generators emit ${CLAUDE_PROJECT_DIR}, doctor/upgrade learn to see it (T-2704 GO). sync vendored bin/hook-enable.sh — fw vendor self misses it, audit catches it. file the four defects surfaced during hook-path portability work. fix Verification gate to bin/fw doctor --quick, avoids unrelated smoke_test.py hang
+
+# Key outcomes
+outcomes:
+  - '`lib/init.sh:617-620` (`generate_claude_code_config`) and'
+  - 'Framework-vs-consumer detection logic is UNCHANGED — it still inspects the real'
+  - '`lib/init.sh`''s heredoc quoting (SJSON) verified not to re-expand the'
+  - '`bash -n` on every edited shell file (L-408: never edit `bin/fw` heredoc /'
+  - 'ONE shared predicate ("hook command contains a literal absolute filesystem path'
+  - '`fw doctor` no longer prints "all portable" when it is not — `bin/fw:1177-1178`'
+  - '`fw upgrade` regenerate/stale computation FIRES on a consumer still carrying the'
+  - '`docs/claude-code-settings.md:108` corrected: describes the actual mechanism'
+  - '`lib/paths.sh:82-89` and `lib/hook_paths.py:3-13` comments rewritten — their'
+  - 'T-2465/T-2468 tests re-run under the placeholder form; reanchoring'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix Verification gate to bin/fw doctor --quick, avoids unrelated smoke_test.py hang'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-31 — where the shared A2 predicate lives'
+    chose: 'a new python module `lib/hook_portability.py`, shelled out to from both'
+    rationale: 'both call sites are bash wrapping inline python heredocs, and both already'
+    alternatives_rejected: ['a bash function in `lib/` (the call sites parse JSON, so it would be a']
+  - decision: '2026-07-31 — what the rewritten `hook_absolute_paths.bats` asserts'
+    chose: 'placeholder-OR-literal-absolute, never bare-relative — so the live (still'
+    rationale: 'the original assertion (`startswith(''/'')`) measured a *proxy* — "is it'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/hook-enable.sh'
+  - '.agentic-framework/lib/doctor-hook-exercise.py'
+  - '.agentic-framework/lib/hook_paths.py'
+  - '.agentic-framework/lib/hook_portability.py'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - 'bin/fw'
+  - 'bin/hook-enable.sh'
+  - '.claude/settings.json'
+  - '.context/project/enforcement-baseline.sha256'
+  - 'docs/claude-code-settings.md'
+  - 'lib/doctor-hook-exercise.py'
+  - 'lib/hook_paths.py'
+  - 'lib/hook_portability.py'
+  - 'lib/init.sh'
+  - 'lib/paths.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2709-hook-path-portability-emit-claudeproject.md'
+  - '.tasks/active/T-2710-naive-settingsjson-regenerate-drops-6-no.md'
+  - '.tasks/active/T-2711-fw-vendor-self---check-cannot-see-drift-.md'
+  - '.tasks/active/T-2712-initsh-seed-guard-checks-only-active-and.md'
+  - '.tasks/active/T-2713-consumer-staleness-decided-by-a-version-.md'
+  - 'tests/lint/hook-paths-portable.bats'
+  - 'tests/unit/hook_absolute_paths.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-31T14:36:51"
+    action: "T-2709: build task off T-2704 GO — four slices specified with ACs"
+  - time: "2026-07-31T18:48:45"
+    action: "T-2709: A1-A4 hook path portability — generators emit ${CLAUDE_PROJECT_DIR}, doctor/upgrade learn to see it (T-2704 GO)"
+  - time: "2026-07-31T18:55:30"
+    action: "T-2709: sync vendored bin/hook-enable.sh — fw vendor self misses it, audit catches it"
+  - time: "2026-08-01T09:25:33"
+    action: "T-2709: file the four defects surfaced during hook-path portability work"
+  - time: "2026-08-01T10:06:17"
+    action: "T-2709: fix Verification gate to bin/fw doctor --quick, avoids unrelated smoke_test.py hang"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 1171 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1171
+  commits: 5
+  files_changed: 29
+  lines_added: 2249
+  lines_removed: 184
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2709-hook-path-portability-emit-claudeproject.md
+generated_by: context-agent-hybrid
