@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2714: doctor hook counters state their denominator (OBS-110)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-01T09:38:12Z
+# ============================================================================
+
+task_id: T-2714
+task_name: "doctor hook counters state their denominator (OBS-110)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-01T09:09:02Z
+completed: 2026-08-01T09:28:19Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-01T11:25:42+02:00
+last_commit: 2026-08-01T11:25:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor hook counters state their denominator (OBS-110)
+
+# Key outcomes
+outcomes:
+  - '`Hook configuration valid` reports the hook-command count (25), matching `Hook path validation`, and states the matcher/event breakdown so the three numbers are reconcilable rather than contradictory'
+  - '`Hook exercise from /tmp` names the event scope it probes, so its lower number reads as deliberate coverage rather than 4 missing hooks'
+  - 'A bats suite pins each counter to what it counts, with a negative control that goes red if the entry-vs-command conflation is reintroduced'
+  - 'Ground truth is asserted from a fixture whose entry count and command count differ (a 1-entry/3-command matcher), so a fix that merely renames the label without changing the arithmetic fails'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-doctor_hook_counters.yaml'
+  - '.tasks/active/T-2714-doctor-hook-counters-state-their-denomin.md'
+  - 'tests/unit/doctor_hook_counters.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-01T11:25:42"
+    action: "T-2714: doctor hook counters state their denominator (OBS-110)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 6
+  lines_added: 495
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2714-doctor-hook-counters-state-their-denomin.md
+generated_by: context-agent-hybrid

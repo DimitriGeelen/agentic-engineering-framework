@@ -24412,3 +24412,39 @@ scan_id: R-c8c8c8f0
 task_id: T-2712
 payload:
   task_file: .tasks/active/T-2712-initsh-seed-guard-checks-only-active-and.md
+---
+kind: scan_emitted
+timestamp: '2026-08-01T09:25:19Z'
+scan_id: R-bee665f6
+task_id: T-2714
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-01T09:25:19Z'
+scan_id: R-bee665f6
+task_id: T-2714
+payload:
+  task_file: .tasks/active/T-2714-doctor-hook-counters-state-their-denomin.md
+---
+kind: scan_emitted
+timestamp: '2026-08-01T09:38:03Z'
+scan_id: R-25346e76
+task_id: T-2714
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-01T09:38:03Z'
+scan_id: R-25346e76
+task_id: T-2714
+payload:
+  task_file: .tasks/active/T-2714-doctor-hook-counters-state-their-denomin.md
