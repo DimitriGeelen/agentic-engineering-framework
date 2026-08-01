@@ -845,19 +845,25 @@ do_upgrade() {
        && [ "$project_version" != "$fw_version" ] \
        && [ "$fw_version" != "unknown" ] \
        && [ "$force_downgrade" != true ]; then
-        local _precheck_direction
-        if [ "$(printf '%s\n%s\n' "$project_version" "$fw_version" | sort -V | tail -1)" = "$project_version" ]; then
-            _precheck_direction="ahead"
-        else
-            _precheck_direction="behind"
-        fi
-        if [ "$_precheck_direction" = "ahead" ]; then
-            echo -e "${RED}REFUSED${NC}  Consumer v$project_version is AHEAD of framework v$fw_version." >&2
+        # T-2713: relation via git ancestry, not `sort -V`. The guard below is
+        # unchanged in intent; it is simply no longer fed a fabricated direction.
+        local _precheck_direction _precheck_sha
+        _precheck_sha=$(grep "^version_sha:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/^version_sha:[[:space:]]*//' || true)
+        # Bare call, not $(...) — the reason travels via a global (see lib/version-relation.sh).
+        fw_version_relation "$project_version" "$fw_version" "$_precheck_sha" "$FRAMEWORK_ROOT" >/dev/null
+        _precheck_direction="$FW_VERSION_RELATION"
+        if fw_version_relation_should_refuse "$_precheck_direction"; then
+            echo -e "${RED}REFUSED${NC}  Consumer v$project_version vs framework v$fw_version: ${_precheck_direction}." >&2
+            echo -e "          ${FW_VERSION_RELATION_REASON}." >&2
             echo -e "          Running fw upgrade here would downgrade the runtime (.agentic-framework/)" >&2
             echo -e "          AND the pinned version, creating a split-brain state (T-1912 class)." >&2
-            echo -e "          Framework VERSION likely rolled back (see T-1828)." >&2
             echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}." >&2
             return 1
+        fi
+        if [ "$_precheck_direction" = "undecidable" ]; then
+            echo -e "${YELLOW}WARN${NC}    Version relation undetermined: ${FW_VERSION_RELATION_REASON}." >&2
+            echo -e "          Proceeding (T-2713 default). This upgrade records version_sha, so the" >&2
+            echo -e "          next comparison will be decidable. Set FW_UNDECIDABLE_VERSION_PROCEED=0 to refuse instead." >&2
         fi
     fi
 
@@ -1722,6 +1728,11 @@ MCPJSON
     # ── 9. Version tracking (.framework.yaml) ──
     echo -e "${YELLOW}[9/10] Version tracking${NC}"
 
+    # T-2713: `version:` is a tag counter that resets (1.6.354 → 1.6.121 →
+    # 1.6.176), so it can never answer "is this consumer behind?". The commit
+    # SHA can, via git ancestry. Writer lives in lib/version-relation.sh next to
+    # the reader that consumes it.
+
     local fw_version="${FW_VERSION:-unknown}"
     local yaml_file="$target_dir/.framework.yaml"
 
@@ -1731,6 +1742,11 @@ MCPJSON
 
         if [ "$current_pinned" = "$fw_version" ]; then
             echo -e "  ${GREEN}OK${NC}  Version $fw_version already recorded"
+            # T-2713: backfill the SHA even when the counter already matches —
+            # otherwise a same-version consumer stays permanently undecidable.
+            if [ "$dry_run" != true ]; then
+                fw_record_version_sha "$yaml_file" "$FRAMEWORK_ROOT"
+            fi
         else
             # T-1839: silent-downgrade guard. If consumer's pinned version is
             # AHEAD of the framework's version, refuse to rewrite — that would
@@ -1738,16 +1754,15 @@ MCPJSON
             # leaves consumers in this state, and pre-T-1838 doctor advice
             # could send operators here unwittingly.
             if [ -n "$current_pinned" ] && [ "$current_pinned" != "$fw_version" ]; then
-                local _direction
-                if [ "$(printf '%s\n%s\n' "$current_pinned" "$fw_version" | sort -V | tail -1)" = "$current_pinned" ]; then
-                    _direction="ahead"
-                else
-                    _direction="behind"
-                fi
-                if [ "$_direction" = "ahead" ] && [ "$force_downgrade" != true ]; then
-                    echo -e "  ${RED}REFUSED${NC}  Consumer v$current_pinned is AHEAD of framework v$fw_version."
+                # T-2713: ancestry, not string order (see lib/version-relation.sh).
+                local _direction _pinned_sha
+                _pinned_sha=$(grep "^version_sha:" "$yaml_file" 2>/dev/null | sed 's/^version_sha:[[:space:]]*//' || true)
+                fw_version_relation "$current_pinned" "$fw_version" "$_pinned_sha" "$FRAMEWORK_ROOT" >/dev/null
+                _direction="$FW_VERSION_RELATION"
+                if fw_version_relation_should_refuse "$_direction" && [ "$force_downgrade" != true ]; then
+                    echo -e "  ${RED}REFUSED${NC}  Consumer v$current_pinned vs framework v$fw_version: ${_direction}."
+                    echo -e "          ${FW_VERSION_RELATION_REASON}."
                     echo -e "          Running fw upgrade here would downgrade the pinned version."
-                    echo -e "          Framework VERSION likely rolled back (see T-1828)."
                     echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}."
                     return 1
                 fi
@@ -1769,6 +1784,10 @@ MCPJSON
                 else
                     echo "version: $fw_version" >> "$yaml_file"
                 fi
+                # T-2713: record the framework commit alongside the counter.
+                # VERSION resets, so it can never answer "does the framework
+                # contain this consumer's code?". A SHA can, via git ancestry.
+                fw_record_version_sha "$yaml_file" "$FRAMEWORK_ROOT"
                 # Record last_upgrade timestamp
                 local upgrade_ts
                 upgrade_ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
