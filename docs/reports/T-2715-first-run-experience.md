@@ -110,13 +110,59 @@ This is the likeliest explanation for the skip verb existing: if the human is ta
 skipping costs the human nothing. The scenario is not failing to teach well — it is not aimed at
 the human at all. Same audience-axis error CLAUDE.md already codifies for AC routing (T-2143).
 
-### F-8 — the bypass exists but is undiscoverable
+### F-8 — RETRACTED 2026-08-02: the bypass is discoverable, at point of need
 
-`fw onboarding skip` is implemented (`bin/fw:6284`, writes `.onboarding-complete` with a reason)
-but appears **nowhere** in `README.md`, `lib/init.sh`, or `docs/*.md`. So "add a hard bypass" may
-be substantially a *discoverability* problem rather than a missing capability. Needs confirming
-with the operator (what specifically is deficient — undiscoverable, not hard enough, or wrong
-granularity?).
+**Original claim (false on the axis that matters):** *"`fw onboarding skip` is implemented
+(`bin/fw:6284`) but appears nowhere in `README.md`, `lib/init.sh`, or `docs/*.md` — so 'add a hard
+bypass' may be substantially a discoverability problem."*
+
+**What is actually there.** The original check measured documents. It never measured the surface a
+*blocked reader* is looking at:
+
+| Surface | Names `fw onboarding skip`? |
+|---|---|
+| **The T-532 block message** (`agents/context/check-active-task.sh:475-476`) | **Yes, verbatim** |
+| `fw help` (line 58) | **Yes** — `onboarding <cmd>  Onboarding gate (status\|skip\|reset)` |
+| `README.md` (4 onboarding mentions) | No |
+| `FRAMEWORK.md`, `lib/init.sh` closing output, Watchtower | No |
+
+The gate prints, at the moment it blocks:
+
+```
+To skip onboarding (not recommended):
+  fw onboarding skip
+```
+
+Point-of-need, exact copy-pasteable command, with a stance on whether to use it. That is the best
+discoverability shape in the framework. The finding measured README and concluded "gap" while the
+gate was already doing it correctly — nobody reads README while blocked.
+
+**Eighth instance this session of the inception's own thesis** — a check reporting confidently about
+the wrong object. Prior seven: the `crontab -l` false drift finding, two wrong premises on IW-21,
+the lane-band checker disagreeing with `corpus lint` on 9/11 projects, the `awk` cross-file range
+leak in the Human-AC count, OBS-118's authority-enum message, and F-9.
+
+**What survives, and it is a different and smaller thing.** Every surface that names `skip` is
+*agent-facing* (hook stderr, `fw help`). Every *human-facing* surface is silent. `lib/init.sh:542`
+closes the install with:
+
+> `Onboarding tasks are ready — N tasks will guide you through setup.`
+
+That sentence is not false; it is **incomplete in its consequential half**. Those tasks do not only
+guide — they block every other edit until completed or skipped. The install output describes a
+tutorial; the mechanism is a gate. A human whose agent then stalls on unrelated work has no model
+for why. Third appearance of the T-2143 audience axis this session.
+
+**Bounded honestly:** this is *inferred* need, not recorded failure. The origin case never reached
+the T-532 gate — Mehdi's failure was at install time, and the gate fires on Write/Edit *after*
+`init.sh` has seeded tasks. So no evidence exists that any human has hit this. It is argued from the
+sentence being wrong, not from an incident, and should be weighted at that level.
+
+**Disposition:** not a discoverability defect; no bypass work needed. One filed residual — *install
+output under-describes the onboarding gate* — carried into the onboarding-scenario arc as a
+candidate first instance of the D-8 teach-note shape (`<what happened> · <one-line why> · <what to
+do>`). The escape verb deliberately stays where it is: naming `skip` in the install banner would
+advertise the bypass before the human has any reason to want it.
 
 ### F-9 — RETRACTED 2026-08-01: the existing-codebase path DOES have a scenario
 
@@ -158,7 +204,7 @@ eight live findings, **it classifies zero of them cleanly**:
 | F-5 goals 2 and 3 may be the same object | none | A **scope question**, not a defect |
 | F-6 macOS bash 3.2 untestable on Linux | "environment"? | Not a failure caused by environment — a **coverage limit**, we cannot test it at all |
 | F-7 10 of 11 seeded onboarding tasks are `owner: agent` | none | **Product design defect** |
-| F-8 `fw onboarding skip` exists at bin/fw:6284, absent from README/docs | none | **Discoverability** — a fifth category the taxonomy lacked |
+| F-8 `fw onboarding skip` exists at bin/fw:6284, absent from README/docs | none | ~~Discoverability~~ — **RETRACTED 2026-08-02**, the block message names it verbatim. The finding itself was an instance of the dominant cluster below |
 
 **What the findings actually cluster into, and the dominant cluster is the surprise:**
 
