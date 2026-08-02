@@ -2557,3 +2557,10 @@ decisions:
     date: 2026-08-01
     task: T-2712
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-368
+    decision: "**Invert the default, and enumerate visibly.** Greenfield becomes the narrow case that"
+    scope: project
+    date: 2026-08-02
+    task: T-2718
+    rationale: "Auto-captured from task file on completion"

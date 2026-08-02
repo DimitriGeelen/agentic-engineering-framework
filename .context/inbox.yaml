@@ -984,3 +984,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-125
+  text: "Installed git hooks are 5 minor versions behind source: agents/git/lib/hooks.sh is VERSION=1.10 but .git/hooks/pre-push is VERSION=1.5. Found incidentally while sweeping task verification blocks for 832 rail-384's stale-pointer class. Generated-to-deployed drift (T-1771 family) for git hooks specifically — fw git install-hooks has not been re-run since the source moved. Unknown whether any 1.6-1.10 behaviour is load-bearing."
+  captured: 2026-08-02T08:02:13Z
+  context_task: T-2719
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-126
+  text: "832 rail-384 class confirmed on our side, population 3 (theirs was 1). Partial-complete tasks whose Verification blocks assert on a CURRENT pointer where they meant a DELIVERED artifact, so they can never pass again: T-2240 pins '# VERSION=1.5' in agents/git/lib/hooks.sh (now 1.10); T-2063 and T-2064 pin http://192.168.10.107:3000 (watchtower is on 3001, and the literal :3000 hard-code is the T-1376 anti-pattern). All three are status work-completed sitting in .tasks/active/ awaiting a human, so fw task verify returns red forever and a permanently-red gate is indistinguishable from 'the human has not got to it yet'. Counter-example proving the distinction: T-2632 pins vendor/designer/aef-workflow-designer-0.7.0.html by name+sha256 — a delivered artifact, still verifies. Above 832's population-of-one threshold, so a sweep instrument is worth building: run every partial-complete task's Verification block and report the ones that cannot pass today."
+  captured: 2026-08-02T08:02:17Z
+  context_task: T-2719
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-127
+  text: "832 rail-384 class swept: our population of the 'never passes again' shape is ZERO, not 3 as I first reported (OBS-126 retracted; OBS-125 retracted as a grep -m1 measurement error). But the sweep did find a real and DIFFERENT defect in T-2063/T-2064, and it is the inverse failure: their verification lines PASS and should not. Each is 'curl -s -o /dev/null -w \"%{http_code}\" http://192.168.10.107:3000/...'. Two independent faults compose: (1) the literal :3000 is the T-1376 anti-pattern — this project's watchtower is on 3001, so the request goes to whatever else is listening on 3000, which right now is a different project's server answering HTTP 405; (2) the assertion has no teeth at all, because -w only PRINTS the status code and curl exits 0 on any successful connection, so 405/404/500 all read as PASS. A check that is green about the wrong server AND green regardless of the answer. Correct form: URL from $(bin/fw watchtower url), and assert the code with --fail or an explicit test on the captured value."
+  captured: 2026-08-02T08:04:43Z
+  context_task: T-2719
+  tags: []
+  status: pending
+  promoted_to: null

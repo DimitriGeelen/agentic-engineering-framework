@@ -24448,3 +24448,165 @@ scan_id: R-25346e76
 task_id: T-2714
 payload:
   task_file: .tasks/active/T-2714-doctor-hook-counters-state-their-denomin.md
+---
+kind: scan_emitted
+timestamp: '2026-08-01T23:02:03Z'
+scan_id: R-4e2347ac
+task_id: T-2717
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-01T23:02:03Z'
+scan_id: R-4e2347ac
+task_id: T-2717
+payload:
+  task_file: .tasks/active/T-2717-obs-118-split-known-no-owner-authority-f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T06:02:20Z'
+scan_id: R-b4f63904
+task_id: T-2718
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T06:02:20Z'
+scan_id: R-b4f63904
+task_id: T-2718
+payload:
+  task_file: .tasks/active/T-2718-keystone-fw-init-enumerates-what-is-ther.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T06:16:46Z'
+scan_id: R-9096227a
+task_id: T-2723
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T06:16:46Z'
+scan_id: R-9096227a
+task_id: T-2723
+payload:
+  task_file: .tasks/active/T-2723-wire-the-fresh-project-seed-harness-so-f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T06:28:32Z'
+scan_id: R-3d2efe30
+task_id: T-2724
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T06:28:32Z'
+scan_id: R-3d2efe30
+task_id: T-2724
+payload:
+  task_file: .tasks/active/T-2724-fw-init-reports-19-broken-hooks-on-a-cor.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T06:42:55Z'
+scan_id: R-ddba7ffc
+task_id: T-2725
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T06:42:55Z'
+scan_id: R-ddba7ffc
+task_id: T-2725
+payload:
+  task_file: .tasks/active/T-2725-audit-validate-init-hook-path-check-acro.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T07:15:14Z'
+scan_id: R-50017b2c
+task_id: T-2722
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T07:15:14Z'
+scan_id: R-50017b2c
+task_id: T-2722
+payload:
+  task_file: .tasks/active/T-2722-fw-init-infers-project-shape-by-enumerat.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T07:44:31Z'
+scan_id: R-86e5c39c
+task_id: T-2726
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T07:44:31Z'
+scan_id: R-86e5c39c
+task_id: T-2726
+payload:
+  task_file: .tasks/active/T-2726-fw-init-reports-success-for-checks-it-ne.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T07:57:52Z'
+scan_id: R-b6751d34
+task_id: T-2727
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T07:57:52Z'
+scan_id: R-b6751d34
+task_id: T-2727
+payload:
+  task_file: .tasks/active/T-2727-fw-init-validates-before-it-creates--the.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T08:03:48Z'
+scan_id: R-28fb5d31
+task_id: T-2240
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T08:03:48Z'
+scan_id: R-28fb5d31
+task_id: T-2240
+payload:
+  task_file: .tasks/active/T-2240-wire-fw-vendor-self---dry-run-into-pre-p.md

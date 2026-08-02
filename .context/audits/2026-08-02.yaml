@@ -1,9 +1,9 @@
-# Audit Results - 2026-08-01-2318
-timestamp: 2026-08-01T21:18:49Z
+# Audit Results - 2026-08-02-0958
+timestamp: 2026-08-02T07:58:11Z
 sections: "structure"
 summary:
   pass: 28
-  warn: 6
+  warn: 5
   fail: 0
 findings:
   - level: PASS
@@ -19,9 +19,9 @@ findings:
   - level: PASS
     check: "No duplicate task IDs across active/ and completed/"
   - level: PASS
-    check: "All 25 project YAML files parse correctly"
+    check: "All 29 project YAML files parse correctly"
   - level: PASS
-    check: "All 13 arc anchor_task references resolve to existing tasks"
+    check: "All 17 arc anchor_task references resolve to existing tasks"
   - level: WARN
     check: "Arc 'arc-grooming' has no task commits in the last 30 days (39 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
@@ -47,13 +47,10 @@ findings:
     check: "No stale-slice-references (L-417)"
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
   - level: PASS
-    check: "Fabric: 932 registered, 0 unregistered"
+    check: "Fabric: 934 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 22/845 cards have no edges"
+    check: "Fabric: 24/847 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 1 source file(s) have no fabric card"

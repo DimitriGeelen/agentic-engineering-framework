@@ -5518,3 +5518,14 @@ git add .tasks/completed/T-2705-compaction-ux-budget-messages-dont-expla.md
 git diff --cached --stat
 FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
 T-2705: ma'
+- timestamp: '2026-08-01T21:47:19Z'
+  task: 'T-2715'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2716'
+  command: 'bin/fw context add-learning "Teeth prove a guard is IMPLEMENTED, never that it is CORRECT. A teeth test (mutate, assert the mutation landed, confirm red) proves the guard fires; it says nothing about '
+- timestamp: '2026-08-02T00:13:53Z'
+  task: 'T-2715'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'

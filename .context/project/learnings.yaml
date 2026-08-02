@@ -4050,3 +4050,10 @@ X'` returning empty group."
   date: 2026-08-01
   context: Added via context agent
   application: TBD
+- id: L-532
+  learning: "When sweeping for checks that report about the wrong object, RUN the checks — do not grep them. A grep-based sweep is itself a measurement scoped by whatever line it happens to hit, so it reproduces the defect class it is hunting. Concrete: grep -m1 '^# VERSION=' on agents/git/lib/hooks.sh returns 1.10, but that file embeds four hook scripts each with its own version line (1.10, 1.2, 1.6, 1.5); reading the first match as 'the file's version' produced a false drift report and a false 'this task can never pass' claim, both published to a peer project before any check was executed. Running the eight checks took one command and showed all eight passing. Rule: when a cheap direct oracle exists (execute the assertion), a static proxy is not a shortcut, it is a second instrument that needs its own control."
+  source: P-001
+  task: T-2719
+  date: 2026-08-02
+  context: Added via context agent
+  application: TBD
