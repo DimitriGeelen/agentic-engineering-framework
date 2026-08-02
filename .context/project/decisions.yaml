@@ -2564,3 +2564,10 @@ decisions:
     date: 2026-08-02
     task: T-2718
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-369
+    decision: "`background: var(--wt-accent); color: var(--wt-accent-ink);`"
+    scope: project
+    date: 2026-08-02
+    task: T-2741
+    rationale: "Auto-captured from task file on completion"
