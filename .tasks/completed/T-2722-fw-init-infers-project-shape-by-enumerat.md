@@ -10,12 +10,12 @@ description: >
   whose absence-of-match is currently read as positive evidence of emptiness. Explicitly
   NOT a longer allowlist (see T-2718 Decisions: same property, later failure date).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:onboarding-shape-detection]
-components: []
+components: [lib/init.sh, tests/unit/init_project_shape_detection.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T05:55:30Z
-last_update: 2026-08-02T07:04:30Z
-date_finished:
+last_update: 2026-08-02T07:14:21Z
+date_finished: 2026-08-02T07:14:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -216,6 +216,18 @@ grep -q "preexisting_entries" .agentic-framework/lib/init.sh
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-08-02 — the census had to move before init writes anything
+
+- **What changed:** the first implementation took the directory census at seed time and
+  regressed the truly-empty case, because `fw init` creates `policy/` before that point.
+  Excluding framework artefacts by name would have been the same allowlist mistake one
+  level down — silently breaking the next time init learns to create a directory.
+- **Plan impact:** census moved to function entry, so the question became "what did the
+  USER have before we touched anything", which needs no framework-artefact list at all.
+- **Triggered:** no new task. Worth noting the enumerate-visibly half of the mechanic is
+  what diagnosed it — `found 1 existing item(s): policy` named the culprit directly. The
+  observability feature paid for itself before it shipped.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -249,3 +261,15 @@ grep -q "preexisting_entries" .agentic-framework/lib/init.sh
 
 ### 2026-08-02T07:04:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-50017b2c
+- **Timestamp:** 2026-08-02T07:15:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-02T07:14:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

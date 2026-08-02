@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2722: fw init infers project shape by enumeration, not manifest allowlist (F-10 implementation)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T07:15:24Z
+# ============================================================================
+
+task_id: T-2722
+task_name: "fw init infers project shape by enumeration, not manifest allowlist (F-10 implementation)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T05:55:30Z
+completed: 2026-08-02T07:14:21Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-02T09:10:42+02:00
+last_commit: 2026-08-02T09:10:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init infers project shape by enumeration — F-10 closed, 12/12 green
+
+# Key outcomes
+outcomes:
+  - '`lib/init.sh` no longer decides project shape from a manifest allowlist. Greenfield is'
+  - '`fw init` enumerates what it actually found and states the shape it inferred from it, so'
+  - '`tests/unit/init_project_shape_detection.bats` goes from 6 red / 6 green to **12 green**'
+  - 'The three negative controls still pass, i.e. the suite did not go green by making the'
+  - '`tests/unit/greenfield_seed_audit_prototype.bats` (T-2703) re-run: **still RED**'
+  - 'Vendored copy refreshed (`fw vendor self`) so consumers get the fix, per the pre-push'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - 'lib/init.sh'
+  - '.tasks/active/T-2722-fw-init-infers-project-shape-by-enumerat.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-02T09:10:42"
+    action: "T-2722: fw init infers project shape by enumeration — F-10 closed, 12/12 green"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 78 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:onboarding-shape-detection]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 78
+  commits: 1
+  files_changed: 3
+  lines_added: 142
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2722-fw-init-infers-project-shape-by-enumerat.md
+generated_by: context-agent-hybrid
