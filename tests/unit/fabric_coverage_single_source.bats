@@ -124,6 +124,22 @@ _fixture() {
     [ "$from_root" = "$from_elsewhere" ]
 }
 
+_require_audit_ran() {
+    # audit.sh takes a lock; under a concurrent cron run it prints
+    # "Another audit is already running — exiting" and nothing else. Every
+    # `! grep` assertion below would then pass on output that contains no
+    # fabric section at all — a vacuous green of exactly the kind this suite
+    # exists to catch. Assert the section is present before asserting about it.
+    if echo "$1" | grep -q "Another audit is already running"; then
+        skip "audit lock held by a concurrent run"
+    fi
+    echo "$1" | grep -q "Fabric" || {
+        echo "audit produced no Fabric section:" >&2
+        echo "$1" >&2
+        false
+    }
+}
+
 @test "T-2735: the live audit reports exactly one coverage number" {
     # Differential over the real audit output. Two lines answering the same
     # question is the state that hid this; assert only one of them makes a
@@ -132,6 +148,7 @@ _fixture() {
     # `|| true` — audit exits 1 on WARN by design, and bats runs under set -e,
     # so the substitution would abort the test before any assertion ran.
     out="$(cd "$FRAMEWORK_ROOT" && bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    _require_audit_ran "$out"
     # The registered-count line must no longer carry an unregistered claim.
     echo "$out" | grep -q "Fabric: [0-9]* registered card(s)"
     ! echo "$out" | grep -qE "registered, [0-9]+ unregistered"
@@ -175,6 +192,9 @@ PY
     # `|| true` — audit exits 1 on WARN by design, and bats runs under set -e,
     # so the substitution would abort the test before any assertion ran.
     out="$(cd "$FRAMEWORK_ROOT" && bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    # Without this the `else drift=0` arm below would silently absorb a locked
+    # audit and compare 0 against the real expander answer.
+    _require_audit_ran "$out"
     if echo "$out" | grep -q "Fabric drift: [0-9]* source file"; then
         drift="$(echo "$out" | grep -oE "Fabric drift: [0-9]+ source" | grep -oE "[0-9]+")"
     else
@@ -216,7 +236,9 @@ _audit_project() {
     local out
     out="$(cd "$FRAMEWORK_ROOT" && PROJECT_ROOT="$TEST_TEMP_DIR/ap" \
         bash agents/audit/audit.sh --sections structure 2>&1 || true)"
-    echo "$out" | grep -q "PASS. Fabric drift: All watched source files registered"
+    # T-2737 changed this wording: the old line printed the CARD count, which
+    # read as "N files were checked". It now names the measured set size.
+    echo "$out" | grep -q "PASS. Fabric drift: all 1 watched file(s) registered"
 }
 
 @test "T-2735 severity: injecting one uncarded file flips PASS to WARN" {
@@ -227,6 +249,7 @@ _audit_project() {
     local out
     out="$(cd "$FRAMEWORK_ROOT" && PROJECT_ROOT="$TEST_TEMP_DIR/ap" \
         bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    _require_audit_ran "$out"
     echo "$out" | grep -q "WARN. Fabric drift: 1 source file"
 }
 
@@ -241,6 +264,7 @@ _audit_project() {
     local out
     out="$(cd "$FRAMEWORK_ROOT" && PROJECT_ROOT="$TEST_TEMP_DIR/ap" \
         bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    _require_audit_ran "$out"
     echo "$out" | grep -q "FAIL. Fabric drift: coverage expander failed"
     # red-for-the-stated-reason: it must not merely be non-PASS
     echo "$out" | grep -q "UNMEASURED"

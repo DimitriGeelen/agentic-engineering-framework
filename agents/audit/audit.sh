@@ -1506,11 +1506,26 @@ if proc.returncode != 0:
 watched = [line for line in proc.stdout.split("\n") if line.strip()]
 unregistered = [rel for rel in watched if rel not in registered]
 
-print(f"{len(unregistered)} {len(registered)}")
+# T-2737: the registry's own contents are evidence about the watch file.
+# A card exists because someone decided that file is a significant component.
+# If no pattern covers it, the coverage denominator is demonstrably incomplete
+# and every drift number is measuring a subset without saying so.
+#
+# Derived, not judged: this makes no claim about which files *should* be
+# watched. It reports that the project has already answered that question for
+# N files in a way the watch file cannot see.
+watched_set = set(watched)
+carded_unwatched = [loc for loc in registered
+                    if loc not in watched_set
+                    and os.path.isfile(os.path.join(PROJECT_ROOT, loc))]
+
+print(f"{len(unregistered)} {len(registered)} {len(watched)} {len(carded_unwatched)}")
 DRIFTEOF
     )
     drift_unreg=$(echo "$drift_result" | awk '{print $1}')
     drift_total=$(echo "$drift_result" | awk '{print $2}')
+    drift_watched=$(echo "$drift_result" | awk '{print $3}')
+    drift_carded_unwatched=$(echo "$drift_result" | awk '{print $4}')
     # T-2735: a non-numeric result means the expander failed. Without this arm
     # the `-gt 0` test below fails on the non-numeric value and falls through to
     # pass() — an instrument that cannot run would report as an instrument that
@@ -1524,7 +1539,28 @@ DRIFTEOF
              "$drift_unreg unregistered files matching watch-patterns.yaml" \
              "Run: fw fabric scan"
     else
-        pass "Fabric drift: All watched source files registered ($drift_total cards)"
+        # T-2737: state the size of the set that was actually measured. The old
+        # wording was "All watched source files registered ($drift_total cards)"
+        # where drift_total is the CARD count — so it read as "N files were
+        # checked" while N was the registry size. 832 hit exactly this: their
+        # "(15 cards)" sat on a watch file that expanded to zero files.
+        pass "Fabric drift: all $drift_watched watched file(s) registered"
+    fi
+
+    # T-2737: the watch file is the denominator of every coverage check above,
+    # and nothing verified it matches the project it was stamped into by
+    # `fw context init`. Two derived signals, both WARN-only.
+    if [[ "$drift_watched" =~ ^[0-9]+$ ]] && [ "$drift_watched" -eq 0 ] \
+       && [[ "$drift_total" =~ ^[0-9]+$ ]] && [ "$drift_total" -gt 0 ]; then
+        # Degenerate case: coverage reads as complete because nothing was
+        # checked. This is the shape that reported 13% as 100%.
+        warn "Fabric: watch-patterns.yaml matches 0 files while $drift_total card(s) exist" \
+             "Coverage checks are comparing an empty set — every fabric verdict above is vacuous" \
+             "Tailor .fabric/watch-patterns.yaml to this project's source layout"
+    elif [[ "$drift_carded_unwatched" =~ ^[0-9]+$ ]] && [ "$drift_carded_unwatched" -gt 0 ]; then
+        warn "Fabric: $drift_carded_unwatched card(s) point at files no watch pattern covers" \
+             "The registry already treats these as components; drift checks cannot see them, so coverage is measured over a subset" \
+             "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
     fi
 fi
 
