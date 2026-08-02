@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2718: Keystone: fw init enumerates what is there and decides project shape (F-10)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T06:02:32Z
+# ============================================================================
+
+task_id: T-2718
+task_name: "Keystone: fw init enumerates what is there and decides project shape (F-10)"
+workflow_type: design
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T00:33:29Z
+completed: 2026-08-02T06:02:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-02T02:38:05+02:00
+last_commit: 2026-08-02T08:00:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  four arcs created from the T-2715 GO — arc-015..018 with keystones. F-10 re-reproduced, design decision recorded, arc-015 drivers proposed. frontmatter description carried the corrected-away '6 of 7' figure. arc-015 build tasks created (T-2722, T-2723); three defects found in the operator's own approval flow
+
+# Key outcomes
+outcomes:
+  - 'F-10 reproduced against real `bin/fw init` with a fixture table recording which ecosystems'
+  - 'Design decision recorded in `## Decisions`: invert the default (greenfield positively'
+  - 'Build task(s) created under arc-015 for the implementation and for wiring the T-2703 harness'
+  - 'Scoped drivers proposed on the arc YAML (D-5: after this body is filled, before any approval)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-02 — how `fw init` decides project shape'
+    chose: '**Invert the default, and enumerate visibly.** Greenfield becomes the narrow case that'
+    rationale: 'the failure is not that the allowlist is too short — it is that **the allowlist is the'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/ladder-trigger-producer.yaml'
+  - '.context/arcs/onboarding-curriculum.yaml'
+  - '.context/arcs/onboarding-shape-detection.yaml'
+  - '.context/arcs/readme-first-run.yaml'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2718-keystone-fw-init-enumerates-what-is-ther.md'
+  - '.tasks/active/T-2719-keystone-readme-five-minute-path-tested-.md'
+  - '.tasks/active/T-2720-keystone-onboarding-set-contains-nothing.md'
+  - '.tasks/active/T-2721-keystone-escalation-ladder-trigger-deriv.md'
+  - '.tasks/active/T-2722-fw-init-infers-project-shape-by-enumerat.md'
+  - '.tasks/active/T-2723-wire-the-fresh-project-seed-harness-so-f.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-02T02:38:05"
+    action: "T-2718: four arcs created from the T-2715 GO — arc-015..018 with keystones"
+  - time: "2026-08-02T02:41:34"
+    action: "T-2718: F-10 re-reproduced, design decision recorded, arc-015 drivers proposed"
+  - time: "2026-08-02T02:48:06"
+    action: "T-2718: frontmatter description carried the corrected-away '6 of 7' figure"
+  - time: "2026-08-02T08:00:39"
+    action: "T-2718: arc-015 build tasks created (T-2722, T-2723); three defects found in the operator's own approval flow"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 328 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:onboarding-shape-detection]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 328
+  commits: 4
+  files_changed: 11
+  lines_added: 1554
+  lines_removed: 61
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2718-keystone-fw-init-enumerates-what-is-ther.md
+generated_by: context-agent-hybrid

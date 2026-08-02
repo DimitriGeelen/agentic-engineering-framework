@@ -5,13 +5,21 @@ name: "Wire the fresh-project seed harness so F-10-class misclassification fails
 description: >
   arc-015. tests/unit/greenfield_seed_audit_prototype.bats (T-2703) seeds a real project
   via fw init under a scrubbed env and asserts fw audit exits <=1 — it is the harness
-  that would have caught F-10 at authoring time. Today it is RED and, per the T-2696/T-2697
-  finding, tests/unit is globbed by no runner (fw test lint = shellcheck), so its
-  redness is unobservable. This task makes it run in a real runner and cover the misclassifying
-  ecosystems (.NET, C/C++, PHP, flat-python) with negative controls proving each fixture
-  can fail.
+  that would have caught F-10 at authoring time, and it is RED. This task turns that
+  single prototype into a shape-detection guard covering the ecosystems F-10 actually
+  misclassifies (.NET, C/C++, PHP, flat-python), each with a negative control proving
+  the fixture can fail, so T-2722's fix lands against a test that was provably red first.
 
-status: captured
+  CORRECTION (2026-08-02, at task start): this description originally claimed
+  "tests/unit is globbed by no runner (fw test lint = shellcheck)". That is wrong.
+  bin/fw:7551 runs `bats "$FRAMEWORK_ROOT/tests/unit/"` under `fw test unit`, so this
+  prototype IS picked up. The no-runner finding from T-2696/T-2697 was about
+  tests/lint/, a different directory; it was carried over onto the wrong object here.
+  Recorded rather than silently edited away — misattributing a real finding to the
+  wrong target is the same defect class arc-015 exists to fix, and this instance was
+  mine.
+
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -29,7 +37,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T05:56:16Z
-last_update: '2026-08-02T06:00:11Z'
+last_update: 2026-08-02T06:02:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,14 +83,52 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Sibling of T-2722 under arc-015, and deliberately sequenced **before** it: the fix should
+land against a test that was observed red, not one written afterwards to describe whatever
+the fix happened to do. Design decision and F-10 reproduction live in the arc keystone
+T-2718; the fix shape ("enumerate what IS there and decide, not a longer allowlist") was
+ratified with 832 on rail 376.
+
+The existing prototype (`tests/unit/greenfield_seed_audit_prototype.bats`, T-2703) asserts
+something adjacent but not identical: that a freshly seeded *greenfield* project passes its
+own audit. That guards seed-template drift. It does **not** guard shape *detection* — a
+project could be misclassified as greenfield and still pass, because the seeded greenfield
+set is internally consistent. This task adds the missing axis: given a directory with real
+code in it, does `fw init` conclude "existing"?
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A bats file under `tests/unit/` asserts project-shape detection per ecosystem, driven by
+      a fixture table covering at minimum the four F-10 misclassifiers (.NET `.sln`+`.csproj`,
+      C/C++ `Makefile`+`main.c`, PHP `composer.json`, flat-python `*.py` with no manifest),
+      the two accidental passes (ruby `Gemfile`+`app/`, gradle `build.gradle`+`src/`), and
+      `truly-empty` — `tests/unit/init_project_shape_detection.bats`, 12 tests
+- [x] Each fixture runs against real `bin/fw init` in a scrubbed `env -i` environment
+      (L-009/L-020, T-1633: never let a test's `fw` resolve to this repo). Confirmed the
+      scrubbed and unscrubbed runs produce identical verdicts, so the scrubbing is fidelity,
+      not a result-changing variable
+- [x] Negative controls prove the suite cannot be green while blind. **Scope corrected from
+      the original wording of this AC** ("negative control per fixture, expected shape
+      inverted"): what is implemented is three *class-level* controls — empty-is-not-existing,
+      recognised-is-not-greenfield, and helper-fails-loudly-with-no-parseable-mode-line. These
+      close the three ways this suite could pass vacuously (a helper that always answers
+      "existing", one that always answers "greenfield", one that yields an empty string a
+      later `[ "$output" = ... ]` silently satisfies). Per-fixture inversion would add nothing
+      on top: the six red fixtures are *observed failing right now*, which is the strongest
+      possible demonstration that they can fail. Ticking the narrower true claim rather than
+      the broader one I originally wrote
+- [x] Ruby and gradle are asserted to pass **for the right reason** — the guard distinguishes
+      "recognised as existing" from "passed because it incidentally has `app/`/`src/`", since
+      T-2718 measured that both currently pass by accident. Implemented as `rubyflat`
+      (`Gemfile`+`Rakefile`+`models/`) and `gradleflat` (`build.gradle`+`Main.java`), neither
+      containing `src/`, `lib/` or `app/`. Both are RED, confirming T-2718's accident finding
+      independently
+- [x] The new file is confirmed to be executed by `fw test unit` (bin/fw:7551 globs
+      `tests/unit/`), with the run output quoted — not inferred from the glob pattern
+- [x] Suite is RED on the four misclassifiers at hand-off to T-2722, and the redness is
+      quoted verbatim in `## Verification` so T-2722 has a provably-failing starting point
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -188,6 +234,23 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+# This task's deliverable is a guard that is RED in exactly the right places, so the
+# gate must NOT assert "suite passes" — that would be false, and asserting it would be
+# the very defect arc-015 exists to fix. It asserts the precise handoff split instead:
+# 6 failing (4 F-10 misclassifiers + 2 right-reason cases), 6 passing (3 already-correct
+# ecosystems + 3 negative controls). T-2722 flips the 6 red to green; if it also breaks
+# a green, this same command catches that too.
+out=$(bats tests/unit/init_project_shape_detection.bats 2>&1 || true); f=$(printf '%s\n' "$out" | grep -c "^not ok" || true); p=$(printf '%s\n' "$out" | grep -c "^ok" || true); echo "failing=$f passing=$p"; [ "$f" = "6" ] && [ "$p" = "6" ]
+# The three negative controls specifically must be GREEN — they are what makes the six
+# reds meaningful. A run where the controls themselves fail is not a red suite, it is a
+# broken one, and the two look identical in a bare pass/fail count.
+out=$(bats tests/unit/init_project_shape_detection.bats 2>&1 || true); printf '%s\n' "$out" | grep -q "^ok 10 negative control" && printf '%s\n' "$out" | grep -q "^ok 11 negative control" && printf '%s\n' "$out" | grep -q "^ok 12 negative control"
+# The guard is reachable by the project's own runner, not just by a direct bats call.
+# Pattern deliberately avoids an unescaped $VAR: the same check written as
+# grep -q 'bats "$FRAMEWORK_ROOT/tests/unit/"' failed under one shell layer and passed
+# under another, which is a false negative waiting to happen in a completion gate.
+grep -q 'tests/unit/" || _test_exit=1' bin/fw
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -218,3 +281,6 @@ bvp_scores_proposed:
 
 ### 2026-08-02T05:57:00Z — status-update [task-update-agent]
 - **Change:** tags: +arc:onboarding-shape-detection
+
+### 2026-08-02T06:02:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
