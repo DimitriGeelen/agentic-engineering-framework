@@ -367,9 +367,18 @@ HEREDOC
                 # Format: "2026-02-17 14:00:00 +0100 T-116: message"
                 local ts=$(echo "$line" | awk '{print $1"T"$2}')
                 local msg=$(echo "$line" | cut -d' ' -f4-)
-                local escaped_msg=$(echo "$msg" | sed 's/"/\\"/g')
-                echo "  - time: \"$ts\"" >> "$episodic_file"
-                echo "    action: \"$escaped_msg\"" >> "$episodic_file"
+                # T-2729: single-quoted YAML — the only escape is ' -> ''. A
+                # DOUBLE-quoted scalar processes backslash escapes, so a commit
+                # subject containing `\x` is an invalid escape (hard parser error)
+                # and one containing `\n` silently becomes a newline instead of the
+                # two literal characters. Escaping only `"` (the previous code) does
+                # not address either. This was the FIFTH emission site in this
+                # writer: T-1871/T-1873 converted decisions, outcomes, challenges
+                # and artifacts for exactly this reason (L-392) and the sibling
+                # sweep stopped one block short of the git timeline.
+                local escaped_msg=$(echo "$msg" | sed "s/'/''/g")
+                echo "  - time: '$ts'" >> "$episodic_file"
+                echo "    action: '$escaped_msg'" >> "$episodic_file"
             fi
         done
     else

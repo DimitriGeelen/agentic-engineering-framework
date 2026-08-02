@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2728: reviewer detector: HTTP verification assertions that cannot fail, and literal
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T08:58:00Z
+# ============================================================================
+
+task_id: T-2728
+task_name: "reviewer detector: HTTP verification assertions that cannot fail, and literal"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T08:24:57Z
+completed: 2026-08-02T08:50:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T10:29:14+02:00
+last_commit: 2026-08-02T10:31:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer detector for HTTP assertions that cannot fail. correct ACs to match what shipped + OBS-128 (reviewer crashes on \x in task text, pre-existing). self-vendor parity for static_scan.py
+
+# Key outcomes
+outcomes:
+  - '`detect_toothless_http` flags a `curl` line that discards output and carries no'
+  - '~~It flags a literal `host:port` URL~~ — **built, measured, then REMOVED.**'
+  - 'The shipped pattern id is registered in `policy/anti-patterns.yaml` with'
+  - 'Negative controls prove it discriminates rather than firing on any `curl`:'
+  - 'The detector is run against the two real historical offenders (T-2063/T-2064'
+  - 'Running the reviewer over the repo''s own task corpus does not produce a flood'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.agentic-framework/policy/anti-patterns.yaml'
+  - '.context/audits/2026-08-02.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - 'lib/reviewer/static_scan.py'
+  - 'policy/anti-patterns.yaml'
+  - '.tasks/active/T-2240-wire-fw-vendor-self---dry-run-into-pre-p.md'
+  - '.tasks/active/T-2719-keystone-readme-five-minute-path-tested-.md'
+  - '.tasks/active/T-2728-reviewer-detector-http-verification-asse.md'
+  - 'tests/unit/reviewer_toothless_http.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-02T10:29:14'
+    action: 'T-2728: reviewer detector for HTTP assertions that cannot fail'
+  - time: '2026-08-02T10:30:35'
+    action: 'T-2728: correct ACs to match what shipped + OBS-128 (reviewer crashes on \x in task text, pre-existing)'
+  - time: '2026-08-02T10:31:16'
+    action: 'T-2728: self-vendor parity for static_scan.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25
+  commits: 3
+  files_changed: 21
+  lines_added: 716
+  lines_removed: 99
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2728-reviewer-detector-http-verification-asse.md
+generated_by: context-agent-hybrid

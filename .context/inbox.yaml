@@ -1012,3 +1012,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-129
+  text: "episodic generator: T-100202.yaml is unparseable because $task_name captured MULTIPLE lines (grep '^name:' matched a continuation line in the task frontmatter), breaking both the header comment and the task_name: scalar across lines. Distinct from T-2729 (escape handling) — this is unbounded multi-line capture into a single-line scalar. Reproduce: python3 -c \"import yaml;yaml.safe_load(open('.context/episodic/T-100202.yaml'))\". Found by the T-2729 corpus sweep: 2 bad of 2427."
+  captured: 2026-08-02T08:58:17Z
+  context_task: T-2729
+  tags: []
+  status: pending
+  promoted_to: null

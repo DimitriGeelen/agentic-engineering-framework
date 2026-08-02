@@ -1,10 +1,8 @@
 ---
-id: T-2728
-name: "reviewer detector: HTTP verification assertions that cannot fail, and literal
-  host:port URLs"
+id: T-2729
+name: "episodic generator emits invalid YAML when a commit subject contains a backslash"
 description: >
-  reviewer detector: HTTP verification assertions that cannot fail, and literal host:port
-  URLs
+  episodic generator emits invalid YAML when a commit subject contains a backslash
 
 status: started-work
 workflow_type: build
@@ -23,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-02T08:24:57Z
-last_update: '2026-08-02T08:30:10Z'
+created: 2026-08-02T08:51:34Z
+last_update: '2026-08-02T09:00:11Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -37,7 +35,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-02T08:30:06Z'
+  - ts: '2026-08-02T09:00:06Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -47,82 +45,81 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-02T08:30:10Z'
+  - ts: '2026-08-02T09:00:11Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
       D3: 2
       D4: 2
-      F-RECALL: 0
+      F-RECALL: 1
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 0
+      F2: 1
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2728: reviewer detector: HTTP verification assertions that cannot fail, and literal host:port URLs
+# T-2729: episodic generator emits invalid YAML when a commit subject contains a backslash
 
 ## Context
 
-OBS-127 found two Verification lines of the form:
+Closing T-2728 emitted `.context/episodic/T-2728.yaml` that PyYAML refuses to parse.
+The offending row is a mined git subject containing `\x`:
 
 ```
-curl -s -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/api/...
+action: "T-2728: ... (reviewer crashes on \x in task text, pre-existing)"
 ```
 
-Two independent faults compose. `-w` only *prints* the status code — curl exits 0 on
-any successful connection, so 403, 404 and 500 all read PASS. And the literal `:3000`
-is the per-project-port anti-pattern CLAUDE.md already names (T-1376): this project
-serves on 3001, so the request reached a *different project's* Watchtower.
+`agents/context/lib/episodic.sh:370` escapes only the double quote
+(`sed 's/"/\\"/g'`) before writing into a **double-quoted** YAML scalar, where
+backslash is the escape introducer. `\x` is an invalid escape (hard error); `\n`,
+`\t` would parse but silently mean something other than the literal text.
 
-Green about the wrong server, and green regardless of the answer. It would survive
-the endpoint being deleted.
-
-Those two occurrences are fixed. Nothing stops the third. 832 put the general form
-precisely on rail 387, about their own tree: *"our exposure is zero **by occupancy**,
-not by construction — if someone adds an HTTP assertion tomorrow and reaches for
-`-w "%{http_code}"`, nothing here stops them."* They declined to build a guard because
-their population was zero and an instrument whose finding-bucket you cannot fill is
-the same defect one level up. Ours is not zero — it is two, both authored here, both
-shipped past review.
-
-The reviewer static scan is the author-time surface that already owns this class
-(`swallowed-errors`, `output-spoofing`, `empty-output-success` are siblings — all
-"the assertion cannot fail"). This adds the HTTP member.
+Third instance of this class in this same file (L-005 T-1236 regex-in-episodic,
+L-392 T-1873 unescaped emission), so per the escalation ladder the fix must be
+structural, not another field-specific patch.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `detect_toothless_http` flags a `curl` line that discards output and carries no
-      failure mechanism — no `-f`/`--fail`, no comparison of a captured status.
-- [x] ~~It flags a literal `host:port` URL~~ — **built, measured, then REMOVED.**
-      The AC as written was wrong to promise. Measurement: 391 corpus hits, including
-      legitimately fixed-port services (ollama `:11434`, litellm `:4000`, `:8834`),
-      deliberate negative fixtures (`example.invalid:9999`), and a line asserting the
-      string is *absent*. Separating "this project's Watchtower" from "some other
-      service" needs a maintained route allowlist — the allowlist-as-oracle shape
-      T-2722 was built to kill. Regexes kept unwired with the reasoning in-file; the
-      port anti-pattern stays documented in CLAUDE.md rather than getting a detector
-      that cries wolf 391 times. Ticked as *resolved*, not as *delivered*.
-- [x] The shipped pattern id is registered in `policy/anti-patterns.yaml` with
-      `detector_ref`, positive and negative examples. (Singular — see above.)
-- [x] Negative controls prove it discriminates rather than firing on any `curl`:
-      `-sf`, captured-and-compared, redirect-to-file, piped-to-grep, comment and
-      non-curl lines are all clean. 9/9 in `tests/unit/reviewer_toothless_http.bats`.
-- [x] The detector is run against the two real historical offenders (T-2063/T-2064
-      pre-fix text) and flags both — measured, not asserted.
-- [x] Running the reviewer over the repo's own task corpus does not produce a flood
-      of new findings; the count is reported, and if it is large the detector is
-      narrowed rather than the finding suppressed.
-      → 2715 task files scanned, **exactly 1 finding**: T-2063, the line knowingly
-      left toothless because that task is *about* a CSRF 403. The detector's only
-      corpus hit is the one already declared.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] The git-timeline `action:` row is emitted as a **single-quoted** YAML scalar
+      (`''` doubling, no escape sequences at all) — the same idiom already used by
+      the artifacts block twelve lines above at `episodic.sh:352`.
+- [x] Regression test: an episodic generated from a commit subject containing
+      `\x`, `\n`, a double quote and a single quote parses under `yaml.safe_load`
+      **and** round-trips the subject byte-for-byte (not merely "parses").
+      → `tests/unit/episodic_yaml_timeline_escape.bats` tests 1-2. The expectation
+      is read from `git log` itself, never a re-typed literal.
+- [x] Negative control: the test fails against the pre-fix emitter, proving it has
+      teeth rather than passing because the fixture never reached the writer.
+      → Two controls, both exercised: (a) test 3 rewrites the emitted row back into
+      the pre-fix double-quoted shape and requires PyYAML to reject it — if the
+      fixture ever loses its teeth this goes green and says so; (b) the fix was
+      reverted in place and the suite re-run: tests 3 and 4 went red, naming
+      `episodic.sh:380-381` as the offending lines, then restored byte-clean.
+      An earlier attempt at a symlink-farm framework root was **discarded** — it
+      silently resolved back to the real framework and reported the fixed output,
+      i.e. it measured the wrong object (same trap as T-2726).
+- [x] The whole file is swept for other free-text-into-double-quoted-scalar sites;
+      each is either converted or recorded as safe-by-construction with the reason.
+      → See `## Sweep` below. One converted; four recorded safe with reasons; one
+      unrelated defect found and filed as OBS-129 rather than folded in.
+- [x] `.context/episodic/T-2728.yaml` (the corrupt artifact that surfaced this) is
+      regenerated and parses — 3 timeline rows, the `\x` row carrying the literal
+      two characters.
+- [x] Every existing episodic under `.context/episodic/` parses — establishing
+      whether the blast radius is one file or many. → 2427 scanned, blast radius
+      for **this** defect is exactly 1 (T-2728). The sweep also surfaced T-100202,
+      a different generator defect, now OBS-129.
+- [x] The guard is source-derived with no maintained allowlist, and is itself
+      controlled: test 4 asserts no interpolated double-quoted scalar exists in the
+      writer; test 5 appends one to a **copy** and requires the guard to catch it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -188,7 +185,93 @@ The reviewer static scan is the author-time surface that already owns this class
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/episodic_yaml_timeline_escape.bats
+bats tests/unit/episodic_yaml_decision_escape.bats
+bats tests/unit/context_episodic.bats
+python3 -c "import yaml; yaml.safe_load(open('.context/episodic/T-2728.yaml'))"
+bash -n agents/context/lib/episodic.sh
+
+## Sweep
+
+Every site in `agents/context/lib/episodic.sh` that writes an interpolated value
+into the episodic, and its disposition:
+
+| Line | Emission | Quoting | Disposition |
+|------|----------|---------|-------------|
+| 291 | `- '$text'` (outcomes) | single | already correct (T-1873) |
+| 307 | `description: '$escaped'` (challenges) | single | already correct (T-1873) |
+| 328-337 | decisions topic/chose/rationale/rejected | single | already correct (T-1871) |
+| 353 | `- '$escaped'` (artifacts) | single | already correct (T-1873) |
+| 380-381 | `time:` / `action:` (git timeline) | **double** | **CONVERTED — this task** |
+| 393-394 | `description:` / `why:` (successes) | double | safe: literal `[TODO: …]`, no interpolation |
+| 277 | `summary: \|` block scalar | block | safe: block scalars process no escapes, and `summary_text` is single-line by construction — the git path joins with `awk` (`:221`), the fallback is a single `grep` line (`:87`) |
+| 265, 268 | `first_commit:` / `last_commit:` | bare | safe: git hashes, `[0-9a-f]` only |
+| 400 | `tags: [$tags]` | flow | safe: copied verbatim out of the task's own already-valid `tags:` flow sequence with the brackets stripped and re-added (`:86`) |
+| 409 | `source_file: $task_file` | bare | safe: framework-generated repo path, slugified, no `": "` |
+
+Not in this writer but found by the corpus sweep and filed rather than folded in:
+**OBS-129** — `T-100202.yaml` breaks because `$task_name` captured *multiple*
+lines (`grep "^name:"` matched a continuation line). Unbounded multi-line capture
+into a single-line scalar; distinct mechanism, distinct fix.
+
 ## RCA
+
+**Symptom:** `fw task update T-2728 --status work-completed` closed the task but
+its final step failed with
+
+```
+yaml.scanner.ScannerError: while scanning a double-quoted scalar
+  expected escape sequence of 2 hexadecimal numbers, but found ' '
+```
+
+`.context/episodic/T-2728.yaml` was written to disk and is unreadable — invisible
+to `fw recall`, `fw timeline` and every downstream episodic consumer.
+
+**Root cause:** `episodic.sh:370` escaped only the double quote
+(`sed 's/"/\\"/g'`) before writing a mined commit subject into a **double-quoted**
+YAML scalar. In a double-quoted scalar the backslash is the escape introducer, so
+`"` was never the dangerous character — the backslash was. The subject contained
+`\x` (from a commit about the reviewer crashing on `\x`), which is an invalid
+escape and a hard parser error. `\n` or `\t` would have been worse: they parse,
+and silently mean something other than the literal text.
+
+**Why structurally allowed:** two compounding gaps.
+
+1. *The sibling sweep stopped one block short.* L-392 named this exact class in
+   this exact file. T-1871 converted the decisions emitter; T-1873 converted
+   outcomes, challenges and artifacts. The git-timeline emitter sits twenty lines
+   below artifacts and was not converted. Nothing enumerated the sites, so
+   "converted the ones we found" and "converted all of them" were
+   indistinguishable — for eleven weeks.
+2. *The regression test could not see an unknown site.* The behavioural half of
+   `episodic_yaml_decision_escape.bats` re-types the writer's sed chain into a
+   local `_emit_and_parse` helper rather than running the writer. A test that
+   reimplements the producer can only ever check the sites its author already knew
+   about; it was green throughout T-2728's corruption because the corrupt bytes
+   never passed through it. This is the producer/consumer join class of L-399 with
+   the *test* as the divergent consumer.
+
+**Prevention:** structural, per the escalation ladder — this is the third instance
+(L-005, L-392, now T-2729), so another field-specific patch would have been the
+same move a third time.
+
+- **Guard, source-derived, no allowlist:** the writer must contain no line matching
+  `:\s*\"\$` — an interpolated value inside a double-quoted YAML scalar. The
+  predicate is a property of the shape, not a list of known fields, so a *sixth*
+  site fails the moment it is written. Test 4; controlled by test 5, which appends
+  such a line to a copy and requires the guard to catch it.
+- **End-to-end regression:** tests 1-3 drive the real `fw context
+  generate-episodic` against a fixture repo whose commit subject carries `\x`,
+  `\n`, `"` and `'`, and compare the parsed value against `git log` output rather
+  than a re-typed expectation. Nothing about the emitter is reimplemented in the
+  test.
+- **Corpus assertion:** test 6 parses every episodic in `.context/episodic/`, so
+  the next corruption of any mechanism surfaces at test time rather than at some
+  future `fw recall`. OBS-129 is excluded **by name**, so the exclusion is visible
+  rather than silent.
+
+**Related:** L-005 (T-1236), L-385 (T-1861), L-392 (T-1873) — same class, three
+prior visits.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -251,15 +334,15 @@ The reviewer static scan is the author-time surface that already owns this class
 
 ## Updates
 
-### 2026-08-02T08:24:57Z — task-created [task-create-agent]
+### 2026-08-02T08:51:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2728-reviewer-detector-http-verification-asse.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2729-episodic-generator-emits-invalid-yaml-wh.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c03dc7b2
-- **Timestamp:** 2026-08-02T08:29:40Z
+- **Scan ID:** R-10267477
+- **Timestamp:** 2026-08-02T09:01:25Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
