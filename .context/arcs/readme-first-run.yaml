@@ -1,0 +1,21 @@
+id: arc-016
+slug: readme-first-run
+name: "Onboarding: the by-hand five-minute path is tested as its own persona"
+description: "T-2715 GO item 3. IW-11 reproduced end-to-end: fw init then fw work-on 'Add authentication'\
+  \ then agent Write hits T-532 exit 2. Two personas, separate scenarios \u2014 the\
+  \ by-hand failure is structurally invisible to the agent-assisted test."
+status: draft
+anchor_task: T-2719
+headline_mechanic: "A person with no agent assisting follows the README's five-minute walkthrough end\
+  \ to end and reaches a working first task without hitting a block they cannot clear,\
+  \ and a persona test that runs the by-hand path separately from the agent-assisted\
+  \ one fails loudly if that ever stops being true"
+demo_evidence: null
+created: 2026-08-02T00:36:25Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.

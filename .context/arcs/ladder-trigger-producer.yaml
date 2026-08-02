@@ -1,0 +1,21 @@
+id: arc-018
+slug: ladder-trigger-producer
+name: "Escalation ladder: the trigger is produced by witnessed failure, not self-report"
+description: "T-2715 GO item 5 (IW-12). Diagnosis complete in T-2715: complete wired mechanism,\
+  \ trigger set on 0 of 2416 tasks \u2014 no producer. Derive from failures the framework\
+  \ already witnesses: P-011 close failures, logged gate bypasses, Tier-0 blocks."
+status: draft
+anchor_task: T-2721
+headline_mechanic: "A task's verification fails, a gate bypass is logged, or a Tier-0 action is blocked\
+  \ \u2014 and the operator sees an escalation-ladder entry appear for it in Watchtower\
+  \ without any agent having remembered to self-report, where today that same failure\
+  \ produces nothing at all"
+demo_evidence: null
+created: 2026-08-02T00:36:35Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.

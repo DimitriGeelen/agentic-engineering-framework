@@ -1,0 +1,25 @@
+id: arc-015
+slug: onboarding-shape-detection
+name: "Onboarding: fw init detects project shape by enumeration, not manifest allowlist"
+description: "T-2715 GO item 2. Fixes F-10 (reproduced: 7 synthetic projects, 6 seeded greenfield).\
+  \ Fix shape ratified with 832 (rail 376): enumerate what IS there and decide, NOT\
+  \ a longer manifest list \u2014 lengthening the list reproduces the same property\
+  \ with a later failure date. Includes the fresh-project harness that would have\
+  \ caught it: tests/unit/greenfield_seed_audit_prototype.bats (T-2703, currently\
+  \ RED, unwired)."
+status: draft
+anchor_task: T-2718
+headline_mechanic: "A developer runs fw init inside an existing .NET, Ruby, PHP, Make or Gradle project\
+  \ and watches it report what it actually found in the directory, state the project\
+  \ shape it inferred from that, and seed a task set they can start working immediately\
+  \ \u2014 instead of being handed a greenfield inception task that requires a decision\
+  \ the agent cannot record and that blocks every other edit"
+demo_evidence: null
+created: 2026-08-02T00:34:15Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
