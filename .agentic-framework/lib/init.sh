@@ -67,6 +67,27 @@ do_init() {
         return 1
     fi
 
+    # T-2722 (arc-015, F-10): snapshot what is in the directory BEFORE we write anything.
+    # Project shape is then inferred from what the USER already had, not from a list of
+    # names we hope covers every ecosystem. Taking the census here rather than at seed time
+    # matters: `fw init` creates policy/, .tasks/, .context/ etc. before the seed step, so a
+    # census taken later has to exclude framework artefacts by name — which is the same
+    # allowlist mistake one level down, and would silently break again the next time init
+    # learns to create a new directory.
+    local -a preexisting_entries=()
+    local _e _b
+    for _e in "$target_dir"/* "$target_dir"/.[!.]*; do
+        [ -e "$_e" ] || continue
+        _b="$(basename "$_e")"
+        case "$_b" in
+            # VCS metadata, editor/OS noise and placeholders are not evidence of a project.
+            .git|.gitignore|.gitattributes|.gitmodules|.svn|.hg|.keep|.gitkeep|.DS_Store) continue ;;
+            # A prior/partial framework install is scaffolding, not user content.
+            .agentic-framework|.claude|.framework.yaml|CLAUDE.md|FRAMEWORK.md|.mcp.json) continue ;;
+        esac
+        preexisting_entries+=("$_b")
+    done
+
     local project_display
     project_display=$(basename "$target_dir")
     echo -e "${BOLD}Setting up agentic governance for ${project_display}...${NC}"
@@ -486,21 +507,26 @@ CYAML
     done
 
     if [ "$has_existing_tasks" = false ]; then
-        # Detect if project has existing code
-        for manifest in package.json requirements.txt pyproject.toml go.mod Cargo.toml pom.xml setup.py; do
-            if [ -f "$target_dir/$manifest" ]; then
-                has_code=true
-                break
-            fi
-        done
-        if [ "$has_code" = false ]; then
-            for codedir in src lib app; do
-                if [ -d "$target_dir/$codedir" ]; then
-                    has_code=true
-                    break
-                fi
-            done
-        fi
+        # T-2722 (arc-015, F-10): infer project shape by ENUMERATION, not by an allowlist.
+        #
+        # The previous implementation asked "is one of these seven manifests present?" and
+        # treated a miss as positive evidence of an empty directory. Every ecosystem off the
+        # list (.NET, C/C++, PHP, flat Python, Ruby, Gradle, …) was therefore seeded greenfield,
+        # which lands an owner:human inception task that the T-532 gate then uses to block all
+        # other edits — a first-run deadlock the agent is structurally forbidden to clear.
+        #
+        # Lengthening the list was explicitly rejected (T-2718 Decisions): it reproduces the
+        # identical property with a later failure date, because the defect is not WHICH names
+        # are listed, it is that THE LIST IS THE ORACLE.
+        #
+        # Inverted: greenfield must be positively established — the directory contains nothing
+        # but framework scaffolding, VCS metadata and placeholders. Anything else means we
+        # found something we did not put here, so treat it as an existing project. The cost
+        # asymmetry drives the direction: existing→greenfield is a wall the user cannot clear,
+        # greenfield→existing is mild noise.
+        # The census was taken at function entry, before we created anything (see above).
+        local -a found_entries=("${preexisting_entries[@]}")
+        [ ${#found_entries[@]} -gt 0 ] && has_code=true
 
         local seed_dir
         if [ "$has_code" = true ]; then
@@ -526,6 +552,18 @@ CYAML
             if [ "$task_count" -gt 0 ]; then
                 local mode_label="existing project"
                 [ "$has_code" = false ] && mode_label="greenfield"
+                # T-2722: state the EVIDENCE, not just the verdict. A wrong inference is then
+                # legible here, at the moment it happens, instead of surfacing three commands
+                # later as an unexplained gate refusal. Cap the list so a large repo does not
+                # bury the line it is meant to clarify.
+                if [ "$has_code" = true ]; then
+                    local shown="${found_entries[*]:0:6}"
+                    local more=""
+                    [ ${#found_entries[@]} -gt 6 ] && more=" +$(( ${#found_entries[@]} - 6 )) more"
+                    echo -e "  ${CYAN}·${NC}  found ${#found_entries[@]} existing item(s): ${shown// /, }${more}"
+                else
+                    echo -e "  ${CYAN}·${NC}  found nothing but framework scaffolding — treating as a new project"
+                fi
                 echo -e "  ${GREEN}✓${NC}  $task_count onboarding tasks ($mode_label mode)"
             fi
         fi

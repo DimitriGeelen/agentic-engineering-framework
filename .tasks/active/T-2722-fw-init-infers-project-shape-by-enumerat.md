@@ -10,7 +10,7 @@ description: >
   whose absence-of-match is currently read as positive evidence of emptiness. Explicitly
   NOT a longer allowlist (see T-2718 Decisions: same property, later failure date).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T05:55:30Z
-last_update: '2026-08-02T06:00:10Z'
+last_update: 2026-08-02T07:04:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,8 +80,27 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/init.sh` no longer decides project shape from a manifest allowlist. Greenfield is
+      positively established (the directory holds nothing but framework scaffolding, VCS
+      metadata and placeholders); anything else infers "existing project"
+- [x] `fw init` enumerates what it actually found and states the shape it inferred from it, so
+      a wrong inference is legible at the moment it happens rather than three commands later
+      when the T-532 gate fires. Live output on a .NET project:
+      `·  found 2 existing item(s): MyApp, MyApp.sln` / `✓  6 onboarding tasks (existing project mode)`;
+      on an empty one: `·  found nothing but framework scaffolding — treating as a new project`
+- [x] `tests/unit/init_project_shape_detection.bats` goes from 6 red / 6 green to **12 green**
+- [x] The three negative controls still pass, i.e. the suite did not go green by making the
+      helper answer "existing" unconditionally — tests 10/11/12 green, and test 9
+      (empty→greenfield) green, which is the assertion that would break first under a
+      blanket "everything is existing" implementation
+- [x] `tests/unit/greenfield_seed_audit_prototype.bats` (T-2703) re-run: **still RED**
+      (`audit exit: 2`). Pre-existing and out of scope here — the file's own header records it
+      as RED at authoring on 2026-07-31, and it asserts a different property (that the
+      *greenfield seed set* passes its own audit), which this task does not touch. The
+      greenfield path itself still works: shape test 9 confirms an empty directory is still
+      classified greenfield and still seeds 5 onboarding tasks. Tracked by T-2703
+- [x] Vendored copy refreshed (`fw vendor self`) so consumers get the fix, per the pre-push
+      self-vendor gate
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,6 +165,16 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# The guard T-2723 built, now fully green. Asserts 12/12 with zero failures — the whole
+# point of this task is flipping its six reds, so a partial flip must not read as success.
+out=$(bats tests/unit/init_project_shape_detection.bats 2>&1); echo "$out" | grep -q "^ok 12" && ! echo "$out" | grep -q "^not ok"
+# Shape is inferred from a pre-write census, not a name allowlist. Pins the actual mechanism:
+# if someone reintroduces a manifest list, this fails even if the suite above still passes.
+grep -q "preexisting_entries" lib/init.sh && ! grep -q "for manifest in package.json" lib/init.sh
+# The vendored copy carries the fix — consumers vendor from there, and a fix that lands only
+# in lib/ looks shipped without being shipped (caught live on T-2724 by the pre-push gate).
+grep -q "preexisting_entries" .agentic-framework/lib/init.sh
 
 ## RCA
 
@@ -217,3 +246,6 @@ bvp_scores_proposed:
 
 ### 2026-08-02T05:56:59Z — status-update [task-update-agent]
 - **Change:** tags: +arc:onboarding-shape-detection
+
+### 2026-08-02T07:04:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
