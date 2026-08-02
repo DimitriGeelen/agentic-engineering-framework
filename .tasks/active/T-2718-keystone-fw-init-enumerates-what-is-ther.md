@@ -8,8 +8,10 @@ description: >
   the user on a human-owned inception task requiring a decision the agent is structurally
   forbidden to record, behind the T-532 gate that blocks all other work. Re-reproduced
   2026-08-02 in this task: 4 of 8 real-code fixtures misclassify (.NET, C/C++, PHP,
-  flat-python); the earlier "6 of 7" figure was specific to T-2715's fixture set — the
-  class reproduces, the ratio does not. Fix shape per 832 rail 376: enumerate what IS
+  flat-python); the earlier "6 of 7" figure was specific to T-2715's fixture set —
+  the
+  class reproduces, the ratio does not. Fix shape per 832 rail 376: enumerate what
+  IS
   there and decide, NOT a longer manifest list. Carries the arc's closure Recommendation.
 
 status: started-work
@@ -30,7 +32,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:33:29Z
-last_update: '2026-08-02T00:45:05Z'
+last_update: '2026-08-02T05:42:58Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -59,6 +61,23 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-02T05:42:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-08-02T00:45:05Z'
@@ -159,7 +178,10 @@ runner) that would have caught this class at authoring time.
 - [x] Design decision recorded in `## Decisions`: invert the default (greenfield positively
       established) + enumerate visibly, with the rejected alternative (longer allowlist) and the
       reason it is rejected (reproduces the property with a later failure date)
-- [ ] Build task(s) created under arc-015 for the implementation and for wiring the T-2703 harness
+- [x] Build task(s) created under arc-015 for the implementation and for wiring the T-2703 harness
+      — T-2722 (invert the default + enumerate visibly in `lib/init.sh`) and T-2723 (wire the
+      fresh-project seed harness so F-10-class misclassification fails a runner), both tagged
+      `arc:onboarding-shape-detection`
 - [x] Scoped drivers proposed on the arc YAML (D-5: after this body is filled, before any approval)
       — two proposed (`unknown-input-safety` w6, `first-run-recoverability` w4), a third drafted and
       discarded rather than shipped to look thorough (R5); awaiting operator approval at

@@ -1,57 +1,52 @@
 id: arc-015
 slug: onboarding-shape-detection
 name: "Onboarding: fw init detects project shape by enumeration, not manifest allowlist"
-description: "T-2715 GO item 2. Fixes F-10 (re-reproduced 2026-08-02 under T-2718: 9 synthetic projects,\
-  \ 4 of 8 real-code ones seeded greenfield; the earlier 6-of-7 figure was fixture-specific, the\
-  \ CLASS reproduces but the ratio does not).\
-  \ Fix shape ratified with 832 (rail 376): enumerate what IS there and decide, NOT\
-  \ a longer manifest list \u2014 lengthening the list reproduces the same property\
-  \ with a later failure date. Includes the fresh-project harness that would have\
-  \ caught it: tests/unit/greenfield_seed_audit_prototype.bats (T-2703, currently\
-  \ RED, unwired)."
+description: "T-2715 GO item 2. Fixes F-10 (re-reproduced 2026-08-02 under T-2718:
+  9 synthetic projects, 4 of 8 real-code ones seeded greenfield; the earlier 6-of-7
+  figure was fixture-specific, the CLASS reproduces but the ratio does not). Fix shape
+  ratified with 832 (rail 376): enumerate what IS there and decide, NOT a longer manifest
+  list — lengthening the list reproduces the same property with a later failure date.
+  Includes the fresh-project harness that would have caught it: tests/unit/greenfield_seed_audit_prototype.bats
+  (T-2703, currently RED, unwired)."
 status: in-progress
 anchor_task: T-2718
-headline_mechanic: "A developer runs fw init inside an existing .NET, Ruby, PHP, Make or Gradle project\
-  \ and watches it report what it actually found in the directory, state the project\
-  \ shape it inferred from that, and seed a task set they can start working immediately\
-  \ \u2014 instead of being handed a greenfield inception task that requires a decision\
-  \ the agent cannot record and that blocks every other edit"
-demo_evidence: null
+headline_mechanic: "A developer runs fw init inside an existing .NET, Ruby, PHP, Make
+  or Gradle project and watches it report what it actually found in the directory,
+  state the project shape it inferred from that, and seed a task set they can start
+  working immediately — instead of being handed a greenfield inception task that requires
+  a decision the agent cannot record and that blocks every other edit"
+demo_evidence:
 created: 2026-08-02T00:34:15Z
-closed_at: null
-decision: null
+closed_at:
+decision:
 # T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
 # docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
 bvp_scores: {}
-scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
-proposed_scoped_drivers:  # uncapped persistence (D7-reframe). Estimator may write here freely.
+scoped_drivers:              # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+  - name: unknown-input-safety
+    weight: 4
+    approved_at: '2026-08-02T05:42:57Z'
+    rationale: 'Distinguishes from D2 (reliability): D2 is about not failing silently
+      on inputs we handle; this scores what the framework does with inputs it does
+      NOT recognise. F-10 is precisely a non-recognition path that resolved to a confident
+      wrong answer instead of a harmless one. Scores whether each change makes unrecognised
+      input degrade toward the cheap side of the cost asymmetry (mild noise) or the
+      expensive side (a gate the user cannot clear). No global driver measures behaviour-on-the-unknown;
+      D2 presumes the case is known.'
+  - name: first-run-recoverability
+    weight: 4
+    approved_at: '2026-08-02T05:43:10Z'
+    rationale: "Distinguishes from D3 (usability): D3 is joy-to-use across the whole
+      lifecycle for someone who already has context. This scores the narrower and
+      harsher case of a user in their first five minutes with zero framework knowledge,
+      where the operative question is not 'is this pleasant' but 'can they get themselves
+      unstuck without reading source'. F-10's damage came entirely from irrecoverability
+      — the deadlock needed knowledge of fw onboarding skip that the blocked user
+      had no path to. Weighted below unknown-input-safety because it is the consequence,
+      not the cause."
+proposed_scoped_drivers: [] # uncapped persistence (D7-reframe). Estimator may write here freely.
   # Proposed by agent 2026-08-02 per CLAUDE.md §Arc-Scoped Driver Suggestion Workflow (T-1925),
   # step 3. Anchor body (T-2718) read in full first, per D-5 timing. Approval is the operator's:
   #   http://192.168.10.107:3001/arcs/onboarding-shape-detection
   # Recommending TWO, not three — a third candidate was drafted and discarded rather than shipped
   # to look thorough (R5: manufacturing drivers is worse than proposing fewer).
-  - name: unknown-input-safety
-    rationale: "Distinguishes from D2 (reliability): D2 is about not failing silently on inputs we
-      handle; this scores what the framework does with inputs it does NOT recognise. F-10 is
-      precisely a non-recognition path that resolved to a confident wrong answer instead of a
-      harmless one. Scores whether each change makes unrecognised input degrade toward the cheap
-      side of the cost asymmetry (mild noise) or the expensive side (a gate the user cannot clear).
-      No global driver measures behaviour-on-the-unknown; D2 presumes the case is known."
-    weight_suggestion: 6
-    source: agent
-    ts: 2026-08-02T00:40:00Z
-  - name: first-run-recoverability
-    rationale: "Distinguishes from D3 (usability): D3 is joy-to-use across the whole lifecycle for
-      someone who already has context. This scores the narrower and harsher case of a user in their
-      first five minutes with zero framework knowledge, where the operative question is not 'is this
-      pleasant' but 'can they get themselves unstuck without reading source'. F-10's damage came
-      entirely from irrecoverability — the deadlock needed knowledge of fw onboarding skip that the
-      blocked user had no path to. Weighted below unknown-input-safety because it is the consequence,
-      not the cause."
-    weight_suggestion: 4
-    source: agent
-    ts: 2026-08-02T00:40:00Z
-  # Discarded candidate (recorded so it is not re-proposed): `detector-accuracy`. Rejected because
-  # it scores the symptom (how many ecosystems classify correctly) rather than the property, and
-  # would reward exactly the fix this arc rejects — lengthening the allowlist raises detector
-  # accuracy on the measured fixtures while leaving the defect intact.
