@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T19:41:40Z
-last_update: '2026-08-01T19:45:09Z'
+last_update: 2026-08-02T00:27:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -103,7 +103,8 @@ gated on the operator promoting this draft (IW-23 also still open on where that 
       (drop the sweep's staleness gate vs inline on the completion trigger vs both) and the
       agent-completion-only trigger gap requiring an `fw arc close` backstop
 - [x] Structurally sound: XML parses, every node is lane-assigned, no dangling flows, no unreachable
-      node and no dead end (16 nodes / 20 flows, all clean)
+      node and no dead end (v3, the current latest: 17 nodes / 22 flows, all clean — v1 was 16/20
+      before the driver-approval gate was replaced by decide+inform in v3)
 - [x] Layout is clean: every node contained in its lane band, no overlapping node boxes
 - [x] The draft is visible in the **live** designer, not merely committed — `/designer` on the
       running Watchtower lists `draft-arc-lifecycle`
@@ -143,7 +144,14 @@ gated on the operator promoting this draft (IW-23 also still open on where that 
 
   **Steps:**
   1. Open `http://192.168.10.107:3001/designer` and select `draft-arc-lifecycle`
-  2. Walk the happy path: open arc → propose drivers → approve → recalc → pick → work → recalc (loop)
+  2. Walk the happy path: open arc → agent **decides** scoped drivers → agent **informs** you what it
+     adopted and how to change it → recalc → pick → work → recalc (loop). Note this changed in v3 on
+     your 2026-08-01 instruction: driver approval is no longer a gate, sovereignty is preserved by
+     availability (`hum_2_adjust`, optional, re-entering through recalc) rather than by a checkpoint.
+     **This conflicts with CLAUDE.md §Arc-Scoped Driver Suggestion Workflow (M6/D8) and with
+     `lib/arc.sh`, which gates `scoped_drivers:` behind `fw arc approve-driver` (T-1926, §ACD).**
+     The conflict is flagged, not silently resolved — if you tick this AC, code and CLAUDE.md must
+     follow. If you'd rather keep the approval gate, say so and the agent restores it in v4.
   3. Walk the exit path: pick finds nothing → exit recalc → **re-surfaced?** → yes returns to the arc,
      no proceeds to the G-062 close gates → you close via Watchtower
   4. Walk the two escapes: file-and-continue (a bug found mid-work is filed, not fixed, and simply
@@ -198,7 +206,14 @@ gated on the operator promoting this draft (IW-23 also still open on where that 
 # Falsified 2026-08-01: a dangling targetRef fires dangling-flow-ref, and a node pushed
 # out of its band fires lane-geometry + lane-overflow. Known gap OBS-113: a node in NO
 # lane still reports clean — the fix belongs in the lint, not in a parallel checker.
-out=$(bin/fw corpus lint --summary .context/designer/projects/draft-arc-lifecycle/v1.bpmn 2>&1); echo "$out" | grep -q "CLEAN"
+# Pin resolves from meta.json `latest` — NOT hard-coded to a version. Fixed 2026-08-02:
+# this line read v1.bpmn while meta.json latest was 3 and the Human AC asks the operator
+# to walk v3. A green check on v1 says nothing about the object under review — the exact
+# "check reports success about the wrong object" class T-2715 catalogued (12 instances).
+# Verified before landing: v1/v2/v3 all lint CLEAN; a dangling-targetRef mutant of v3
+# produces 22 findings and NO "CLEAN" substring (predicate discriminates); and a missing
+# path exits 2 with "not a file and not a store map id" (no silent pass if resolution breaks).
+P=.context/designer/projects/draft-arc-lifecycle; F="$P/v$(python3 -c "import json;print(json.load(open('$P/meta.json'))['latest'])").bpmn"; echo "linting $F"; out=$(bin/fw corpus lint --summary "$F" 2>&1); echo "$out" | grep -q "CLEAN"
 
 # meta.json is valid JSON and its `latest` points at a version file that exists on disk
 python3 -c "import json,os;p='.context/designer/projects/draft-arc-lifecycle';m=json.load(open(p+'/meta.json'));f=p+'/v%d.bpmn'%m['latest'];assert os.path.isfile(f),'meta.json latest points at missing '+f;print('meta OK v%d'%m['latest'])"
