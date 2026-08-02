@@ -79,25 +79,38 @@ side names a type the evaluator cannot serve.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A guard extracts the declared-type set from `lib/init.sh` and the handled-type
+- [x] A guard extracts the declared-type set from `lib/init.sh` and the handled-type
       set from `lib/validate-init.sh`'s `case`, from source in both directions — no
       hand-maintained list of types anywhere in the test.
-- [ ] The guard **fails** on declared-but-not-handled (a check that cannot be
+      → `_declared_types` / `_handled_types` in `tests/unit/validate_init_check_type_join.bats`.
+- [x] The guard **fails** on declared-but-not-handled (a check that cannot be
       evaluated), and is verified to fail by introducing one, not by assertion alone.
-- [ ] The guard **records** handled-but-not-declared as a named, reachable-but-
+      → observed red twice: on the real `md` orphan before the fix, and on a seeded
+      `qqq-999` orphan after it (`not ok 1 … # qqq`), tree restored.
+- [x] The guard **records** handled-but-not-declared as a named, reachable-but-
       unoccupied set rather than an error — `exec` is capability without occupancy,
       and deleting it would manufacture a capability zero out of an occupancy zero
       (832 rail 378).
-- [ ] `md` gains a real evaluator, so `policy/bvp-scoring-rubric.md` is actually
+- [x] `md` gains a real evaluator, so `policy/bvp-scoring-rubric.md` is actually
       checked on a fresh install.
-- [ ] At runtime, an unknown check type is a **failure**, not a silent skip: the
+      → live: `✓ md-3bv  BVP scoring rubric (T-1921/T-2259)`.
+- [x] At runtime, an unknown check type is a **failure**, not a silent skip: the
       validator's own verdict goes red when it is handed a check it cannot run.
-- [ ] The unknown-type message goes to stdout with the rest of the verdict lines,
+      → measured differentially against a control identical but for the type.
+- [x] The unknown-type message goes to stdout with the rest of the verdict lines,
       not stderr.
-- [ ] A fresh `fw init` reports zero skipped-as-unknown checks and its validation
+- [x] A fresh `fw init` reports zero skipped-as-unknown checks and its validation
       count reconciles: passed + failed + skipped == total.
-- [ ] Negative control: the guard is shown to pass on the fixed tree and fail on a
+      → live: `Validation passed: 41/42 checks OK (1 skipped)`, no unknown types.
+- [x] Negative control: the guard is shown to pass on the fixed tree and fail on a
       seeded divergence in each direction it claims to detect.
+      → orphan-type seed (test 2) and silent-skip seed (test 9), both observed red,
+      both restored; and two in-suite controls prove the differential can register a
+      `+1` at all and does not fire on manifest length.
+- [x] Every declared check produces exactly one visible row, so the summary's
+      denominator is auditable from the output the operator sees.
+      → 42 rows / 42 checks; the provider-scoped skip is now named
+      (`- file-6qs … (skipped: provider 'generic' not in cursor)`) instead of silent.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -121,6 +121,14 @@ do_validate_init() {
                     if [ "$match" = false ]; then
                         skipped=$((skipped + 1))
                         total=$((total + 1))
+                        # T-2726: this skip is legitimate (the check is scoped to
+                        # another provider) but it used to print nothing at all,
+                        # so the summary counted 42 while only 41 rows were
+                        # visible and no reader could tell which check was
+                        # absent. A skip that leaves no row makes an absence
+                        # unrepresentable (L-525); the git-condition branch above
+                        # already prints one.
+                        [ "$quiet" = false ] && echo -e "  ${CYAN}-${NC} ${type_key}  ${desc_line} (skipped: provider '${provider}' not in ${condition})"
                         continue
                     fi
                     ;;
@@ -141,7 +149,13 @@ do_validate_init() {
                 fi
                 ;;
 
-            file)
+            # T-2726: `md` was declared in the manifest (md-3bv
+            # policy/bvp-scoring-rubric.md) with no evaluator, so it fell to the
+            # `*)` fallthrough and was counted-but-never-run. A markdown artifact
+            # wants exactly the file contract — exists and is non-empty — so it
+            # is served here rather than by an alias branch that would add a type
+            # without adding behaviour.
+            file|md)
                 if [ -f "$full_path" ] && [ -s "$full_path" ]; then
                     result="pass"
                 elif [ -f "$full_path" ]; then
@@ -336,9 +350,16 @@ for event, entries in data.get('hooks', {}).items():
                 ;;
 
             *)
-                skipped=$((skipped + 1))
-                [ "$quiet" = false ] && echo -e "  ${YELLOW}?${NC} ${type_key}  Unknown check type" >&2
-                continue
+                # T-2726: a declared check the evaluator cannot serve is a defect
+                # in the manifest/evaluator join — not a property of the target
+                # tree, and not a condition-based skip. Absorbing it into
+                # `skipped` left the verdict green (the function returns
+                # `[ "$failed" -eq 0 ]`) while `total` had already been
+                # incremented, so the run reported success about a check it never
+                # ran. Falling through with the default result="fail" turns it red
+                # and prints it on stdout with the other verdict lines; it used to
+                # go to stderr, invisible in any captured log.
+                detail="unknown check type '${check_type}' — no evaluator in validate-init.sh"
                 ;;
         esac
 

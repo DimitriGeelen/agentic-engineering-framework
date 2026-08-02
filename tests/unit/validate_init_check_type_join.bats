@@ -171,10 +171,12 @@ _failed_count() {
     local root; root=$(_fake_root_with_check 'zzzz-001 some/path')
     mkdir -p "$TEST_TEMP_DIR/proj"
     local out
+    # `set +e` inside the subshell does not protect the assignment: the command
+    # substitution still carries the subshell's status out to bats' `set -e`.
     out=$( set +e
            export FRAMEWORK_ROOT="$root"
            source "$VALIDATE_SH" >/dev/null 2>&1
-           do_validate_init "$TEST_TEMP_DIR/proj" 2>/dev/null )
+           do_validate_init "$TEST_TEMP_DIR/proj" 2>/dev/null ) || true
     echo "$out"
     [[ "$out" == *"zzzz-001"* ]]
 }
@@ -188,6 +190,23 @@ _failed_count() {
     out=$("$FRAMEWORK_ROOT/bin/fw" init "$proj" 2>&1 | sed 's/\x1b\[[0-9;]*m//g')
     echo "$out"
     [[ "$out" != *"Unknown check type"* ]]
+}
+
+@test "T-2726: every declared check produces exactly one visible row" {
+    # The strongest form of the claim, and the one a reader can act on: the
+    # summary's denominator must be witnessable line by line. A check that is
+    # counted but prints nothing — as the provider-scoped skip did — leaves an
+    # absence that cannot be represented, so 'N checks' is unauditable from the
+    # output the operator actually sees.
+    local proj="$TEST_TEMP_DIR/rows"
+    mkdir -p "$proj"
+    local out; out=$("$FRAMEWORK_ROOT/bin/fw" init "$proj" 2>&1 | sed 's/\x1b\[[0-9;]*m//g')
+    local block; block=$(printf '%s\n' "$out" | sed -n '/^Validating/,/^  Validation/p')
+    local rows;  rows=$(printf '%s\n' "$block" | grep -cE '^  [✓✗-]')
+    local total; total=$(printf '%s\n' "$block" | grep -E "Validation" | head -1 \
+                         | sed -n 's/.*[^0-9]\([0-9][0-9]*\) checks.*/\1/p')
+    echo "rows=$rows total=$total"
+    [ -n "$total" ] && [ "$rows" -eq "$total" ]
 }
 
 @test "T-2726: a fresh fw init's validation count reconciles" {
