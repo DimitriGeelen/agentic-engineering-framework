@@ -202,7 +202,7 @@ Research artifact: `docs/reports/T-1443-independent-reviewer-agent.md` decisions
 ## Verification
 
 # All reviewer tests pass (includes 11 new dispatch tests)
-out=$(python3 -m pytest tests/unit/test_reviewer_dispatch.py tests/unit/test_reviewer_static_scan.py tests/unit/test_reviewer_auto_tick.py -q 2>&1); echo "$out" | grep -q "passed"
+out=$(python3 -m pytest tests/unit/test_reviewer_dispatch.py tests/unit/test_reviewer_static_scan.py tests/unit/test_reviewer_auto_tick.py -q 2>&1); echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 # Inline reviewer path unchanged (no --dispatch)
 out=$(python3 -m lib.reviewer.static_scan T-1951 --no-write --json 2>&1); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['task_id']=='T-1951'" 2>/dev/null || python3 -m lib.reviewer.static_scan T-1951 --no-write --json > /dev/null
 # dispatch_cli module loads without error

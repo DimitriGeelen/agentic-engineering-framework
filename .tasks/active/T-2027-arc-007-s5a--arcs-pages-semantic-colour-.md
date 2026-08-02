@@ -116,7 +116,7 @@ boundary applied to the approvals restyle in T-2025/T-2026).
 
 ## Verification
 
-out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_arcs_pages_tokens.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed"
+out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_arcs_pages_tokens.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; [app.jinja_env.get_template(t) for t in ('arcs_index.html','arc_detail.html','arc_close.html','arc_review.html')]; print('templates compile')"
 
 ## Evolution

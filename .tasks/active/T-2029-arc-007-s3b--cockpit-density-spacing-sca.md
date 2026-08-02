@@ -132,7 +132,7 @@ DO NOT WRAP:
 
 ## Verification
 
-out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_cockpit_density_spacing.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed"
+out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_cockpit_density_spacing.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jinja_env.get_template('cockpit.html'); print('compiles')"
 
 ## Evolution

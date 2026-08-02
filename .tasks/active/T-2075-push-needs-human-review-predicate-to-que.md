@@ -122,7 +122,7 @@ Implements T-2064 GO scope. The "needs human review?" predicate lived as two par
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 bash -n bin/fw
 python3 -c "import ast; ast.parse(open('web/shared.py').read()); ast.parse(open('web/blueprints/approvals.py').read())"
-out=$(python3 -m pytest tests/unit/test_count_unchecked_human_acs.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed"
+out=$(python3 -m pytest tests/unit/test_count_unchecked_human_acs.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 out=$(bin/fw review-queue 2>&1 | head -5); echo "$out" | grep -q "VERDICT\|DECISIONS\|No tasks"
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;

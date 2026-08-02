@@ -138,7 +138,7 @@ User asked: "can we show the scoring guidance (0-5) for the BVP drivers (e.g. on
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 python3 -c "import ast; ast.parse(open('web/blueprints/bvp.py').read())"
-out=$(python3 -m pytest tests/unit/test_driver_rubrics.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed"
+out=$(python3 -m pytest tests/unit/test_driver_rubrics.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 curl -sf "$(bin/fw watchtower url)/bvp" > /tmp/.t2084-bvp; grep -qE 'data-tooltip|<details' /tmp/.t2084-bvp
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;

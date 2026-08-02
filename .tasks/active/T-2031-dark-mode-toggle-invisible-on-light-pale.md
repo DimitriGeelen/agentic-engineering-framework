@@ -103,7 +103,7 @@ The fix is `base.html:545`: change the toggle's inline `color:var(--pico-color)`
 
 ## Verification
 
-out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_theme_toggle_contrast.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed"
+out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_theme_toggle_contrast.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jinja_env.get_template('base.html'); print('compiles')"
 
 ## RCA

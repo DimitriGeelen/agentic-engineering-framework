@@ -1047,3 +1047,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-134
+  text: "T-2027's verification was a LIVE false green: tests/unit/test_arcs_pages_tokens.py::test_only_neutral_fallback_hexes_remain FAILS (1 failed, 5 passed), and the old line 'echo $out | grep -q passed' matched the '5 passed' substring and reported green. Surfaced only when T-2739 added the absence-of-failure guard. The failing assertion is at tests/unit/test_arcs_pages_tokens.py:76 - non-neutral hexes remain in the arcs pages after the arc-007 s5a token migration. This is the T-2738 class firing for real in this repo, not a hypothetical. Needs its own fix task (one bug = one task)."
+  captured: 2026-08-02T17:42:16Z
+  context_task: T-2739
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-135
+  text: "tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded is RED on 2 of 20 routes: /inception/T-2715 and /review/T-2715 both exceed the height bound (2 failed, 18 passed in 198s). Found while executing T-2088's rewritten verification line under T-2739. Not a false green - the old line pinned 'grep -qE \"20 passed\"' which never matched '18 passed' either, so T-2088 has simply been carrying a red verification line while sitting in active/. Note also the suite needs ~198s end to end (pytest collection alone is ~91s), so any inner timeout below ~200s kills it - that is what made T-2089's 'timeout 90' fail (93.7s actual); raised to 300 under T-2739."
+  captured: 2026-08-02T17:42:16Z
+  context_task: T-2739
+  tags: []
+  status: pending
+  promoted_to: null

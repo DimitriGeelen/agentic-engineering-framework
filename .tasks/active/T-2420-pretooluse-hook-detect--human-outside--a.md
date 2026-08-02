@@ -196,7 +196,7 @@ Implements T-2418 GO. T-2417's close cascade lost a Human AC because `## Build s
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 python3 -c "import ast; ast.parse(open('agents/context/check-task-ac-structure.py').read())"
 bash -n agents/context/check-task-ac-structure.sh
-out=$(bats tests/unit/check_task_ac_structure.bats 2>&1); echo "$out" | grep -q "^ok 10 "
+out=$(bats tests/unit/check_task_ac_structure.bats 2>&1); echo "$out" | grep -q "^ok 10 " && ! echo "$out" | grep -q "^not ok"
 
 ## RCA
 

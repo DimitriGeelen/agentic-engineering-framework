@@ -1,22 +1,17 @@
 ---
-id: T-2623
-name: "Corpus draft mode — cheap iteration tier for sketch maps"
+id: T-2739
+name: "remediate 20 active tasks carrying the unjudged-test-run verification shape"
 description: >
-  ITERATE goal (T-2619 slice): each map version currently costs a full task + e2e
-  ceremony (v3->v4 of task-lifecycle was a session). Add a draft tier: registry draft
-  flag per project/version, lint runs advisory-only on drafts (excluded from the 2-finding
-  steady baseline), prove/e2e required only at promotion draft->ratified. Lets operator
-  or agent sketch a workflow in /designer without the contract-grade ceremony, then
-  graduate it. Build only after T-2619 GO.
+  remediate 20 active tasks carrying the unjudged-test-run verification shape
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
-tags: [designer, corpus, t2619-slice]
+owner: agent
+horizon: null
+tags: []
 components: []
-related_tasks: [T-2619]
-arc_id: designer-corpus
+related_tasks: []
+# arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
@@ -26,9 +21,9 @@ arc_id: designer-corpus
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-25T16:46:22Z
-last_update: 2026-07-26T20:51:50Z
-date_finished: 2026-07-26T20:51:50Z
+created: 2026-08-02T17:23:04Z
+last_update: 2026-08-02T17:43:00Z
+date_finished: 2026-08-02T17:43:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -40,26 +35,17 @@ date_finished: 2026-07-26T20:51:50Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-25T17:00:05Z'
+  - ts: '2026-08-02T17:30:06Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-26T17:00:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-25T17:00:08Z'
+  - ts: '2026-08-02T17:30:10Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -76,56 +62,69 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-07-26T17:00:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2623: Corpus draft mode — cheap iteration tier for sketch maps
+# T-2739: remediate 20 active tasks carrying the unjudged-test-run verification shape
 
 ## Context
 
-**Operator endorsed 2026-07-25 (T-2619 dialogue round 3):** *"makes sense, we can also jointly iterate it and test it before releasing it fully in production."* Draft mode is the joint iteration + testing surface: agent and operator sketch/refine a workflow as DRAFT, exercise it together, and only promotion to production (ratified corpus) pays the full ceremony — uuid audit, lint clean, suites, e2e, operator sign-off as Human AC. Drafts are excluded from the retrieval index and lint baseline, badged DRAFT in the gallery, and never treated as authority (cascading-detail rules from T-2622 apply only to ratified maps). Stale drafts (~30 days untouched) surface as audit INFO. See docs/reports/T-2619-designer-authority-model.md Dialogue Log.
+T-2738 shipped the close gate that refuses a pass-marker verdict on an unjudged
+test run. 20 such lines sit in `.tasks/active/` (OBS-133) — each one would report
+green on a red suite, and each will now block its own task's close.
 
-**Session-start triggers (operator question 2026-07-25: "how can I trigger starting a drafting session together with agent?"):** three entry points, all converging on the same ritual:
-1. **Chat**: operator says "let's draft <topic>" → agent runs the ritual (task, registry entry status:draft, skeleton seed, deep-link back).
-2. **CLI**: `fw designer draft new <name>` → creates draft registry entry + empty/seeded map + prints editor deep-link (+ ntfy push of the URL).
-3. **Watchtower**: "New draft" button in /designer gallery → same as CLI, opens editor directly.
-The ritual (pair-draft loop, proven in arc-014 D1-D5): agent seeds skeleton from dialogue → operator edits visually in /designer/app → agent re-reads saved version (fw corpus derive/parse), critiques/normalizes, writes next version → repeat until settled → promotion ceremony. Versions v1..vN in .context/designer/projects/<name>/ are the shared medium; operator holds the pen in the UI, agent holds the pen in the spec.
+The gate is the prevention. This is the cleanup: rewrite each line so its verdict
+is as strong as the exit code it discarded, and confirm the corpus is clean by the
+real predicate rather than by inspection.
+
+41 further instances sit in `.tasks/completed/`. Those are out of scope and stay
+that way — they were the verdict at the moment those tasks closed, and rewriting
+history to make the record look better than it was is the opposite of the point.
+They are counted here so the number is on the record.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Draft convention settled and documented: map id prefix `draft-` marks a draft (no registry to drift); documented in designer.sh, corpus_lint, corpus_explain docstrings/comments
-- [x] `fw designer draft new <name>` live-verified: created draft-smoke-test (seeded 3-node/2-flow skeleton via /api/save), printed deep-link, ntfy best-effort; duplicate refused with the existing deep-link; refuses when Watchtower is down
-- [x] Draft exclusions live: lint skips `draft-*` (scanned 9→8 maps, baseline unchanged at 2 findings); `fw search` corpus section skips drafts (verified: "threshold" no longer surfaces draft-trigger-handling); `fw corpus explain draft-trigger-handling` renders "DRAFT — not authority at any stage" provenance
-- [x] Stale-draft audit leg shipped (check_stale_drafts in audit.sh structure section, INFO at 30d+ via meta.json updated ts)
-- [x] Gallery live-verified after restart: DRAFT badge markup renders for draft maps (dashed card + badge), "New draft" form POSTs to /designer/draft/new (CSRF-tokened) → 302 into editor at seeded v1 (draft-post-smoke round-trip confirmed, then cleaned up)
-- [x] Tests (test_corpus_explain.py 9 passed): search excludes drafts; explain DRAFT footer; lint collect_targets skips drafts but lints one explicitly targeted; duplicate-refusal covered live above
+- [x] Every offending line in `.tasks/active/` is rewritten to carry a verdict at
+      least as strong as the discarded exit code — failure guard, or exit-preserving form
+- [x] Rewrites are semantically faithful: same suite, same expected outcome; no line
+      is "fixed" by weakening what it asserts (e.g. deleting the assertion)
+- [x] `find_unjudged_test_runs` over `.tasks/active/` returns zero — measured with the
+      real predicate from `lib/verification-verdict.sh`, not a re-typed copy (L-533)
+- [x] Each rewritten line is executed and its verdict recorded — a rewrite that cannot
+      run (missing suite, moved path) is reported as such, not silently left green
+- [x] `.tasks/completed/` is untouched: count unchanged before and after
 
-### Human
-- [ ] [REVIEW] Gallery DRAFT badge + "New draft" affordance read cleanly in the live gallery
-  **Steps:**
-  1. Open http://192.168.10.107:3001/designer in a browser
-  2. Locate draft-trigger-handling — verify the DRAFT badge is visible and unambiguous
-  3. Click "New draft", enter a throwaway name, verify the editor opens on a seeded skeleton; delete the throwaway via the gallery if desired
-  **Expected:** Badge clearly separates drafts from ratified maps; New draft lands you in the editor without manual URL work
-  **If not:** Note what reads wrong; the badge/button styling iterates in the next round
+## Findings
+
+20 lines rewritten across 19 task files: pytest lines gained
+`&& ! echo "$out" | grep -qE "[0-9]+ (failed|error)"`, bats lines gained
+`&& ! echo "$out" | grep -q "^not ok"`. Both guards were validated against real
+fail / collection-error / all-pass / empty-run output before being applied —
+anchoring on pytest's summary shape rather than a bare `failed`, which would
+collide with test names.
+
+All 20 were then executed. 16 pass; 4 are red, and they are not the same finding:
+
+| Task | Red because | Was it green before? |
+|---|---|---|
+| **T-2027** | `test_only_neutral_fallback_hexes_remain` genuinely fails | **YES — `1 failed, 5 passed` matched `grep -q "passed"`** |
+| T-2623 | count pinned at `9 passed`, suite grew to 13 | No — fails red. Generalised to `" passed"`, now green |
+| T-2089 | inner `timeout 90`, actual run 93.7s | No — pre-existing, unrelated to the guard. Raised to 300 |
+| T-2088 | 2 of 20 routes exceed the height bound | No — `2 failed, 18 passed` never matched `"20 passed"` either |
+
+**Exactly one live false green: T-2027** (OBS-134). Its verification claimed pass
+while a unit test failed, and it took the guard to surface it. The other three
+were already red for their own reasons and are reported as such rather than
+folded into the headline — the class firing once for real is the finding; four
+would be an overclaim.
+
+T-2088's playwright suite needs ~198s end to end (pytest collection alone is
+~91s), which is what made T-2089's 90s bound fail. OBS-135 carries both the two
+failing routes and the timing.
+
+T-2027 and T-2088 now correctly block their own closes until the underlying tests
+are fixed. That is the gate working, not a regression introduced here; neither
+test was touched (one bug = one task — OBS-134, OBS-135).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -160,14 +159,6 @@ The ritual (pair-draft loop, proven in arc-014 D1-D5): agent seeds skeleton from
 
 ## Verification
 
-out=$(python3 -m pytest tests/unit/test_corpus_explain.py -q 2>&1); echo "$out" | grep -q " passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
-out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "^2 finding"
-out=$(python3 tools/corpus_lint.py 2>&1); echo "$out" | grep -q "scanned 8 map"
-out=$(bin/fw corpus explain draft-trigger-handling 2>&1); echo "$out" | grep -q "DRAFT — not authority"
-out=$(python3 tools/corpus_explain.py --search "threshold" 2>&1); test -z "$out"
-curl -s "$(bin/fw watchtower url)/designer" -o /tmp/.t2623-gallery.html && grep -q "draft-badge" /tmp/.t2623-gallery.html
-grep -q "New draft" /tmp/.t2623-gallery.html
-
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -192,12 +183,32 @@ grep -q "New draft" /tmp/.t2623-gallery.html
 # stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
 # string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
 #
+# BUT NOT for a test runner (T-2738): the capture above discards the command's
+# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
+# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
+# that exit code WAS the verdict, and the pass marker you grep instead survives
+# a partial failure: a suite printing "3 failed, 9 passed" satisfies
+# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
+# same output. Either keep the exit code:
+#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
+# or add the guard the exit code used to supply:
+#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# The real predicate, over the real corpus — zero offenders remain in active/.
+[ -z "$(bash -c 'source lib/verification-verdict.sh; source lib/verification-port.sh; for f in .tasks/active/T-*.md; do find_unjudged_test_runs "$(extract_verification_block "$f")"; done')" ]
+# completed/ untouched by this task (history is not rewritten to look better)
+[ "$(git status --short .tasks/completed/ | wc -l)" -eq 0 ]
+# the two guards still discriminate — pinned in T-2738's suite
+bats tests/unit/verification_unjudged_test_run.bats > /tmp/.t2739.out 2>&1 && grep -q "^ok 16 " /tmp/.t2739.out && ! grep -q "^not ok" /tmp/.t2739.out
 
 ## RCA
 
@@ -239,24 +250,6 @@ grep -q "New draft" /tmp/.t2623-gallery.html
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-07-26 — registry dissolved into a naming convention
-- **What changed:** Filing assumed a draft *registry* ("registry entry status:draft"). Building revealed the id prefix `draft-` gives the same partition with zero registry to drift — every surface (lint, search, explain, gallery, audit) tests one string prefix. The T-2622 retrieval seam shipping first made this urgent: search was surfacing drafts unbadged for a few hours.
-- **Plan impact:** No registry file; promotion = re-author under a production id (new uuid — acceptable since prod maps must never reference draft uuids anyway). Promotion ceremony itself is deliberately NOT built here — it's the settled-draft moment's work, and draft-trigger-handling will be its first live case.
-- **Triggered:** CSRF form-token requirement discovered on the gallery POST (403 → `_csrf_token` hidden field per T-1343 idiom).
-
-## Recommendation
-
-**Recommendation:** GO — approve the gallery draft UI as shipped.
-
-**Rationale:** All six agent ACs verified live: the pair-draft ritual now has all three endorsed entry points (chat worked already; `fw designer draft new` and the gallery button shipped here), drafts are structurally partitioned from ratified corpus on every surface (lint 8-map scan/2-finding baseline unchanged, search excludes, explain shows DRAFT provenance, audit nudges stale drafts at 30d as INFO), and the create→edit round-trip was proven end-to-end (POST → 302 → editor on seeded v1, then cleaned up). The only open judgment is visual: whether the DRAFT badge + New draft form read cleanly in the gallery — that's the single [REVIEW] Human AC.
-
-**Evidence:**
-- `fw designer draft new "smoke test"` → created + deep-link; duplicate refused with link; drafts deleted after test
-- lint: `scanned 8 map(s)` / `2 finding(s)` (draft excluded, baseline intact)
-- `fw corpus explain draft-trigger-handling` → "DRAFT — not authority at any stage"
-- gallery live at /designer: dashed card + DRAFT badge on draft-trigger-handling, New draft form (CSRF-tokened) → 302 into editor
-- tests/unit/test_corpus_explain.py: 9 passed
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -280,23 +273,19 @@ grep -q "New draft" /tmp/.t2623-gallery.html
 
 ## Updates
 
-### 2026-07-25T16:46:22Z — task-created [task-create-agent]
+### 2026-08-02T17:23:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2623-corpus-draft-mode--cheap-iteration-tier-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2739-remediate-20-active-tasks-carrying-the-u.md
 - **Context:** Initial task creation
-
-### 2026-07-26T20:42:24Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: later → now (auto-sync)
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4cf536fa
-- **Timestamp:** 2026-07-26T20:51:53Z
+- **Scan ID:** R-ad5ee023
+- **Timestamp:** 2026-08-02T17:43:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-### 2026-07-26T20:51:50Z — status-update [task-update-agent]
+### 2026-08-02T17:43:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

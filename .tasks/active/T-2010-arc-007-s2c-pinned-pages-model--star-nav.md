@@ -163,7 +163,7 @@ rotation drops both — accepted tradeoff, identical to S1.
   **If not:** Note which control is unclear or where the strip crowds the nav
 
 ## Verification
-out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_pins.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed"
+out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_pins.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -c "import ast; ast.parse(open('web/blueprints/settings.py').read()); ast.parse(open('web/shared.py').read()); print('ok')" 2>&1); echo "$out" | grep -q "ok"
 out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -c "from web.app import app; c=app.test_client(); r=c.get('/tasks'); print(r.status_code)" 2>&1); echo "$out" | grep -q "200"
 

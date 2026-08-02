@@ -123,7 +123,7 @@ Implements T-2066 GO scope: `/inception/<id>` was extracting Context, RCA, Accep
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 python3 -c "import ast; ast.parse(open('web/blueprints/inception.py').read())"
-out=$(python3 -m pytest tests/playwright/test_inception_detail_sections.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed"
+out=$(python3 -m pytest tests/playwright/test_inception_detail_sections.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;

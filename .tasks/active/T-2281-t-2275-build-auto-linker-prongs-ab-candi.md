@@ -118,7 +118,7 @@ See `docs/reports/T-2275-auto-linker-rca.md` for the full design.
 grep -q "docs/articles/" web/shared.py
 grep -q "ROOT_FILES" web/shared.py
 test -f tests/unit/test_auto_link_root_and_articles.py
-out=$(python3 -m pytest tests/unit/test_auto_link_root_and_articles.py -q 2>&1); echo "$out" | grep -q "passed"
+out=$(python3 -m pytest tests/unit/test_auto_link_root_and_articles.py -q 2>&1); echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 WT=$(bin/fw watchtower url); out=$(curl -s "$WT/review/T-2274" 2>&1); echo "$out" | grep -qE '<a href="/file/README\.md"'
 out=$(bin/fw reviewer T-2281 2>&1); echo "$out" | grep -qE "Overall:.*PASS"
 ## RCA

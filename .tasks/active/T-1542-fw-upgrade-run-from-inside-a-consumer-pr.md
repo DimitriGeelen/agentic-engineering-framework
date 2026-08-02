@@ -186,7 +186,7 @@ Origin: OBS-032 (S-2026-0427-0908 against `/opt/050-email-archive`).
 #
 # Bats regression test exists and passes (assertion, not optional) — content-asserted
 test -f tests/unit/test_upgrade_self_target_guard.bats
-out=$(bats tests/unit/test_upgrade_self_target_guard.bats 2>&1); echo "$out" | grep -q "^ok 4 "
+out=$(bats tests/unit/test_upgrade_self_target_guard.bats 2>&1); echo "$out" | grep -q "^ok 4 " && ! echo "$out" | grep -q "^not ok"
 # Existing upgrade-from-framework-repo path still works — content-asserted, not exit-only
 out=$(bin/fw upgrade --help 2>&1); echo "$out" | grep -q "Sync framework improvements to consumer project"
 # Guard-line presence in lib/upgrade.sh (T-1542 fix landed)

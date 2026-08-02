@@ -111,7 +111,7 @@ graph should ever follow the palette) is design-judgment, tracked separately.
 
 ## Verification
 
-out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_fabric_coupling_token.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed"
+out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_fabric_coupling_token.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jinja_env.get_template('fabric_detail.html'); print('compiles')"
 
 ## Evolution

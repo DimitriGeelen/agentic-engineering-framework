@@ -140,7 +140,7 @@ Template: `web/templates/reviewer_overrides.html` (lines 21-52 active, 66-87 eve
 # T-2089 verification: the targeted height-guard test must pass on the live page.
 # L-387-safe pattern: capture pytest output, then SINGLE pipe to grep (no intermediate
 # tail/awk/sed stages — T-2090; the middle pipe re-introduces SIGPIPE risk).
-out=$(timeout 90 python3 -m pytest "tests/playwright/test_all_routes_height.py::test_route_height_bounded[/reviewer/overrides]" -q 2>&1); echo "$out" | grep -qE "1 passed"
+out=$(timeout 300 python3 -m pytest "tests/playwright/test_all_routes_height.py::test_route_height_bounded[/reviewer/overrides]" -q 2>&1); echo "$out" | grep -qE "1 passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your

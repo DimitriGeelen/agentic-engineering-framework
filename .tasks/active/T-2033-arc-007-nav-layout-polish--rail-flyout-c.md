@@ -137,7 +137,7 @@ decouple — nav is an independent axis; presets no longer carry it.**
 
 ## Verification
 
-out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_nav_layout_polish.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed"
+out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_nav_layout_polish.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jinja_env.get_template('base.html'); app.jinja_env.get_template('appearance.html'); print('compiles')"
 python3 -c "import sys; sys.path.insert(0,'.'); from web.blueprints.settings import PRESETS; assert all('nav' not in p for p in PRESETS.values()), 'preset still carries nav'; print('F4a presets nav-free')"
 # Real-render integration (the F1/F2/F3/F5 behaviour). Scoped to where the Playwright harness is installed (L-291); run via `fw test playwright` elsewhere.

@@ -142,7 +142,7 @@ All 6 sites are structurally distinct from cockpit.py (T-2221): they **lack** an
 
 # T-2222: 6-site widening contract — no narrow [:200]/[:300] truncations survive
 # on tasks.py error-render paths; widened sites carry _escape + pre-wrap.
-out=$(python3 -m pytest tests/unit/test_tasks_error_render_widen.py -q 2>&1); echo "$out" | grep -q "5 passed"
+out=$(python3 -m pytest tests/unit/test_tasks_error_render_widen.py -q 2>&1); echo "$out" | grep -q "5 passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 # Class invariant: zero narrow truncations remain in tasks.py
 out=$(grep -cE '\)\[:200\]|\)\[:300\]' web/blueprints/tasks.py 2>&1); test "$out" = "0"
 # Exactly 6 widened sites

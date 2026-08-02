@@ -144,7 +144,7 @@ hand the human the exact resolved URL(s), confirmed serving current S0/S1 code, 
 
 # Regression guard: the appearance preset JS must actually execute (the origin
 # bug returned 200 + presets-present but the script threw, so buttons were dead).
-out=$(python3 -m pytest tests/playwright/test_appearance_presets.py -q 2>&1); echo "$out" | tail -3 | grep -q "2 passed"
+out=$(python3 -m pytest tests/playwright/test_appearance_presets.py -q 2>&1); echo "$out" | tail -3 | grep -q "2 passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 # Resolved review URL serves the appearance page (no hard-coded :3000)
 curl -sf "$(bin/fw watchtower url)/settings/appearance" >/dev/null
 

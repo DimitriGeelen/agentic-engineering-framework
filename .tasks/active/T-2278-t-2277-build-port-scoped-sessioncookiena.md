@@ -137,7 +137,7 @@ class documented in `docs/reports/T-2277-watchtower-csrf-pollution.md`.
 
 grep -q 'SESSION_COOKIE_NAME.*fw_session_' web/app.py
 test -f tests/unit/test_csrf_cookie_scoping.py
-out=$(python3 -m pytest tests/unit/test_csrf_cookie_scoping.py -q 2>&1); echo "$out" | grep -q "passed"
+out=$(python3 -m pytest tests/unit/test_csrf_cookie_scoping.py -q 2>&1); echo "$out" | grep -q "passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 out=$(bin/fw reviewer T-2278 2>&1); echo "$out" | grep -qE "Overall:.*PASS"
 
 ## RCA

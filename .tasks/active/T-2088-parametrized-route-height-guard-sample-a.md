@@ -181,8 +181,8 @@ T-2087's narrow fix didn't sweep.
 # (10th instance of the parameterless unbounded class, filed as T-2089) — that pre-exists
 # T-2088 and is not regressed by it. Scoping verification to the new contracts avoids
 # hostage-taking by unrelated failures (L-387 safe pattern: capture-then-grep).
-out=$(python3 -m pytest tests/unit/test_parametrized_route_sampler.py -q 2>&1); echo "$out" | grep -qE "9 passed"
-out=$(python3 -m pytest tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded -q --tb=no 2>&1); echo "$out" | grep -qE "20 passed"
+out=$(python3 -m pytest tests/unit/test_parametrized_route_sampler.py -q 2>&1); echo "$out" | grep -qE "9 passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
+out=$(python3 -m pytest tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded -q --tb=no 2>&1); echo "$out" | grep -qE "20 passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 
 ## RCA
 
