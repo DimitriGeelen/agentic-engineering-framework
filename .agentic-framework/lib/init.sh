@@ -448,18 +448,6 @@ CYAML
         fi
     fi
 
-    # --- Post-init validation (T-461: Tier 1 structural + Tier 2 functional) ---
-    echo ""
-    echo -e "${BOLD}Validating...${NC}"
-    source "$FW_LIB_DIR/validate-init.sh" 2>/dev/null || \
-        source "$(dirname "${BASH_SOURCE[0]}")/validate-init.sh" 2>/dev/null || true
-    if type do_validate_init >/dev/null 2>&1; then
-        if ! do_validate_init "$target_dir" --provider "$provider"; then
-            echo ""
-            echo -e "${YELLOW}Init completed with validation errors — check output above${NC}"
-        fi
-    fi
-
     # --- Activate governance: initialize session context (T-002) ---
     # F5 (T-2444): route through the project's vendored fw — the SAME entry
     # point as the `fw context init` recovery — so context.sh runs with the
@@ -566,6 +554,32 @@ CYAML
                 fi
                 echo -e "  ${GREEN}✓${NC}  $task_count onboarding tasks ($mode_label mode)"
             fi
+        fi
+    fi
+
+    # --- Post-init validation (T-461: Tier 1 structural + Tier 2 functional) ---
+    #
+    # T-2727: this block used to run BEFORE governance activation and before the
+    # onboarding tasks were seeded, ~114 lines earlier. `func-tasks` — the check
+    # that parses .tasks/active/ and verifies the onboarding tasks have valid
+    # frontmatter — is guarded by `active_tasks > 0`, so on a fresh init it found
+    # an empty directory, did not run, and (because the guard sits outside the
+    # `total++`) was not counted either. It appeared in neither the numerator nor
+    # the denominator and printed nothing: a check that never ran and a check that
+    # does not exist were indistinguishable from the output.
+    #
+    # The artifact it protects is the onboarding task set — the thing a first-run
+    # user is handed. Validation must run last so its verdict describes the tree
+    # the user is actually left with, not an intermediate state that no longer
+    # exists by the time init returns.
+    echo ""
+    echo -e "${BOLD}Validating...${NC}"
+    source "$FW_LIB_DIR/validate-init.sh" 2>/dev/null || \
+        source "$(dirname "${BASH_SOURCE[0]}")/validate-init.sh" 2>/dev/null || true
+    if type do_validate_init >/dev/null 2>&1; then
+        if ! do_validate_init "$target_dir" --provider "$provider"; then
+            echo ""
+            echo -e "${YELLOW}Init completed with validation errors — check output above${NC}"
         fi
     fi
 
