@@ -105,6 +105,19 @@ date_finished: null
 # stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
 # string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
 #
+# BUT NOT for a test runner (T-2738): the capture above discards the command's
+# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
+# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
+# that exit code WAS the verdict, and the pass marker you grep instead survives
+# a partial failure: a suite printing "3 failed, 9 passed" satisfies
+# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
+# same output. Either keep the exit code:
+#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
+# or add the guard the exit code used to supply:
+#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
