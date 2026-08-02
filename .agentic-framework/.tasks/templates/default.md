@@ -102,8 +102,29 @@ date_finished: null
 # Single pipe only — no intermediate tail/awk/sed stages between capture and grep
 # (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
 # the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+# stdin on. grep scans the whole captured string anyway, so the tail-3 was
+# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+#
+# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
+# for the captures they were written about, and both invert above the pipe
+# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
+# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
+# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
+# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
+# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
+# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
+# For anything that might be large, redirect to a file:
+#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
+#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
+# This is the better default even when size is not a concern: `&&` keeps the
+# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
+# the T-2738 problem one layer down. A 404 from curl fails the line instead of
+# silently producing an empty capture for grep to not-match.
+#
+# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
+# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
+# 141 under P-011, from the same directory, the same second. To rehearse for real:
+#     bash -c 'set -eo pipefail; <your verification line>'
 #
 # BUT NOT for a test runner (T-2738): the capture above discards the command's
 # exit code, and `set -e` is suppressed inside the `if` condition the gate runs
