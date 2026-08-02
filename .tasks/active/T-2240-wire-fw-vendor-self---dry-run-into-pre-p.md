@@ -247,12 +247,11 @@ rev_out=$(bin/fw reviewer T-2240 2>&1); echo "$rev_out" | grep -qE "Overall:.*(P
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b17c27b2
-- **Timestamp:** 2026-06-07T19:52:24Z
+- **Scan ID:** R-28fb5d31
+- **Timestamp:** 2026-08-02T08:03:48Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-06-07T19:52:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

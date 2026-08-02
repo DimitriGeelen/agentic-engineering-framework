@@ -24610,3 +24610,39 @@ scan_id: R-28fb5d31
 task_id: T-2240
 payload:
   task_file: .tasks/active/T-2240-wire-fw-vendor-self---dry-run-into-pre-p.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T08:29:40Z'
+scan_id: R-c03dc7b2
+task_id: T-2728
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T08:29:40Z'
+scan_id: R-c03dc7b2
+task_id: T-2728
+payload:
+  task_file: .tasks/active/T-2728-reviewer-detector-http-verification-asse.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T08:29:40Z'
+scan_id: R-0a876f68
+task_id: T-2719
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T08:29:40Z'
+scan_id: R-0a876f68
+task_id: T-2719
+payload:
+  task_file: .tasks/active/T-2719-keystone-readme-five-minute-path-tested-.md

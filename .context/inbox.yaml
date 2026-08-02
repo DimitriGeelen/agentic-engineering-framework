@@ -1005,3 +1005,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-128
+  text: "fw reviewer CRASHES (re.error: bad escape \\x) on any task whose text contains a backslash-x escape — e.g. a Verification line with sed 's/\\x1b[0-9;]*m//g' for ANSI stripping, which is our documented idiom. Traceback is in re._parser.parse_template, so somewhere the scanner passes task text as the REPLACEMENT argument of re.sub, where backslash sequences are interpreted. Reproduces on T-2726 and T-2727. VERIFIED PRE-EXISTING: identical crash with the pre-T-2728 scanner checked out (git show b1388a442~1), so it is not from the new detector. Impact: the reviewer emits no verdict at all for these tasks — a crash reads as 'no findings' to anyone not watching stderr, which is the same wrong-object family this session has been cataloguing. Fix direction: use a replacement function or re.escape the text before substitution."
+  captured: 2026-08-02T08:30:30Z
+  context_task: T-2728
+  tags: []
+  status: pending
+  promoted_to: null

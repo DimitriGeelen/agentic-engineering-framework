@@ -1,19 +1,19 @@
-commit-cadence=3
+commit-cadence=10
 
 
-error-watchdog=16
-checkpoint=18
-budget-gate=18
-check-project-boundary=18
-check-tier0=17
-check-active-task=17
-loop-detect=17
-audit-task-tools=16
-check-active-completed-dup=1
-check-human-ac-tick=1
-check-inception-schema=1
-check-heredoc-cmd-sub=1
-check-arc-id=1
-check-inception-decisions=1
-check-settings-edit=1
+error-watchdog=39
+checkpoint=51
+check-inception-schema=6
+check-arc-id=5
+check-heredoc-cmd-sub=6
+check-human-ac-tick=6
+check-inception-decisions=6
+budget-gate=27
+check-project-boundary=27
+check-active-task=27
+audit-task-tools=14
+check-settings-edit=3
+check-tier0=12
+loop-detect=13
+check-active-completed-dup=2
 check-fabric-new-file=1

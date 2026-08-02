@@ -1,8 +1,10 @@
 ---
 id: T-2728
-name: "reviewer detector: HTTP verification assertions that cannot fail, and literal host:port URLs"
+name: "reviewer detector: HTTP verification assertions that cannot fail, and literal
+  host:port URLs"
 description: >
-  reviewer detector: HTTP verification assertions that cannot fail, and literal host:port URLs
+  reviewer detector: HTTP verification assertions that cannot fail, and literal host:port
+  URLs
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T08:24:57Z
-last_update: 2026-08-02T08:24:57Z
-date_finished: null
+last_update: '2026-08-02T08:30:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-02T08:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-02T08:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2728: reviewer detector: HTTP verification assertions that cannot fail, and literal host:port URLs
@@ -69,20 +99,30 @@ The reviewer static scan is the author-time surface that already owns this class
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `detect_toothless_http` flags a `curl` line that discards output and carries no
+- [x] `detect_toothless_http` flags a `curl` line that discards output and carries no
       failure mechanism — no `-f`/`--fail`, no comparison of a captured status.
-- [ ] It flags a literal `host:port` URL in a verification line that does not resolve
-      the port through `fw watchtower url` / `$WURL` / config.
-- [ ] Both pattern ids are registered in `policy/anti-patterns.yaml` with
-      `detector_ref`, positive and negative examples.
-- [ ] Negative controls prove it discriminates rather than firing on any `curl`:
-      `curl -sf …` does NOT flag; a captured-and-compared status does NOT flag;
-      a URL built from `$(bin/fw watchtower url)` does NOT flag.
-- [ ] The detector is run against the two real historical offenders (T-2063/T-2064
+- [x] ~~It flags a literal `host:port` URL~~ — **built, measured, then REMOVED.**
+      The AC as written was wrong to promise. Measurement: 391 corpus hits, including
+      legitimately fixed-port services (ollama `:11434`, litellm `:4000`, `:8834`),
+      deliberate negative fixtures (`example.invalid:9999`), and a line asserting the
+      string is *absent*. Separating "this project's Watchtower" from "some other
+      service" needs a maintained route allowlist — the allowlist-as-oracle shape
+      T-2722 was built to kill. Regexes kept unwired with the reasoning in-file; the
+      port anti-pattern stays documented in CLAUDE.md rather than getting a detector
+      that cries wolf 391 times. Ticked as *resolved*, not as *delivered*.
+- [x] The shipped pattern id is registered in `policy/anti-patterns.yaml` with
+      `detector_ref`, positive and negative examples. (Singular — see above.)
+- [x] Negative controls prove it discriminates rather than firing on any `curl`:
+      `-sf`, captured-and-compared, redirect-to-file, piped-to-grep, comment and
+      non-curl lines are all clean. 9/9 in `tests/unit/reviewer_toothless_http.bats`.
+- [x] The detector is run against the two real historical offenders (T-2063/T-2064
       pre-fix text) and flags both — measured, not asserted.
-- [ ] Running the reviewer over the repo's own task corpus does not produce a flood
+- [x] Running the reviewer over the repo's own task corpus does not produce a flood
       of new findings; the count is reported, and if it is large the detector is
       narrowed rather than the finding suppressed.
+      → 2715 task files scanned, **exactly 1 finding**: T-2063, the line knowingly
+      left toothless because that task is *about* a CSRF 403. The detector's only
+      corpus hit is the one already declared.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -215,3 +255,12 @@ The reviewer static scan is the author-time surface that already owns this class
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2728-reviewer-detector-http-verification-asse.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c03dc7b2
+- **Timestamp:** 2026-08-02T08:29:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

@@ -1,9 +1,9 @@
-# Audit Results - 2026-08-02-0958
-timestamp: 2026-08-02T07:58:11Z
+# Audit Results - 2026-08-02-1013
+timestamp: 2026-08-02T08:13:33Z
 sections: "structure"
 summary:
   pass: 28
-  warn: 5
+  warn: 4
   fail: 0
 findings:
   - level: PASS
@@ -27,9 +27,6 @@ findings:
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
   - level: WARN
     check: "Arc 'dispatch-safety' has no task commits in the last 30 days (11 task(s) in arc)"
-    mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
-  - level: WARN
-    check: "Arc 'watchtower-redesign' has no task commits in the last 30 days (70 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
   - level: INFO
     check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
