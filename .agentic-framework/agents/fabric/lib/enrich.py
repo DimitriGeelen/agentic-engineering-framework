@@ -652,8 +652,43 @@ def detect_ts_js_imports(content, source_location, project_root):
 # Edge resolver
 # ---------------------------------------------------------------------------
 
-def resolve_edges(raw_edges, loc_to_id, source_id):
-    """Convert (location, type) pairs to edge dicts. Deduplicates."""
+def classify_unresolved(loc, project_root):
+    """Why did this target not resolve to a card? (T-2736)
+
+    Returns "ignorable" | "actionable" | "absent".
+
+    The distinction is derived from the target itself, never from an allowlist
+    of known-noisy paths (L-533) — a directory is ignorable *because it is a
+    directory*, not because someone remembered to list it. An allowlist can
+    only ever cover the noise its author had already seen.
+    """
+    path = os.path.join(project_root, loc) if project_root else loc
+    if os.path.isdir(path):
+        return "ignorable"      # a dependency on a directory is not a component
+    if os.path.isfile(path):
+        return "actionable"     # a real file with no card — `fw fabric register`
+    return "absent"             # referenced but not on disk
+
+
+def resolve_edges(raw_edges, loc_to_id, source_id, unresolved=None,
+                  project_root=None):
+    """Convert (location, type) pairs to edge dicts. Deduplicates.
+
+    T-2736: unresolvable targets were dropped by a bare `continue` with no
+    counter, no verbose line and no effect on the summary — so enrichment could
+    only ever draw edges inside the already-registered set, and a run that
+    discarded everything reported identically to one that discarded nothing.
+
+    Measured before the fix: 2419 raw edges detected, 2124 kept, 295 discarded
+    across 117 distinct targets, every one of which existed on disk. The split
+    is what makes the silence expensive — 148 of those edge instances pointed at
+    directories (genuine detector noise, correctly dropped) and 147 at real
+    uncarded files (genuine coverage loss). One mute branch was doing both jobs,
+    so no reader could tell a healthy run from a lossy one.
+
+    Passing `unresolved` (a dict) collects the breakdown for the caller to
+    report. Omitting it preserves the previous signature exactly.
+    """
     seen = set()
     resolved = []
 
@@ -661,6 +696,10 @@ def resolve_edges(raw_edges, loc_to_id, source_id):
         loc = os.path.normpath(loc)
         target_id = loc_to_id.get(loc)
         if not target_id:
+            if unresolved is not None:
+                kind = classify_unresolved(loc, project_root)
+                unresolved.setdefault(kind, {})
+                unresolved[kind][loc] = unresolved[kind].get(loc, 0) + 1
             continue
         if target_id == source_id:
             continue
@@ -677,10 +716,13 @@ def resolve_edges(raw_edges, loc_to_id, source_id):
 # Forward pass — detect depends_on for each card
 # ---------------------------------------------------------------------------
 
-def compute_forward_edges(cards, loc_to_id, framework_root):
+def compute_forward_edges(cards, loc_to_id, framework_root, unresolved=None):
     """Analyze all cards and return new forward edges per card_path.
 
     Returns: dict of card_path -> list of edge dicts to ADD to depends_on
+
+    T-2736: pass `unresolved` (a dict) to collect the breakdown of targets that
+    did not resolve to a card, so the summary can report what was dropped.
     """
     forward = {}  # card_path -> [edge_dicts]
 
@@ -745,7 +787,9 @@ def compute_forward_edges(cards, loc_to_id, framework_root):
         if not raw_edges:
             continue
 
-        new_edges = resolve_edges(raw_edges, loc_to_id, card_id)
+        new_edges = resolve_edges(raw_edges, loc_to_id, card_id,
+                                  unresolved=unresolved,
+                                  project_root=framework_root)
         if not new_edges:
             continue
 
@@ -963,7 +1007,9 @@ def main():
     print(f"Processing {len(targets)} cards...\n")
 
     # Phase 1: Compute forward edges (depends_on)
-    forward = compute_forward_edges(targets, loc_to_id, project_root)
+    unresolved = {}
+    forward = compute_forward_edges(targets, loc_to_id, project_root,
+                                    unresolved=unresolved)
 
     # Phase 2: Compute reverse edges (depended_by) — uses ALL cards as targets
     reverse = compute_reverse_edges(forward, cards, id_to_card)
@@ -984,6 +1030,31 @@ def main():
     print(f"Forward edges:     {n_fwd}  (depends_on)")
     print(f"Reverse edges:     {n_rev}  (depended_by)")
     print(f"Total edges added: {n_fwd + n_rev}")
+
+    # T-2736: report what did NOT resolve. Before this, unresolvable targets
+    # were dropped by a bare `continue` — so a run that discarded 295 edges
+    # printed the same summary as one that discarded none, and the operator
+    # had no way to tell "nothing to add" from "everything thrown away".
+    #
+    # ACTIONABLE is printed even at zero. An absence has to be representable,
+    # or a clean run and a broken counter look identical (L-525).
+    n_actionable = sum(unresolved.get("actionable", {}).values())
+    n_ignorable = sum(unresolved.get("ignorable", {}).values())
+    n_absent = sum(unresolved.get("absent", {}).values())
+    d_actionable = len(unresolved.get("actionable", {}))
+
+    print(f"\n=== Unresolved edge targets ===")
+    print(f"Actionable:        {n_actionable}  ({d_actionable} real file(s) "
+          f"with no card — run: fw fabric register <path>)")
+    print(f"Ignorable:         {n_ignorable}  (directories — not components)")
+    if n_absent:
+        print(f"Absent:            {n_absent}  (referenced but not on disk)")
+
+    if args.verbose and d_actionable:
+        print(f"\nUncarded files referenced as dependencies:")
+        for loc, count in sorted(unresolved["actionable"].items(),
+                                 key=lambda x: -x[1]):
+            print(f"  x{count:<4d} {loc}")
 
     if sub_stats:
         print(f"\nEdges by subsystem:")
