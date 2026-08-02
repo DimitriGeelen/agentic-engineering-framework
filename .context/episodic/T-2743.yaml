@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2743: task template SIGPIPE hint is wrong above the pipe buffer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T22:57:44Z
+# ============================================================================
+
+task_id: T-2743
+task_name: "task template SIGPIPE hint is wrong above the pipe buffer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T22:53:18Z
+completed: 2026-08-02T22:57:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-03T00:57:23+02:00
+last_commit: 2026-08-03T00:57:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the template's SIGPIPE-safe idiom is only safe below the pipe buffer. register the pipe-buffer test in the component fabric
+
+# Key outcomes
+outcomes:
+  - '`.tasks/templates/default.md` states the pipe-buffer limit next to the existing L-387 / T-2090 hints, with the file-redirect form as the remedy for large captures'
+  - 'T-2090''s false premise is corrected at source, not just annotated below — the line asserting "`echo "$out"` is small and immediate" is the belief that makes the idiom look unconditionally safe, and it is gone'
+  - 'The hint says *why* the redirect form is better beyond SIGPIPE: it keeps the producing command''s exit code in the verdict instead of discarding it (the T-2738 concern, one layer down)'
+  - 'The hint gives the rehearsal command (`bash -c ''set -eo pipefail; <line>''`) and says plainly that running the line by hand does not rehearse the gate'
+  - 'Checked the greenfield seed templates for a stale copy (the T-2740 two-template-sets trap). They carry **no** hint block at all — `grep -rl SIGPIPE lib/seeds/` is empty — so there is nothing stale to correct. That absence is its own onboarding gap and is filed separately rather than folded in here'
+  - 'A test pins the mechanism rather than the prose: a >64KB capture piped to an early-matching `grep -q` exits 141 under `pipefail`, and the file-redirect form of the same check exits 0. Synthetic payload, so it holds without a running Watchtower'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-verification_pipe_buffer.yaml'
+  - '.tasks/active/T-2743-task-template-sigpipe-hint-is-wrong-abov.md'
+  - '.tasks/templates/default.md'
+  - 'tests/unit/verification_pipe_buffer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T00:57:23'
+    action: 'T-2743: the template''s SIGPIPE-safe idiom is only safe below the pipe buffer'
+  - time: '2026-08-03T00:57:32'
+    action: 'T-2743: register the pipe-buffer test in the component fabric'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 5
+  lines_added: 390
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2743-task-template-sigpipe-hint-is-wrong-abov.md
+generated_by: context-agent-hybrid
