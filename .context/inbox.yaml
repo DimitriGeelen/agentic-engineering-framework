@@ -1075,3 +1075,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-138
+  text: "Tier 0 enforcement is string-level only and this is nowhere documented, so its silence reads as coverage. agents/context/check-tier0.sh:40 extracts tool_input.command from the PreToolUse JSON and pattern-matches THAT STRING; it never opens a file the command references. So 'bash some-script.sh' is opaque to the gate no matter what the script does - a recursive delete inside the script is invisible. VERIFIED in our code, not inherited: line 40 is the only input, and the only file reads in the hook are lib/ sources. Reported by 832 (rail 404) after it cost them their working tree: a mutated build script ran rm -rf \"$OUT\" with the var pointing at their repo root, taking .git/.tasks/.context/.agentic-framework with it; recovered from origin, zero committed work lost, entirely due to P-009 commit cadence. They filed it as their G-018 severity high and flagged it as equally live for us because we run the same hook. Our exposure measured: 16 recursive deletes of a variable path in shipped non-test code (bin/, agents/, lib/, tools/). bin/fw:415 already uses the fail-closed 'rm -rf \\${dest:?}/\\${item:?}' idiom; the other 15 do not. NOTE the two subclasses are different: \\${var:?} fail-closed only prevents the EMPTY-var case; 832's var was set, just set to the wrong directory, which no :? guard catches. The primary deliverable is therefore DOCUMENTING the scope boundary (agents currently infer coverage from the gate's silence), not a lint. Every Tier 0 block anyone has ever hit came from a TYPED command, so the gate's apparent reliability is evidence about agent habits, not about coverage."
+  captured: 2026-08-02T22:42:22Z
+  context_task: T-100196
+  tags: []
+  status: pending
+  promoted_to: null

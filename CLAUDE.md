@@ -236,6 +236,29 @@ Captured → Started Work ↔ Issues → Work Completed
 | 2 | Human situational authorization | Single-use, mandatory logging | Partial (git --no-verify + bypass log) |
 | 3 | Pre-approved categories (health checks, status queries, git-status) | Configured | Spec only |
 
+**Tier 0 sees the command string, and nothing else (T-2742).** `check-tier0.sh` matches
+against `tool_input.command` — the literal text of the Bash call. It never opens a file
+that command refers to. So `bash ./build.sh`, `make clean`, `python3 deploy.py` and
+`./agents/foo/foo.sh` all pass the gate on the first check, whatever they do inside.
+
+**The moment a command becomes a file, Tier 0 stops seeing it.** A script is governed at
+*write* time by Tier 1 (`check-active-task.sh`) and not at *run* time by Tier 0 — so an
+agent-authored script that an agent then executes is outside Tier 0 entirely. Do not
+treat "the gate did not fire" as evidence that an action was non-destructive; it is only
+evidence that the destructive part was not spelled out in the command you typed.
+
+This is a scope boundary, not a bug — inspecting arbitrary interpreted files is a much
+larger problem. It is stated here because its absence reads as coverage: every Tier 0
+block on record came from a *typed* command, which makes the gate's apparent reliability
+evidence about agent habits rather than about its reach. Pinned by
+`tests/unit/tier0_scope_boundary.bats`, so this claim is falsifiable rather than folklore.
+
+Origin: 832 lost a working tree this way (their G-018, high) — a mutated build script ran
+`rm -rf "$OUT"` with the variable pointing at their repo root, taking `.git`, `.tasks`,
+`.context` and `.agentic-framework`. They recovered from origin with zero committed work
+lost, purely on P-009 commit cadence. Our instance was verified independently against our
+own hook source before being written down (OBS-138).
+
 ## Working with Tasks
 
 When starting work (**BEFORE reading code, editing files, or invoking skills**):
