@@ -1019,3 +1019,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-130
+  text: "tests/unit/update_task_episodic_gen.bats: tests 1 and 4 are RED at HEAD and were red before T-2731 touched anything (verified by checking out HEAD versions of lib/yaml.sh + agents/context/lib/episodic.sh and re-running: same 2/4 failure). Both fail on [ \"$status\" -eq 0 ] — the update-task.sh invocation itself is failing, not the episodic assertion. Same class as T-2696/T-2697 orphaned guard suite (L-526): a suite nothing runs reports success by silence. Reproduce: bats tests/unit/update_task_episodic_gen.bats"
+  captured: 2026-08-02T09:38:28Z
+  context_task: T-2731
+  tags: []
+  status: pending
+  promoted_to: null

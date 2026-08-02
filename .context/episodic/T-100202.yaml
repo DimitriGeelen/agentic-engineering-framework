@@ -1,15 +1,13 @@
 # ============================================================================
-# EPISODIC MEMORY - T-100202: Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emit
-Audit WARN — Task T-2488-audit-warn--task-t-2462-audit-warn--task.md missing Updates...
+# EPISODIC MEMORY - T-100202: Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emit runaway)
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-07-21T06:54:55Z
+# Generated: 2026-08-02T09:35:49Z
 # ============================================================================
 
 task_id: T-100202
-task_name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emit
-Audit WARN — Task T-2488-audit-warn--task-t-2462-audit-warn--task.md missing Updates..."
+task_name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emit runaway)"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 
@@ -19,11 +17,11 @@ completed: 2026-07-21T06:54:42Z
 duration_days: 16
 updates_count: 1
 first_commit: 2026-07-06T00:51:41+02:00
-last_commit: 2026-07-06T01:09:06+02:00
+last_commit: 2026-07-21T09:09:58+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  file task-ID inflation + split-view collision RCA. pin inflation mechanism (AC#1) — self-feeding audit-finding emitter. quarantine far-outlier ID bands in generate_id (AC#2). refresh vendored create-task.sh (self-vendor parity)
+  file task-ID inflation + split-view collision RCA. pin inflation mechanism (AC#1) — self-feeding audit-finding emitter. quarantine far-outlier ID bands in generate_id (AC#2). refresh vendored create-task.sh (self-vendor parity). task-ID allocator — AC3 cross-view guard (generate_id union-scans .tasks across all git worktrees + allocation keylock anchored at main checkout; stale worktree can no longer mint duplicate IDs) + AC4 recursion gate (double audit-warn name refused at create time, emitter verified removed from HEAD); live-fired next-id T-2584 over main+3 worktrees; 10/10 bats. OBS-095 — strand census 'proven DONE' claims not content-verified; T-2335/T-2171/T-2390 need per-task verify against HEAD
 
 # Key outcomes
 outcomes:
@@ -47,23 +45,31 @@ decisions:
 artifacts:
   - '.agentic-framework/agents/task-create/create-task.sh'
   - 'agents/task-create/create-task.sh'
+  - '.context/episodic/T-100202.yaml'
+  - '.context/inbox.yaml'
+  - '.context/project/learnings.yaml'
   - '.tasks/active/T-100202-task-id-allocator-inflation--split-view-.md'
+  - '.tasks/completed/T-100202-task-id-allocator-inflation--split-view-.md'
   - 'tests/unit/t100202_id_quarantine.bats'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  - time: "2026-07-06T00:51:41"
-    action: "T-100202: file task-ID inflation + split-view collision RCA"
-  - time: "2026-07-06T00:56:06"
-    action: "T-100202: pin inflation mechanism (AC#1) — self-feeding audit-finding emitter"
-  - time: "2026-07-06T01:08:17"
-    action: "T-100202: quarantine far-outlier ID bands in generate_id (AC#2)"
-  - time: "2026-07-06T01:09:06"
-    action: "T-100202: refresh vendored create-task.sh (self-vendor parity)"
+  - time: '2026-07-06T00:51:41'
+    action: 'T-100202: file task-ID inflation + split-view collision RCA'
+  - time: '2026-07-06T00:56:06'
+    action: 'T-100202: pin inflation mechanism (AC#1) — self-feeding audit-finding emitter'
+  - time: '2026-07-06T01:08:17'
+    action: 'T-100202: quarantine far-outlier ID bands in generate_id (AC#2)'
+  - time: '2026-07-06T01:09:06'
+    action: 'T-100202: refresh vendored create-task.sh (self-vendor parity)'
+  - time: '2026-07-21T08:55:57'
+    action: 'T-100202: task-ID allocator — AC3 cross-view guard (generate_id union-scans .tasks across all git worktrees + allocation keylock anchored at main checkout; stale worktree can no longer mint duplicate IDs) + AC4 recursion gate (double audit-warn name refused at create time, emitter verified removed from HEAD); live-fired next-id T-2584 over main+3 worktrees; 10/10 bats'
+  - time: '2026-07-21T09:09:58'
+    action: 'T-100202: OBS-095 — strand census ''proven DONE'' claims not content-verified; T-2335/T-2171/T-2390 need per-task verify against HEAD'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 4 commit(s), 22085 min
+  # Completed successfully in 6 commit(s), 22085 min
 
 # Related tasks
 related_tasks:
@@ -72,16 +78,15 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [
-audit-finding, severity:warn, section:audit]
+tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 22085
-  commits: 4
-  files_changed: 4
-  lines_added: 459
-  lines_removed: 23
+  commits: 6
+  files_changed: 8
+  lines_added: 755
+  lines_removed: 52
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100202-task-id-allocator-inflation--split-view-.md

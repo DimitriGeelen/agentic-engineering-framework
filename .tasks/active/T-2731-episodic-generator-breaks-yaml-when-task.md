@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T09:16:25Z
-last_update: 2026-08-02T09:16:25Z
-date_finished: null
+last_update: '2026-08-02T09:30:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,41 +34,77 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-02T09:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-02T09:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2731: episodic generator breaks YAML when task name spans multiple lines (OBS-129)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`.context/episodic/T-100202.yaml` is unparseable: `task_name:` spans two lines.
+Found by T-2729's corpus sweep (2 bad of 2427; the other was T-2729's own
+defect), filed as OBS-129.
+
+Two causes, only one of which raised. The task file has a body line beginning
+`name:` at line 248, and the generator extracted with `grep "^name:"` over the
+**whole file** — two matches, two lines, broken scalar. Independently, the same
+grep kept only the first physical line, so the frontmatter's own multi-line
+`name:` was already being truncated mid-sentence, silently, on every task.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Both causes are addressed, not just the one that fired:
+- [x] Both causes are addressed, not just the one that fired:
       (a) the frontmatter `name:` is a multi-line double-quoted scalar and the
       extractor keeps only its first physical line, truncating mid-sentence;
       (b) the extractor greps the **whole file**, so a body line beginning
       `name:` is captured too — T-100202 has one at line 248.
       Cause (b) is what produced two lines and broke the YAML; cause (a) was
       silently corrupting the value on its own.
-- [ ] `agents/context/lib/episodic.sh` stops rolling its own
+- [x] `agents/context/lib/episodic.sh` stops rolling its own
       `grep "^field:" | sed …` extraction and uses the shared
       `lib/yaml.sh:get_yaml_field`, which exists precisely to "replace the
       inconsistent grep/sed/cut patterns duplicated across 30+ files".
       One extractor to harden, not thirty.
-- [ ] `get_yaml_field` is hardened to (i) read only the frontmatter block when
+- [x] `get_yaml_field` is hardened to (i) read only the frontmatter block when
       the file begins with `---`, and (ii) return a single physical line for
       multi-line scalars.
-- [ ] The hardening's blast radius is **measured, not assumed**: old vs new
+- [x] The hardening's blast radius is **measured, not assumed**: old vs new
       extraction compared over every task file × every field the callers use,
       with every differing result listed. A silent behaviour change to a helper
       used by 30+ callers is not acceptable.
-- [ ] `.context/episodic/T-100202.yaml` regenerates and parses, and the corpus
+- [x] `.context/episodic/T-100202.yaml` regenerates and parses, and the corpus
       sweep from T-2729 goes to zero unparseable files with no name-based
       exclusion left in the test.
-- [ ] Guard + negative control: a test asserts episodic.sh contains no bare
+- [x] Guard + negative control: a test asserts episodic.sh contains no bare
       frontmatter grep, and the suite is shown to go red when the fix is
       reverted (L-533 — a sweep whose completeness is unrepresentable is what
       let T-2729 sit for eleven weeks).
@@ -137,6 +173,92 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import yaml; yaml.safe_load(open('.context/episodic/T-100202.yaml'))"
+bats tests/unit/episodic_frontmatter_extraction.bats
+bats tests/unit/context_episodic.bats
+bats tests/unit/episodic_yaml_decision_escape.bats
+bats tests/unit/episodic_yaml_timeline_escape.bats
+bash -n lib/yaml.sh
+bash -n agents/context/lib/episodic.sh
+
+## Measurement
+
+Old vs hardened `get_yaml_field`, over 2717 task files x 9 fields = 24462
+comparisons, before the helper was changed:
+
+| Field | Differing files | Read by a live caller? |
+|-------|-----------------|------------------------|
+| `id` | 0 | yes (resume, healing/suggest) |
+| `status` | 0 | yes (resume, healing x2) |
+| `owner` | 0 | yes (resume) |
+| `workflow_type` | 0 | no |
+| `created` | 0 | no |
+| `last_update` | 0 | no |
+| `tags` | 15 | no |
+| `name` | 1041 | **yes** (resume, healing x3) |
+| `description` | 2717 | no |
+
+So the live behaviour change is exactly one field: `name`, in
+`agents/resume/resume.sh` and the three `agents/healing/lib/*.sh` call sites,
+which now print the whole task name instead of one truncated to its first
+physical line. `description` moves from a bare `>` to the folded content, but no
+current caller reads it through this helper.
+
+## RCA
+
+**Symptom:** `.context/episodic/T-100202.yaml` cannot be loaded —
+
+```
+expected '<document start>', but found '<block mapping start>'
+```
+
+The file is invisible to `fw recall` / `fw timeline`, and its header comment is
+broken across lines too.
+
+**Root cause:** `grep "^name:" "$task_file"` is not a frontmatter reader. It
+matched a body line at T-100202:248 as well as the frontmatter key, so the shell
+variable held two lines and `task_name: "$task_name"` emitted a scalar spanning
+lines. The second, quieter defect in the same expression: it kept only the first
+physical line of a value, so a wrapped `name:` was truncated and a folded
+`description:` came back as the literal `>`.
+
+**Why structurally allowed:** the shared helper `lib/yaml.sh:get_yaml_field`
+exists and its own header says it is there to "replace the inconsistent
+grep/sed/cut patterns duplicated across 30+ files" — and the episodic generator
+never adopted it, keeping six bespoke greps. Nothing represented that gap: a
+file that ignores a shared helper looks identical to one that has no need of it.
+The helper itself had the truncation bug too, so adopting it would have fixed
+only the crash and left the silent corruption.
+
+Compounding: `episodic.sh` relied on its *caller* to have sourced the helper
+chain. `context.sh` does, but `tests/unit/context_episodic.bats` sources the
+module directly and does not — so the first adoption attempt left every field
+empty, and only one downstream grep assertion noticed.
+
+**Prevention:**
+- **One extractor, hardened once.** `get_yaml_field` is now frontmatter-scoped
+  and folds continuations. Both defects die at the single site rather than being
+  patched per caller.
+- **Blast radius measured before the change**, not asserted after — table above.
+  Six of nine fields are provably byte-identical, and the one live behavioural
+  change is named.
+- **Guard, source-derived, no allowlist** (test 7): `episodic.sh` may contain no
+  `grep "^field:" "$task_file"` extraction; test 8 appends one to a copy and
+  requires the guard to catch it.
+- **Dependency declared, not assumed** (test 9): the module sources
+  `lib/yaml.sh` itself, and a test sources the module in isolation to prove it.
+- **Corpus assertion with the exclusion removed** (test 10): T-2729's version of
+  this check excluded T-100202 by name. That exclusion is gone — 2429 episodics,
+  zero unparseable.
+
+**Found and NOT folded in:** `tests/unit/update_task_episodic_gen.bats` tests 1
+and 4 are red, and were red at HEAD before this task touched anything (verified
+by reverting both files and re-running). Filed as **OBS-130** — same class as the
+T-2696/T-2697 orphaned guard suite.
+
+**Related:** L-533 (T-2729) — the enumerating-guard lesson, applied here from the
+start rather than after a third visit.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -204,3 +326,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2731-episodic-generator-breaks-yaml-when-task.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1cfb1fc8
+- **Timestamp:** 2026-08-02T09:41:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
