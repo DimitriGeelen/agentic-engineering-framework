@@ -4057,3 +4057,10 @@ X'` returning empty group."
   date: 2026-08-02
   context: Added via context agent
   application: TBD
+- id: L-533
+  learning: "Sibling-site sweeps need an enumerating guard, not a memory of which sites were converted. L-392 named the double-quoted-YAML-scalar class in agents/context/lib/episodic.sh; T-1871 fixed one site and T-1873 fixed three more, but the git-timeline site twenty lines below survived eleven weeks because nothing could distinguish 'converted the ones we found' from 'converted all of them'. Two compounding causes: (1) the sweep was by inspection, so its completeness was unrepresentable; (2) the regression test re-typed the writer's sed chain into a local helper instead of running the writer, so it could only ever check sites its author already knew about — it stayed green throughout the corruption. Fix shape: a source-derived predicate over the file's SHAPE with no maintained allowlist (no line may write an interpolated value into a double-quoted YAML scalar), plus end-to-end tests that drive the real producer. When you fix N instances of a class in one file, ask what would fail if there were an N+1th."
+  source: P-001
+  task: T-2729
+  date: 2026-08-02
+  context: Added via context agent
+  application: TBD
