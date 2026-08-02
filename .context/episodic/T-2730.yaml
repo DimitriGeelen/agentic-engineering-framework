@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2730: reviewer crashes with re.error bad escape on task text containing backslash-x
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T09:16:15Z
+# ============================================================================
+
+task_id: T-2730
+task_name: "reviewer crashes with re.error bad escape on task text containing backslash-x"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T09:07:13Z
+completed: 2026-08-02T09:16:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T11:15:43+02:00
+last_commit: 2026-08-02T11:15:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer verdict is data, not an re.sub template — 4 sites converted
+
+# Key outcomes
+outcomes:
+  - 'The crash is **located**, not guessed: the exact call site that raises'
+  - 'A reproduction exists that fails before the fix and passes after, driving'
+  - 'The fix removes the escape interpretation rather than sanitising the input:'
+  - 'The whole reviewer package is swept for sibling sites where task-derived'
+  - '`bin/fw reviewer` returns a verdict for every task that currently crashes it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/drift.py'
+  - '.agentic-framework/lib/reviewer/recommendation_claims.py'
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - 'lib/reviewer/drift.py'
+  - 'lib/reviewer/recommendation_claims.py'
+  - 'lib/reviewer/static_scan.py'
+  - '.tasks/active/T-2730-reviewer-crashes-with-reerror-bad-escape.md'
+  - 'tests/unit/reviewer_verdict_replacement_escape.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-02T11:15:43'
+    action: 'T-2730: reviewer verdict is data, not an re.sub template — 4 sites converted'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 8
+  lines_added: 429
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2730-reviewer-crashes-with-reerror-bad-escape.md
+generated_by: context-agent-hybrid
