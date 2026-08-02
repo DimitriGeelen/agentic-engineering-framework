@@ -64,9 +64,19 @@ TASK
 }
 
 # Run the real generator. Returns the episodic path.
+#
+# PROJECT_ROOT and its derivatives must be unset. update-task.sh EXPORTS
+# PROJECT_ROOT when it runs this file as a P-011 verification command; inherited,
+# it points `fw` at the real repo, T-9999 is not found there, and the fixture
+# episodic is never written — the tests below then fail for a reason that has
+# nothing to do with escaping. Caught by test 1's `[ -f "$ep" ]` when the suite
+# was first run under the completion gate. Same measuring-the-wrong-object trap
+# as the T-2726 fixtures; update-task.sh:1018 unsets the other three for exactly
+# this reason and cannot unset PROJECT_ROOT because it needs it to cd.
 _generate() {
     local proj="$1"
-    ( cd "$proj" && "$FRAMEWORK_ROOT/bin/fw" context generate-episodic T-9999 >/dev/null 2>&1 )
+    ( unset PROJECT_ROOT TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED
+      cd "$proj" && "$FRAMEWORK_ROOT/bin/fw" context generate-episodic T-9999 >/dev/null 2>&1 )
     echo "$proj/.context/episodic/T-9999.yaml"
 }
 

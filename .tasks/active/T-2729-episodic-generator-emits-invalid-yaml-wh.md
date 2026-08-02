@@ -106,6 +106,13 @@ structural, not another field-specific patch.
       An earlier attempt at a symlink-farm framework root was **discarded** — it
       silently resolved back to the real framework and reported the fixed output,
       i.e. it measured the wrong object (same trap as T-2726).
+      → And the suite itself hit the trap once: green standalone, red the first
+      time the completion gate ran it, because `update-task.sh` **exports**
+      `PROJECT_ROOT` and the inherited value sent `fw context generate-episodic`
+      at the real repo instead of the fixture. `_generate` now unsets it. The
+      suite is verified green **both** with and without `PROJECT_ROOT` in the
+      environment; without that, it would have passed for me and failed for the
+      gate — a test whose verdict depends on who invoked it.
 - [x] The whole file is swept for other free-text-into-double-quoted-scalar sites;
       each is either converted or recorded as safe-by-construction with the reason.
       → See `## Sweep` below. One converted; four recorded safe with reasons; one
