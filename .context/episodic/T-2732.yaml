@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2732: verification blocks curl a hard-coded :3000 which is another project's watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T10:28:28Z
+# ============================================================================
+
+task_id: T-2732
+task_name: "verification blocks curl a hard-coded :3000 which is another project's watchtower"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T10:15:40Z
+completed: 2026-08-02T10:28:05Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T12:25:16+02:00
+last_commit: 2026-08-02T12:25:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  P-011 refuses hard-coded Watchtower port in verification blocks
+
+# Key outcomes
+outcomes:
+  - '`update-task.sh` refuses `--status work-completed` when the task''s `## Verification` block contains a URL literal on port 3000 with no port resolution on the same line'
+  - 'The sanctioned defensive fallback (`WT_URL=$(bin/fw watchtower url) || echo "…:3000"`) is NOT refused — the discriminator is "resolves on the same line", not "mentions 3000"'
+  - 'The refusal message names the offending line, the resolver to use, and the bypass mechanism'
+  - '`FW_ALLOW_HARDCODED_PORT=1` bypasses and writes a Tier-2 entry to `.gate-bypass-log.yaml`'
+  - 'Every task in `.tasks/active/` is free of bare-port verification lines (remediated to the resolver form)'
+  - 'bats suite covers: refusal, sanctioned-form pass, bypass, guard control (a violation appended to a COPY is caught), and a corpus scan of `active/` with no exclusions'
+  - 'Negative control run: with the guard reverted the suite goes red, and red *for the stated reason* (failure text names the condition, not merely rc!=0)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/verification-port.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'CLAUDE.md'
+  - '.fabric/components/lib-verification-port.yaml'
+  - 'lib/verification-port.sh'
+  - '.tasks/active/T-1960-arc-recommendation-schema--auto-render-o.md'
+  - '.tasks/active/T-1961-approvals-ingestion-of-close-ready-arcs-.md'
+  - '.tasks/active/T-1963-arcsslugreview-route--read-only-review-s.md'
+  - '.tasks/active/T-1969-arc-badge-unified-form-render-arc-nnn--s.md'
+  - '.tasks/active/T-1971-remove-stale-read-only--live-weight-slid.md'
+  - '.tasks/active/T-2281-t-2275-build-auto-linker-prongs-ab-candi.md'
+  - '.tasks/active/T-2336-add-0-5-scoring-rubric--guardrails-for-v.md'
+  - '.tasks/active/T-2342-arc-011-m1-5--watchtower-orchestratorpar.md'
+  - '.tasks/active/T-2732-verification-blocks-curl-a-hard-coded-30.md'
+  - '.tasks/active/T-544-create-termlink-homebrew-tap-with-github.md'
+  - '.tasks/active/T-802-watchtower-token-dashboard--costs-page-w.md'
+  - '.tasks/active/T-803-landing-page-token-widget--show-current-.md'
+  - 'tests/unit/verification_port_hardcode.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-02T12:25:16'
+    action: 'T-2732: P-011 refuses hard-coded Watchtower port in verification blocks'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 19
+  lines_added: 690
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2732-verification-blocks-curl-a-hard-coded-30.md
+generated_by: context-agent-hybrid

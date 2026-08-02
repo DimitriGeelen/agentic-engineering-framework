@@ -4064,3 +4064,10 @@ X'` returning empty group."
   date: 2026-08-02
   context: Added via context agent
   application: TBD
+- id: L-534
+  learning: "A documented convention with no reader accumulates violations in proportion to how BENIGN its failure looks. The port-3000 rule was in CLAUDE.md from T-1376 and was violated 371x across 277 tasks, because the violation manifests as a false green: the line curls another project's Watchtower, gets 200 from the same Flask app, and passes. A red line is noticed at the next close; a green line that asserts nothing is indistinguishable from one that asserts everything, so nothing prompts anyone to look. When adding a convention, ask which surface will READ it - if the answer is 'agents, from prose' and the failure mode is a pass rather than a fail, expect the violation count to grow without bound. The reader here already existed: P-011 executes those very lines and never inspected them."
+  source: P-011
+  task: T-2732
+  date: 2026-08-02
+  context: Added via context agent
+  application: TBD
