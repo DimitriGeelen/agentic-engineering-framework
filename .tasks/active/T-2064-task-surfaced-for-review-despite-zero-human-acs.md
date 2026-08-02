@@ -156,7 +156,9 @@ Cross-reference: `fw review-queue` lists 118 tasks awaiting Human AC verificatio
 ## Verification
 
 # Confirm current symptom:
-curl -s -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/review/T-2056
+# T-2727/OBS-127: was a literal :3000 (T-1376 anti-pattern) — reached another
+# project's watchtower. Resolved URL returns 200 for this endpoint.
+curl -sf -o /dev/null "$(bin/fw watchtower url)/review/T-2056"
 # T-2056 is in completed/ with zero Human ACs but route returns 200
 
 ## Recommendation

@@ -164,7 +164,13 @@ The Complete button (`web/templates/_review_acs.html:101-105`) is an htmx form:
 ## Verification
 
 # Reproduce the silent fail (current state):
-curl -s -X POST -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/api/task/T-2060/complete
+# T-2727/OBS-127: was a literal :3000 — the per-project port anti-pattern (T-1376).
+# This project serves on 3001, so the literal reached a DIFFERENT project's
+# watchtower (answering 405) and the check was green about the wrong server.
+# NOTE: still has no teeth — -w only prints the code and curl exits 0 on any
+# connection, so 403/404/500 all pass. Asserting the right code needs this
+# task's intent (it is ABOUT a CSRF 403), so it is left for the author.
+curl -s -X POST -o /dev/null -w "%{http_code}\n" "$(bin/fw watchtower url)/api/task/T-2060/complete"
 
 ## Recommendation
 
