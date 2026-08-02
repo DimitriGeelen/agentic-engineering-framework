@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2734: inception close gate imports lib via stdin __file__, fails outside framework CWD
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T11:07:03Z
+# ============================================================================
+
+task_id: T-2734
+task_name: "inception close gate imports lib via stdin __file__, fails outside framework CWD"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T10:54:51Z
+completed: 2026-08-02T11:06:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T13:03:46+02:00
+last_commit: 2026-08-02T13:03:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  untrack 3 files my previous commit swept in by mistake
+
+# Key outcomes
+outcomes:
+  - 'The heredoc resolves the framework path explicitly (from `FRAMEWORK_ROOT`, passed in) rather than from `__file__`, which is `''<stdin>''` for a piped script'
+  - 'Closing an inception task with a project root that is NOT the framework root succeeds, with no traceback on stderr — verified by running it, not by reading the diff'
+  - 'Closing an inception task from the framework root still succeeds (no regression on the path that worked by accident)'
+  - '`tests/unit/rca_gate.bats` is 12/12 green as a consequence'
+  - 'bats coverage pins the consumer-shaped case (project root ≠ framework root ≠ CWD), and a negative control confirms it goes red with the fix reverted'
+  - 'Swept for the same `__file__`-in-heredoc shape elsewhere in the tree; count stated, each instance fixed or filed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.gitignore'
+  - 'tests/unit/_bvp_cli_imported_1938.py'
+  - 'tests/unit/_bvp_cli_imported.py'
+  - 'tests/unit/greenfield_seed_audit_prototype.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-02T13:03:46'
+    action: 'T-2734: untrack 3 files my previous commit swept in by mistake'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 12
+  lines_added: 832
+  lines_removed: 3029
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2734-inception-close-gate-imports-lib-via-std.md
+generated_by: context-agent-hybrid

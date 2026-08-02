@@ -1026,3 +1026,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-131
+  text: "tests/unit/greenfield_seed_audit_prototype.bats (T-2703 prototype, header says NOT wired into CI) is RED and sits untracked in tests/unit/. bats globs untracked files, so fw test unit runs it and counts its failure. Sibling to T-2733: a red guard nobody owns. Either wire it (make it pass) or move it out of tests/unit/ to a prototypes dir — leaving a permanently-red file in the globbed directory trains everyone to ignore red."
+  captured: 2026-08-02T11:06:27Z
+  context_task: T-2734
+  tags: []
+  status: pending
+  promoted_to: null

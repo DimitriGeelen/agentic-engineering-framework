@@ -1,15 +1,16 @@
 ---
-id: T-2733
-name: "T-1550 RCA gate invalidated pre-existing test fixtures, red since May"
+id: T-2734
+name: "inception close gate imports lib via stdin __file__, fails outside framework
+  CWD"
 description: >
-  T-1550 RCA gate invalidated pre-existing test fixtures, red since May
+  inception close gate imports lib via stdin __file__, fails outside framework CWD
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, tests/unit/update_task_episodic_gen.bats, tests/unit/update_task_yaml_components_emit.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +22,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-02T10:43:20Z
-last_update: '2026-08-02T10:45:10Z'
-date_finished:
+created: 2026-08-02T10:54:51Z
+last_update: 2026-08-02T11:06:33Z
+date_finished: 2026-08-02T11:06:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,17 +36,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-02T10:45:06Z'
+  - ts: '2026-08-02T11:00:06Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-02T10:45:10Z'
+  - ts: '2026-08-02T11:00:10Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -64,66 +65,60 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-2733: T-1550 RCA gate invalidated pre-existing test fixtures, red since May
+# T-2734: inception close gate imports lib via stdin __file__, fails outside framework CWD
 
 ## Context
 
-Four tests across two suites are red, and all four fail for the same reason:
+`update-task.sh:check_inception_scope_trace` (T-1984 GO-scope trace gate) runs its
+reachability check via `python3 - <<'PYEOF'`, and the heredoc starts with:
 
-    ERROR: Cannot complete bug-class task — ## RCA section is missing.
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-That gate is T-1550, landed `e4f8b12be` on **2026-04-27**. The suites predate it:
-`update_task_episodic_gen.bats` added 2026-04-20, `update_task_yaml_components_emit.bats`
-added 2026-04-25 — two days before the gate — and untouched since.
+The script is read from **stdin**, so `__file__` is the literal string `'<stdin>'`.
+`abspath('<stdin>')` resolves against the CWD, and three `dirname`s later the
+computed entry is `'/'` — measured, from both the framework root and elsewhere.
+The line has never contributed anything.
 
-Their fixtures create tasks named "Block-style components repro" / "Flow-style
-components" and close them with `--status work-completed`. The bug-class heuristic
-matches on title, so the gate classifies the fixtures as bug-class and refuses.
-The suites are not testing RCA behaviour at all — one tests YAML components
-emission, the other episodic generation. They are collateral.
+The import nevertheless succeeds when CWD is the framework root, because Python
+prepends the CWD to `sys.path` for a stdin script and the framework root happens
+to contain `lib/`. Anywhere else it raises:
 
-Both suites are inside `tests/unit/`, which `fw test unit` runs wholesale
-(`bin/fw:7551`). So this is not an unrun suite: it is a suite whose red has been
-absorbed for ~97 days.
+    ModuleNotFoundError: No module named 'lib.inception_decisions'
 
-Filed earlier as OBS-130 for the episodic half only. The `yaml_components_emit`
-half was found while checking T-2732 for regressions. Same root cause, so one task.
+and `update-task.sh` exits 1. Reproduced: closing a `workflow_type: inception`
+task from a temp project root gives `RC=1` with the traceback on stderr.
+
+Consumers invoke `.agentic-framework/bin/fw task update …` from their own root,
+which has no `lib/`. So **inception close is broken for every consumer project**,
+and has been since T-1984. The gate is load-bearing on an accident of CWD.
+
+Found while fixing T-2733: `tests/unit/rca_gate.bats` test 4 is red because of
+this, not because of a fixture problem.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Attribution established by measurement (not inference), and its method limits stated
-- [x] All 4 tests pass, with fixtures fixed at the fixture — not by weakening the assertion or by passing `--skip-rca`
-- [x] The suites that can reach a close gate are swept for any OTHER instance of this class; each one found is either fixed here or filed with its own task id
-- [x] Red count recorded before and after, so the residue is stated rather than implied
-- [x] OBS-130 resolved and cross-referenced to this task
+- [x] The heredoc resolves the framework path explicitly (from `FRAMEWORK_ROOT`, passed in) rather than from `__file__`, which is `'<stdin>'` for a piped script
+- [x] Closing an inception task with a project root that is NOT the framework root succeeds, with no traceback on stderr — verified by running it, not by reading the diff
+- [x] Closing an inception task from the framework root still succeeds (no regression on the path that worked by accident)
+- [x] `tests/unit/rca_gate.bats` is 12/12 green as a consequence
+- [x] bats coverage pins the consumer-shaped case (project root ≠ framework root ≠ CWD), and a negative control confirms it goes red with the fix reverted
+- [x] Swept for the same `__file__`-in-heredoc shape elsewhere in the tree; count stated, each instance fixed or filed
 
-**AC1 as originally written was wrong and is reworded above.** It asserted "both
-suites were GREEN immediately before `e4f8b12be`". Measured, that is false for
-`update_task_episodic_gen.bats`: at `e4f8b12be~1` it shows 2 ok / 2 not ok.
+**Sweep result:** 2 instances of `abspath(__file__)` inside stdin-piped python
+blocks in shell scripts. `agents/task-create/update-task.sh:597` — active
+failure, fixed here. `agents/audit/audit.sh:5279` — latent: it is the eagerly
+evaluated *default* of `os.environ.get("PROJECT_ROOT", …)`, and that key is
+always set by the caller, so the wrong value (`/`) is computed and discarded. Not
+fixed here (no failure to fix); excluded from the shape guard by SHAPE — the
+guard skips lines carrying `environ.get(` on the same line — rather than by
+filename, so a future unguarded instance in audit.sh would still be caught.
+The other 13 `abspath(__file__)` hits are in real `.py` files, where `__file__`
+is legitimate.
 
-Those two failures are an artefact of the method, not history. Checking out an
-old `update-task.sh` while keeping TODAY's test file measures a mixture: the two
-that fail are the T-1860 tests, added 2026-05-15, failing against 2026-04-27 code
-because the feature they pin did not exist yet. Per-test names at each point:
-
-    BEFORE gate (e4f8b12be~1)   red: 2, 3   (both T-1860 — anachronism)
-    AT     gate (e4f8b12be)     red: 1, 2, 3, 4
-    TODAY  (HEAD, pre-fix)      red: 1, 4
-
-So T-1550 reddened exactly tests 1 and 4 — precisely the two red today — and
-`update_task_yaml_components_emit.bats` went 2 green → 0 green at the same
-commit. Attribution is clean once the anachronism is subtracted; the naive
-before/after count is not.
-
-**Red counts.** Before: 5 (episodic_gen 2, yaml_components_emit 2, rca_gate 1).
-After: 0 across all 23 suites that invoke `--status work-completed`.
-
-**Scope note.** The full `tests/unit/` run (2979 tests) was started but is far
-too slow to gate on (~212 tests in 12 minutes). The sweep was therefore scoped to
-the 23 suites that can actually reach a close gate — which is the population this
-defect class can touch — rather than left as an unmeasured cell. Whether the full
-unit suite should gate pushes is an operator decision, not one to take here.
+**Negative control:** fix reverted in place → tests 1, 2 and 4 red; test 3
+(framework-root close) stays green, which is correct and is the whole point —
+that path passed against the broken code too. Restored byte-clean (residue 0).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -188,9 +183,9 @@ unit suite should gate pushes is an operator decision, not one to take here.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-out=$(bats tests/unit/update_task_episodic_gen.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
-out=$(bats tests/unit/update_task_yaml_components_emit.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/inception_close_consumer_root.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
 out=$(bats tests/unit/rca_gate.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+out=$(bin/fw reviewer T-2734 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 ## RCA
 
@@ -208,31 +203,29 @@ out=$(bats tests/unit/rca_gate.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! e
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** 5 tests across 3 suites red, up to 97 days. All failed inside a
-close gate that landed after the suite was written: 4 on T-1550's RCA gate
-(2026-04-27), 1 on G-052/T-1626's inception-decision gate.
+**Symptom:** `fw task update <inception> --status work-completed` exits 1 with
+`ModuleNotFoundError: No module named 'lib.inception_decisions'` in any project
+whose CWD is not the framework root — i.e. every consumer.
 
-**Root cause:** each new close gate adds a precondition to
-`--status work-completed`. Existing fixtures were authored against the
-preconditions of their day, so every gate addition silently invalidates some of
-them. The fixtures are collateral — none of these suites is about RCA or
-inception decisions; they test YAML component emission and episodic generation.
+**Root cause:** the T-1984 scope-trace gate runs `python3 - <<'PYEOF'` and
+computed its `sys.path` entry from `__file__`. For a script read from stdin
+`__file__` is the literal `'<stdin>'`, so `abspath()` resolved it against the CWD
+and three `dirname()`s yielded `'/'` — measured, from every location. The line
+never contributed anything.
 
-**Why structurally allowed:** nothing runs `tests/unit/` as a gate. It is not an
-unrun suite — `fw test unit` runs the whole directory (`bin/fw:7551`) — but
-nothing *requires* it green, so the red was absorbed. A gate author sees their
-own new tests pass and has no signal that they broke four unrelated ones. There
-is also no cheap signal available: the full suite is ~2979 tests and far too slow
-to run per-commit, so "just run it" is not a remedy anyone will adopt.
+**Why structurally allowed:** the import still worked in the framework repo,
+because Python prepends the CWD to `sys.path` for a stdin script and the
+framework root contains `lib/`. So the gate passed its own tests and every
+developer run. The defect was only reachable from a CWD nobody tested from, and
+the framework's own suite runs from the framework root — the one place the bug is
+invisible. Same family as the T-2726 unwitnessable-check class: the check could
+not fail where it was being observed.
 
-**Prevention:** fixtures fixed at the fixture, so they now satisfy the gates they
-must pass through. That is the fix, not the prevention, and I want to be explicit
-about the difference: nothing here stops the NEXT close gate from reddening
-another fixture. The candidate remedy — make some fast subset of `tests/unit/`
-gate pushes, or have the pre-push audit report the red count — is a change to how
-we work, and per §ACD that is the operator's call, not mine. Surfaced rather than
-built. What this task does buy: the 23 close-gate suites are now a known, named
-population that a gate author can run in ~3 minutes instead of 3 hours.
+**Prevention:** `tests/unit/inception_close_consumer_root.bats` runs the close
+with CWD deliberately outside the framework, plus a source-derived shape guard
+over stdin-piped python blocks that compute a path from `__file__`, with a guard
+control. The shape guard is what generalises — this exact expression is easy to
+write again, and it is wrong every time it appears in a piped block.
 
 ## Evolution
 
@@ -281,7 +274,19 @@ population that a gate author can run in ~3 minutes instead of 3 hours.
 
 ## Updates
 
-### 2026-08-02T10:43:20Z — task-created [task-create-agent]
+### 2026-08-02T10:54:51Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2733-t-1550-rca-gate-invalidated-pre-existing.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2734-inception-close-gate-imports-lib-via-std.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7ea5bccb
+- **Timestamp:** 2026-08-02T11:06:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-02T11:06:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
