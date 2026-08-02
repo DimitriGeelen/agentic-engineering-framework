@@ -2,7 +2,12 @@
 id: T-2719
 name: "Keystone: README five-minute path tested by-hand as its own persona"
 description: >
-  Arc keystone for T-2715 GO item 3. IW-11 reproduced: the README's own five-minute walkthrough reaches the T-532 block by instruction, not by misclassification — fw init then fw work-on 'Add authentication' then an agent Write hits exit 2 with five untouched onboarding tasks listed. The by-hand failure is structurally invisible to the agent-assisted test, so the two personas need separate scenarios rather than one shared path. Carries the arc's closure Recommendation.
+  Arc keystone for T-2715 GO item 3. IW-11 reproduced: the README's own five-minute
+  walkthrough reaches the T-532 block by instruction, not by misclassification — fw
+  init then fw work-on 'Add authentication' then an agent Write hits exit 2 with five
+  untouched onboarding tasks listed. The by-hand failure is structurally invisible
+  to the agent-assisted test, so the two personas need separate scenarios rather than
+  one shared path. Carries the arc's closure Recommendation.
 
 status: captured
 workflow_type: design
@@ -22,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:34:23Z
-last_update: 2026-08-02T00:36:51Z
-date_finished: null
+last_update: '2026-08-02T00:45:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +39,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-02T00:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 3
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-02T00:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2719: Keystone: README five-minute path tested by-hand as its own persona

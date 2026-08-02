@@ -14,10 +14,10 @@ description: >
   IS
   there and decide, NOT a longer manifest list. Carries the arc's closure Recommendation.
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:onboarding-shape-detection]
 components: []
 related_tasks: []
@@ -32,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:33:29Z
-last_update: '2026-08-02T05:42:58Z'
-date_finished:
+last_update: 2026-08-02T06:02:20Z
+date_finished: 2026-08-02T06:02:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -291,6 +291,19 @@ runner) that would have caught this class at authoring time.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+# Both build tasks exist AND resolve into arc-015, read through the canonical CLI
+# membership surface (`fw arc show` uses lib/arc_membership.sh). Checking membership
+# rather than file-existence is deliberate: a task file that exists but never joined
+# the arc is the failure this AC actually guards against, and file-existence alone
+# would report success about the wrong object.
+M=$(bin/fw arc show onboarding-shape-detection 2>&1); echo "$M" | grep -q "T-2722" && echo "$M" | grep -q "T-2723"
+# The arc's anchor still points at this keystone (guards against an anchor rewrite
+# silently orphaning the design decision the arc is built on).
+grep -q "^anchor_task: T-2718$" .context/arcs/onboarding-shape-detection.yaml
+# The rejected alternative is recorded, not just the chosen one — the whole point of
+# this keystone is that the intuitive fix (longer allowlist) must stay explicitly refused.
+sed -n '/^## Decisions/,/^## Updates/p' .tasks/active/T-2718-keystone-fw-init-enumerates-what-is-ther.md | grep -qi "rejected"
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -360,3 +373,15 @@ runner) that would have caught this class at authoring time.
 
 ### 2026-08-02T00:37:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b4f63904
+- **Timestamp:** 2026-08-02T06:02:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-02T06:02:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

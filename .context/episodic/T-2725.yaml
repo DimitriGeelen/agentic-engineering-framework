@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2725: Audit validate-init hook-path check across ALL carrier shapes, not just the one measured
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T06:43:04Z
+# ============================================================================
+
+task_id: T-2725
+task_name: "Audit validate-init hook-path check across ALL carrier shapes, not just the one measured"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T06:29:29Z
+completed: 2026-08-02T06:42:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T08:33:34+02:00
+last_commit: 2026-08-02T08:33:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  per-carrier audit of the hook-path check — shape D was a second false positive
+
+# Key outcomes
+outcomes:
+  - 'Every hook-command carrier shape present in the repo is enumerated with counts and a'
+  - 'For each shape, the token the selector actually tests is recorded — not the token a'
+  - 'The check''s verdict is stated per shape (correct / false-positive / false-negative),'
+  - 'The wrapper-command shape is absent from the repo today; recorded explicitly below as'
+  - 'Result is committed as a durable per-carrier record, not left as terminal output —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/validate-init.sh'
+  - '.context/episodic/T-2724.yaml'
+  - '.fabric/components/tests-unit-validate_init_hook_path_expansion.yaml'
+  - 'lib/validate-init.sh'
+  - '.tasks/active/T-2725-audit-validate-init-hook-path-check-acro.md'
+  - '.tasks/completed/T-2724-fw-init-reports-19-broken-hooks-on-a-cor.md'
+  - 'tests/unit/validate_init_hook_path_expansion.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-02T08:33:34"
+    action: "T-2725: per-carrier audit of the hook-path check — shape D was a second false positive"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 7
+  lines_added: 436
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2725-audit-validate-init-hook-path-check-acro.md
+generated_by: context-agent-hybrid
