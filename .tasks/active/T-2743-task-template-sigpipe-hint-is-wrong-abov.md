@@ -1,11 +1,12 @@
 ---
-id: T-XXX
-name:
+id: T-2743
+name: "task template SIGPIPE hint is wrong above the pipe buffer"
 description: >
+  task template SIGPIPE hint is wrong above the pipe buffer
 
-status: captured
-workflow_type:
-owner:
+status: started-work
+workflow_type: build
+owner: agent
 horizon: now
 tags: []
 components: []
@@ -20,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created:
-last_update:
+created: 2026-08-02T22:53:18Z
+last_update: 2026-08-02T22:53:18Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -35,18 +36,34 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-XXX: [Task Name]
+# T-2743: task template SIGPIPE hint is wrong above the pipe buffer
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The task template prescribes `out=$(cmd 2>&1); echo "$out" | grep -q PATTERN` as *the*
+SIGPIPE-safe form for `## Verification` (L-387), and T-2090 hardened it to single-pipe-only.
+Both are right for the captures they were written about, and both are wrong above the pipe
+buffer: if the capture exceeds 65,536 bytes and `grep -q` matches early, `echo` blocks on
+the full pipe, `grep -q` exits, `echo` takes SIGPIPE, and the pipeline exits 141 under
+`pipefail` — reintroducing precisely the failure L-387 exists to prevent.
+
+Measured under T-2741 (OBS-137): a Watchtower page is 146,366 bytes; the line returned
+rc=141 on 3/3 runs. Deterministic, not racy. Any Verification line that curls a rendered
+page is exposed — Watchtower routes run 50-200KB.
+
+Second, methodological half: the same line returned **0 by hand and 141 under the gate**,
+because an interactive shell has no `set -eo pipefail`. Rehearsing a verification line by
+running it in the terminal does not rehearse the gate.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `.tasks/templates/default.md` states the pipe-buffer limit next to the existing L-387 / T-2090 hints, with the file-redirect form as the remedy for large captures
+- [x] T-2090's false premise is corrected at source, not just annotated below — the line asserting "`echo "$out"` is small and immediate" is the belief that makes the idiom look unconditionally safe, and it is gone
+- [x] The hint says *why* the redirect form is better beyond SIGPIPE: it keeps the producing command's exit code in the verdict instead of discarding it (the T-2738 concern, one layer down)
+- [x] The hint gives the rehearsal command (`bash -c 'set -eo pipefail; <line>'`) and says plainly that running the line by hand does not rehearse the gate
+- [x] Checked the greenfield seed templates for a stale copy (the T-2740 two-template-sets trap). They carry **no** hint block at all — `grep -rl SIGPIPE lib/seeds/` is empty — so there is nothing stale to correct. That absence is its own onboarding gap and is filed separately rather than folded in here
+- [x] A test pins the mechanism rather than the prose: a >64KB capture piped to an early-matching `grep -q` exits 141 under `pipefail`, and the file-redirect form of the same check exits 0. Synthetic payload, so it holds without a running Watchtower
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -102,29 +119,8 @@ date_finished: null
 # Single pipe only — no intermediate tail/awk/sed stages between capture and grep
 # (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
 # the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. grep scans the whole captured string anyway, so the tail-3 was
-# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
-# for the captures they were written about, and both invert above the pipe
-# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
-# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
-# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
-# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
-# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
-# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
-# For anything that might be large, redirect to a file:
-#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# This is the better default even when size is not a concern: `&&` keeps the
-# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
-# the T-2738 problem one layer down. A 404 from curl fails the line instead of
-# silently producing an empty capture for grep to not-match.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
-# 141 under P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
+# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
+# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
 #
 # BUT NOT for a test runner (T-2738): the capture above discards the command's
 # exit code, and `set -e` is suppressed inside the `if` condition the gate runs
@@ -146,6 +142,18 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# The mechanism test. Guarded per T-2738 (bats verdict is `ok N`; a partial
+# failure must not pass on the pass-marker alone).
+out=$(bats tests/unit/verification_pipe_buffer.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+
+# The template carries the correction, and no longer carries the false premise.
+grep -q "65536-byte pipe buffer" .tasks/templates/default.md
+grep -q "DOES NOT REHEARSE THE GATE" .tasks/templates/default.md
+! grep -q "small and immediate" .tasks/templates/default.md
+
+# The greenfield seeds still carry no stale copy of the hint (T-2740 trap).
+test -z "$(grep -rl SIGPIPE lib/seeds/ 2>/dev/null)"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -161,6 +169,32 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a T-2741 verification line curling a Watchtower page returned 0 when run by
+hand and 141 at the close gate, blocking completion. Nothing was wrong with the page, the
+pattern, or the command.
+
+**Root cause:** the line used the idiom the task template prescribes as SIGPIPE-safe.
+That idiom is safe only while the capture fits the 65,536-byte pipe buffer. The page was
+146,366 bytes with the match near the top, so `grep -q` exited while `echo` was still
+blocked on a full pipe — SIGPIPE, 141 under `pipefail`.
+
+**Why structurally allowed:** the framework taught it. L-387 was written about advisory
+tools with small outputs and is correct there; T-2090 then reinforced it with an explicit
+premise — "`echo "$out"` is small and immediate" — which is a property of the *examples*
+the hint was derived from, not of the idiom. Once written as a general rule it stopped
+being reexamined. This is the same shape as T-2738, where the same template taught a
+verdict-discarding pattern for test runners: **a hint derived from one class of command,
+stated without its precondition, becomes a defect the moment it is applied outside that
+class.** Two instances now, one template.
+
+**Prevention:** the precondition is now stated with the hint (below the buffer / above
+it), the false premise is deleted rather than annotated, and
+`tests/unit/verification_pipe_buffer.bats` pins the mechanism with a synthetic payload so
+the threshold is asserted rather than described. The methodological half — that running a
+line by hand is not a rehearsal, because an interactive shell has no `pipefail` — is in
+the template and pinned by its own test, since that is what let the defect be observed
+only at the gate.
 
 ## Evolution
 
@@ -209,5 +243,7 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-08-02T22:53:18Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2743-task-template-sigpipe-hint-is-wrong-abov.md
+- **Context:** Initial task creation

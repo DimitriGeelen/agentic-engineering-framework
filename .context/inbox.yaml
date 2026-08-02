@@ -1082,3 +1082,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-139
+  text: "Greenfield seed tasks carry ## Verification sections with NO hint block at all. lib/seeds/tasks/greenfield/T-00{2,3,4,5}-*.md each have a ## Verification section, but grep -rl SIGPIPE lib/seeds/ is empty and so is any T-2090/T-2738/T-2743 guidance - the canonical .tasks/templates/default.md carries ~40 lines of hard-won hints (SIGPIPE, pipe-buffer limit, single-pipe, unjudged test runner, toolchain build commands, enforcement baseline) and a newly initialised project inherits none of them. So a new user writes their first verification lines with zero guidance, and every hint the framework learned the hard way is invisible until they happen to open a task created later from the canonical template. Sibling of T-2740 (two template sets for one concept, seeds missed CTL-027) but the inverse direction: T-2740 was drift between two sets that should match, this is content the seeds never had. Not folded into T-2743 (one task = one deliverable). Open question for whoever picks it up: are the seeds meant to be minimal-by-design for readability, or is this an oversight? If minimal-by-design, the fix is a pointer line to the canonical template rather than a copy - copies are what created T-2740."
+  captured: 2026-08-02T22:57:11Z
+  context_task: T-2743
+  tags: []
+  status: pending
+  promoted_to: null
