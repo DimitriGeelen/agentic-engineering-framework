@@ -592,12 +592,18 @@ check_inception_scope_trace() {
     # Run reachability check via Python helper
     # Returns: "OK" or one failure per line prefixed with "FAIL:"
     local py_output failures
-    py_output=$(python3 - "$TASK_FILE" "$PROJECT_ROOT" <<'PYEOF'
+    py_output=$(python3 - "$TASK_FILE" "$PROJECT_ROOT" "$FRAMEWORK_ROOT" <<'PYEOF'
 import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-# argv[0] = "-" (stdin), argv[1] = task_file, argv[2] = project_root
-# But when called via bash heredoc, sys.argv may differ. Use env instead.
-import os
+# T-2734: the framework root arrives as argv[3]. It must NOT be derived from
+# __file__ here: this script is read from STDIN, so __file__ is the literal
+# string '<stdin>', abspath() resolves it against the CWD, and three dirname()s
+# later the result was always '/'. The import then succeeded only when CWD
+# happened to be the framework root — Python prepends the CWD to sys.path for a
+# stdin script — and raised ModuleNotFoundError everywhere else, which is every
+# consumer project (they run .agentic-framework/bin/fw from their own root).
+framework_root = sys.argv[3] if len(sys.argv) > 3 else os.environ.get("FRAMEWORK_ROOT", "")
+if framework_root:
+    sys.path.insert(0, framework_root)
 task_file = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("TASK_FILE", "")
 project_root = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("PROJECT_ROOT", ".")
 

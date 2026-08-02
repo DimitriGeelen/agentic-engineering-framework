@@ -44,6 +44,13 @@ tags: []
 ### Agent
 - [x] Done
 
+## RCA
+
+**Symptom:** fixture placeholder — this task is closed by the test below.
+**Root cause:** n/a, fixture.
+**Why structurally allowed:** n/a, fixture.
+**Prevention:** n/a, fixture.
+
 ## Updates
 
 ### 2026-04-20T22:00:00Z — task-created [task-create-agent]

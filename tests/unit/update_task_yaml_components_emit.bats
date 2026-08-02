@@ -57,6 +57,13 @@ last_update: 2026-04-25T20:00:00Z
 ### Agent
 - [x] test
 
+## RCA
+
+**Symptom:** fixture placeholder — this task is closed by the test below.
+**Root cause:** n/a, fixture.
+**Why structurally allowed:** n/a, fixture.
+**Prevention:** n/a, fixture.
+
 ## Updates
 
 ### 2026-04-25T20:00:00Z — task-created [task-create-agent]
@@ -146,6 +153,13 @@ last_update: 2026-04-25T20:00:00Z
 
 ### Agent
 - [x] test
+
+## RCA
+
+**Symptom:** fixture placeholder — this task is closed by the test below.
+**Root cause:** n/a, fixture.
+**Why structurally allowed:** n/a, fixture.
+**Prevention:** n/a, fixture.
 
 ## Updates
 

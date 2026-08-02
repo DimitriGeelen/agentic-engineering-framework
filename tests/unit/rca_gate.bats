@@ -133,8 +133,13 @@ EOF
     local body
     body="$(_body_minimal)"
     _make_task "T-9004" "Fix-related inception exploration" "inception" "[]" "$body" >/dev/null
+    # T-2733: --skip-inception-decision is about a DIFFERENT gate. G-052/T-1626
+    # landed after this suite and refuses any inception close without a recorded
+    # decision, so the fixture stopped reaching the assertion this test is about
+    # (that the RCA gate EXCLUDES inceptions). Scoping the unrelated gate out
+    # keeps the RCA assertion meaningful rather than passing on a wrong reason.
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9004 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --skip-inception-decision
     [ "$status" -eq 0 ]
     [[ "$output" != *"## RCA section is"* ]]
 }
