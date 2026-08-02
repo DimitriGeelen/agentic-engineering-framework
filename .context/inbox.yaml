@@ -1031,7 +1031,7 @@ observations:
   captured: 2026-08-02T11:06:27Z
   context_task: T-2734
   tags: []
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-132
   text: "T-2736 verification line pins a literal test count: grep -q \"9 passed\". Same G-015 shape 832 flagged at rail-400 (an AC/gate asserting a literal integer that moves as the tool is used). Lower blast radius than a moving global — it is my own test file, so it only breaks when a test is added to that file — but the property form (grep -q for a pass marker + absence of failures) is what the other two tasks in the trio use. Fix: replace with 'echo $out | grep -qE \"[0-9]+ passed\" && ! echo $out | grep -q failed'. Found by applying 832 rail-400's question 'worth checking whether any of your ACs pin a count' to my own trio."
@@ -1058,6 +1058,13 @@ observations:
   text: "tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded is RED on 2 of 20 routes: /inception/T-2715 and /review/T-2715 both exceed the height bound (2 failed, 18 passed in 198s). Found while executing T-2088's rewritten verification line under T-2739. Not a false green - the old line pinned 'grep -qE \"20 passed\"' which never matched '18 passed' either, so T-2088 has simply been carrying a red verification line while sitting in active/. Note also the suite needs ~198s end to end (pytest collection alone is ~91s), so any inner timeout below ~200s kills it - that is what made T-2089's 'timeout 90' fail (93.7s actual); raised to 300 under T-2739."
   captured: 2026-08-02T17:42:16Z
   context_task: T-2739
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-136
+  text: "tests/unit/ is standing-red: 25 failed / 2010 passed / 3 skipped in 319s (measured 2026-08-03 under T-2741). Nothing gates a push or a task close on the suite being green, so a guard going red is indistinguishable from the standing red — that is why T-2027's arcs-token guard sat red for 28 days (T-2349 landed the regression 2026-07-05; found 2026-08-02). Failures cluster: test_orchestrator_status_terminal_events.py (10), test_orchestrator_status_outcomes.py (2), test_task_panel*.py (4), plus singles in test_auto_link_root_and_articles, test_cockpit_activity, test_corpus_lint, test_file_route_extensions, test_hook_paths, test_render_page_guard, test_arcs_pages_tokens (fixed under T-2741). Needs a triage task that classifies each cluster as genuine-bug / stale-test / env-dependent BEFORE any fixing - one bug = one task, and 25 is not one bug. Do NOT mass-fix. The prior instance of this class is T-2696/T-2697 (orphaned tests/lint/ suite, 7 red, one 51 days old)."
+  captured: 2026-08-02T22:31:39Z
+  context_task: T-2741
   tags: []
   status: pending
   promoted_to: null
