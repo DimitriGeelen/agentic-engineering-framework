@@ -279,7 +279,10 @@ def write_claims_verdict_to_task(task_path: Path, verdict: ClaimsVerdict) -> Non
     text = task_path.read_text()
     new_section = render_claims_verdict_md(verdict)
     if _CLAIMS_VERDICT_SECTION_RE.search(text):
-        new_text = _CLAIMS_VERDICT_SECTION_RE.sub(new_section, text)
+        # T-2730: callable replacement — a rendered verdict is data, and passing
+        # it as a string makes `re` parse its backslashes as template escapes.
+        # Sibling of static_scan.write_verdict_to_task; same shape, same fix.
+        new_text = _CLAIMS_VERDICT_SECTION_RE.sub(lambda _m: new_section, text)
     else:
         sep = "" if text.endswith("\n") else "\n"
         new_text = text + sep + "\n" + new_section

@@ -2758,7 +2758,14 @@ def write_verdict_to_task(
 
     new_section = render_verdict_md(verdict)
     if _VERDICT_SECTION_RE.search(text):
-        new_text = _VERDICT_SECTION_RE.sub(new_section, text)
+        # T-2730: the replacement MUST be a callable. Passing `new_section` as a
+        # string makes `re` parse it as a template, so any backslash the verdict
+        # quotes out of the task body is interpreted: `\x` raises
+        # `re.error: bad escape \x` and `\1` would silently splice in a capture
+        # group. The verdict is data, not a template. CLAUDE.md itself tells
+        # authors to write `sed 's/\x1b\[…'`, so this crashed the reviewer on
+        # exactly the tasks that follow the documented idiom.
+        new_text = _VERDICT_SECTION_RE.sub(lambda _m: new_section, text)
     else:
         sep = "" if text.endswith("\n") else "\n"
         new_text = text + sep + "\n" + new_section

@@ -182,14 +182,21 @@ def write_baseline(task_text: str, baseline: dict[str, str]) -> str:
 
     # Replace existing
     if _BASELINE_RE.search(task_text):
-        return _BASELINE_RE.sub(marker, task_text)
+        # T-2730: callable replacement. `marker` wraps a json.dumps payload of
+        # file paths, and JSON escaping emits `\\` and `\uXXXX` — both of which
+        # `re` would parse as template escapes (`\u` is not a valid one). Same
+        # shape as static_scan.write_verdict_to_task.
+        return _BASELINE_RE.sub(lambda _m: marker, task_text)
 
     # Insert after `## Reviewer Verdict` header (any version)
     insert_re = re.compile(
         r"(^## Reviewer Verdict[^\n]*\n)", re.MULTILINE
     )
     if insert_re.search(task_text):
-        return insert_re.sub(rf"\1{marker}\n", task_text, count=1)
+        # T-2730: `\1` is a genuine backreference here, so the template form is
+        # intentional — but `marker` must not ride along inside it. Build the
+        # replacement in the callable, where only the group lookup is templated.
+        return insert_re.sub(lambda m: m.group(1) + marker + "\n", task_text, count=1)
 
     # No verdict section — append at end
     return task_text.rstrip() + f"\n\n## Reviewer Verdict (drift baseline only)\n{marker}\n"
