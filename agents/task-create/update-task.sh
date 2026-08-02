@@ -1031,6 +1031,57 @@ check_verification_port_literals() {
     exit 1
 }
 
+# T-2738: a pass-marker verdict on an unjudged test run is green while tests fail.
+#
+# This gate runs each line as `if ( eval "$cmd" ); then` under `set -euo pipefail`.
+# pipefail survives into the condition, so pipelines are judged correctly — but
+# `set -e` does NOT, so in a sequence (`cmd1; cmd2`) only cmd2's status is the
+# verdict. Capture a pytest run into a variable and assert `grep -q "9 passed"`
+# on it, and a suite printing "3 failed, 9 passed" closes GREEN.
+#
+# Not a ban on the capture idiom — CLAUDE.md prescribes it as the L-387 SIGPIPE
+# remedy and 821 corpus lines use it soundly. The predicate is narrow by design;
+# see lib/verification-verdict.sh for what it does and does not fire on.
+check_verification_unjudged_test_runs() {
+    local cmds="$1" offenders
+
+    [ "${FW_ALLOW_UNJUDGED_TEST_RUN:-0}" = "1" ] && {
+        log_gate_bypass "FW_ALLOW_UNJUDGED_TEST_RUN" "check_verification_unjudged_test_runs"
+        return 0
+    }
+
+    # Predicate lives in lib/verification-verdict.sh so the regression suite runs
+    # THIS expression over the real corpus rather than a re-typed copy (L-533).
+    if ! declare -F find_unjudged_test_runs >/dev/null 2>&1; then
+        source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/lib/verification-verdict.sh"
+    fi
+    offenders=$(find_unjudged_test_runs "$cmds")
+
+    [ -z "$offenders" ] && return 0
+
+    echo -e "${RED}ERROR: Cannot complete — unjudged test run in ## Verification:${NC}" >&2
+    printf '%s\n' "$offenders" | while IFS= read -r line; do
+        echo "    $line" >&2
+    done
+    echo "" >&2
+    echo "  The test runner's exit code is discarded by the capture, and the" >&2
+    echo "  pass marker you assert instead is still printed by a partially" >&2
+    echo "  failing run. A suite reporting \"3 failed, 9 passed\" satisfies" >&2
+    echo "  grep -q \"9 passed\" — so the line reports success for a red suite." >&2
+    echo "  Generalising the count does not help: grep -qE \"[0-9]+ passed\"" >&2
+    echo "  matches the same output (T-2738)." >&2
+    echo "" >&2
+    echo "  Either keep the exit code as the verdict:" >&2
+    echo "    python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q \"passed\" /tmp/.out" >&2
+    echo "" >&2
+    echo "  or add the absence-of-failure guard the exit code used to supply:" >&2
+    echo "    out=\$(python3 -m pytest <file> -q 2>&1); echo \"\$out\" | grep -q passed && ! echo \"\$out\" | grep -q failed" >&2
+    echo "    out=\$(bats <file> 2>&1); echo \"\$out\" | grep -q '^ok 1 ' && ! echo \"\$out\" | grep -q '^not ok'" >&2
+    echo "" >&2
+    echo "  Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1 (logged Tier-2)" >&2
+    exit 1
+}
+
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {
@@ -1051,6 +1102,7 @@ print(text)
     [ -z "$verify_cmds" ] && return 0
 
     check_verification_port_literals "$verify_cmds"
+    check_verification_unjudged_test_runs "$verify_cmds"
 
     verify_total=$(echo "$verify_cmds" | wc -l)
     verify_pass=0

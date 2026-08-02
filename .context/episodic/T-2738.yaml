@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2738: verification gate: a pass-marker verdict on an unjudged test run closes green while tests fail
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T17:18:12Z
+# ============================================================================
+
+task_id: T-2738
+task_name: "verification gate: a pass-marker verdict on an unjudged test run closes green while tests fail"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T17:06:30Z
+completed: 2026-08-02T17:17:37Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verification gate: a pass-marker verdict on an unjudged test run closes green while tests fail
+
+# Key outcomes
+outcomes:
+  - 'Predicate has exactly one definition, in `lib/`, sourced by both the gate and its'
+  - '`fw task update --status work-completed` refuses a task whose `## Verification`'
+  - 'Named bypass env var exists, is stated in the refusal message, and logs Tier-2'
+  - 'Negative controls pass: the sanctioned `fw doctor` capture-grep idiom, and a'
+  - 'End-to-end test drives a real partially-failing suite through the real gate —'
+  - 'Task template''s L-387 hint no longer teaches the defect: it states that for a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2738-verification-gate-a-pass-marker-verdict-.md
+generated_by: context-agent-hybrid
