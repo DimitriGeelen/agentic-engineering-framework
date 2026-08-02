@@ -189,6 +189,105 @@ and existing-project adds fabric registration + a learning-capture task. Whether
 separate *scenario* (as distinct from its already-existing seed tasks) is a real open question —
 that is what IW-17 now asks, on corrected ground.
 
+### F-10 — 6 of 7 existing-codebase ecosystems are seeded as GREENFIELD, into a deadlock (2026-08-02)
+
+IW-17 asked whether option B needs a scenario. It already has one, and it is the better-designed of
+the two. The defect is that most option-B users **never reach it**.
+
+`lib/init.sh:489-502` decides greenfield-vs-existing from a fixed list: seven manifests
+(`package.json`, `requirements.txt`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `pom.xml`,
+`setup.py`) plus three directory names (`src`, `lib`, `app`). Anything else is greenfield.
+
+**Measured by running the real `fw init` against synthetic projects** (not by replicating the loop):
+
+| Project shape | Seeded as |
+|---|---|
+| `MyPlugin.csproj` + `Program.cs` (.NET) | **greenfield** |
+| `CMakeLists.txt` + `main.cpp` | **greenfield** |
+| `Makefile` + `main.c` | **greenfield** |
+| `Gemfile` + `app.rb` | **greenfield** |
+| `composer.json` + `index.php` | **greenfield** |
+| `build.gradle` + `Main.java` | **greenfield** |
+| flat `script.py` at repo root | **greenfield** |
+
+The list covers JS/TS, Python, Go, Rust and Maven-Java. It misses .NET, C/C++, Ruby, PHP,
+Gradle-Java, and any flat-layout repo. **.NET is not an edge case for this framework** — CLAUDE.md's
+own toolchain-build table lists `*.vbproj` / `*.csproj` → `dotnet build`, and the framework's real
+consumer `003-NTB-ATC-Plugin` is a VB.NET plugin. The documented consumer toolchain is invisible to
+the detector that decides how consumers are onboarded.
+
+**What the misclassification costs is not cosmetic — it is a complete deadlock:**
+
+1. The user is handed greenfield `T-002 "Define goals and architecture"` — `owner: human`,
+   `tags: [onboarding, inception]`.
+2. `T-002` carries the *only* `### Human` AC in either seed set —
+   `[REVIEW] Problem statement is clear and scoped`. Only the human may tick it.
+3. `T-002`'s Agent ACs require `fw inception decide T-002 go`, which **`lib/inception.sh` refuses
+   under `$CLAUDECODE=1`** (T-1259/T-1260) — the agent is structurally forbidden from recording it.
+4. The **T-532 gate** blocks every non-onboarding Write/Edit until all onboarding tasks reach
+   `work-completed`. A partial-complete task stays in `active/`, so the gate keeps holding.
+5. Meanwhile they do **not** get existing-project's `T-003 register key components in fabric` or
+   `T-006 record first project learning` — precisely the two tasks written for people who have code.
+
+So an existing-codebase user in six of seven common ecosystems is blocked, by a governance gate, on
+a human-owned task about defining goals for a project that already exists — and the only exit is
+`fw onboarding skip`. **This is the closest reconstruction in this artifact of the origin case**: a
+user blocked, with the framework reporting healthy, and self-recovery depending on knowing a verb.
+
+It also retroactively justifies IW-16's conclusion. `skip`'s point-of-need surfacing in the block
+message is load-bearing precisely because this deadlock exists and is reachable by default.
+
+**Ninth instance of this inception's thesis, and the first one that is in the shipped product rather
+than in the investigation of it** — a check (`has_code`) reporting confidently "greenfield" about a
+project that has code.
+
+### F-11 — G-062's creation gate is proven; its CLOSURE gate has never executed (IW-18, 2026-08-02)
+
+Both §ACD layers exist in `lib/arc.sh` and are real code, not prose:
+
+- **Layer A** (`_arc_validate_headline_mechanic`, line 227) — length bounds, observable-action
+  check, and a substrate-phrasing rejection with the message *"names WHO observes WHAT — not what
+  the framework does internally."* `do_arc_create` refuses without it (line 362).
+- **Layer B** (`_arc_validate_demo_path` line 256, `_arc_validate_demo_url` line 298) — existence,
+  ≥256 bytes, extension allowlist, and a reference check requiring the artefact to name the arc id
+  or one of its constituent task ids.
+
+**Layer A is battle-tested: 14 of 14 arcs carry a `headline_mechanic`.** Every arc in the register
+passed the gate at creation.
+
+**Layer B has never run once:**
+
+| Measure | Value |
+|---|---|
+| Arcs closed, ever | **0** (12 in-progress, 1 draft, 1 in-progress w/ inline comment) |
+| `status: closed` in git history of `.context/arcs/` | none |
+| `.context/audits/arc-bypass.jsonl` | **file does not exist** — `--demo none` never used |
+| `demo_evidence:` populated | 3 of 14 (arc-009, orchestrator-rethink, parallel-execution-aef) |
+| `demo_evidence: null` / empty | 11 of 14 |
+
+**Third instance in this inception of the IW-12a pattern** — a complete, wired mechanism whose
+trigger has never fired. First was the Error Escalation Ladder (full A/B/C/D engine, `status:
+issues` never set across 2416 tasks). Second was the never-reached existing-project seed set (F-10).
+This is the third.
+
+**What this means for IW-18.** The code already answers the substitute-vs-compose question in the
+compose direction: `fw arc close` structurally requires `--demo`, so HV-complete *cannot* substitute
+for it. But that answer is unproven — it has been asserted zero times against a real closure.
+
+**The untested failure mode is predictable and named.** HV-complete is countable, mechanical and
+agent-evaluable; the demo is a judgment-bearing artefact that requires someone to look at something.
+When the two meet at a real closure, the pressure runs one way: *all HV tasks are done, the arc is
+obviously finished, the mechanic just hasn't been demoed* → reach for `--demo none --justification`.
+CLAUDE.md §ACD already names the exact sentences this produces ("substrate is in place", "forward
+work, not a closure blocker") as violations in plain text. `arc-bypass.jsonl` being absent means
+there is **no baseline** — the first use of the escape will also be the first test of whether its
+justification gets scrutinised.
+
+**The three arcs that captured `demo_evidence` while still in-progress are the healthy pattern**, and
+it is the design recommendation: capture the demo *when the headline mechanic fires*, not as a
+closure ritual. A closure-time demo is precisely the one that gets bypassed, because by then the
+work feels done and the artefact feels like paperwork.
+
 ### D-7 — the classification axis is SUBJECT, not cause (IW-12, elaborated 2026-08-01)
 
 The proposed taxonomy (installer bug / prompt ambiguity / environment / agent error) was invented

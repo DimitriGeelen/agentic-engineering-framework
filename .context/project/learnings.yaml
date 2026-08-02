@@ -4043,3 +4043,10 @@ X'` returning empty group."
   date: 2026-08-01
   context: Added via context agent
   application: TBD
+- id: L-531
+  learning: "WITNESSES OVER COUNTS: a diagnostic that emits a count collapses exactly the per-item variation that makes an anomaly legible; one that names the items lets a reader spot the outlier without re-running anything. Converged with 832 (rail 375/376) from two independent directions: they had adopted it twice on authoring-ergonomics grounds (T-317 names flow ids rather than counting them; the lane-capacity rule prints WHICH lane and by how much), and AEF hit the DETECTION payoff by accident - the OBS-118 authority message prints per-node owners, and that per-node list turned out to be the only surface on which the T-2717 userTask-in-Framework-lane defect was visible at all (te_scan->human sitting next to five ->agent siblings). A count would have said '6 nodes fell back' and shown nothing. Sibling to L-525 (tool emits the summary, CLEAN rows printed so an ABSENCE is representable) and to L-530 (teeth prove a guard fires, never what it discriminates)."
+  source: P-001
+  task: T-2715
+  date: 2026-08-01
+  context: Added via context agent
+  application: TBD

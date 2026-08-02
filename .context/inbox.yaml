@@ -942,3 +942,17 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-119
+  text: "LATENT divergence with 832 on authority-lane owner derivation (rail 374, T-2717 follow-on). Our AUTHORITY_NO_OWNER={'authority'} vs their AUTHORITY_OWNER['authority']='agent'. Measured empirically by flipping fw_1_scan serviceTask->userTask in aef-tier0-escalation v1: our compiler emits owner=human for a userTask in the Framework-Authority lane, and the O-1 type-vs-lane mismatch warning does NOT fire (it lives in the 'lane_owner is not None' branch, which a no-owner authority skips; _lane_owner('Framework · Authority') is also non-indicative). 832's shape yields owner=agent PLUS a W-TYPE-LANE-MISMATCH warning. So the divergence is in the COMPILED OWNER, not only in the warning channel as 832 framed it. Flip condition measured on both sides: 0 such nodes in our 31 docs, 0 in their 174 - live but unfired. Also corrects the T-2567 comment quoted in T-2717: 'the executor is still the agent' holds for serviceTask/scriptTask, NOT for userTask, which type-derives human. Accidental win: the OBS-118 split message prints per-node owners, so the anomaly is visible as te_scan->human next to five ->agent siblings. Joint decision - 832 batches the authority-owner question into their T-189/T-195 v1.1 operator ruling; do not fix unilaterally."
+  captured: 2026-08-01T23:46:54Z
+  context_task: T-2715
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-120
+  text: "Lane owner-resolution has a SILENT third path, separable from OBS-119 and ours alone to fix (832 rail 376 flagged the class; measured our corpus). Counted across 31 designer .bpmn docs, 75 lanes: 53 resolve by AUTHORITY, 22 UNRESOLVABLE, and 0 resolve by NAME. So (a) _lane_owner is dead code in practice - it has never once been the deciding path; (b) all 22 unresolvable lanes are the SAME lane ('Framework · Authority', authority=authority), so the authority cause and the name cause are 100% co-located, meaning a fix to the authority mapping would take the observable population to zero and make the name path invisible by construction, not merely harder to see (832's point, strengthened by the count); (c) the ACTUAL defect is neither: when a lane EXISTS but yields no owner, bpmn_to_tasks.py falls to 'owner = type_owner or agent' with NO warning - the only warning in that branch fires on lane_name is None, which is a different case. A lane that exists and resolves to nothing is silent. Fix wants to warn on 'lane present, owner not derivable' independent of how OBS-119's authority mapping is ruled. Do not fold into OBS-119: that one waits on 832's T-189 v1.1 operator ruling, this one does not."
+  captured: 2026-08-01T23:52:44Z
+  context_task: T-2715
+  tags: []
+  status: pending
+  promoted_to: null
