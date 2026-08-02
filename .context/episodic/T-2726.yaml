@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2726: fw init reports success for checks it never ran — join the @init manifest to the validator evaluator set
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T07:44:40Z
+# ============================================================================
+
+task_id: T-2726
+task_name: "fw init reports success for checks it never ran — join the @init manifest to the validator evaluator set"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T07:29:30Z
+completed: 2026-08-02T07:44:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T09:36:12+02:00
+last_commit: 2026-08-02T09:41:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  join guard for #@init manifest vs validator evaluator set — 4 red, controls green. fw init can no longer report success about a check it never ran — 10/10
+
+# Key outcomes
+outcomes:
+  - 'A guard extracts the declared-type set from `lib/init.sh` and the handled-type'
+  - 'The guard **fails** on declared-but-not-handled (a check that cannot be'
+  - 'The guard **records** handled-but-not-declared as a named, reachable-but-'
+  - '`md` gains a real evaluator, so `policy/bvp-scoring-rubric.md` is actually'
+  - 'At runtime, an unknown check type is a **failure**, not a silent skip: the'
+  - 'The unknown-type message goes to stdout with the rest of the verdict lines,'
+  - 'A fresh `fw init` reports zero skipped-as-unknown checks and its validation'
+  - 'Negative control: the guard is shown to pass on the fixed tree and fail on a'
+  - 'Every declared check produces exactly one visible row, so the summary''s'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/validate-init.sh'
+  - 'lib/validate-init.sh'
+  - '.tasks/active/T-2726-fw-init-reports-success-for-checks-it-ne.md'
+  - 'tests/unit/validate_init_check_type_join.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-02T09:36:12"
+    action: "T-2726: join guard for #@init manifest vs validator evaluator set — 4 red, controls green"
+  - time: "2026-08-02T09:41:10"
+    action: "T-2726: fw init can no longer report success about a check it never ran — 10/10"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 2
+  files_changed: 4
+  lines_added: 578
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2726-fw-init-reports-success-for-checks-it-ne.md
+generated_by: context-agent-hybrid

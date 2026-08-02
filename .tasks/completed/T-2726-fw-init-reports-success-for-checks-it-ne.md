@@ -4,12 +4,12 @@ name: "fw init reports success for checks it never ran — join the @init manife
 description: >
   fw init reports success for checks it never ran — join the @init manifest to the validator evaluator set
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/validate-init.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T07:29:30Z
-last_update: 2026-08-02T07:29:30Z
-date_finished: null
+last_update: 2026-08-02T07:44:13Z
+date_finished: 2026-08-02T07:44:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -145,10 +145,11 @@ side names a type the evaluator cannot serve.
 
 ## Verification
 
+# Each line runs in its own shell, so $$ differs per line — a cleanup line
+# using $$ would never match the dirs the earlier lines created. Self-contained.
 bats tests/unit/validate_init_check_type_join.bats
-out=$(bin/fw init /tmp/fw-t2726-verify-$$ 2>&1); echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q "Validation passed"
-out=$(bin/fw init /tmp/fw-t2726-verify2-$$ 2>&1); ! echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q "Unknown check type"
-rm -rf /tmp/fw-t2726-verify-$$ /tmp/fw-t2726-verify2-$$ || true
+d=$(mktemp -d); out=$(bin/fw init "$d" 2>&1); rm -rf "$d"; echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q "Validation passed"
+d=$(mktemp -d); out=$(bin/fw init "$d" 2>&1); rm -rf "$d"; ! (echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q "Unknown check type")
 bash -n lib/validate-init.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -286,3 +287,26 @@ with its own evidence. Filed separately rather than folded in.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2726-fw-init-reports-success-for-checks-it-ne.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-86e5c39c
+- **Timestamp:** 2026-08-02T07:44:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `d=$(mktemp -d); out=$(bin/fw init "$d" 2>&1); rm -rf "$d"; echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q "Validation passed"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `d=$(mktemp -d); out=$(bin/fw init "$d" 2>&1); rm -rf "$d"; ! (echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q "Unknown check type")`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-08-02T07:44:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
