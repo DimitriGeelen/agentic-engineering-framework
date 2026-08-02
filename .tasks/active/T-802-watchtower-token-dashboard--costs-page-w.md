@@ -172,8 +172,7 @@ test -f web/blueprints/costs.py
 test -f web/templates/costs.html
 grep -q "costs" web/blueprints/__init__.py
 python3 -c "from web.blueprints.costs import bp; print('OK')"
-curl -sf http://localhost:3000/costs -o /tmp/T-802-verify.html && grep -qi "token" /tmp/T-802-verify.html
-
+WT=$(bin/fw watchtower url); curl -sf "$WT/costs" -o /tmp/T-802-verify.html && grep -qi "token" /tmp/T-802-verify.html
 ## Recommendation
 
 **Recommendation:** GO

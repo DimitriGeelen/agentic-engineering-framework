@@ -1,25 +1,29 @@
 ---
-id: T-1971
-name: "Remove stale 'Read-only — live weight sliders ship in T-1929' text on /bvp
-  — sliders have shipped"
+id: T-2732
+name: "verification blocks curl a hard-coded :3000 which is another project's watchtower"
 description: >
-  Remove stale 'Read-only — live weight sliders ship in T-1929' text on /bvp — sliders
-  have shipped
+  verification blocks curl a hard-coded :3000 which is another project's watchtower
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
-components: [web/templates/bvp.html]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-05-21T06:52:30Z
-last_update: '2026-06-11T22:23:27Z'
-date_finished: 2026-05-21T06:55:50Z
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
+created: 2026-08-02T10:15:40Z
+last_update: 2026-08-02T10:15:40Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -30,67 +34,55 @@ date_finished: 2026-05-21T06:55:50Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-05-28T22:54:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-11T22:23:27Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-1971: Remove stale 'Read-only — live weight sliders ship in T-1929' text on /bvp — sliders have shipped
+# T-2732: verification blocks curl a hard-coded :3000 which is another project's watchtower
 
 ## Context
 
-`/bvp` (web/templates/bvp.html:8) currently shows the page sub-header:
+CLAUDE.md §Watchtower Port bans a literal `curl http://localhost:3000/...` in
+verification examples, calls it an anti-pattern (T-1376), and says it "has caused
+agents to kill or mis-target live sessions across projects". The rule is documented
+and enforced nowhere.
 
-> "Business Value Points vs composite cost. Tasks = small dots, arcs = larger dots. **Read-only — live weight sliders ship in T-1929.**"
+Measured on this host, 2026-08-02:
 
-T-1929 has shipped (closed work-completed/partial-complete). The sliders are rendered and functional below this paragraph. The "Read-only" framing is stale and actively misleads users into thinking the interactive controls aren't operational.
+| | lines | tasks | in active/ |
+|---|---|---|---|
+| bare `:3000`, no resolver on the line | 371 | 277 | 13 lines / 11 tasks |
+| sanctioned `fw watchtower url \|\| echo …:3000` fallback | 15 | 4 | 14 lines / 3 tasks |
 
-Discovered during T-1915 demo-evidence capture for arc-006 closure — visible in `docs/reports/T-1915-demo-evidence/03-bvp-scatter.png` header.
+Two Watchtowers are running here: `:3000` is **832's**
+(`/opt/832-Workflow-designer/.agentic-framework`, pid 1341537, up 5 days) and
+`:3001` is AEF's (pid 2567301). The triple-file correctly resolves to
+`http://192.168.10.107:3001`. So every bare-`:3000` verification line has been
+curling **another project's** web server.
+
+Both projects run the same Flask app, so the generic routes exist in both. Probed:
+
+    /tasks/T-152    :3000(832)=200   :3001(AEF)=200    <- task IDs COLLIDE
+    /tasks/T-2731   :3000(832)=404   :3001(AEF)=200
+    /costs          :3000(832)=200   :3001(AEF)=200
+
+224 of the 371 lines assert only reachability (`curl -sf … -o /dev/null`). Those
+return **200 from 832's server** and assert nothing whatever about AEF — a green
+that asserts less than it says. The remaining 147 assert page content and would go
+red against 832, i.e. red for a reason unrelated to their task.
+
+This is the T-1376 hazard live, not hypothetically.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `Read-only — live weight sliders ship in T-1929` removed from `web/templates/bvp.html:8`
-- [x] Replacement text accurately describes the live-slider+commit flow (one sentence, names `fw bvp weight --from-watchtower` + §ACD)
-- [x] Page sub-header still names the scatter/dot legend ("Tasks = small dots, arcs = larger dots." preserved)
-- [x] Watchtower restarted; live `curl /bvp` confirms stale text count=0, new text count=1
+- [x] `update-task.sh` refuses `--status work-completed` when the task's `## Verification` block contains a URL literal on port 3000 with no port resolution on the same line
+- [x] The sanctioned defensive fallback (`WT_URL=$(bin/fw watchtower url) || echo "…:3000"`) is NOT refused — the discriminator is "resolves on the same line", not "mentions 3000"
+- [x] The refusal message names the offending line, the resolver to use, and the bypass mechanism
+- [x] `FW_ALLOW_HARDCODED_PORT=1` bypasses and writes a Tier-2 entry to `.gate-bypass-log.yaml`
+- [x] Every task in `.tasks/active/` is free of bare-port verification lines (remediated to the resolver form)
+- [x] bats suite covers: refusal, sanctioned-form pass, bypass, guard control (a violation appended to a COPY is caught), and a corpus scan of `active/` with no exclusions
+- [x] Negative control run: with the guard reverted the suite goes red, and red *for the stated reason* (failure text names the condition, not merely rc!=0)
 
 ### Human
-- [ ] [REVIEW] `/bvp` page sub-header text reads cleanly and accurately describes the slider+commit flow
-  **Steps:**
-  1. Hard-refresh http://192.168.10.107:3000/bvp
-  2. Read the paragraph immediately below the `BVP Quadrant Scatter` heading
-  **Expected:** Two sentences. First sentence describes the scatter (BVP vs cost, tasks = small dots, arcs = larger). Second sentence accurately describes the slider+commit flow naming `fw bvp weight --from-watchtower` and §ACD. No mention of "Read-only" or "T-1929".
-  **If not:** Note specific phrasing concern; the swap landed in `web/templates/bvp.html:8`.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -141,15 +133,27 @@ Discovered during T-1915 demo-evidence capture for arc-006 closure — visible i
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
 #
+# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
+# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
+# the capture step closed off — the middle stage is what `grep -q` slams its
+# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
+# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# NOTE: these lines deliberately do not spell a port-3000 URL literal — this
+# task's own guard would (correctly) refuse them. The corpus scan lives in the
+# bats suite, which builds the pattern rather than writing the URL.
+# Asserts "no failures" + "the suite actually ran", NOT a pinned test count —
+# a count pins a growing global into a per-task gate (G-015 shape, 832 rail-394).
+out=$(bats tests/unit/verification_port_hardcode.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+out=$(bin/fw reviewer T-2732 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
-# Re-verify the swap end-to-end against the live Watchtower (single line — gate runs each line separately)
-WT=$(bin/fw watchtower url); out=$(curl -s "$WT/bvp" 2>&1); grep -q "Drag a slider below to preview re-ranking" <<<"$out" && ! grep -q "Read-only — live weight sliders ship in T-1929" <<<"$out"
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -166,7 +170,33 @@ WT=$(bin/fw watchtower url); out=$(curl -s "$WT/bvp" 2>&1); grep -q "Drag a slid
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
+**Symptom:** 371 verification lines across 277 tasks fetch `:3000`. On this host
+that port belongs to 832's Watchtower, not AEF's (AEF resolves to `:3001`). 224 of
+those lines assert only HTTP reachability, so they return 200 from the wrong
+project's server and pass while asserting nothing about AEF.
+
+**Root cause:** the port is a *runtime-resolved, per-project* value (triple-file →
+`fw config get PORT` → 3000) written into task files as a *literal at authoring
+time*. A literal cannot track a value that is by design per-project.
+
+**Why structurally allowed:** the rule against it has existed in CLAUDE.md since
+T-1376 as prose only. Nothing reads the `## Verification` block looking for it —
+not the P-011 runner that executes those very lines, not audit, not the reviewer.
+The one surface that had both the text and the opportunity (P-011, which runs each
+line) never inspected what it was about to run. So the convention was documented,
+repeatedly restated, and 371× violated with no signal.
+
+Second-order: the failure mode is a *false green*, not a red. A red line gets
+noticed the next time someone closes the task. A green line that asserts nothing
+is indistinguishable from a green line that asserts everything — there is no moment
+at which anyone is prompted to look. That is why it reached 371 rather than 3.
+
+**Prevention:** P-011 refuses to run a verification block containing a
+port-literal URL with no same-line resolution, naming the line and the resolver.
+Distinct from the fix (remediating the 11 live tasks): the gate is what stops the
+372nd. Completed tasks are deliberately left alone — their gates already ran and
+the files are archived; rewriting 277 archived tasks is churn that would also
+destroy the evidence trail for this RCA.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -211,39 +241,9 @@ WT=$(bin/fw watchtower url); out=$(curl -s "$WT/bvp" 2>&1); grep -q "Drag a slid
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
-## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** Stale "Read-only" framing on a shipped interactive surface actively misleads users; the swap is single-line, single-file, and verified end-to-end (live `curl` confirms new text, stale text gone). Render-surface gate satisfied by the [REVIEW] AC for sub-header readability.
-
-**Evidence:**
-- `web/templates/bvp.html:8` swapped: "Read-only — live weight sliders ship in T-1929." → "Drag a slider below to preview re-ranking client-side; Commit persists via fw bvp weight --from-watchtower (§ACD)."
-- Verification block re-runs the curl check at completion gate
-- Watchtower live confirms swap landed (curl grep counts: stale=0, new=1)
-
-**Review on Watchtower:** http://192.168.10.107:3000/review/T-1971
-
 ## Updates
 
-### 2026-05-21T06:52:30Z — task-created [task-create-agent]
+### 2026-08-02T10:15:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1971-remove-stale-read-only--live-weight-slid.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2732-verification-blocks-curl-a-hard-coded-30.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.4)
-
-- **Scan ID:** R-98e03e98
-- **Timestamp:** 2026-05-21T06:55:51Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 1
-
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — `Read-only — live weight sliders ship in T-1929` removed from `web/templates/bvp.html:8`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/bvp.html in: `Read-only — live weight sliders ship in T-1929` removed from `web/templates/bvp.html:8``
-
-### 2026-05-21T06:55:50Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

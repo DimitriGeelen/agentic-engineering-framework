@@ -192,10 +192,9 @@ Setting up TermLink distribution via Homebrew with GitHub Actions automated buil
      The completion gate runs each command — if any exits non-zero, completion is blocked.
      Examples:
        python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
+       WT=$(bin/fw watchtower url); curl -sf "$WT/page"
        grep -q "expected_string" output_file.txt
 -->
-
 ## Recommendation
 
 **Recommendation:** DEFER

@@ -186,9 +186,8 @@ out=$(grep -A1 "rubric:" policy/value-drivers.yaml); echo "$out" | grep -q "No p
 out=$(grep -A1 "rubric:" policy/value-drivers.yaml); echo "$out" | grep -q "No memory-layer touched"
 out=$(grep -A1 "rubric:" policy/value-drivers.yaml); echo "$out" | grep -q "No fabric/topology touched"
 ! grep -q "name: t2079probe" .context/bvp-weight-history.yaml
-curl -sf http://localhost:3000/bvp > /tmp/.t2336-bvp.out 2>&1 && grep -q "V_PROMPT_QUALITY" /tmp/.t2336-bvp.out
+WT=$(bin/fw watchtower url); curl -sf "$WT/bvp" > /tmp/.t2336-bvp.out 2>&1 && grep -q "V_PROMPT_QUALITY" /tmp/.t2336-bvp.out
 out=$(bin/fw audit --section structure 2>&1); echo "$out" | grep -qE "^Fail: 0$"
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

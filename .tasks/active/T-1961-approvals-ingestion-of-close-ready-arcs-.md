@@ -175,8 +175,7 @@ The completion-threshold (≥0.80) plus the recommendation-present filter keeps 
 python3 -c "import ast; ast.parse(open('web/blueprints/approvals.py').read())"
 bats tests/unit/approvals_close_ready_arcs.bats
 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_approvals_arc_closure_section.py -q
-out=$(curl -s http://localhost:3000/approvals 2>&1); [[ "$out" == *"approvals"* ]]
-
+WT=$(bin/fw watchtower url); out=$(curl -s "$WT/approvals" 2>&1); [[ "$out" == *"approvals"* ]]
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

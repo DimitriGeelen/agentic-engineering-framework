@@ -166,9 +166,8 @@ Follow-up from T-802 (Watchtower /costs page). Adds a compact token usage widget
 
 ## Verification
 
-curl -sf http://localhost:3000/ -o /tmp/T-803-verify.html && grep -qi "token" /tmp/T-803-verify.html
+WT=$(bin/fw watchtower url); curl -sf "$WT/" -o /tmp/T-803-verify.html && grep -qi "token" /tmp/T-803-verify.html
 python3 -c "from web.blueprints.core import _get_token_usage; print('OK')"
-
 ## Recommendation
 
 **Recommendation:** GO

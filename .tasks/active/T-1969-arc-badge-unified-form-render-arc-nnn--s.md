@@ -185,8 +185,7 @@ Existing helpers in `lib/arc.sh`: `_resolve_arc_slug` and `_resolve_arc_id` (per
 
 python3 -m pytest tests/unit/test_arc_display_helper.py -q
 python3 -m pytest tests/playwright/test_arc_badge.py -q
-out=$(curl -s http://localhost:3000/tasks 2>&1); grep -qE '>arc-[0-9]{3} · [a-z]' <<<"$out"
-
+WT=$(bin/fw watchtower url); out=$(curl -s "$WT/tasks" 2>&1); grep -qE '>arc-[0-9]{3} · [a-z]' <<<"$out"
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

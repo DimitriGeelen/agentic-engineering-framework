@@ -966,6 +966,65 @@ PYRELATED
     exit 1
 }
 
+# Watchtower port-literal guard (T-2732)
+#
+# CLAUDE.md §Watchtower Port has banned a literal port-3000 URL in verification
+# examples since T-1376 — the port is per-project (triple-file → fw config PORT →
+# 3000) and a literal cannot track a per-project value. The rule was prose only:
+# nothing read the ## Verification block looking for it, least of all this
+# function, which executes those very lines.
+#
+# Measured 2026-08-02: 371 such lines across 277 tasks. On that host :3000 was a
+# DIFFERENT PROJECT's Watchtower (832's), and because both projects run the same
+# Flask app, the 224 lines asserting only reachability returned 200 from the wrong
+# server. Task IDs collide at low numbers, so even /tasks/T-152 answered 200. The
+# failure mode is a false green, which is why it reached 371 instead of 3.
+#
+# Predicate: a URL literal on port 3000 with NO port resolution on the same line.
+# The sanctioned defensive fallback documented in CLAUDE.md —
+#   WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000")
+# — resolves on the same line and passes. "Mentions 3000" is not the predicate;
+# "reaches for 3000 without asking where it actually is" is.
+#
+# Deliberately fixed on 3000 rather than "the currently-resolved port": a gate
+# whose verdict depends on which port happens to be live today is the same class
+# of defect it exists to catch (a check asserting a property of the host at this
+# moment rather than of the task).
+check_verification_port_literals() {
+    local cmds="$1" offenders
+
+    [ "${FW_ALLOW_HARDCODED_PORT:-0}" = "1" ] && {
+        log_gate_bypass "FW_ALLOW_HARDCODED_PORT" "check_verification_port_literals"
+        return 0
+    }
+
+    # Predicate lives in lib/verification-port.sh so the regression suite runs
+    # THIS expression over the real corpus rather than a re-typed copy (L-533).
+    if ! declare -F find_port_literals >/dev/null 2>&1; then
+        source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/lib/verification-port.sh"
+    fi
+    offenders=$(find_port_literals "$cmds")
+
+    [ -z "$offenders" ] && return 0
+
+    echo -e "${RED}ERROR: Cannot complete — hard-coded Watchtower port in ## Verification:${NC}" >&2
+    printf '%s\n' "$offenders" | while IFS= read -r line; do
+        echo "    $line" >&2
+    done
+    echo "" >&2
+    echo "  Port 3000 is the framework default, not this project's port. It is" >&2
+    echo "  frequently ANOTHER project's Watchtower — such a line can pass while" >&2
+    echo "  asserting nothing about this project (T-1376, T-2732)." >&2
+    echo "" >&2
+    echo "  Resolve the port instead of assuming it:" >&2
+    echo "    WT_URL=\$(bin/fw watchtower url); curl -sf \"\$WT_URL/<path>\"" >&2
+    echo "" >&2
+    echo "  Current resolution: $("$FW_BIN" watchtower url 2>/dev/null || echo '<unresolved>')" >&2
+    echo "" >&2
+    echo "  Bypass: FW_ALLOW_HARDCODED_PORT=1 (logged Tier-2)" >&2
+    exit 1
+}
+
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {
@@ -984,6 +1043,8 @@ print(text)
     verify_cmds=$(echo "$verify_section" | grep -vE '^\s*$|^\s*#|^\s*```' || true)
 
     [ -z "$verify_cmds" ] && return 0
+
+    check_verification_port_literals "$verify_cmds"
 
     verify_total=$(echo "$verify_cmds" | wc -l)
     verify_pass=0

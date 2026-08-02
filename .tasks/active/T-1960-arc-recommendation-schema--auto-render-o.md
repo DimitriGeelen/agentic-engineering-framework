@@ -176,8 +176,7 @@ python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
 python3 -c "import ast; ast.parse(open('web/shared.py').read())"
 bats tests/unit/extract_recommendation_close_keep_open.bats
 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_close_recommendation_panel.py -q
-out=$(curl -s http://localhost:3000/arcs/value-prioritisation/close 2>&1); [[ "$out" == *"arc-close-hdr"* ]]
-
+WT=$(bin/fw watchtower url); out=$(curl -s "$WT/arcs/value-prioritisation/close" 2>&1); [[ "$out" == *"arc-close-hdr"* ]]
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

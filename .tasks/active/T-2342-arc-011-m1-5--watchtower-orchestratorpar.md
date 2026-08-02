@@ -129,10 +129,9 @@ After this slice lands, arc-011 M1 is 6/6 complete.
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 python3 -m pytest tests/unit/test_orchestrator_parallel_view.py -q > /tmp/.t2342-pytest.out 2>&1 && grep -q "11 passed" /tmp/.t2342-pytest.out
-curl -s -o /tmp/.t2342-curl.out -w "%{http_code}\n" http://localhost:3000/orchestrator/parallel > /tmp/.t2342-code; grep -q "200" /tmp/.t2342-code
+WT=$(bin/fw watchtower url); curl -s -o /tmp/.t2342-curl.out -w "%{http_code}\n" "$WT/orchestrator/parallel" > /tmp/.t2342-code; grep -q "200" /tmp/.t2342-code
 grep -q "hx-trigger" /tmp/.t2342-curl.out
-curl -s -o /tmp/.t2342-curl-old.out -w "%{http_code}\n" http://localhost:3000/orchestrator > /tmp/.t2342-code-old; grep -q "200" /tmp/.t2342-code-old
-
+WT=$(bin/fw watchtower url); curl -s -o /tmp/.t2342-curl-old.out -w "%{http_code}\n" "$WT/orchestrator" > /tmp/.t2342-code-old; grep -q "200" /tmp/.t2342-code-old
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

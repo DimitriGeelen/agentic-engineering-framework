@@ -68,6 +68,10 @@ Resolution order (T-885, T-1287, T-1376):
 - Do not write `curl http://localhost:3000/...` in instructions, verification examples, or cron scripts. That literal hard-code is an anti-pattern (T-1376) and has caused agents to kill or mis-target live sessions across projects.
 - Fallback to `3000` is fine in shell when `fw_config PORT` and the triple file both return empty — that is a defensive default, not a hard-code.
 
+**Structurally enforced in `## Verification` blocks (T-2732).** The P-011 close gate refuses `--status work-completed` when a verification line contains a port-3000 URL literal with no port resolution *on the same line*. The sanctioned fallback above resolves first, so it passes; `curl -sf http://localhost:3000/x` does not. Predicate: `lib/verification-port.sh:find_port_literals`. Bypass: `FW_ALLOW_HARDCODED_PORT=1` (logged Tier-2).
+
+Why a gate and not more prose: the rule was documented from T-1376 onward and violated **371 times across 277 tasks** anyway. On the origin host `:3000` was a *different project's* Watchtower (832's), and because consumer projects run the same Flask app, the 224 lines asserting only reachability returned 200 from the wrong server — even `/tasks/T-152`, because low task IDs collide across projects. The failure mode is a **false green**, which is why it reached 371 rather than 3: a red line gets noticed at the next close, while a green line that asserts nothing is indistinguishable from one that asserts everything. Nothing ever prompts anyone to look.
+
 ## Task System
 
 ### File Structure

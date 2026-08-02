@@ -171,9 +171,8 @@ T-1963 adds a thin GET-only `/arcs/<slug>/review` route that renders the anchor-
 
 python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_review_route.py -q
-out=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/arcs/value-prioritisation/review); [[ "$out" == "200" ]]
-out=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/arcs/dispatch-safety/review); [[ "$out" == "200" ]]
-
+WT=$(bin/fw watchtower url); out=$(curl -s -o /dev/null -w "%{http_code}" "$WT/arcs/value-prioritisation/review"); [[ "$out" == "200" ]]
+WT=$(bin/fw watchtower url); out=$(curl -s -o /dev/null -w "%{http_code}" "$WT/arcs/dispatch-safety/review"); [[ "$out" == "200" ]]
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

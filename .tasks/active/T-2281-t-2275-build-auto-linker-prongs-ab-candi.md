@@ -119,9 +119,8 @@ grep -q "docs/articles/" web/shared.py
 grep -q "ROOT_FILES" web/shared.py
 test -f tests/unit/test_auto_link_root_and_articles.py
 out=$(python3 -m pytest tests/unit/test_auto_link_root_and_articles.py -q 2>&1); echo "$out" | grep -q "passed"
-out=$(curl -s http://localhost:3000/review/T-2274 2>&1); echo "$out" | grep -qE '<a href="/file/README\.md"'
+WT=$(bin/fw watchtower url); out=$(curl -s "$WT/review/T-2274" 2>&1); echo "$out" | grep -qE '<a href="/file/README\.md"'
 out=$(bin/fw reviewer T-2281 2>&1); echo "$out" | grep -qE "Overall:.*PASS"
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
