@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2742: document the Tier 0 scope boundary — string-level only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T22:49:11Z
+# ============================================================================
+
+task_id: T-2742
+task_name: "document the Tier 0 scope boundary — string-level only"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T22:42:29Z
+completed: 2026-08-02T22:48:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-03T00:48:25+02:00
+last_commit: 2026-08-03T00:48:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  document the Tier 0 scope boundary — the hook sees the command string only. register the scope-boundary test in the component fabric
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-tier0.sh` header states the scope boundary: what the hook inspects, and that a destructive operation inside a referenced script file is not inspected'
+  - '`CLAUDE.md` §Enforcement Tiers states the same boundary and its consequence, so an agent reading the tier table cannot infer coverage the gate does not provide (`FRAMEWORK.md` too — the provider-neutral guide carried the same silently-over-promising table)'
+  - 'A characterization test asserts the boundary as it actually is: a Bash command invoking a script whose *contents* are Tier-0 destructive is **not** blocked. The documented claim is therefore falsifiable — if anyone later extends coverage, the test goes red and forces the docs to change with it'
+  - 'The same test carries a positive control: the identical destructive command typed inline **is** blocked. Without it, an "allowed" result is indistinguishable from a harness that cannot observe a block at all'
+  - 'The falsifiability claim is itself demonstrated, not asserted: the hook was temporarily patched to splice referenced file contents into the match string, and the test file records which tests went red under it (3 and 4) and which did not (5 and 6, documentary only)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-tier0.sh'
+  - 'CLAUDE.md'
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-tier0_scope_boundary.yaml'
+  - 'FRAMEWORK.md'
+  - '.tasks/active/T-2742-document-the-tier-0-scope-boundary--stri.md'
+  - 'tests/unit/tier0_scope_boundary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T00:48:25'
+    action: 'T-2742: document the Tier 0 scope boundary — the hook sees the command string only'
+  - time: '2026-08-03T00:48:49'
+    action: 'T-2742: register the scope-boundary test in the component fabric'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 7
+  lines_added: 542
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2742-document-the-tier-0-scope-boundary--stri.md
+generated_by: context-agent-hybrid
