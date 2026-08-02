@@ -186,7 +186,13 @@ out=$(python3 -m pytest tests/unit/test_arcs_pages_tokens.py -q 2>&1); echo "$ou
 cta=$(grep -A2 "close-arc-button" web/templates/arc_detail.html); echo "$cta" | grep -q "Close this arc" && ! echo "$cta" | grep -qE "#[0-9a-fA-F]{3,6}"
 
 # Live render — the page the operator actually opens (never hard-code :3000).
-out=$(curl -sf "$(bin/fw watchtower url)/arcs/watchtower-redesign"); echo "$out" | grep -q "Close this arc"
+# NOT the `out=$(curl ...); echo "$out" | grep -q` form the template recommends:
+# this page is 146,366 bytes against a 65,536-byte pipe buffer, so `echo` blocks
+# on a full pipe while `grep -q` exits at its first match — SIGPIPE, exit 141,
+# deterministically (3/3). L-387's capture-first rule only removes SIGPIPE while
+# the capture fits the pipe buffer. Redirect to a file instead; this also keeps
+# curl's own exit code as part of the verdict rather than discarding it. OBS-137.
+curl -sf "$(bin/fw watchtower url)/arcs/watchtower-redesign" -o /tmp/.t2741-arc.html && grep -q "Close this arc" /tmp/.t2741-arc.html
 
 ## RCA
 

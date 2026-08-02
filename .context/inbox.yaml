@@ -1068,3 +1068,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-137
+  text: "L-387's capture-first pattern is only SIGPIPE-safe below the pipe buffer. The task template (.tasks/templates/default.md) prescribes 'out=$(cmd 2>&1); echo \"$out\" | grep -q PATTERN' as THE safe form for ## Verification, and T-2090 hardened it to single-pipe-only. Both are correct for small captures and WRONG for large ones: if the capture exceeds the 65536-byte pipe buffer and grep -q matches early, echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE, pipeline exits 141 under pipefail. Measured under T-2741: curl of a Watchtower page = 146366 bytes, rc=141 on 3/3 runs, deterministic not racy. The safe form for large captures is a file: 'cmd -o /tmp/.out && grep -q PATTERN /tmp/.out' - which also keeps the producing command's exit code in the verdict instead of discarding it. Affects any Verification line that curls a rendered HTML page (Watchtower routes are 50-200KB). SECOND finding, methodological: dry-running a verification line in an interactive shell does NOT rehearse the gate, because the interactive shell has no 'set -eo pipefail' - the identical line returned 0 by hand and 141 under the gate. Rehearse with: bash -c 'set -eo pipefail; <line>'. Suggest a template hint next to the existing L-387/T-2090 hints."
+  captured: 2026-08-02T22:36:04Z
+  context_task: T-2741
+  tags: []
+  status: pending
+  promoted_to: null
