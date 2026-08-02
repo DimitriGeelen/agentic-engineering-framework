@@ -537,6 +537,80 @@ def detect_swallowed_errors(verification_section: str) -> list[Finding]:
     return findings
 
 
+# ── T-2728: HTTP assertions that cannot fail, and literal host:port URLs ──────
+#
+# Origin OBS-127: two shipped verification lines read
+#   curl -s -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/api/...
+# `-w` only PRINTS the code; curl exits 0 on any successful connection, so 403/404/
+# 500 all pass. And the literal :3000 is the per-project-port anti-pattern (T-1376)
+# — this project serves on 3001, so the request reached a DIFFERENT project's
+# Watchtower. Green about the wrong server AND green regardless of the answer.
+#
+# Sibling of swallowed-errors / output-spoofing / empty-output-success: the family
+# is "the assertion cannot fail". This is its HTTP member.
+
+_CURL_RE = re.compile(r"\bcurl\b")
+# A real failure mechanism: -f/--fail makes curl exit non-zero on HTTP >= 400.
+_CURL_FAIL_RE = re.compile(r"(?:^|\s)(?:-[a-zA-Z]*f[a-zA-Z]*|--fail(?:-with-body|-early)?)(?:\s|$)")
+# The status code is only meaningful if something compares it. Any of these on the
+# line means the author did the work; assignment means the value is carried to a
+# later line, which this line-oriented scan must not second-guess.
+_CURL_COMPARED_RE = re.compile(r"\btest\b|\[\[?\s|\bgrep\b|==|-eq\b|\bcase\b")
+_ASSIGNMENT_RE = re.compile(r"^\s*\w+=")
+# A redirect carries the value to a later line this line-oriented scan cannot see.
+_REDIRECT_RE = re.compile(r">\s*\S")
+# Output discarded: nothing downstream can inspect the body either.
+_CURL_DISCARD_RE = re.compile(r"-o\s+/dev/null|--output\s+/dev/null")
+# T-2728: a `literal-host-port` detector was built and REMOVED after measurement.
+# It fired 391 times across the corpus: mostly long-completed tasks, but also
+# genuinely fixed-port services where a literal is correct (ollama :11434,
+# litellm :4000, :8834), deliberate negative fixtures (example.invalid:9999),
+# and a line asserting the string is ABSENT. Distinguishing "this project's
+# Watchtower" from "some other service" needs a maintained route allowlist —
+# the allowlist-as-oracle shape T-2722 was built to kill. The port anti-pattern
+# stays documented in CLAUDE.md; it does not get a detector that cries wolf 391
+# times. Regexes kept for a future narrowing, deliberately unwired.
+_LITERAL_HOSTPORT_RE = re.compile(r"https?://[A-Za-z0-9_.\-]+:\d{2,5}\b")
+# Ways a line can legitimately obtain the port.
+_PORT_RESOLVED_RE = re.compile(
+    r"watchtower\s+url|watchtower\s+port|\$\{?WURL|\$\{?FW_PORT|watchtower\.url|config\s+get\s+PORT"
+)
+
+
+def detect_toothless_http(verification_section: str) -> list[Finding]:
+    findings: list[Finding] = []
+    if not verification_section:
+        return findings
+    for lineno, raw in enumerate(verification_section.splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        if _CURL_RE.search(line):
+            # Only flag when the line both discards the body and has no failure
+            # mechanism of its own. A capture (`x=$(curl ...)`) defers the check to
+            # a later line this scan cannot see, so it is left alone.
+            if (
+                _CURL_DISCARD_RE.search(line)
+                and not _CURL_FAIL_RE.search(line)
+                and not _CURL_COMPARED_RE.search(line)
+                and not _ASSIGNMENT_RE.search(line)
+                and not _REDIRECT_RE.search(line)
+            ):
+                findings.append(
+                    Finding(
+                        pattern_id="toothless-http-assertion",
+                        pattern_name="HTTP assertion that cannot fail",
+                        detection_confidence="deterministic",
+                        lie_severity="severe",
+                        location=f"Verification:line {lineno}",
+                        evidence=line[:200],
+                    )
+                )
+
+    return findings
+
+
 # L-264-(b): widened — added more success markers + catch standalone
 # success-printing lines as well as echo/printf forms.
 _SUCCESS_TOKEN_RE = re.compile(
@@ -2497,6 +2571,7 @@ def scan_task(
     findings.extend(detect_tautology(verif_section))
     findings.extend(detect_empty_body(ac_section))
     findings.extend(detect_swallowed_errors(verif_section))
+    findings.extend(detect_toothless_http(verif_section))
     findings.extend(detect_output_spoofing(verif_section))
     # v1.1 detectors
     findings.extend(detect_empty_output_success(verif_section))

@@ -56,6 +56,27 @@ patterns:
     examples_negative:
       - "[x] lib/reviewer/static_scan.py exists with 4 anti-pattern detectors"
 
+  - id: toothless-http-assertion
+    name: "HTTP assertion that cannot fail"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_toothless_http"
+    description: >
+      A curl verification line that discards its output and carries no failure
+      mechanism. `-w "%{http_code}"` only PRINTS the status; curl exits 0 on any
+      successful connection, so 403/404/500 all read PASS. The assertion would
+      survive the endpoint being deleted. Sibling of swallowed-errors and
+      empty-output-success — the family is "the assertion cannot fail".
+      Origin OBS-127 (T-2728): two shipped lines were green against a DIFFERENT
+      project's Watchtower and green regardless of the answer.
+      Not flagged when the line uses -f/--fail, compares a captured status, or
+      assigns/redirects the value for a later line to consume.
+    examples_positive:
+      - 'curl -s -o /dev/null -w "%{http_code}" "$WURL/api/x"'
+    examples_negative:
+      - 'curl -sf -o /dev/null "$WURL/review/T-1"'
+      - 'out=$(curl -s -o /dev/null -w "%{http_code}" "$WURL/x"); test "$out" = "200"'
+
   - id: swallowed-errors
     name: "Errors swallowed or hooks bypassed"
     detection_confidence: deterministic
