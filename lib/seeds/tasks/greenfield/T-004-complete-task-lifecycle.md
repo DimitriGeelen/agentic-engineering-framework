@@ -34,3 +34,8 @@ Create a genuine task (small feature or improvement), complete it, and verify th
 
 # At least one completed task exists (beyond onboarding tasks)
 test "$(ls .tasks/completed/T-*.md 2>/dev/null | wc -l)" -ge "1"
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->

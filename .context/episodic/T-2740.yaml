@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2740: greenfield seed tasks fail fw audit on a freshly initialised project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T22:02:49Z
+# ============================================================================
+
+task_id: T-2740
+task_name: "greenfield seed tasks fail fw audit on a freshly initialised project"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T21:56:59Z
+completed: 2026-08-02T22:02:10Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  greenfield seed tasks fail fw audit on a freshly initialised project
+
+# Key outcomes
+outcomes:
+  - '`fw audit` on a freshly `fw init`-ed greenfield project exits ≤1 — zero hard'
+  - 'Every greenfield seed carries the sections its own `workflow_type` requires,'
+  - '`tests/unit/greenfield_seed_audit_prototype.bats` passes AND is tracked in git —'
+  - 'Seed section-conformance is checked mechanically, so the next control added to'
+  - 'Fix is in the seeds, not in the audit control: CTL-027 is correct and stays'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2740-greenfield-seed-tasks-fail-fw-audit-on-a.md
+generated_by: context-agent-hybrid
