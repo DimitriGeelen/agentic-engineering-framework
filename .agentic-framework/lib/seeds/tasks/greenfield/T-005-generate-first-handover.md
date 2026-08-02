@@ -33,3 +33,8 @@ The handover is the primary mechanism for session continuity. Generate one to va
 
 # Handover exists
 test -f .context/handovers/LATEST.md
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->

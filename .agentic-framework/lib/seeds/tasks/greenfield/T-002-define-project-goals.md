@@ -41,3 +41,27 @@ This is an inception task. Define the problem __PROJECT_NAME__ solves, its goals
 
 # Research artifact exists
 ls docs/reports/T-002-*.md
+
+## Recommendation
+
+<!-- Fill this in before running `fw inception decide`. Watchtower renders this
+     section — if it is empty, the reviewer sees a blank decision form.
+
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** why, citing what the exploration actually turned up
+     **Evidence:**
+     - Finding 1
+     - Finding 2
+
+     DEFER is for evidence gaps, not confidence gaps: if the research artifact is
+     already complete, commit to GO or NO-GO with the rationale you have. -->
+
+## Decision
+
+<!-- Filled at completion via:
+     fw inception decide T-002 go|no-go|defer --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
