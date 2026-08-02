@@ -79,3 +79,6 @@ datetime
 
 # Child-2 write-out staging proposals (T-2539) — generated, not tasks; regenerable via `fw bpmn compile --write`
 .context/bpmn-staged/
+
+# T-2734: generated at test time by tests/unit/test_bvp_cli_*.py (tmp.write_text)
+tests/unit/_bvp_cli_imported*.py
