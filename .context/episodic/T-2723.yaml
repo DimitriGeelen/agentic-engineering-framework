@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2723: Wire the fresh-project seed harness so F-10-class misclassification fails a
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T06:16:55Z
+# ============================================================================
+
+task_id: T-2723
+task_name: "Wire the fresh-project seed harness so F-10-class misclassification fails a"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T05:56:16Z
+completed: 2026-08-02T06:16:44Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-02T08:14:13+02:00
+last_commit: 2026-08-02T08:14:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shape-detection guard — provably red on all six F-10 cases, green on its own negative controls
+
+# Key outcomes
+outcomes:
+  - 'A bats file under `tests/unit/` asserts project-shape detection per ecosystem, driven by'
+  - 'Each fixture runs against real `bin/fw init` in a scrubbed `env -i` environment'
+  - 'Negative controls prove the suite cannot be green while blind. **Scope corrected from'
+  - 'Ruby and gradle are asserted to pass **for the right reason** — the guard distinguishes'
+  - 'The new file is confirmed to be executed by `fw test unit` (bin/fw:7551 globs'
+  - 'Suite is RED on the four misclassifiers at hand-off to T-2722, and the redness is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2718.yaml'
+  - '.tasks/active/T-2723-wire-the-fresh-project-seed-harness-so-f.md'
+  - '.tasks/completed/T-2718-keystone-fw-init-enumerates-what-is-ther.md'
+  - 'tests/unit/init_project_shape_detection.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-08-02T08:14:13"
+    action: "T-2723: shape-detection guard — provably red on all six F-10 cases, green on its own negative controls"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:onboarding-shape-detection]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 4
+  lines_added: 363
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2723-wire-the-fresh-project-seed-harness-so-f.md
+generated_by: context-agent-hybrid

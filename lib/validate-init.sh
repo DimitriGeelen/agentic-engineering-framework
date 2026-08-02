@@ -289,8 +289,15 @@ do_validate_init() {
                     continue
                 else
                     local broken
-                    broken=$(VALIDATE_FILE="$full_path" python3 -c "
+                    broken=$(VALIDATE_FILE="$full_path" VALIDATE_ROOT="$target_dir" python3 -c "
 import json, os
+# T-2724: hook commands are written by fw init as
+# '\${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw hook <event>'. Without expansion,
+# os.path.exists() is handed that literal and every correct install reports 19 broken
+# hooks named 'fw' (the basename of the unexpanded string). expandvars handles both
+# \$VAR and \${VAR}, and deliberately leaves UNKNOWN variables untouched so an
+# unresolvable path still fails rather than silently passing.
+os.environ['CLAUDE_PROJECT_DIR'] = os.environ['VALIDATE_ROOT']
 with open(os.environ['VALIDATE_FILE']) as f:
     data = json.load(f)
 for event, entries in data.get('hooks', {}).items():
@@ -299,6 +306,7 @@ for event, entries in data.get('hooks', {}).items():
             cmd = hook.get('command', '')
             parts = cmd.split()
             script = next((p for p in parts if '=' not in p), '')
+            script = os.path.expandvars(script) if script else script
             if script and not os.path.exists(script):
                 print(f'missing: {os.path.basename(script)}')
             elif script and '/Cellar/' in script:
@@ -363,8 +371,12 @@ for event, entries in data.get('hooks', {}).items():
     if [ -f "$settings_file" ] && [ "$has_python" = true ]; then
         total=$((total + 1))
         local broken_hooks
-        broken_hooks=$(VALIDATE_FILE="$settings_file" python3 -c "
+        broken_hooks=$(VALIDATE_FILE="$settings_file" VALIDATE_ROOT="$target_dir" python3 -c "
 import json, os
+# T-2724: see the matching comment on the hookpaths check above — same unexpanded
+# \${CLAUDE_PROJECT_DIR} defect, same fix. Both sites must stay in step; a fix to one
+# alone leaves the other reporting 19 phantom 'fw' entries.
+os.environ['CLAUDE_PROJECT_DIR'] = os.environ['VALIDATE_ROOT']
 with open(os.environ['VALIDATE_FILE']) as f:
     data = json.load(f)
 broken = []
@@ -374,6 +386,7 @@ for event, entries in data.get('hooks', {}).items():
             cmd = hook.get('command', '')
             parts = cmd.split()
             script = next((p for p in parts if '=' not in p), '')
+            script = os.path.expandvars(script) if script else script
             if script and not os.path.exists(script):
                 broken.append(os.path.basename(script))
 print(','.join(broken))
