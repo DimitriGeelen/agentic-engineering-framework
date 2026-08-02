@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2731: episodic generator breaks YAML when task name spans multiple lines (OBS-129)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T09:42:14Z
+# ============================================================================
+
+task_id: T-2731
+task_name: "episodic generator breaks YAML when task name spans multiple lines (OBS-129)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T09:16:25Z
+completed: 2026-08-02T09:41:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T11:41:13+02:00
+last_commit: 2026-08-02T11:41:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  frontmatter extraction scoped and folded — episodic corpus now parses 2429/2429
+
+# Key outcomes
+outcomes:
+  - 'Both causes are addressed, not just the one that fired:'
+  - '`agents/context/lib/episodic.sh` stops rolling its own'
+  - '`get_yaml_field` is hardened to (i) read only the frontmatter block when'
+  - 'The hardening''s blast radius is **measured, not assumed**: old vs new'
+  - '`.context/episodic/T-100202.yaml` regenerates and parses, and the corpus'
+  - 'Guard + negative control: a test asserts episodic.sh contains no bare'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/episodic.sh'
+  - '.agentic-framework/lib/yaml.sh'
+  - 'agents/context/lib/episodic.sh'
+  - '.context/episodic/T-100202.yaml'
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-episodic_frontmatter_extraction.yaml'
+  - 'lib/yaml.sh'
+  - '.tasks/active/T-2731-episodic-generator-breaks-yaml-when-task.md'
+  - 'tests/unit/episodic_frontmatter_extraction.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-02T11:41:13'
+    action: 'T-2731: frontmatter extraction scoped and folded — episodic corpus now parses 2429/2429'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 9
+  lines_added: 486
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2731-episodic-generator-breaks-yaml-when-task.md
+generated_by: context-agent-hybrid
