@@ -4,12 +4,12 @@ name: "fw init reports 19 broken hooks on a correct install — validator never 
 description: >
   fw init reports 19 broken hooks on a correct install — validator never expands CLAUDE_PROJECT_DIR
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/validate-init.sh, tests/unit/validate_init_hook_path_expansion.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T06:17:02Z
-last_update: 2026-08-02T06:17:02Z
-date_finished: null
+last_update: 2026-08-02T06:27:34Z
+date_finished: 2026-08-02T06:27:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -304,3 +304,24 @@ subject.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2724-fw-init-reports-19-broken-hooks-on-a-cor.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d2efe30
+- **Timestamp:** 2026-08-02T06:28:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 38
+     - evidence: `T=$(mktemp -d); touch "$T/Makefile" "$T/main.c"; out=$(bin/fw init "$T" 2>&1); rc=$?; clean=$(printf '%s\n' "$out" | sed 's/\x1b\[[0-9;]*m//g'); rm -rf "$T"; [ $rc -eq 0 ] && echo "$clean" | grep -q "`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-08-02T06:27:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

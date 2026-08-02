@@ -290,7 +290,7 @@ do_validate_init() {
                 else
                     local broken
                     broken=$(VALIDATE_FILE="$full_path" VALIDATE_ROOT="$target_dir" python3 -c "
-import json, os
+import json, os, shutil
 # T-2724: hook commands are written by fw init as
 # '\${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw hook <event>'. Without expansion,
 # os.path.exists() is handed that literal and every correct install reports 19 broken
@@ -307,6 +307,14 @@ for event, entries in data.get('hooks', {}).items():
             parts = cmd.split()
             script = next((p for p in parts if '=' not in p), '')
             script = os.path.expandvars(script) if script else script
+            # T-2725: a bare command with no '/' is an interpreter/wrapper
+            # ('bash \${CLAUDE_PROJECT_DIR}/x.sh'), not a path. Resolve it on PATH —
+            # os.path.exists('bash') is False and would report a valid hook broken,
+            # the same false positive T-2724 fixed for the \${CLAUDE_PROJECT_DIR} form
+            # surviving under a different carrier shape. Unoccupied in this repo today
+            # but reachable, so this is an occupancy zero, not a capability one.
+            if script and '/' not in script:
+                script = shutil.which(script) or script
             if script and not os.path.exists(script):
                 print(f'missing: {os.path.basename(script)}')
             elif script and '/Cellar/' in script:
@@ -372,7 +380,7 @@ for event, entries in data.get('hooks', {}).items():
         total=$((total + 1))
         local broken_hooks
         broken_hooks=$(VALIDATE_FILE="$settings_file" VALIDATE_ROOT="$target_dir" python3 -c "
-import json, os
+import json, os, shutil
 # T-2724: see the matching comment on the hookpaths check above — same unexpanded
 # \${CLAUDE_PROJECT_DIR} defect, same fix. Both sites must stay in step; a fix to one
 # alone leaves the other reporting 19 phantom 'fw' entries.
@@ -387,6 +395,14 @@ for event, entries in data.get('hooks', {}).items():
             parts = cmd.split()
             script = next((p for p in parts if '=' not in p), '')
             script = os.path.expandvars(script) if script else script
+            # T-2725: a bare command with no '/' is an interpreter/wrapper
+            # ('bash \${CLAUDE_PROJECT_DIR}/x.sh'), not a path. Resolve it on PATH —
+            # os.path.exists('bash') is False and would report a valid hook broken,
+            # the same false positive T-2724 fixed for the \${CLAUDE_PROJECT_DIR} form
+            # surviving under a different carrier shape. Unoccupied in this repo today
+            # but reachable, so this is an occupancy zero, not a capability one.
+            if script and '/' not in script:
+                script = shutil.which(script) or script
             if script and not os.path.exists(script):
                 broken.append(os.path.basename(script))
 print(','.join(broken))

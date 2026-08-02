@@ -109,3 +109,26 @@ _hook_lines() {
     echo "$output"
     [[ "$output" == *"✓ func-paths"* ]]
 }
+
+# ── T-2725: carrier shapes beyond the one T-2724 was measured against ───────────
+# Applying 832's rail-379 finding: the selector fires on EVERY hook command shape,
+# but T-2724 was verified against exactly one — the ${CLAUDE_PROJECT_DIR}/…/fw form,
+# because that is the shape fw init writes and therefore the shape the fixture had.
+
+@test "T-2725: a wrapper-style hook (bash \${CLAUDE_PROJECT_DIR}/x.sh) is not falsely broken" {
+    # The selector picks 'bash', and os.path.exists('bash') is False — so before the
+    # PATH-resolution fix this valid hook was reported broken. Same false positive as
+    # T-2724, surviving under a different carrier shape.
+    local p; p=$(_project_with_hook 'bash ${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw')
+    run _hook_lines "$p"
+    echo "$output"
+    [[ "$output" == *"✓ func-paths"* ]]
+}
+
+@test "T-2725 negative control: a bare command NOT on PATH is still reported broken" {
+    local p; p=$(_project_with_hook 'definitely-not-a-real-binary-xyz run')
+    run _hook_lines "$p"
+    echo "$output"
+    [[ "$output" == *"✗ func-paths"* ]]
+    [[ "$output" == *"definitely-not-a-real-binary-xyz"* ]]
+}
