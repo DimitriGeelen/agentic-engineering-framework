@@ -1394,18 +1394,15 @@ for card_path in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
     if data and data.get('location'):
         registered.add(data['location'])
 
-unregistered = 0
 orphaned = 0
 
-# Check watch patterns
-if os.path.exists(WATCH_FILE):
-    with open(WATCH_FILE) as f:
-        wp = yaml.safe_load(f)
-    for p in wp.get('patterns', []):
-        for match in glob.glob(p['glob']):
-            rel = os.path.relpath(match, PROJECT_ROOT)
-            if rel not in registered:
-                unregistered += 1
+# T-2735: this check no longer answers which watched files have no card.
+# That question has exactly one answer in this file: the drift check below,
+# which routes through expand_patterns.py (the T-1842 canonical expander).
+# Full rationale sits beside that check. Kept prose-only and ASCII here
+# because this block is a double-quoted python3 -c string, where backticks
+# and dollar signs are shell-interpolated before python ever sees them
+# (L-408). A backtick pair in this comment ran a glob as a command.
 
 # Check orphaned cards
 for card_path in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
@@ -1415,22 +1412,19 @@ for card_path in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
         if not os.path.exists(os.path.join(PROJECT_ROOT, data['location'])):
             orphaned += 1
 
-print(f'{len(registered)} {unregistered} {orphaned}')
+print(f'{len(registered)} {orphaned}')
 " 2>&1)
         fabric_registered=$(echo "$drift_result" | awk '{print $1}')
-        fabric_unreg=$(echo "$drift_result" | awk '{print $2}')
-        fabric_orphan=$(echo "$drift_result" | awk '{print $3}')
+        fabric_orphan=$(echo "$drift_result" | awk '{print $2}')
 
         if [ "$fabric_orphan" -gt 0 ]; then
             warn "Fabric: $fabric_orphan orphaned card(s) (file deleted but card remains)" \
                  "$fabric_orphan cards reference missing files" \
                  "Run: fw fabric drift"
         fi
-        if [ "$fabric_unreg" -gt 0 ]; then
-            pass "Fabric: $fabric_registered registered, $fabric_unreg unregistered (coverage growing)"
-        else
-            pass "Fabric: $fabric_registered registered, 0 unregistered"
-        fi
+        # Coverage verdict belongs to the drift check below (T-2735) — it is the
+        # one that routes through expand_patterns.py and the one that can WARN.
+        pass "Fabric: $fabric_registered registered card(s)"
 
         # Check for unenriched cards (no depends_on AND no depended_by edges)
         # Cards explicitly marked `standalone: true` are excluded — these are
@@ -1469,10 +1463,14 @@ fi
 # Fabric drift: check for unregistered source files
 WATCH_PATTERNS="$PROJECT_ROOT/.fabric/watch-patterns.yaml"
 if [ -f "$WATCH_PATTERNS" ] && [ -d "$PROJECT_ROOT/.fabric/components" ]; then
-    drift_result=$(python3 << 'DRIFTEOF'
-import yaml, glob, os
+    drift_result=$(python3 - "$PROJECT_ROOT" "$FRAMEWORK_ROOT" << 'DRIFTEOF'
+import yaml, glob, os, sys, subprocess
 
-PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+# T-2735: roots arrive as argv, not from __file__. A heredoc script read from
+# stdin has __file__ == '<stdin>', so any path derived from it is silently
+# wrong (T-2734). Env is the fallback, argv is the contract.
+PROJECT_ROOT = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("PROJECT_ROOT", ".")
+FRAMEWORK_ROOT = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("FRAMEWORK_ROOT", "")
 COMP_DIR = os.path.join(PROJECT_ROOT, ".fabric", "components")
 WATCH_FILE = os.path.join(PROJECT_ROOT, ".fabric", "watch-patterns.yaml")
 
@@ -1487,26 +1485,41 @@ for f in glob.glob(os.path.join(COMP_DIR, "*.yaml")):
     except Exception:
         pass
 
-# Get files matching watch patterns
-with open(WATCH_FILE) as f:
-    data = yaml.safe_load(f)
-patterns = data.get("patterns", []) if data else []
-unregistered = []
-for p in patterns:
-    g = p.get("glob", "") if isinstance(p, dict) else str(p)
-    if not g:
-        continue
-    for match in glob.glob(os.path.join(PROJECT_ROOT, g), recursive=True):
-        rel = os.path.relpath(match, PROJECT_ROOT)
-        if os.path.isfile(match) and rel not in registered:
-            unregistered.append(rel)
+# Get files matching watch patterns.
+#
+# T-2735: delegate expansion to expand_patterns.py — the T-1842 canonical
+# expander, already used by register.sh (scan) and drift.sh. T-1842 extracted it
+# precisely so the glob + exclude predicate would have one source of truth, but
+# migrated only the two callers its author had in hand; the audit copies were
+# left behind. The copy that stood here recursed and joined the root correctly
+# but silently dropped `exclude:` — the key the expander exists to honour, and
+# the one whose absence produced 5946 junk cards in the T-1842 origin incident.
+expander = os.path.join(FRAMEWORK_ROOT, "agents", "fabric", "lib", "expand_patterns.py")
+proc = subprocess.run(
+    [sys.executable, expander, WATCH_FILE, PROJECT_ROOT],
+    capture_output=True, text=True,
+)
+if proc.returncode != 0:
+    # Loud, not silent: a broken expander must not read as "no drift".
+    print(f"ERR {proc.returncode}")
+    sys.exit(0)
+watched = [line for line in proc.stdout.split("\n") if line.strip()]
+unregistered = [rel for rel in watched if rel not in registered]
 
 print(f"{len(unregistered)} {len(registered)}")
 DRIFTEOF
     )
     drift_unreg=$(echo "$drift_result" | awk '{print $1}')
     drift_total=$(echo "$drift_result" | awk '{print $2}')
-    if [ "$drift_unreg" -gt 0 ] 2>/dev/null; then
+    # T-2735: a non-numeric result means the expander failed. Without this arm
+    # the `-gt 0` test below fails on the non-numeric value and falls through to
+    # pass() — an instrument that cannot run would report as an instrument that
+    # ran and found nothing. That is the defect this task exists to remove.
+    if ! [[ "$drift_unreg" =~ ^[0-9]+$ ]]; then
+        fail "Fabric drift: coverage expander failed — coverage is UNMEASURED" \
+             "expand_patterns.py returned: ${drift_result:-<no output>}" \
+             "Run: python3 agents/fabric/lib/expand_patterns.py .fabric/watch-patterns.yaml ."
+    elif [ "$drift_unreg" -gt 0 ] 2>/dev/null; then
         warn "Fabric drift: $drift_unreg source file(s) have no fabric card" \
              "$drift_unreg unregistered files matching watch-patterns.yaml" \
              "Run: fw fabric scan"
