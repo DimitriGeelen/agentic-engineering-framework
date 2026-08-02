@@ -1038,7 +1038,7 @@ observations:
   captured: 2026-08-02T16:33:42Z
   context_task: T-100196
   tags: []
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-133
   text: "20 active tasks carry the T-2738 unjudged-test-run shape in ## Verification and will now be BLOCKED at close by check_verification_unjudged_test_runs. This is intended (each is a line that would report green on a red suite), but it is a live population, not a hypothetical: T-1542, T-1951, T-1999, T-2010, T-2027, T-2028, T-2029, T-2031, T-2033, T-2075, T-2077, T-2084, T-2088, T-2089, T-2222, T-2278, T-2281, T-2420, T-2623. Fix per task is mechanical: add the absence-of-failure guard, or keep the exit code with 'runner > file && grep'. 41 further instances sit in completed/ where the gate can no longer reach them - those closed green and were never re-judged."
