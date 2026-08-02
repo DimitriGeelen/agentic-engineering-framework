@@ -6,12 +6,12 @@ description: >
   Fabric watch-patterns default is stamped into every consumer and never checked against
   it
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, tests/unit/fabric_coverage_single_source.bats, tests/unit/fabric_watch_pattern_fitness.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T13:09:28Z
-last_update: '2026-08-02T13:15:09Z'
-date_finished:
+last_update: 2026-08-02T13:46:39Z
+date_finished: 2026-08-02T13:46:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -321,3 +321,20 @@ the WARN now makes it visible and dateable. Operator's decision.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2737-fabric-watch-patterns-default-is-stamped.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-623e259d
+- **Timestamp:** 2026-08-02T13:55:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 26
+     - evidence: `out=$(bash agents/audit/audit.sh --sections structure 2>&1 || true); ! echo "$out" | grep -q "FAIL. Fabric: .* point at files"`
+
+### 2026-08-02T13:46:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

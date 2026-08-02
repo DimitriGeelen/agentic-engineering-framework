@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-02-1013
-timestamp: 2026-08-02T08:13:33Z
+# Audit Results - 2026-08-02-1556
+timestamp: 2026-08-02T13:56:03Z
 sections: "structure"
 summary:
   pass: 28
@@ -23,9 +23,6 @@ findings:
   - level: PASS
     check: "All 17 arc anchor_task references resolve to existing tasks"
   - level: WARN
-    check: "Arc 'arc-grooming' has no task commits in the last 30 days (39 task(s) in arc)"
-    mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
-  - level: WARN
     check: "Arc 'dispatch-safety' has no task commits in the last 30 days (11 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
   - level: INFO
@@ -45,13 +42,16 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 934 registered, 0 unregistered"
+    check: "Fabric: 941 registered card(s)"
   - level: WARN
-    check: "Fabric: 24/847 cards have no edges"
+    check: "Fabric: 31/854 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 1 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
+  - level: WARN
+    check: "Fabric: 603 card(s) point at files no watch pattern covers"
+    mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: PASS

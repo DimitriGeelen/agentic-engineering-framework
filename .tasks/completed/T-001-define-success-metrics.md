@@ -15,7 +15,7 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T12:00:00Z
-last_update: '2026-06-11T22:23:35Z'
+last_update: '2026-08-02T10:36:41Z'
 date_finished: 2026-02-14T12:24:36Z
 bvp_scores_proposed:
   - ts: '2026-06-01T00:25:16Z'
@@ -43,6 +43,22 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=0 
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-02T10:36:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

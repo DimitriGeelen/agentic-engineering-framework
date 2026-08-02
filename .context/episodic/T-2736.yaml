@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2736: Fabric enrich discards unresolvable and ignorable edges through one silent branch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-02T13:06:39Z
+# ============================================================================
+
+task_id: T-2736
+task_name: "Fabric enrich discards unresolvable and ignorable edges through one silent branch"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T13:00:05Z
+completed: 2026-08-02T13:06:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-02T15:06:07+02:00
+last_commit: 2026-08-02T15:06:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  enrich dropped noise and coverage loss through one silent branch
+
+# Key outcomes
+outcomes:
+  - '`resolve_edges` distinguishes *unresolvable* targets from *ignorable* ones'
+  - 'Discards are counted and surfaced in the enrich summary, so a run that'
+  - 'The distinction is derived from the target, not from an allowlist of'
+  - 'A file target that exists but has no card is reported as *actionable*'
+  - 'The measurement is reproducible from the shipped code — the tests call'
+  - 'Negative control: reverting the counting reddens exactly the two'
+  - 'The `Actionable:` line prints even at zero, so a clean run and a broken'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - 'agents/fabric/lib/enrich.py'
+  - '.fabric/components/tests-unit-test_enrich_unresolved_targets.yaml'
+  - '.tasks/active/T-2736-fabric-enrich-silently-discards-unresolv.md'
+  - '.tasks/completed/T-2735-fabric-coverage-audit-check-is-cwd-depen.md'
+  - 'tests/unit/test_enrich_unresolved_targets.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-02T15:06:07'
+    action: 'T-2736: enrich dropped noise and coverage loss through one silent branch'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 6
+  lines_added: 623
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2736-fabric-enrich-silently-discards-unresolv.md
+generated_by: context-agent-hybrid
