@@ -1,8 +1,24 @@
 ---
 id: T-2774
-name: "Watchtower unreachable over loopback (localhost/127.0.0.1 time out) though it listens on 0.0.0.0"
+name: "Watchtower unreachable over loopback (localhost/127.0.0.1 time out) though
+  it listens on 0.0.0.0"
 description: >
-  Measured on this host: Watchtower listens 0.0.0.0:3001 (pid 390238) and answers on the LAN address http://192.168.10.107:3001 immediately, but http://localhost:3001 and http://127.0.0.1:3001 both time out (rc=000 after the full 5s curl budget); ::1 refuses instantly. So loopback traffic to the port is being dropped while LAN traffic is permitted — most likely a firewall/iptables rule or a namespace quirk, not a bind problem, since the socket is bound to 0.0.0.0. Impact: every Playwright suite is affected, because the harness builds base_url as http://localhost:$FW_TEST_PORT. Page.goto then times out at 15s against a server that is demonstrably up. Found via T-2771 while repairing T-1960/T-1961, and it reframes what those hard-coded FW_TEST_PORT=3000 lines were: port 3000 is a different project's Watchtower that DOES answer on loopback, so pinning 3000 was very likely a workaround for this defect — one that silently converted 'our tests cannot reach our server' into 'another project's server passes our assertions'. That is a worse failure than the timeout it avoided. Fixing reachability is the prerequisite for T-1960/T-1961 going green on their own merits; do not re-point them at a foreign server. Diagnose the loopback drop first (iptables -L -n, docker network rules), then re-run both suites.
+  Measured on this host: Watchtower listens 0.0.0.0:3001 (pid 390238) and answers
+  on the LAN address http://192.168.10.107:3001 immediately, but http://localhost:3001
+  and http://127.0.0.1:3001 both time out (rc=000 after the full 5s curl budget);
+  ::1 refuses instantly. So loopback traffic to the port is being dropped while LAN
+  traffic is permitted — most likely a firewall/iptables rule or a namespace quirk,
+  not a bind problem, since the socket is bound to 0.0.0.0. Impact: every Playwright
+  suite is affected, because the harness builds base_url as http://localhost:$FW_TEST_PORT.
+  Page.goto then times out at 15s against a server that is demonstrably up. Found
+  via T-2771 while repairing T-1960/T-1961, and it reframes what those hard-coded
+  FW_TEST_PORT=3000 lines were: port 3000 is a different project's Watchtower that
+  DOES answer on loopback, so pinning 3000 was very likely a workaround for this defect
+  — one that silently converted 'our tests cannot reach our server' into 'another
+  project's server passes our assertions'. That is a worse failure than the timeout
+  it avoided. Fixing reachability is the prerequisite for T-1960/T-1961 going green
+  on their own merits; do not re-point them at a foreign server. Diagnose the loopback
+  drop first (iptables -L -n, docker network rules), then re-run both suites.
 
 status: captured
 workflow_type: build
@@ -22,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:32:26Z
-last_update: 2026-08-03T17:32:26Z
-date_finished: null
+last_update: '2026-08-03T17:45:06Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +50,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-03T17:45:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2774: Watchtower unreachable over loopback (localhost/127.0.0.1 time out) though it listens on 0.0.0.0

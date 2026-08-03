@@ -1,8 +1,19 @@
 ---
 id: T-2773
-name: "stale 'Read-only — live weight sliders ship in T-1929' copy still rendered on /bvp"
+name: "stale 'Read-only — live weight sliders ship in T-1929' copy still rendered
+  on /bvp"
 description: >
-  T-1971 shipped the removal of the stale read-only notice from the BVP page once live weight sliders landed. Its single verification line asserts /bvp contains 'Drag a slider below to preview re-ranking' AND NOT 'Read-only — live weight sliders ship in T-1929'. Both strings are on the rendered page today: the first once, the second TWICE. The line has been red because the removal is incomplete, not because the line is wrong — classified (b) CORRECTLY FAILING under T-2771 and deliberately left byte-identical. The string is not in web/ source, so it is reaching the page from rendered content (task text, a cached fragment, or a stored description) — locate the actual source before editing anything. Fixing this makes T-1971's own line go green on its own merits, which is the only acceptable way for it to go green. Do NOT touch T-1971's verification line as part of this.
+  T-1971 shipped the removal of the stale read-only notice from the BVP page once
+  live weight sliders landed. Its single verification line asserts /bvp contains 'Drag
+  a slider below to preview re-ranking' AND NOT 'Read-only — live weight sliders ship
+  in T-1929'. Both strings are on the rendered page today: the first once, the second
+  TWICE. The line has been red because the removal is incomplete, not because the
+  line is wrong — classified (b) CORRECTLY FAILING under T-2771 and deliberately left
+  byte-identical. The string is not in web/ source, so it is reaching the page from
+  rendered content (task text, a cached fragment, or a stored description) — locate
+  the actual source before editing anything. Fixing this makes T-1971's own line go
+  green on its own merits, which is the only acceptable way for it to go green. Do
+  NOT touch T-1971's verification line as part of this.
 
 status: captured
 workflow_type: build
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:21:55Z
-last_update: 2026-08-03T17:21:55Z
-date_finished: null
+last_update: '2026-08-03T17:30:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-03T17:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-03T17:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2773: stale 'Read-only — live weight sliders ship in T-1929' copy still rendered on /bvp

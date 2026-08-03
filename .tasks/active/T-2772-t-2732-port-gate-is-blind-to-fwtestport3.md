@@ -1,8 +1,22 @@
 ---
 id: T-2772
-name: "T-2732 port gate is blind to FW_TEST_PORT=3000 (env-var assignment, not URL literal)"
+name: "T-2732 port gate is blind to FW_TEST_PORT=3000 (env-var assignment, not URL
+  literal)"
 description: >
-  find_port_literals in lib/verification-port.sh matches only https?://(localhost|127.0.0.1|0.0.0.0):3000 URL shapes. A port supplied as an env-var assignment — FW_TEST_PORT=3000, PORT=3000, FW_PORT=3000 — is invisible to it, and that is exactly how a test harness is pointed at a server. Found by T-2771: T-1960 and T-1961 both stored 'FW_TEST_PORT=3000 python3 -m pytest tests/playwright/...' and passed the P-011 close gate clean, then drove a DIFFERENT project's Watchtower (port 3000 on this host is pid 1341537; ours is 3001) which answers 200. That is the T-2732 origin failure — the false green that reached 371 instances — recurring in a syntax the gate for it cannot see. Verified directly against the predicate: find_port_literals on the T-1960 line prints nothing. Scope: widen the predicate to cover port-bearing env-var assignments, keep the sanctioned-fallback discriminator (a line that resolves the port first must still pass), add corpus regression cases from T-1960/T-1961, and sweep the corpus for other instances of the env-var shape. The sweep matters as much as the predicate — T-2764 and T-2771 both found that a sweep is only as wide as the pattern that generated it.
+  find_port_literals in lib/verification-port.sh matches only https?://(localhost|127.0.0.1|0.0.0.0):3000
+  URL shapes. A port supplied as an env-var assignment — FW_TEST_PORT=3000, PORT=3000,
+  FW_PORT=3000 — is invisible to it, and that is exactly how a test harness is pointed
+  at a server. Found by T-2771: T-1960 and T-1961 both stored 'FW_TEST_PORT=3000 python3
+  -m pytest tests/playwright/...' and passed the P-011 close gate clean, then drove
+  a DIFFERENT project's Watchtower (port 3000 on this host is pid 1341537; ours is
+  3001) which answers 200. That is the T-2732 origin failure — the false green that
+  reached 371 instances — recurring in a syntax the gate for it cannot see. Verified
+  directly against the predicate: find_port_literals on the T-1960 line prints nothing.
+  Scope: widen the predicate to cover port-bearing env-var assignments, keep the sanctioned-fallback
+  discriminator (a line that resolves the port first must still pass), add corpus
+  regression cases from T-1960/T-1961, and sweep the corpus for other instances of
+  the env-var shape. The sweep matters as much as the predicate — T-2764 and T-2771
+  both found that a sweep is only as wide as the pattern that generated it.
 
 status: captured
 workflow_type: build
@@ -22,8 +36,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:21:06Z
-last_update: 2026-08-03T17:21:06Z
-date_finished: null
+last_update: '2026-08-03T17:30:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +48,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-03T17:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-03T17:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2772: T-2732 port gate is blind to FW_TEST_PORT=3000 (env-var assignment, not URL literal)

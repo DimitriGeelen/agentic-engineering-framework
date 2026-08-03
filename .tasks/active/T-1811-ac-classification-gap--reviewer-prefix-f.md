@@ -183,21 +183,16 @@ Detected via T-1810 follow-up triage: 7 Group C tasks were initially classified 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ab8cd4bb
-- **Timestamp:** 2026-08-03T13:36:04Z
+- **Scan ID:** R-100f9952
+- **Timestamp:** 2026-08-03T17:41:38Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 1
 
 **Per-AC findings:**
 
 - **AC#3 (Agent)** — `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the output (Overall + Needs Human + Findings count)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/verify-acs.sh in: `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the`
-
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
-     - evidence: `bin/fw verify-acs T-1811 --verbose 2>&1 | grep -q "Reviewer"`
 ### 2026-05-13T18:23:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

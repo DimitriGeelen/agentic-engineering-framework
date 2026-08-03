@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2771: triage the remaining red verification blocks in the human review queue (T-2765 census)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T17:45:00Z
+# ============================================================================
+
+task_id: T-2771
+task_name: "triage the remaining red verification blocks in the human review queue (T-2765 census)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T17:05:02Z
+completed: 2026-08-03T17:36:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-03T19:13:18+02:00
+last_commit: 2026-08-03T19:34:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  all 11 census reds classified (count corrected 13->11; two were pytest FAILURES separators). 8x(a) wrong, 1x(b) correctly-failing (T-1971 stale text still rendered), 1 environment-flaky. Repairs pending. repair 8 (a)-class red verification lines — SIGPIPE on 5.3MB/375KB pages, pipefail surfacing producer exit codes, superseded assertions (incl. one pinning its own task's v1 value), hard-coded port 3000 driving a foreign Watchtower, and a G-015 always-moving VERSION pin in a bats file. T-1971 deliberately untouched (correctly failing). file T-2772 (port gate blind to FW_TEST_PORT=3000) and T-2773 (stale /bvp copy behind T-1971's correctly-failing line); 5/8 repairs verified green. T-2774 filed — Watchtower unreachable over loopback though bound 0.0.0.0; this reframes the FW_TEST_PORT=3000 pins as a workaround that traded 'cannot reach our server' for 'a foreign server passes'. T-1960/T-1961 left red deliberately
+
+# Key outcomes
+outcomes:
+  - 'Every red block from the census carries an explicit classification — **(a) WRONG,'
+  - 'Every (a) is repaired and its full block re-run green via'
+  - 'The environmental defect exposed by the repair is filed rather than papered over'
+  - 'Every (b) has its underlying defect filed as its own task, and its verification line'
+  - 'The counts reconcile: reds classified = reds found, stated as a number, so a partial'
+  - 'The gate coverage gap the sweep exposed is filed rather than quietly patched here'
+  - 'A fresh `bin/fw verify-queue` pass over the tasks touched here shows the (a) repairs'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md'
+  - '.tasks/active/T-1928-bvp-watchtower-bvp-static-scatter-read-only.md'
+  - '.tasks/active/T-1947-reviewer-prose-quality-mis-routing-guard.md'
+  - '.tasks/active/T-1951-g-066-deliverable-3--reviewer-termlink-d.md'
+  - '.tasks/active/T-1960-arc-recommendation-schema--auto-render-o.md'
+  - '.tasks/active/T-1961-approvals-ingestion-of-close-ready-arcs-.md'
+  - '.tasks/active/T-1968-arc-badge-dark-on-dark-contrast-fix--col.md'
+  - '.tasks/active/T-2771-triage-the-remaining-red-verification-bl.md'
+  - '.tasks/active/T-2772-t-2732-port-gate-is-blind-to-fwtestport3.md'
+  - '.tasks/active/T-2773-stale-read-only--live-weight-sliders-shi.md'
+  - '.tasks/active/T-2774-watchtower-unreachable-over-loopback-loc.md'
+  - 'tests/unit/test_pre_push_monotonic_ancestor.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T19:13:18'
+    action: 'T-2771: all 11 census reds classified (count corrected 13->11; two were pytest FAILURES separators). 8x(a) wrong, 1x(b) correctly-failing (T-1971 stale text still rendered), 1 environment-flaky. Repairs pending'
+  - time: '2026-08-03T19:17:46'
+    action: 'T-2771: repair 8 (a)-class red verification lines — SIGPIPE on 5.3MB/375KB pages, pipefail surfacing producer exit codes, superseded assertions (incl. one pinning its own task''s v1 value), hard-coded port 3000 driving a foreign Watchtower, and a G-015 always-moving VERSION pin in a bats file. T-1971 deliberately untouched (correctly failing)'
+  - time: '2026-08-03T19:23:58'
+    action: 'T-2771: file T-2772 (port gate blind to FW_TEST_PORT=3000) and T-2773 (stale /bvp copy behind T-1971''s correctly-failing line); 5/8 repairs verified green'
+  - time: '2026-08-03T19:34:12'
+    action: 'T-2771: T-2774 filed — Watchtower unreachable over loopback though bound 0.0.0.0; this reframes the FW_TEST_PORT=3000 pins as a workaround that traded ''cannot reach our server'' for ''a foreign server passes''. T-1960/T-1961 left red deliberately'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 31
+  commits: 4
+  files_changed: 12
+  lines_added: 1114
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2771-triage-the-remaining-red-verification-bl.md
+generated_by: context-agent-hybrid
