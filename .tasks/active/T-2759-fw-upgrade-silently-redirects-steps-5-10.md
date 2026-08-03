@@ -1,14 +1,10 @@
 ---
-id: T-2758
-name: "fw upgrade hard-fails at step 3 when a consumer has no .context/project/ directory"
+id: T-2759
+name: "fw upgrade silently redirects steps 5-10 to the wrong directory and still reports success"
 description: >
-  cp of seed files (practices/decisions/patterns) at lib/upgrade.sh:1117 targets $target_dir/.context/project/
-  without mkdir -p. On a consumer that has .framework.yaml but no .context tree, cp
-  fails and fw upgrade exits 1 at step 3 of 10 — steps 4-10 (hooks, resume.md, shims,
-  vendor) never run. Reproduced live 2026-08-03; 3 tests in tests/unit/lib_upgrade.bats
-  have been red on this.
+  lib/upgrade.sh:1305 declares 'local target_dir' INSIDE do_upgrade, which already binds target_dir to the consumer path at :566. Bash re-local in the same scope reassigns, so from that point target_dir is dirname(readlink -f ~/.local/bin/fw). Steps 5-10 (.claude/settings.json, .mcp.json, resume.md, scripts/, context subdirs, .framework.yaml version pin, enforcement baseline) then write to that directory instead of the consumer. Proven live 2026-08-03: run exits 0, prints 'Upgrade Complete', consumer pin stays at its old value and receives no settings.json/.mcp.json/resume.md. Consumer appears permanently behind despite successful upgrades. Fires whenever ~/.local/bin/fw is a symlink whose target ends in /bin/fw and has no FRAMEWORK.md alongside.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -25,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-03T10:18:21Z
-last_update: '2026-08-03T10:30:07Z'
-date_finished:
+created: 2026-08-03T10:34:32Z
+last_update: 2026-08-03T10:34:32Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-08-03T10:25:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-08-03T10:30:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2758: fw upgrade hard-fails at step 3 when a consumer has no .context/project/ directory
+# T-2759: fw upgrade silently redirects steps 5-10 to the wrong directory and still reports success
 
 ## Context
 
@@ -78,26 +46,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw upgrade` completes (exit 0, all 10 steps) against a consumer that has only
-      `.framework.yaml` and no `.context/` tree — the shape that currently dies at step 3.
-- [ ] Every write target under `$target_dir` in `lib/upgrade.sh` has its parent directory
-      guaranteed to exist before the write, not only the seven that happen to `mkdir -p`
-      today. Audited as a set, not spot-fixed at the one line that was observed failing.
-- [ ] The three pre-existing red tests in `tests/unit/lib_upgrade.bats` (resume.md drift /
-      match / create) go green, and the reason they were red is stated — they were failing
-      on this bug, not on resume.md.
-- [ ] Regression test covers the bare-consumer shape end-to-end, so a future step added
-      without a `mkdir -p` is caught by the suite rather than by a consumer.
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (CLAUDE.md
-      §Consumer-Facing Command Hygiene).
-
-**Origin (2026-08-03).** Found while running the upgrade suite for T-2755, not reported by
-a user — `lib_upgrade.bats` tests 10-12 were red and the assumed cause (resume.md drift)
-was wrong. Live repro: a consumer with `.framework.yaml` and nothing else exits 1 at
-`[3/10] Seed files` with `cp: cannot create regular file '.../.context/project/practices.yaml'`.
-Steps 4-10 — hooks, resume.md, shim, vendor — never run. The failure is loud, but it is
-loud *after* two steps have already written to the consumer, so it leaves a half-upgraded
-project.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,10 +210,7 @@ project.
 
 ## Updates
 
-### 2026-08-03T10:18:21Z — task-created [task-create-agent]
+### 2026-08-03T10:34:32Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2758-fw-upgrade-hard-fails-at-step-3-when-a-c.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2759-fw-upgrade-silently-redirects-steps-5-10.md
 - **Context:** Initial task creation
-
-### 2026-08-03T10:25:17Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

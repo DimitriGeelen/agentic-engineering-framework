@@ -959,6 +959,31 @@ do_upgrade() {
         fi
     fi
 
+    # ── 0. Directory skeleton (T-2758) ──
+    #
+    # Step 8 below has always created the .context/ subdirectories. It runs FIVE
+    # STEPS TOO LATE: step 3 copies seed files into .context/project/, and on a
+    # consumer that doesn't have that directory yet the cp fails, `fw upgrade`
+    # exits 1, and steps 4-10 — hooks, resume.md, shim, vendor — never run. The
+    # consumer is left half-upgraded, having already taken steps 1 and 2.
+    #
+    # The ordering was invisible because every consumer that reached step 3 had
+    # been through `fw init`, which creates the tree. The shape that breaks is a
+    # project holding .framework.yaml and little else — which is exactly what the
+    # tests construct, and why lib_upgrade.bats had three red tests attributed to
+    # resume.md drift when the run was dying long before resume.md.
+    #
+    # Creating the skeleton up front rather than adding a mkdir at the one line
+    # observed failing: the next step added below is written against a consumer
+    # that already has its directories, and would inherit the same bug.
+    if [ "$dry_run" != true ]; then
+        local _skel
+        for _skel in audits bus episodic handovers inbox project qa scans working; do
+            mkdir -p "$target_dir/.context/$_skel"
+        done
+        mkdir -p "$target_dir/.tasks/templates" "$target_dir/.claude/commands" "$target_dir/policy"
+    fi
+
     # ── 1. CLAUDE.md — preserve project sections, update governance ──
     echo -e "${YELLOW}[1/10] CLAUDE.md governance sections${NC}"
 
