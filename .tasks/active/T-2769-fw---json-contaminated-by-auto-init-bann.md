@@ -16,7 +16,7 @@ description: >
   and ::test_default_json_does_not_have_outcomes_key failing on json.loads(stdout).
   Those two tests have been red and unattributed because nothing owned that population.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T16:43:57Z
-last_update: '2026-08-03T16:45:10Z'
+last_update: 2026-08-03T16:51:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,8 +86,25 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw <cmd> --json` from a non-project directory emits **parseable JSON on stdout**:
+      `PROJECT_ROOT=$TD bin/fw orchestrator status --json` in a fresh temp dir pipes
+      cleanly into `json.loads` — asserted by reproducing the original failure, not by
+      reading the diff
+- [x] The auto-init side effect stays **visible on stderr** rather than being silenced —
+      writing a project into the caller's cwd must not become invisible while fixing the
+      stream (the fix must not trade one blindness for another)
+- [x] The two tests the defect was breaking pass:
+      `tests/unit/test_orchestrator_status_outcomes.py::test_outcomes_json_exposes_aggregation`
+      and `::test_default_json_does_not_have_outcomes_key`
+- [x] A regression test pins the contract — stdout of a `--json` command on an
+      uninitialised root parses, and the banner appears on stderr — so the next edit to
+      the auto-init block cannot silently re-contaminate stdout
+- [x] The regression test **fails against the pre-fix code** (mutation-checked), so it is
+      known to test the thing rather than to pass vacuously
+- [x] The separate design question (should a read-only query auto-init and vendor at all?)
+      is filed as its own task rather than decided inside this fix
+- [x] The init path change keeps `tests/unit/upgrade_fresh_machine_simulation.bats` green
+      (CLAUDE.md §Consumer-Facing Command Hygiene — this edit is on the `fw init` path)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -187,6 +204,21 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# The contract, asserted in both directions plus an anti-vacuity guard.
+timeout 300 python3 -m pytest tests/unit/test_fw_json_stdout_purity.py -q
+
+# The two tests the defect was breaking, which had no owner until T-2766.
+timeout 300 python3 -m pytest tests/unit/test_orchestrator_status_outcomes.py -q
+
+# The redirect targets the stream the output is actually on, and the form that
+# suppressed the wrong one is gone. Structural, because the behavioural tests above
+# would also pass if a future edit reached clean stdout by discarding the narration.
+grep -q 'do_init "$PWD" --provider claude >&2' bin/fw
+! grep -q 'do_init "$PWD" --provider claude 2>/dev/null' bin/fw
+
+# CLAUDE.md §Consumer-Facing Command Hygiene: this edit is on the `fw init` path.
+timeout 300 bats tests/unit/upgrade_fresh_machine_simulation.bats
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -202,6 +234,43 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw <cmd> --json` run from a directory that is not yet a framework project
+returned setup prose ahead of its JSON and exited **0**. Downstream `json.loads` failed at
+character 0 while every exit-code check reported success.
+
+**Root cause:** `bin/fw`'s non-TTY auto-init branch ran `do_init … 2>/dev/null` under a
+comment reading "silently use defaults". `do_init` writes its progress narrative to
+**stdout**. The suppression was applied to the stream the output was not on, so the branch
+never achieved the silence it claimed and dumped a multi-line banner into the data
+channel. One character of redirect, and the code's own stated contract was the thing that
+disagreed with it.
+
+**Why structurally allowed:** three gaps compose.
+1. **stdout/stderr discipline is unenforced.** Nothing distinguishes fw's data channel
+   from its narration channel; each site decides ad hoc, so a wrong choice is invisible
+   until something parses the output.
+2. **The failure mode is rc=0.** A contaminated `--json` is indistinguishable from a
+   healthy one to any caller that checks exit status — the false-green shape (L-534). Only
+   a parse catches it, and the two tests that did parse were themselves unowned.
+3. **The only thing running those tests was an unscoped fallback.**
+   `test_orchestrator_status_outcomes.py` was red, but the sole executor reaching it was
+   T-1805's `|| pytest -k outcome` arm, whose population nobody had scoped. The failures
+   were attributed to T-1805, which had not touched that component. A test can be red *and*
+   run *and* still have no owner.
+
+**Prevention:** distinct from the fix.
+- `tests/unit/test_fw_json_stdout_purity.py` pins the contract in **both** directions —
+  banner present on stderr *and* absent from stdout — because either assertion alone is
+  also satisfied by discarding the narration, which would clean stdout by making a
+  cwd-mutating side effect invisible. A third test asserts auto-init actually fires, so
+  the pair cannot pass vacuously if the branch is later removed.
+- Two structural lines in `## Verification` pin the redirect form itself, since a future
+  edit could reach clean stdout the wrong way and still satisfy the behavioural tests.
+- **Not built, and the real generalisation:** nothing stops the next `--json` route from
+  printing prose to stdout. A rail that runs each `--json`-capable verb on a scratch root
+  and parses stdout would cover the class rather than this instance. Recording it here as
+  an open gap rather than implying the class is closed — this fix covers one site.
 
 ## Evolution
 
@@ -254,3 +323,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2769-fw---json-contaminated-by-auto-init-bann.md
 - **Context:** Initial task creation
+
+### 2026-08-03T16:48:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

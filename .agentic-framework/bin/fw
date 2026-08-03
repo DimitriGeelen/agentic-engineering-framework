@@ -530,7 +530,28 @@ if [ -z "$PROJECT_ROOT" ]; then
        [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ "$_cmd" != "hook" ] && \
        [ "$_cmd" != "vendor" ] && [ -n "$_cmd" ]; then
 
-        # Non-TTY: silently use defaults (cwd + claude)
+        # Non-TTY: use defaults (cwd + claude), announcing on stderr only.
+        #
+        # T-2769: this branch used `do_init ... 2>/dev/null` and described
+        # itself as silent. It was not — do_init writes its progress narrative
+        # to STDOUT, so the redirect suppressed the stream the output was not
+        # on. Every `fw <cmd> --json` run from a directory that is not yet a
+        # project therefore emitted "Setting up agentic governance for…" and
+        # "Vendoring framework into project…" ahead of its JSON, with rc=0:
+        # unparseable output that no exit-code check can see. Two tests in
+        # tests/unit/test_orchestrator_status_outcomes.py had been failing on
+        # json.loads(stdout) with no owner until T-2766 traced them here.
+        #
+        # `>&2`, not `>/dev/null`: auto-init writes a project into the caller's
+        # cwd and vendors the framework there. That side effect should stay
+        # announced — just not on the data channel. Discarding it would clean
+        # stdout by making a large mutation invisible, trading one blindness
+        # for another. Whether a read-only query should trigger it at all is a
+        # separate question, deliberately not decided here (T-2770).
+        #
+        # Pinned by tests/unit/test_fw_json_stdout_purity.py, which asserts the
+        # move in both directions (on stderr AND absent from stdout) plus that
+        # the branch actually fires, so the contract cannot pass vacuously.
         if [ ! -t 0 ]; then
             FRAMEWORK_ROOT=$(resolve_framework) || true
             if [ -n "$FRAMEWORK_ROOT" ]; then
@@ -538,7 +559,7 @@ if [ -z "$PROJECT_ROOT" ]; then
                 export FRAMEWORK_ROOT
                 FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
                 source "$FRAMEWORK_ROOT/lib/init.sh"
-                do_init "$PWD" --provider claude 2>/dev/null
+                do_init "$PWD" --provider claude >&2
                 exec "$0" "$@"
             fi
             # Fall through to normal "no framework" error if resolve fails
