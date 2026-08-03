@@ -27,7 +27,7 @@ Before acting on a pickup message:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (10)
+## Used By (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -40,6 +40,7 @@ Before acting on a pickup message:
 | [pickup_send_remote_session](/docs/generated/tests-unit-pickup_send_remote_session) | tests_by | TODO: describe what this component does |
 | [pickup_type_routing](/docs/generated/tests-unit-pickup_type_routing) | called_by | TODO: describe what this component does |
 | [pickup_type_routing](/docs/generated/tests-unit-pickup_type_routing) | tests_by | TODO: describe what this component does |
+| [t2457_fabric_atomic_card_write](/docs/generated/tests-unit-t2457_fabric_atomic_card_write) | tests_by | TODO: describe what this component does |
 
 ## Related
 

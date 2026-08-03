@@ -8,6 +8,13 @@
 
 ## What It Does
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [learnings-data](/docs/generated/learnings-data) | calls | Persistent store of all project learnings. Read by web UI and audit. Written by add-learning command. |
+| [decisions](/docs/generated/context-project-decisions) | calls | Decision log recording architectural and process decisions with rationale and rejected alternatives. |
+
 ## Used By (2)
 
 | Component | Relationship | Description |

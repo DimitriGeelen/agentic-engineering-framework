@@ -12,6 +12,12 @@ re-vendors from there. Uses upstream_repo from .framework.yaml.
 Global installs (~/.agentic-framework with .git): fetches and resets
 to latest upstream (legacy path, pre-T-499).
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ## Used By (4)
 
 | Component | Relationship | Description |

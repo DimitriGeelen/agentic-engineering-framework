@@ -9,11 +9,13 @@
 Fabric Agent - register and scan commands
 Implements: fw fabric register, fw fabric scan
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fabric](/docs/generated/agents-fabric-fabric) | called_by | Fabric Agent - Component topology system for codebase self-awareness |
+| [t2457_fabric_atomic_card_write](/docs/generated/tests-unit-t2457_fabric_atomic_card_write) | called_by | TODO: describe what this component does |
+| [t2457_fabric_atomic_card_write](/docs/generated/tests-unit-t2457_fabric_atomic_card_write) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

@@ -10,11 +10,12 @@ File reference extraction
 Matches: relative paths starting with ./ or just dir/file.ext, absolute paths,
 and common stems mentioned in test/grep/python -c contexts.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [reverify](/docs/generated/lib-reviewer-reverify) | calls | TODO: describe what this component does |
 
 ## Used By (3)
 

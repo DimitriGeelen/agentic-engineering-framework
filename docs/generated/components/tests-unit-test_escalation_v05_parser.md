@@ -9,6 +9,12 @@
 The tool ships as `tools/escalation-scan-v0.5.py` — the dot in the filename
 blocks normal `import`, so load via spec for testing.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | calls | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_escalation_v05_parser.yaml`*
 *Last verified: 2026-05-05*

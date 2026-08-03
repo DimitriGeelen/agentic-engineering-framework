@@ -9,16 +9,21 @@
     },
     {
       "v": 2,
-      "note": "operator editor save — layout pass (agent lane height 240 -> 266.4, whole diagram re-anchored, node ids normalised by the editor: hum_1_open -> hum_1_operator, hum_5_closed -> hum_5_arc, agt_4_work -> agt_5_work, agt_5_file -> agt_4_file, fwk_2_exit_recalc -> fwk_2_exit, fwk_3_resurfaced -> fwk_3_any, fwk_5_close_gates -> fwk_5_062, fwk_6_gates_pass -> fwk_6_close, hum_3_flag -> hum_3_raise). Topology unchanged from v1.",
+      "note": "operator editor save \u2014 layout pass (agent lane height 240 -> 266.4, whole diagram re-anchored, node ids normalised by the editor: hum_1_open -> hum_1_operator, hum_5_closed -> hum_5_arc, agt_4_work -> agt_5_work, agt_5_file -> agt_4_file, fwk_2_exit_recalc -> fwk_2_exit, fwk_3_resurfaced -> fwk_3_any, fwk_5_close_gates -> fwk_5_062, fwk_6_gates_pass -> fwk_6_close, hum_3_flag -> hum_3_raise). Topology unchanged from v1.",
       "ts": 1785614654
     },
     {
       "v": 3,
-      "note": "agent-normalize on v2: operator layout and ids kept verbatim; ONE semantic change applied per operator instruction 2026-08-01 — 'on hum_2_approve agent decides no operator involvement, agent informs operator can adjust when desired, agent informs operator that it can and how to if desired'. Driver approval is no longer a gate: agt_1_propose now DECIDES/adopts, new agt_1b_inform tells the operator what was adopted, what each driver distinguishes, and the command to change it; the main path continues straight to recalc (flow_3) without waiting, and hum_2_approve is repurposed to hum_2_adjust — optional, non-blocking, re-entering through recalc like any other state change (flow_21/flow_22). Sovereignty preserved by AVAILABILITY rather than by a checkpoint. GOVERNANCE CONFLICT FLAGGED, not silently resolved: CLAUDE.md Arc-Scoped Driver Suggestion Workflow states approval stays with the human (M6/D8) and lib/arc.sh gates scoped_drivers: behind fw arc approve-driver (T-1926, ACD) — code and CLAUDE.md must follow if this draft is promoted. 17 nodes / 22 flows, corpus lint CLEAN.",
+      "note": "agent-normalize on v2: operator layout and ids kept verbatim; ONE semantic change applied per operator instruction 2026-08-01 \u2014 'on hum_2_approve agent decides no operator involvement, agent informs operator can adjust when desired, agent informs operator that it can and how to if desired'. Driver approval is no longer a gate: agt_1_propose now DECIDES/adopts, new agt_1b_inform tells the operator what was adopted, what each driver distinguishes, and the command to change it; the main path continues straight to recalc (flow_3) without waiting, and hum_2_approve is repurposed to hum_2_adjust \u2014 optional, non-blocking, re-entering through recalc like any other state change (flow_21/flow_22). Sovereignty preserved by AVAILABILITY rather than by a checkpoint. GOVERNANCE CONFLICT FLAGGED, not silently resolved: CLAUDE.md Arc-Scoped Driver Suggestion Workflow states approval stays with the human (M6/D8) and lib/arc.sh gates scoped_drivers: behind fw arc approve-driver (T-1926, ACD) \u2014 code and CLAUDE.md must follow if this draft is promoted. 17 nodes / 22 flows, corpus lint CLEAN.",
       "ts": 1785614931
+    },
+    {
+      "v": 4,
+      "note": "",
+      "ts": 1785714013
     }
   ],
   "uuid": "e57f66fe-f169-4a91-85fa-dde63809a9ce",
-  "latest": 3,
-  "updated": 1785614931
+  "latest": 4,
+  "updated": 1785714013
 }

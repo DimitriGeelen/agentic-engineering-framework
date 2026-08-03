@@ -8,11 +8,12 @@
 
 Helpers — mirror tests/unit/test_pause_resolve.py
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [default](/docs/generated/prompts-default) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_review_paused_resolve.yaml`*

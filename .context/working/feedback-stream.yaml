@@ -25328,3 +25328,129 @@ scan_id: R-623e259d
 task_id: T-2737
 payload:
   task_file: .tasks/active/T-2737-fabric-watch-patterns-default-is-stamped.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T17:18:02Z'
+scan_id: R-55b51b7a
+task_id: T-2738
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T17:18:02Z'
+scan_id: R-55b51b7a
+task_id: T-2738
+payload:
+  task_file: .tasks/active/T-2738-verification-gate-a-pass-marker-verdict-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T17:43:16Z'
+scan_id: R-ad5ee023
+task_id: T-2739
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T17:43:16Z'
+scan_id: R-ad5ee023
+task_id: T-2739
+payload:
+  task_file: .tasks/active/T-2739-remediate-20-active-tasks-carrying-the-u.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T22:02:39Z'
+scan_id: R-42ac7804
+task_id: T-2740
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T22:02:39Z'
+scan_id: R-42ac7804
+task_id: T-2740
+payload:
+  task_file: .tasks/active/T-2740-greenfield-seed-tasks-fail-fw-audit-on-a.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T22:36:20Z'
+scan_id: R-c9372074
+task_id: T-2741
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T22:36:20Z'
+scan_id: R-c9372074
+task_id: T-2741
+payload:
+  task_file: .tasks/active/T-2741-arcdetail-close-arc-button-reintroduced-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T22:49:01Z'
+scan_id: R-27d1f80a
+task_id: T-2742
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T22:49:01Z'
+scan_id: R-27d1f80a
+task_id: T-2742
+payload:
+  task_file: .tasks/active/T-2742-document-the-tier-0-scope-boundary--stri.md
+---
+kind: scan_emitted
+timestamp: '2026-08-02T22:57:35Z'
+scan_id: R-853af6d0
+task_id: T-2743
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-02T22:57:35Z'
+scan_id: R-853af6d0
+task_id: T-2743
+payload:
+  task_file: .tasks/active/T-2743-task-template-sigpipe-hint-is-wrong-abov.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T00:18:12Z'
+scan_id: R-86d3a3b3
+task_id: T-2744
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T00:18:12Z'
+scan_id: R-86d3a3b3
+task_id: T-2744
+payload:
+  task_file: .tasks/active/T-2744-triage-the-25-standing-red-tests-in-test.md

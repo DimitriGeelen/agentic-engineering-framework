@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -14,8 +14,9 @@
 | [orchestrator](/docs/generated/web-templates-orchestrator) | renders | TODO: describe what this component does |
 | [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 | [orchestrator_parallel](/docs/generated/web-templates-orchestrator_parallel) | renders | TODO: describe what this component does |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | TODO: describe what this component does |
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,6 +27,7 @@
 | [test_orchestrator_workflow_coverage](/docs/generated/tests-unit-test_orchestrator_workflow_coverage) | registered_by | TODO: describe what this component does |
 | [test_orchestrator_parallel_view](/docs/generated/tests-unit-test_orchestrator_parallel_view) | called_by | TODO: describe what this component does |
 | [test_orchestrator_parallel_view](/docs/generated/tests-unit-test_orchestrator_parallel_view) | registered_by | TODO: describe what this component does |
+| [test_termlink_governance_frame_contract](/docs/generated/tests-unit-test_termlink_governance_frame_contract) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-orchestrator.yaml`*

@@ -17,7 +17,7 @@ Exit codes:
 0  baseline match
 1  drift: new unclassified tools (manual classification needed) or ratchet candidates
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +28,8 @@ Exit codes:
 | [manifest](/docs/generated/agents-mcp-manifest) | called_by | TODO: describe what this component does |
 | [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | called_by | TODO: describe what this component does |
 | [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | tests_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-orchestrator-mcp-scan.yaml`*

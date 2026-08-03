@@ -22,7 +22,7 @@ Origin: T-889 (foundation for T-885 service registry)
 |-----------|--------------|-------------|
 | [config-file](/docs/generated/lib-config-file) | calls | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -33,6 +33,7 @@ Origin: T-889 (foundation for T-885 service registry)
 | [fw_config](/docs/generated/tests-integration-fw_config) | called_by | Integration tests for fw config CLI (9 tests) |
 | [lib_config_file](/docs/generated/tests-unit-lib_config_file) | called_by | Unit tests for lib/config-file.sh — fw config set/get/list commands |
 | [lib_config_file](/docs/generated/tests-unit-lib_config_file) | tests_by | Unit tests for lib/config-file.sh — fw config set/get/list commands |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Related
 

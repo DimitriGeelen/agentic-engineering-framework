@@ -39,7 +39,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (13)
+## Used By (17)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -56,6 +56,10 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [checkpoint](/docs/generated/tests-unit-checkpoint) | tests_by | TODO: describe what this component does |
 | [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | called_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
 | [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | tests_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
+| [arc-012-continuous-mode-live-fire](/docs/generated/docs-runbooks-arc-012-continuous-mode-live-fire) | called_by | TODO: describe what this component does |
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | TODO: describe what this component does |
+| [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

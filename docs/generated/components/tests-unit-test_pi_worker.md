@@ -8,6 +8,12 @@
 
 Make lib/ importable without installing the package.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pi_worker](/docs/generated/lib-pi_worker) | calls | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_pi_worker.yaml`*
 *Last verified: 2026-05-06*

@@ -29,7 +29,7 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 |-----------|--------------|-------------|
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
 
-## Used By (21)
+## Used By (25)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -54,6 +54,10 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 | [arc_review_verb](/docs/generated/tests-unit-arc_review_verb) | tests_by | TODO: describe what this component does |
 | [arc_set_scoped_weight](/docs/generated/tests-unit-arc_set_scoped_weight) | called_by | TODO: describe what this component does |
 | [arc_set_scoped_weight](/docs/generated/tests-unit-arc_set_scoped_weight) | tests_by | TODO: describe what this component does |
+| [estimator](/docs/generated/agents-termlink-bvp-estimator-estimator) | called_by | TODO: describe what this component does |
+| [test_bvp_estimator](/docs/generated/tests-unit-test_bvp_estimator) | called_by | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [test_arcs_detail_arc_id_membership](/docs/generated/tests-playwright-test_arcs_detail_arc_id_membership) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-arc.yaml`*

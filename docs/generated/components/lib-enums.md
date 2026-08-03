@@ -13,7 +13,7 @@ Reads status-transitions.yaml and compiles to O(1) associative array lookup.
 Falls back to inline definitions if YAML file or python3 unavailable.
 Usage: source "$FRAMEWORK_ROOT/lib/enums.sh"
 
-## Used By (8)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,7 @@ Usage: source "$FRAMEWORK_ROOT/lib/enums.sh"
 | [lib_enums](/docs/generated/tests-unit-lib_enums) | called_by | Unit tests for enums (23 tests) |
 | [lib_enums](/docs/generated/tests-unit-lib_enums) | tests_by | Unit tests for enums (23 tests) |
 | [test_work_on_completed_task](/docs/generated/tests-unit-test_work_on_completed_task) | tests_by | TODO: describe what this component does |
+| [corpus_conformance](/docs/generated/tools-corpus_conformance) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-enums.yaml`*

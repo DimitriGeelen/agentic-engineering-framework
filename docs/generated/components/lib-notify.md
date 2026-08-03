@@ -14,12 +14,18 @@ audit failures, handovers, human AC ready). Uses the skills-manager (150) ntfy
 infrastructure via its alert dispatcher CLI.
 Usage:
 source "$FRAMEWORK_ROOT/lib/notify.sh"
-fw_notify "title" "message" [trigger] [category]
+fw_notify "title" "message" [trigger] [category] [click_url]
 Configuration:
 NTFY_ENABLED — set to "true" to enable (default: disabled)
 Design: Fire-and-forget, backgrounded, never blocks the calling script.
 
-## Used By (9)
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+
+## Used By (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -32,6 +38,9 @@ Design: Fire-and-forget, backgrounded, never blocks the calling script.
 | [lib_notify](/docs/generated/tests-unit-lib_notify) | called_by | Unit tests for notify (7 tests) |
 | [pending](/docs/generated/lib-pending) | called_by | TODO: describe what this component does |
 | [lib_notify](/docs/generated/tests-unit-lib_notify) | tests_by | Unit tests for notify (7 tests) |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [designer](/docs/generated/agents-designer-designer) | called_by | TODO: describe what this component does |
+| [bvp](/docs/generated/lib-bvp) | called_by | TODO: describe what this component does |
 
 ## Related
 

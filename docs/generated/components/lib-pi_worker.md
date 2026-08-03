@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [spawn](/docs/generated/lib-spawn) | called_by | TODO: describe what this component does |
+| [test_pi_worker](/docs/generated/tests-unit-test_pi_worker) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pi_worker.yaml`*

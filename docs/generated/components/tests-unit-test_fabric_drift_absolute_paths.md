@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [drift](/docs/generated/agents-fabric-lib-drift) | calls | Fabric Agent - drift detection commands |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_fabric_drift_absolute_paths.yaml`*

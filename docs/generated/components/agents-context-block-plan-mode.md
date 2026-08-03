@@ -17,6 +17,12 @@ Use /plan skill instead (requires active task, writes to docs/plans/)
 |-----------|--------------|-------------|
 | `?` | uses | — |
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-block-plan-mode.yaml`*
 *Last verified: 2026-03-04*

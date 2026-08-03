@@ -22,7 +22,7 @@ When run from inside the framework repo itself, it auto-detects.
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (47)
+## Dependencies (75)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -73,8 +73,36 @@ When run from inside the framework repo itself, it auto-detects.
 | [cron_dry_run](/docs/generated/lib-cron_dry_run) | calls | TODO: describe what this component does |
 | [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | calls | TODO: describe what this component does |
 | [manifest](/docs/generated/agents-mcp-manifest) | calls | TODO: describe what this component does |
+| [resolver-shim](/docs/generated/lib-resolver-sh) | calls | Thin shell shim that routes `fw resolver` invocations to lib/resolver.py. Per D-073: shim does PROJECT_ROOT export + argv passthrough only — no script-level logic. |
+| [outcome-shim](/docs/generated/lib-outcome-sh) | calls | Thin shell shim that routes `fw outcome` invocations to lib/outcome.py. Per D-073: shim does PROJECT_ROOT export + argv passthrough only — no script-level logic. |
+| [pause](/docs/generated/lib-pause) | calls | TODO: describe what this component does |
+| [pending](/docs/generated/lib-pending) | calls | TODO: describe what this component does |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | calls | TODO: describe what this component does |
+| [prompt](/docs/generated/lib-prompt) | calls | fw prompt — reusable agent-prompt register. Subcommands: create, list, show, copy (with {{var}} substitutions). Prompt files are markdown with YAML frontmatter stored under prompts/. Single source of truth for cross-machine / cross-agent reusable prompts (fleet upgrade+test+fix, audit dispatch, onboarding, etc.). |
+| [hook-telemetry](/docs/generated/lib-hook-telemetry) | calls | TODO: describe what this component does |
+| [verify-acs](/docs/generated/lib-verify-acs) | calls | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
+| [release](/docs/generated/lib-release) | calls | Release tagging + GitHub Release automation (T-1256). Cuts a new annotated tag based on latest v* (patch-bumping by default), pushes to all remotes, and creates a GitHub Release via gh CLI. Idempotent — no-op when HEAD == latest tag. Entrypoint for `fw release` subcommand and weekly cron job release-weekly. |
+| [mirror](/docs/generated/lib-mirror) | calls | TODO: describe what this component does |
+| [config-file](/docs/generated/lib-config-file) | calls | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
+| [version](/docs/generated/lib-version) | calls | fw version subcommand: show framework version, git tag, commit count, paths. Supports --check for update detection. |
+| [worktree](/docs/generated/lib-worktree) | calls | TODO: describe what this component does |
+| [branch-hygiene](/docs/generated/lib-branch-hygiene) | calls | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [bvp](/docs/generated/lib-bvp) | calls | TODO: describe what this component does |
+| [hook-enable](/docs/generated/bin-hook-enable) | calls | Register framework hooks in .claude/settings.json idempotently — adds { type "command", command ".agentic-framework/bin/fw hook <name>" } entries under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015). |
+| [api-usage](/docs/generated/agents-metrics-api-usage) | calls | TODO: describe what this component does |
+| [notify](/docs/generated/lib-notify) | calls | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
+| [govd_policy](/docs/generated/lib-govd_policy) | calls | TODO: describe what this component does |
+| [write_set](/docs/generated/lib-write_set) | calls | TODO: describe what this component does |
+| [integrate](/docs/generated/lib-integrate) | calls | TODO: describe what this component does |
+| [orchestrator-graph](/docs/generated/agents-orchestrator-orchestrator-graph) | calls | TODO: describe what this component does |
+| [designer](/docs/generated/agents-designer-designer) | calls | TODO: describe what this component does |
+| [bpmn](/docs/generated/agents-bpmn-bpmn) | calls | TODO: describe what this component does |
+| [corpus_lint](/docs/generated/tools-corpus_lint) | calls | TODO: describe what this component does |
+| [corpus_explain](/docs/generated/tools-corpus_explain) | calls | TODO: describe what this component does |
+| [corpus_spec](/docs/generated/tools-corpus_spec) | calls | TODO: describe what this component does |
 
-## Used By (234)
+## Used By (310)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -311,6 +339,82 @@ When run from inside the framework repo itself, it auto-detects.
 | [t2332_bvp_propose_queue](/docs/generated/tests-unit-t2332_bvp_propose_queue) | tests_by | TODO: describe what this component does |
 | [test_orchestrator_graph](/docs/generated/tests-unit-test_orchestrator_graph) | tests_by | TODO: describe what this component does |
 | [test_write_set](/docs/generated/tests-unit-test_write_set) | tests_by | TODO: describe what this component does |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | called_by | TODO: describe what this component does |
+| [estimator](/docs/generated/agents-termlink-bvp-estimator-estimator) | called_by | TODO: describe what this component does |
+| [t2391_project_root_inherited_stale](/docs/generated/tests-unit-t2391_project_root_inherited_stale) | tests_by | TODO: describe what this component does |
+| [test_inject_next_directive](/docs/generated/tests-unit-test_inject_next_directive) | called_by | TODO: describe what this component does |
+| [manifest](/docs/generated/agents-mcp-manifest) | called_by | TODO: describe what this component does |
+| [govd_policy](/docs/generated/lib-govd_policy) | called_by | TODO: describe what this component does |
+| [fw_derive_version_symlink](/docs/generated/tests-unit-fw_derive_version_symlink) | tests_by | TODO: describe what this component does |
+| [t2446_project_root_cwd_consistency](/docs/generated/tests-unit-t2446_project_root_cwd_consistency) | tests_by | TODO: describe what this component does |
+| [t2452_doctor_quick](/docs/generated/tests-unit-t2452_doctor_quick) | tests_by | TODO: describe what this component does |
+| [t2461_doctor_mcp_consumer_path](/docs/generated/tests-unit-t2461_doctor_mcp_consumer_path) | tests_by | TODO: describe what this component does |
+| [watchtower_health_verdict_identity](/docs/generated/tests-unit-watchtower_health_verdict_identity) | tests_by | TODO: describe what this component does |
+| [integrate](/docs/generated/lib-integrate) | called_by | TODO: describe what this component does |
+| [check_active_task_cwd_resolution](/docs/generated/tests-unit-check_active_task_cwd_resolution) | tests_by | TODO: describe what this component does |
+| [t2465_reanchor_from_cwd](/docs/generated/tests-unit-t2465_reanchor_from_cwd) | tests_by | TODO: describe what this component does |
+| [hook_paths](/docs/generated/lib-hook_paths) | called_by | TODO: describe what this component does |
+| [self-audit](/docs/generated/agents-audit-self-audit) | called_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
+| [single-host-parallel-demo](/docs/generated/agents-dispatch-single-host-parallel-demo) | called_by | TODO: describe what this component does |
+| [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
+| [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
+| [test-onboarding](/docs/generated/agents-onboarding-test-test-onboarding) | called_by | End-to-end onboarding flow test with 8 checkpoints: scaffold, hooks, first task, task gate, first commit, audit, self-audit, handover. Validates that fw init produces a working project. |
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [init](/docs/generated/lib-init) | called_by | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [setup](/docs/generated/lib-setup) | called_by | fw setup - Guided onboarding wizard for new projects |
+| [termlink_worker](/docs/generated/lib-termlink_worker) | called_by | TODO: describe what this component does |
+| [update](/docs/generated/lib-update) | called_by | fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes. |
+| [upgrade](/docs/generated/lib-upgrade) | called_by | fw upgrade - Sync framework improvements to a consumer project |
+| [version](/docs/generated/lib-version) | called_by | fw version subcommand: show framework version, git tag, commit count, paths. Supports --check for update detection. |
+| [test_pretooluse_gates](/docs/generated/tests-governance-test_pretooluse_gates) | called_by | TODO: describe what this component does |
+| [test_task_lifecycle_gates](/docs/generated/tests-governance-test_task_lifecycle_gates) | called_by | TODO: describe what this component does |
+| [audit_blocks_review_and_decide](/docs/generated/tests-integration-audit_blocks_review_and_decide) | called_by | TODO: describe what this component does |
+| [cron_install](/docs/generated/tests-integration-cron_install) | called_by | TODO: describe what this component does |
+| [fw_pickup](/docs/generated/tests-integration-fw_pickup) | called_by | TODO: describe what this component does |
+| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | called_by | TODO: describe what this component does |
+| [add_learning_id_allocator](/docs/generated/tests-unit-add_learning_id_allocator) | called_by | Regression test — add-learning ID allocator handles BOTH legacy indented format ('  id: L-XXX') and new dash-prefix format ('- id: L-XXX'). Pre-fix grep for '^- id: L-' missed 234 legacy entries, causing new IDs to collide with historical ones. |
+| [arc_create_start_flag](/docs/generated/tests-unit-arc_create_start_flag) | called_by | TODO: describe what this component does |
+| [audit_task_tools](/docs/generated/tests-unit-audit_task_tools) | called_by | TODO: describe what this component does |
+| [cron_flock_parity](/docs/generated/tests-unit-cron_flock_parity) | called_by | TODO: describe what this component does |
+| [doctor_duplicate_hook_detection](/docs/generated/tests-unit-doctor_duplicate_hook_detection) | called_by | TODO: describe what this component does |
+| [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | TODO: describe what this component does |
+| [fw_derive_version_symlink](/docs/generated/tests-unit-fw_derive_version_symlink) | called_by | TODO: describe what this component does |
+| [gaps_close](/docs/generated/tests-unit-gaps_close) | called_by | TODO: describe what this component does |
+| [hook_absolute_paths](/docs/generated/tests-unit-hook_absolute_paths) | called_by | Regression test — .claude/settings.json hook commands must emit absolute paths (canonicalized via cd && pwd at init/upgrade time), because Claude Code resolves hook commands against the session CWD. Relative paths cascade into tool-blocks when CWD drifts. |
+| [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | called_by | TODO: describe what this component does |
+| [inception_defer_park](/docs/generated/tests-unit-inception_defer_park) | called_by | TODO: describe what this component does |
+| [reviewer_human_ac_mechanical_signal](/docs/generated/tests-unit-reviewer_human_ac_mechanical_signal) | called_by | TODO: describe what this component does |
+| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | called_by | TODO: describe what this component does |
+| [t2331_driver_propose](/docs/generated/tests-unit-t2331_driver_propose) | called_by | TODO: describe what this component does |
+| [t2452_doctor_quick](/docs/generated/tests-unit-t2452_doctor_quick) | called_by | TODO: describe what this component does |
+| [t2461_doctor_mcp_consumer_path](/docs/generated/tests-unit-t2461_doctor_mcp_consumer_path) | called_by | TODO: describe what this component does |
+| [task_archive_eligible](/docs/generated/tests-unit-task_archive_eligible) | called_by | TODO: describe what this component does |
+| [test_audit_completable_not_completed](/docs/generated/tests-unit-test_audit_completable_not_completed) | called_by | TODO: describe what this component does |
+| [test_audit_cron_registry_generated_drift](/docs/generated/tests-unit-test_audit_cron_registry_generated_drift) | called_by | TODO: describe what this component does |
+| [test_audit_retire_when](/docs/generated/tests-unit-test_audit_retire_when) | called_by | TODO: describe what this component does |
+| [test_audit_revert_chain](/docs/generated/tests-unit-test_audit_revert_chain) | called_by | TODO: describe what this component does |
+| [test_bin_fw_no_heredoc_cmd_sub](/docs/generated/tests-unit-test_bin_fw_no_heredoc_cmd_sub) | called_by | TODO: describe what this component does |
+| [test_cron_generate_shape](/docs/generated/tests-unit-test_cron_generate_shape) | called_by | TODO: describe what this component does |
+| [test_cron_registry_generated_drift](/docs/generated/tests-unit-test_cron_registry_generated_drift) | called_by | TODO: describe what this component does |
+| [test_doctor_litellm_ollama](/docs/generated/tests-unit-test_doctor_litellm_ollama) | called_by | TODO: describe what this component does |
+| [test_doctor_scope_tags](/docs/generated/tests-unit-test_doctor_scope_tags) | called_by | TODO: describe what this component does |
+| [test_mcp_wire_fragment](/docs/generated/tests-unit-test_mcp_wire_fragment) | called_by | TODO: describe what this component does |
+| [test_orchestrator_graph](/docs/generated/tests-unit-test_orchestrator_graph) | called_by | TODO: describe what this component does |
+| [test_orchestrator_status_synthetic_filter](/docs/generated/tests-unit-test_orchestrator_status_synthetic_filter) | called_by | TODO: describe what this component does |
+| [test_reviewer_prose_mismatch](/docs/generated/tests-unit-test_reviewer_prose_mismatch) | called_by | TODO: describe what this component does |
+| [test_work_on_completed_task](/docs/generated/tests-unit-test_work_on_completed_task) | called_by | TODO: describe what this component does |
+| [test_worker_kind_drift](/docs/generated/tests-unit-test_worker_kind_drift) | called_by | TODO: describe what this component does |
+| [test_write_set](/docs/generated/tests-unit-test_write_set) | called_by | TODO: describe what this component does |
+| [verify_acs](/docs/generated/tests-unit-verify_acs) | called_by | Unit tests for verify acs (6 tests) |
+| [watchtower_health_verdict_identity](/docs/generated/tests-unit-watchtower_health_verdict_identity) | called_by | TODO: describe what this component does |
+| [designer](/docs/generated/agents-designer-designer) | called_by | TODO: describe what this component does |
+| [doctor_designer_pin_drift](/docs/generated/tests-unit-doctor_designer_pin_drift) | tests_by | TODO: describe what this component does |
+| [bpmn_promote](/docs/generated/tools-bpmn_promote) | called_by | TODO: describe what this component does |
+| [designer_registry](/docs/generated/web-designer_registry) | called_by | TODO: describe what this component does |
+| [designer_sync_from_tag](/docs/generated/tests-unit-designer_sync_from_tag) | tests_by | TODO: describe what this component does |
+| [corpus_spec](/docs/generated/tools-corpus_spec) | called_by | TODO: describe what this component does |
+| [designer](/docs/generated/web-blueprints-designer) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

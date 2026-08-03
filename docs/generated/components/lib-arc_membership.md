@@ -26,13 +26,14 @@ leaking through nine sites again.
 
 Frontmatter regexes — same patterns previously inline in arcs.py.
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | `.tasks/active/` | reads | — |
 | `.tasks/completed/` | reads | — |
 | [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [tasks](/docs/generated/web-blueprints-tasks) | calls | Flask blueprint: Tasks |
 
 ## Used By (7)
 

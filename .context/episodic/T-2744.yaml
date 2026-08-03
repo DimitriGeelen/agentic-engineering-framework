@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2744: Triage the 25 standing-red tests in tests/unit/ (classify, do not mass-fix)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T00:18:22Z
+# ============================================================================
+
+task_id: T-2744
+task_name: "Triage the 25 standing-red tests in tests/unit/ (classify, do not mass-fix)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T23:44:26Z
+completed: 2026-08-03T00:18:10Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-03T01:49:44+02:00
+last_commit: 2026-08-03T02:17:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  triage task scoped — classify-don't-fix ACs + census/no-edit verification. triage complete — 24 failures classified, 10 root-cause tasks filed; keystone finding: pytest tests/unit/ is run by NO runner. ACs ticked; T-2755/T-2756 filed from operator downgrade report (upgrade header never compares direction)
+
+# Key outcomes
+outcomes:
+  - 'Census is reproducible and machine-readable: the exact runner command, its measured'
+  - 'Every nodeid in the census appears in the triage report classified as exactly one of'
+  - 'Every classification carries falsifiable evidence: for `genuine-bug`, the'
+  - 'Follow-up tasks are filed one per *root cause*, not one per test; each classified'
+  - 'No test file and no non-test source file is modified under this task — triage only.'
+  - 'The reason the standing red is *invisible* (no gate consumes the suite''s verdict) is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'triage task scoped — classify-don''t-fix ACs + census/no-edit verification'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-2744-census.txt'
+  - 'docs/reports/T-2744-unit-suite-triage.md'
+  - '.tasks/active/T-2744-triage-the-25-standing-red-tests-in-test.md'
+  - '.tasks/active/T-2745-wire-pytest-testsunit-into-fw-test-and-c.md'
+  - '.tasks/active/T-2746-fw-auto-inits-a-project-in-pwd-on-any-no.md'
+  - '.tasks/active/T-2747-orchestrator-status-test-fixtures-seed-o.md'
+  - '.tasks/active/T-2748-find-the-cross-test-polluter-making-6-we.md'
+  - '.tasks/active/T-2749-fw-doctor-stray-root-marker-check-misses.md'
+  - '.tasks/active/T-2750-find-the-test-leaking-t-9999-testmd-to-f.md'
+  - '.tasks/active/T-2751-re-pin-isviewablepath-readmemd-assertion.md'
+  - '.tasks/active/T-2752-extend-renderpageguard-dictloader-stubs-.md'
+  - '.tasks/active/T-2753-arc-tag-idempotency-test-counts-audit-lo.md'
+  - '.tasks/active/T-2754-corpus-all-versions-census-pin-is-28-sto.md'
+  - '.tasks/active/T-2755-fw-upgrade-header-labels-any-version-mis.md'
+  - '.tasks/active/T-2756-verify-whether-fw-upgrade-bootstrap-auto.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T01:49:44'
+    action: 'T-2744: triage task scoped — classify-don''t-fix ACs + census/no-edit verification'
+  - time: '2026-08-03T02:14:46'
+    action: 'T-2744: triage complete — 24 failures classified, 10 root-cause tasks filed; keystone finding: pytest tests/unit/ is run by NO runner'
+  - time: '2026-08-03T02:17:45'
+    action: 'T-2744: ACs ticked; T-2755/T-2756 filed from operator downgrade report (upgrade header never compares direction)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 33
+  commits: 3
+  files_changed: 16
+  lines_added: 3642
+  lines_removed: 83
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2744-triage-the-25-standing-red-tests-in-test.md
+generated_by: context-agent-hybrid

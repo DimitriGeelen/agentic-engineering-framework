@@ -5573,3 +5573,88 @@ FW_S'
   command: 'git add -A .tasks/completed/T-2733*.md .tasks/completed/T-2734*.md .context/episodic/T-2733.yaml .context/episodic/T-2734.yaml .context/inbox.yaml .fabric/ 2>&1|tail -1
 git diff --cached --name-only
 F'
+- timestamp: '2026-08-02T16:35:00Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2737'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2737: close artifacts — fabric coverage denominator trio (T-2735/2736/2737)
+
+Episodics for the three closures, audit s'
+- timestamp: '2026-08-02T17:20:26Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2738'
+  command: 'git add .agentic-framework/lib/verification-verdict.sh .agentic-framework/agents/task-create/update-task.sh .agentic-framework/.tasks/templates/default.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-2738'
+- timestamp: '2026-08-02T17:48:58Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2739'
+  command: 'git add .context/inbox.yaml .tasks/active/ 2>/dev/null; git status --short | grep "^[MARD]" | head -6; FW_SWITCH_FOCUS=1 git commit -q -m "T-2739: dismiss OBS-132 (superseded by T-2738 — it named th'
+- timestamp: '2026-08-02T22:04:20Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2740'
+  command: 'bin/fw vendor self 2>&1 | tail -3; git add .agentic-framework/lib/seeds/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2740: vendor self — ship the fixed greenfield seeds to consumers
+
+The seeds are what'
+- timestamp: '2026-08-02T22:37:29Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2741'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/active/T-2741-arcdetail-close-arc-button-reintroduced-.md .context/project/decisions.yaml .context/inbox.yaml
+FW_SWITCH_FOCUS'
+- timestamp: '2026-08-02T22:38:01Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2741'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git diff --stat .agentic-framework/web/templates/arc_detail.html
+git add .agentic-framework/web/templates/arc_detail.html
+FW_SWITCH_FOCUS=1 git commit -q -m "'
+- timestamp: '2026-08-02T22:49:53Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2742'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2742-document-the-tier-0-scope-boundary--stri.md .context/episodic/T-2742.yaml .context/project/decisions.yaml .t'
+- timestamp: '2026-08-02T22:50:01Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2742'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .agentic-framework/agents/context/check-tier0.sh
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2742: vendor self — ship the documented Tie'
+- timestamp: '2026-08-02T22:58:23Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2743'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2743-task-template-sigpipe-hint-is-wrong-abov.md .context/episodic/T-2743.yaml .tasks/active/ .context/project/de'
+- timestamp: '2026-08-02T22:58:30Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2743'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .agentic-framework/.tasks/templates/default.md
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2743: vendor self — ship the corrected verifi'
+- timestamp: '2026-08-02T23:03:13Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-012'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add -A .context/handovers/ 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover" 2>&1 | tail -1
+git push origin t2539-staging t2539-sta'

@@ -4071,3 +4071,10 @@ X'` returning empty group."
   date: 2026-08-02
   context: Added via context agent
   application: TBD
+- id: L-535
+  learning: "A directory named by a test runner is not a directory covered by it. tests/unit/ holds 383 .bats + 153 pytest files; fw test unit, fw test all and CI all run bats only on it, so ~2035 pytest tests have never run as a suite (no pytest.ini/conftest.py either). The camouflage is that the command names the exact directory and exits green about what it did run — nothing states what it did NOT run. Sibling of T-2696/T-2697 (tests/lint/, no runner) but 22x larger and harder to see, because tests/lint had NO runner naming it. Check to apply: for every test-bearing directory, ask which runner collects each file EXTENSION present, not whether the directory appears in a runner command."
+  source: P-001
+  task: T-2744
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD

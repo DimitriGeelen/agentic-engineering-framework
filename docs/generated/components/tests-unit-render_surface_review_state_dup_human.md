@@ -12,6 +12,12 @@ Pre-fix bug: a task with `### Human` template-comment header + a second
 `### Human` containing the actual [REVIEW] AC returned "empty" because
 re.search captured only the first block's content. Hit on T-1898.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-render_surface_review_state_dup_human.yaml`*
-*Last verified: 2026-05-18*
+*Last verified: 2026-07-22*

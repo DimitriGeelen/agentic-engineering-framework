@@ -53,7 +53,7 @@ When building a web application:
 | [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [arcs](/docs/generated/web-blueprints-arcs) | registers | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 
-## Used By (38)
+## Used By (45)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -93,6 +93,13 @@ When building a web application:
 | [test_task_panel](/docs/generated/tests-unit-test_task_panel) | called_by | TODO: describe what this component does |
 | [test_task_panel_edit](/docs/generated/tests-unit-test_task_panel_edit) | called_by | TODO: describe what this component does |
 | [test_theme_toggle_contrast](/docs/generated/tests-unit-test_theme_toggle_contrast) | called_by | TODO: describe what this component does |
+| [test_designer_api_uuid_identity](/docs/generated/tests-web-test_designer_api_uuid_identity) | called_by | TODO: describe what this component does |
+| [test_designer_registry_claim](/docs/generated/tests-web-test_designer_registry_claim) | called_by | TODO: describe what this component does |
+| [test_designer_registry_ghosts](/docs/generated/tests-web-test_designer_registry_ghosts) | called_by | TODO: describe what this component does |
+| [test_designer_landing](/docs/generated/tests-web-test_designer_landing) | called_by | TODO: describe what this component does |
+| [test_api_overlay](/docs/generated/tests-web-test_api_overlay) | called_by | TODO: describe what this component does |
+| [test_api_version_latest](/docs/generated/tests-web-test_api_version_latest) | called_by | TODO: describe what this component does |
+| [test_designer_overlay](/docs/generated/tests-web-test_designer_overlay) | called_by | TODO: describe what this component does |
 
 ## Related
 

@@ -4,10 +4,10 @@ name: "Triage the 25 standing-red tests in tests/unit/ (classify, do not mass-fi
 description: >
   Triage the 25 standing-red tests in tests/unit/ (classify, do not mass-fix)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T23:44:26Z
-last_update: '2026-08-03T00:00:12Z'
-date_finished:
+last_update: 2026-08-03T00:18:10Z
+date_finished: 2026-08-03T00:18:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -218,6 +218,44 @@ git log --format=%H --grep='T-2744' > /tmp/.t2744c.txt && test -s /tmp/.t2744c.t
 
 ## RCA
 
+**Symptom:** 24 pytest tests under `tests/unit/` fail. OBS-136 recorded them as a
+"standing red" that drowns out new failures — the diagnosis that let T-2027's token guard
+sit red for 28 days.
+
+**Root cause:** the standing-red framing was wrong. `tests/unit/` holds 383 `.bats` files
+and 153 pytest files, and **every runner that targets the directory runs bats only** —
+`fw test unit` (`bin/fw:7551`), `fw test all` (`bin/fw:7663`, whose pytest leg is
+`web/test_app.py tests/web/`), and CI (`.github/workflows/test.yml:46`, whose only pytest
+leg is `tests/playwright/`). No `pytest.ini` / `pyproject.toml` / `conftest.py` exists to
+supply a `testpaths` default either. These ~2035 tests have never been executed as a suite
+by any runner, gate, hook, or CI job. They are not ignored; they are **unrun**. The only
+executions on record are single-file `## Verification` lines naming the author's own file.
+
+**Why structurally allowed:** the directory is *named* by a command that *appears* to
+cover it. `fw test unit` prints `=== Bats Unit Tests ===`, runs `bats tests/unit/`, and
+exits honestly about what it ran — but nothing in its output states what it did **not**
+run. Coverage was inferred from a matching directory name plus a green exit code. This is
+the same shape as T-2696/T-2697 (`tests/lint/`, globbed by no runner, 7 red, one 51 days
+old); that fix added `tests/lint/` as leg 2c of `fw test all` and never asked whether any
+*other* directory had the same defect. This one is 22× larger and better camouflaged,
+because `tests/lint/` had no runner naming it at all while `tests/unit/` has one that does.
+
+Second-order: because no suite verdict exists, a test can only break from its *own*
+author's change. Every failure caused by someone else's change is unobservable by
+construction — which is exactly what four of the classified failures are (T-2751 pre-T-2281,
+T-2752 pre-T-2009, T-2753 audit-log line, T-2754 store growth). T-2754's docstring even
+carries the maintenance instruction "Update deliberately when the store grows"; the trigger
+to read it never fired.
+
+**Prevention:** T-2745 wires pytest `tests/unit/` into `fw test all` and CI — that is the
+structural fix and it is deliberately *not* done here (one bug = one task; and wiring a
+runner is a change to `bin/fw`, which this task's own AC forbids). The remaining nine tasks
+fix the individual causes. Distinct from the fix itself: this task's report records the
+generalised lesson — **a directory named by a runner is not a directory covered by it** —
+and the check that would have caught it is asking, for every test-bearing directory, *which
+runner collects each file extension present*. `tests/unit/` contains two extensions and one
+runner.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -283,3 +321,15 @@ git log --format=%H --grep='T-2744' > /tmp/.t2744c.txt && test -s /tmp/.t2744c.t
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2744-triage-the-25-standing-red-tests-in-test.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-86d3a3b3
+- **Timestamp:** 2026-08-03T00:18:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-03T00:18:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -17,7 +17,7 @@ Public functions (called from bin/fw dispatcher):
 mirror_main <subcommand> [args...]
 Subcommands:
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,7 @@ Subcommands:
 | [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | tests_by | TODO: describe what this component does |
 | [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | called_by | TODO: describe what this component does |
 | [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | tests_by | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-mirror.yaml`*

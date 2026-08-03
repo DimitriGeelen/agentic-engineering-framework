@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Dependencies (4)
+## Dependencies (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -18,8 +18,15 @@ Path resolution
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [settings](/docs/generated/web-blueprints-settings) | calls | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
 | [settings](/docs/generated/web-blueprints-settings) | registers | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
+| [recommendation_claims](/docs/generated/lib-reviewer-recommendation_claims) | calls | TODO: describe what this component does |
+| [bvp](/docs/generated/web-blueprints-bvp) | calls | TODO: describe what this component does |
+| [approvals](/docs/generated/web-blueprints-approvals) | calls | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+| [timeline](/docs/generated/web-blueprints-timeline) | calls | Blueprint 'timeline' — routes: /timeline |
+| [search_utils](/docs/generated/web-search_utils) | calls | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [cockpit](/docs/generated/web-blueprints-cockpit) | calls | Flask blueprint: Cockpit |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
 
-## Used By (60)
+## Used By (64)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -83,6 +90,10 @@ Path resolution
 | [test_breadcrumb](/docs/generated/tests-unit-test_breadcrumb) | called_by | TODO: describe what this component does |
 | [test_nav_subsections](/docs/generated/tests-unit-test_nav_subsections) | called_by | TODO: describe what this component does |
 | [test_orchestrator_workflow_coverage](/docs/generated/tests-unit-test_orchestrator_workflow_coverage) | called_by | TODO: describe what this component does |
+| [test_command_palette](/docs/generated/tests-unit-test_command_palette) | called_by | TODO: describe what this component does |
+| [designer](/docs/generated/web-blueprints-designer) | called_by | TODO: describe what this component does |
+| [designer_api](/docs/generated/web-blueprints-designer_api) | called_by | TODO: describe what this component does |
+| [extract_recommendation_close_keep_open](/docs/generated/tests-unit-extract_recommendation_close_keep_open) | tests_by | TODO: describe what this component does |
 
 ## Related
 

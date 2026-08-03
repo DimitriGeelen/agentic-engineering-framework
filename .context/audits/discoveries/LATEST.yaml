@@ -1,24 +1,40 @@
-timestamp: 2026-08-02T16:30:02Z
+timestamp: 2026-08-03T00:00:01Z
 findings:
-  - id: D1
+  - id: D4
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2435)"
-  - id: D2
-    level: FAIL
-    check: "D2: Human review queue — 163 task(s) waiting >30d: T-100131(27d) T-100188(27d) T-1701(67d) T-1702(62d) T-1707(67d) T-1718(67d) T-1773(80d) T-1774(80d) T-1775(80d) T-1776(63d) T-1792(81d) T-1794(81d) T-1795(81d) T-1796(81d) T-1797(81d) T-1799(81d) T-1801(81d) T-1802(81d) T-1803(81d) T-1805(81d) T-1806(81d) T-1807(81d) T-1808(80d) T-1810(80d) T-1811(80d) T-1818(80d) T-1827(72d) T-1834(79d) T-1842(72d) T-1843(72d) T-1844(72d) T-1891(76d) T-1909(74d) T-1910(74d) T-1911(74d) T-1928(74d) T-1929(74d) T-1930(74d) T-1933(75d) T-1934(73d) T-1935(73d) T-1936(73d) T-1939(73d) T-1947(74d) T-1951(72d) T-1954(74d) T-1955(74d) T-1957(74d) T-1960(72d) T-1961(72d) T-1963(72d) T-1964(73d) T-1965(73d) T-1968(73d) T-1969(73d) T-1970(73d) T-1971(73d) T-1976(72d) T-1977(73d) T-1978(72d) T-1980(72d) T-1982(73d) T-1984(72d) T-1985(72d) T-1988(71d) T-1989(68d) T-1990(67d) T-1991(71d) T-1992(68d) T-1993(68d) T-1994(67d) T-1999(71d) T-2002(67d) T-2003(68d) T-2004(68d) T-2006(68d) T-2008(68d) T-2009(68d) T-2010(68d) T-2011(68d) T-2012(68d) T-2013(68d) T-2015(68d) T-2016(68d) T-2017(68d) T-2018(68d) T-2019(68d) T-2020(68d) T-2021(68d) T-2022(68d) T-2023(68d) T-2024(68d) T-2025(68d) T-2026(68d) T-2027(68d) T-2028(68d) T-2029(68d) T-2031(68d) T-2033(68d) T-2034(68d) T-2038(68d) T-2039(68d) T-2040(68d) T-2041(68d) T-2043(68d) T-2044(68d) T-2045(68d) T-2046(68d) T-2047(68d) T-2049(68d) T-2051(67d) T-2054(67d) T-2062(65d) T-2063(65d) T-2064(65d) T-2065(65d) T-2066(65d) T-2075(65d) T-2077(65d) T-2080(65d) T-2082(65d) T-2084(65d) T-2085(65d) T-2086(65d) T-2087(65d) T-2088(65d) T-2089(65d) T-2102(64d) T-2103(64d) T-2106(64d) T-2110(64d) T-2111(64d) T-2112(64d) T-2114(63d) T-2116(63d) T-2117(63d) T-2119(57d) T-2136(63d) T-2160(62d) T-2167(61d) T-2174(60d) T-2175(61d) T-2176(57d) T-2179(60d) T-2183(50d) T-2185(59d) T-2192(60d) T-2222(57d) T-2240(55d) T-2265(54d) T-2274(54d) T-2278(54d) T-2281(54d) T-2332(52d) T-2336(51d) T-2342(51d) T-2349(27d) T-2369(50d) T-2373(50d) T-2376(49d) T-2403(48d) T-2406(47d) T-2417(47d) T-2428(45d) T-2430(45d) T-2463(27d) T-2474(39d) T-2479(27d) T-2525(22d) T-2529(22d) T-2530(22d)"
-    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
-  - id: D8
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 17 anomaly(s): T-1542(97d-active) T-1624(94d-active) T-1820(81d-active) T-2170(62d-active) T-2268(55d-active) T-2410(48d-active) T-801(121d-active) T-802(121d-active) T-803(121d-active) T-2389(49d-active) (+7 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D13
+    level: WARN
+    check: "D13: Inception limbo — 7 task(s): A=6/B=1 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2715(B)"
+    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
+  - id: D3
     level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
-  - id: D10
+    check: "D3: Commit velocity — normal (PASS today=19 avg=47 ratio=0.4x)"
+  - id: D7
     level: PASS
-    check: "D10: Decision-without-dialogue — none detected"
-  - id: D11
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 76_commits_24h)"
+  - id: D6
     level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
+    check: "D6: Completion velocity — normal (PASS recent=9.3 earlier=9.7)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
+  - id: D14
+    level: PASS
+    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
+  - id: D15
+    level: PASS
+    check: "D15: Inception limbo state — none (PASS no_limbo)"
 
 summary:
-  pass: 4
-  warn: 0
-  fail: 1
-  total: 5
+  pass: 8
+  warn: 2
+  fail: 0
+  total: 10

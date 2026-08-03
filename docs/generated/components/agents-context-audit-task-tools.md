@@ -19,13 +19,14 @@ Output: JSON with additionalContext when banned tool detected, empty otherwise
 |-----------|--------------|-------------|
 | [hook-config](/docs/generated/hook-config) | reads | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [block-task-tools](/docs/generated/agents-context-block-task-tools) | complements | PreToolUse hook that blocks Claude Code built-in task/todo tools to prevent bypassing framework task governance |
 | [audit_task_tools](/docs/generated/tests-unit-audit_task_tools) | called_by | TODO: describe what this component does |
 | [audit_task_tools](/docs/generated/tests-unit-audit_task_tools) | tests_by | TODO: describe what this component does |
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-audit-task-tools.yaml`*

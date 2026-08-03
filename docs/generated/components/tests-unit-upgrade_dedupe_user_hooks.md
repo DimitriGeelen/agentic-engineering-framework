@@ -11,13 +11,14 @@ framework hooks from $HOME/.claude/settings.json that duplicate the
 project-level config; always backs up first. T-1479/T-1480 surface the
 overlap; this gives the user a one-command fix.
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [pre-compact](/docs/generated/agents-context-pre-compact) | calls | Pre-Compaction Hook — Save structured context before lossy compaction |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_dedupe_user_hooks.yaml`*

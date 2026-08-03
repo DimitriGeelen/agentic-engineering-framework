@@ -12,12 +12,13 @@ that the generator silently produced unrunnable lines (no cwd for `python3
 was effectively dead for 9 days. Generator shape is now load-bearing —
 this fixture pins it.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | tests | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_cron_generate_shape.yaml`*

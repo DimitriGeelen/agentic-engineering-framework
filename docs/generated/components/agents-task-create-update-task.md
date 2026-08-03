@@ -16,7 +16,7 @@ Usage:
 ./agents/task-create/update-task.sh T-XXX --owner claude-code
 ./agents/task-create/update-task.sh T-XXX --status blocked --reason "Waiting on API key"
 
-## Dependencies (14)
+## Dependencies (15)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -34,8 +34,9 @@ Usage:
 | [render_surface](/docs/generated/lib-render_surface) | calls | TODO: describe what this component does |
 | [bvp-estimator](/docs/generated/agents-termlink-bvp-estimator-bvp-estimator) | calls | TODO: describe what this component does |
 | [inception_decisions](/docs/generated/lib-inception_decisions) | calls | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (29)
+## Used By (32)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -68,6 +69,9 @@ Usage:
 | [disposition_gate](/docs/generated/tests-unit-disposition_gate) | tests_by | TODO: describe what this component does |
 | [test_update_task_horizon_null_reclose](/docs/generated/tests-unit-test_update_task_horizon_null_reclose) | called_by | TODO: describe what this component does |
 | [test_update_task_horizon_null_reclose](/docs/generated/tests-unit-test_update_task_horizon_null_reclose) | tests_by | TODO: describe what this component does |
+| [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | called_by | TODO: describe what this component does |
+| [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | tests_by | TODO: describe what this component does |
+| [render_surface_review_state_dup_human](/docs/generated/tests-unit-render_surface_review_state_dup_human) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

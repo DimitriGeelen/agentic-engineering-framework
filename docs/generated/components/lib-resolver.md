@@ -6,15 +6,16 @@
 
 ## What It Does
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [patterns-data](/docs/generated/patterns-data) | calls | Stores failure, success, and workflow patterns discovered during project work. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [spawn](/docs/generated/lib-spawn) | calls | TODO: describe what this component does |
+| [bvp](/docs/generated/lib-bvp) | calls | TODO: describe what this component does |
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +26,8 @@
 | [workflow_lint](/docs/generated/lib-workflow_lint) | called_by | TODO: describe what this component does |
 | [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | called_by | TODO: describe what this component does |
 | [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | uses_by | TODO: describe what this component does |
+| [test_resolver_run](/docs/generated/tests-unit-test_resolver_run) | called_by | TODO: describe what this component does |
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-resolver.yaml`*

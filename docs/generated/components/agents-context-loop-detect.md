@@ -17,11 +17,12 @@ Exit: 0=ok/warning, 2=block
 |-----------|--------------|-------------|
 | [loop-detect](/docs/generated/lib-ts-src-loop-detect) | calls | TypeScript PostToolUse loop detector — reads hook JSON on stdin, detects repetitive tool call patterns (generic_repeat, ping_pong, no_progress), and emits additionalContext or blocks at critical threshold. Compiled to lib/ts/dist/loop-detect.js. Origin: T-586 Phase 2 prototype, T-594 production port. |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [error-watchdog](/docs/generated/agents-context-error-watchdog) | complements | Error Watchdog — PostToolUse hook for Bash error detection |
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-loop-detect.yaml`*

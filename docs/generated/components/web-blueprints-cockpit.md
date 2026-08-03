@@ -17,7 +17,7 @@ web/blueprints/cockpit.py
 | [tasks](/docs/generated/web-blueprints-tasks) | calls | Flask blueprint: Tasks |
 | [tasks](/docs/generated/web-blueprints-tasks) | registers | Flask blueprint: Tasks |
 
-## Used By (8)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -29,6 +29,7 @@ web/blueprints/cockpit.py
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 | [test_api_scan](/docs/generated/tests-playwright-test_api_scan) | called_by | Playwright tests for scan API endpoints (T-1029). |
 | [test_api_scan_actions](/docs/generated/tests-playwright-test_api_scan_actions) | called_by | Playwright tests for scan action endpoints (T-1041). |
+| [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-cockpit.yaml`*

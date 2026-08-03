@@ -10,7 +10,7 @@ Flask blueprints for the Agentic Engineering Framework web UI
 Centralizes blueprint registration (T-431/A2).
 Adding a new blueprint: import it here and append to _BLUEPRINTS.
 
-## Dependencies (66)
+## Dependencies (70)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -80,6 +80,10 @@ Adding a new blueprint: import it here and append to _BLUEPRINTS.
 | [arcs](/docs/generated/web-blueprints-arcs) | registers | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [bvp](/docs/generated/web-blueprints-bvp) | calls | TODO: describe what this component does |
 | [bvp](/docs/generated/web-blueprints-bvp) | registers | TODO: describe what this component does |
+| [designer](/docs/generated/web-blueprints-designer) | calls | TODO: describe what this component does |
+| [designer_api](/docs/generated/web-blueprints-designer_api) | calls | TODO: describe what this component does |
+| [designer](/docs/generated/web-blueprints-designer) | registers | TODO: describe what this component does |
+| [designer_api](/docs/generated/web-blueprints-designer_api) | registers | TODO: describe what this component does |
 
 ## Used By (12)
 
