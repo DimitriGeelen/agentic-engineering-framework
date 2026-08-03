@@ -11,11 +11,23 @@ setup() {
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     export FW_VERSION="1.5.0"
     export NO_COLOR=1
+    # T-2759: do_upgrade's shim-migration step (4c) reads $HOME/.local/bin/fw
+    # unconditionally — a real host with fw installed via the shim-symlink
+    # pattern leaks its own ~/.local/bin/fw state into every real-run test
+    # here. On the framework's own dev host that symlink resolves into a
+    # self-vendored copy carrying its own FRAMEWORK.md, so the T-1278
+    # defence-in-depth guard REFUSES and do_upgrade returns 1 — aborting
+    # before steps 5-10 run. Scope HOME to an empty temp dir so $HOME/.local/bin
+    # never exists and step 4c's `[ -d "$local_bin" ]` guard skips it cleanly.
+    export REAL_HOME="$HOME"
+    export HOME="$TEST_TEMP_DIR/home"
+    mkdir -p "$HOME"
     source "$FRAMEWORK_ROOT/lib/colors.sh"
     source "$FRAMEWORK_ROOT/lib/upgrade.sh"
 }
 
 teardown() {
+    export HOME="$REAL_HOME"
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
@@ -139,3 +151,7 @@ STALE
     [ -f "$proj/.claude/commands/resume.md" ]
     grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
 }
+
+# T-2759 (target_dir rebind in step 4c's shim migration) has its own
+# regression coverage in tests/unit/t2759_upgrade_target_dir_shadowing.bats —
+# real bin/fw subprocess, controlled $HOME, asserts exact directory contents.
