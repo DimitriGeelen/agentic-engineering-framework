@@ -5,6 +5,17 @@
 # framework, then updates governance sections, templates, hooks, and seeds.
 # Project-specific content is preserved.
 
+# T-2755: the version-relation comparator is a hard dependency of BOTH the
+# "Pinned:" header line and the T-1912 precheck below it. bin/fw:688 sources it
+# with `2>/dev/null || true`, so an absent or unreadable file degrades silently —
+# and what degrades is the loudest line in the output. Source it here too, next
+# to the code that needs it (L-399: a contract split across files drifts).
+# Idempotent — skipped when bin/fw already provided it.
+if ! declare -f fw_version_relation >/dev/null 2>&1; then
+    # shellcheck source=version-relation.sh
+    source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/version-relation.sh"
+fi
+
 # T-1481: Opt-in remediation for OBS-023's structural cause. Removes
 # framework hooks from $HOME/.claude/settings.json that duplicate
 # project-level. Always creates a timestamped backup. Honors dry-run.
@@ -508,6 +519,49 @@ _self_vendor_web() {
     return 0
 }
 
+# T-2755 — render the "Pinned:" header line from a COMPUTED relation.
+#
+# fw_upgrade_render_pin_line <consumer_version> <framework_version> <relation> <force_downgrade>
+#
+# Extracted from do_upgrade so the wording is reachable by a test without
+# standing up a whole consumer. That is not incidental tidiness: the defect this
+# replaces survived because the only way to see the line was to run a real
+# upgrade against a real mismatched consumer, which no test did.
+#
+# `relation` is whatever fw_version_relation produced — this function never
+# compares versions itself. One comparator, one answer, two readers (this line
+# and the T-1912 guard below it).
+fw_upgrade_render_pin_line() {
+    local cversion="$1" fversion="$2" relation="$3" force_downgrade="${4:-false}"
+
+    # The suffix comes from the same predicate the guard obeys, so the header
+    # cannot promise an outcome the guard is about to contradict two lines later.
+    local note=""
+    if fw_version_relation_should_refuse "$relation"; then
+        if [ "$force_downgrade" = true ]; then
+            note=" — --force-downgrade given, proceeding anyway"
+        else
+            note=" — upgrade will refuse"
+        fi
+    fi
+
+    case "$relation" in
+        same)
+            echo -e "  Pinned:    v${cversion} ${GREEN}(current)${NC}" ;;
+        behind)
+            echo -e "  Pinned:    v${cversion} ${YELLOW}(behind v${fversion})${NC}" ;;
+        ahead)
+            echo -e "  Pinned:    v${cversion} ${RED}(AHEAD of v${fversion}${note})${NC}" ;;
+        diverged)
+            echo -e "  Pinned:    v${cversion} ${RED}(diverged from v${fversion}${note})${NC}" ;;
+        *)
+            # undecidable, or a relation this function has not been taught.
+            # Say so — do NOT fall through to "behind". Claiming a direction we
+            # cannot compute is the entire defect (see lib/version-relation.sh).
+            echo -e "  Pinned:    v${cversion} ${YELLOW}(direction undecidable vs v${fversion}${note})${NC}" ;;
+    esac
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -832,16 +886,36 @@ do_upgrade() {
         project_version=$(grep "^version:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
     fi
 
+    # T-2755: compute the relation ONCE, here, and let both the header and the
+    # T-1912 precheck below read the same answer.
+    #
+    # The header used to be `[ "$project_version" = "$fw_version" ]` — equality,
+    # not direction. Every mismatch therefore rendered "(behind)", including the
+    # ones the guard was about to refuse. Field instance (2026-08-03,
+    # /opt/002-Claude-Partner-Network): the same output carried
+    #     Pinned:  v1.6.354 (behind v1.6.8)
+    #     REFUSED  Consumer v1.6.354 is AHEAD of framework v1.6.8
+    # two lines apart. A reader who trusts the header reaches for
+    # --force-downgrade at the exact moment the guard is protecting them.
+    #
+    # The comparator already existed — T-2713 replaced `sort -V` with git
+    # ancestry precisely because a resetting counter cannot order. It was wired
+    # into the guard and not into the sentence above it, so the loudest line in
+    # the output was the one line still guessing.
+    local _rel="" _rel_sha=""
+    if [ -n "$project_version" ]; then
+        _rel_sha=$(grep "^version_sha:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/^version_sha:[[:space:]]*//' || true)
+        # Bare call, not $(...) — the reason travels via a global (see lib/version-relation.sh).
+        fw_version_relation "$project_version" "$fw_version" "$_rel_sha" "$FRAMEWORK_ROOT" >/dev/null
+        _rel="$FW_VERSION_RELATION"
+    fi
+
     echo -e "${BOLD}fw upgrade${NC} - Syncing framework improvements"
     echo ""
     echo "  Project:   $target_dir ($project_name)"
     echo "  Framework: $FRAMEWORK_ROOT (v${fw_version})"
     if [ -n "$project_version" ]; then
-        if [ "$project_version" = "$fw_version" ]; then
-            echo -e "  Pinned:    v${project_version} ${GREEN}(current)${NC}"
-        else
-            echo -e "  Pinned:    v${project_version} ${YELLOW}(behind v${fw_version})${NC}"
-        fi
+        fw_upgrade_render_pin_line "$project_version" "$fw_version" "$_rel" "$force_downgrade"
     else
         echo -e "  Pinned:    ${YELLOW}<none>${NC} (version tracking will be added)"
     fi

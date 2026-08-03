@@ -1,11 +1,10 @@
 ---
-id: T-2755
-name: "fw upgrade header labels any version mismatch as behind — it never compares
-  direction"
+id: T-2758
+name: "fw upgrade hard-fails at step 3 when a consumer has no .context/project/ directory"
 description: >
-  fw upgrade header labels any version mismatch as behind — it never compares direction
+  cp of seed files (practices/decisions/patterns) at lib/upgrade.sh:1117 targets $target_dir/.context/project/ without mkdir -p. On a consumer that has .framework.yaml but no .context tree, cp fails and fw upgrade exits 1 at step 3 of 10 — steps 4-10 (hooks, resume.md, shims, vendor) never run. Reproduced live 2026-08-03; 3 tests in tests/unit/lib_upgrade.bats have been red on this.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-03T00:16:00Z
-last_update: '2026-08-03T00:30:06Z'
-date_finished:
+created: 2026-08-03T10:18:21Z
+last_update: 2026-08-03T10:18:21Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,95 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-08-03T00:22:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-08-03T00:30:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2755: fw upgrade header labels any version mismatch as behind — it never compares direction
+# T-2758: fw upgrade hard-fails at step 3 when a consumer has no .context/project/ directory
 
 ## Context
 
-The `fw upgrade` header line was an equality test wearing a directional label. The
-comparator it needed already existed (T-2713's `fw_version_relation`, git-ancestry
-based) and was wired into the guard below it — but not into the sentence above it.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/upgrade.sh` header computes the actual direction (behind / ahead / current)
-      instead of branching on string equality alone (`lib/upgrade.sh:840-844`), using the
-      same comparator the T-1912 precheck already uses — one comparator, not two.
-- [x] When the consumer is ahead, the header says so, and the header's wording cannot
-      contradict the guard's verdict printed a few lines later in the same output.
-- [x] Regression test pins all three directions (behind / ahead / equal) against the
-      rendered header text, so a future refactor cannot silently reintroduce
-      "any mismatch = behind".
-- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (CLAUDE.md
-      §Consumer-Facing Command Hygiene — this is one of the three consumer-facing commands).
-
-**How each was met.** The relation is computed once (`lib/upgrade.sh:850-857`) and read
-by both the header and the T-1912 precheck. Rendering moved to a pure function
-`fw_upgrade_render_pin_line` (`lib/upgrade.sh:511-551`) so the wording is reachable by a
-test without standing up a consumer — the old line was only observable by running a real
-upgrade against a real mismatched consumer, which is why nothing caught it. The suffix
-("upgrade will refuse") is derived from `fw_version_relation_should_refuse`, the guard's
-own predicate, so header and guard cannot disagree. Nine tests in
-`tests/unit/t2755_upgrade_pin_line_direction.bats` pin five relations plus the
-`--force-downgrade` variant, the delegation seam, and a check that the renderer never
-compares versions itself.
-
-**Live-verified** against the operator's exact numbers (dry-run, fixture consumer pinned
-v1.6.354, no `version_sha`):
-
-```
-  Framework: /opt/999-Agentic-Engineering-Framework (v1.6.764)
-  Pinned:    v1.6.354 (direction undecidable vs v1.6.764)
-
-WARN    Version relation undetermined: no version_sha recorded and no tag v1.6.354 …
-```
-
-Header and WARN now agree. Before the fix that same line read `(behind v1.6.764)` while
-the WARN two lines down said the direction could not be determined.
-
-**Mutation-checked:** collapsing the `ahead` branch back to "behind" turns tests 1, 2 and
-7 red. The suite bites; it does not merely co-exist with the fix.
-
-**Origin (2026-08-03, operator report from `/opt/002-Claude-Partner-Network`):** a consumer
-`fw upgrade` printed `Pinned: v1.6.354 (behind v1.6.8)` and then `REFUSED  Consumer
-v1.6.354 is AHEAD of framework v1.6.8` in the same output. The header is not a
-lexicographic comparison — it is `[ "$project_version" = "$fw_version" ]`, so **every**
-mismatch renders as "behind". The operator-facing consequence is that the header tells you
-to upgrade at the exact moment the guard is refusing to, which points a reader at
-`--force-downgrade`. A downgrade did occur on that host (vendored 1.6.295 → 1.6.121,
-working-tree only). This task fixes the false direction label; T-2756 investigates
-whether the bootstrap auto-clone path also bypasses the T-1839 guard.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -223,52 +147,7 @@ whether the bootstrap auto-clone path also bypasses the T-1839 guard.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(bats tests/unit/t2755_upgrade_pin_line_direction.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/version_relation.bats tests/unit/test_upgrade_runtime_downgrade_guard.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-bash -n lib/upgrade.sh
-# the defect shape itself must be gone from the header
-! grep -q 'behind v${fw_version}' lib/upgrade.sh
-
 ## RCA
-
-**Symptom.** One `fw upgrade` run printed, two lines apart:
-`Pinned: v1.6.354 (behind v1.6.8)` and
-`REFUSED  Consumer v1.6.354 is AHEAD of framework v1.6.8`.
-On the reporting host a downgrade did occur (vendored 1.6.295 → 1.6.121).
-
-**Root cause.** The header was `[ "$project_version" = "$fw_version" ]` — an *equality*
-test with a *directional* label bolted onto its else-branch. It never computed direction,
-so every mismatch rendered "behind", including the ones the guard was about to refuse.
-
-**Why structurally allowed.** T-2713 had already established that this comparison cannot
-be done on version strings (VERSION is a counter that resets) and shipped
-`fw_version_relation` to replace `sort -V` at *three decision sites*. The header was not
-one of the three, because it was never classified as a decision site — it only prints.
-That is the gap: a line that prints a direction is making the same claim as a line that
-acts on one, and it reaches the operator first and louder. T-2713's own test
-(`version_relation.bats:47` "no decision site still open-codes sort -V") scanned for the
-old comparator; the header didn't have one to find, because it wasn't comparing at all.
-
-A second, quieter contributor: `bin/fw:688` sources `lib/version-relation.sh` with
-`2>/dev/null || true`. Any consumer of those functions that isn't reached through that
-line degrades silently. Found while fixing this — `lib_upgrade.bats:95` went red because
-the bats context sources `lib/upgrade.sh` alone. Now sourced defensively at
-`lib/upgrade.sh:8-16`.
-
-**Prevention.** Three layers, none of which is "remember to use the comparator":
-1. `tests/unit/t2755_upgrade_pin_line_direction.bats` — nine tests over five relations;
-   mutation-verified to fail when the `ahead` branch is collapsed back to "behind".
-2. The delegation seam test in that file greps `lib/upgrade.sh` for the call site *and*
-   for the old `behind v${fw_version}` shape, so re-inlining the defect inside
-   `do_upgrade` cannot pass against an orphaned renderer.
-3. The refusal suffix is derived from `fw_version_relation_should_refuse` rather than
-   restated, so the header and the guard read the same predicate. Divergence would now
-   require editing the predicate, not forgetting to mirror it.
-
-**Not fixed here.** Whether the `fw upgrade` bootstrap auto-clone re-invokes from a clone
-lacking the T-1839 guard — the operator's other claim — is T-2756. It is a different
-mechanism and unverified; asserting on it here would be guessing.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -331,10 +210,7 @@ mechanism and unverified; asserting on it here would be guessing.
 
 ## Updates
 
-### 2026-08-03T00:16:00Z — task-created [task-create-agent]
+### 2026-08-03T10:18:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2755-fw-upgrade-header-labels-any-version-mis.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2758-fw-upgrade-hard-fails-at-step-3-when-a-c.md
 - **Context:** Initial task creation
-
-### 2026-08-03T00:22:07Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
