@@ -4078,3 +4078,24 @@ X'` returning empty group."
   date: 2026-08-03
   context: Added via context agent
   application: TBD
+- id: L-536
+  learning: "A line that PRINTS a direction is a decision site, even though it only prints. T-2713 replaced sort -V with git ancestry at three sites that ACT on a version relation, and its guard test scans for the old comparator — but fw upgrade's header never compared at all (an equality test with a directional label on its else-branch), so it had no old comparator to find and was never classified as a site. It rendered 'behind' for every mismatch, including ones the guard was refusing, and reached the operator first and louder than the guard. When replacing an untrustworthy comparison, enumerate the sites that REPORT the answer, not only those that branch on it."
+  source: P-001
+  task: T-2755
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD
+- id: L-537
+  learning: "A guard that resolves the consumer's identity INSIDE the source under suspicion cannot convict that source: a stale/foreign framework is precisely the repo that lacks the consumer's commit, so the lookup fails — and 'lookup failed' shared a return value with 'nothing was recorded', whose safe default is proceed. Two states with opposite evidentiary weight must not share one return value; absence-of-evidence and evidence-of-absence need different relations before they can have different defaults. T-2762: consumer downgraded 1.6.295 -> 1.6.121 while the run reported success."
+  source: P-001
+  task: T-2762
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD
+- id: L-538
+  learning: "An end-to-end test that asserts only on exit status measures the host, not the code. T-2762's first draft passed its 'refuses' test and failed its 'allows' test BEFORE the fix existed, because on that host `fw upgrade` aborts at step 4c (global shim resolving into a stale framework repo) and sets exit 1 either way. Both verdicts were correct-looking and both were about something else. For any e2e test of a guard: control the environment the command reads (HOME, PATH, shim), and assert on the guard's OWN message, not on a non-zero exit that any unrelated failure can supply."
+  source: P-001
+  task: T-2762
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD

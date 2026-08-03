@@ -5658,3 +5658,30 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-2743: vendor self — ship the corrected v
 git add -A .context/handovers/ 2>/dev/null
 FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover" 2>&1 | tail -1
 git push origin t2539-staging t2539-sta'
+- timestamp: '2026-08-03T11:15:59Z'
+  task: 'T-2759'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2761'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2761*.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-2761: file the always-vendored-fw guard — upgrade source is unguarded
+
+Operator question: should upgrade '
+- timestamp: '2026-08-03T11:22:08Z'
+  task: 'T-2759'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2758'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2758: close — skeleton-before-writes fix verified, ACs/RCA filled
+
+Code fix landed in 826010dfa (directory skeleton moved to a new step 0). This
+comm'
+- timestamp: '2026-08-03T11:59:09Z'
+  task: 'T-2762'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2759'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2759: commit the completion move (active/ -> completed/)
+
+The file was moved on completion but never committed, leaving HEAD with the
+active/ copy and disk with t'

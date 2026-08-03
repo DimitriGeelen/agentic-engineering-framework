@@ -25454,3 +25454,101 @@ scan_id: R-86d3a3b3
 task_id: T-2744
 payload:
   task_file: .tasks/active/T-2744-triage-the-25-standing-red-tests-in-test.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T10:24:12Z'
+scan_id: R-88e3ffe2
+task_id: T-2755
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T10:24:12Z'
+scan_id: R-88e3ffe2
+task_id: T-2755
+payload:
+  task_file: .tasks/active/T-2755-fw-upgrade-header-labels-any-version-mis.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T11:20:24Z'
+scan_id: R-88369ca2
+task_id: T-2758
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T11:20:24Z'
+scan_id: R-88369ca2
+task_id: T-2758
+payload:
+  task_file: .tasks/active/T-2758-fw-upgrade-hard-fails-at-step-3-when-a-c.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T11:21:07Z'
+scan_id: R-85162899
+task_id: T-2761
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T11:21:07Z'
+scan_id: R-85162899
+task_id: T-2761
+payload:
+  task_file: .tasks/active/T-2761-fw-upgrade-should-refuse-to-run-a-consum.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-03T11:21:07Z'
+scan_id: RC-46bfc393
+task_id: T-2761
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-08-03T11:47:06Z'
+scan_id: R-ebb9f2b1
+task_id: T-2759
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T11:47:06Z'
+scan_id: R-ebb9f2b1
+task_id: T-2759
+payload:
+  task_file: .tasks/active/T-2759-fw-upgrade-silently-redirects-steps-5-10.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T12:03:01Z'
+scan_id: R-f48eaec6
+task_id: T-2762
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T12:03:01Z'
+scan_id: R-f48eaec6
+task_id: T-2762
+payload:
+  task_file: .tasks/active/T-2762-upgrade-guard-a-source-repo-that-cannot-.md
