@@ -169,6 +169,30 @@ The red one is **T-1805**: its stored block runs
 close, same as T-2632 and T-2634 did before T-2764 repaired them. Three instances now,
 all found by looking rather than by anyone tripping them.
 
+**3b. CORRECTION, same session, after close — the sample kept running and the rate is
+much worse than the 24-task figure above.** The background sweep reached **60 of 221**
+before it was stopped. Full log: `docs/reports/T-2765-review-queue-census.log`.
+
+    reached                          60 / 221   (27.1% of the queue)
+      NONE  no stored verification    9
+      PASS  block green              27
+      FAIL  block red                13
+      TIME  over budget              11
+
+**13 red, not 1.** Of the 40 tasks that had a block and finished, **roughly a third are
+red**: T-1805, T-1811, T-1843, T-1910, T-1928, T-1947, T-1951, T-1960, T-1961, T-1968,
+T-1971 (+2 whose ids the log's separator lines swallowed — read the log, not this list).
+
+Leaving the 1/19 figure above unamended would have been the exact failure this session
+has now hit three times: a number true of the slice measured, carried into prose as if it
+were true of the population. The honest reading is that the review queue's stored
+verification is **not** in good health, and one repaired instance (T-2764) was not the
+tail of the problem but the first sample from it.
+
+Not classified here — each one needs the wrong-vs-correctly-failing call individually,
+which is a task apiece and not this task's scope. T-2766 covers T-1805; the rest are
+unfiled and the log is the record.
+
 **4. A full sweep is a multi-hour job, which is itself the argument for rotation.**
 Four of the first 24 tasks (T-1792, T-1794, T-1795, T-1796) each run an orchestrator
 pytest suite that exceeds 90s. A daily rail cannot afford the queue in one pass; it can
