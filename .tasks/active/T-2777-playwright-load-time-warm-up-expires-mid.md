@@ -10,14 +10,14 @@ description: >
   cache has expired long before the parametrized test for that route executes, so
   the warm-up buys nothing beyond the first few tests.
 
-Evidence: /approvals, /approvals/content and /metrics FAIL the 5s cap inside the
+  Evidence: /approvals, /approvals/content and /metrics FAIL the 5s cap inside the
   suite, while the same three routes measure 1.38s, 0.90s and 2.75s against the 
   live server. The suite is reporting cold-cache cost under the name 
   'warm-load', which is a measurement defect, not a page defect. It also masks 
   the real ones — /timeline (T-2775) and /tasks (T-2776) are genuinely over cap 
   and are currently indistinguishable from these three in the output.
 
-Fix options to weigh, not a decided design: (a) re-warm per-test rather than 
+  Fix options to weigh, not a decided design: (a) re-warm per-test rather than 
   per-session; (b) measure the second of two consecutive gotos so the first pays
   the cold cost; (c) drop the pretence and assert a separate, higher cold-start 
   budget under an honest name. Whichever is chosen, the assertion message must 

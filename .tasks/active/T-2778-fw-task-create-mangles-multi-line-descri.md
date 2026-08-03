@@ -1,25 +1,13 @@
 ---
-id: T-2775
-name: "Watchtower /timeline renders 69.8MB of HTML with no bound"
+id: T-2778
+name: "fw task create mangles multi-line descriptions into unparseable YAML"
 description: >
-  The /timeline route returns 69,814,921 bytes (69.8 MB) in a single response, measured
-  directly off the Flask test client and confirmed against the live server. It renders
-  every session ever recorded, each with its full enriched tasks_touched/tasks_completed
-  lists, with no limit, pagination, or windowing. Template rendering alone is 6.5s
-  and _wrapper.html:root is invoked 1,714,776 times. This fails the 5s LOAD_CAP_MS
-  guard at 29.4s to domcontentloaded.
-
-  Found while fixing T-2774 (Watchtower / latency). Distinct defect, distinct cause:
-  T-2774 was per-request corpus re-parsing; this is unbounded output volume. A 70MB
-  page is not a latency problem that caching fixes — the bytes have to be produced
-  and shipped regardless. Sibling of the same class: /bvp at 5,374,898 bytes, which
-  already caused a SIGPIPE false-green in T-2743 because it overflows the 64KB pipe
-  buffer.
-
-  Fix shape is probably windowing (most-recent-N sessions with paging) rather than
-  caching. Note the size cap should be a guard in its own right — there is a height
-  guard (test_all_routes_height.py, 8000px) and a latency guard (LOAD_CAP_MS, 5s)
-  but no response-SIZE guard, which is why 70MB shipped unnoticed.
+  create-task.sh indents only the first line of --description when substituting into
+  the 'description: >' folded scalar, so any newline in the description emits continuation
+  lines at column 0. YAML ends the scalar there and parses the next paragraph as a
+  mapping, producing a ScannerError. Three sites share the defect: inception template,
+  default template, and the fallback heredoc. Instance: T-2775, filed this session,
+  flagged by audit as T-2069 class.
 
 status: started-work
 workflow_type: build
@@ -38,7 +26,7 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-03T19:18:51Z
+created: 2026-08-03T21:30:27Z
 last_update: '2026-08-03T21:45:13Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
@@ -66,7 +54,7 @@ bvp_scores_proposed:
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 3
       D4: 2
       F-RECALL: 0
@@ -74,46 +62,54 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2775: Watchtower /timeline renders 69.8MB of HTML with no bound
+# T-2778: fw task create mangles multi-line descriptions into unparseable YAML
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw task create --description` emitted frontmatter that YAML could not parse, whenever the
+description contained a blank line. Found via the audit WARN on T-2775 (filed earlier the
+same session). The defect is in the producer, present at three emission sites, and it has
+two outcomes — only one of which anything detects.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `/timeline` response size is bounded and the number is recorded before and after,
-      measured off the wire (`curl -w '%{size_download}'`) not estimated from the template
-- [ ] The bound is a deliberate, documented choice (most-recent-N with paging, or an
-      explicit windowing rule) — not a silent truncation. A user who has more history than
-      the window must be able to reach it, and must be able to tell that a window applies.
-- [ ] `/timeline` passes the existing 5s `LOAD_CAP_MS` guard in
-      `tests/playwright/test_all_routes_load_time.py` (currently 29,439ms)
-- [ ] The information the page exists to convey is preserved — verify the most-recent
-      sessions still render with their task lists, deltas, and emergency-run collapsing
-      intact. A page that is fast because it stopped saying anything is not fixed.
-- [ ] A response-SIZE guard exists, parametrized over all routes, sibling to the existing
-      height guard (`test_all_routes_height.py`, 8000px) and latency guard (`LOAD_CAP_MS`,
-      5s). This is the structural gap: 69.8 MB shipped unnoticed because size was the one
-      axis nothing measured, and L-429 (T-2040) already names unbounded pages as a
-      recurring class — the learning existed, the check did not.
-- [ ] The size guard is mutation-checked: confirm it fails against the current unbounded
-      `/timeline` before the fix, and passes after. A guard that has never been red proves
-      only that it is implemented, not that it is correct (L-530).
-- [ ] `/bvp` (5,374,898 bytes) is assessed against the same size guard and either brought
-      under it or given an explicit, recorded exemption with a reason. It is the same class
-      and it has already caused a false green once — its size overflows the 64KB pipe
-      buffer, which made `cmd | grep -q` exit 141 (SIGPIPE) and read as a failing check
-      (T-2743, L-387). Do not fix `/timeline` and leave its sibling unmeasured.
+- [x] Repro established BEFORE the fix: a `--description` containing a blank line produces
+      frontmatter that `yaml.safe_load` rejects. Recorded verbatim in `## RCA` with the
+      ScannerError message and the offending column. Mutation discipline: if the repro does
+      NOT fail on unfixed code, the premise is wrong and this task re-scopes (T-2776 pattern).
+      → Reproduced by driving the real `create-task.sh` against a scratch `TASKS_DIR`:
+      `ScannerError: while scanning a simple key … could not find expected ':'` at line 8.
+- [x] All three emission sites in `agents/task-create/create-task.sh` indent EVERY line of
+      the description, not just the first: inception template, default template, and the
+      fallback heredoc. Each site exercised by the test below — a fix verified at only the
+      default site would leave two live.
+      → `indent_block()` at both python sites; `DESCRIPTION_INDENTED` (awk) at the heredoc.
+- [x] Round-trip preserved, not merely parseable: the parsed `description` value contains
+      text from every paragraph of the input. Escaping a mangled field into an empty string
+      would also "parse" — that is the failure this AC excludes.
+      → This AC earned its keep: the inception path already "parsed" before the fix, while
+      silently truncating `description` to `'First paragraph.\n'` and injecting a junk key.
+- [x] `tests/unit/test_task_create_description_yaml.py` pins the contract and is mutation-checked
+      (reverting any one of the three sites turns the suite red).
+      → 5 passed. Each of the 3 mutations killed exactly one test, disjointly: inception,
+      build, fallback. No site is covered only incidentally by another site's test.
+- [x] T-2775's existing frontmatter is repaired in place with its description content
+      preserved, and `bin/fw audit --section structure` no longer emits the unparseable-YAML WARN.
+      → Repaired; audit structure section emits no frontmatter line and no `[FAIL]`.
+- [x] Corpus census: every task file under `.tasks/active/` and `.tasks/completed/` has
+      frontmatter that parses to a non-empty dict. Count of files scanned is reported, so the
+      denominator is visible rather than assumed.
+      → 2,765 scanned (312 active / 2,453 completed): 0 unparseable, 0 truncated. The census
+      predicate had to be widened first — see RCA; on the original predicate it read 1 of 5.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -213,6 +209,16 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/task-create/create-task.sh
+python3 -m pytest tests/unit/test_task_create_description_yaml.py -q > /tmp/.t2778-pytest.out 2>&1 && grep -q "5 passed" /tmp/.t2778-pytest.out
+# Both python emission sites must call indent_block, and the heredoc must use the pre-indented var.
+test "$(grep -c "indent_block(desc)" agents/task-create/create-task.sh)" = "2"
+grep -q '^\$DESCRIPTION_INDENTED$' agents/task-create/create-task.sh
+# Corpus census on BOTH predicates (parse failure AND silent truncation into junk keys)
+# runs as test_corpus_frontmatter_is_intact inside the pytest line above; this asserts the
+# test is actually present rather than trusting the suite's name.
+grep -q "def test_corpus_frontmatter_is_intact" tests/unit/test_task_create_description_yaml.py
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -228,6 +234,62 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw audit` WARNed that T-2775 had unparseable YAML frontmatter. Reproduced by
+driving the real `create-task.sh` against a scratch `TASKS_DIR` with a three-paragraph
+`--description`:
+
+```
+ScannerError: while scanning a simple key
+  in "<unicode string>", line 8, column 1:
+    Third paragraph.
+    ^
+could not find expected ':'
+  in "<unicode string>", line 10, column 1:
+    status: captured
+```
+
+**Root cause:** `description: >` is a folded scalar — every line of its value must be
+indented. All three emission sites substituted with `'description: >\n  ' + desc`, indenting
+only the first line. Any newline in the description therefore ended the scalar, and YAML read
+the following paragraphs as frontmatter.
+
+**The part that matters — the failure has two outcomes, and the loud one is the lucky one:**
+
+| continuation paragraph | outcome | detected? |
+|---|---|---|
+| contains `word: word` | parses as a junk top-level key; `description` silently truncated to its first line | **no** — valid YAML, audit sees nothing |
+| contains no colon | ScannerError | yes — audit WARNs |
+
+So the observable rate understates the real rate, and does so *by construction*: the better
+formed the prose, the likelier it contains a colon, and the likelier the corruption is silent.
+My first census used the loud predicate — "does `yaml.safe_load` raise?" — and returned **1 of
+2,765**. Re-run on "did a description paragraph become a frontmatter key?", the same corpus
+returned **5**: T-2775 (loud), plus T-2776 ×2, T-2777, and T-452 (all silent, all invisible).
+T-452 shipped in this state and has sat in `completed/` unnoticed ever since.
+
+**Why structurally allowed:** the diagnosis was already written down — in the audit's own
+warning text: *"T-2069 class (folded scalar 'description: >' terminated by blank line then
+col-0 lines parsed as keys; quote the description string or move structured body out of
+frontmatter)"*. The class was named, the mechanism was understood precisely enough to be
+described in one sentence, and the mitigation offered was advice **to the author of the
+description**. Nobody fixed the producer that generates the malformed block. This is the L-429
+shape again (unbounded pages named as a recurring class while the check went unbuilt): a
+learning recorded at the detector does not travel to the emitter on its own.
+
+Second, the detector inherited the same blind spot as my census — `audit.sh:699` fires only on
+the parse error, so the silent variant is out of its reach. A check written from the symptom
+that was noticed can only ever find the symptom that was noticed.
+
+**Prevention:**
+1. `tests/unit/test_task_create_description_yaml.py` — drives the real script at all three
+   sites and asserts **round-trip content**, not parseability. Mutation-checked: each of the
+   three reversions kills exactly one test, disjointly. Asserting "it parses" would have
+   passed against the pre-fix inception path, which parsed and lost two thirds of the value.
+2. A standing corpus census in the same file, asserted on **both** predicates, so a future
+   regression cannot hide in the silent half.
+3. Follow-up filed for the audit detector, which still only sees the loud variant — the fix
+   here stops this producer, but any other writer of task frontmatter has the same opening.
 
 ## Evolution
 
@@ -276,10 +338,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-03T19:18:51Z — task-created [task-create-agent]
+### 2026-08-03T21:30:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2775-watchtower-timeline-renders-698mb-of-htm.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2778-fw-task-create-mangles-multi-line-descri.md
 - **Context:** Initial task creation
-
-### 2026-08-03T19:30:24Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

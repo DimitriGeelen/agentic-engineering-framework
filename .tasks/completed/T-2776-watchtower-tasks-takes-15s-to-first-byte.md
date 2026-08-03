@@ -7,13 +7,13 @@ description: >
   at the OLD 15s Playwright goto timeout — which is why it read as flaky rather than
   slow (T-2774 RCA).
 
-Found while fixing T-2774. Not the same cause: T-2774's fixes (CSafeLoader 
+  Found while fixing T-2774. Not the same cause: T-2774's fixes (CSafeLoader 
   frontmatter parsing, shared-cache reuse in arcs.py) took / from 57.8s cold to 
   1.5s and /approvals to 1.4s, but did not move /tasks. Needs its own profile — 
   do not assume it is the same corpus-scan shape without measuring, which is the
   mistake the T-2774 thread already made once.
 
-Profile with the route profiler pattern: cProfile around a Flask test-client 
+  Profile with the route profiler pattern: cProfile around a Flask test-client 
   GET, sort by cumulative. That is what located T-2774's cause (6,243 
   yaml.safe_load calls = 64 of 70.9 profiled seconds) in one pass.
 

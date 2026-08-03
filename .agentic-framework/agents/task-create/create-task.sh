@@ -448,9 +448,20 @@ e = os.environ
 with open(e['TC_TEMPLATE']) as f:
     t = f.read()
 name, desc = sys.argv[1], sys.argv[2]
+def indent_block(s):
+    # T-2778: 'description: >' is a folded scalar, so EVERY line of the value must be
+    # indented, not just the first. Indenting only the first line ends the scalar at the
+    # first newline; YAML then reads the next paragraph as frontmatter. That fails two
+    # different ways, and the loud one is the lucky one: a paragraph containing 'word: word'
+    # parses as a junk top-level key and SILENTLY truncates description to its first line
+    # (no error, audit sees valid YAML), while a paragraph without a colon raises
+    # ScannerError and is caught. Found 5 corpus instances -- 1 loud, 4 silent.
+    # Blank lines are emitted bare: whitespace-only lines inside a block scalar are
+    # separators, and padding them to the indent width leaves trailing spaces.
+    return '\n'.join(('  ' + ln) if ln.strip() else '' for ln in s.split('\n'))
 t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
 t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
-t = t.replace('description: >', 'description: >\n  ' + desc, 1)
+t = t.replace('description: >', 'description: >\n' + indent_block(desc), 1)
 t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
 t = t.replace('horizon: now', 'horizon: ' + e['TC_HORIZON'])
 t = t.replace('owner:', 'owner: ' + e['TC_OWNER'], 1)
@@ -474,9 +485,20 @@ e = os.environ
 with open(e['TC_TEMPLATE']) as f:
     t = f.read()
 name, desc = sys.argv[1], sys.argv[2]
+def indent_block(s):
+    # T-2778: 'description: >' is a folded scalar, so EVERY line of the value must be
+    # indented, not just the first. Indenting only the first line ends the scalar at the
+    # first newline; YAML then reads the next paragraph as frontmatter. That fails two
+    # different ways, and the loud one is the lucky one: a paragraph containing 'word: word'
+    # parses as a junk top-level key and SILENTLY truncates description to its first line
+    # (no error, audit sees valid YAML), while a paragraph without a colon raises
+    # ScannerError and is caught. Found 5 corpus instances -- 1 loud, 4 silent.
+    # Blank lines are emitted bare: whitespace-only lines inside a block scalar are
+    # separators, and padding them to the indent width leaves trailing spaces.
+    return '\n'.join(('  ' + ln) if ln.strip() else '' for ln in s.split('\n'))
 t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
 t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
-t = t.replace('description: >', 'description: >\n  ' + desc, 1)
+t = t.replace('description: >', 'description: >\n' + indent_block(desc), 1)
 t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
 t = t.replace('workflow_type:', 'workflow_type: ' + e['TC_WORKFLOW_TYPE'], 1)
 t = t.replace('owner:', 'owner: ' + e['TC_OWNER'], 1)
@@ -492,12 +514,15 @@ with open(e['TC_FILEPATH'], 'w') as f:
 " "$NAME" "$DESCRIPTION"
 else
     # Fallback: minimal inline template (only if default.md missing)
+    # T-2778: indent every line of the description, not just the first — see indent_block()
+    # above for why the single-indent form corrupts multi-paragraph descriptions.
+    DESCRIPTION_INDENTED=$(printf '%s\n' "$DESCRIPTION" | awk '{ if (length($0)) print "  " $0; else print "" }')
     cat > "$FILEPATH" << EOF
 ---
 id: $TASK_ID
 name: "$NAME"
 description: >
-  $DESCRIPTION
+$DESCRIPTION_INDENTED
 status: $STATUS
 workflow_type: $WORKFLOW_TYPE
 horizon: $HORIZON

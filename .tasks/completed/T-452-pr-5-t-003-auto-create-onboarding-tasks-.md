@@ -4,7 +4,7 @@ name: "PR #5: T-003: Auto-create onboarding tasks after fw init"
 description: >
   OneDev PR #5 (branch: fix/T-003-auto-onboarding-tasks)
 
-Replaces static Choose your path menu with auto-detection: existing projects get
+  Replaces static Choose your path menu with auto-detection: existing projects get
   3 onboarding tasks (ingest, fabric, handover), new projects get inception 
   task. Idempotent on re-init.
 
