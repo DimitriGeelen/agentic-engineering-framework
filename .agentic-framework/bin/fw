@@ -2090,6 +2090,7 @@ else:
                     ahead)       reasons="v$cversion is AHEAD of framework v$FW_VERSION" ;;
                     diverged)    reasons="v$cversion has DIVERGED from framework v$FW_VERSION" ;;
                     undecidable) reasons="v$cversion vs v$FW_VERSION — relation undetermined" ;;
+                    foreign-source) reasons="v$cversion — this framework does not contain the consumer's commit" ;;
                 esac
                 if [[ "$hook_info" == missing* ]]; then
                     [ -n "$reasons" ] && reasons="$reasons, "
@@ -2107,6 +2108,17 @@ else:
                         echo -e "         Cannot order these: ${FW_VERSION_RELATION_REASON}."
                         echo -e "         Upgrade is NOT blocked on this — it records version_sha, making the next check decidable."
                         echo -e "         Run: fw upgrade $consumer_dir"
+                        ;;
+                    foreign-source)
+                        # T-2762. Without this branch the relation fell through to
+                        # the default below and doctor printed "Run: fw upgrade" —
+                        # recommending the one command that is about to refuse, from
+                        # the one source that must not perform it. The remedy is to
+                        # change WHICH fw runs, not to run this one harder.
+                        echo -e "         DO NOT run \`fw upgrade $consumer_dir\` from here — ${FW_VERSION_RELATION_REASON}."
+                        echo -e "         Check which fw is running: readlink -f \"\$(command -v fw)\""
+                        echo -e "         Upgrade from the consumer's own .agentic-framework/bin/fw, or from an"
+                        echo -e "         upstream checkout containing the consumer's commit."
                         ;;
                     *)
                         echo -e "         Run: fw upgrade $consumer_dir"

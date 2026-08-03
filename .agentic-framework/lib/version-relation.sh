@@ -94,6 +94,28 @@ fw_version_relation() {
     if [ -z "$cref" ]; then
         # No commit to compare. Deliberately NOT falling back to string order —
         # that fallback is the entire defect. Say so instead.
+        #
+        # T-2762: but "no commit to compare" is TWO different states, and
+        # collapsing them is how a stale source downgrades a consumer.
+        #
+        #   (a) csha empty      — legacy pin, predates T-2713. Genuinely no
+        #                         evidence. Proceed-with-warning is right; refusing
+        #                         would strand every legacy consumer.
+        #   (b) csha recorded   — the consumer TOLD us its commit and this repo
+        #       but unresolvable   cannot find it. That is not missing evidence, it
+        #                         is evidence ABOUT THE SOURCE: a repo that does
+        #                         not contain the consumer's history cannot be the
+        #                         origin of its code, so it must not overwrite it.
+        #
+        # (b) is the field failure (2026-08-03: consumer 1.6.295 downgraded to
+        # 1.6.121 by a stale checkout). Before this split it landed in (a)'s bucket
+        # and proceeded on a WARN. Note the relation is computed INSIDE $froot —
+        # the repo under suspicion — so a foreign source is precisely the one that
+        # cannot see far enough to convict itself.
+        if [ -n "$csha" ]; then
+            _vr_set foreign-source "consumer recorded version_sha ${csha:0:12} but this source repo does not contain that commit — it cannot be the origin of the consumer's code"
+            return 0
+        fi
         _vr_set undecidable "no version_sha recorded and no tag v${cversion} in framework repo; VERSION is a resetting counter so string order cannot decide"
         return 0
     fi
@@ -152,10 +174,25 @@ fw_record_version_sha() {
 
 # Should a guard refuse to proceed for this relation?
 # ahead/diverged  -> always refuse (a real downgrade risk)
+# foreign-source  -> refuse by default (T-2762); bypass FW_ALLOW_FOREIGN_SOURCE=1
 # undecidable     -> operator-configurable, default proceed-with-warning
+#
+# T-2762 note on the two defaults pointing opposite ways: that asymmetry is the
+# point. `undecidable` means we learned nothing and defaults to proceed so legacy
+# consumers keep upgrading. `foreign-source` means we learned something bad about
+# the source and defaults to refuse. Same "no commit to compare" surface, opposite
+# evidentiary weight.
+#
+# Bypass is an env var, not a flag (L-399 / T-1890): this predicate is also reached
+# from `fw doctor`'s fleet badge and from wrapper/cron invocations that have no
+# flag surface, so a flag-only contract would be honoured on one path and rejected
+# on the others — the exact producer/consumer split T-1890 was filed for.
 fw_version_relation_should_refuse() {
     case "$1" in
         ahead|diverged) return 0 ;;
+        foreign-source)
+            if [ "${FW_ALLOW_FOREIGN_SOURCE:-0}" = "1" ]; then return 1; else return 0; fi
+            ;;
         undecidable)
             if [ "${FW_UNDECIDABLE_VERSION_PROCEED:-1}" = "1" ]; then return 1; else return 0; fi
             ;;
