@@ -136,21 +136,24 @@ test "$(sha256sum vendor/designer/aef-workflow-designer-0.7.0.html | cut -d' ' -
 served=$(curl -sf "$(bin/fw watchtower url)/designer/app" | sha256sum | cut -d' ' -f1); pinned=$(python3 -c "import yaml;print(yaml.safe_load(open('policy/designer-pin.yaml'))['sha256'])"); [ -n "$pinned" ] && [ "$served" = "$pinned" ]
 test "$(grep -c aefApplyAnnotations vendor/designer/aef-workflow-designer-0.7.0.html)" = "2"
 python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py tests/web/test_designer_overlay.py -q
-out=$(curl -sf "$(bin/fw watchtower url)/api/overlay?id=aef-task-lifecycle"); grep -q '"annotations"' <<<"$out" && grep -q '"tone"' <<<"$out"
+# T-2764: classified (a) WRONG — superseded shape, repairable. The `annotations`/`tone`
+# adaptation this line asserted was T-2632's own deliverable, and T-2635 deliberately
+# REVERTED it: 832 confirmed the `nodes/severity/text` shape canonical at rail 230, and
+# T-2635 retired the alias from the emitter (it stays accepted on intake until 0.8.0).
+# So this asserted a deliverable that was removed on purpose, with the peer's agreement —
+# not a regression. Evidence: T-2635 Context ("T-2629's stored Verification greps
+# ['annotations'] → back to ['nodes']") — it repaired the sibling's line and missed this
+# one, the very task that introduced the assertion. Until now the corpus held a straight
+# contradiction: T-2635 asserts `! grep -q '"annotations"'` on the same endpoint.
+# Repaired shape-agnostically: the canonical shape is T-2635's deliverable to assert, not
+# this task's. What T-2632 durably shipped is the seam serving renderable annotations, so
+# that is what this asserts — and it survives the 0.8.0 alias retirement either way.
+curl -sf "$(bin/fw watchtower url)/api/overlay?id=aef-task-lifecycle" -o /tmp/.t2632-overlay.json && python3 -c "import json;d=json.load(open('/tmp/.t2632-overlay.json'));items=d.get('nodes') or d.get('annotations') or [];assert d.get('type')=='aef:annotate',d.get('type');assert items,'no renderable entries';assert all(('uid' in i and 'badge' in i) for i in items)"
 # T-2763: was `= "3"`. Second G-015 in this same block — `latest` is a revision counter
 # that only ever moves (now 6). "The draft's current revision is 3" was true the day this
 # shipped and false at the next save. What T-2632 durably established is that the revision
 # it created exists and was not rolled back, so assert the floor, not the moment.
 test "$(python3 -c "import json; print(json.load(open('.context/designer/projects/draft-trigger-handling/meta.json'))['latest'])")" -ge 3
-# T-2763: NOT REPAIRED — classification pending, deliberately left red.
-# The line below expects `"annotations"` + `"tone"` from /api/overlay. The endpoint is
-# healthy (200, valid JSON) but now returns `{"type":"aef:annotate","nodes":[...]}`.
-# That is a CONTRACT change, not an expired global, so it is not the G-015 class this
-# sweep is repairing. It is either (a) wrong — pinned a shape superseded by the T-2634
-# wire-shape convergence, repairable — or (b) correctly failing — a real regression in
-# the overlay payload. Those need opposite responses and the evidence to choose is
-# T-2634's convergence decision. Editing it before that read would be a bypass wearing
-# the costume of a repair (832 RAIL-409). Tracked as T-2764.
 
 ## RCA
 

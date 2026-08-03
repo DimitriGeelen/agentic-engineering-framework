@@ -153,7 +153,15 @@ PROFILES — no template change needed).
 #
 grep -q 'value="if_gw_outcome"' .context/designer/projects/aef-inception-flow/v1.bpmn
 python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py tests/web/test_designer_overlay.py -q
-out=$(curl -sf "$(bin/fw watchtower url)/api/overlay?id=aef-inception-flow"); grep -q '"annotations"' <<<"$out"
+# T-2764: classified (a) WRONG — superseded shape, repairable. Same cause as T-2632's
+# line: T-2635 flipped the wire shape back to `nodes/severity/text` with 832's rail-230
+# confirmation and retired the alias from the emitter, then re-pointed only T-2629's
+# stored Verification. This one and T-2632's were left asserting the retired alias.
+# T-2763's G-015 sweep did not catch it either — that sweep's population was defined by
+# the always-moving-global shape, and this is a superseded-contract shape in the same
+# blocks. Repaired shape-agnostically: T-2635 owns the canonical-shape assertion; what
+# T-2634 shipped is profile #2 serving renderable annotations for the inception map.
+curl -sf "$(bin/fw watchtower url)/api/overlay?id=aef-inception-flow" -o /tmp/.t2634-overlay.json && python3 -c "import json;d=json.load(open('/tmp/.t2634-overlay.json'));items=d.get('nodes') or d.get('annotations') or [];assert d.get('type')=='aef:annotate',d.get('type');assert items,'no renderable entries';assert all(('uid' in i and 'badge' in i) for i in items)"
 out=$(curl -sf "$(bin/fw watchtower url)/designer/overlay?id=aef-inception-flow"); grep -q 'aef:ready' <<<"$out"
 
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
