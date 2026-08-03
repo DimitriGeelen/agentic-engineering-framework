@@ -2,13 +2,22 @@
 id: T-2776
 name: "Watchtower /tasks takes 15s to first byte on a warm server"
 description: >
-  Measured 15.008s time-to-first-byte against the live Watchtower with warm caches, for a 662,916-byte response. Exceeds the 5s LOAD_CAP_MS guard by 3x and sits exactly at the OLD 15s Playwright goto timeout — which is why it read as flaky rather than slow (T-2774 RCA).
+  Measured 15.008s time-to-first-byte against the live Watchtower with warm caches,
+  for a 662,916-byte response. Exceeds the 5s LOAD_CAP_MS guard by 3x and sits exactly
+  at the OLD 15s Playwright goto timeout — which is why it read as flaky rather than
+  slow (T-2774 RCA).
 
-Found while fixing T-2774. Not the same cause: T-2774's fixes (CSafeLoader frontmatter parsing, shared-cache reuse in arcs.py) took / from 57.8s cold to 1.5s and /approvals to 1.4s, but did not move /tasks. Needs its own profile — do not assume it is the same corpus-scan shape without measuring, which is the mistake the T-2774 thread already made once.
+Found while fixing T-2774. Not the same cause: T-2774's fixes (CSafeLoader 
+  frontmatter parsing, shared-cache reuse in arcs.py) took / from 57.8s cold to 
+  1.5s and /approvals to 1.4s, but did not move /tasks. Needs its own profile — 
+  do not assume it is the same corpus-scan shape without measuring, which is the
+  mistake the T-2774 thread already made once.
 
-Profile with the route profiler pattern: cProfile around a Flask test-client GET, sort by cumulative. That is what located T-2774's cause (6,243 yaml.safe_load calls = 64 of 70.9 profiled seconds) in one pass.
+Profile with the route profiler pattern: cProfile around a Flask test-client 
+  GET, sort by cumulative. That is what located T-2774's cause (6,243 
+  yaml.safe_load calls = 64 of 70.9 profiled seconds) in one pass.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,8 +35,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T19:19:39Z
-last_update: 2026-08-03T19:19:39Z
-date_finished: null
+last_update: 2026-08-03T21:06:58Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,6 +47,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-03T19:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-03T19:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2776: Watchtower /tasks takes 15s to first byte on a warm server
@@ -50,8 +87,29 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The 15.0s figure is re-established on a **quiet system** before anything is built on
+      it. L-443 (T-2083): perf measurements must be steady-state, not contention-amplified.
+      The original reading was taken moments after a 7.5-minute Playwright run and with a
+      background sampler in flight, so it is a suspect number until re-measured. Record
+      several runs with system load alongside. If `/tasks` turns out to be fast when idle,
+      say so and re-scope this task rather than fixing a phantom — the T-2774 thread
+      already spent a cycle on a diagnosis built from one bad measurement.
+      → **The premise is false. `/tasks` is not slow.** Re-measured at load average 8.19
+        (i.e. NOT a quiet system — the reading is if anything pessimistic): 5 consecutive
+        runs gave **3.70s / 0.147s / 0.162s / 0.140s / 0.295s**, response 666,407 bytes.
+        A second pass gave 1.85s cold → **0.139s warm**. The route answers in under
+        two-tenths of a second. The original 15.008s was contention amplification, exactly
+        the L-443 class, measured while a Playwright suite and a background sampler were
+        both in flight.
+- [x] ~~Cause named by profile~~ — **moot: there is no defect to profile.** Not run, and
+      deliberately so; profiling a route that answers in 0.14s would have manufactured a
+      cause for a problem that does not exist.
+- [x] ~~First-byte time brought under the 5s `LOAD_CAP_MS` guard~~ — **already under it**,
+      by a factor of ~35 warm and ~1.4 cold. Nothing to bring.
+- [x] ~~`/tasks` passes the load-time suite~~ — its failure there is T-2777's measurement
+      defect, not a property of this route. Re-pointed rather than fixed here.
+- [x] ~~Board and list views unchanged~~ — **moot: no change was made.** No code was
+      touched under this task.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -85,6 +143,12 @@ date_finished: null
 -->
 
 ## Verification
+# The premise of this task was that /tasks is slow. It is not. This asserts the
+# finding that closed it: first byte well under the 5s LOAD_CAP_MS budget. One
+# warming request, then the measured one — a cold cache is legitimate cost, not
+# the thing this records. Single line: the extractor runs each line as its own
+# command and shreds a multi-line python -c (learned on T-2774).
+curl -sf -o /dev/null -m 60 "$(bin/fw watchtower url)/tasks" && python3 -c "import time,urllib.request,sys; u=sys.argv[1]+'/tasks'; t0=time.perf_counter(); urllib.request.urlopen(u,timeout=60).read(); d=time.perf_counter()-t0; print(f'/tasks {d:.3f}s'); sys.exit(0 if d < 5.0 else 1)" "$(bin/fw watchtower url)"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -167,6 +231,67 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+## Recommendation
+
+**Recommendation:** GO — close as NOT-A-DEFECT. The filing was wrong; `/tasks` is fast.
+
+**Rationale:** I filed this on a 15.008s measurement taken while a 7.5-minute Playwright
+suite had just finished and a background sampler was still running. Re-measured at load
+average 8.19 — deliberately not a quiet system, so the number is if anything pessimistic —
+`/tasks` returns first byte in **0.14s warm**, 1.85–3.70s cold. It is under the 5s
+`LOAD_CAP_MS` guard by a wide margin and needs no work.
+
+The AC that caught this was written before the measurement, precisely because L-443
+(T-2083) already names contention-amplified perf readings as a known class, and because
+the T-2774 thread had just spent a cycle on a diagnosis built from one bad measurement.
+Writing the falsification condition into the AC *first* is what made the phantom cheap —
+one measurement instead of a profile-and-fix cycle against a route that was never slow.
+
+**This also corrects my own report from the previous session.** I said two of the five
+load-time failures were genuine (T-2775, T-2776) and three were the measurement defect.
+That was wrong: **only `/timeline` (T-2775) is genuine**, and four of five are T-2777's
+measurement defect. Re-measured directly, every other route is comfortably under cap —
+`/metrics` 3.00s, `/approvals` 1.00s, `/approvals/content` 0.97s, `/bvp` 1.45s.
+`/timeline` survives because its defect is **size** (69,836,661 bytes, confirmed on two
+separate passes), and size cannot be contention-amplified the way latency can.
+
+**Evidence:**
+- 5 consecutive runs, load avg 8.19: 3.70s / 0.147s / 0.162s / 0.140s / 0.295s
+- Second independent pass: 1.850s cold → 0.139s warm, 666,407 bytes
+- Comparison sweep of all previously-"failing" routes, cold → warm:
+  `/` 3.03→1.67s · `/tasks` 1.85→0.14s · `/metrics` 3.14→3.00s · `/approvals` 1.05→1.00s ·
+  `/approvals/content` 0.99→0.97s · `/bvp` 1.58→1.45s · `/timeline` 3.37→2.98s
+- No source file was modified under this task.
+
+## RCA (measurement defect, not a product defect)
+
+**Symptom.** `/tasks` reported at 15.008s first byte; filed as a slow-route bug.
+
+**Root cause.** The measurement was taken during heavy contention — immediately after a
+7.5-minute Playwright run, with a 16-sample background curl loop still in flight, on a box
+already at load average ~8. The route itself costs 0.14s warm.
+
+**Why structurally allowed.** Two things, and the second is the interesting one.
+
+L-443 already names this class ("perf measurements must be steady-state, not
+contention-amplified"). It surfaced in the `fw work-on` briefing for this very task — but
+*after* the task was filed. The knowledge was in the system and reached me one step too
+late to prevent the filing; it arrived in time only to prevent the fix.
+
+More usefully: I took the 15.008s reading in the same batch as `/timeline`'s 69.8 MB and
+treated both as equally solid, because they came out of one command. But they are not
+equally solid — **a size measurement is contention-invariant and a latency measurement is
+not.** Bundling both into one sweep made them look like observations of the same quality.
+There was no step that asked which numbers in the batch were load-sensitive.
+
+**Prevention.** The durable form is the AC pattern that actually worked here: when a task's
+premise is a performance number, make "re-establish the number under controlled conditions,
+and re-scope if it does not hold" the *first* acceptance criterion, ahead of any fix. That
+converts a possible phantom from a fix-cycle into a single measurement. Recorded as a
+learning against this task rather than as new tooling — a lint cannot tell which of two
+numbers in a batch was load-sensitive, but an author asking "is this quantity
+contention-invariant?" can.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -218,3 +343,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2776-watchtower-tasks-takes-15s-to-first-byte.md
 - **Context:** Initial task creation
+
+### 2026-08-03T21:06:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
