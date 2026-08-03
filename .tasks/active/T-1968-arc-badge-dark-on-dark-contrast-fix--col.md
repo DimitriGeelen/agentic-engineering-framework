@@ -142,7 +142,12 @@ Fix (user-chosen "subtle pill, brighter text"): change `color: var(--pico-second
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-WT=$(bin/fw watchtower url); out=$(curl -sf "$WT/" 2>&1); echo "$out" | awk '/\.arc-badge \{/,/^[[:space:]]*\}/' | grep -q 'color: var(--pico-color);'
+# T-2771: two independent defects in one line. (1) It piped a 375,353-byte page
+# through awk|grep -q → SIGPIPE/141 (T-2743). (2) It asserted `var(--pico-color)`,
+# which is T-1968's OWN v1 fix — the CSS comment at that selector records that v1
+# resolved to the Pico link colour inside an <a> and was replaced by
+# --pico-secondary-inverse. The line pinned the value its task superseded.
+WT=$(bin/fw watchtower url); curl -sf "$WT/" -o /tmp/.t1968-wt.html && awk '/\.arc-badge \{/,/^[[:space:]]*\}/' /tmp/.t1968-wt.html | grep -q 'color: var(--pico-secondary-inverse);'
 WT=$(bin/fw watchtower url); test $(curl -sf "$WT/tasks" 2>&1 | grep -c 'class="arc-badge"') -ge 1
 
 ## RCA

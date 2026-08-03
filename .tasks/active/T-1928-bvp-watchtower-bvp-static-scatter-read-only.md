@@ -95,7 +95,11 @@ First split-child of T-NEW-12 (handoff `needs-split` because novel-mechanism: li
 test -f web/blueprints/bvp.py
 test -f web/templates/bvp.html
 grep -q "bvp_bp\|web.blueprints.bvp" web/blueprints/__init__.py
-out=$(curl -sf "$(bin/fw watchtower url)/bvp" 2>&1); echo "$out" | grep -qi "quadrant\|scatter"
+# T-2771: was `out=$(curl ... /bvp); echo "$out" | grep -qi ...`. /bvp renders at
+# 5,366,599 bytes; grep -q matches early and closes the pipe while echo is still
+# writing, so echo takes SIGPIPE and the line exits 141 under pipefail (T-2743).
+# The content was present all along (33 matches). Redirect to a file instead.
+curl -sf "$(bin/fw watchtower url)/bvp" -o /tmp/.t1928-bvp.html && grep -qi "quadrant\|scatter" /tmp/.t1928-bvp.html
 out=$(bin/fw test playwright -- tests/playwright/test_bvp_scatter.py 2>&1); grep -qE '[0-9]+ passed' <<<"$out" && ! grep -qE '[0-9]+ failed' <<<"$out"
 
 ## Recommendation

@@ -174,7 +174,9 @@ The completion-threshold (≥0.80) plus the recommendation-present filter keeps 
 
 python3 -c "import ast; ast.parse(open('web/blueprints/approvals.py').read())"
 bats tests/unit/approvals_close_ready_arcs.bats
-FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_approvals_arc_closure_section.py -q
+# T-2771: was `FW_TEST_PORT=3000` — same foreign-Watchtower defect as T-1960.
+# See CLAUDE.md §Watchtower Port: the port is per-project, never a literal.
+FW_TEST_PORT="$(bin/fw watchtower port)" python3 -m pytest tests/playwright/test_approvals_arc_closure_section.py -q
 WT=$(bin/fw watchtower url); out=$(curl -s "$WT/approvals" 2>&1); [[ "$out" == *"approvals"* ]]
 ## RCA
 

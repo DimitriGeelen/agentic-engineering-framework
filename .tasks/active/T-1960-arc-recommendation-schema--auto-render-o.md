@@ -175,7 +175,10 @@ T-1960 closes that gap: extend the existing `extract_recommendation` parser (web
 python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
 python3 -c "import ast; ast.parse(open('web/shared.py').read())"
 bats tests/unit/extract_recommendation_close_keep_open.bats
-FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_close_recommendation_panel.py -q
+# T-2771: was `FW_TEST_PORT=3000`. Port 3000 on this host is a different project
+# entirely (pid 1341537; ours is 3001) and it answers 200 — so this suite was
+# driving a foreign Watchtower, the exact T-2732 origin failure. Resolve the port.
+FW_TEST_PORT="$(bin/fw watchtower port)" python3 -m pytest tests/playwright/test_arc_close_recommendation_panel.py -q
 WT=$(bin/fw watchtower url); out=$(curl -s "$WT/arcs/value-prioritisation/close" 2>&1); [[ "$out" == *"arc-close-hdr"* ]]
 ## RCA
 

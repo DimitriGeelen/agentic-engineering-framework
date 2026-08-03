@@ -55,9 +55,21 @@ _run_hook() {
     [ "$status" -eq 0 ]
 }
 
-@test "T-1843: pre-push hook VERSION bumped to 1.4" {
-    run grep -q "^# VERSION=1.4" .git/hooks/pre-push
+# T-2771: was `grep -q "^# VERSION=1.4"`. The hook's VERSION is designed to be bumped;
+# pinning equality against a value that only ever moves forward is the G-015
+# always-moving-value class, and it went red the moment the hook reached 1.5 — while
+# every behavioural case below (3-7) kept passing, which is the tell that the hook was
+# fine and the assertion was wrong. T-2763's G-015 sweep ran over stored `## Verification`
+# blocks and could not see this one, because it lives in a bats file.
+#
+# The intent worth keeping is "T-1843's bump happened and has not been rolled back", so
+# the assertion is now monotonic: VERSION >= 1.4, checked by version-sort rather than
+# string equality.
+@test "T-1843: pre-push hook VERSION is at least 1.4 (monotonic, not pinned)" {
+    run bash -c "grep -oE '^# VERSION=[0-9]+(\.[0-9]+)*' .git/hooks/pre-push | head -1 | cut -d= -f2"
     [ "$status" -eq 0 ]
+    [ -n "$output" ]
+    printf '%s\n%s\n' "1.4" "$output" | sort -V -C
 }
 
 # --- Case 1: forward-in-time VERSION decrease (tag-counter reset) — ALLOWED ---

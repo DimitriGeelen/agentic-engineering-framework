@@ -88,7 +88,12 @@ Concrete instance discovered 2026-05-13 in T-1810 follow-up triage: Group C task
 
 grep -q "REVIEWER" CLAUDE.md
 grep -q "REVIEWER.*conversion rule\|REVIEW.*REVIEWER.*re-class\|conversion.*REVIEW\|reviewer.*verifiable" CLAUDE.md
-bin/fw verify-acs T-1811 --verbose 2>&1 | grep -q "Reviewer"
+# T-2771: was `bin/fw verify-acs T-1811 --verbose 2>&1 | grep -q "Reviewer"`.
+# verify-acs exits 1 by design while REVIEW ACs are pending, and pipefail returns the
+# pipeline's last non-zero status — the producer's — so the line failed with rc=1 even
+# though the output does contain "Reviewer". The assertion was about content; the exit
+# code it inherited was about workflow state. Capture, then assert.
+out=$(bin/fw verify-acs T-1811 --verbose 2>&1 || true); echo "$out" | grep -q "Reviewer"
 
 ## RCA
 

@@ -210,7 +210,10 @@ python3 -c "import lib.reviewer.dispatch_cli"
 # bin/fw syntax clean
 bash -n bin/fw
 # FW_REVIEWER_IN_DISPATCH=1 sentinel guard
-out=$(FW_REVIEWER_IN_DISPATCH=1 python3 -m lib.reviewer.dispatch_cli T-1951 2>&1); echo "$out" | grep -q "FW_REVIEWER_IN_DISPATCH"
+# T-2771: the guard under test exits 3 on purpose (recursive --dispatch refused).
+# `out=$(cmd)` is itself the command `set -e` judges, so the line died at the
+# assignment with rc=3 and never reached the grep that was the actual assertion.
+out=$(FW_REVIEWER_IN_DISPATCH=1 python3 -m lib.reviewer.dispatch_cli T-1951 2>&1 || true); echo "$out" | grep -q "FW_REVIEWER_IN_DISPATCH"
 
 ## RCA
 

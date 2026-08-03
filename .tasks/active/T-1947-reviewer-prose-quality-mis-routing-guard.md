@@ -187,7 +187,12 @@ python3 -c "import ast; ast.parse(open('lib/reviewer/static_scan.py').read())"
 bash -n bin/fw
 bats tests/unit/test_reviewer_prose_mismatch.bats
 out=$(bin/fw reviewer T-1811 2>&1); echo "$out" | grep -qv "reviewer-prose-mismatch"
-grep -q "necessary-but-not-sufficient" CLAUDE.md
+# T-2771: was `grep -q "necessary-but-not-sufficient" CLAUDE.md`. T-1948 rewrote
+# that paragraph per human review and the hyphenated phrase went with it — a
+# deliberate, human-confirmed contract change, so this is superseded rather than
+# regressed (T-2764 class). Re-pinned on the detector name, which is a stable
+# identifier rather than a turn of phrase, so the next prose edit cannot red it.
+grep -q "reviewer-prose-mismatch" CLAUDE.md
 grep -q "L-409" .context/project/learnings.yaml
 
 ## RCA
