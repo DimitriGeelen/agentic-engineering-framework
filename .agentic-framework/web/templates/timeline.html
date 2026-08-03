@@ -1,18 +1,34 @@
 <div class="page-header">
     <h1>Timeline</h1>
-    <p>Chronological project narrative across {{ sessions|length }} sessions</p>
+    <p>Chronological project narrative across {{ total_sessions }} sessions —
+       showing {{ range_start }}–{{ range_end }} (newest first), page {{ page }} of {{ page_count }}</p>
 </div>
 
-{# T-2041: bound rendered height — render the newest _tl_cap sessions inline, wrap the
-   older overflow in a collapsed <details> (display:none → excluded from scrollHeight and
-   full_page screenshots, yet still in the DOM and one click away; nothing dropped).
-   Same unbounded-card-list class as T-2038/T-2039/T-2040; sessions list is newest-first. #}
-{% set _tl_cap = 40 %}
-{% for session in sessions %}
-{% if loop.index == _tl_cap + 1 %}
-<details class="timeline-overflow" style="margin:0.75rem 0;">
-<summary style="cursor:pointer; font-weight:600; padding:0.5rem 0.6rem; color:var(--wt-accent); border:1px dashed var(--pico-muted-border-color); border-radius:6px;">Show {{ sessions|length - _tl_cap }} older session{{ 's' if (sessions|length - _tl_cap) != 1 }} — earlier history</summary>
+{# T-2775: paged server-side, newest first. This replaces T-2041's height cap, which rendered
+   every session and hid the overflow in a collapsed <details>. That bounded the page's height
+   (display:none is excluded from scrollHeight) but not its size — all 1,524 sessions and
+   182,541 task entries still crossed the wire, for 69.8 MB. Paging bounds both axes, and the
+   header above states the window so it reads as a window rather than as all the history
+   there is. #}
+{% macro pager(pos) %}
+{% if page_count > 1 %}
+<nav class="timeline-pager" data-pager="{{ pos }}" style="display:flex; gap:0.5rem; align-items:center; justify-content:center; margin:1rem 0;">
+    {% if page > 1 %}
+    <a href="/timeline?page=1" role="button" class="secondary outline">&laquo; Newest</a>
+    <a href="/timeline?page={{ page - 1 }}" role="button" class="secondary outline">&lsaquo; Newer</a>
+    {% endif %}
+    <span style="opacity:0.7;">Page {{ page }} of {{ page_count }}</span>
+    {% if page < page_count %}
+    <a href="/timeline?page={{ page + 1 }}" role="button" class="secondary outline">Older &rsaquo;</a>
+    <a href="/timeline?page={{ page_count }}" role="button" class="secondary outline">Oldest &raquo;</a>
+    {% endif %}
+</nav>
 {% endif %}
+{% endmacro %}
+
+{{ pager('top') }}
+
+{% for session in sessions %}
 <article{% if session.is_emergency %} style="opacity: 0.6; border-left: 3px solid var(--pico-del-color); padding-left: 0.75rem;"{% endif %}>
     <details>
         <summary>
@@ -60,6 +76,9 @@
                 </li>
                 {% endfor %}
             </ul>
+            {% if session.tasks_touched_hidden %}
+            <p style="margin-top:-0.5rem;"><a href="/timeline/session/{{ session.id }}">+ {{ session.tasks_touched_hidden }} more task{{ 's' if session.tasks_touched_hidden != 1 }} in this session &rsaquo;</a></p>
+            {% endif %}
             {% endif %}
 
             {% if session.tasks_completed %}
@@ -69,12 +88,16 @@
                 <li><a href="/tasks/{{ t.id }}">{{ t.id }}{% if t.name %}: {{ t.name }}{% endif %}</a></li>
                 {% endfor %}
             </ul>
+            {% if session.tasks_completed_hidden %}
+            <p style="margin-top:-0.5rem;"><a href="/timeline/session/{{ session.id }}">+ {{ session.tasks_completed_hidden }} more completed &rsaquo;</a></p>
+            {% endif %}
             {% endif %}
         </div>
     </details>
 </article>
 {% endfor %}
-{% if sessions|length > _tl_cap %}</details><!-- /timeline-overflow (T-2041) -->{% endif %}
+
+{{ pager('bottom') }}
 
 {% if not sessions %}
 <div class="coming-soon">

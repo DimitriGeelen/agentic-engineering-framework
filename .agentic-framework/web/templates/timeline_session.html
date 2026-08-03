@@ -1,0 +1,32 @@
+<div class="page-header">
+    <h1>Session {{ session.id }}</h1>
+    <p>{{ session.timestamp[:19] if session.timestamp else 'Unknown date' }} —
+       full task lists (the timeline caps these per session)</p>
+    <p><a href="/timeline">&lsaquo; Back to timeline</a></p>
+</div>
+
+{% if session.narrative %}
+<blockquote>{{ session.narrative|linkify_tasks }}</blockquote>
+{% endif %}
+
+{% if session.tasks_touched %}
+<h4>Tasks Touched ({{ session.tasks_touched|length }})</h4>
+<ul>
+    {% for t in session.tasks_touched %}
+    <li><a href="/tasks/{{ t.id }}">{{ t.id }}{% if t.name %}: {{ t.name }}{% endif %}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if session.tasks_completed %}
+<h4>Tasks Completed ({{ session.tasks_completed|length }})</h4>
+<ul>
+    {% for t in session.tasks_completed %}
+    <li><a href="/tasks/{{ t.id }}">{{ t.id }}{% if t.name %}: {{ t.name }}{% endif %}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if not session.tasks_touched and not session.tasks_completed %}
+<p><em>No task references recorded for this session.</em></p>
+{% endif %}
