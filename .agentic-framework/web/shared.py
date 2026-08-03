@@ -424,6 +424,21 @@ def load_scan() -> dict | None:
     return None
 
 
+# T-2774: libyaml-backed loader when the C extension is compiled in, pure-Python
+# SafeLoader otherwise. `getattr` rather than try/import because PyYAML always
+# exposes the name-or-nothing; a wheel built without libyaml simply lacks it, and
+# the framework must not require a C toolchain (Directive 4, portability).
+#
+# Measured on this repo's 2,761-task corpus: 9.820s -> 1.115s (8.8x). The parse
+# is byte-for-byte equivalent — all 2,761 frontmatter blocks were loaded under
+# both loaders and compared by repr, 0 differing files. That check mattered:
+# L-495 has us on record for PyYAML mangling unquoted ISO-8601 Z timestamps, and
+# the two loaders resolve implicit types through different code paths, so
+# "faster" had to be shown to also mean "same". tests/unit/test_frontmatter_loader_equivalence.py
+# pins it against the live corpus so a PyYAML upgrade cannot drift them apart silently.
+_YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+
 def parse_frontmatter(content):
     """Parse YAML frontmatter from a markdown file.
 
@@ -434,7 +449,7 @@ def parse_frontmatter(content):
     if not fm_match:
         return {}, content
     try:
-        fm = yaml.safe_load(fm_match.group(1))
+        fm = yaml.load(fm_match.group(1), Loader=_YAML_LOADER)
     except yaml.YAMLError:
         return {}, content
     if not isinstance(fm, dict):

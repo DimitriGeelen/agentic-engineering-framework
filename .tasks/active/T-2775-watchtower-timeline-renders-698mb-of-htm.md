@@ -8,7 +8,7 @@ Found while fixing T-2774 (Watchtower / latency). Distinct defect, distinct caus
 
 Fix shape is probably windowing (most-recent-N sessions with paging) rather than caching. Note the size cap should be a guard in its own right — there is a height guard (test_all_routes_height.py, 8000px) and a latency guard (LOAD_CAP_MS, 5s) but no response-SIZE guard, which is why 70MB shipped unnoticed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T19:18:51Z
-last_update: 2026-08-03T19:18:51Z
+last_update: 2026-08-03T19:30:24Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -50,8 +50,29 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `/timeline` response size is bounded and the number is recorded before and after,
+      measured off the wire (`curl -w '%{size_download}'`) not estimated from the template
+- [ ] The bound is a deliberate, documented choice (most-recent-N with paging, or an
+      explicit windowing rule) — not a silent truncation. A user who has more history than
+      the window must be able to reach it, and must be able to tell that a window applies.
+- [ ] `/timeline` passes the existing 5s `LOAD_CAP_MS` guard in
+      `tests/playwright/test_all_routes_load_time.py` (currently 29,439ms)
+- [ ] The information the page exists to convey is preserved — verify the most-recent
+      sessions still render with their task lists, deltas, and emergency-run collapsing
+      intact. A page that is fast because it stopped saying anything is not fixed.
+- [ ] A response-SIZE guard exists, parametrized over all routes, sibling to the existing
+      height guard (`test_all_routes_height.py`, 8000px) and latency guard (`LOAD_CAP_MS`,
+      5s). This is the structural gap: 69.8 MB shipped unnoticed because size was the one
+      axis nothing measured, and L-429 (T-2040) already names unbounded pages as a
+      recurring class — the learning existed, the check did not.
+- [ ] The size guard is mutation-checked: confirm it fails against the current unbounded
+      `/timeline` before the fix, and passes after. A guard that has never been red proves
+      only that it is implemented, not that it is correct (L-530).
+- [ ] `/bvp` (5,374,898 bytes) is assessed against the same size guard and either brought
+      under it or given an explicit, recorded exemption with a reason. It is the same class
+      and it has already caused a false green once — its size overflows the 64KB pipe
+      buffer, which made `cmd | grep -q` exit 141 (SIGPIPE) and read as a failing check
+      (T-2743, L-387). Do not fix `/timeline` and leave its sibling unmeasured.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -218,3 +239,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2775-watchtower-timeline-renders-698mb-of-htm.md
 - **Context:** Initial task creation
+
+### 2026-08-03T19:30:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
