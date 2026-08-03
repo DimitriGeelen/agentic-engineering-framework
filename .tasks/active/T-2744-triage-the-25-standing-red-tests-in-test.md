@@ -85,22 +85,22 @@ Report: `docs/reports/T-2744-unit-suite-triage.md`. Census: `docs/reports/T-2744
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Census is reproducible and machine-readable: the exact runner command, its measured
+- [x] Census is reproducible and machine-readable: the exact runner command, its measured
       counts, and one failing test nodeid per line are recorded in
       `docs/reports/T-2744-census.txt` — derived from the runner's own output, not
       transcribed from prose.
-- [ ] Every nodeid in the census appears in the triage report classified as exactly one of
+- [x] Every nodeid in the census appears in the triage report classified as exactly one of
       `genuine-bug` / `stale-test` / `env-dependent`.
-- [ ] Every classification carries falsifiable evidence: for `genuine-bug`, the
+- [x] Every classification carries falsifiable evidence: for `genuine-bug`, the
       user-visible defect it implies; for `stale-test`, what changed and when (commit or
       task ID); for `env-dependent`, the specific environmental dependency and what makes
       it absent here.
-- [ ] Follow-up tasks are filed one per *root cause*, not one per test; each classified
+- [x] Follow-up tasks are filed one per *root cause*, not one per test; each classified
       failure maps to exactly one follow-up task ID, or to an explicit "no action" with a
       stated reason.
-- [ ] No test file and no non-test source file is modified under this task — triage only.
+- [x] No test file and no non-test source file is modified under this task — triage only.
       Verified mechanically over this task's commits.
-- [ ] The reason the standing red is *invisible* (no gate consumes the suite's verdict) is
+- [x] The reason the standing red is *invisible* (no gate consumes the suite's verdict) is
       recorded as a distinct finding with a concrete proposal, and routed to its own
       task/observation rather than fixed here.
 
