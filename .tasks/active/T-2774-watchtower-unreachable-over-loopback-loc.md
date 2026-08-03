@@ -277,6 +277,44 @@ curl -sf -o /dev/null -m 60 "$(bin/fw watchtower url)/" && python3 -c "import ti
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+## Recommendation
+
+**Recommendation:** GO — close on the Human AC once the arc tables read correctly.
+
+**Rationale:** All five Agent ACs are met and independently evidenced, and the two
+tasks that motivated this work (T-1960, T-1961) are green on their own merits
+against our own Watchtower rather than by pointing at another project's server.
+The remaining risk is narrow and named: `_read_task_meta` now reads a shared cache,
+so the failure mode is not an error but a stale-looking-correct table. That is
+precisely what the Human AC asks you to check, and it is why I did not bypass the
+render-surface gate.
+
+Three defects this work uncovered are filed rather than folded in (T-2775, T-2776,
+T-2777). `tests/playwright/test_all_routes_load_time.py` is currently RED on five
+routes — deliberately. Two are genuine (T-2775, T-2776) and three are a measurement
+defect in the suite itself (T-2777). Leaving it red is the honest state; making it
+green now would mean raising the cap, which the guard's own docstring forbids.
+
+**Evidence:**
+- `/` cold-start first byte: 57.82s → 1.45–3.19s across 16 samples spaced 20s apart
+  over cache-TTL boundaries, no spikes; 5 back-to-back runs 1.47–1.51s. Under the
+  existing 5s `LOAD_CAP_MS`.
+- `_build_approvals_context`: 70.9s → 5.57s profiled. `_get_approval_qr`: 18.58s →
+  2.84s unprofiled.
+- Cause named by measurement, not inference: 6,243 `yaml.safe_load` calls = 64 of
+  70.9 profiled seconds over a 2,761-task corpus.
+- Loader swap verified safe before adoption: all 2,761 frontmatter blocks parsed
+  under both `SafeLoader` and `CSafeLoader` and compared by `repr` — **0 differing
+  files** — plus 13 implicit-type cases (ISO-8601 `Z`, sexagesimals, YAML-1.1 bools,
+  octals, anchors). L-495 is why this was checked rather than assumed.
+- `tests/playwright/test_arc_close_recommendation_panel.py` +
+  `test_approvals_arc_closure_section.py`: **10/10 passed** on port 3001 (ours).
+- `bin/fw verify-queue --task T-1960` → PASS 5/5; `--task T-1961` → PASS 4/4;
+  `--task T-2774` → PASS 5/5.
+- Both fixes mutation-checked: reverting each turns its test red, restoring it green.
+- The 11 pre-existing `tests/unit/` failures were confirmed identical on a clean
+  `git stash` baseline before and after — none are attributable to this work.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
