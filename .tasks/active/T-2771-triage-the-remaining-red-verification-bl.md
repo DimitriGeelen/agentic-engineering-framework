@@ -88,9 +88,16 @@ bvp_scores_proposed:
 - [x] Every red block from the census carries an explicit classification — **(a) WRONG,
       repairable** or **(b) CORRECTLY FAILING** — recorded with the evidence that decides
       it, in this task's `## Findings`. No red is left unclassified or silently skipped
-- [ ] Every (a) is repaired and its full block re-run green via
+- [x] Every (a) is repaired and its full block re-run green via
       `bin/fw verify-queue --task T-XXX`, with the repair carrying a provenance comment
       naming what it replaced and why
+      <!-- 6/8 green (T-1811, T-1928, T-1947, T-1968, T-1951, T-1843-bats). T-1960/T-1961
+           repaired correctly — they now resolve to our own Watchtower — but remain red on
+           a distinct environmental defect underneath (T-2774, loopback unreachable). They
+           are NOT re-pointed to make them green; see the post-repair correction below. -->
+- [x] The environmental defect exposed by the repair is filed rather than papered over
+      (T-2774), and the two affected lines are left red rather than re-pointed at a server
+      that would answer
 - [x] Every (b) has its underlying defect filed as its own task, and its verification line
       left **byte-identical** — a correctly-failing line is the framework working, and
       editing it to green is the failure mode this whole exercise exists to prevent
@@ -98,7 +105,7 @@ bvp_scores_proposed:
       sweep cannot read as a complete one
 - [x] The gate coverage gap the sweep exposed is filed rather than quietly patched here
       (T-2772 — the T-2732 port predicate cannot see `FW_TEST_PORT=3000`)
-- [ ] A fresh `bin/fw verify-queue` pass over the tasks touched here shows the (a) repairs
+- [x] A fresh `bin/fw verify-queue` pass over the tasks touched here shows the (a) repairs
       green and the (b) lines still red — verified by running it, not by assuming
 
 ### Human
@@ -191,6 +198,30 @@ code; here `pipefail` *preserves* one that means "there is human work pending", 
 "failure". Both directions of the same confusion between *did it succeed* and *does the
 output say X*.
 
+### Post-repair correction: T-1960 / T-1961 are still red, and the reason matters
+
+The port repair worked — both suites now resolve to `http://localhost:3001`, our own
+Watchtower, instead of port 3000. They still fail, with `Page.goto: Timeout 15000ms` on
+`about:blank`. That is not a regression introduced by the repair; it is what was underneath.
+
+Measured: Watchtower listens on `0.0.0.0:3001` and answers on the **LAN** address
+`http://192.168.10.107:3001` immediately, while **`localhost:3001` and `127.0.0.1:3001`
+both time out** (rc=000 after the full 5s curl budget). Loopback traffic to the port is
+being dropped though the socket is bound to all interfaces. Playwright builds its base_url
+as `http://localhost:$FW_TEST_PORT`, so every Playwright suite on this host is affected.
+Filed as **T-2774**.
+
+**This reframes the hard-coded port.** Port 3000 is another project's Watchtower, and it
+*does* answer on loopback. So `FW_TEST_PORT=3000` was most likely not carelessness but a
+workaround for the loopback defect — one that traded "our tests cannot reach our server"
+for "another project's server passes our assertions". The second is the worse failure, and
+it is invisible: it produces green.
+
+So the honest classification for T-1960/T-1961 is **two stacked defects**: the stored line
+was (a) WRONG *and* the environment underneath it is (b) genuinely broken. The repair fixed
+the half this task owns. The lines stay red until T-2774 lands, and they should — a green
+there would mean they had been re-pointed at the wrong server again.
+
 ### Filed rather than fixed here
 
 - **T-2772** — the T-2732 port gate's predicate is blind to `FW_TEST_PORT=3000`. Patching
@@ -219,6 +250,30 @@ hook works; only the version-equality assertion fails. T-2763's G-015 sweep ran 
 as the corpus it was pointed at.
 
 ## Verification
+
+# The six repairs that are green on their own merits.
+timeout 400 bin/fw verify-queue --task T-1811 > /tmp/.t2771-1811.out 2>&1 && grep -q "0 red" /tmp/.t2771-1811.out
+timeout 400 bin/fw verify-queue --task T-1928 > /tmp/.t2771-1928.out 2>&1 && grep -q "0 red" /tmp/.t2771-1928.out
+timeout 400 bin/fw verify-queue --task T-1947 > /tmp/.t2771-1947.out 2>&1 && grep -q "0 red" /tmp/.t2771-1947.out
+timeout 400 bin/fw verify-queue --task T-1968 > /tmp/.t2771-1968.out 2>&1 && grep -q "0 red" /tmp/.t2771-1968.out
+timeout 400 bin/fw verify-queue --task T-1951 > /tmp/.t2771-1951.out 2>&1 && grep -q "0 red" /tmp/.t2771-1951.out
+timeout 400 bats tests/unit/test_pre_push_monotonic_ancestor.bats
+
+# T-1971's line is untouched. Asserting the bytes rather than trusting the intent, because
+# "I left it alone" is exactly the claim a sweep is tempted to make falsely.
+grep -q 'Drag a slider below to preview re-ranking' .tasks/active/T-1971-remove-stale-read-only--live-weight-slid.md
+
+# The port repairs resolve the port instead of pinning it. These two suites stay RED until
+# T-2774 (loopback) lands — that is correct, so this asserts the repair shape, not a green.
+grep -q 'FW_TEST_PORT="$(bin/fw watchtower port)"' .tasks/active/T-1960-arc-recommendation-schema--auto-render-o.md
+grep -q 'FW_TEST_PORT="$(bin/fw watchtower port)"' .tasks/active/T-1961-approvals-ingestion-of-close-ready-arcs-.md
+# Absence is checked over the EXECUTABLE lines only — the provenance comments deliberately
+# quote the old `FW_TEST_PORT=3000` they replaced, and a naive file-wide grep would fail on
+# the very comment that documents the fix.
+bash -c 'source lib/verification-port.sh; extract_verification_block .tasks/active/T-1960-arc-recommendation-schema--auto-render-o.md' > /tmp/.t2771-b1960.out
+bash -c 'source lib/verification-port.sh; extract_verification_block .tasks/active/T-1961-approvals-ingestion-of-close-ready-arcs-.md' > /tmp/.t2771-b1961.out
+! grep -q 'FW_TEST_PORT=3000' /tmp/.t2771-b1960.out
+! grep -q 'FW_TEST_PORT=3000' /tmp/.t2771-b1961.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
