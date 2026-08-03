@@ -1,0 +1,110 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2766: classify T-1805 verification line: tests/unit/test_outcome_read.py no longer exists
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T16:46:15Z
+# ============================================================================
+
+task_id: T-2766
+task_name: "classify T-1805 verification line: tests/unit/test_outcome_read.py no longer exists"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T13:35:42Z
+completed: 2026-08-03T16:45:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-03T15:38:38+02:00
+last_commit: 2026-08-03T18:45:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the third review-queue red (T-1805 pytest against a deleted file). real ACs for the T-1805 classification. classification recorded — T-1805 names test files that never existed; the || fallback has been the sole executor and widens the population to -k outcome (70 tests, 4 files), surfacing two genuine reds in orchestrator status --json (auto-init banner on stdout, rc=0). repair T-1805's line — re-point at test_outcome.py, drop the population-widening -k outcome fallback; RCA + T-2769 filed for the fw --json contamination the fallback was masking
+
+# Key outcomes
+outcomes:
+  - 'Fate of `tests/unit/test_outcome_read.py` established from git history'
+  - 'Whether the outcome read/list cases still exist under another path answered by'
+  - 'Classification recorded in `## Decisions` as exactly one of **(a) WRONG — path'
+  - 'Response executed to match: if (a), T-1805''s line re-pointed and its full block'
+  - '`bin/fw verify-queue --task T-1805` reflects the outcome (green for (a); still red'
+  - 'The red the fallback was masking is filed as its own task (T-2769), not folded into'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-03.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-03.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/pickup/.bridge-posted/e5d1b5484f9f8840899b67041714b5047ff583c34eebd70b06431bcfecf74360'
+  - '.context/pickup/dedup.log'
+  - '.context/pickup/processed/P-050-bug-report.yaml'
+  - '.context/pickup/rejected/P-051-bug-report.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.verify-queue-state.json'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-1805-pauserequested-terminalevent-class--subs.md'
+  - '.tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md'
+  - '.tasks/active/T-2766-classify-t-1805-verification-line-testsu.md'
+  - '.tasks/active/T-2769-fw---json-contaminated-by-auto-init-bann.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T15:38:38'
+    action: 'T-2766: file the third review-queue red (T-1805 pytest against a deleted file)'
+  - time: '2026-08-03T15:43:36'
+    action: 'T-2766: real ACs for the T-1805 classification'
+  - time: '2026-08-03T18:04:17'
+    action: 'T-2766: classification recorded — T-1805 names test files that never existed; the || fallback has been the sole executor and widens the population to -k outcome (70 tests, 4 files), surfacing two genuine reds in orchestrator status --json (auto-init banner on stdout, rc=0)'
+  - time: '2026-08-03T18:45:49'
+    action: 'T-2766: repair T-1805''s line — re-point at test_outcome.py, drop the population-widening -k outcome fallback; RCA + T-2769 filed for the fw --json contamination the fallback was masking'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 190 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 190
+  commits: 4
+  files_changed: 29
+  lines_added: 7174
+  lines_removed: 5052
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2766-classify-t-1805-verification-line-testsu.md
+generated_by: context-agent-hybrid

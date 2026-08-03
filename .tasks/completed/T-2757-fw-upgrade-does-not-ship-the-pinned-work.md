@@ -7,16 +7,16 @@ description: >
   designer sync --from <delivered-artifact>' with no stated artifact source. Decide
   whether upgrade/vendor should include the pinned designer by default.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-08-03T10:09:39Z
-last_update: 2026-08-03T11:40:36Z
-date_finished:
+last_update: 2026-08-03T15:26:14Z
+date_finished: 2026-08-03T15:26:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -198,7 +198,7 @@ intake path (already works, unchanged by this decision).
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -302,7 +302,68 @@ states that remain.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — ship the pinned build only (not the directory)
+
+Rationale:
+
+The DEFER this replaces was a genuine evidence gap, and it is now closed. All three
+unknowns it named have measured answers: `do_vendor` does not copy `vendor/` (verified
+in `bin/fw:332-356`), 903.6 KB is the marginal cost when scoped to the pinned build
+(measured), and there is no consumer-reachable artifact source at all — the only one
+that exists is a LAN repo.
+
+The decisive evidence is not the size or the convenience. It is that the consumer
+already receives the pin naming a file it does not have. `policy/` ships;
+`vendor/designer/` does not. That is not a missing feature, it is an internally
+inconsistent payload — the consumer is handed a pointer and no referent, and the
+resulting placeholder returns HTTP 200, so nothing anywhere reports a problem.
+
+This is the third instance of one class, and the previous two are documented in
+comments inside the very array that omits it:
+
+- T-2656 — secret-scan pattern files omitted → consumer's scanner ran patternless.
+  A silent no-op.
+- T-2674 — `status-transitions.yaml` omitted → consumer enums froze at seed time.
+- T-2757 (this) — designer artifact omitted → every `/designer` route serves a
+  placeholder at 200.
+
+Each shipped a consumer that was structurally incomplete while reporting success. Two
+were fixed by adding the missing file to `includes`; the same remedy applies here.
+
+Scoping to the pinned build is what makes this cheap: 903.6 KB against 7.6 MB for the
+directory. A consumer serves exactly one build — `_serve_bundle()` resolves
+`vendored_path` from the pin — so the other eight are archival weight with no
+consumer-visible capability.
+
+Evidence:
+- `bin/fw:332-356` — `includes` array; `vendor` absent (4 grep hits in range are prose
+  in the T-2656/T-2674 comments)
+- `bin/fw:337` — `policy` present, so the pin already ships without its referent
+- `sha256sum vendor/designer/aef-workflow-designer-0.8.0.html` →
+  `cab3c75183979b0e15e23192518f9360ea12fe33b6a4f78641d7e264f6110935`, exact match to
+  `policy/designer-pin.yaml:20`; 903,600 bytes, matching the declared `bytes:`
+- `du -sh vendor/designer/` → 7.6 MB across 9 `.html` builds
+- `web/blueprints/designer.py:100-107` — missing artifact → `_placeholder()` at HTTP 200
+- `agents/designer/designer.sh:76` — the sourceless "832 must deliver" guidance
+- `vendor/designer/README.md:6-13` — read-only `0444` contract, no maintenance burden
+- Worker report: `docs/reports/T-2757-designer-consumer-vendoring.md`
+
+Proposed build slices on GO:
+1. Add the pinned artifact to the vendor payload — filtered to `vendored_path` from the
+   pin, not a blanket `vendor/designer` include. Guard test: a vendored consumer's
+   `/designer` serves the real bundle, not the placeholder. This must assert on the
+   served bytes, not on file presence — the placeholder's 200 is exactly what makes
+   presence-only checks vacuous here.
+2. Fix the not-synced guidance to name a source and state the LAN-reachability
+   precondition (IW-4). Independent of slice 1 — the placeholder stays reachable when a
+   pin is bumped ahead of the artifact.
+
+Slice 1 alone closes the reported symptom; slice 2 stops the message dead-ending in the
+states that remain.
+
+**Date**: 2026-08-03T15:26:14Z
 
 ## Updates
 
@@ -311,3 +372,104 @@ states that remain.
 
 ### 2026-08-03T11:40:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-03T15:26:14Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — ship the pinned build only (not the directory)
+
+Rationale:
+
+The DEFER this replaces was a genuine evidence gap, and it is now closed. All three
+unknowns it named have measured answers: `do_vendor` does not copy `vendor/` (verified
+in `bin/fw:332-356`), 903.6 KB is the marginal cost when scoped to the pinned build
+(measured), and there is no consumer-reachable artifact source at all — the only one
+that exists is a LAN repo.
+
+The decisive evidence is not the size or the convenience. It is that the consumer
+already receives the pin naming a file it does not have. `policy/` ships;
+`vendor/designer/` does not. That is not a missing feature, it is an internally
+inconsistent payload — the consumer is handed a pointer and no referent, and the
+resulting placeholder returns HTTP 200, so nothing anywhere reports a problem.
+
+This is the third instance of one class, and the previous two are documented in
+comments inside the very array that omits it:
+
+- T-2656 — secret-scan pattern files omitted → consumer's scanner ran patternless.
+  A silent no-op.
+- T-2674 — `status-transitions.yaml` omitted → consumer enums froze at seed time.
+- T-2757 (this) — designer artifact omitted → every `/designer` route serves a
+  placeholder at 200.
+
+Each shipped a consumer that was structurally incomplete while reporting success. Two
+were fixed by adding the missing file to `includes`; the same remedy applies here.
+
+Scoping to the pinned build is what makes this cheap: 903.6 KB against 7.6 MB for the
+directory. A consumer serves exactly one build — `_serve_bundle()` resolves
+`vendored_path` from the pin — so the other eight are archival weight with no
+consumer-visible capability.
+
+Evidence:
+- `bin/fw:332-356` — `includes` array; `vendor` absent (4 grep hits in range are prose
+  in the T-2656/T-2674 comments)
+- `bin/fw:337` — `policy` present, so the pin already ships without its referent
+- `sha256sum vendor/designer/aef-workflow-designer-0.8.0.html` →
+  `cab3c75183979b0e15e23192518f9360ea12fe33b6a4f78641d7e264f6110935`, exact match to
+  `policy/designer-pin.yaml:20`; 903,600 bytes, matching the declared `bytes:`
+- `du -sh vendor/designer/` → 7.6 MB across 9 `.html` builds
+- `web/blueprints/designer.py:100-107` — missing artifact → `_placeholder()` at HTTP 200
+- `agents/designer/designer.sh:76` — the sourceless "832 must deliver" guidance
+- `vendor/designer/README.md:6-13` — read-only `0444` contract, no maintenance burden
+- Worker report: `docs/reports/T-2757-designer-consumer-vendoring.md`
+
+Proposed build slices on GO:
+1. Add the pinned artifact to the vendor payload — filtered to `vendored_path` from the
+   pin, not a blanket `vendor/designer` include. Guard test: a vendored consumer's
+   `/designer` serves the real bundle, not the placeholder. This must assert on the
+   served bytes, not on file presence — the placeholder's 200 is exactly what makes
+   presence-only checks vacuous here.
+2. Fix the not-synced guidance to name a source and state the LAN-reachability
+   precondition (IW-4). Independent of slice 1 — the placeholder stays reachable when a
+   pin is bumped ahead of the artifact.
+
+Slice 1 alone closes the reported symptom; slice 2 stops the message dead-ending in the
+states that remain.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bcff13fe
+- **Timestamp:** 2026-08-03T15:26:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-6ecedea8
+- **Timestamp:** 2026-08-03T15:26:15Z
+- **Overall:** CONTRADICTED
+- **Claims:** 7
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `policy/designer-pin.yaml:20` | file_line | ✓ pass |
+| `web/blueprints/designer.py:100-107` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `agents/designer/designer.sh:76` | file_line | ✓ pass |
+| `vendor/designer/README.md:6-13` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `docs/reports/T-2757-designer-consumer-vendoring.md` | file | ✓ pass |
+| `T-2656` | task | ✓ pass |
+| `T-2674` | task | ✓ pass |
+
+### 2026-08-03T15:26:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
