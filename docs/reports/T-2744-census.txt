@@ -1,0 +1,38 @@
+# T-2744 census — failing tests in tests/unit/ (pytest)
+#
+# Runner command (from PROJECT_ROOT, 2026-08-03):
+#   python3 -m pytest tests/unit/ -q --tb=no -p no:cacheprovider
+# Result: 24 failed, 2011 passed, 3 skipped in 327.64s
+#
+# Isolation re-run of exactly these 24 nodeids:
+#   python3 -m pytest $(cat this-file-nodeids) -q --tb=short
+# Result: 18 failed, 6 passed in 94.22s  -> 6 are order-dependent.
+#
+# Note: the previous measurement (OBS-136) said 25. It is 24 because T-2741
+# fixed test_arcs_pages_tokens. No other delta.
+#
+# One failing nodeid per line below.
+tests/unit/test_arc_system.py::test_arc_tag_idempotent
+tests/unit/test_auto_link_root_and_articles.py::test_existing_root_file_gets_linkified
+tests/unit/test_cockpit_activity.py::test_cockpit_page_has_polling_activity_card
+tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census
+tests/unit/test_file_route_extensions.py::test_is_viewable_path_rejects_unknown_dir
+tests/unit/test_hook_paths.py::ReanchorProjectRoot::test_noop_when_cwd_outside_any_project
+tests/unit/test_orchestrator_status_outcomes.py::test_default_json_does_not_have_outcomes_key
+tests/unit/test_orchestrator_status_outcomes.py::test_outcomes_json_exposes_aggregation
+tests/unit/test_orchestrator_status_terminal_events.py::test_json_by_model_empty_when_no_model_field
+tests/unit/test_orchestrator_status_terminal_events.py::test_json_exposes_by_model_key
+tests/unit/test_orchestrator_status_terminal_events.py::test_json_exposes_terminal_event_keys
+tests/unit/test_orchestrator_status_terminal_events.py::test_json_recent_carries_terminal_event
+tests/unit/test_orchestrator_status_terminal_events.py::test_json_terminal_keys_empty_when_no_rows_have_terminal_event
+tests/unit/test_orchestrator_status_terminal_events.py::test_model_filter_with_json
+tests/unit/test_orchestrator_status_terminal_events.py::test_recent_composes_with_json
+tests/unit/test_orchestrator_status_terminal_events.py::test_resolved_via_filter_with_json
+tests/unit/test_orchestrator_status_terminal_events.py::test_task_filter_composes_with_json
+tests/unit/test_orchestrator_status_terminal_events.py::test_task_filter_with_json_returns_empty_stats
+tests/unit/test_orchestrator_status_terminal_events.py::test_worker_kind_filter_composes_with_json
+tests/unit/test_render_page_guard.py::test_guard_skipped_on_htmx_request
+tests/unit/test_task_panel_edit.py::test_active_task_panel_has_editable_selects
+tests/unit/test_task_panel_edit.py::test_completed_task_panel_is_read_only
+tests/unit/test_task_panel.py::test_board_links_open_panel_not_full_page
+tests/unit/test_task_panel.py::test_panel_fragment_is_lean_read_view

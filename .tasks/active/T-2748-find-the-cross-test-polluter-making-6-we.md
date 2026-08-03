@@ -1,13 +1,13 @@
 ---
-id: T-2744
-name: "Triage the 25 standing-red tests in tests/unit/ (classify, do not mass-fix)"
+id: T-2748
+name: "Find the cross-test polluter making 6 web tests fail only in full-suite order"
 description: >
-  Triage the 25 standing-red tests in tests/unit/ (classify, do not mass-fix)
+  Find the cross-test polluter making 6 web tests fail only in full-suite order. Filed by T-2744 triage; evidence and mechanism in docs/reports/T-2744-unit-suite-triage.md
 
-status: started-work
+status: captured
 workflow_type: test
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-02T23:44:26Z
-last_update: '2026-08-03T00:00:12Z'
-date_finished:
+created: 2026-08-03T00:09:48Z
+last_update: 2026-08-03T00:09:48Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,75 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-03T00:00:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 1
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=1 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-03T00:00:12Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2744: Triage the 25 standing-red tests in tests/unit/ (classify, do not mass-fix)
+# T-2748: Find the cross-test polluter making 6 web tests fail only in full-suite order
 
 ## Context
 
-`tests/unit/` is standing-red (25 failed / 2010 passed / 3 skipped, measured 2026-08-03
-under T-2741). Nothing gates a push or a task close on the suite being green, so a guard
-going red is indistinguishable from the background red — which is why T-2027's arcs-token
-guard sat red for 28 days before T-2741 found it. OBS-136.
-
-**This task classifies. It does not fix.** 25 red tests are not one bug, and the framework's
-own sizing rule (one bug = one task) makes a mass-fix commit the wrong shape: it would
-destroy per-failure causality and produce a green suite whose greenness nobody could trace
-to a cause. The deliverable is a per-failure classification with evidence, plus one
-follow-up task per *root cause*. Prior instance of this class: T-2696/T-2697 (orphaned
-`tests/lint/` suite, 7 red, one 51 days old).
-
-Report: `docs/reports/T-2744-unit-suite-triage.md`. Census: `docs/reports/T-2744-census.txt`.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Census is reproducible and machine-readable: the exact runner command, its measured
-      counts, and one failing test nodeid per line are recorded in
-      `docs/reports/T-2744-census.txt` — derived from the runner's own output, not
-      transcribed from prose.
-- [ ] Every nodeid in the census appears in the triage report classified as exactly one of
-      `genuine-bug` / `stale-test` / `env-dependent`.
-- [ ] Every classification carries falsifiable evidence: for `genuine-bug`, the
-      user-visible defect it implies; for `stale-test`, what changed and when (commit or
-      task ID); for `env-dependent`, the specific environmental dependency and what makes
-      it absent here.
-- [ ] Follow-up tasks are filed one per *root cause*, not one per test; each classified
-      failure maps to exactly one follow-up task ID, or to an explicit "no action" with a
-      stated reason.
-- [ ] No test file and no non-test source file is modified under this task — triage only.
-      Verified mechanically over this task's commits.
-- [ ] The reason the standing red is *invisible* (no gate consumes the suite's verdict) is
-      recorded as a distinct finding with a concrete proposal, and routed to its own
-      task/observation rather than fixed here.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -201,20 +146,6 @@ Report: `docs/reports/T-2744-unit-suite-triage.md`. Census: `docs/reports/T-2744
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# NOTE: this task does NOT run the unit suite as a verification line. The suite is
-# red by construction — that is the subject under study, not a regression to gate on.
-# Gating on it here would either force a mass-fix (explicitly out of scope) or
-# require a green-washing grep. The census file IS the runner evidence.
-
-# Census exists, is non-empty, and records the runner command it came from.
-test -s docs/reports/T-2744-census.txt && grep -q "pytest" docs/reports/T-2744-census.txt
-
-# Every census nodeid is classified in the report, on the same line as its verdict.
-python3 -c "import sys,pathlib; c=[l.strip() for l in pathlib.Path('docs/reports/T-2744-census.txt').read_text().split(chr(10)) if l.strip() and '::' in l]; r=pathlib.Path('docs/reports/T-2744-unit-suite-triage.md').read_text().split(chr(10)); bad=[n for n in c if not any(n in ln and any(k in ln for k in ('genuine-bug','stale-test','env-dependent')) for ln in r)]; print('census:', len(c), 'unclassified:', bad); sys.exit(1 if (not c or bad) else 0)"
-
-# Triage only: no test file and no source file touched by this task's commits.
-git log --format=%H --grep='T-2744' > /tmp/.t2744c.txt && test -s /tmp/.t2744c.txt && git show --name-only --format= $(tr '\n' ' ' < /tmp/.t2744c.txt) > /tmp/.t2744f.txt && ! grep -Eq '^(tests/|web/|lib/|agents/|bin/|policy/)' /tmp/.t2744f.txt
 
 ## RCA
 
@@ -279,7 +210,7 @@ git log --format=%H --grep='T-2744' > /tmp/.t2744c.txt && test -s /tmp/.t2744c.t
 
 ## Updates
 
-### 2026-08-02T23:44:26Z — task-created [task-create-agent]
+### 2026-08-03T00:09:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2744-triage-the-25-standing-red-tests-in-test.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2748-find-the-cross-test-polluter-making-6-we.md
 - **Context:** Initial task creation
