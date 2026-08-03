@@ -1302,10 +1302,18 @@ CRONREGEOF
                     # T-1278: defence-in-depth — if the resolved target sits
                     # next to a FRAMEWORK.md, refuse. It's a framework repo's
                     # bin/fw, not a PATH shim location.
-                    local target_dir
-                    target_dir=$(dirname "$link_target" 2>/dev/null || echo "")
-                    if [ -n "$target_dir" ] && [ -f "$target_dir/../FRAMEWORK.md" ]; then
-                        echo -e "  ${RED}REFUSED${NC}  $current_fw resolves into a framework repo ($target_dir/..)"
+                    # T-2759: MUST NOT be named target_dir. do_upgrade binds
+                    # target_dir to the consumer at :566, and a second `local`
+                    # in the same function scope REBINDS it rather than scoping
+                    # a new one. Steps 5-10 then wrote .claude/settings.json,
+                    # .mcp.json, resume.md, scripts/, the context subdirs, the
+                    # .framework.yaml version pin and the enforcement baseline
+                    # into dirname(readlink -f ~/.local/bin/fw) — while the run
+                    # printed "=== Upgrade Complete ===" and exited 0.
+                    local _shim_link_dir
+                    _shim_link_dir=$(dirname "$link_target" 2>/dev/null || echo "")
+                    if [ -n "$_shim_link_dir" ] && [ -f "$_shim_link_dir/../FRAMEWORK.md" ]; then
+                        echo -e "  ${RED}REFUSED${NC}  $current_fw resolves into a framework repo ($_shim_link_dir/..)"
                         echo -e "         Refusing to overwrite a framework repo's bin/fw with the shim."
                         echo -e "         Inspect: ls -la $current_fw && readlink -f $current_fw"
                         return 1
