@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2769: fw --json contaminated by auto-init banner on stdout; read-only status query vendors into cwd
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T16:59:40Z
+# ============================================================================
+
+task_id: T-2769
+task_name: "fw --json contaminated by auto-init banner on stdout; read-only status query vendors into cwd"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T16:43:57Z
+completed: 2026-08-03T16:58:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-03T18:58:01+02:00
+last_commit: 2026-08-03T18:58:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw --json no longer contaminated by auto-init banner — the redirect targeted stderr while do_init writes to stdout; routed to >&2 so the cwd-mutating side effect stays announced but off the data channel. Regression test pins both directions + anti-vacuity. T-2770 filed for whether a read-only query should auto-init at all
+
+# Key outcomes
+outcomes:
+  - '`fw <cmd> --json` from a non-project directory emits **parseable JSON on stdout**:'
+  - 'The auto-init side effect stays **visible on stderr** rather than being silenced —'
+  - 'The two tests the defect was breaking pass:'
+  - 'A regression test pins the contract — stdout of a `--json` command on an'
+  - 'The regression test **fails against the pre-fix code** (mutation-checked), so it is'
+  - 'The separate design question (should a read-only query auto-init and vendor at all?)'
+  - 'The init path change keeps `tests/unit/upgrade_fresh_machine_simulation.bats` green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-test_fw_json_stdout_purity.yaml'
+  - '.tasks/active/T-2769-fw---json-contaminated-by-auto-init-bann.md'
+  - '.tasks/active/T-2770-should-a-read-only-fw-query-auto-init-an.md'
+  - 'tests/unit/test_fw_json_stdout_purity.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T18:58:01'
+    action: 'T-2769: fw --json no longer contaminated by auto-init banner — the redirect targeted stderr while do_init writes to stdout; routed to >&2 so the cwd-mutating side effect stays announced but off the data channel. Regression test pins both directions + anti-vacuity. T-2770 filed for whether a read-only query should auto-init at all'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 1
+  files_changed: 6
+  lines_added: 380
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2769-fw---json-contaminated-by-auto-init-bann.md
+generated_by: context-agent-hybrid
