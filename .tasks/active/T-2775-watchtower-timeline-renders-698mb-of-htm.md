@@ -21,12 +21,12 @@ description: >
   guard (test_all_routes_height.py, 8000px) and a latency guard (LOAD_CAP_MS, 5s)
   but no response-SIZE guard, which is why 70MB shipped unnoticed.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/create-task.sh, tests/playwright/test_all_routes_size.py, tests/unit/test_task_create_description_yaml.py, web/blueprints/timeline.py, web/templates/timeline.html, web/templates/timeline_session.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T19:18:51Z
-last_update: 2026-08-03T22:25:15Z
-date_finished:
+last_update: 2026-08-03T22:39:59Z
+date_finished: 2026-08-03T22:39:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -315,6 +315,32 @@ Measuring only the landing page would have shipped a 12.6 MB page as a fix.
 4. Mutation-checked against the unbounded render, per L-530: a guard that has never been red
    demonstrates only that it is implemented.
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The defect is closed on the axis it was filed for and the structural gap behind
+it is now covered. `/timeline` went from 69,879,595 bytes to 513,706 on its worst page and from
+29,439ms to 640ms, with content verified preserved rather than assumed. The remaining judgment
+is genuinely yours: whether the paged view still *reads* as the project's narrative. I can
+measure that 1,185 task links and 25 token deltas render; I cannot tell you whether stepping
+through 61 pages feels like history or like a filing cabinet. That is the one open AC.
+
+Two follow-ups are filed rather than folded in, per one-bug-one-task: T-2780 (`/bvp`, 5.4 MB)
+and T-2781 (`/project`, 2.27 MB). Both were found by the new guard on its first run, which is
+the strongest evidence I have that the guard was the missing piece rather than the fix itself.
+
+**Evidence:**
+- `web/blueprints/timeline.py` — 25 sessions/page, 40 tasks/session, deltas and emergency-run
+  collapsing computed before slicing (both are cross-session)
+- `web/templates/timeline.html` + new `timeline_session.html` — stated window, pager,
+  "+N more" link to the full per-session list
+- `tests/playwright/test_all_routes_size.py` — 2 MB cap over all routes; 56 passed, 2 xfailed
+- Mutation check: unbounded render turns the guard red on 5 tests, revert turns it green
+- Full load-time suite 54/54 (5 were failing at the start of this work); height guard green
+- Worst-page sweep across all 61 pages: 12,576,219 → 513,706 bytes after the per-session cap
+- Verification block 5/5 PASS
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -369,3 +395,15 @@ Measuring only the landing page would have shipped a 12.6 MB page as a fix.
 
 ### 2026-08-03T19:30:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8b3e2240
+- **Timestamp:** 2026-08-03T22:40:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-03T22:39:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

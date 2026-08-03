@@ -5718,3 +5718,11 @@ Operator recorded GO via Wa'
   target: 'T-2779'
   command: 'FW_SWITCH_FOCUS=1 git add .context/ .tasks/completed/T-2779-*.md 2>/dev/null
 FW_SWITCH_FOCUS=1 git commit -q -m "T-2779: L-543 — a symptom-derived detector is bounded by its symptom, and the count c'
+- timestamp: '2026-08-03T22:42:14Z'
+  task: 'T-2780'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2775'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/ .tasks/ 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2775: L-544 — bounded is per-axis; partial-complete for the narrative [REVIEW]" 2>&1 | tail -2
+git push '

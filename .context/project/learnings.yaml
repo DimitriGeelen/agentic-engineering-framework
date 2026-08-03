@@ -4134,3 +4134,10 @@ X'` returning empty group."
   date: 2026-08-03
   context: Added via context agent
   application: TBD
+- id: L-544
+  learning: "\"Bounded\" is per-axis, and a page is bounded only on the axes something actually measures. Watchtower /timeline shipped 69,879,595 bytes past TWO green guards: the 8000px height guard passed because T-2041 had capped the page on the height axis by rendering everything and hiding the overflow in a collapsed <details> (display:none is excluded from scrollHeight, so the measured number dropped while the payload did not), and the 5s latency guard passed because loopback transfer is 4.4s - the cost is the browser parsing 70MB, not the server sending it. Two green guards read as 'this page is fine' when they mean 'fine in two specific respects'. Second lesson from the same fix: paging bounded the session count but not the session size, so page 1 measured 609,180 bytes while page 10 measured 12,576,219 - always sweep the range, because the landing page is the one that looks fixed. Remedy: when adding a guard, ask which axis it does NOT cover, and prefer size guards over latency guards where both apply (L-542: size is contention-invariant)."
+  source: P-001
+  task: unknown
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD
