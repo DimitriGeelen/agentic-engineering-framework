@@ -1,25 +1,16 @@
 ---
-id: T-2775
-name: "Watchtower /timeline renders 69.8MB of HTML with no bound"
+id: T-2780
+name: "Watchtower /bvp returns 5.4MB with no row bound"
 description: >
-  The /timeline route returns 69,814,921 bytes (69.8 MB) in a single response, measured
-  directly off the Flask test client and confirmed against the live server. It renders
-  every session ever recorded, each with its full enriched tasks_touched/tasks_completed
-  lists, with no limit, pagination, or windowing. Template rendering alone is 6.5s
-  and _wrapper.html:root is invoked 1,714,776 times. This fails the 5s LOAD_CAP_MS
-  guard at 29.4s to domcontentloaded.
+  The /bvp route returns 5,385,019 bytes in a single response.
 
-  Found while fixing T-2774 (Watchtower / latency). Distinct defect, distinct cause:
-  T-2774 was per-request corpus re-parsing; this is unbounded output volume. A 70MB
-  page is not a latency problem that caching fixes — the bytes have to be produced
-  and shipped regardless. Sibling of the same class: /bvp at 5,374,898 bytes, which
-  already caused a SIGPIPE false-green in T-2743 because it overflows the 64KB pipe
-  buffer.
+  Same unbounded-row class as /timeline (T-2775): every scored task renders as a row
+  with no windowing. Detected by the T-2775 response-size guard, which caps routes
+  at 2,000,000 bytes.
 
-  Fix shape is probably windowing (most-recent-N sessions with paging) rather than
-  caching. Note the size cap should be a guard in its own right — there is a height
-  guard (test_all_routes_height.py, 8000px) and a latency guard (LOAD_CAP_MS, 5s)
-  but no response-SIZE guard, which is why 70MB shipped unnoticed.
+  This size has already caused one false green: it overflows the 64KB pipe buffer,
+  so a verification line of the shape "cmd | grep -q PAT" exited 141 (SIGPIPE) and
+  read as a failing check rather than a passing one (T-2743, L-387).
 
 status: started-work
 workflow_type: build
@@ -38,8 +29,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-03T19:18:51Z
-last_update: 2026-08-03T22:25:15Z
+created: 2026-08-03T22:21:59Z
+last_update: '2026-08-03T22:30:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,7 +43,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-03T21:45:08Z'
+  - ts: '2026-08-03T22:30:06Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -62,7 +53,7 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-03T21:45:13Z'
+  - ts: '2026-08-03T22:30:10Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -81,7 +72,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-2775: Watchtower /timeline renders 69.8MB of HTML with no bound
+# T-2780: Watchtower /bvp returns 5.4MB with no row bound
 
 ## Context
 
@@ -91,70 +82,20 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `/timeline` response size is bounded and the number is recorded before and after,
-      measured off the wire (`curl -w '%{size_download}'`) not estimated from the template
-      → **69,879,595 → 513,706 bytes** worst page (136x). Landing page 609,180 → 513,706 is
-      not the headline; see the next-to-last AC for why the worst page is the real number.
-- [x] The bound is a deliberate, documented choice (most-recent-N with paging, or an
-      explicit windowing rule) — not a silent truncation. A user who has more history than
-      the window must be able to reach it, and must be able to tell that a window applies.
-      → 25 sessions/page with prev/next/first/last, header states "showing X–Y of 1,524,
-      page N of 61". Per-session task lists cap at 40 with a "+N more" link to
-      `/timeline/session/<id>`, which renders that session whole.
-- [x] `/timeline` passes the existing 5s `LOAD_CAP_MS` guard in
-      `tests/playwright/test_all_routes_load_time.py` (currently 29,439ms)
-      → **0.64s**. Full suite now **54/54 pass**; it had 5 failures at the start of this work.
-- [x] The information the page exists to convey is preserved — verify the most-recent
-      sessions still render with their task lists, deltas, and emergency-run collapsing
-      intact. A page that is fast because it stopped saying anything is not fixed.
-      → Page 1: 25 token-delta marks, 1,185 task links, 971 expand affordances, 20 "+N more"
-      links. Emergency marking verified on page 57 (where the emergency sessions actually
-      are — page 1 has none, so checking only page 1 would have proved nothing). Run
-      collapsing intact: 1,524 sessions → 1,510 entries.
-- [x] A response-SIZE guard exists, parametrized over all routes, sibling to the existing
-      height guard (`test_all_routes_height.py`, 8000px) and latency guard (`LOAD_CAP_MS`,
-      5s). This is the structural gap: 69.8 MB shipped unnoticed because size was the one
-      axis nothing measured, and L-429 (T-2040) already names unbounded pages as a
-      recurring class — the learning existed, the check did not.
-      → `tests/playwright/test_all_routes_size.py`, 2 MB cap over all discovered routes.
-      It found two more members of the class on its first run: `/project` (T-2781) and
-      confirmed `/bvp` (T-2780).
-- [x] The size guard is mutation-checked: confirm it fails against the current unbounded
-      `/timeline` before the fix, and passes after. A guard that has never been red proves
-      only that it is implemented, not that it is correct (L-530).
-      → Restoring the unbounded render (page size 100000, per-session cap 1000000) turns it
-      red on 5 tests; reverting turns it green (56 passed, 2 xfailed).
-- [x] `/bvp` (5,374,898 bytes) is assessed against the same size guard and either brought
-      under it or given an explicit, recorded exemption with a reason. It is the same class
-      and it has already caused a false green once — its size overflows the 64KB pipe
-      buffer, which made `cmd | grep -q` exit 141 (SIGPIPE) and read as a failing check
-      (T-2743, L-387). Do not fix `/timeline` and leave its sibling unmeasured.
-      → Measured at 5,385,019 bytes and filed as **T-2780** with its own ACs. Exemption is
-      recorded in `KNOWN_OVER_CAP` naming the owning task, and the guard *fails* an entry
-      that drops under cap while still listed — so the exemption cannot outlive the fix.
+- [ ] `/bvp` response size measured off the wire before and after, and lands under the
+      2,000,000-byte cap in `tests/playwright/test_all_routes_size.py`.
+- [ ] The `/bvp` entry is removed from `KNOWN_OVER_CAP` in that guard. The guard fails a
+      route that is under cap but still listed, so a stale exemption cannot outlive the fix.
+- [ ] The bound is a window the reader can see and step past, not a truncation — same
+      standard as T-2775 (`/timeline`): state the window, keep the remainder reachable.
+- [ ] Ranking is preserved across the window: `/bvp` exists to order tasks by value, so the
+      window must be over a *sorted* set. Bounding it by "first N found" would silently
+      change what the page means while making it look fixed.
+- [ ] Re-check the T-2743 verification line that this page's size broke. At 5.4 MB it
+      overflowed the 64KB pipe buffer, so `cmd | grep -q PAT` exited 141 (SIGPIPE) and a
+      passing check read as failing. Confirm which shape that line now uses (L-387).
 
 ### Human
-
-- [ ] [REVIEW] The timeline still reads as a narrative, and the window is obvious rather than
-      merely disclosed.
-
-  **Steps:**
-  1. Open http://192.168.10.107:3001/timeline
-  2. Read the header line and the pager. Ask whether it is clear you are looking at the most
-     recent 25 of 1,524 sessions, and that older history is a click away — as opposed to
-     looking like the whole record.
-  3. Click "Older ›" a couple of times, then "Newest «". Check the narrative still flows and
-     the token-delta figures still make sense across a page boundary.
-  4. Find a session showing "+ N more tasks in this session ›" and follow it.
-
-  **Expected:** The paged view reads as a deliberate window, not as truncation or as loss.
-  The per-session page shows that session's full task list. Nothing feels like it went
-  missing.
-
-  **If not:** Say which of the three signals is weak — the header wording, the pager, or the
-  "+N more" link — and whether the fix is wording, placement, or page size (25 is a
-  parameter, `_TIMELINE_PAGE_SIZE` in `web/blueprints/timeline.py`).
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -252,14 +193,6 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -c "import ast,sys; ast.parse(open('web/blueprints/timeline.py').read())"
-FW_TEST_PORT="$(bin/fw watchtower port)" python3 -m pytest tests/playwright/test_all_routes_size.py -q > /tmp/.t2775-size.out 2>&1 && grep -q "56 passed" /tmp/.t2775-size.out
-FW_TEST_PORT="$(bin/fw watchtower port)" python3 -m pytest tests/playwright/test_all_routes_load_time.py tests/playwright/test_all_routes_height.py -q -k timeline > /tmp/.t2775-guards.out 2>&1 && grep -q "2 passed" /tmp/.t2775-guards.out
-# Worst page, not the landing page — page 1 measured fine while page 10 was 12.6 MB.
-python3 -c "import sys,urllib.request; u=sys.argv[1]; m=max(len(urllib.request.urlopen(u+'/timeline?page=%d'%p,timeout=300).read()) for p in (1,10,35,61)); print('worst page bytes:',m); sys.exit(0 if m < 2000000 else 1)" "$(bin/fw watchtower url)"
-# The capped remainder must stay reachable, else the bound is a deletion.
-curl -sf -o /dev/null -m 120 "$(bin/fw watchtower url)/timeline/session/S-2026-0706-2055"
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -275,45 +208,6 @@ curl -sf -o /dev/null -m 120 "$(bin/fw watchtower url)/timeline/session/S-2026-0
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `/timeline` returned 69,879,595 bytes (69.9 MB) and took 29.4s to
-domcontentloaded, failing the 5s Playwright cap.
-
-**Root cause:** the route rendered every session ever recorded — 1,524 of them, carrying
-182,541 task references — with no windowing on either axis.
-
-**Why structurally allowed — the page was already "fixed" once.** T-2041 capped this exact
-page, on the height axis: render everything, wrap the overflow in a collapsed `<details>`.
-That was a correct fix for what it measured. `display:none` is excluded from `scrollHeight`,
-so the 8000px height guard went green and stayed green, while all 69.9 MB continued to cross
-the wire. The latency guard, meanwhile, passed intermittently for an unrelated reason —
-transfer over loopback is 4.4s, under the 5s cap, because the cost is the browser parsing
-70 MB rather than the server sending it. So the page satisfied both guards it had, and the
-one axis nobody measured was the one that was broken.
-
-That is the general shape worth keeping: **"bounded" is per-axis, and a page is bounded only
-on the axes something actually measures.** Two green guards read as "this page is fine"
-rather than as "this page is fine in two specific respects". L-429 (T-2040) had already named
-unbounded pages as a recurring class — the learning existed; the third check did not.
-
-**A second axis inside the fix.** Paging alone took the landing page to 609,180 bytes and
-looked like the job was done. Sweeping all 61 pages showed the worst at **12,576,219 bytes** —
-sessions are wildly uneven (median ~37 task references, largest 2,499), so one outlier
-dominates whichever page it lands on. Bounding the session count does not bound session size.
-Measuring only the landing page would have shipped a 12.6 MB page as a fix.
-
-**Prevention:**
-1. `tests/playwright/test_all_routes_size.py` — a response-SIZE guard over every discovered
-   route, 2 MB cap, measured off the wire (not `len(page.content())`, which is the
-   post-parse DOM and a different number). Third sibling to the height and latency guards.
-2. It found two further members of the class on its first run: `/project` (T-2781, 2.27 MB)
-   and `/bvp` (T-2780, 5.4 MB). Both are recorded as exemptions naming their owning task, and
-   the guard fails an exempted route that drops under cap — a stale exemption cannot outlive
-   the defect it documents.
-3. `test_timeline_pages_bounded_not_just_the_first` samples pages 1/10/35/61 rather than the
-   landing page, pinning the second axis specifically.
-4. Mutation-checked against the unbounded render, per L-530: a guard that has never been red
-   demonstrates only that it is implemented.
 
 ## Evolution
 
@@ -362,10 +256,7 @@ Measuring only the landing page would have shipped a 12.6 MB page as a fix.
 
 ## Updates
 
-### 2026-08-03T19:18:51Z — task-created [task-create-agent]
+### 2026-08-03T22:21:59Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2775-watchtower-timeline-renders-698mb-of-htm.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2780-watchtower-bvp-returns-54mb-with-no-row-.md
 - **Context:** Initial task creation
-
-### 2026-08-03T19:30:24Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

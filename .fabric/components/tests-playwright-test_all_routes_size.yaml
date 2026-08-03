@@ -1,0 +1,20 @@
+id: tests/playwright/test_all_routes_size.py
+name: test_all_routes_size
+type: script
+subsystem: unknown
+location: tests/playwright/test_all_routes_size.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-03
+created_by: unknown

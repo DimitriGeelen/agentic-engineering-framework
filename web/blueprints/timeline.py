@@ -5,7 +5,7 @@ import re as re_mod
 from pathlib import Path
 
 import yaml
-from flask import Blueprint, abort, render_template
+from flask import Blueprint, abort, render_template, request
 
 from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, get_task_names, mtime_cached_get
 
@@ -216,27 +216,116 @@ def _get_cached_sessions():
     return sessions
 
 
+# T-2775: sessions per page. The page previously rendered every session ever recorded —
+# 1,524 of them, carrying 182,541 task entries, for a 69.8 MB response.
+#
+# T-2041 had already capped this page, but on the *height* axis: it rendered everything and
+# wrapped the overflow in a collapsed <details>, which is display:none and so drops out of
+# scrollHeight. That satisfied the 8000px height guard exactly as intended while every one of
+# those bytes still crossed the wire. The lesson is not that T-2041 was wrong — it fixed what
+# it measured — but that "bounded" is per-axis, and a page is only bounded on the axis some
+# check actually looks at.
+_TIMELINE_PAGE_SIZE = 25
+
+# T-2775: per-session task-list cap. Paging bounds how many sessions render; it does not
+# bound how large one session is. Sessions are wildly uneven — the median carries ~37 task
+# references and the largest carries 2,499 — so with paging alone the worst page measured
+# 12.6 MB while page 1 measured 609 KB. Two independent axes, and only sweeping every page
+# showed the second one; the landing page looked fixed.
+_TIMELINE_TASKS_PER_SESSION = 40
+
+
 @bp.route("/timeline")
 def timeline():
     import copy
-    sessions = [copy.copy(s) for s in _get_cached_sessions()]
+
+    all_sessions = [copy.copy(s) for s in _get_cached_sessions()]
+
+    # Collapse and delta BEFORE slicing: both are cross-session. _collapse_emergency_runs
+    # merges consecutive runs (so it changes what index N means), and _compute_session_deltas
+    # reads each session's predecessor to compute a difference — slicing first would compute
+    # a wrong delta at every page boundary rather than a missing one, which is worse.
+    all_sessions = _collapse_emergency_runs(all_sessions)
+    _compute_session_deltas(all_sessions)
+
+    total = len(all_sessions)
+    page_count = max(1, (total + _TIMELINE_PAGE_SIZE - 1) // _TIMELINE_PAGE_SIZE)
+    try:
+        page = int(request.args.get("page", 1))
+    except (TypeError, ValueError):
+        page = 1
+    page = max(1, min(page, page_count))
+
+    start = (page - 1) * _TIMELINE_PAGE_SIZE
+    sessions = all_sessions[start:start + _TIMELINE_PAGE_SIZE]
+
+    # Enrich only the page being rendered. This is the step that scaled with the whole
+    # corpus: it built a dict per task reference, 182,541 of them, to fill lists the browser
+    # then had to parse.
     task_names = _load_task_names()
-
-    # Enrich task IDs with names (fast — just dict lookups)
     for s in sessions:
-        s["tasks_touched"] = [
-            {"id": t, "name": task_names.get(t, "")}
-            for t in s.get("_tasks_touched_ids", [])
-        ]
-        s["tasks_completed"] = [
-            {"id": t, "name": task_names.get(t, "")}
-            for t in s.get("_tasks_completed_ids", [])
-        ]
+        if "_tasks_touched_ids" in s:
+            ids = s["_tasks_touched_ids"]
+            s["tasks_touched"] = [
+                {"id": t, "name": task_names.get(t, "")}
+                for t in ids[:_TIMELINE_TASKS_PER_SESSION]
+            ]
+            # Surfaced in the template as a link to this session's own page, so the
+            # remainder stays reachable rather than being quietly dropped.
+            s["tasks_touched_hidden"] = max(0, len(ids) - _TIMELINE_TASKS_PER_SESSION)
+        if "_tasks_completed_ids" in s:
+            ids = s["_tasks_completed_ids"]
+            s["tasks_completed"] = [
+                {"id": t, "name": task_names.get(t, "")}
+                for t in ids[:_TIMELINE_TASKS_PER_SESSION]
+            ]
+            s["tasks_completed_hidden"] = max(0, len(ids) - _TIMELINE_TASKS_PER_SESSION)
 
-    sessions = _collapse_emergency_runs(sessions)
-    _compute_session_deltas(sessions)
+    return render_page(
+        "timeline.html",
+        page_title="Timeline",
+        sessions=sessions,
+        page=page,
+        page_count=page_count,
+        page_size=_TIMELINE_PAGE_SIZE,
+        total_sessions=total,
+        range_start=(start + 1) if total else 0,
+        range_end=min(start + _TIMELINE_PAGE_SIZE, total),
+    )
 
-    return render_page("timeline.html", page_title="Timeline", sessions=sessions)
+
+@bp.route("/timeline/session/<session_id>")
+def timeline_session(session_id):
+    """Full task lists for one session.
+
+    T-2775: the timeline caps each session's task list so one outlier cannot blow up a page
+    (the largest session carries 2,499 task references). This is where the rest lives — the
+    cap is a window onto the data, not a deletion of it, and the timeline links here whenever
+    it has hidden anything.
+    """
+    if not re_mod.match(r"^S-[0-9A-Za-z._-]{1,64}$", session_id):
+        abort(404)
+
+    match = next((s for s in _get_cached_sessions() if s.get("id") == session_id), None)
+    if match is None:
+        abort(404)
+
+    task_names = _load_task_names()
+    session = dict(match)
+    session["tasks_touched"] = [
+        {"id": t, "name": task_names.get(t, "")}
+        for t in session.get("_tasks_touched_ids", [])
+    ]
+    session["tasks_completed"] = [
+        {"id": t, "name": task_names.get(t, "")}
+        for t in session.get("_tasks_completed_ids", [])
+    ]
+
+    return render_page(
+        "timeline_session.html",
+        page_title=f"Session {session_id}",
+        session=session,
+    )
 
 
 @bp.route("/api/timeline/task/<task_id>")
