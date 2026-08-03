@@ -217,14 +217,21 @@ bin/fw reviewer T-1818 2>&1 | grep -q "Overall:.*PASS"
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1818-v2-peer-consult-slice-1-framework-half--.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-62408ecd
-- **Timestamp:** 2026-05-18T09:30:58Z
+- **Scan ID:** R-70d10d3f
+- **Timestamp:** 2026-08-03T13:30:13Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** none
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw peer --help 2>&1 | grep -q subscribe`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `bin/fw reviewer T-1818 2>&1 | grep -q "Overall:.*PASS"`
 
 - **Layer-1 escalations:** 2
   1. **external-publish** (high) — External publish or release
