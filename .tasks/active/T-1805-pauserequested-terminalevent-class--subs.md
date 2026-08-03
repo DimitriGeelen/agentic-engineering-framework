@@ -82,7 +82,14 @@ Slice 1/5 of the dispatch-safety arc. Substrate-only — teaches `lib/spawn.py`,
 # Shell commands that MUST pass before work-completed.
 
 python3 -m pytest tests/unit/test_spawn.py -q
-python3 -m pytest tests/unit/test_outcome_read.py tests/unit/test_outcome_list.py -q 2>&1 | tail -5 || python3 -m pytest tests/unit/ -k outcome -q
+# T-2766: was `pytest tests/unit/test_outcome_read.py tests/unit/test_outcome_list.py
+# -q 2>&1 | tail -5 || pytest tests/unit/ -k outcome -q`. Neither named file has ever
+# existed (git log --all --diff-filter=A is empty for both), so the `||` arm was the
+# sole executor from the day this was written — and its population is `-k outcome`
+# across the whole suite (70 tests, 4 files), not this task's deliverable. It was
+# reporting another component's failures as T-1805's. Re-pointed at the file this
+# task's own `components:` declares and its commit modified; fallback dropped.
+python3 -m pytest tests/unit/test_outcome.py -q
 python3 -c "import sys; sys.path.insert(0, 'lib'); from spawn import _PAUSE_EVENT_TYPE; assert _PAUSE_EVENT_TYPE == 'pause_requested', f'pause event class drift: {_PAUSE_EVENT_TYPE!r}'"
 python3 -c "import sys; sys.path.insert(0, 'lib'); from spawn import _VALID_OUTCOME_STATUSES; assert 'paused' in _VALID_OUTCOME_STATUSES, f'paused status missing from VALID set: {_VALID_OUTCOME_STATUSES}'"
 
