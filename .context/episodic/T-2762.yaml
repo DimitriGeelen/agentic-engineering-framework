@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2762: upgrade guard: a source repo that cannot resolve the consumer's sha is not a valid upgrade source
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T12:03:12Z
+# ============================================================================
+
+task_id: T-2762
+task_name: "upgrade guard: a source repo that cannot resolve the consumer's sha is not a valid upgrade source"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T11:43:03Z
+completed: 2026-08-03T12:02:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-03T13:59:26+02:00
+last_commit: 2026-08-03T13:59:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a source that cannot resolve the consumer's sha is not a valid upgrade source. register fabric card for the new guard test
+
+# Key outcomes
+outcomes:
+  - '`fw_version_relation` distinguishes *sha recorded but unresolvable in this source*'
+  - 'The unresolvable-sha case refuses by default (it is evidence about the source, not'
+  - 'The refusal is bypassable via a documented env var, logged Tier-2, mirroring the'
+  - 'The reason string for the unresolvable-sha case states the real cause — that the'
+  - '`lib/upgrade.sh`''s T-1912 precheck refuses on the new relation without needing its'
+  - 'Regression test reproduces the field case end-to-end: consumer pinned ahead with a'
+  - 'Mutation check recorded in the task: reverting the guard turns the new tests red'
+  - 'Existing `t2755_upgrade_pin_line_direction.bats` and'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-03 — guard mechanism: sha-resolvability, not path comparison'
+    chose: 'refuse when the consumer records a `version_sha` this source cannot'
+    rationale: 'it targets the actual failure, is host-independent, and leaves the'
+    alternatives_rejected: ['T-2761''s original "refuse when `FRAMEWORK_ROOT` != the target''s']
+  - decision: '2026-08-03 — opposite defaults for two neighbouring relations'
+    chose: '`foreign-source` refuses by default; `undecidable` keeps proceeding by'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-t2762_upgrade_foreign_source_sha.yaml'
+  - 'lib/upgrade.sh'
+  - 'lib/version-relation.sh'
+  - '.tasks/active/T-2762-upgrade-guard-a-source-repo-that-cannot-.md'
+  - 'tests/unit/t2762_upgrade_foreign_source_sha.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T13:59:26'
+    action: 'T-2762: a source that cannot resolve the consumer''s sha is not a valid upgrade source'
+  - time: '2026-08-03T13:59:45'
+    action: 'T-2762: register fabric card for the new guard test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 2
+  files_changed: 6
+  lines_added: 687
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2762-upgrade-guard-a-source-repo-that-cannot-.md
+generated_by: context-agent-hybrid

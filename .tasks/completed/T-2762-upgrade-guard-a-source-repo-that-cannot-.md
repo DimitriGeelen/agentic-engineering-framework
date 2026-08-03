@@ -6,12 +6,12 @@ description: >
   upgrade guard: a source repo that cannot resolve the consumer's sha is not a valid
   upgrade source
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/upgrade.sh, lib/version-relation.sh, tests/unit/t2762_upgrade_foreign_source_sha.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T11:43:03Z
-last_update: 2026-08-03T11:47:26Z
-date_finished:
+last_update: 2026-08-03T12:02:25Z
+date_finished: 2026-08-03T12:02:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -391,3 +391,20 @@ green as the bug it is chasing.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2762-upgrade-guard-a-source-repo-that-cannot-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f48eaec6
+- **Timestamp:** 2026-08-03T12:03:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/t2762_upgrade_foreign_source_sha.bats`
+
+### 2026-08-03T12:02:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
