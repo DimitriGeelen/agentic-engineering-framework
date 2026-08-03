@@ -20,7 +20,7 @@ description: >
   on their own merits; do not re-point them at a foreign server. Diagnose the loopback
   drop first (iptables -L -n, docker network rules), then re-run both suites.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:32:26Z
-last_update: '2026-08-03T17:45:06Z'
+last_update: 2026-08-03T17:48:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -60,6 +60,24 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-03T17:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2774: Watchtower unreachable over loopback (localhost/127.0.0.1 time out) though it listens on 0.0.0.0
@@ -72,8 +90,20 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Cause of the loopback drop identified by measurement (firewall rules, namespace, or
+      bind behaviour) — not inferred from the symptom. State which rule or mechanism drops
+      it, with the command that shows it
+- [ ] `curl -sf http://127.0.0.1:$(bin/fw watchtower port)/` returns 200 — the LAN address
+      already does, so the fix is judged on loopback specifically
+- [ ] `tests/playwright/test_arc_close_recommendation_panel.py` and
+      `test_approvals_arc_closure_section.py` run green **against our own Watchtower**
+      (`FW_TEST_PORT="$(bin/fw watchtower port)"`), closing T-1960/T-1961's reds on their
+      own merits rather than by re-pointing at another server
+- [ ] If the cause is host configuration rather than framework code, it is documented where
+      an operator will find it (doctor check or CLAUDE.md), because an unreachable loopback
+      silently disables every Playwright suite and the failure looks like a test bug
+- [ ] Whatever the fix, a check exists that would catch this state again — the defect's real
+      cost was three weeks of Playwright suites failing in a way that read as flakiness
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -240,3 +270,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2774-watchtower-unreachable-over-loopback-loc.md
 - **Context:** Initial task creation
+
+### 2026-08-03T17:48:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
