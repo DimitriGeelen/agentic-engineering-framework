@@ -92,21 +92,39 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Cause of the multi-second `/` render identified by measurement — profile the route,
+- [x] Cause of the multi-second `/` render identified by measurement — profile the route,
       name the expensive work, don't infer it from the page size
-- [ ] `/` first-byte time is brought under a stated budget and the number is recorded
+      → cProfile over `_build_approvals_context`: **6,243 `yaml.safe_load` calls = 64 of
+        70.9 profiled seconds**, over a 2,761-task corpus. Named, not inferred; page size
+        (375KB) turned out to be irrelevant to the cost.
+- [x] `/` first-byte time is brought under a stated budget and the number is recorded
       before and after, measured over several runs rather than one (the original
       mis-diagnosis came from a single measurement with too short a timeout)
-- [ ] `tests/playwright/test_arc_close_recommendation_panel.py` and
+      → **Budget: under the existing 5s `LOAD_CAP_MS`.** Before: 57.82s / 2.31s / 2.62s
+        (cold-then-warm, first run of the session). After: 16 samples spaced 20s apart
+        across cache-TTL boundaries — **1.45s min, 3.19s max, no spikes**, plus 5
+        back-to-back runs at 1.47-1.51s. `/` passes the load-cap guard.
+- [x] `tests/playwright/test_arc_close_recommendation_panel.py` and
       `test_approvals_arc_closure_section.py` run green **against our own Watchtower**
       (`FW_TEST_PORT="$(bin/fw watchtower port)"`), closing T-1960/T-1961's reds on their
       own merits rather than by re-pointing at another server
-- [ ] Playwright's `Page.goto` budget is raised above the observed worst case, so a slow
+      → **10/10 passed** on port 3001 (ours). `fw verify-queue` for both source tasks now
+        PASS 5/5 and 4/4. No foreign server involved.
+- [x] Playwright's `Page.goto` budget is raised above the observed worst case, so a slow
       page fails on an assertion (loud, diagnostic) instead of on a timeout (silent, reads
       as flakiness) — the two failure modes carry completely different information
-- [ ] Whatever the fix, a check exists that would catch this state again. The defect's real
+      → 15s → 45s (`FW_TEST_NAV_TIMEOUT_MS`). Demonstrated working: the load-time suite
+        now reports `/timeline warm-load took 29439ms — exceeds 5000ms cap`. At 15s that
+        route died as a bare `TimeoutError` before any assertion ran.
+- [x] Whatever the fix, a check exists that would catch this state again. The defect's real
       cost was not the latency; it was that timeouts read as flaky tests, which is what got
       a foreign server pinned as a workaround in the first place
+      → Three, at different layers: `test_all_routes_load_time.py` (already existed; the
+        goto-budget change is what makes it *fire* as an assertion rather than being
+        pre-empted), plus two new unit pins — `test_arcs_membership_cached.py` (the caches
+        cannot be bypassed again) and `test_frontmatter_loader_equivalence.py` (the fast
+        loader cannot silently revert, and cannot drift from the slow one). Both
+        mutation-checked: reverting each fix turns its test red.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +158,24 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+# Behavioural: the two caches this task wired must not be bypassed again, and the
+# fast loader must stay both wired AND equivalent to the slow one. Both files are
+# mutation-checked — reverting either fix turns them red.
+python3 -m pytest tests/unit/test_arcs_membership_cached.py tests/unit/test_frontmatter_loader_equivalence.py -q
+# T-1960/T-1961's suites, green against OUR Watchtower. The port is resolved, never
+# literal — pinning :3000 is the workaround this whole task exists to undo, and it
+# would make these assertions pass against a different project's server (T-2732).
+FW_TEST_PORT="$(bin/fw watchtower port)" python3 -m pytest tests/playwright/test_arc_close_recommendation_panel.py tests/playwright/test_approvals_arc_closure_section.py -q
+# Structural: the goto backstop must stay well above the 5s load cap, so a slow route
+# fails on the named load-cap assertion rather than as a bare TimeoutError.
+grep -q 'FW_TEST_NAV_TIMEOUT_MS' tests/playwright/conftest.py
+python3 -c "import os,re; s=open('tests/playwright/conftest.py').read(); m=re.search(r'FW_TEST_NAV_TIMEOUT_MS\", \"(\d+)\"', s); assert m and int(m.group(1)) >= 30000, 'nav timeout backstop too low to outlast the 5s load cap'"
+# The live index must answer under the 5s LOAD_CAP_MS budget this task adopted.
+# One warming request first (a cache refill is legitimate cost, not the regression
+# this guards), then the measured one. Must be a single line: the verification
+# extractor executes each line as its own command, so a multi-line python -c here
+# gets shredded into fragments that fail on shell syntax. Caught by rehearsing.
+curl -sf -o /dev/null -m 60 "$(bin/fw watchtower url)/" && python3 -c "import time,urllib.request,sys; u=sys.argv[1]+'/'; t0=time.perf_counter(); urllib.request.urlopen(u,timeout=60).read(); d=time.perf_counter()-t0; print(f'index {d:.2f}s'); sys.exit(0 if d < 5.0 else 1)" "$(bin/fw watchtower url)"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -221,6 +257,66 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom.** Playwright suites against Watchtower failed intermittently with
+`TimeoutError` inside `page.goto`. Read as flaky infrastructure, which is why the
+standing workaround was to re-point them at `FW_TEST_PORT=3000` — a *different
+project's* Watchtower, which answered faster. That traded "our page is slow" for
+"a foreign server passes our assertions" (T-2732 class).
+
+**Root cause.** Three independent caches on the `/` and `/approvals` render path,
+each already built, each bypassed:
+
+1. `parse_frontmatter` used the pure-Python `yaml.SafeLoader` although PyYAML on
+   this host has libyaml compiled in. 6,243 `safe_load` calls = 64 of 70.9
+   profiled seconds over a 2,761-task corpus.
+2. `arcs.py:_read_task_meta` globbed `.tasks/` and re-parsed one file per task id
+   — 393 globs and 393 parses per `/approvals` render, for files the shared
+   metadata cache had already parsed on the same request.
+3. `arcs.py:_resolve_constituents` called the *uncached* membership scan while its
+   own docstring said "request-cached (60s)". One full-corpus scan per arc; 14 per
+   render.
+
+**Why structurally allowed.** Two gaps that compose.
+
+*The measurement said the wrong thing.* A latency guard existed
+(`LOAD_CAP_MS = 5000`) and would have named this. It never got to run: the goto
+timeout (15s) sat *below* the observed worst case, so the navigation aborted
+before any assertion executed. A timeout carries strictly less information than an
+assertion — it says "did not answer inside my budget", not "is wrong" — and
+because a warm cache put the same route under 15s on other runs, the signal
+oscillated and read as flakiness. **The guard was present, correct, and silenced
+by an unrelated constant.**
+
+*The cost was invisible per-commit.* Every one of the three bypasses is a
+correctness-neutral performance defect: nothing fails, output is identical, the
+page just costs more as the corpus grows. #3 is the sharpest — a docstring
+asserting a cache the body didn't use. Prose claiming behaviour the code doesn't
+implement is unfalsifiable by any test that only checks output.
+
+**Prevention.** Distinct from the fix in each case:
+- `test_arcs_membership_cached.py` — asserts N arcs cost *one* scan, and that
+  `_read_task_meta` builds one index rather than parsing per id. This is what makes
+  claim #3 falsifiable: the docstring and the body can no longer disagree silently.
+- `test_frontmatter_loader_equivalence.py` — pins the fast loader as wired, *and*
+  pins it byte-equivalent to the slow one across the live corpus plus 13 tricky
+  implicit-type cases. Speed alone would have been the wrong thing to assert:
+  L-495 already has this project on record for PyYAML mangling unquoted ISO-8601
+  `Z` timestamps, so a loader swap had to be shown not to change meaning.
+- Raising the goto backstop to 45s so `LOAD_CAP_MS` is what fires. This is the
+  structural one — it restores information to a channel that was carrying noise,
+  and it immediately surfaced three genuine defects that had been hiding behind
+  the timeouts (T-2775, T-2776, T-2777).
+
+**The generalisation, stated but not built.** There is a height guard (8000px) and
+a latency guard (5s), but no *response-size* guard — which is how `/timeline` got
+to 69.8 MB unnoticed. Filed as part of T-2775 rather than smuggled in here.
+
+**Carried-forward correction.** This task was originally filed claiming loopback
+was blocked. It was not. That came from `curl -m 5` returning rc=000 and reading a
+timeout as a refusal — the same TIME-vs-FAIL conflation described above, made by
+me, one task after building that distinction into `verify-queue`. The original
+text is left visible in the description rather than rewritten.
 
 ## Evolution
 
