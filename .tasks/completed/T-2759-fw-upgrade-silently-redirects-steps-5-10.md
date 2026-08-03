@@ -13,12 +13,12 @@ description: >
   permanently behind despite successful upgrades. Fires whenever ~/.local/bin/fw is
   a symlink whose target ends in /bin/fw and has no FRAMEWORK.md alongside.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, tests/unit/lib_upgrade.bats, tests/unit/t2759_upgrade_target_dir_shadowing.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -31,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T10:34:32Z
-last_update: '2026-08-03T10:45:06Z'
-date_finished:
+last_update: 2026-08-03T11:45:57Z
+date_finished: 2026-08-03T11:45:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -359,3 +359,20 @@ T-2760 for the distinction and T-2756 for the bootstrap-clone question.
 
 ### 2026-08-03T10:35:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ebb9f2b1
+- **Timestamp:** 2026-08-03T11:47:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/t2759_upgrade_target_dir_shadowing.bats 2>&1); echo "$out" | grep -q '^1\.\.6' && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-08-03T11:45:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
