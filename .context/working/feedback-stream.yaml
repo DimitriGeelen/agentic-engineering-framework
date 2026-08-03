@@ -26028,3 +26028,39 @@ scan_id: R-094fdbce
 task_id: T-2776
 payload:
   task_file: .tasks/active/T-2776-watchtower-tasks-takes-15s-to-first-byte.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T21:55:02Z'
+scan_id: R-b9a85037
+task_id: T-2778
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T21:55:02Z'
+scan_id: R-b9a85037
+task_id: T-2778
+payload:
+  task_file: .tasks/active/T-2778-fw-task-create-mangles-multi-line-descri.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T22:09:25Z'
+scan_id: R-f45c3f2f
+task_id: T-2779
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T22:09:25Z'
+scan_id: R-f45c3f2f
+task_id: T-2779
+payload:
+  task_file: .tasks/active/T-2779-audit-frontmatter-check-is-blind-to-sile.md

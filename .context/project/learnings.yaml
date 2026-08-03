@@ -4127,3 +4127,10 @@ X'` returning empty group."
   date: 2026-08-03
   context: Added via context agent
   application: TBD
+- id: L-543
+  learning: "A detector written from the instance that announced itself is bounded by that instance's failure mode, and its count cannot reveal the bound. audit.sh classified task frontmatter by 'did parsing raise?', so folded-scalar breaks whose orphaned paragraph contained a colon parsed as a junk key, truncated description silently, and scored the same rc=0 as a healthy file. Two independent censuses years apart (the T-1845 note at audit.sh:640, and T-2778) both reported exactly 1 victim; the true count was 5. Both inherited the predicate rather than the phenomenon. A low count reads as good news whether the population is small or the predicate is narrow, and from inside the check those are indistinguishable. Remedy: derive the predicate from the MECHANISM (what can a folded-scalar break do?) not from the observed symptom. Where a defect has a loud and a silent variant, expect the loud one to be the minority - well-formed prose is likelier to contain a colon, hence likelier to corrupt silently."
+  source: P-001
+  task: unknown
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD

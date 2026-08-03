@@ -1,40 +1,24 @@
-timestamp: 2026-08-03T21:00:02Z
+timestamp: 2026-08-03T21:30:01Z
 findings:
-  - id: D4
+  - id: D1
     level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
-    level: WARN
-    check: "D5: Task lifecycle — 17 anomaly(s): T-1542(98d-active) T-1624(95d-active) T-1820(81d-active) T-2170(62d-active) T-2268(55d-active) T-2410(49d-active) T-801(122d-active) T-802(122d-active) T-803(122d-active) T-2389(50d-active) (+7 more)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D13
-    level: WARN
-    check: "D13: Inception limbo — 7 task(s): A=6/B=1 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2715(B)"
-    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
-  - id: D3
+    check: "D1: Episodic quality — 0% [TODO] (18/2454)"
+  - id: D2
+    level: FAIL
+    check: "D2: Human review queue — 163 task(s) waiting >30d: T-100131(28d) T-100188(28d) T-1701(68d) T-1702(64d) T-1707(68d) T-1718(68d) T-1773(82d) T-1774(82d) T-1775(82d) T-1776(64d) T-1792(83d) T-1794(83d) T-1795(82d) T-1796(82d) T-1797(82d) T-1799(82d) T-1801(82d) T-1802(82d) T-1803(82d) T-1805(82d) T-1806(82d) T-1807(82d) T-1808(82d) T-1810(82d) T-1811(82d) T-1818(81d) T-1827(73d) T-1834(80d) T-1842(73d) T-1843(73d) T-1844(73d) T-1891(77d) T-1909(75d) T-1910(75d) T-1911(75d) T-1928(76d) T-1929(76d) T-1930(76d) T-1933(76d) T-1934(75d) T-1935(75d) T-1936(75d) T-1939(75d) T-1947(75d) T-1951(73d) T-1954(75d) T-1955(75d) T-1957(75d) T-1960(74d) T-1961(74d) T-1963(74d) T-1964(75d) T-1965(75d) T-1968(75d) T-1969(74d) T-1970(74d) T-1971(74d) T-1976(73d) T-1977(74d) T-1978(73d) T-1980(73d) T-1982(74d) T-1984(73d) T-1985(73d) T-1988(73d) T-1989(69d) T-1990(68d) T-1991(73d) T-1992(69d) T-1993(69d) T-1994(68d) T-1999(72d) T-2002(68d) T-2003(69d) T-2004(69d) T-2006(69d) T-2008(69d) T-2009(69d) T-2010(69d) T-2011(69d) T-2012(69d) T-2013(69d) T-2015(69d) T-2016(69d) T-2017(69d) T-2018(69d) T-2019(69d) T-2020(69d) T-2021(69d) T-2022(69d) T-2023(69d) T-2024(69d) T-2025(69d) T-2026(69d) T-2027(69d) T-2028(69d) T-2029(69d) T-2031(69d) T-2033(69d) T-2034(69d) T-2038(69d) T-2039(69d) T-2040(69d) T-2041(69d) T-2043(69d) T-2044(69d) T-2045(69d) T-2046(69d) T-2047(69d) T-2049(69d) T-2051(68d) T-2054(68d) T-2062(67d) T-2063(67d) T-2064(67d) T-2065(67d) T-2066(67d) T-2075(66d) T-2077(66d) T-2080(67d) T-2082(67d) T-2084(66d) T-2085(66d) T-2086(66d) T-2087(66d) T-2088(66d) T-2089(66d) T-2102(65d) T-2103(65d) T-2106(65d) T-2110(65d) T-2111(65d) T-2112(65d) T-2114(65d) T-2116(65d) T-2117(65d) T-2119(58d) T-2136(64d) T-2160(63d) T-2167(63d) T-2174(62d) T-2175(62d) T-2176(58d) T-2179(62d) T-2183(51d) T-2185(60d) T-2192(61d) T-2222(58d) T-2240(57d) T-2265(56d) T-2274(55d) T-2278(55d) T-2281(55d) T-2332(53d) T-2336(53d) T-2342(53d) T-2349(28d) T-2369(51d) T-2373(51d) T-2376(51d) T-2403(49d) T-2406(49d) T-2417(48d) T-2428(46d) T-2430(46d) T-2463(28d) T-2474(40d) T-2479(28d) T-2525(24d) T-2529(23d) T-2530(23d) T-2555(15d) T-2558(15d) T-2561(15d) T-2563(15d) T-2565(15d)"
+    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
+  - id: D8
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=84 avg=47 ratio=1.8x)"
-  - id: D7
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - id: D10
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 84_commits_24h)"
-  - id: D6
+    check: "D10: Decision-without-dialogue — none detected"
+  - id: D11
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=13.7 earlier=9.7)"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
-  - id: D14
-    level: PASS
-    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
-  - id: D15
-    level: PASS
-    check: "D15: Inception limbo state — none (PASS no_limbo)"
+    check: "D11: Gap register staleness — all gaps fresh"
 
 summary:
-  pass: 8
-  warn: 2
-  fail: 0
-  total: 10
+  pass: 4
+  warn: 0
+  fail: 1
+  total: 5
