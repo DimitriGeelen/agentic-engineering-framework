@@ -1,24 +1,26 @@
 ---
 id: T-2774
-name: "Watchtower unreachable over loopback (localhost/127.0.0.1 time out) though
-  it listens on 0.0.0.0"
+name: "Watchtower / renders in 2-14s, straddling Playwright's 15s goto timeout (filed
+  as a loopback block; that diagnosis was wrong)"
 description: >
-  Measured on this host: Watchtower listens 0.0.0.0:3001 (pid 390238) and answers
-  on the LAN address http://192.168.10.107:3001 immediately, but http://localhost:3001
-  and http://127.0.0.1:3001 both time out (rc=000 after the full 5s curl budget);
-  ::1 refuses instantly. So loopback traffic to the port is being dropped while LAN
-  traffic is permitted — most likely a firewall/iptables rule or a namespace quirk,
-  not a bind problem, since the socket is bound to 0.0.0.0. Impact: every Playwright
-  suite is affected, because the harness builds base_url as http://localhost:$FW_TEST_PORT.
-  Page.goto then times out at 15s against a server that is demonstrably up. Found
-  via T-2771 while repairing T-1960/T-1961, and it reframes what those hard-coded
-  FW_TEST_PORT=3000 lines were: port 3000 is a different project's Watchtower that
-  DOES answer on loopback, so pinning 3000 was very likely a workaround for this defect
-  — one that silently converted 'our tests cannot reach our server' into 'another
-  project's server passes our assertions'. That is a worse failure than the timeout
-  it avoided. Fixing reachability is the prerequisite for T-1960/T-1961 going green
-  on their own merits; do not re-point them at a foreign server. Diagnose the loopback
-  drop first (iptables -L -n, docker network rules), then re-run both suites.
+  CORRECTED DIAGNOSIS — the original filing said loopback was blocked. It is not.
+  That conclusion came from `curl -m 5`, which timed out and was read as unreachable.
+  With a real budget every address returns 200, and the latency is not address-dependent:
+  127.0.0.1 ttfb measured 19.5s, 13.8s, 2.2s, 3.4s across runs; the LAN address 2.1s,
+  2.8s. A raw TCP connect to 127.0.0.1:3001 succeeds in 0.2ms, so there is no firewall
+  drop — ufw's INPUT policy is DROP but loopback is permitted, as the connect proves.
+  The actual defect: the Watchtower `/` route takes 2-14 seconds to produce first byte,
+  varying with load, and Playwright's default Page.goto timeout is 15s. The suites sit
+  right on the edge, so they fail intermittently in a way that reads as flakiness rather
+  than as a slow server. This is one root cause for three observations from T-2771:
+  T-1960 and T-1961 timing out post-repair, and T-1910's red that vanished on re-run.
+  Scope: find why `/` costs seconds (the page is 375KB and something behind it is
+  expensive — likely per-request scanning of the task corpus with no caching), fix or
+  cache it, and separately raise the Playwright goto budget so a slow-but-working page
+  fails loudly on an assertion rather than silently on a timeout. Do NOT re-point the
+  suites at port 3000; that was the workaround this whole thread came from — port 3000
+  is a different project's Watchtower, and pinning it traded 'our page is slow' for
+  'a foreign server passes our assertions'.
 
 status: started-work
 workflow_type: build
@@ -90,20 +92,21 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Cause of the loopback drop identified by measurement (firewall rules, namespace, or
-      bind behaviour) — not inferred from the symptom. State which rule or mechanism drops
-      it, with the command that shows it
-- [ ] `curl -sf http://127.0.0.1:$(bin/fw watchtower port)/` returns 200 — the LAN address
-      already does, so the fix is judged on loopback specifically
+- [ ] Cause of the multi-second `/` render identified by measurement — profile the route,
+      name the expensive work, don't infer it from the page size
+- [ ] `/` first-byte time is brought under a stated budget and the number is recorded
+      before and after, measured over several runs rather than one (the original
+      mis-diagnosis came from a single measurement with too short a timeout)
 - [ ] `tests/playwright/test_arc_close_recommendation_panel.py` and
       `test_approvals_arc_closure_section.py` run green **against our own Watchtower**
       (`FW_TEST_PORT="$(bin/fw watchtower port)"`), closing T-1960/T-1961's reds on their
       own merits rather than by re-pointing at another server
-- [ ] If the cause is host configuration rather than framework code, it is documented where
-      an operator will find it (doctor check or CLAUDE.md), because an unreachable loopback
-      silently disables every Playwright suite and the failure looks like a test bug
-- [ ] Whatever the fix, a check exists that would catch this state again — the defect's real
-      cost was three weeks of Playwright suites failing in a way that read as flakiness
+- [ ] Playwright's `Page.goto` budget is raised above the observed worst case, so a slow
+      page fails on an assertion (loud, diagnostic) instead of on a timeout (silent, reads
+      as flakiness) — the two failure modes carry completely different information
+- [ ] Whatever the fix, a check exists that would catch this state again. The defect's real
+      cost was not the latency; it was that timeouts read as flaky tests, which is what got
+      a foreign server pinned as a workaround in the first place
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
