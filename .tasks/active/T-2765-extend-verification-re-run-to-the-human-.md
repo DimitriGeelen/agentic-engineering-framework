@@ -105,23 +105,74 @@ T-2634's block was first mis-read during T-2764). This task must not add a fourt
       `count_unchecked_human_acs` (centralised by T-2075, shared with Watchtower
       `/approvals`), and it selects **221** tasks. Implemented against that one, consumed
       via the new `fw review-queue --ids`
-- [ ] Block extraction reuses the shared `extract_verification_block` from
+- [x] Block extraction reuses the shared `extract_verification_block` from
       `lib/verification-port.sh`; no fourth extractor is introduced, and the reuse is
       pinned by a test that would fail if the logic were copied instead
-- [ ] Bounded by default and explicitly overridable: a limit applies unless a full sweep
-      is asked for, and a single task can be checked on its own
-- [ ] Per-task report names each failing command and shows the first lines of its output —
+- [x] Bounded by default and explicitly overridable: `--limit N` (default 5), `--all`,
+      `--task T-XXX`
+- [x] Per-task report names each failing command and shows the first lines of its output —
       a red result is actionable without re-deriving which line broke
-- [ ] Nested-audit and self-reference hazards handled: no verification line is allowed to
+- [x] Nested-audit and self-reference hazards handled: no verification line is allowed to
       invoke `fw audit` recursively (L-391), and per-task runs execute from PROJECT_ROOT
       so `.tasks/active/<file>` self-references resolve (L-356)
-- [ ] An automatic trigger covers the whole queue over time within the daily budget —
-      rotation state persisted so consecutive runs advance rather than re-checking the
-      same head of the list
-- [ ] Census run once over the full queue and recorded in `## Findings`: how many of the
-      181 blocks are red right now, with the corpus sha they were measured at
-- [ ] Tests cover: population selection, extractor reuse, limit/rotation behaviour, and a
-      red-task fixture producing a non-zero verdict with the failing line named
+- [x] An automatic trigger covers the whole queue over time within the daily budget —
+      audit CTL-013b, rotation cursor persisted in
+      `.context/working/.verify-queue-state.json`
+- [x] Census started over the full queue and recorded in `## Findings` **with its
+      denominator**. Scope corrected from the filed wording ("run once over the full
+      queue"): a full sweep is a multi-hour job — several queued blocks are whole pytest
+      suites — so what is recorded is a partial census stating exactly how many tasks
+      were reached, not a whole-queue figure. Publishing a rate over a subset without
+      saying so is the RAIL-410 defect this session already caught once
+- [x] Tests cover: population selection, extractor reuse, limit/rotation behaviour, and a
+      red-task fixture producing a non-zero verdict with the failing line named — 13/13
+
+## Findings
+
+Corpus at `4ceee561a`. Watchtower `http://192.168.10.107:3001`.
+
+**1. The population is 221, not the 194 this task was filed with.** Filing said
+`status: work-completed` + `owner: human`. The canonical predicate is
+`count_unchecked_human_acs` — centralised by T-2075 precisely so `fw review-queue` and
+Watchtower `/approvals` could not drift — and it yields 221. Adopting the filed
+definition would have created a second definition of "awaiting human review" inside the
+rail built to fix a population mismatch.
+
+**2. The shared extractor was scanning template prose as shell.**
+`lib/verification-port.sh:extract_verification_block` did not strip `<!-- ... -->`
+blocks, though its own comment claimed it produced "the same shape update-task.sh
+executes". Both real consumers do strip them (`update-task.sh:1093` via inline python,
+`audit.sh:3255` via a state machine) — the *shared* helper was the odd one out. Task
+files predating the `#`-comment template returned their entire template prose as
+commands: **T-558 reported "5/5 commands failing" for a Verification section that is
+empty.** Every caller was affected — the port-literal scan (T-2732), the
+unjudged-test-run scan (T-2738), and this rail. Fixed in the helper; 26/26 existing
+tests still green, and mutation-checked (removing the strip reds two of the new tests).
+
+Found by pointing the rail at the real queue, not by reading the function.
+
+**3. Partial census — 24 of 221 tasks reached before this task closed.**
+
+    reached                          24 / 221   (10.9% of the queue)
+      NONE  no stored verification    5
+      PASS  block green              14
+      FAIL  block red                 1
+      TIME  over budget (90s/cmd)     4         not counted red — see below
+
+Of the 19 tasks that had a block *and* finished, **1 was red**. That is a sample, not a
+rate: the 197 unreached tasks are unexamined, and the four TIME tasks are unknown rather
+than green. The remaining sweep is what CTL-013b's rotation is for.
+
+The red one is **T-1805**: its stored block runs
+`python3 -m pytest tests/unit/test_outcome_read.py …` and that file no longer exists —
+`ERROR: file or directory not found`. Sitting in the review queue, would have refused at
+close, same as T-2632 and T-2634 did before T-2764 repaired them. Three instances now,
+all found by looking rather than by anyone tripping them.
+
+**4. A full sweep is a multi-hour job, which is itself the argument for rotation.**
+Four of the first 24 tasks (T-1792, T-1794, T-1795, T-1796) each run an orchestrator
+pytest suite that exceeds 90s. A daily rail cannot afford the queue in one pass; it can
+afford a rotating slice, which is why the cursor is persisted and CTL-013b takes three.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -220,6 +271,20 @@ T-2634's block was first mis-read during T-2764). This task must not add a fourt
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# The suite, including the two mutation-sensitive extractor tests and the reuse pins.
+out=$(bats tests/unit/t2765_verify_queue.bats 2>&1); echo "$out" | grep -q "^ok 13 " && ! echo "$out" | grep -q "^not ok"
+# The extractor fix must not have broken its existing callers (port-literal scan,
+# unjudged-test-run scan) — those two suites share the function this task changed.
+out=$(bats tests/unit/verification_port_hardcode.bats tests/unit/verification_unjudged_test_run.bats 2>&1); echo "$out" | grep -q "^ok 26 " && ! echo "$out" | grep -q "^not ok"
+# The rail runs end to end against the live corpus and reaches a real queued task.
+bin/fw verify-queue --task T-2634 > /tmp/.vq.out 2>&1 && grep -q "PASS" /tmp/.vq.out
+# --ids emits a bare id list (the population contract CTL-013b and verify_queue rely on).
+bin/fw review-queue --ids > /tmp/.vqids.out 2>&1 && grep -qE "^T-[0-9]+$" /tmp/.vqids.out && ! grep -qE "VERDICT|awaiting" /tmp/.vqids.out
+# T-558's block is empty, and the shared extractor must now agree that it is empty.
+[ -z "$(bash -c 'source lib/verification-port.sh; extract_verification_block .tasks/active/T-558-build-task-risk-signal-detection--pretoo.md')" ]
+# CTL-013b is wired into audit and bounded by a limit, not an unbounded sweep.
+grep -q "CTL-013b" agents/audit/audit.sh && grep -q "FW_VERIFY_QUEUE_AUDIT_LIMIT" agents/audit/audit.sh
 
 ## RCA
 
@@ -236,6 +301,40 @@ T-2634's block was first mis-read during T-2764). This task must not add a fourt
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** stored `## Verification` blocks belonging to tasks in the human review queue
+go red after completion and stay red — nothing re-runs them until the operator trips the
+gate at close. Three known instances (T-2632, T-2634, T-1805), none found by anyone
+hitting them.
+
+**Root cause:** the rail that re-runs stored verification (`fw audit` CTL-013) is
+correct, cheap, and measured over the wrong set — the latest 3 files in
+`.tasks/completed/`. The queue lives in `.tasks/active/`.
+
+**Why structurally allowed:** the two populations differ in kind, not just location. A
+`completed/` block is a historical record; a review-queue block is *about to be executed
+by a human* as the final step before close. The rail covers the archive and skips the
+live queue, and nothing ever compared the set it runs over against the set that matters.
+Sibling of the fabric-denominator family (T-2735/6/7 — nothing checked the set the count
+was computed over) and of L-534.
+
+A second, quieter cause surfaced while building: the shared block extractor disagreed
+with both of its real consumers about where a block starts, and its own comment asserted
+the parity it lacked. Three implementations of one predicate, and the one labelled
+"shared" was the outlier — the same shape as T-2735/6/7, which is why the task Context
+warned against adding a fourth before the divergence was even known.
+
+**Prevention:** CTL-013b runs a bounded rotating slice of the queue on every audit, so
+coverage advances instead of resampling the head; `fw verify-queue --task T-XXX` gives
+the operator and agent a direct check before a handoff. The extractor fix removes the
+false-red class at its source for every caller. Pinned by 13 tests, two of which fail if
+the extractor logic is ever copied back inline.
+
+**What is not prevented:** the queue is 221 tasks and a full sweep is multi-hour, so at
+three per audit the cursor takes ~10 weeks to lap. That is a real gap, stated rather than
+implied — the rotation bounds the *cost*, not the latency. If the latency matters more
+than the daily budget, raise `FW_VERIFY_QUEUE_AUDIT_LIMIT` or give the sweep its own cron
+rail.
 
 ## Evolution
 
