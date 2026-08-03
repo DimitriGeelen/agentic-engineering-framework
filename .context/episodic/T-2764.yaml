@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2764: classify T-2632 overlay-contract verification line: superseded shape vs real regression
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T12:51:51Z
+# ============================================================================
+
+task_id: T-2764
+task_name: "classify T-2632 overlay-contract verification line: superseded shape vs real regression"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T12:15:14Z
+completed: 2026-08-03T12:51:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-03T14:51:32+02:00
+last_commit: 2026-08-03T14:51:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  overlay-contract lines classified (a) WRONG — superseded shape, both repaired
+
+# Key outcomes
+outcomes:
+  - 'Live `/api/overlay` response captured verbatim (top-level keys enumerated) and'
+  - 'The overlay emitter located in source (`file:line`) and the keys it actually emits'
+  - 'The wire-shape convergence decision read and quoted; verdict stated on whether'
+  - 'Classification recorded in `## Decisions` as exactly one of **(a) WRONG — superseded'
+  - 'Response executed to match the classification: if (a), T-2632''s line repaired to'
+  - 'T-2632''s `## Verification` block runs end-to-end with no line failing for a reason'
+  - '`## RCA` filled — including why the framework let a producer-side contract change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-03 — classification: (a) WRONG, superseded shape'
+    chose: '**(a) WRONG — superseded shape, repairable.** Both T-2632''s and T-2634''s'
+    rationale: 'the shape change was deliberate, peer-confirmed, and documented as a'
+    alternatives_rejected: ['(b) CORRECTLY FAILING. Would have meant filing a regression against']
+  - decision: '2026-08-03 — repaired shape-agnostically rather than re-pointing at `nodes`'
+    chose: 'assert the seam''s *substance* — envelope `type == aef:annotate`, at least one'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2632-designer-070-adoption--re-pin--annotatio.md'
+  - '.tasks/active/T-2634-overlay-profile-2--aef-inception-flow-ui.md'
+  - '.tasks/active/T-2764-classify-t-2632-overlay-contract-verific.md'
+  - '.tasks/active/T-2765-extend-verification-re-run-to-the-human-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T14:51:32'
+    action: 'T-2764: overlay-contract lines classified (a) WRONG — superseded shape, both repaired'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36
+  commits: 1
+  files_changed: 4
+  lines_added: 457
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2764-classify-t-2632-overlay-contract-verific.md
+generated_by: context-agent-hybrid

@@ -11,10 +11,10 @@ description: >
   left red by T-2763 rather than guessed. Evidence to decide: T-2634's convergence
   decision + the overlay emitter's current contract.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T12:15:14Z
-last_update: 2026-08-03T12:39:32Z
-date_finished:
+last_update: 2026-08-03T12:51:36Z
+date_finished: 2026-08-03T12:51:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -424,3 +424,20 @@ shape in the same blocks. A sweep is only as wide as the pattern that generated 
 
 ### 2026-08-03T12:39:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bee7222d
+- **Timestamp:** 2026-08-03T12:51:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py tests/web/test_designer_overlay.py -q`
+
+### 2026-08-03T12:51:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
