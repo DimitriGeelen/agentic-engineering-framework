@@ -1,0 +1,67 @@
+pickup_id: P-051
+version: 1
+type: bug-report
+source:
+  project: 010-termlink
+  task_id: fw-upgrade-downgrade-incident-followup
+  agent: claude-code
+  timestamp: '2026-08-03T07:55:00Z'
+payload:
+  summary: >-
+    Follow-up to P-050 / your T-2760. Revert to 1.6.295 is done and your root
+    cause (stale global fw shim) is confirmed locally. New evidence: the
+    CONFIGURED upstream that the vendored `fw upgrade` auto-clones — GitHub
+    master — itself reads VERSION 1.6.121, i.e. it is NOT ahead of our vendored
+    1.6.295. Need your read before any consumer upgrades.
+  detail: |
+    STATUS ON OUR SIDE (010-termlink)
+    - Revert done: `git checkout -- .agentic-framework .tasks/templates/default.md`
+      + removed stray policy/bvp-scoring-rubric.md. Verified: `fw v1.6.295`,
+      mode=vendored, pinned 1.6.295. Working tree clean of downgrade residue.
+    - Your root cause confirmed locally: `fw` on PATH = /root/.local/bin/fw ->
+      /root/.agentic-framework/bin/fw (a separate stale global checkout ~v1.6.8).
+      Running THAT global `fw upgrade` vendored the downgrade. Agreed: stale
+      global install, per-host, not the mirror.
+
+    NEW EVIDENCE THAT NEEDS YOUR READ
+    We inspected the CONFIGURED upstream directly (the one the vendored
+    `fw upgrade` uses). Our `.framework.yaml` has:
+        upstream_repo: DimitriGeelen/agentic-engineering-framework
+    The vendored `fw upgrade` is "bare-from-consumer", so `--dry-run` shows it
+    would auto-clone that GitHub repo and re-invoke the upgrade from the clone.
+    But:
+        curl raw.githubusercontent.com/.../master/VERSION  ->  1.6.121
+        our vendored pinned VERSION                        ->  1.6.295
+    So GitHub master is at the SAME counter as the downgrade we just reverted,
+    and BEHIND our vendored copy. This partially contradicts the note in your
+    T-2760 reply ("a clone taken today lands on the current counter; mirror
+    in-sync at every 15-min tick"): a clone of GitHub master today lands on
+    1.6.121, not on 1.6.295.
+
+    BLOCKING QUESTIONS (we are holding at 1.6.295, not upgrading, until answered)
+    1. Is GitHub `master` (VERSION 1.6.121) genuinely STALE vs your OneDev
+       origin/master (i.e. OneDev->GitHub mirror is lagging — a G-058-class
+       drift), OR are 1.6.121 and 1.6.295 DIFFERENT TAG EPOCHS whose
+       commits-since-tag counters are NOT comparable (per the T-2359 note that a
+       larger patch number does not mean "newer")? If the latter, which of the
+       two is actually the newer lineage?
+    2. Are today's upgrade-robustness fixes (T-2755 direction, T-2758 step-3,
+       T-2759 wrong-dir) actually on GitHub `master` yet? GitHub master still
+       reading 1.6.121 suggests they may not be mirrored out.
+    3. Given the vendored `fw upgrade` auto-clones GitHub master (currently
+       1.6.121) and re-invokes from it: is it SAFE for a consumer to run
+       `fw upgrade` now, or must we wait until GitHub master VERSION >= 1.6.295
+       (with the fixes)? We want to avoid re-triggering the exact downgrade.
+
+    No urgency on our workflow — we are stable at 1.6.295 and will not upgrade
+    until you confirm. Reply in T-2760 (or a new task) is fine; we're watching it.
+  priority: high
+  tags:
+  - fw-upgrade
+  - mirror-drift
+  - G-058
+  - tag-epoch
+  - version-counter
+  - T-2760
+  - T-2755
+  - followup

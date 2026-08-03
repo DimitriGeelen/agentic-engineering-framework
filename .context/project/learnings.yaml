@@ -4099,3 +4099,10 @@ X'` returning empty group."
   date: 2026-08-03
   context: Added via context agent
   application: TBD
+- id: L-539
+  learning: "A rail can be correct, cheap, and blind: check the SET it runs over, not just what it does. fw audit CTL-013 re-runs stored ## Verification — over the latest 3 files in .tasks/completed/. Partial-complete tasks (work-completed + owner:human) live in .tasks/active/, so the entire human review queue (194 tasks, 181 with stored verification) is outside the rail's population. Those are the blocks that matter most: a human executes them as the last step before close, so a line that rots after completion stays red until they trip it. Corollary for contract changes: when you change a wire shape, ENUMERATE the tasks whose stored verification asserts it — do not recall them. T-2635 flipped the overlay shape with 832's confirmation and repaired the one downstream task its Context happened to name, leaving the origin (T-2632) and a copy (T-2634) red for weeks, and the corpus holding two completed tasks whose blocks could not both pass."
+  source: P-011
+  task: T-2764
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD

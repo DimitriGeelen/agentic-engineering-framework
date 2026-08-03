@@ -2571,3 +2571,45 @@ decisions:
     date: 2026-08-02
     task: T-2741
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-370
+    decision: "refuse when the consumer records a `version_sha` this source cannot"
+    scope: project
+    date: 2026-08-03
+    task: T-2762
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-371
+    decision: "`foreign-source` refuses by default; `undecidable` keeps proceeding by"
+    scope: project
+    date: 2026-08-03
+    task: T-2762
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-372
+    decision: "leave the equal-version case alone. `fw_version_relation` returns `same`"
+    scope: project
+    date: 2026-08-03
+    task: T-2762
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-373
+    decision: "**(a) WRONG — superseded shape, repairable.** Both T-2632's and T-2634's"
+    scope: project
+    date: 2026-08-03
+    task: T-2764
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-374
+    decision: "assert the seam's *substance* — envelope `type == aef:annotate`, at least one"
+    scope: project
+    date: 2026-08-03
+    task: T-2764
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-375
+    decision: "repair T-2634's instance here."
+    scope: project
+    date: 2026-08-03
+    task: T-2764
+    rationale: "Auto-captured from task file on completion"

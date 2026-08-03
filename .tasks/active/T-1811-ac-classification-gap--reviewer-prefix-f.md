@@ -176,18 +176,23 @@ Detected via T-1810 follow-up triage: 7 Group C tasks were initially classified 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6de17adf
-- **Timestamp:** 2026-05-20T07:43:26Z
+- **Scan ID:** R-ab8cd4bb
+- **Timestamp:** 2026-08-03T13:36:04Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#3 (Agent)** — `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the output (Overall + Needs Human + Findings count)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/verify-acs.sh in: `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw verify-acs T-1811 --verbose 2>&1 | grep -q "Reviewer"`
 ### 2026-05-13T18:23:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

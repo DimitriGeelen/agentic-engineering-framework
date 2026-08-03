@@ -25552,3 +25552,183 @@ scan_id: R-f48eaec6
 task_id: T-2762
 payload:
   task_file: .tasks/active/T-2762-upgrade-guard-a-source-repo-that-cannot-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T12:18:01Z'
+scan_id: R-910dd634
+task_id: T-2763
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T12:18:01Z'
+scan_id: R-910dd634
+task_id: T-2763
+payload:
+  task_file: .tasks/active/T-2763-sweep-verification-blocks-for-g-015-shap.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T12:51:40Z'
+scan_id: R-bee7222d
+task_id: T-2764
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T12:51:40Z'
+scan_id: R-bee7222d
+task_id: T-2764
+payload:
+  task_file: .tasks/active/T-2764-classify-t-2632-overlay-contract-verific.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T13:30:13Z'
+scan_id: R-70d10d3f
+task_id: T-1818
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T13:30:13Z'
+scan_id: R-70d10d3f
+task_id: T-1818
+payload:
+  task_file: .tasks/active/T-1818-v2-peer-consult-slice-1-framework-half--.md
+---
+kind: override_applied
+timestamp: '2026-08-03T13:30:13Z'
+scan_id: R-70d10d3f
+task_id: T-1818
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 3
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-08-03T13:30:13Z'
+scan_id: R-70d10d3f
+task_id: T-1818
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-08-03T13:32:41Z'
+scan_id: R-494cfa3d
+task_id: T-2765
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T13:32:41Z'
+scan_id: R-494cfa3d
+task_id: T-2765
+payload:
+  task_file: .tasks/active/T-2765-extend-verification-re-run-to-the-human-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T13:36:02Z'
+scan_id: R-37fed976
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T13:36:02Z'
+scan_id: R-37fed976
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T13:36:02Z'
+scan_id: R-5ab97589
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T13:36:02Z'
+scan_id: R-5ab97589
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T13:36:03Z'
+scan_id: R-1c561159
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T13:36:03Z'
+scan_id: R-1c561159
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T13:36:03Z'
+scan_id: R-9a6aaaee
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T13:36:03Z'
+scan_id: R-9a6aaaee
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T13:36:04Z'
+scan_id: R-ab8cd4bb
+task_id: T-1811
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T13:36:04Z'
+scan_id: R-ab8cd4bb
+task_id: T-1811
+payload:
+  task_file: .tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md

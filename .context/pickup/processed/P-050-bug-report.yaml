@@ -1,0 +1,96 @@
+pickup_id: P-050
+version: 1
+type: bug-report
+source:
+  project: 010-termlink
+  task_id: fw-upgrade-downgrade-incident
+  agent: claude-code
+  timestamp: '2026-08-03T07:20:00Z'
+payload:
+  summary: >-
+    `fw upgrade` from a bare (no-git-remote) vendored consumer AUTO-CLONES the
+    stale GitHub upstream mirror and re-invokes the upgrade from it, structurally
+    BYPASSING the T-1839 downgrade guard — silently DOWNGRADING the consumer
+    (observed 1.6.295 -> 1.6.121, ~165 files, incl. loss of project governance
+    lines in CLAUDE.md). Fleet-wide exposure. Requesting a structural-fix eval.
+  detail: |
+    REPORTER: 010-termlink (consumer of AEF via vendored .agentic-framework/).
+    Reaching out because this is an AEF-upstream, fleet-wide class — every
+    consumer that runs `fw upgrade` from a bare vendored copy is exposed.
+
+    SYMPTOM
+    Operator ran `fw upgrade` in /opt/termlink. It presented as a normal upgrade
+    but performed a DOWNGRADE of the vendored framework: version counter
+    1.6.295 -> 1.6.121 (~165 .agentic-framework/* files rolled back, plus
+    .tasks/templates/default.md; a stray policy/bvp-scoring-rubric.md appeared).
+    No warning was shown. CLAUDE.md lost 38 project-specific governance lines,
+    including a REGRESSION of the load-bearing rule "use vendored
+    .agentic-framework/bin/fw, never bin/fw" -> generic "use bin/fw".
+
+    ROOT CAUSE (as diagnosed on the consumer side)
+    1. `fw upgrade` run from a consumer whose vendored copy is "bare" (no upstream
+       git remote) AUTO-CLONES the GitHub upstream mirror
+       (DimitriGeelen/agentic-engineering-framework) and re-invokes the upgrade
+       FROM that fresh clone. (This is the T-2232 auto-clone behavior.)
+    2. That GitHub mirror is STALE relative to the consumer — mirror is 1.6.121,
+       vendored copy was 1.6.295. "Upgrading" from it is actually a downgrade.
+    3. The auto-clone -> re-invoke path structurally BYPASSES the T-1839
+       downgrade guard: the guard that should refuse "replace newer vendored copy
+       with older source" never fires, because the second invocation runs inside
+       the freshly-cloned (older) tree and treats that as authoritative.
+    4. Version numbers are a RESETTING, git-derived counter (resets on tag
+       re-tag), so raw lexical ordering cannot decide upgrade-vs-downgrade.
+       Authoritative signals are (a) version-counter magnitude and (b) the
+       framework's own downgrade guard — NOT the mirror clone's HEAD commit DATE.
+       The mirror clone's HEAD date read 2026-07-29, which initially misled the
+       consumer session into calling it a "forward upgrade" before it was
+       corrected against the counter + guard.
+
+    WHY IT MATTERS / SYSTEMIC
+    A silent downgrade of a consumer's vendored framework is a governance-safety
+    failure: it can regress project-specific CLAUDE.md rules (as observed),
+    roll back hooks/agents, and reintroduce already-fixed framework bugs — with
+    no warning and no gate firing. It recurs for ANY consumer whenever the
+    GitHub mirror lags the vendored copy (which is the normal state, since the
+    mirror is downstream of OneDev and can lag or be re-tagged).
+
+    RECOMMENDED FRAMEWORK FIXES (for AEF to evaluate)
+    1. Make the T-2232 auto-clone path ENFORCE the T-1839 downgrade guard BEFORE
+       re-invoking: compare version-counter magnitude (not commit date) between
+       the local vendored copy and the clone; if the clone is older, ABORT with a
+       loud message rather than proceeding.
+    2. Reconsider whether `fw upgrade` from a bare consumer should auto-clone at
+       all. Alternative: refuse-with-warning and require an explicit --source, so
+       the operator consciously chooses the upgrade origin.
+    3. Make the direction decision robust to the resetting counter: the guard
+       must not rely on lexical string order or commit date. Decide direction by
+       counter magnitude within the same tag epoch, and treat a tag-epoch change
+       as "needs explicit operator confirmation", not an implicit upgrade.
+    4. Emit a diff preview / confirmation for any `fw upgrade` that would change
+       >N files or touch CLAUDE.md, so a silent 165-file rollback cannot happen
+       unattended.
+
+    CONSUMER-SIDE STATUS
+    - CLAUDE.md already restored on the consumer (git checkout).
+    - The 165-file downgrade is left UNCOMMITTED and fully reversible on the
+      consumer; revert candidate:
+        git checkout -- .agentic-framework .tasks/templates/default.md
+        rm -f policy/bvp-scoring-rubric.md
+      (holding the revert pending advice on the cleanest AEF-blessed path).
+
+    ASK
+    (1) Advice on the cleanest recovery path for the consumer (is the git checkout
+        revert above correct, or is there an AEF-blessed recovery?).
+    (2) A structural-fix evaluation of items 1-4 above — does AEF want a task/gap
+        for the auto-clone-bypasses-downgrade-guard class? If you file one, reply
+        with the id and I'll relay any additional specifics needed.
+  priority: high
+  tags:
+  - fw-upgrade
+  - downgrade-guard
+  - T-1839
+  - T-2232
+  - auto-clone
+  - version-counter
+  - governance-safety
+  - fleet-wide
