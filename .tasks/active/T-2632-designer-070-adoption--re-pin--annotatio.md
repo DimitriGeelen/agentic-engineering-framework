@@ -126,11 +126,31 @@ against their protocol doc AT THE TAG before adapting anything.
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 test "$(sha256sum vendor/designer/aef-workflow-designer-0.7.0.html | cut -d' ' -f1)" = "472d6a5d333ccb3c5e0d9cc5cfbb6bb9cff366c997d0362a77c3ec1856b8be04"
-test "$(curl -s "$(bin/fw watchtower url)/designer/app" | sha256sum | cut -d' ' -f1)" = "472d6a5d333ccb3c5e0d9cc5cfbb6bb9cff366c997d0362a77c3ec1856b8be04"
+# T-2763: was `= "472d6a5d…"` (the 0.7.0 sha). That asserted "the live server currently
+# serves 0.7.0" — true the instant this task shipped, false from the next re-pin onward.
+# G-015 shape: a gate pinned to an always-moving global. It went red at 0.8.0 and would
+# have refused this task at close for a reason unrelated to what it shipped.
+# What this task actually produced is asserted durably on the line above, still green.
+# This line now asserts the invariant that survives re-pinning: the server serves the
+# build the pin names. Baseline read from the pin, never re-derived from the server.
+served=$(curl -sf "$(bin/fw watchtower url)/designer/app" | sha256sum | cut -d' ' -f1); pinned=$(python3 -c "import yaml;print(yaml.safe_load(open('policy/designer-pin.yaml'))['sha256'])"); [ -n "$pinned" ] && [ "$served" = "$pinned" ]
 test "$(grep -c aefApplyAnnotations vendor/designer/aef-workflow-designer-0.7.0.html)" = "2"
 python3 -m pytest tests/unit/test_corpus_overlay.py tests/web/test_api_overlay.py tests/web/test_designer_overlay.py -q
 out=$(curl -sf "$(bin/fw watchtower url)/api/overlay?id=aef-task-lifecycle"); grep -q '"annotations"' <<<"$out" && grep -q '"tone"' <<<"$out"
-test "$(python3 -c "import json; print(json.load(open('.context/designer/projects/draft-trigger-handling/meta.json'))['latest'])")" = "3"
+# T-2763: was `= "3"`. Second G-015 in this same block — `latest` is a revision counter
+# that only ever moves (now 6). "The draft's current revision is 3" was true the day this
+# shipped and false at the next save. What T-2632 durably established is that the revision
+# it created exists and was not rolled back, so assert the floor, not the moment.
+test "$(python3 -c "import json; print(json.load(open('.context/designer/projects/draft-trigger-handling/meta.json'))['latest'])")" -ge 3
+# T-2763: NOT REPAIRED — classification pending, deliberately left red.
+# The line below expects `"annotations"` + `"tone"` from /api/overlay. The endpoint is
+# healthy (200, valid JSON) but now returns `{"type":"aef:annotate","nodes":[...]}`.
+# That is a CONTRACT change, not an expired global, so it is not the G-015 class this
+# sweep is repairing. It is either (a) wrong — pinned a shape superseded by the T-2634
+# wire-shape convergence, repairable — or (b) correctly failing — a real regression in
+# the overlay payload. Those need opposite responses and the evidence to choose is
+# T-2634's convergence decision. Editing it before that read would be a bypass wearing
+# the costume of a repair (832 RAIL-409). Tracked as T-2764.
 
 ## RCA
 
