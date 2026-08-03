@@ -4106,3 +4106,24 @@ X'` returning empty group."
   date: 2026-08-03
   context: Added via context agent
   application: TBD
+- id: L-540
+  learning: "curl rc=000 is a TIMEOUT, not a refusal — never read it as 'blocked'. T-2774 was filed claiming loopback traffic was dropped, on the strength of 'curl -m 5' returning rc=000 against the Watchtower while the LAN address answered. A raw TCP connect to 127.0.0.1 succeeded in 0.2ms and every address returned 200 given a real budget: the page simply takes 2-14s to render. The distinction between 'did not answer within my budget' and 'refused' is the same TIME-vs-FAIL separation verify-queue (T-2765) was built to preserve, and it was applied to other tasks' checks but not to the measurement being used to diagnose them. Before concluding unreachable: raise the budget, connect at TCP level separately from HTTP, and repeat the measurement — a single sample cannot distinguish a slow server from a blocked one."
+  source: P-001
+  task: T-2774
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD
+- id: L-541
+  learning: "A performance guard can be present, correct, and silenced by an unrelated constant. LOAD_CAP_MS=5000 would have named Watchtower's slow routes on day one, but the 15s Page.goto timeout sat BELOW the observed worst case, so navigation aborted before any assertion ran. A timeout carries strictly less information than an assertion — 'did not answer inside my budget' is not 'is wrong' — and because a warm cache put the same route under 15s on other runs, the signal oscillated and read as flakiness rather than as a slow page. That is what got a foreign project's Watchtower pinned as FW_TEST_PORT=3000. When a check never fires, ask what is aborting before it rather than whether it exists."
+  source: P-011
+  task: T-2774
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD
+- id: L-542
+  learning: "A size measurement is contention-invariant; a latency measurement is not. Taking both in one command makes them look like observations of equal quality, and they are not. T-2776 filed /tasks as a 15.0s slow-route bug from a reading captured moments after a 7.5-minute Playwright run with a background sampler in flight; re-measured at load average 8.19 it returns first byte in 0.14s warm. The /timeline finding from the same batch (69.8MB) survived unchanged, because bytes do not inflate under load. When a batch of measurements becomes evidence, ask per-quantity which ones are load-sensitive rather than trusting the batch. The durable countermeasure is an AC pattern: when a task premise IS a performance number, make re-establish-it-under-controlled-conditions-and-re-scope-if-it-does-not-hold the FIRST acceptance criterion — that turns a phantom from a fix cycle into one measurement."
+  source: P-011
+  task: T-2776
+  date: 2026-08-03
+  context: Added via context agent
+  application: TBD

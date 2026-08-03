@@ -25732,3 +25732,299 @@ scan_id: R-ab8cd4bb
 task_id: T-1811
 payload:
   task_file: .tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T15:26:15Z'
+scan_id: R-bcff13fe
+task_id: T-2757
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T15:26:15Z'
+scan_id: R-bcff13fe
+task_id: T-2757
+payload:
+  task_file: .tasks/active/T-2757-fw-upgrade-does-not-ship-the-pinned-work.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-03T15:26:15Z'
+scan_id: RC-6ecedea8
+task_id: T-2757
+payload:
+  overall: CONTRADICTED
+  claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-08-03T16:46:06Z'
+scan_id: R-67486d79
+task_id: T-2766
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T16:46:06Z'
+scan_id: R-67486d79
+task_id: T-2766
+payload:
+  task_file: .tasks/active/T-2766-classify-t-1805-verification-line-testsu.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T16:59:29Z'
+scan_id: R-8df12281
+task_id: T-2769
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T16:59:29Z'
+scan_id: R-8df12281
+task_id: T-2769
+payload:
+  task_file: .tasks/active/T-2769-fw---json-contaminated-by-auto-init-bann.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:19:49Z'
+scan_id: R-5e228f5f
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:19:49Z'
+scan_id: R-5e228f5f
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:19:49Z'
+scan_id: R-2cf2e0a7
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:19:49Z'
+scan_id: R-2cf2e0a7
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:19:49Z'
+scan_id: R-45d0ebb4
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:19:49Z'
+scan_id: R-45d0ebb4
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:19:50Z'
+scan_id: R-95d4d766
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:19:50Z'
+scan_id: R-95d4d766
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:19:50Z'
+scan_id: R-1dbb68d9
+task_id: T-1811
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:19:50Z'
+scan_id: R-1dbb68d9
+task_id: T-1811
+payload:
+  task_file: .tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:41:36Z'
+scan_id: R-7e89174d
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:41:36Z'
+scan_id: R-7e89174d
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:41:36Z'
+scan_id: R-f3ed629f
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:41:36Z'
+scan_id: R-f3ed629f
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:41:37Z'
+scan_id: R-9d1f4116
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:41:37Z'
+scan_id: R-9d1f4116
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:41:37Z'
+scan_id: R-97b588e0
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:41:37Z'
+scan_id: R-97b588e0
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:41:38Z'
+scan_id: R-100f9952
+task_id: T-1811
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:41:38Z'
+scan_id: R-100f9952
+task_id: T-1811
+payload:
+  task_file: .tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T17:44:48Z'
+scan_id: R-2b553f87
+task_id: T-2771
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T17:44:48Z'
+scan_id: R-2b553f87
+task_id: T-2771
+payload:
+  task_file: .tasks/active/T-2771-triage-the-remaining-red-verification-bl.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T19:29:19Z'
+scan_id: R-9744d277
+task_id: T-2774
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T19:29:19Z'
+scan_id: R-9744d277
+task_id: T-2774
+payload:
+  task_file: .tasks/active/T-2774-watchtower-unreachable-over-loopback-loc.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T21:10:48Z'
+scan_id: R-094fdbce
+task_id: T-2776
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T21:10:48Z'
+scan_id: R-094fdbce
+task_id: T-2776
+payload:
+  task_file: .tasks/active/T-2776-watchtower-tasks-takes-15s-to-first-byte.md

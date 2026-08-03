@@ -1,8 +1,8 @@
-# Audit Results - 2026-08-03-1538
-timestamp: 2026-08-03T13:38:49Z
+# Audit Results - 2026-08-03-2136
+timestamp: 2026-08-03T19:36:37Z
 sections: "structure"
 summary:
-  pass: 28
+  pass: 29
   warn: 4
   fail: 0
 findings:
@@ -20,11 +20,13 @@ findings:
     check: "No duplicate task IDs across active/ and completed/"
   - level: PASS
     check: "All 29 project YAML files parse correctly"
+  - level: WARN
+    check: "Task frontmatter: 1 task(s) have unparseable YAML"
+    mitigation: "T-2067 class (mangled components: list — wrapped flow-style left orphan continuation)."
   - level: PASS
     check: "All 17 arc anchor_task references resolve to existing tasks"
-  - level: WARN
-    check: "Arc 'dispatch-safety' has no task commits in the last 30 days (11 task(s) in arc)"
-    mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
+  - level: PASS
+    check: "All 11 in-progress arc(s) had task commits within 30 days"
   - level: INFO
     check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
   - level: INFO
@@ -42,15 +44,15 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 947 registered card(s)"
+    check: "Fabric: 950 registered card(s)"
   - level: WARN
-    check: "Fabric: 37/860 cards have no edges"
+    check: "Fabric: 40/863 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 1 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 607 card(s) point at files no watch pattern covers"
+    check: "Fabric: 610 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"

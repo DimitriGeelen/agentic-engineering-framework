@@ -2,13 +2,30 @@
 id: T-2777
 name: "Playwright load-time warm-up expires mid-suite, so fast routes fail as slow"
 description: >
-  tests/playwright/conftest.py:_warm_slow_routes (T-2104) pre-hits /approvals /inception /tasks /timeline /bvp once at session start, to keep cold-aggregation latency from being measured as the route's real cost. But the caches it warms have 30s (shared task metadata), 60s (dashboard/QR, arc membership) and 120s (session transcripts) TTLs, while test_all_routes_load_time.py takes 7.5 minutes to run. Every warmed cache has expired long before the parametrized test for that route executes, so the warm-up buys nothing beyond the first few tests.
+  tests/playwright/conftest.py:_warm_slow_routes (T-2104) pre-hits /approvals /inception
+  /tasks /timeline /bvp once at session start, to keep cold-aggregation latency from
+  being measured as the route's real cost. But the caches it warms have 30s (shared
+  task metadata), 60s (dashboard/QR, arc membership) and 120s (session transcripts)
+  TTLs, while test_all_routes_load_time.py takes 7.5 minutes to run. Every warmed
+  cache has expired long before the parametrized test for that route executes, so
+  the warm-up buys nothing beyond the first few tests.
 
-Evidence: /approvals, /approvals/content and /metrics FAIL the 5s cap inside the suite, while the same three routes measure 1.38s, 0.90s and 2.75s against the live server. The suite is reporting cold-cache cost under the name 'warm-load', which is a measurement defect, not a page defect. It also masks the real ones — /timeline (T-2775) and /tasks (T-2776) are genuinely over cap and are currently indistinguishable from these three in the output.
+Evidence: /approvals, /approvals/content and /metrics FAIL the 5s cap inside the
+  suite, while the same three routes measure 1.38s, 0.90s and 2.75s against the 
+  live server. The suite is reporting cold-cache cost under the name 
+  'warm-load', which is a measurement defect, not a page defect. It also masks 
+  the real ones — /timeline (T-2775) and /tasks (T-2776) are genuinely over cap 
+  and are currently indistinguishable from these three in the output.
 
-Fix options to weigh, not a decided design: (a) re-warm per-test rather than per-session; (b) measure the second of two consecutive gotos so the first pays the cold cost; (c) drop the pretence and assert a separate, higher cold-start budget under an honest name. Whichever is chosen, the assertion message must say which cost it is measuring — the current message says 'warm-load' for a number that is usually cold, and a check that misnames what it measured is how a false green or a false red survives review.
+Fix options to weigh, not a decided design: (a) re-warm per-test rather than 
+  per-session; (b) measure the second of two consecutive gotos so the first pays
+  the cold cost; (c) drop the pretence and assert a separate, higher cold-start 
+  budget under an honest name. Whichever is chosen, the assertion message must 
+  say which cost it is measuring — the current message says 'warm-load' for a 
+  number that is usually cold, and a check that misnames what it measured is how
+  a false green or a false red survives review.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T19:20:31Z
-last_update: 2026-08-03T19:20:31Z
-date_finished: null
+last_update: 2026-08-03T21:11:30Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-03T19:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-03T19:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2777: Playwright load-time warm-up expires mid-suite, so fast routes fail as slow
@@ -50,8 +95,29 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The suite measures, and names, one well-defined quantity. Today it reports
+      cold-cache-plus-contention cost under the label "warm-load". Whichever design is
+      chosen, the assertion message must state which cost it measured — a check that
+      misnames its own quantity is how both a false green and a false red survive review.
+- [ ] Contention is controlled or acknowledged. This is the sharper half of the defect:
+      the suite times routes while a browser, a Flask server and 50+ sibling tests share
+      one box, so a route's measured latency depends on what else is running. **Scope
+      correction from T-2776: FOUR of the five failing routes are fast when measured
+      directly** — `/tasks` 0.14s, `/approvals/content` 0.97s, `/approvals` 1.00s,
+      `/metrics` 3.00s — against suite readings of 11.7s, 21.8s, 11.8s and 27.3s. Only
+      `/timeline` (T-2775) is genuinely over budget, and it is over on **size**, which is
+      the one quantity that does not inflate under load (L-443, and the T-2776 RCA).
+- [ ] Whatever replaces the current warm-up is verified to actually hold for the routes it
+      claims to cover — the present `_warm_slow_routes` runs once per session with 30s/60s/
+      120s TTLs behind it and a 7.5-minute suite, so every cache it warms has expired long
+      before the route it warmed is tested. Show the new mechanism still warm at point of
+      measurement rather than assuming it.
+- [ ] After the fix, `tests/playwright/test_all_routes_load_time.py` is green except for
+      genuinely-over-budget routes, and each remaining red is traceable to a filed task.
+      Do NOT reach green by raising `LOAD_CAP_MS` — the guard's own docstring forbids it,
+      and the cap is the thing carrying the T-2102 provenance.
+- [ ] The four routes above are re-measured after the change and confirmed passing on
+      their merits, not by loosening the assertion.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -218,3 +284,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2777-playwright-load-time-warm-up-expires-mid.md
 - **Context:** Initial task creation
+
+### 2026-08-03T21:11:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
