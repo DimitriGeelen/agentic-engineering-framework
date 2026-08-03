@@ -351,34 +351,68 @@ def _state_counts(arcs: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def _read_task_meta(task_id: str) -> dict[str, Any] | None:
-    """Locate task file in active/ or completed/ and return its frontmatter + completion."""
-    tasks_dir = PROJECT_ROOT / ".tasks"
-    for sub in ("active", "completed"):
-        for cand in (tasks_dir / sub).glob(f"{task_id}-*.md"):
-            try:
-                text = cand.read_text()
-            except OSError:
-                continue
-            m = _FRONTMATTER_RE.search(text)
-            if not m:
-                continue
-            try:
-                fm = yaml.safe_load(m.group(1)) or {}
-            except yaml.YAMLError:
-                continue
-            return {
-                "id": task_id,
-                "name": fm.get("name", "(no name)"),
-                "status": fm.get("status", "?"),
-                "horizon": fm.get("horizon", "?"),
-                "type": fm.get("workflow_type", "?"),
-                "completed": (sub == "completed"),
-                # T-1909: arc_id + tags so the arc_badge macro can render
-                # membership on the arc-detail constituent-task table.
-                "arc_id": fm.get("arc_id") or "",
-                "_tags": [str(t) for t in (fm.get("tags") or [])],
-            }
-    return None
+    """Return a task's frontmatter + completion flag, or None if not found.
+
+    T-2774: reads the shared task-metadata cache (`web.shared`, 30s TTL) rather
+    than globbing `.tasks/{active,completed}` and re-parsing the file. The old
+    shape cost one directory glob plus one pure-Python `yaml.safe_load` *per
+    task id*; `_resolve_constituents` calls this once per constituent, so a
+    14-arc /approvals render paid 393 globs and 393 parses for files the shared
+    cache had already parsed on the same request. That was ~6.1s of a 14.8s
+    profile. Now it is a dict lookup against an index built once per cache fill.
+
+    Returned keys are unchanged — callers and the arc_badge macro see the same
+    shape. `completed` still derives from which directory the file is in, via
+    the cache's `_location`.
+    """
+    idx = _task_meta_index()
+    return idx.get(task_id)
+
+
+_TASK_META_INDEX: tuple[list[Any], dict[str, dict[str, Any]]] | None = None
+
+
+def _task_meta_index() -> dict[str, dict[str, Any]]:
+    """Build (and memoise) {task_id: meta} over the shared task-metadata cache.
+
+    Validity is keyed on the *identity of the rows list* `get_all_task_metadata()`
+    returns: that list object is replaced wholesale when the shared 30s TTL
+    expires, so `is not` against the previous one is exactly the refresh signal.
+    No second TTL to drift out of step with the first — a duplicated timer here
+    would be its own staleness bug.
+
+    The previous rows list is retained (not just its `id()`) deliberately. An
+    `id()` comparison would be an ABA hazard: once the shared cache drops its
+    reference the old list can be freed and CPython can hand the same address to
+    the new one, at which point a stale index compares equal and is served. The
+    reference costs one pointer and makes the comparison mean what it reads as.
+    """
+    global _TASK_META_INDEX
+    from web.shared import get_all_task_metadata
+
+    rows = get_all_task_metadata()
+    if _TASK_META_INDEX is not None and _TASK_META_INDEX[0] is rows:
+        return _TASK_META_INDEX[1]
+
+    idx: dict[str, dict[str, Any]] = {}
+    for fm in rows:
+        tid = fm.get("id", "")
+        if not tid:
+            continue
+        idx[tid] = {
+            "id": tid,
+            "name": fm.get("name", "(no name)"),
+            "status": fm.get("status", "?"),
+            "horizon": fm.get("horizon", "?"),
+            "type": fm.get("workflow_type", "?"),
+            "completed": (fm.get("_location") == "completed"),
+            # T-1909: arc_id + tags so the arc_badge macro can render
+            # membership on the arc-detail constituent-task table.
+            "arc_id": fm.get("arc_id") or "",
+            "_tags": [str(t) for t in (fm.get("tags") or [])],
+        }
+    _TASK_META_INDEX = (rows, idx)
+    return idx
 
 
 def _scan_tasks_by_tag(tag: str) -> list[str]:
@@ -429,9 +463,15 @@ def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
       3. Legacy `arc:<slug>` tag scan — pre-T-1850 form, still honored
 
     Legacy entries first (preserves author order); membership-scan entries
-    appended in sorted order; dedup by task id. The membership index comes
-    from `_scan_tasks_by_arc_membership()` which is request-cached (60s) and
-    avoids per-call yaml-parsing the full task corpus.
+    appended in sorted order; dedup by task id. The membership index comes from
+    `_arc_membership()`, the 60s-TTL cached wrapper.
+
+    T-2774: this docstring already said "request-cached (60s)" while the body
+    called the *uncached* `_scan_tasks_by_arc_membership()` directly — the cache
+    existed and its only hot caller went around it. Cost: one full-corpus scan
+    per arc, so /approvals paid 14 of them per render (3.3s of a 9.1s profile).
+    The comment was describing the intent, not the code; both now say the same
+    thing. Pinned by tests/unit/test_arcs_membership_cached.py.
     """
     legacy = arc.get("constituent_tasks") or []
     if not isinstance(legacy, list):
@@ -441,7 +481,7 @@ def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
     slug = str(arc.get("slug") or "").strip()
     arc_numeric = str(arc.get("id") or "").strip()
 
-    by_arc_id, by_tag = _scan_tasks_by_arc_membership()
+    by_arc_id, by_tag = _arc_membership()
     membership: list[str] = []
     if slug:
         membership.extend(by_arc_id.get(slug, []))

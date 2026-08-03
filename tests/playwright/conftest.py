@@ -127,7 +127,25 @@ def page(browser_instance, watchtower_server):
     context = browser_instance.new_context()
     pg = context.new_page()
     pg.set_default_timeout(10_000)  # 10s instead of 30s default
-    pg.set_default_navigation_timeout(15_000)  # 15s for page.goto
+    # T-2774: navigation budget is deliberately far above the 5s LOAD_CAP_MS that
+    # test_all_routes_load_time.py enforces. The two numbers do different jobs and
+    # the gap between them is the point.
+    #
+    # The load cap is the *assertion* about latency: it fails with "route X took
+    # 8213ms > 5000ms", which names the problem. The navigation timeout is only a
+    # backstop against a genuinely hung page. When it sat at 15s it was doing both
+    # jobs badly — a route between 15s and healthy died as `TimeoutError` inside
+    # `page.goto`, before any assertion ran, so every test touching that route
+    # failed with an error that says nothing about *why*. Worse, it reads as
+    # flaky: the same route passes whenever a warm cache puts it under 15s, so the
+    # signal looks like test infrastructure noise rather than a slow page.
+    #
+    # That is the failure mode T-1960/T-1961 hit, and it is what sent an earlier
+    # diagnosis chasing an imaginary loopback block — a timeout is "did not answer
+    # inside my budget", not "is broken", and conflating the two cost real time.
+    # With the backstop at 45s, a slow-but-working route now loads and fails the
+    # load-cap assertion by name; only a truly hung page hits the timeout.
+    pg.set_default_navigation_timeout(int(os.environ.get("FW_TEST_NAV_TIMEOUT_MS", "45000")))
     try:
         pg.goto(TEST_URL + "/", wait_until="domcontentloaded")
         token = pg.evaluate(
