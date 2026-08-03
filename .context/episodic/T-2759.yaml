@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2759: fw upgrade silently redirects steps 5-10 to the wrong directory and still reports success
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T11:47:16Z
+# ============================================================================
+
+task_id: T-2759
+task_name: "fw upgrade silently redirects steps 5-10 to the wrong directory and still reports success"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T10:34:32Z
+completed: 2026-08-03T11:45:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-03T13:04:08+02:00
+last_commit: 2026-08-03T13:14:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shim migration must not rebind do_upgrade's target_dir. regression coverage for the target_dir rebind + real-host test isolation. register fabric card for the new regression test. sync self-vendored upgrade.sh; T-2760: AEF reply to 010-termlink downgrade report
+
+# Key outcomes
+outcomes:
+  - '`do_upgrade`''s `target_dir` is never rebound after entry. The shim-migration'
+  - 'Regression test reproduces the redirect end-to-end with a controlled `$HOME`'
+  - 'The test fails against the pre-fix code. A test that merely passes afterwards'
+  - 'No other `local` re-declaration shadows an outer binding inside `do_upgrade`'
+  - '`tests/unit/lib_upgrade.bats` tests 10-12 go green (they were red on this plus'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-t2759_upgrade_target_dir_shadowing.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2760-pickup---from-010-termlink.md'
+  - 'tests/unit/lib_upgrade.bats'
+  - 'tests/unit/t2759_upgrade_target_dir_shadowing.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T13:04:08'
+    action: 'T-2759: shim migration must not rebind do_upgrade''s target_dir'
+  - time: '2026-08-03T13:10:50'
+    action: 'T-2759: regression coverage for the target_dir rebind + real-host test isolation'
+  - time: '2026-08-03T13:11:41'
+    action: 'T-2759: register fabric card for the new regression test'
+  - time: '2026-08-03T13:14:33'
+    action: 'T-2759: sync self-vendored upgrade.sh; T-2760: AEF reply to 010-termlink downgrade report'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 71
+  commits: 4
+  files_changed: 6
+  lines_added: 584
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2759-fw-upgrade-silently-redirects-steps-5-10.md
+generated_by: context-agent-hybrid

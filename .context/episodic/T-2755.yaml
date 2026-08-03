@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2755: fw upgrade header labels any version mismatch as behind — it never compares direction
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T10:24:22Z
+# ============================================================================
+
+task_id: T-2755
+task_name: "fw upgrade header labels any version mismatch as behind — it never compares direction"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T00:16:00Z
+completed: 2026-08-03T10:23:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-03T02:22:54+02:00
+last_commit: 2026-08-03T12:20:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope the upgrade-header direction bug from operator downgrade report. fw upgrade header reports the computed direction, not 'behind' for every mismatch
+
+# Key outcomes
+outcomes:
+  - '`lib/upgrade.sh` header computes the actual direction (behind / ahead / current)'
+  - 'When the consumer is ahead, the header says so, and the header''s wording cannot'
+  - 'Regression test pins all three directions (behind / ahead / equal) against the'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green (CLAUDE.md'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'scope the upgrade-header direction bug from operator downgrade report'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2757-designer-consumer-vendoring.md'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2755-fw-upgrade-header-labels-any-version-mis.md'
+  - '.tasks/active/T-2757-fw-upgrade-does-not-ship-the-pinned-work.md'
+  - '.tasks/active/T-2758-fw-upgrade-hard-fails-at-step-3-when-a-c.md'
+  - 'tests/unit/t2755_upgrade_pin_line_direction.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T02:22:54'
+    action: 'T-2755: scope the upgrade-header direction bug from operator downgrade report'
+  - time: '2026-08-03T12:20:11'
+    action: 'T-2755: fw upgrade header reports the computed direction, not ''behind'' for every mismatch'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 607 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 607
+  commits: 2
+  files_changed: 6
+  lines_added: 835
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2755-fw-upgrade-header-labels-any-version-mis.md
+generated_by: context-agent-hybrid
