@@ -39,9 +39,20 @@ find_port_literals() {
 
 # Extract the ## Verification block of a task file, stripped of comments, blank
 # lines and fences — the same shape update-task.sh executes.
+#
+# T-2765: the HTML-comment strip below is not decoration. Task files written
+# before the `#`-comment template used `<!-- ... -->` blocks in this section, and
+# without the strip every line of that prose came back as a command. The gate
+# (update-task.sh:1093) and audit CTL-013 (audit.sh:3255) both strip it; this
+# helper claimed parity with the gate in its own comment and did not have it, so
+# every caller — the port-literal scan, the unjudged-test-run scan, and
+# `fw verify-queue` — was scanning template prose as if it were shell. Found by
+# running the whole review queue through it: T-558 reported "5/5 commands
+# failing" for a section that is empty.
 extract_verification_block() {
     local file="$1"
     sed -n '/^## Verification/,/^## /p' "$file" 2>/dev/null \
         | sed '$d' | tail -n +2 \
+        | python3 -c "import re,sys;sys.stdout.write(re.sub(r'<!--.*?-->','',sys.stdin.read(),flags=re.DOTALL))" 2>/dev/null \
         | grep -vE '^\s*$|^\s*#|^\s*```' || true
 }

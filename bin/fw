@@ -712,6 +712,7 @@ show_help() {
     echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
     echo -e "  ${GREEN}approvals${NC} <cmd>      Approval queue (pending, status, expire)"
     echo -e "  ${GREEN}review-queue${NC}         List tasks awaiting human review (with verdicts)"
+    echo -e "  ${GREEN}verify-queue${NC}         Re-run stored Verification for that queue (--all, --task, --json)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
     echo -e "  ${GREEN}dispatch${NC} <cmd>       SSH-based cross-machine communication (send, hosts)"
@@ -5695,6 +5696,7 @@ print('0')
         # Lists active tasks with unchecked Human ACs, prefixed by agent verdict.
         # T-2405: --arc <id> filters to tasks tagged with that arc.
         rq_arc_filter=""
+        rq_ids_only=0
         while [ $# -gt 0 ]; do
             case "$1" in
                 --help|-h|help)
@@ -5718,8 +5720,15 @@ print('0')
                     echo "                                   Matches frontmatter arc_id: AND"
                     echo "                                   legacy tags: [arc:<slug>, ...] (T-1849)."
                     echo "                                   Unknown id → error + exit 1."
+                    echo "  fw review-queue --ids            VERDICT-pass task ids only,"
+                    echo "                                   one per line, oldest first"
+                    echo "                                   (machine-readable; the population"
+                    echo "                                   fw verify-queue runs over)"
                     echo "  fw review-queue --help           This message"
                     exit 0
+                    ;;
+                --ids)
+                    rq_ids_only=1
                     ;;
                 --arc)
                     shift
@@ -5739,7 +5748,7 @@ print('0')
             esac
             shift
         done
-        PROJECT_ROOT="$PROJECT_ROOT" FW_REVQ_ARC="$rq_arc_filter" python3 - <<'PYREVQ'
+        PROJECT_ROOT="$PROJECT_ROOT" FW_REVQ_ARC="$rq_arc_filter" FW_REVQ_IDS="$rq_ids_only" python3 - <<'PYREVQ'
 import os, re, sys, time
 from pathlib import Path
 from datetime import datetime
@@ -5925,6 +5934,16 @@ try:
 except Exception:
     paused_rows = []
 
+# T-2765: --ids — machine-readable VERDICT-pass task ids, one per line, oldest first.
+# Exists so `fw verify-queue` draws the queue population from the ONE predicate that
+# defines it (count_unchecked_human_acs, centralised by T-2075) instead of re-deriving
+# it from status/owner. A second definition of "awaiting human review" is how the
+# populations drift; L-539 is the cost of a rail measured over the wrong set.
+if os.environ.get("FW_REVQ_IDS") == "1":
+    for _r in sorted(rows, key=lambda r: -r[1]):
+        print(_r[2])
+    sys.exit(0)
+
 if not rows and not decision_rows and not paused_rows:
     print("No tasks awaiting human review.")
     sys.exit(0)
@@ -6001,6 +6020,41 @@ url_file = ROOT / ".context" / "working" / "watchtower.url"
 wt_url = url_file.read_text().strip() if url_file.exists() else f"http://localhost:{os.environ.get('FW_PORT', '3000')}"
 print(f"\033[2mOpen in Watchtower: {wt_url}/approvals\033[0m")
 PYREVQ
+        ;;
+    verify-queue)
+        # T-2765: re-run stored ## Verification for the human review queue.
+        # CTL-013 covers the latest 3 files in completed/; the queue lives in
+        # active/ and was outside every rail's population (L-539).
+        case "${1:-}" in
+            --help|-h|help)
+                echo -e "${BOLD}fw verify-queue${NC} — re-run stored Verification for tasks awaiting human review (T-2765)"
+                echo ""
+                echo "Population comes from 'fw review-queue --ids' — the same predicate that"
+                echo "defines the queue. Block extraction reuses extract_verification_block"
+                echo "from lib/verification-port.sh. Each line runs under 'set -eo pipefail'"
+                echo "from PROJECT_ROOT, exactly as the P-011 close gate runs it."
+                echo ""
+                echo "Usage:"
+                echo "  fw verify-queue                  Check the N least-recently-checked (default 5)"
+                echo "  fw verify-queue --limit N        Check N of them"
+                echo "  fw verify-queue --all            Full sweep (slow — one block per queued task)"
+                echo "  fw verify-queue --task T-XXX     Check one task"
+                echo "  fw verify-queue --json           Machine-readable verdict"
+                echo ""
+                echo "Rotation state: .context/working/.verify-queue-state.json"
+                echo "  (least-recently-checked first, so consecutive runs advance)"
+                echo ""
+                echo "Unsafe lines (nested 'fw audit', 'corpus prove', rm -rf, git push) are"
+                echo "reported SKIPPED, never PASS."
+                echo ""
+                echo "Exit: 0 = no red, 1 = at least one task red."
+                echo "Env: FW_VERIFY_QUEUE_TIMEOUT (per-command seconds, default 180)"
+                exit 0
+                ;;
+        esac
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            python3 "$FRAMEWORK_ROOT/lib/verify_queue.py" "$@"
+        exit $?
         ;;
     work-on)
         # Single-step gate: create/resume task + set focus + start work

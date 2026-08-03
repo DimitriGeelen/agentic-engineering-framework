@@ -2,11 +2,20 @@
 id: T-2765
 name: "extend verification re-run to the human review queue (CTL-013 denominator gap)"
 description: >
-  fw audit CTL-013 re-runs stored ## Verification for the latest 3 files in .tasks/completed/ and never reads .tasks/active/. Partial-complete tasks (status: work-completed + owner: agent human) live in active/: 194 of them right now, 181 carrying stored verification commands that nothing re-runs. Those are precisely the blocks a human is about to execute as the last step before close, so a line that goes red after completion sits red until the human trips it. Found via T-2764: T-2632 red since 2026-07-27, T-2634 likewise, both in the queue. Design open: sampling vs full sweep, cadence, and whether this extends CTL-013 or becomes its own cron rail (181 blocks is far past CTL-013's 3-task budget). Sibling of the fabric-denominator family - the rail is correct and its population omits the set that needs it.
+  fw audit CTL-013 re-runs stored ## Verification for the latest 3 files in .tasks/completed/
+  and never reads .tasks/active/. Partial-complete tasks (status: work-completed +
+  owner: agent human) live in active/: 194 of them right now, 181 carrying stored
+  verification commands that nothing re-runs. Those are precisely the blocks a human
+  is about to execute as the last step before close, so a line that goes red after
+  completion sits red until the human trips it. Found via T-2764: T-2632 red since
+  2026-07-27, T-2634 likewise, both in the queue. Design open: sampling vs full sweep,
+  cadence, and whether this extends CTL-013 or becomes its own cron rail (181 blocks
+  is far past CTL-013's 3-task budget). Sibling of the fabric-denominator family -
+  the rail is correct and its population omits the set that needs it.
 
-status: captured
+status: started-work
 workflow_type: build
-owner:
+owner: agent
 horizon: now
 tags: []
 components: []
@@ -22,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T12:50:07Z
-last_update: 2026-08-03T12:50:07Z
-date_finished: null
+last_update: '2026-08-03T13:00:07Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +43,85 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-03T12:55:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-03T13:00:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2765: extend verification re-run to the human review queue (CTL-013 denominator gap)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw audit` CTL-013 re-runs stored `## Verification` — over the **latest 3 files in
+`.tasks/completed/`**. The human review queue lives in `.tasks/active/`
+(`status: work-completed` + `owner: human`): **194 tasks, 181 with stored verification
+commands**, none of them ever re-run. Those blocks are the ones a human executes as the
+last step before close, so a line that rots after completion stays red until they trip
+it. Found by T-2764 (T-2632 red since 2026-07-27, T-2634 alongside it — both in the
+queue, both invisible). See L-539.
+
+**Constraint carried in from T-2735/T-2736/T-2737:** there are already **three**
+implementations of "extract the verification block" —
+`lib/verification-port.sh:42 extract_verification_block`,
+`agents/task-create/update-task.sh:1088`, and the inline state machine at
+`agents/audit/audit.sh:3241`. They do not agree on where the block starts (a naive split
+on the string `## Verification` lands inside the Human-AC template comment, which is how
+T-2634's block was first mis-read during T-2764). This task must not add a fourth.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Re-run reaches the review-queue population, selected by the same predicate
+      `fw review-queue` already uses, not a reimplementation of it.
+      **Correction made while building:** this task was filed saying the population is
+      `status: work-completed` + `owner: human` (194 tasks) — that is a *second*
+      definition of "awaiting human review", and adopting it would have reproduced the
+      exact defect this task exists to fix. The canonical predicate is
+      `count_unchecked_human_acs` (centralised by T-2075, shared with Watchtower
+      `/approvals`), and it selects **221** tasks. Implemented against that one, consumed
+      via the new `fw review-queue --ids`
+- [ ] Block extraction reuses the shared `extract_verification_block` from
+      `lib/verification-port.sh`; no fourth extractor is introduced, and the reuse is
+      pinned by a test that would fail if the logic were copied instead
+- [ ] Bounded by default and explicitly overridable: a limit applies unless a full sweep
+      is asked for, and a single task can be checked on its own
+- [ ] Per-task report names each failing command and shows the first lines of its output —
+      a red result is actionable without re-deriving which line broke
+- [ ] Nested-audit and self-reference hazards handled: no verification line is allowed to
+      invoke `fw audit` recursively (L-391), and per-task runs execute from PROJECT_ROOT
+      so `.tasks/active/<file>` self-references resolve (L-356)
+- [ ] An automatic trigger covers the whole queue over time within the daily budget —
+      rotation state persisted so consecutive runs advance rather than re-checking the
+      same head of the list
+- [ ] Census run once over the full queue and recorded in `## Findings`: how many of the
+      181 blocks are red right now, with the corpus sha they were measured at
+- [ ] Tests cover: population selection, extractor reuse, limit/rotation behaviour, and a
+      red-task fixture producing a non-zero verdict with the failing line named
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,3 +288,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2765-extend-verification-re-run-to-the-human-.md
 - **Context:** Initial task creation
+
+### 2026-08-03T12:55:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

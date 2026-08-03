@@ -3370,6 +3370,42 @@ for task_file in $recent_completed; do
 done
 shopt -u nullglob
 
+# CTL-013b OE (T-2765): Verification Gate — rotating slice of the HUMAN REVIEW QUEUE.
+#
+# CTL-013 above covers the latest 3 files in completed/. The review queue lives in
+# .tasks/active/ (221 tasks at filing) and was outside every rail's population — a
+# stored block could rot after completion and stay red until the operator tripped it
+# at close (L-539; found by T-2764, where two tasks had been red for a week).
+#
+# Bounded and ROTATING: `fw verify-queue` picks the least-recently-checked first and
+# persists the cursor, so consecutive daily runs advance through the queue instead of
+# re-checking the same head — which is precisely how CTL-013's fixed top-3 window let
+# the tail rot. Set FW_VERIFY_QUEUE_AUDIT_LIMIT=0 to disable.
+vq_limit="${FW_VERIFY_QUEUE_AUDIT_LIMIT:-3}"
+if [ "$vq_limit" != "0" ] && [ -f "$FRAMEWORK_ROOT/lib/verify_queue.py" ]; then
+    vq_json=$(cd "$PROJECT_ROOT" && PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+        FW_VERIFY_QUEUE_TIMEOUT="${FW_VERIFY_QUEUE_TIMEOUT:-90}" \
+        python3 "$FRAMEWORK_ROOT/lib/verify_queue.py" --limit "$vq_limit" --json 2>/dev/null || true)
+    vq_red=$(echo "$vq_json" | python3 -c "import json,sys
+try: print(json.load(sys.stdin).get('red', 0))
+except Exception: print(-1)" 2>/dev/null || echo -1)
+    vq_checked=$(echo "$vq_json" | python3 -c "import json,sys
+try: print(json.load(sys.stdin).get('checked', 0))
+except Exception: print(0)" 2>/dev/null || echo 0)
+    if [ "$vq_red" = "-1" ]; then
+        info "CTL-013b: review-queue verification re-run produced no verdict (skipped)"
+    elif [ "$vq_red" = "0" ]; then
+        pass "CTL-013b: review-queue verification re-run: $vq_checked task(s), 0 red"
+    else
+        vq_ids=$(echo "$vq_json" | python3 -c "import json,sys
+d=json.load(sys.stdin)
+print(' '.join(r['task'] for r in d.get('results', []) if r.get('status') == 'fail'))" 2>/dev/null || true)
+        warn "CTL-013b: review-queue verification re-run: $vq_red of $vq_checked task(s) red" \
+             "Awaiting human review with a failing stored block: $vq_ids" \
+             "Run: fw verify-queue --task <id> — repair the line or confirm the regression before the human trips it at close"
+    fi
+fi
+
 # CTL-019 OE: Auto-Restart — claude-fw wrapper exists
 if [ -x "$FRAMEWORK_ROOT/bin/claude-fw" ]; then
     pass "CTL-019: claude-fw wrapper installed and executable"
