@@ -554,6 +554,11 @@ fw_upgrade_render_pin_line() {
             echo -e "  Pinned:    v${cversion} ${RED}(AHEAD of v${fversion}${note})${NC}" ;;
         diverged)
             echo -e "  Pinned:    v${cversion} ${RED}(diverged from v${fversion}${note})${NC}" ;;
+        foreign-source)
+            # T-2762: the fault is the SOURCE, not the consumer's pin — so the line
+            # names the source. Rendering this as "undecidable" (the old fallthrough)
+            # understated it: undecidable proceeds by default, this refuses.
+            echo -e "  Pinned:    v${cversion} ${RED}(source does not contain this consumer's commit${note})${NC}" ;;
         *)
             # undecidable, or a relation this function has not been taught.
             # Say so — do NOT fall through to "behind". Claiming a direction we
@@ -947,9 +952,24 @@ do_upgrade() {
         if fw_version_relation_should_refuse "$_precheck_direction"; then
             echo -e "${RED}REFUSED${NC}  Consumer v$project_version vs framework v$fw_version: ${_precheck_direction}." >&2
             echo -e "          ${FW_VERSION_RELATION_REASON}." >&2
-            echo -e "          Running fw upgrade here would downgrade the runtime (.agentic-framework/)" >&2
-            echo -e "          AND the pinned version, creating a split-brain state (T-1912 class)." >&2
-            echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}." >&2
+            if [ "$_precheck_direction" = "foreign-source" ]; then
+                # T-2762: different fault, different remedy. The consumer is fine;
+                # the SOURCE is wrong, so "force the downgrade" is the wrong verb to
+                # put in front of the reader. Naming the targeted bypass is L-399
+                # discipline — a block message that offers only a mechanism aimed at
+                # another failure is how agents end up routing around the gate.
+                echo -e "          Upgrading from it would overwrite the consumer's files with a" >&2
+                echo -e "          history that never held them." >&2
+                echo -e "          Likely cause: a stale global shim. Check which fw is running:" >&2
+                echo -e "            readlink -f \"\$(command -v fw)\"" >&2
+                echo -e "          Then re-run from the consumer's own vendored framework, or from an" >&2
+                echo -e "          upstream checkout that contains the consumer's commit." >&2
+                echo -e "          To proceed anyway: ${BOLD}FW_ALLOW_FOREIGN_SOURCE=1${NC} (logged Tier-2)." >&2
+            else
+                echo -e "          Running fw upgrade here would downgrade the runtime (.agentic-framework/)" >&2
+                echo -e "          AND the pinned version, creating a split-brain state (T-1912 class)." >&2
+                echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}." >&2
+            fi
             return 1
         fi
         if [ "$_precheck_direction" = "undecidable" ]; then
