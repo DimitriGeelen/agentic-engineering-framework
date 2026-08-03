@@ -157,6 +157,41 @@ bvp_scores_proposed:
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] Arc constituent tables still show the right tasks, and the dashboard
+      still shows the right numbers
+
+  **Why this needs your eye rather than a command:** this task rewrote
+  `_read_task_meta` — the function that supplies every row of the constituent-task
+  table on an arc page — to read a shared 30s cache instead of opening each task
+  file. The unit tests pin the *shape* (all eight keys present, `completed` derived
+  from the right field, index rebuilt when the cache turns over) and they pass. What
+  they cannot check is whether the values a person reads on the page are the values
+  that are actually true right now. A caching bug of this kind does not error; it
+  shows you a correct-looking table describing a slightly older world.
+
+  **Steps:**
+  1. Open http://192.168.10.107:3001/arcs and pick any in-progress arc.
+  2. On its detail page, look at the constituent-task table: task ids, names,
+     statuses, and the completed/not-completed split.
+  3. Cross-check two or three rows against
+     `cd /opt/999-Agentic-Engineering-Framework && bin/fw task show T-XXXX`
+     (use ids you just saw). Status and name should match.
+  4. Open http://192.168.10.107:3001/ and check the active/completed task counts
+     and the focus-task panel against
+     `cd /opt/999-Agentic-Engineering-Framework && bin/fw metrics`.
+
+  **Expected:** Rows describe real tasks with the statuses `fw task show` reports.
+  Counts on the dashboard match `fw metrics`. Nothing is missing from a table that
+  you know belongs to that arc, and no task appears under an arc it does not belong
+  to. Pages should also feel fast now (~1.5s rather than the previous multi-second
+  stall) — but speed is not what this AC is asking you to judge.
+
+  **If not:** Note the specific row and what it should have said, then reopen. A
+  wrong *value* points at the cache-key logic in `arcs.py:_task_meta_index`; a
+  *missing or extra row* points at `_resolve_constituents` and the membership cache.
+  Both are named in the RCA. Staleness up to ~30 seconds after you change a task is
+  expected and is not a defect — re-load once before reporting.
+
 ## Verification
 # Behavioural: the two caches this task wired must not be bypassed again, and the
 # fast loader must stay both wired AND equivalent to the slow one. Both files are
