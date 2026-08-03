@@ -1,10 +1,19 @@
 ---
 id: T-2759
-name: "fw upgrade silently redirects steps 5-10 to the wrong directory and still reports success"
+name: "fw upgrade silently redirects steps 5-10 to the wrong directory and still reports
+  success"
 description: >
-  lib/upgrade.sh:1305 declares 'local target_dir' INSIDE do_upgrade, which already binds target_dir to the consumer path at :566. Bash re-local in the same scope reassigns, so from that point target_dir is dirname(readlink -f ~/.local/bin/fw). Steps 5-10 (.claude/settings.json, .mcp.json, resume.md, scripts/, context subdirs, .framework.yaml version pin, enforcement baseline) then write to that directory instead of the consumer. Proven live 2026-08-03: run exits 0, prints 'Upgrade Complete', consumer pin stays at its old value and receives no settings.json/.mcp.json/resume.md. Consumer appears permanently behind despite successful upgrades. Fires whenever ~/.local/bin/fw is a symlink whose target ends in /bin/fw and has no FRAMEWORK.md alongside.
+  lib/upgrade.sh:1305 declares 'local target_dir' INSIDE do_upgrade, which already
+  binds target_dir to the consumer path at :566. Bash re-local in the same scope reassigns,
+  so from that point target_dir is dirname(readlink -f ~/.local/bin/fw). Steps 5-10
+  (.claude/settings.json, .mcp.json, resume.md, scripts/, context subdirs, .framework.yaml
+  version pin, enforcement baseline) then write to that directory instead of the consumer.
+  Proven live 2026-08-03: run exits 0, prints 'Upgrade Complete', consumer pin stays
+  at its old value and receives no settings.json/.mcp.json/resume.md. Consumer appears
+  permanently behind despite successful upgrades. Fires whenever ~/.local/bin/fw is
+  a symlink whose target ends in /bin/fw and has no FRAMEWORK.md alongside.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T10:34:32Z
-last_update: 2026-08-03T10:34:32Z
-date_finished: null
+last_update: '2026-08-03T10:45:06Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +43,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-03T10:35:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-03T10:45:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2759: fw upgrade silently redirects steps 5-10 to the wrong directory and still reports success
@@ -46,8 +83,61 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `do_upgrade`'s `target_dir` is never rebound after entry. The shim-migration
+      block at `lib/upgrade.sh:1305` uses a distinctly-named local.
+      Renamed to `_shim_link_dir` (91bf98243).
+- [x] Regression test reproduces the redirect end-to-end with a controlled `$HOME`
+      (symlinked `~/.local/bin/fw` → a decoy `.../bin/fw` with no sibling FRAMEWORK.md)
+      and asserts the consumer — not the decoy — receives `.claude/settings.json`,
+      `.mcp.json` and `resume.md`, and that the consumer's `version:` pin advances.
+      `tests/unit/t2759_upgrade_target_dir_shadowing.bats` (7868f4fa0), 6/6 green.
+- [x] The test fails against the pre-fix code. A test that merely passes afterwards
+      does not distinguish "fixed" from "never exercised that path".
+      Verified in an isolated `git worktree` at HEAD~1 (pre-rename): 5 of 6 tests
+      hang indefinitely (do_upgrade never returns once target_dir is corrupted —
+      an even stronger failure signal than a clean red), the 6th (structural
+      "declared once" guard) fails cleanly. Worktree removed after verification.
+- [x] No other `local` re-declaration shadows an outer binding inside `do_upgrade`
+      — checked as a set, since the defect class is the re-declaration, not this line.
+      Audited programmatically: only `fw_version` (:883/:1861) and `upgrade_ts`
+      (:1917/:1940) redeclare, both reassigning the identical value/meaning each
+      time — harmless, unlike `target_dir` which meant something different at
+      each site. See RCA "Prevention" #3.
+- [x] `tests/unit/lib_upgrade.bats` tests 10-12 go green (they were red on this plus
+      T-2758; both causes must be gone), and
+      `tests/unit/upgrade_fresh_machine_simulation.bats` stays green.
+      12/12 + 7/7 green. Tests 10-12's actual cause on this host was a THIRD,
+      test-isolation gap (see Verification block below), not directly T-2758 or
+      T-2759 — `setup()` never scoped `$HOME`, so the ambient host's real
+      `~/.local/bin/fw` (which resolves into a self-vendored copy carrying its
+      own FRAMEWORK.md) tripped the unrelated T-1278 guard and aborted the whole
+      upgrade at step 4c, before steps 5-10 ran. Fixed in the same commit
+      (7868f4fa0) by scoping `$HOME` per-test.
+
+**Severity — this is a silent false-green, not a crash.** Live repro 2026-08-03 against
+a bare consumer with a fake `$HOME`:
+
+```
+[9/10] Version tracking
+[10/10] Enforcement baseline
+=== Upgrade Complete ===          # exit 0
+```
+
+and afterwards the consumer had **no** `.claude/settings.json`, **no** `.mcp.json`, **no**
+`resume.md`, and `version: 1.0.0` unchanged — while the decoy directory held all three.
+A consumer in this state receives no hook updates and no governance refresh, and its pin
+never advances, so it reads as permanently "behind" no matter how many times the operator
+upgrades it. Every one of those upgrades reports success.
+
+This is the same failure *direction* as L-534: the check is green about the wrong object.
+A red step gets investigated at the next run; a green step that wrote to the wrong place
+is indistinguishable from one that wrote to the right place, so nothing ever prompts a look.
+
+**Relation to the 2026-08-03 operator downgrade report.** Their consumer printed
+`Pinned: v1.6.354` against a framework at v1.6.8. A pin that will not advance is exactly
+what this defect produces. Not asserted as *the* cause — that host is out of this session's
+boundary and unverified — but it is a mechanism that produces the reported symptom, and it
+is on the same command. T-2756 remains the task for the bootstrap-clone question.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,7 +237,59 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t2759_upgrade_target_dir_shadowing.bats 2>&1); echo "$out" | grep -q '^1\.\.6' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/lib_upgrade.bats 2>&1); echo "$out" | grep -q '^1\.\.12' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^1\.\.7' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
+
+**Symptom.** `fw upgrade` prints every step, prints `=== Upgrade Complete ===`, exits 0 —
+and the consumer receives none of steps 5-10. Measured on a controlled fixture: no
+`.claude/settings.json`, no `.mcp.json`, no `.claude/commands/resume.md`, `version:` still
+`1.0.0`; 30+ files (settings, mcp config, 11 scripts, 10 command docs, the `.context`
+subdirectory tree) landed in the shim's symlink-target directory instead.
+
+**Root cause.** `lib/upgrade.sh:1305` declared `local target_dir` inside `do_upgrade`,
+which already binds `target_dir` to the consumer at `:566`. Bash does not open a new scope
+for a second `local` in the same function — it rebinds the existing name. From that line
+on, `target_dir` was `dirname(readlink -f ~/.local/bin/fw)`.
+
+**Trigger.** `~/.local/bin/fw` is a symlink whose resolved path ends in `/bin/fw`, with no
+`FRAMEWORK.md` beside its parent. The `FRAMEWORK.md` check is a *protective refusal* added
+by T-1278; when it fires the upgrade aborts, which is loud. The bug lives in the path where
+that refusal does **not** fire — i.e. exactly the machines the protection judged safe.
+
+**Why structurally allowed.**
+1. *Bash's `local` is not a scope.* The line reads like an ordinary temporary. Nothing in
+   shell warns on it, `shellcheck` does not flag re-`local` in the same function, and the
+   name collision is 739 lines from the original binding — far past what a reviewer holds.
+2. *The failure direction hid it.* The run exits 0. A consumer in this state simply never
+   changes: its pin does not advance, so it reads as "behind" forever and every upgrade
+   reports success. There is no red step to investigate. This is the L-534 shape — the
+   check was green about the wrong object — and the same reason T-2732's port-3000 class
+   reached 371 instances rather than 3.
+3. *No test drove the branch.* `upgrade_fresh_machine_simulation.bats` runs under `env -i`
+   with a minimal PATH and no `~/.local/bin/fw` symlink, so the shim-migration path it was
+   built to protect is the one path it does not enter. The suite covered the command; it
+   did not cover this branch of it.
+
+**Prevention.**
+1. `tests/unit/t2759_upgrade_target_dir_shadowing.bats` — drives the real `bin/fw upgrade`
+   with a controlled `$HOME` so the branch is genuinely taken, and asserts destination for
+   three artefacts, the pin, and that *nothing* lands in the link directory. Verified to
+   fail against the pre-fix code; a test that only passes afterwards cannot tell "fixed"
+   from "never exercised".
+2. A structural test asserting `target_dir` is bound exactly once inside `do_upgrade` —
+   the defect class is the re-declaration, not this one line.
+3. Audited every duplicate `local` in `do_upgrade` as a set rather than fixing the observed
+   line: `fw_version` (`:883`, `:1861`) and `upgrade_ts` (`:1917`, `:1940`) are also
+   re-declared, both assigning the identical value, so both are harmless. Stated here so
+   the next reader does not have to re-derive that they are safe.
+
+**Not claimed.** That this caused the 2026-08-03 operator downgrade. It produces a pin that
+never advances, which matches the reported `Pinned: v1.6.354`; it does not move a version
+backwards, which is what that host actually saw. Different mechanism, same command — see
+T-2760 for the distinction and T-2756 for the bootstrap-clone question.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -214,3 +356,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2759-fw-upgrade-silently-redirects-steps-5-10.md
 - **Context:** Initial task creation
+
+### 2026-08-03T10:35:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

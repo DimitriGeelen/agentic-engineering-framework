@@ -1,19 +1,27 @@
 ---
 id: T-2761
-name: "fw upgrade should refuse to run a consumer's upgrade from a framework that is not that consumer's own vendored copy"
+name: "fw upgrade should refuse to run a consumer's upgrade from a framework that
+  is not that consumer's own vendored copy"
 description: >
-  Today any fw on PATH can upgrade any consumer. If ~/.local/bin/fw is a stale symlink into some other framework checkout (rather than the T-665 project-detecting shim), that stale tree becomes the SOURCE of the upgrade — do_vendor copies its older runtime into the consumer, which is a downgrade with no guard between intent and outcome. The invariant the design already assumes ('each project uses its own framework version, no global install dependency' — printed by step 4c itself) is nowhere enforced. Decide: refuse by default with an env bypass, warn loudly, or auto-reroute to the consumer's vendored bin/fw.
+  Today any fw on PATH can upgrade any consumer. If ~/.local/bin/fw is a stale symlink
+  into some other framework checkout (rather than the T-665 project-detecting shim),
+  that stale tree becomes the SOURCE of the upgrade — do_vendor copies its older runtime
+  into the consumer, which is a downgrade with no guard between intent and outcome.
+  The invariant the design already assumes ('each project uses its own framework version,
+  no global install dependency' — printed by step 4c itself) is nowhere enforced.
+  Decide: refuse by default with an env bypass, warn loudly, or auto-reroute to the
+  consumer's vendored bin/fw.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-03T11:15:03Z
-last_update: 2026-08-03T11:15:03Z
-date_finished: null
+last_update: 2026-08-03T11:21:06Z
+date_finished: 2026-08-03T11:21:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +30,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-08-03T11:21:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2761: fw upgrade should refuse to run a consumer's upgrade from a framework that is not that consumer's own vendored copy
@@ -72,15 +97,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -129,9 +154,46 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Evidence is in hand, not pending. (1) The invariant is already stated by the product: step 4c prints 'Each project uses its own framework version (no global install dependency)' while doing nothing to ensure it. (2) The failure is silent and directional — a stale source downgrades the consumer and the run reports success, the same false-green direction as T-2759 and L-534. (3) A live instance exists on this host: /root/.local/bin/fw resolves into /root/.agentic-framework, a separate stale checkout, which is what the operator's 2026-08-03 report named as 'Framework: /root/.agentic-framework (v1.6.8)'. (4) The check is cheap and local — compare the running FRAMEWORK_ROOT against the target's .agentic-framework, refuse on mismatch with FW_ALLOW_FOREIGN_FRAMEWORK=1 as the logged Tier-2 bypass, mirroring the existing --force-downgrade contract. The open question is refuse-vs-warn-vs-reroute, not whether a guard is warranted.
+
+**Date**: 2026-08-03T11:21:05Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-08-03T11:21:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Evidence is in hand, not pending. (1) The invariant is already stated by the product: step 4c prints 'Each project uses its own framework version (no global install dependency)' while doing nothing to ensure it. (2) The failure is silent and directional — a stale source downgrades the consumer and the run reports success, the same false-green direction as T-2759 and L-534. (3) A live instance exists on this host: /root/.local/bin/fw resolves into /root/.agentic-framework, a separate stale checkout, which is what the operator's 2026-08-03 report named as 'Framework: /root/.agentic-framework (v1.6.8)'. (4) The check is cheap and local — compare the running FRAMEWORK_ROOT against the target's .agentic-framework, refuse on mismatch with FW_ALLOW_FOREIGN_FRAMEWORK=1 as the logged Tier-2 bypass, mirroring the existing --force-downgrade contract. The open question is refuse-vs-warn-vs-reroute, not whether a guard is warranted.
+
+### 2026-08-03T11:21:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-85162899
+- **Timestamp:** 2026-08-03T11:21:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-46bfc393
+- **Timestamp:** 2026-08-03T11:21:07Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2759` | task | ✓ pass |
+
+### 2026-08-03T11:21:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
