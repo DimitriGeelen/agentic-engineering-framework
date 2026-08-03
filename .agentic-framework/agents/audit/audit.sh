@@ -647,6 +647,8 @@ fi
 #     empty-dict and mention both origin classes.
 fm_fail_count=0
 fm_fail_list=""
+fm_trunc_count=0
+fm_trunc_list=""
 # T-2297: single batched python3 invocation (was per-file fork — 1 process per
 # task file, ~178ms python+yaml startup × 2,261 files = 6.7 min on the audit's
 # pre-push --section structure path). One fork now: file paths stream via stdin,
@@ -677,6 +679,14 @@ for line in sys.stdin:
             rc = 2
         elif isinstance(fm, dict) and len(fm) == 0:
             rc = 3
+        elif isinstance(fm, dict) and any((' ' in str(k) or '\t' in str(k)) for k in fm):
+            # T-2779: the silent half of the T-2069 class. A folded-scalar break whose
+            # orphaned paragraph happens to contain 'word: word' parses as a junk top-level
+            # key and truncates description to its first line — valid YAML, rc=0, invisible.
+            # Predicate is whitespace-in-key, NOT unknown-key: the schema is deliberately
+            # extensible (A2 treats unknown fields as silent additions), so an unknown-key
+            # test would flag bvp_scores_proposed and every field added after it.
+            rc = 4
         else:
             rc = 0
     except Exception:
@@ -687,8 +697,17 @@ for line in sys.stdin:
 while IFS=$'\t' read -r rc tf; do
     [ -z "$rc" ] && continue
     [ "$rc" = "0" ] && continue
-    fm_fail_count=$((fm_fail_count + 1))
     tf_rel="${tf#$PROJECT_ROOT/}"
+    # T-2779: rc=4 is a separate class with a separate repair, so it gets its own counter.
+    # Merging it into the unparseable count would tell the operator a number without
+    # telling them which fix applies: an rc=2/3 file simply will not parse, while an rc=4
+    # file parses fine and has already lost content that has to be reconstructed by hand.
+    if [ "$rc" = "4" ]; then
+        fm_trunc_count=$((fm_trunc_count + 1))
+        fm_trunc_list="$fm_trunc_list\n  $tf_rel"
+        continue
+    fi
+    fm_fail_count=$((fm_fail_count + 1))
     if [ "$rc" = "3" ]; then
         fm_fail_list="$fm_fail_list\n  $tf_rel  (empty-dict / yaml.ScannerError — T-2069 class: folded scalar or quoting break)"
     else
@@ -700,6 +719,13 @@ if [ "$fm_fail_count" -gt 0 ]; then
          "Files: $(printf '%b' "$fm_fail_list")" \
          "T-2067 class (mangled components: list — wrapped flow-style left orphan continuation)." \
          "T-2069 class (folded scalar 'description: >' terminated by blank line then col-0 lines parsed as keys; quote the description string or move structured body out of frontmatter)."
+fi
+if [ "$fm_trunc_count" -gt 0 ]; then
+    warn "Task frontmatter: $fm_trunc_count task(s) have description content parsed as frontmatter keys" \
+         "Files: $(printf '%b' "$fm_trunc_list")" \
+         "T-2779 (silent half of the T-2069 class): a 'description: >' folded scalar ended early, and an orphaned paragraph containing 'word: word' became a top-level key. The file parses, so the unparseable-YAML check above cannot see it — but description was truncated at the first line and the rest of the value is now a key." \
+         "Repair differs from the loud class: re-indent the orphaned paragraphs back under 'description: >' by two spaces, then confirm the description reads whole again. The content is still in the file, just in the wrong place." \
+         "Producer fixed in T-2778 (create-task.sh indented only the first line at all three emission sites); this check covers any other writer of task frontmatter."
 fi
 
 # T-1856 (T-NEW-8): Anchor-task existence check.
