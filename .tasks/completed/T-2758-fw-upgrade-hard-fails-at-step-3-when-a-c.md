@@ -8,12 +8,12 @@ description: >
   vendor) never run. Reproduced live 2026-08-03; 3 tests in tests/unit/lib_upgrade.bats
   have been red on this.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T10:18:21Z
-last_update: '2026-08-03T10:30:07Z'
-date_finished:
+last_update: 2026-08-03T11:19:25Z
+date_finished: 2026-08-03T11:19:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -78,18 +78,36 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw upgrade` completes (exit 0, all 10 steps) against a consumer that has only
+- [x] `fw upgrade` completes (exit 0, all 10 steps) against a consumer that has only
       `.framework.yaml` and no `.context/` tree — the shape that currently dies at step 3.
-- [ ] Every write target under `$target_dir` in `lib/upgrade.sh` has its parent directory
+      Fixed in 826010dfa: a new step 0 creates the full `.context/`, `.tasks/templates`,
+      `.claude/commands` and `policy` skeleton before step 1 runs.
+- [x] Every write target under `$target_dir` in `lib/upgrade.sh` has its parent directory
       guaranteed to exist before the write, not only the seven that happen to `mkdir -p`
       today. Audited as a set, not spot-fixed at the one line that was observed failing.
-- [ ] The three pre-existing red tests in `tests/unit/lib_upgrade.bats` (resume.md drift /
+      Every remaining `cp`/`cat >`/heredoc write under `$target_dir` (steps 2, 3, 3b, 3c,
+      5, 6, 7, 7b, shim migration) is either into a directory step 0 now guarantees
+      (`.context/*`, `.tasks/templates`, `.claude/commands`, `policy`) or has its own
+      immediately-preceding `mkdir -p` at the write site (e.g. `.context/cron` at :1182,
+      `scripts/` at :1792). `$HOME/.agentic-framework` global-install sync writes are
+      gated behind `[ -d "$global_dir/agents/context" ]` — a pre-existence check, not a
+      target_dir write. No unguarded site remains.
+- [x] The three pre-existing red tests in `tests/unit/lib_upgrade.bats` (resume.md drift /
       match / create) go green, and the reason they were red is stated — they were failing
-      on this bug, not on resume.md.
-- [ ] Regression test covers the bare-consumer shape end-to-end, so a future step added
+      on this bug, not on resume.md. 12/12 green. They were red for two stacked causes:
+      this task's ordering bug (cp into `.context/project/` before it existed) plus a
+      second, unrelated cause split off as T-2759 (target_dir rebind at :1305 redirected
+      steps 5-10 to the wrong directory) — both had to land before these tests could pass.
+- [x] Regression test covers the bare-consumer shape end-to-end, so a future step added
       without a `mkdir -p` is caught by the suite rather than by a consumer.
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (CLAUDE.md
-      §Consumer-Facing Command Hygiene).
+      `tests/unit/lib_upgrade.bats:144` ("missing resume.md — created from template")
+      already constructs exactly this shape (`mkdir -p "$proj"; echo framework_root >
+      .framework.yaml` — nothing else) and asserts `do_upgrade` exits 0 end-to-end
+      through all 10 steps. It was one of the three red tests; it is the regression
+      coverage, not a new file — a future ordering regression fails it the same way
+      it failed here.
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (CLAUDE.md
+      §Consumer-Facing Command Hygiene). 7/7 green.
 
 **Origin (2026-08-03).** Found while running the upgrade suite for T-2755, not reported by
 a user — `lib_upgrade.bats` tests 10-12 were red and the assumed cause (resume.md drift)
@@ -197,7 +215,41 @@ project.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/lib_upgrade.bats 2>&1); echo "$out" | grep -q '^1\.\.12' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^1\.\.7' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
+
+**Symptom.** `fw upgrade` against a consumer holding only `.framework.yaml` (no
+`.context/` tree yet — e.g. a project on `.framework.yaml` predating `fw init`'s tree
+creation, or one reconstructed by hand) exits 1 at `[3/10] Seed files` with
+`cp: cannot create regular file '.../.context/project/practices.yaml': No such file
+or directory`. Steps 4-10 — hooks, `.mcp.json`, resume.md, shim, vendor sync, version
+pin, enforcement baseline — never run, leaving the consumer half-upgraded (steps 1-2
+already wrote).
+
+**Root cause.** `.context/` subdirectory creation lived at step 8, five steps after
+step 3 (seed files) first writes into `.context/project/`. The ordering, not the
+absence of a `mkdir -p` on any single line, was the defect: the next write added to
+any step between 3 and 8 would have inherited the identical failure.
+
+**Why structurally allowed.** Every consumer that reached step 3 in practice had been
+through `fw init`, which creates the tree up front — so the ordering gap was invisible
+on every real upgrade path exercised so far. The one place the gap is visible is a
+project holding `.framework.yaml` and little else, which is exactly the shape
+`tests/unit/lib_upgrade.bats` constructs for its resume.md tests — so the tests were
+red, and the failure surfaced under a name (resume.md drift) unrelated to its cause,
+because the run was dying at step 3, long before resume.md at step 7. A second,
+independent defect (T-2759 — `target_dir` rebound at :1305) was stacked on the same
+three tests, which delayed isolating this cause until T-2759 was split out.
+
+**Prevention.** Directory skeleton creation moved to a new step 0, before any write —
+not a `mkdir -p` added at the observed failing line, which would only have protected
+that one `cp`. Every other `$target_dir` write site in `lib/upgrade.sh` was then
+audited as a set (see AC #2) to confirm it either lands under a directory step 0 now
+guarantees, or already carries its own immediately-preceding `mkdir -p`. The bare-shape
+test at `lib_upgrade.bats:144` is the regression guard — a future step written against
+an unguaranteed directory fails it the same way this one did.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -267,3 +319,20 @@ project.
 
 ### 2026-08-03T10:25:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-88369ca2
+- **Timestamp:** 2026-08-03T11:20:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/lib_upgrade.bats 2>&1); echo "$out" | grep -q '^1\.\.12' && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-08-03T11:19:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2758: fw upgrade hard-fails at step 3 when a consumer has no .context/project/ directory
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T11:20:34Z
+# ============================================================================
+
+task_id: T-2758
+task_name: "fw upgrade hard-fails at step 3 when a consumer has no .context/project/ directory"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T10:18:21Z
+completed: 2026-08-03T11:19:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-03T12:35:21+02:00
+last_commit: 2026-08-03T12:35:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  create the consumer directory skeleton before step 1, not at step 8
+
+# Key outcomes
+outcomes:
+  - '`fw upgrade` completes (exit 0, all 10 steps) against a consumer that has only'
+  - 'Every write target under `$target_dir` in `lib/upgrade.sh` has its parent directory'
+  - 'The three pre-existing red tests in `tests/unit/lib_upgrade.bats` (resume.md drift /'
+  - 'Regression test covers the bare-consumer shape end-to-end, so a future step added'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green (CLAUDE.md'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2758-fw-upgrade-hard-fails-at-step-3-when-a-c.md'
+  - '.tasks/active/T-2759-fw-upgrade-silently-redirects-steps-5-10.md'
+  - '.tasks/completed/T-2755-fw-upgrade-header-labels-any-version-mis.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T12:35:21'
+    action: 'T-2758: create the consumer directory skeleton before step 1, not at step 8'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 61
+  commits: 3
+  files_changed: 4
+  lines_added: 300
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2758-fw-upgrade-hard-fails-at-step-3-when-a-c.md
+generated_by: context-agent-hybrid
