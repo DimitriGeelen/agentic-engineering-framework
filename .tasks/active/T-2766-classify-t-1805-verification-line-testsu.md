@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T13:35:42Z
-last_update: 2026-08-03T13:41:32Z
+last_update: '2026-08-03T13:45:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,23 +64,34 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-03T13:45:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2766: classify T-1805 verification line: tests/unit/test_outcome_read.py no longer exists
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Classify the red line the first `fw verify-queue` census (T-2765) found on T-1805.
+The answer is neither of the two readings the task was filed with — see `## Findings`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Fate of `tests/unit/test_outcome_read.py` established from git history
+- [x] Fate of `tests/unit/test_outcome_read.py` established from git history
       (`git log --diff-filter=D --follow`), not inferred: deleted, renamed, or merged
-- [ ] Whether the outcome read/list cases still exist under another path answered by
+- [x] Whether the outcome read/list cases still exist under another path answered by
       searching for the test function names, not the filename
-- [ ] Classification recorded in `## Decisions` as exactly one of **(a) WRONG — path
+- [x] Classification recorded in `## Decisions` as exactly one of **(a) WRONG — path
       moved, repairable** or **(b) CORRECTLY FAILING — coverage genuinely gone, line must
       not be edited**, with the evidence that decides it
 - [ ] Response executed to match: if (a), T-1805's line re-pointed and its full block
@@ -119,6 +130,88 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## Findings
+
+The line under classification (T-1805, `## Verification` line 2):
+
+    python3 -m pytest tests/unit/test_outcome_read.py tests/unit/test_outcome_list.py -q 2>&1 | tail -5 || python3 -m pytest tests/unit/ -k outcome -q
+
+**1. Neither named file has ever existed.** Not deleted, not renamed — never added.
+`git log --all --oneline --diff-filter=A -- '*test_outcome_read*'` and the same for
+`*test_outcome_list*` are both **empty**, as is `git log --follow` on the literal path.
+The two candidate readings the task was filed with (path moved / coverage deleted) both
+presuppose the file existed once. It did not. The paths were written from intent, not
+read off the tree.
+
+**2. The coverage T-1805 shipped is intact, in the file T-1805's own frontmatter names.**
+`components:` lists `tests/unit/test_outcome.py`, and commit `2dcae62f7` ("T-1805:
+pause_requested terminal_event class") modified exactly that file. The pause_requested
+read/list cases are present and green:
+`test_cmd_read_prints_pause_requested_fields`, `test_cmd_read_pause_optional_fields`,
+`test_cmd_list_shows_pause_terminal_with_question`, `test_cmd_list_truncates_long_pause_question`.
+`pytest tests/unit/test_outcome.py -q` → **39 passed**; the pause slice across
+`test_outcome.py` + `test_spawn.py` → **12 passed**.
+
+**3. The `||` fallback has been the sole executor since the line was authored — and it
+silently widens the population.** Because the primary arm can never run, every execution
+of this line has actually run `pytest tests/unit/ -k outcome -q`: **70 tests across at
+least four files**, not the two the line names. That is the same defect family as L-539
+and the T-2735/T-2737 fabric-denominator trio — *the set the check runs over is not the
+set the check claims to be about*. A fallback that broadens the population is not a
+fallback; it is a second, different check wearing the first one's name.
+
+**4. The red is real, and it belongs to a different component.** The fallback's wider net
+catches two genuine failures T-1805 never touched:
+
+    tests/unit/test_orchestrator_status_outcomes.py::test_outcomes_json_exposes_aggregation
+    tests/unit/test_orchestrator_status_outcomes.py::test_default_json_does_not_have_outcomes_key
+
+Both fail on `json.loads(result.stdout)` with `Expecting value: line 1 column 1`.
+
+**5. Root cause of that red — `fw <cmd> --json` on an uninitialised root emits setup
+prose on stdout and exits 0.** Reproduced outside the test harness, in a bare temp dir:
+
+    PROJECT_ROOT=$TD bin/fw orchestrator status --json > out.json
+
+    → rc=0, and out.json begins:
+        Setting up agentic governance for fwjson.B60s...
+          ⚠  Git identity not configured (commits will fail)
+        Vendoring framework into project...
+        fw vendor — vendoring framework into project
+      …then the JSON.
+
+Two distinct defects in one reproduction, both onboarding-surface:
+  (i) a read-only status query **auto-initialises and vendors** into the cwd as a side
+      effect — `fw orchestrator status` created a project;
+  (ii) the setup narrative goes to **stdout**, so `--json` is unparseable while rc stays
+      **0** — a false green at the JSON layer for any programmatic consumer. Banner text
+      belongs on stderr (`lib/init.sh:93` is the emitter).
+
+This is the third instance of the class flagged as owed to 832: **checks written against
+an imagined artifact rather than a measured one.** Filed T-1805's line names imagined
+test files; our scanners matching on imagined stderr text are the sibling case.
+
+## Decisions
+
+**Classification: (a) WRONG — repairable — but by a third mechanism, not the one the task
+anticipated.** The line is wrong because it names paths that never existed, not because a
+path moved. Evidence that decides it: the empty `--diff-filter=A` history for both names
+(rules out moved/deleted), plus the intact green coverage in `test_outcome.py`, the file
+T-1805's own `components:` declares (rules out "coverage genuinely gone"). Reading (b) is
+excluded on evidence, not on preference — had the pause cases been absent, the line would
+have been left byte-identical.
+
+**Repair shape: re-point at `tests/unit/test_outcome.py` AND drop the `-k outcome`
+fallback.** Re-pointing alone would leave the population-widening arm in place, so the
+line would keep reporting another component's failures as T-1805's. The fallback is the
+more dangerous half of the defect and is what must not survive the repair.
+
+**The orchestrator/JSON red is a separate task, not part of this repair.** One bug = one
+task; it is a live product defect on the onboarding surface with its own root cause, and
+folding it into a verification-line classification would bury it. Repairing T-1805's line
+must not be allowed to make it invisible — which is precisely what "just re-point the
+path" would have done in thirty seconds.
 
 ## Verification
 
