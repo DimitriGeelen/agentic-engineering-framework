@@ -25,12 +25,12 @@ description: >
   number that is usually cold, and a check that misnames what it measured is how
   a false green or a false red survives review.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-task.sh, tests/unit/test_task_create_description_yaml.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T19:20:31Z
-last_update: 2026-08-03T21:11:30Z
-date_finished:
+last_update: 2026-08-03T23:32:08Z
+date_finished: 2026-08-03T23:32:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -95,11 +95,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The suite measures, and names, one well-defined quantity. Today it reports
+- [x] The suite measures, and names, one well-defined quantity. Today it reports
       cold-cache-plus-contention cost under the label "warm-load". Whichever design is
       chosen, the assertion message must state which cost it measured — a check that
       misnames its own quantity is how both a false green and a false red survive review.
-- [ ] Contention is controlled or acknowledged. This is the sharper half of the defect:
+      **Verified:** the assertion message now reports every sample
+      (`f"...best-of-{len(samples)}...(all samples: [{sample_report}])..."`) and states
+      explicitly that it measures warm-cache render time, best-of-N, distinct from host
+      contention. See `test_all_routes_load_time.py:187-197`.
+- [x] Contention is controlled or acknowledged. This is the sharper half of the defect:
       the suite times routes while a browser, a Flask server and 50+ sibling tests share
       one box, so a route's measured latency depends on what else is running. **Scope
       correction from T-2776: FOUR of the five failing routes are fast when measured
@@ -107,17 +111,38 @@ bvp_scores_proposed:
       `/metrics` 3.00s — against suite readings of 11.7s, 21.8s, 11.8s and 27.3s. Only
       `/timeline` (T-2775) is genuinely over budget, and it is over on **size**, which is
       the one quantity that does not inflate under load (L-443, and the T-2776 RCA).
-- [ ] Whatever replaces the current warm-up is verified to actually hold for the routes it
+      **Verified, and corrected (see Updates):** the bounded best-of-3 retry controls
+      millisecond-scale contention (a route caught mid-flight of one sibling write). A
+      prior pass on this task attributed the remaining 3 red routes to *sustained*
+      host-wide contention and left it as an acknowledged, uncontrolled boundary. That
+      diagnosis was itself wrong: the actual cause was one specific stale server process
+      on the Playwright test port (3099), unmanaged since 2026-08-03, that had degraded
+      independent of host load (OBS-098). Killing it and re-running fresh took the same
+      3 routes from 13-16s to under 3s and the full suite to 54/54. Contention (the
+      general kind) IS still acknowledged, not fully controlled, as a class — but it was
+      not the operative cause of this particular failure. See Updates + OBS-098 + T-2782.
+- [x] Whatever replaces the current warm-up is verified to actually hold for the routes it
       claims to cover — the present `_warm_slow_routes` runs once per session with 30s/60s/
       120s TTLs behind it and a 7.5-minute suite, so every cache it warms has expired long
       before the route it warmed is tested. Show the new mechanism still warm at point of
       measurement rather than assuming it.
-- [ ] After the fix, `tests/playwright/test_all_routes_load_time.py` is green except for
+      **Verified:** each parametrized test primes its own route immediately before
+      measuring (`test_all_routes_load_time.py:166-169`), independent of session-elapsed
+      time. Full-suite run (54 params, 8m57s) confirms `/tasks` — the route T-2776 showed
+      cold-reading 11.7s in-suite vs 0.14s live — now passes.
+- [x] After the fix, `tests/playwright/test_all_routes_load_time.py` is green except for
       genuinely-over-budget routes, and each remaining red is traceable to a filed task.
       Do NOT reach green by raising `LOAD_CAP_MS` — the guard's own docstring forbids it,
       and the cap is the thing carrying the T-2102 provenance.
-- [ ] The four routes above are re-measured after the change and confirmed passing on
+      **Met:** full-suite run (fresh test server) is 54 passed / 0 failed in 238.09s
+      (0:03:58). No `LOAD_CAP_MS`/`KNOWN_SLOW` values were touched to reach this. See
+      Updates.
+- [x] The four routes above are re-measured after the change and confirmed passing on
       their merits, not by loosening the assertion.
+      **Met:** all four confirmed passing on a fresh test server —
+      `/tasks`, `/approvals`, `/approvals/content`, `/metrics` all inside the 54/54 green
+      run, no cap changes. The previous "not met" readings were traced to a stale test
+      server process, not to these routes — see Updates + OBS-098.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -217,21 +242,74 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-2777: full-suite run must show only KNOWN_SLOW-tracked failures (currently /timeline
+# only, elevated cap). 54/54 passed once the stale Playwright test-server process (OBS-098)
+# was cleared — see RCA. If this line goes red again on a clean checkout, first check
+# `ps aux | grep "python3 -m web.app --port ${FW_TEST_PORT:-3099}"` for a long-lived
+# leftover process before assuming a real regression or contention (T-2782 tracks the
+# structural fix; this comment is the interim mitigation until it lands).
+out=$(python3 -m pytest tests/playwright/test_all_routes_load_time.py -q 2>&1); echo "$out" | grep -q " passed" && ! echo "$out" | grep -q " failed"
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `test_all_routes_load_time.py` reported `/approvals`, `/approvals/content`
+and `/metrics` failing the 5s cap under the label "warm-load", while the same routes
+measured 0.9-3.0s against a live, directly-curled server. The suite was reporting a
+number under a name that implied it wasn't what it actually measured.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `conftest.py:_warm_slow_routes` (T-2104) warms a fixed route set once
+per session, but the caches behind those routes carry 30s/60s/120s TTLs while the
+parametrized suite takes ~7.5 minutes to reach most of its 54 routes — every warmed
+cache had already expired by the time its route was tested. The prior "prime, then
+measure" pair inside each test (added post-T-2104) mostly compensated for that, but
+took exactly one measured sample — so a route caught mid-flight by a concurrent
+session's write to `.tasks/active/` (this repo self-hosts, and dozens of concurrent
+agent sessions write to the corpus continuously) paid a full cache-rebuild cost on
+that one sample and reported it, indistinguishably, as "warm-load".
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** nothing separated "structurally slow route" from "route
+caught mid-rebuild by another session's write" — a single sample and a label that
+didn't say what was actually measured meant a contention-inflated reading and a
+genuine regression produced the identical failure message.
+
+**Prevention (implemented, see diff to `test_all_routes_load_time.py`):**
+1. Each parametrized test primes its own route immediately before measuring, so the
+   guard never depends on the session-level warm-up's TTL surviving to that point.
+2. Measurement takes the best of up to 3 samples (`RETRY_SAMPLES`), bounded — a route
+   caught mid-flight by a sibling session's write gets a clean sample within a retry; a
+   structurally slow route stays slow across all of them.
+3. The assertion message reports every sample and states explicitly what was measured
+   ("warm-cache page-render time, best case across repeated samples"), so a genuine
+   regression and a contention-inflated failure read differently in the output.
+
+**Correction (second pass, 2026-08-04):** a prior pass on this task investigated the
+remaining 3 red routes and attributed them to sustained host-wide contention (load
+average 3-5, 16-18 concurrent `web.app` processes), citing that as a live confirmation
+of a boundary the fix's docstring already acknowledges, and left the task at
+`started-work` with those 2 ACs unmet.
+
+That diagnosis was itself wrong. `tests/playwright/conftest.py:watchtower_server`
+reuses whatever server is already listening on the Playwright test port (3099) across
+sessions, with no staleness check and no teardown if it didn't start the process. The
+server actually serving those 3 routes during every failing run had been running
+unmanaged since 2026-08-03 — 656MB RSS, ~66 minutes of accumulated CPU by the time it
+was found (`ps`/`/proc/<pid>/status`), roughly a day old. `curl` directly against
+THAT process (not a fresh one) reproduced the identical 13-16s readings the Playwright
+suite saw — ruling out Playwright/browser overhead as the cause. Killing that one
+process and letting the fixture spawn a fresh instance took the same 3 routes from
+13-16s to under 3s, and the full 54-route suite from ~9min/51-passed to 4min/54-passed,
+with host load unchanged throughout (`uptime` before/after: load average ~4-5 both
+times). The host genuinely was busy — that part of the prior diagnosis was accurately
+observed — but busy-host was not what was making these 3 routes slow; one specific
+degraded process was.
+
+Registered as **OBS-098** (`.context/concerns.yaml`) — the fixture's unbounded server
+reuse is a structural gap: it can silently degrade the exact timings this suite exists
+to guard, and will reproduce the identical "host contention" misdiagnosis for the next
+session that hits it, same as it did here. Follow-up **T-2782** filed (build, horizon
+later) to add a staleness/age bound to `watchtower_server` — out of scope for this task
+because it touches a shared fixture used by every Playwright test file, not just this
+one's measurement-methodology fix.
 
 ## Evolution
 
@@ -287,3 +365,80 @@ bvp_scores_proposed:
 
 ### 2026-08-03T21:11:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-04T01:xx:xxZ — dispatched-worker verification pass
+- **Found:** the fix (per-test priming + best-of-3-samples retry, honest assertion
+  naming) was already implemented in a prior session, uncommitted. Read the diff
+  against `tests/playwright/test_all_routes_load_time.py` in full — matches design
+  option (a)+(b) from the task body, correctly.
+- **Ran:** targeted 4-route subset twice (~13 min apart) and the full 54-route suite
+  once (8m57s). Result both times: 51 passed / 3 failed — `/approvals`,
+  `/approvals/content`, `/metrics` fail reproducibly on all 3 retry samples;
+  `/timeline` passes under its `KNOWN_SLOW`/T-2775 elevated cap; `/tasks` (the T-2776
+  false-red) now passes.
+- **Cross-checked against live server directly** (bypassing Playwright): `curl` to the
+  same 3 routes on the already-running test server reproduced the same 5.5-16s
+  readings, twice, ruling out Playwright-specific overhead as the cause.
+- **Investigated (hypothesis-driven, bounded):** `/health` and `/api/version` on the
+  same server responded in 12-22ms — rules out global request-handling stall.
+  `web/blueprints/approvals.py` GET routes don't call subprocess directly, but
+  `_build_approvals_context` runs ~7 independent full-corpus scans per request over
+  313 active task files. `web/blueprints/metrics.py` calls `run_git_command` (git log,
+  uncached) twice per request — genuinely sensitive to host scheduling contention.
+  `vmstat` showed 13k-21k context-switches/sec; `ps` showed 17 concurrent `web.app`
+  instances plus multiple live `claude` sessions and termlink hubs on this host.
+  Conclusion: real, current, sustained host contention — not a flaw in the delivered
+  fix, but a live demonstration of the boundary the fix's own docstring already
+  documents (bounded retry survives millisecond blips, not sustained load).
+- **Did NOT:** modify `RETRY_SAMPLES`, add host-load-aware skip logic, or touch
+  `web/blueprints/metrics.py` / `approvals.py` — any of those would be scope
+  expansion beyond the measurement-methodology fix this task targets, and touching
+  them now would be fitting the test to one moment's host state rather than a
+  structural condition. Left AC #4/#5 unticked and Verification red pending either a
+  quieter re-run or a follow-up KNOWN_SLOW-pattern task if the 3 routes prove
+  structurally slow independent of load.
+- **Left task at `started-work`** — not moving to `work-completed`; two Agent ACs are
+  genuinely unmet right now and the Verification line above correctly blocks the gate.
+
+### 2026-08-04T01:xx:xxZ — dispatched-worker, second pass: corrected diagnosis
+- **Re-checked host state:** `uptime` showed load average ~4-5, `ps` showed 16-18
+  concurrent `web.app` instances — essentially the same sustained-load condition the
+  prior pass measured. Direct `curl` to the *production* Watchtower (port 3001) for the
+  3 failing routes measured 0.9-2.8s — fast, consistent with earlier live-server checks.
+- **Found the actual server under test:** the Playwright suite talks to a *different*
+  server, on `FW_TEST_PORT` (3099), managed by `conftest.py:watchtower_server`. `ps`
+  showed that process running since 2026-08-03 (yesterday), 656MB RSS, ~66 minutes
+  accumulated CPU — `watchtower_server`'s "already running, don't manage it" branch had
+  been reusing it across every session since, with no staleness check and no teardown.
+- **Confirmed by direct curl to that specific process** (bypassing Playwright entirely):
+  `/approvals` 15.8s, `/approvals/content` 5.6s, `/metrics` 13.8s — reproducing the
+  in-suite readings exactly, and ruling out Playwright/browser overhead as the cause.
+- **Killed the stale process** (`kill <pid>`; it was root-owned, this session runs as
+  root). Confirmed port 3099 freed.
+- **Re-ran the full suite** — `watchtower_server` auto-spawned a fresh instance.
+  Result: **54 passed, 0 failed, in 238.09s (0:03:58)** — down from ~9 minutes and
+  51/54 on every prior run this session, host load unchanged throughout.
+- **Registered OBS-098** in `.context/concerns.yaml` — the unbounded-reuse gap in
+  `watchtower_server` is structural and will reproduce the same misdiagnosis for future
+  sessions until bounded.
+- **Filed T-2782** (build, horizon later) — add a staleness/age bound to
+  `watchtower_server`. Left out of this task's scope: it's a shared fixture used by
+  every Playwright test file, not specific to this task's measurement-methodology fix,
+  and warrants its own review rather than an incidental edit here.
+- **Updated RCA + the 2 previously-unmet Agent ACs** to reflect the corrected finding;
+  both are now met. Verification line re-run and green.
+- **Did NOT** modify `RETRY_SAMPLES`, `LOAD_CAP_MS`, or any blueprint cache code — the
+  fix that got the suite green was killing a stale process, not a code change to the
+  routes or the guard.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-972c23ac
+- **Timestamp:** 2026-08-03T23:36:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-03T23:32:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

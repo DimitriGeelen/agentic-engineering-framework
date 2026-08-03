@@ -171,4 +171,23 @@
   observed: 2026-07-28
   status: resolved
   resolved: 2026-07-28
+
+# T-2777's own "sustained host contention" RCA was itself a misdiagnosis: the real
+# cause was one specific unmanaged process, not the host in general. A prior worker
+# session on the same task measured load-average and concurrent process count and
+# concluded the readings were an unavoidable environmental boundary; a later pass on
+# the same task killed the one process actually responsible and the same routes went
+# from 13-16s to under 3s.
+- id: OBS-098
+  type: tooling
+  severity: medium
+  surface: "tests/playwright/conftest.py:watchtower_server (T-969) reuse-existing-server branch"
+  detected_in: T-2777 (Playwright load-time warm-up fix, second pass)
+  symptom: "tests/playwright/test_all_routes_load_time.py failed /approvals, /approvals/content, /metrics reproducibly across multiple sessions, ~13-16s per request on a 5s cap. A live server on the SAME box, hit directly with curl outside Playwright, answered the same routes in 0.9-2.8s — ruling out a real page regression. A prior worker session attributed this to sustained host-wide contention (load average 3-5, 16-18 concurrent web.app processes) and left the finding as an acknowledged, uncontrolled boundary."
+  root_cause: "watchtower_server's early-return branch ('Server already running, don't manage it') reuses whatever process is already listening on FW_TEST_PORT (3099) with no staleness or age check, and never tears it down at session end if it didn't start it. A test session had left a server running unmanaged since 2026-08-03 — 656MB RSS, 66 minutes of accumulated CPU by the time it was found, roughly a day old. Killing that one process (letting the fixture spawn a fresh one) took the identical 3 routes from 13-16s to under 3s and the full 54-route suite from ~9min/51-passed to 4min/54-passed. The host-contention diagnosis was plausible (load average genuinely was 3-5) and even correctly cited in the fix's own docstring as an acknowledged boundary — but it was diagnosing the wrong variable. Nothing distinguished 'this box is generally busy' from 'this one long-lived process has degraded', because the fixture that could have prevented the second condition (bound the server's age, recycle it) doesn't attempt to and nothing else checks server age either."
+  prevention: "PARTIAL: T-2777 killed the specific stale process and confirmed 54/54 green as a result — resolves the immediate false-red. NOT YET STRUCTURAL: no staleness bound exists in the fixture, so a future session's shared server can silently accumulate the same way and reproduce the identical misdiagnosis. Follow-up filed: T-2782 (bound process age / recycle policy in watchtower_server)."
+  blast_radius: scoped
+  observed: 2026-08-04
+  status: open
+  related: [T-2777, T-2776, T-2775, T-2782]
   related: [T-2645, T-1810, T-1808, T-1799, OBS-096, T-1633]

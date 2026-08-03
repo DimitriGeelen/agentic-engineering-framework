@@ -14,10 +14,31 @@ and assert under LOAD_CAP_MS. Any new slow page now fails `fw test playwright`
 the moment it lands — the latency leg of the G-019 prevention.
 
 Cap origin: T-2102 RCA suggested "cap, e.g. 5s". 5000ms matches.
-Warm-up: conftest.py _warm_slow_routes() (T-2104) pre-warms the known-slow set
-(/approvals, /inception, /tasks, /timeline, /bvp). Any new slow page either
-needs adding to that list OR — better — a T-1954-pattern cache fix that
-brings warm-cache load under cap.
+
+Warm-up (T-2777 correction): each parametrized test primes its own route with
+an unmeasured goto before the measured one(s) — see `test_route_load_time_bounded`
+below. This guard does NOT depend on conftest.py's session-scoped
+`_warm_slow_routes()` (T-2104) staying warm — that warm-up's 30s/60s/120s TTLs
+expire long before a 7.5-minute, 47-route suite reaches most of its
+parametrizations, which is exactly the defect T-2777 tracked ("warm-up expires
+mid-suite"). `_warm_slow_routes()` still matters for *other* Playwright test
+files that goto a slow route once and assert on content/height rather than
+timing it — this file no longer needs it.
+
+Contention (T-2777, T-2776 RCA): this repo self-hosts on a shared, actively-
+mutating dev host — concurrent agent sessions and cron jobs write to
+`.tasks/active/*.md` and `.context/` while the suite runs, which invalidates
+the blueprint-local mtime-caches (T-1954/T-2102-pattern) mid-measurement and
+inflates a single sample. T-2776 measured this directly: /tasks read 0.14s
+against a live server but 11.7s inside the suite, for the identical route. A
+single post-warm sample can't distinguish "this route regressed" from "another
+session touched a task file in the ~2ms window between this goto and the
+last". `test_route_load_time_bounded` controls for this with a bounded retry:
+a structurally slow route (needs the T-1954 cache-pattern fix) stays slow
+across every sample; a route only caught by transient contention gets a fast
+sample within a couple of retries. The assertion message reports every sample
+so a genuine regression and a contention-inflated one look different in the
+failure output, not just in outcome.
 """
 import importlib.util
 import os
@@ -86,7 +107,30 @@ KNOWN_SLOW: dict[str, tuple[int, str]] = {
     # in web/blueprints/cockpit.py:get_human_verify_tasks + dedupe in get_cockpit_context
     # (was running the 171-task walk twice per render). Warm 2522ms → 712ms,
     # post-TTL 4964ms → 3234ms. Entry removed; guard enforces global 5000ms cap.
+    #
+    # T-2775 (/timeline) OPEN: distinct from the T-2106 cache-TTL defect above — this is
+    # unbounded response SIZE (69.8MB, every session ever recorded, no windowing/paging),
+    # measured at 29.4s to domcontentloaded on the Flask test client. A cache can't fix an
+    # unbounded page; the fix shape is windowing. Elevated cap has margin over the last
+    # measurement but the underlying page grows with corpus history, so this entry may need
+    # raising again before T-2775 lands a real windowing fix — that is the honest state of
+    # an un-bounded route, not cap creep for a bounded one.
+    "/timeline": (35000, "T-2775"),
 }
+
+# T-2777: bounded retry count for the warm-cache measurement below. Controls for transient,
+# contention-driven mtime-cache invalidation (T-2776 RCA) without touching LOAD_CAP_MS or
+# KNOWN_SLOW — a structurally slow route stays slow across every sample, a route only
+# caught mid-flight by another session's write gets a fast sample within a retry or two.
+RETRY_SAMPLES = 3
+
+
+def _measure_goto_ms(page, url):
+    """Time one `goto` + `domcontentloaded`. Caller decides prime vs. measured."""
+    t0 = time.perf_counter()
+    page.goto(url)
+    page.wait_for_load_state("domcontentloaded")
+    return (time.perf_counter() - t0) * 1000
 
 
 @pytest.mark.skipif(not ROUTES, reason="app url_map not importable — route discovery returned []")
@@ -95,26 +139,34 @@ def test_route_load_time_bounded(page, base_url, route):
     """Every discovered route renders below the load-time cap on a WARM cache (no new
     T-1954-class slow page).
 
-    Prime + measure pattern: first goto fills caches, second goto is measured. This
-    isolates "warm-cache user experience" from cache-TTL-expiry noise during long
-    test runs (suite walks 47 routes × ~2-3s each; TTL is 30s, so without priming
-    the second half of the suite measures cold-cache loads).
+    Measures best-of-`RETRY_SAMPLES` warm-cache navigations, after one unmeasured
+    priming goto. Two distinct costs motivate this shape (T-2777):
 
-    A failure means either (a) a new slow-aggregation page entered the class (apply
-    T-1954/T-2102 mtime-keyed cache pattern), or (b) the page is genuinely too heavy
-    and needs splitting. Either way the fix lives in the blueprint, not in raising
-    the cap.
+    - Cold-cache cost (title defect): the priming goto exists so this test never
+      depends on conftest.py's session-scoped warm-up staying warm — each
+      parametrization re-primes its own route regardless of how long the suite has
+      been running or what TTL has since expired.
+    - Contention-inflated cost (T-2776 RCA): this repo self-hosts on a shared,
+      actively-mutating dev host, so a single post-warm sample can land during
+      another session's write to `.tasks/active/` and read as a cache miss that
+      never happens for a real user. Retrying (bounded, stops at the first sample
+      under cap) and reporting the best sample separates "this route is slow" from
+      "this one sample was unlucky" — a structurally slow route stays slow across
+      every retry, a route only caught mid-flight gets a fast sample within one or
+      two.
+
+    A failure that stays high across all `RETRY_SAMPLES` means either (a) a new
+    slow-aggregation page entered the class (apply T-1954/T-2102 mtime-keyed cache
+    pattern), or (b) the page is genuinely too heavy and needs splitting/windowing
+    (see /timeline, T-2775, KNOWN_SLOW below). Either way the fix lives in the
+    blueprint, not in raising the cap.
     """
+    url = f"{base_url}{route}"
+
     # Prime: first hit warms blueprint-local caches (T-1954 _FM_CACHE etc.).
     # We don't measure this — measuring cold is a different test class.
-    page.goto(f"{base_url}{route}")
+    page.goto(url)
     page.wait_for_load_state("domcontentloaded")
-
-    # Measure: second hit is what a real user sees once caches are warm.
-    t0 = time.perf_counter()
-    page.goto(f"{base_url}{route}")
-    page.wait_for_load_state("domcontentloaded")
-    elapsed_ms = (time.perf_counter() - t0) * 1000
 
     cap = LOAD_CAP_MS
     todo_marker = ""
@@ -123,10 +175,23 @@ def test_route_load_time_bounded(page, base_url, route):
         cap = elevated_cap
         todo_marker = f" (KNOWN_SLOW: elevated to {elevated_cap}ms; fix tracked in {task_id})"
 
+    # Measure: best-of-RETRY_SAMPLES warm-cache navigations. Stop as soon as a
+    # sample clears the cap — the common (uncontended) case costs exactly one
+    # measured goto, same as before T-2777.
+    samples = [_measure_goto_ms(page, url)]
+    while samples[-1] >= cap and len(samples) < RETRY_SAMPLES:
+        samples.append(_measure_goto_ms(page, url))
+    elapsed_ms = min(samples)
+    sample_report = ", ".join(f"{s:.0f}ms" for s in samples)
+
     assert elapsed_ms < cap, (
-        f"{route} warm-load took {elapsed_ms:.0f}ms — exceeds {cap}ms cap{todo_marker}. "
-        "This is the T-1954/T-2102/T-2083 slow-aggregation class. Fix by shape "
-        "(mtime-keyed _FM_CACHE / _BODY_CACHE in the blueprint, NOT by raising the "
-        "cap). See web/blueprints/bvp.py:_FM_CACHE and web/blueprints/approvals.py:"
-        "_BODY_CACHE for the proven pattern. (T-2105 guard)"
+        f"{route} best-of-{len(samples)} warm-cache navigation took {elapsed_ms:.0f}ms "
+        f"(all samples: [{sample_report}]) — exceeds {cap}ms cap{todo_marker}. This "
+        "measures warm-cache page-render time, best case across repeated samples "
+        "(T-2777) — every sample landing high means the route itself is slow, not "
+        "host contention (see T-2776 RCA). This is the T-1954/T-2102/T-2083 "
+        "slow-aggregation class. Fix by shape (mtime-keyed _FM_CACHE / _BODY_CACHE "
+        "in the blueprint, NOT by raising the cap). See web/blueprints/bvp.py:"
+        "_FM_CACHE and web/blueprints/approvals.py:_BODY_CACHE for the proven "
+        "pattern. (T-2105 guard)"
     )

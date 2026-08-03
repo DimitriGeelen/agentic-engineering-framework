@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2777: Playwright load-time warm-up expires mid-suite, so fast routes fail as slow
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-03T23:36:18Z
+# ============================================================================
+
+task_id: T-2777
+task_name: "Playwright load-time warm-up expires mid-suite, so fast routes fail as slow"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-03T19:20:31Z
+completed: 2026-08-03T23:32:08Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-08-03T23:12:43+02:00
+last_commit: 2026-08-03T23:12:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs (G-020), scope corrected from T-2776 — four of five failures are the measurement defect, not two
+
+# Key outcomes
+outcomes:
+  - 'The suite measures, and names, one well-defined quantity. Today it reports'
+  - 'Contention is controlled or acknowledged. This is the sharper half of the defect:'
+  - 'Whatever replaces the current warm-up is verified to actually hold for the routes it'
+  - 'After the fix, `tests/playwright/test_all_routes_load_time.py` is green except for'
+  - 'The four routes above are re-measured after the change and confirmed passing on'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-03.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-2776.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/arc-focus.yaml'
+  - '.context/working/.bpmn-promote-audit.jsonl'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.verify-queue-state.json'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - '.tasks/active/T-2777-playwright-load-time-warm-up-expires-mid.md'
+  - '.tasks/completed/T-2776-watchtower-tasks-takes-15s-to-first-byte.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-03T23:12:43'
+    action: 'T-2777: real ACs (G-020), scope corrected from T-2776 — four of five failures are the measurement defect, not two'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 251 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 251
+  commits: 1
+  files_changed: 26
+  lines_added: 6369
+  lines_removed: 7557
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2777-playwright-load-time-warm-up-expires-mid.md
+generated_by: context-agent-hybrid
