@@ -204,18 +204,30 @@ The port repair worked — both suites now resolve to `http://localhost:3001`, o
 Watchtower, instead of port 3000. They still fail, with `Page.goto: Timeout 15000ms` on
 `about:blank`. That is not a regression introduced by the repair; it is what was underneath.
 
-Measured: Watchtower listens on `0.0.0.0:3001` and answers on the **LAN** address
-`http://192.168.10.107:3001` immediately, while **`localhost:3001` and `127.0.0.1:3001`
-both time out** (rc=000 after the full 5s curl budget). Loopback traffic to the port is
-being dropped though the socket is bound to all interfaces. Playwright builds its base_url
-as `http://localhost:$FW_TEST_PORT`, so every Playwright suite on this host is affected.
-Filed as **T-2774**.
+> **CORRECTION (post-close).** The paragraph below originally concluded that loopback
+> traffic was being dropped. **That was wrong, and the error is instructive enough to leave
+> visible rather than quietly rewrite.** It rested on `curl -m 5` returning rc=000, which is
+> a *timeout*, not a refusal — absence of evidence within an arbitrary budget, read as
+> evidence of a block. That is precisely the distinction this task's own rail (`verify-queue`
+> TIME vs FAIL) exists to preserve, applied to someone else's checks and then not to my own.
+>
+> Re-measured properly: a raw TCP connect to `127.0.0.1:3001` succeeds in **0.2 ms**, and
+> every address returns **200** given a real budget. Latency is not address-dependent —
+> 127.0.0.1 produced first byte at 19.5s, 13.8s, 2.2s, 3.4s across runs; the LAN address at
+> 2.1s and 2.8s. The real defect is that the Watchtower `/` route takes **2-14 seconds**,
+> straddling Playwright's 15s `Page.goto` default. T-2774 has been rewritten accordingly,
+> and it explains T-1910's vanishing red as well.
 
-**This reframes the hard-coded port.** Port 3000 is another project's Watchtower, and it
-*does* answer on loopback. So `FW_TEST_PORT=3000` was most likely not carelessness but a
-workaround for the loopback defect — one that traded "our tests cannot reach our server"
-for "another project's server passes our assertions". The second is the worse failure, and
-it is invisible: it produces green.
+Original text, retained: *Watchtower listens on `0.0.0.0:3001` and answers on the LAN
+address immediately, while `localhost:3001` and `127.0.0.1:3001` both time out (rc=000
+after the full 5s curl budget) — loopback traffic is being dropped.* Filed as **T-2774**.
+
+**The reframing of the hard-coded port survives the correction, on weaker evidence.** Port
+3000 is another project's Watchtower and it does respond faster, so `FW_TEST_PORT=3000`
+still looks more like a workaround for timeouts than carelessness — but the thing being
+worked around was slowness, not a block, and I no longer have evidence about what its
+author believed. What holds regardless: pinning it traded "our page is slow" for "a foreign
+server passes our assertions", and the second is worse because it produces green.
 
 So the honest classification for T-1960/T-1961 is **two stacked defects**: the stored line
 was (a) WRONG *and* the environment underneath it is (b) genuinely broken. The repair fixed
