@@ -152,8 +152,12 @@ out=$(bats tests/unit/fw_init_atomic.bats 2>&1); echo "$out" | grep -q '^ok 1 ' 
 out=$(bats tests/unit/fw_router.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 out=$(bats tests/unit/lib_init.bats tests/unit/init_validation_ordering.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 bash -n lib/init.sh && bash -n bin/fw-router
-# Self-vendor parity: both changed files ship to consumers.
-out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q 'self-vendor drift'
+# Self-vendor parity: both changed files ship to consumers. Compared directly
+# rather than via `fw doctor` — the full doctor run exceeded 5 minutes on this
+# host (its non-quick path du-scans the 352MB global install, bin/fw:2270), which
+# is far too slow for a close gate. cmp is the exact predicate anyway.
+cmp -s lib/init.sh .agentic-framework/lib/init.sh
+cmp -s bin/fw-router .agentic-framework/bin/fw-router
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -219,6 +223,41 @@ out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q 'self-vendor drift'
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+## Recommendation
+
+**Recommendation:** GO — close as work-completed.
+
+**Rationale:** All five Agent ACs are verified, and the central claim was tested
+against a real interruption rather than a simulated one. The task is `owner:
+human` because `fw note promote` defaults that way, not because a human
+verification step was identified; there are no Human ACs on it.
+
+**Evidence:**
+
+- Reproduced the original defect: `timeout -s KILL 1.2 fw init` left
+  `.fw-init-incomplete` present, `.framework.yaml` absent,
+  `.agentic-framework/bin/fw` executable — the exact debris shape from
+  `/opt/2345-test-install`.
+- Recovery verified live: re-running `fw init` on that directory printed
+  `RECOVER  Previous init did not finish — re-vendoring over the partial copy`,
+  exited 0, cleared the marker, and produced `.framework.yaml` +
+  `.agentic-framework/FRAMEWORK.md`.
+- Router refusal verified live in both directions: with a global available it
+  announced `has an unfinished init` and routed there (rc 0); with none it exited
+  127 naming the state and giving two recovery paths.
+- `tests/unit/fw_init_atomic.bats` — 5/5 green, including the end-to-end kill and
+  recover, plus two non-vacuity tests.
+- No regressions: `fw_router.bats` 12/12, `fw_shim_selfloop_guard.bats`,
+  `fw_help_no_autoinit.bats`, `install_verify_no_cwd_init.bats`, `lib_init.bats`
+  + `init_validation_ordering.bats` + `init_project_shape_detection.bats` +
+  `init_seed_guard.bats` — 33 ok, 0 not ok.
+- Self-vendor parity confirmed by direct `cmp` of both changed files.
+
+**One thing to know:** `fw doctor` (non-quick) exceeded 5 minutes on this host and
+had to be dropped from this task's Verification block in favour of `cmp`. Filed
+as OBS-159 — it is not a consequence of this change, but it is a health check
+CLAUDE.md recommends routinely and it is currently impractical.
 
 ## RCA
 

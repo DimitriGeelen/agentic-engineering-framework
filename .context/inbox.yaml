@@ -1222,3 +1222,10 @@ observations:
   tags: []
   status: promoted
   promoted_to: task
+- id: OBS-159
+  text: "fw doctor (non-quick) exceeded 5 minutes on this host, timing out a task Verification line. Suspect the global-install du -sm scan at bin/fw:2270 over the 352MB /root/.agentic-framework (T-2803 survey site 9), plus other host-level probes. fw doctor --quick exists (T-2452). Two questions: is the du the dominant cost, and should the global-size probe move to --quick-excluded or cache. Impact: doctor is advertised throughout CLAUDE.md as the routine health check and is used inside Verification blocks; a 5min runtime makes both impractical. Measured 2026-08-05 during T-2801 close."
+  captured: 2026-08-04T22:04:37Z
+  context_task: T-2801
+  tags: []
+  status: pending
+  promoted_to: null
