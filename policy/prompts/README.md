@@ -31,6 +31,35 @@ Discipline shape:
 - **Output streams** — driver spec written to YAML by the handler; research artefact written to `docs/reports/T-XXXX-bvp-driver-<name>.md` by the handler. Both happen as part of the verb's execution. Claude.ai-mode (no `fw` available) is a degraded fallback, not canonical.
 - **After-action recompute** — auto-trigger `fw bvp recompute` after arc-scoped driver approval (cheap, bounded); prompt-confirm after global driver addition (expensive, project-wide).
 
+### `arc-delivery-session.md` — Arc delivery session
+
+> **Status (2026-08):** loaded manually, like the BVP bundle — there is no
+> `fw arc deliver` verb and none is proposed. The operator (or an agent under
+> operator direction) reads this file at the start of a delivery session.
+
+The counterpart to `bvp-driver-session.md`. That bundle decides *what is worth
+doing*; this one gets it **shipped**. Written against a standing measurement: 18
+arcs, 0 ever closed.
+
+Discipline shape:
+
+- **One objective** — for one arc, produce a captured instance of its
+  `headline_mechanic` firing, then hand the closure decision to the operator.
+  Not "progress on arcs".
+- **One arc at a time** — four-rule selection order, closeable-now first, `draft`
+  arcs last. Breadth is explicitly not progress here.
+- **Six-step loop** — read anchor → name the gap *as a deliverable* → slice →
+  build under the normal gates → **capture the demo while the mechanic fires** →
+  hand over via Watchtower URL.
+- **Authority boundary** — `fw arc close` and `fw arc approve-driver` are
+  operator-only and structurally refuse under `$CLAUDECODE=1`. The agent makes an
+  arc *closeable*; it never closes one.
+- **Named failure modes** — substrate/deliverable conflation (§ACD), default-to-
+  OPEN on ≥2 pushbacks, the shipped-but-unclosed slice leak (L-434), false green
+  (T-2732/T-2734), DEFER-as-hedge (T-2144).
+
+Pairs with CLAUDE.md §Arc Completion Discipline and §Arc Action Handoffs.
+
 ### `artefact-template.md` — Research artefact template
 
 The output shape every driver session writes to `docs/reports/T-XXXX-bvp-driver-<name>.md`. Captures driver spec, decisions ledger, rejected paths, dialogue log. References §6 of `docs/reports/INGESTION-bvp-driver-prompt-bundle-2026-06-06.md` as the canonical worked example — that document is itself an artefact in this format.
