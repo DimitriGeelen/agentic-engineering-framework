@@ -24,6 +24,15 @@ Self-heal: on macOS bash 3.2, `brew install bash` and use it — do NOT proceed 
 python3 is missing, install via the platform package manager and say what you did.
 
 ## STEP 2 — Install the framework (once per machine)
+- **[dogfood — T-2795]** If THIS session has already run `fw` for a different, existing
+  project (e.g. any session that ran the Session Start Protocol elsewhere), that project's
+  `FRAMEWORK_ROOT`/`PROJECT_ROOT` are exported into this shell and **`fw` will keep
+  reporting that project's identity even after `cd {{dir}}`** — by design, not a bug
+  (T-2391/T-2446: "env wins" over an inherited-but-valid root). Symptom: `fw --version` /
+  `fw doctor` name the WRONG project after you've `cd`'d into `{{dir}}`. Fix: scope every
+  command below with `env -u FRAMEWORK_ROOT -u PROJECT_ROOT`, or run this onboarding in a
+  genuinely fresh shell/session.
+
 First check whether the framework is **already present** on this host:
 
   command -v fw && fw --version ; ls -d ~/.agentic-framework /opt/*/FRAMEWORK.md 2>/dev/null
