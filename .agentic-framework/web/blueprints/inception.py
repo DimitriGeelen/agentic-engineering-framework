@@ -193,6 +193,59 @@ def _load_assumptions():
     return data.get("assumptions", [])
 
 
+# T-2785: "Open Questions" and other free-form ## sections (custom headings not
+# in the known/rendered set below) can grow to tens of KB in long-running
+# dialogue-heavy inceptions — T-2715's Open Questions alone was 52,302 raw
+# chars, dominating /inception/T-2715's 11,104px scrollHeight (8000px cap).
+# Same windowing shape as work_queue (cockpit.py) / stale_tasks (metrics.py):
+# preview the raw markdown, full section fetched on demand — not CSS-hidden.
+INCEPTION_KNOWN_SECTIONS = {
+    "Problem Statement", "Assumptions", "Exploration Plan",
+    "Technical Constraints", "Scope Fence", "Go/No-Go Criteria",
+    "Recommendation", "Structural Upgrade", "Decision", "Updates",
+    "Acceptance Criteria", "Verification", "Decisions", "Context",
+    "RCA",
+}
+EXTRA_SECTION_PREVIEW_CHARS = 3000
+
+
+def _extra_sections_raw(all_raw_sections):
+    """Extra (non-known, non-verdict) ## sections as [(heading, raw_content), ...].
+
+    Shared by inception_detail (preview) and inception_section_expand (full
+    content on demand) so both see the same filtering/ordering pass.
+    """
+    result = []
+    for heading, content in all_raw_sections.items():
+        if heading in INCEPTION_KNOWN_SECTIONS:
+            continue
+        # T-1585: versioned Reviewer Verdict headings surfaced structurally below.
+        if heading.startswith("Reviewer Verdict"):
+            continue
+        # T-100188: claims-validator verdict surfaced beside the recommendation.
+        if heading.startswith("Recommendation Verdict"):
+            continue
+        if content:
+            result.append((heading, content))
+    return result
+
+
+def _build_extra_sections(all_raw_sections):
+    """Build extra_sections template context: preview + truncation metadata."""
+    extra_sections = []
+    for idx, (heading, content) in enumerate(_extra_sections_raw(all_raw_sections)):
+        truncated = len(content) > EXTRA_SECTION_PREVIEW_CHARS
+        preview_raw = content[:EXTRA_SECTION_PREVIEW_CHARS] + "…" if truncated else content
+        extra_sections.append({
+            "idx": idx,
+            "heading": heading,
+            "content": _md(preview_raw),
+            "truncated": truncated,
+            "full_chars": len(content),
+        })
+    return extra_sections
+
+
 # --- Reports index cache (T-1245) ---
 _reports_cache = {"index": None, "count": 0, "ts": 0}
 _REPORTS_CACHE_TTL = 60
@@ -335,18 +388,6 @@ def inception_detail(task_id):
     # Extract sections dynamically (T-1177, G-036)
     all_raw_sections = _extract_all_sections(task_body)
 
-    # Known sections with template-specific rendering
-    KNOWN_SECTIONS = {
-        "Problem Statement", "Assumptions", "Exploration Plan",
-        "Technical Constraints", "Scope Fence", "Go/No-Go Criteria",
-        "Recommendation", "Structural Upgrade", "Decision", "Updates",
-        "Acceptance Criteria", "Verification", "Decisions", "Context",
-        "RCA",
-    }
-    # T-1585: also exclude versioned Reviewer Verdict headings (e.g.
-    # "Reviewer Verdict (v1.4)") from extra_sections — they're rendered
-    # structurally below via extract_reviewer_verdict, not as generic cards.
-
     # Build legacy sections dict for backward compatibility with template
     sections = {
         "problem": _md(all_raw_sections.get("Problem Statement", "")),
@@ -369,20 +410,9 @@ def inception_detail(task_id):
         "rca": _md(all_raw_sections.get("RCA", "")),
     }
 
-    # Extra sections not in the known set — rendered generically (G-036 fix)
-    # T-1585: also skip "Reviewer Verdict (vX.Y)" — surfaced structurally below.
-    extra_sections = []
-    for heading, content in all_raw_sections.items():
-        if heading in KNOWN_SECTIONS:
-            continue
-        if heading.startswith("Reviewer Verdict"):
-            continue
-        # T-100188: claims-validator verdict (T-100187) — surfaced structurally
-        # beside the recommendation, not as a generic card.
-        if heading.startswith("Recommendation Verdict"):
-            continue
-        if content:
-            extra_sections.append({"heading": heading, "content": _md(content)})
+    # Extra sections not in the known set — rendered generically (G-036 fix),
+    # previewed + expand-on-demand for oversized ones (T-2785).
+    extra_sections = _build_extra_sections(all_raw_sections)
 
     # T-679: Pre-populate rationale from ## Recommendation section
     # T-1390 (F4 fix): extract only the Rationale body from structured
@@ -463,6 +493,33 @@ def inception_detail(task_id):
         reviewer=reviewer,
         claims_verdict=claims_verdict,
     )
+
+
+@bp.route("/inception/<task_id>/section-expand/<int:idx>")
+def inception_section_expand(task_id, idx):
+    """Full content of one extra ## section, fetched on demand (T-2785).
+
+    Sibling to cockpit.work_queue_expand / metrics.stale_tasks_expand /
+    core.project_expand — the detail page ships a preview of any oversized
+    free-form section, the rest renders here on click.
+    """
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
+        abort(404)
+
+    task_body = ""
+    for location in ["active", "completed"]:
+        task_dir = PROJECT_ROOT / ".tasks" / location
+        if not task_dir.exists():
+            continue
+        for f in task_dir.glob(f"{task_id}-*.md"):
+            _, task_body = parse_frontmatter(f.read_text())
+            break
+
+    sections = _extra_sections_raw(_extract_all_sections(task_body))
+    if idx < 0 or idx >= len(sections):
+        abort(404)
+    _heading, content = sections[idx]
+    return Markup(f'<div class="section-content">{_md(content)}</div>')
 
 
 @bp.route("/inception/<task_id>/add-assumption", methods=["POST"])

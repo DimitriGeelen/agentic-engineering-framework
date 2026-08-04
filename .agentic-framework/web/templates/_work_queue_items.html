@@ -1,0 +1,23 @@
+{% for item in items %}
+<div class="wt-queue-item">
+    <span>
+        <span class="wt-queue-rank">{{ item.priority }}.</span>
+        <span class="wt-queue-name">
+            <a href="/tasks/{{ item.task_id }}"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                {{ item.task_id }}: {{ item.name }}
+            </a>
+        </span>
+        <span class="wt-queue-status {{ item.status }}">{{ item.status }}</span>
+    </span>
+    <span class="wt-card-actions">
+        <button class="outline" style="font-size:0.7rem; padding:0.15em 0.4em;"
+                hx-post="/api/scan/focus/{{ item.task_id }}"
+                hx-target="this"
+                hx-swap="outerHTML"
+                hx-headers='{"X-CSRF-Token": "{{ csrf_token() }}"}'>
+            Focus
+        </button>
+    </span>
+</div>
+{% endfor %}

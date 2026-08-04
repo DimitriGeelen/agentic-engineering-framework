@@ -5,13 +5,19 @@ import subprocess
 from datetime import datetime, timezone
 
 import yaml
-from flask import Blueprint
+from flask import Blueprint, render_template
 
 from web.context_loader import load_decisions, load_learnings, load_patterns, load_practices
 from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, parse_frontmatter
 from web.subprocess_utils import run_git_command
 
 bp = Blueprint("metrics", __name__)
+
+# T-2785: rows shown in the initial /metrics "Needs Attention" list before
+# "Show all" is clicked. Sibling to WORK_QUEUE_PREVIEW_LIMIT (cockpit.py,
+# same task) and PROJECT_DOCS_PREVIEW_LIMIT (T-2781) — must match the limit
+# the expand endpoint slices past.
+STALE_TASKS_PREVIEW_LIMIT = 25
 
 
 def _task_counts():
@@ -153,5 +159,16 @@ def project_metrics():
         ac_coverage=ac_coverage,
         knowledge=knowledge,
         commits=commits,
-        stale_tasks=stale,
+        # T-2785: 257 stale tasks rendered unbounded shipped a 10,364px page
+        # (real height — no display:none involved, the guard's RED was honest).
+        # Preview + on-demand expand, same windowing shape as /project (T-2781).
+        stale_tasks=stale[:STALE_TASKS_PREVIEW_LIMIT],
+        stale_tasks_total=len(stale),
     )
+
+
+@bp.route("/api/metrics/stale-tasks/expand")
+def stale_tasks_expand():
+    """Remainder of the /metrics "Needs Attention" list, fetched on demand (T-2785)."""
+    stale = _stale_tasks()
+    return render_template("_stale_tasks_items.html", items=stale[STALE_TASKS_PREVIEW_LIMIT:])
