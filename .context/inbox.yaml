@@ -1096,3 +1096,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-141
+  text: "Component auto-resolution mines git history and misattributes files across adjacent commits, and this now misfires structural gates. Twice this session: (1) T-2781 closed with components = T-2775's timeline.py/timeline.html/timeline_session.html, corrected by hand; (2) T-2783 (a sweep whose entire diff is 3 task files) was attributed web/app.py from the adjacent T-2782 commit, which fired the P-013 render-review gate and forced a Tier-2 --skip-render-review bypass on a task with no render diff. Both times the task was closed BEFORE its work was committed, so history mining had no commit of its own to read and reached for neighbours. Candidate fixes: resolve from the working-tree diff rather than git history, or decline to resolve when no commit references the task ID. The gate misfire is the sharper cost — it trains agents to reach for the bypass flag on a gate that was right to exist."
+  captured: 2026-08-04T10:09:51Z
+  context_task: T-2784
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-142
+  text: "Playwright suite has 13 pre-existing failures (885 passed, 5 skipped, 52:49 runtime), measured 2026-08-04 as the T-2784 baseline — all predate that change. Four are in the HEIGHT guard: test_route_height_bounded[/] and [/metrics], test_parametrized_route_height_bounded[/inception/T-2715] and [/review/T-2715]. The rest: test_arc_review_route (x2), test_arcs_kanban link-under-Work-nav, test_badge_contrast arc-detail .badge-ok, test_bulk_actions listeners-survive-swap, test_bvp_form_htmx add-form-keeps-user-on-bvp, test_file_viewer loads-markdown, test_mobile_viewport approvals-horizontal-overflow, test_task_panel opens-after-htmx-swap. Nobody is acting on these — same orphaned-guard class as T-2696 (tests/lint globbed by no runner, one red 51 days). The height ones deserve first look: a height guard going red on / and /metrics is the same axis T-2775 showed can be gamed by hiding overflow, so a red there may be the honest signal rather than noise. Full list at /tmp/.before-failures.txt and in the T-2784 task body."
+  captured: 2026-08-04T11:04:35Z
+  context_task: T-2784
+  tags: []
+  status: pending
+  promoted_to: null

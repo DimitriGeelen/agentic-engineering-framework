@@ -81,7 +81,38 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Second half of the T-2782 wrong-object class, found by the T-2783 sweep. See that task for
+the first half (`base_url` returning a URL with no server behind it).
+
+### Baseline — full suite BEFORE the conversion
+
+`FW_TEST_PORT=3099 python3 -m pytest tests/playwright/ -q`, 2026-08-04:
+
+```
+13 failed, 885 passed, 5 skipped in 3169.20s (0:52:49)
+```
+
+All 13 predate this task and are **not** absorbed into its diff — filed as **OBS-142**:
+
+| Failure | |
+|---|---|
+| `test_all_routes_height.py::test_route_height_bounded[/]` | height guard |
+| `test_all_routes_height.py::test_route_height_bounded[/metrics]` | height guard |
+| `test_all_routes_height.py::test_parametrized_route_height_bounded[/inception/T-2715]` | height guard |
+| `test_all_routes_height.py::test_parametrized_route_height_bounded[/review/T-2715]` | height guard |
+| `test_arc_review_route.py::test_arc_review_no_form_fields` | |
+| `test_arc_review_route.py::test_arc_review_renders_for_closed_arc_without_redirect` | |
+| `test_arcs_kanban.py::test_arcs_link_lives_under_work_nav_group` | |
+| `test_badge_contrast.py::...::test_arc_detail_badge_contrast[.badge-ok]` | |
+| `test_bulk_actions.py::...::test_listeners_survive_content_swap` | |
+| `test_bvp_form_htmx.py::test_add_form_submit_keeps_user_on_bvp` | |
+| `test_file_viewer.py::...::test_file_viewer_loads_markdown` | |
+| `test_mobile_viewport.py::...::test_approvals_no_horizontal_overflow_on_mobile` | |
+| `test_task_panel.py::...::test_panel_opens_after_htmx_board_swap` | |
+
+The four height failures are worth first look: T-2775 showed that axis can be satisfied by
+hiding overflow rather than bounding it, so a *red* height guard is more likely the honest
+signal than noise.
 
 ## Acceptance Criteria
 
