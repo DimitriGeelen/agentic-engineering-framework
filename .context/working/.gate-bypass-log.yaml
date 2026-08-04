@@ -5726,3 +5726,80 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-2779: L-543 — a symptom-derived detector
   command: 'FW_SWITCH_FOCUS=1 git add .context/ .tasks/ 2>/dev/null
 FW_SWITCH_FOCUS=1 git commit -q -m "T-2775: L-544 — bounded is per-axis; partial-complete for the narrative [REVIEW]" 2>&1 | tail -2
 git push '
+- timestamp: '2026-08-03T23:38:46Z'
+  task: 'T-2782'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2777'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2777: fix Playwright load-time measurement + correct contention misdiagnosis
+
+Prior pass fixed the warm-up-expires-mid-suite defect (per-test priming +'
+- timestamp: '2026-08-03T23:39:16Z'
+  task: 'T-2171'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2777'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2777: fix Playwright load-time measurement + correct contention misdiagnosis
+
+Prior pass fixed the warm-up-expires-mid-suite defect (per-test priming +'
+- timestamp: '2026-08-04T09:41:18Z'
+  task: 'T-2782'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2781'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "$(cat <<EOF
+T-2781: bound /project via 25-row server-side window + on-demand remainder
+
+/project returned 2,274,276 bytes — over the 2MB cap, found by the T-277'
+- timestamp: '2026-08-04T09:42:31Z'
+  task: 'T-2782'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2781'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "$(cat <<EOF
+T-2781: bound /project via 25-row server-side window + on-demand remainder
+
+/project returned 2,274,276 bytes — over the 2MB cap, found by the T-277'
+- timestamp: '2026-08-04T10:04:04Z'
+  task: 'T-2783'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2782'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "$(cat <<EOF
+T-2782: identity-check and staleness-bound the shared Playwright test server
+
+conftest.py adopted anything answering /health on FW_TEST_PORT, yielded '
+- timestamp: '2026-08-04T10:04:42Z'
+  task: 'T-2783'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2782'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "$(cat <<EOF
+T-2782: identity-check and staleness-bound the shared Playwright test server
+
+conftest.py adopted anything answering /health on FW_TEST_PORT, yielded '
+- timestamp: '2026-08-04T10:08:33Z'
+  task: 'T-2783'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-2783 touched no render surface — its entire diff is three task files and an inbox entry (see commit 832fe2bfb). web/app.py was attributed to it by git-history component mining, which picked up the adjacent T-2782 commit; the same misattribution put T-2775''s timeline files on T-2781 earlier this session and had to be corrected by hand. Bypassing a render review for a task with no render diff, not skipping a real one.'
+  reason: ''
+- timestamp: '2026-08-04T11:14:09Z'
+  task: 'T-2784'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2785'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2785-height-guard-red-on--and-metrics--determ.md .context/inbox.yaml 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-2785: file height-guard investigation '
+- timestamp: '2026-08-04T12:03:13Z'
+  task: 'T-2785'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2784'
+  command: 'FW_SWITCH_FOCUS=1 bash -c cp /tmp/.before-failures.txt .context/working/T-2784-before-failures.txt 2>/dev/null; git add .tasks/active/T-2784-playwright-tests-hard-code-port-3099-byp.md .context/worki'
+- timestamp: '2026-08-04T12:03:46Z'
+  task: 'T-2785'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2784'
+  command: 'FW_SWITCH_FOCUS=1 bash -c "bin/fw vendor self 2>&1 | tail -2; git add .agentic-framework/ && git commit -q -m T-2784: refresh vendored copies && git push origin t2539-staging t2539-staging:master 2>'

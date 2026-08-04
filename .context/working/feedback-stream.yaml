@@ -26082,3 +26082,93 @@ scan_id: R-8b3e2240
 task_id: T-2775
 payload:
   task_file: .tasks/active/T-2775-watchtower-timeline-renders-698mb-of-htm.md
+---
+kind: scan_emitted
+timestamp: '2026-08-03T23:36:08Z'
+scan_id: R-972c23ac
+task_id: T-2777
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-03T23:36:08Z'
+scan_id: R-972c23ac
+task_id: T-2777
+payload:
+  task_file: .tasks/active/T-2777-playwright-load-time-warm-up-expires-mid.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T00:04:04Z'
+scan_id: R-01fbb081
+task_id: T-2780
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T00:04:04Z'
+scan_id: R-01fbb081
+task_id: T-2780
+payload:
+  task_file: .tasks/active/T-2780-watchtower-bvp-returns-54mb-with-no-row-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T09:39:17Z'
+scan_id: R-d9be8c26
+task_id: T-2781
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T09:39:17Z'
+scan_id: R-d9be8c26
+task_id: T-2781
+payload:
+  task_file: .tasks/active/T-2781-watchtower-project-returns-227mb-over-th.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T10:01:17Z'
+scan_id: R-8f8e421d
+task_id: T-2782
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T10:01:17Z'
+scan_id: R-8f8e421d
+task_id: T-2782
+payload:
+  task_file: .tasks/active/T-2782-playwright-shared-test-server-port-3099-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T10:08:33Z'
+scan_id: R-932a205c
+task_id: T-2783
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T10:08:33Z'
+scan_id: R-932a205c
+task_id: T-2783
+payload:
+  task_file: .tasks/active/T-2783-sweep-test-fixtures-for-targets-handed-o.md

@@ -2613,3 +2613,10 @@ decisions:
     date: 2026-08-03
     task: T-2764
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-376
+    decision: "Sort `_collect_task_points()` output by `bvp_norm` descending once in the"
+    scope: project
+    date: 2026-08-04
+    task: T-2780
+    rationale: "Auto-captured from task file on completion"
