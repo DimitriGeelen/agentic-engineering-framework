@@ -88,10 +88,13 @@ fixes and the same symptom.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **The v1.6.8-vs-1.6.108 discrepancy is explained with evidence**, and the explanation
+- [x] **The v1.6.8-vs-1.6.108 discrepancy is explained with evidence**, and the explanation
       distinguishes "stale vendored copy" from "version string parsed/formatted wrong".
       Named because these present identically at the surface and the wrong diagnosis ships
-      the wrong fix.
+      the wrong fix. See `## RCA` — two compounding causes (OBS-150 deriver bug + T-2793
+      CLI-not-vendored split-brain), reproduced live in this repo just now: `fw --version`
+      → v1.6.8, `./.agentic-framework/bin/fw --version` → v1.6.234, `VERSION` file → 1.6.111.
+      Three numbers, none orderable.
 - [ ] The onboarding prompt's Steps 1-5 are **executed for real in a throwaway directory**,
       not reasoned about. Every command that fails is recorded with its exact output.
 - [ ] Each failure found is either fixed, or filed as its own task with the reproduction
@@ -214,6 +217,55 @@ fixes and the same symptom.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** The onboarding prompt's Step 2 ("is the framework already installed?") reads
+`fw --version` from the global CLI. On the operator's fresh-install run the global CLI
+reported v1.6.8 while the target repo was at 1.6.108 — the onboarding agent read the low
+number as "already up to date" and skipped the installer, leaving the operator on a build
+~100 versions behind with no error surfaced.
+
+**Root cause — two compounding defects, not one:**
+1. `_derive_version` (`bin/fw`) computes the reported version as `major.minor.<commits-since-tag>`
+   — a commit **distance**, not a semver. The number collapses to near-zero at every release
+   tag and climbs again until the next tag, so it is not globally ordered even between two
+   checkouts of the *same* history (OBS-150). This alone explains why 1.6.8 vs 1.6.108 looked
+   like "very out of date" when both were live checkouts on the same day.
+2. `bin/fw` is not vendored per project: it always re-execs **itself**
+   (`exec "$0" "$@"`, bin/fw ~563/657) instead of delegating to the project's
+   `.agentic-framework/bin/fw`, while 182 references for libs/agents already pull from the
+   vendored copy. A vendored consumer therefore runs a split-brain: old global CLI dispatch
+   driving new vendored libraries — an untested combination that drifts whenever the global
+   install diverges from any project's vendored copy (T-2793, decision D-377).
+
+Defect 2 is the actual root cause; defect 1 is a real bug but is *subsumed* by it — once the
+CLI is vendored (T-2793), `.agentic-framework/` has no `.git`, `_derive_version` falls back
+to the `VERSION` file, and the split-brain disappears as a structural consequence. Patching
+the deriver alone (without vendoring the CLI) would have masked the split-brain by making
+both invocations print the same wrong-but-matching number.
+
+**Live reproduction, this repo, right now (2026-08-04):**
+```
+fw --version                          → fw v1.6.8    (global CLI reporting itself)
+./.agentic-framework/bin/fw --version → fw v1.6.234   (vendored copy)
+VERSION (repo file)                   → 1.6.111
+.framework.yaml version:              → 1.6.234 (vendored)
+```
+Three numbers, none orderable against another, confirming OBS-150/T-2793's finding is live
+and current, not historical.
+
+**Why structurally allowed:** nothing asserts CLI/library version agreement for a vendored
+consumer — `fw doctor` and `fw upgrade` never compare "which `fw` binary am I" against
+"which libs did it load". The "total isolation" invariant (vendor everything a project
+depends on, including the CLI dispatch layer) was implicit in the libs/agents vendoring but
+was never applied to `bin/fw` itself, so its self-exec was never flagged as a gap.
+
+**Prevention:** T-2793 (thin-router fix: `fw` on PATH execs the nearest vendored
+`.agentic-framework/bin/fw`) closes this class structurally, asserted by
+`tests/unit/upgrade_fresh_machine_simulation.bats` checking `fw --version` /
+`.framework.yaml version:` / `.agentic-framework/VERSION` all agree in a vendored consumer.
+Until T-2793 ships, the only mitigation is the `[dogfood]` note already in
+`prompts/aef-fresh-install-onboarding.md:82` (T-2441): use the project-local
+`{{dir}}/.agentic-framework/bin/fw` path explicitly rather than trusting bare `fw`.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -265,3 +317,34 @@ fixes and the same symptom.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2792-fresh-install-onboarding-path-broken-mak.md
 - **Context:** Initial task creation
+
+### 2026-08-04T16:43:02Z — root cause identified [session S-2026-0804-1429]
+- **Action:** Diagnosed the v1.6.8-vs-1.6.108 discrepancy; captured OBS-150 (`.context/inbox.yaml`).
+- **Output:** OBS-150 identifies the version-deriver bug (commit-distance, not semver).
+- **Context:** AC1 partially addressed; refined below once the deeper cause was found.
+
+### 2026-08-04T16:45:03Z — deeper cause found, T-2793 filed [session S-2026-0804-1429]
+- **Action:** Reframed OBS-150 as a symptom of `bin/fw` never delegating to the vendored
+  `.agentic-framework/bin/fw` (self-exec, not thin-router). Filed **T-2793** ("Total
+  isolation: vendor the CLI too") as the owning fix task per one-bug-one-task — T-2793
+  should NOT ship the deriver patch alone, since vendoring the CLI makes the split-brain
+  disappear structurally.
+- **Output:** T-2793 created with real ACs (thin router, walk-up floor, bootstrap-path
+  preserved, self-replacement safety, bats assertion, stale-global-install tolerance).
+- **Context:** AC3 satisfied for this failure (filed as its own task).
+
+### 2026-08-04T~16:50Z — AC1 evidence written into RCA, live-reproduced [this session]
+- **Action:** Wrote `## RCA` with both compounding causes and re-ran the reproduction live
+  in this repo (not the operator's original throwaway dir, which no longer exists) —
+  confirms the bug is current, not stale: `fw --version`→v1.6.8,
+  `./.agentic-framework/bin/fw --version`→v1.6.234, `VERSION`→1.6.111, three unorderable
+  numbers.
+- **Output:** AC1 checkbox ticked.
+- **Context:** **Remaining scope for this task:** AC2 (execute onboarding Steps 1-5 fresh
+  in a genuine throwaway directory — blocked here by the project-boundary hook, which
+  refuses Bash commands targeting paths outside `/opt/999-Agentic-Engineering-Framework`;
+  needs either operator-run steps or `fw termlink dispatch --project <fresh-dir>`) and AC4
+  (second clean-dir re-run reaching a live Watchtower URL) are **not yet done** and AC4
+  cannot pass until T-2793's fix ships — the router bug this task diagnosed is exactly what
+  Step 5 of the onboarding prompt would hit. This task stays `started-work`, blocked on
+  T-2793, not completed.
