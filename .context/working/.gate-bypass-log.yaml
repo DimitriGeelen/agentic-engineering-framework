@@ -5832,3 +5832,27 @@ bash -c set -eo pipefail; bats tests/unit/no_root_framework_markers.bats > /tmp/
   target: 'T-2787'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 bash -c set -eo pipefail; bats tests/unit/no_root_framework_markers.bats > /tmp/.t2787.out 2>&1 || true; grep -q "^ok 1 predicate reports a clean root" /tmp/'
+- timestamp: '2026-08-04T13:17:56Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2784'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2784: tick ACs 1-3 (converted, demonstrated, guard shipped in 6e0373c44); relaunch after-run with a project-r'
+- timestamp: '2026-08-04T13:18:03Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2784'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/active/T-2784-playwright-tests-hard-code-port-3099-byp.md
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2784: tick ACs 1-3 (converted, demon'
+- timestamp: '2026-08-04T13:22:57Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2784'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bin/fw note "T-2784 attempt-3 after-run measured server ABSENCE, not the change under test: 310 failed / 590 passed vs a 13/885 baseline, but the signature is'

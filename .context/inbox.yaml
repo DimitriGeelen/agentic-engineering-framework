@@ -1131,3 +1131,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-146
+  text: "T-2784 attempt-3 after-run measured server ABSENCE, not the change under test: 310 failed / 590 passed vs a 13/885 baseline, but the signature is net::ERR_CONNECTION_REFUSED (100 in the first 250KB) and nothing answers on :3099 afterwards. Two lessons. (1) I contaminated my own measurement — ran the full tests/unit pytest suite, two bats --count passes over 387 files, and a bats execution on the same host while a 42-minute playwright run was in flight. I had explicitly flagged the contention risk for latency assertions (L-542) and then did it anyway for a whole-suite pass/fail comparison. (2) The fixture's own adoption line ([watchtower_server] <action>: <reason>, added by T-2782) appears NOWHERE in the 753KB log, because pytest -q captures stdout for passing tests and the run never printed it. That single line would have settled server-fate in seconds; without it the run is unreconstructible after the fact. Any long unattended suite run should use -s/--capture=no for fixture decision lines, and should own the host."
+  captured: 2026-08-04T13:22:58Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null

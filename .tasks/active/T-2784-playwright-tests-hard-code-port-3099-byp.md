@@ -147,6 +147,40 @@ signal than noise.
       this environment has no plugin for and which exits 4; one to the harness unlinking the
       log when it killed the wrapper shell). Neither is evidence the suite passed.
 
+      **ATTEMPT 3 COMPLETED AND IS INVALID. STILL UNTICKED.**
+      Result: `310 failed, 590 passed, 3 skipped in 2519.27s (0:41:59)` against a baseline of
+      `13 failed, 885 passed, 5 skipped`. That looks like a catastrophic regression and is not
+      one — the failures are **connection-level, not assertion-level**:
+
+      ```
+      100  net::ERR_CONNECTION_REFUSED     (in the first 250KB of the log alone)
+        2  TimeoutError
+      ```
+
+      and nothing answers on `:3099` now. The suite was addressing a server that was not there
+      for much of the run, so it measured server absence, not the port conversion.
+
+      **The contamination is mine and is stated rather than reasoned around.** While this run was
+      in flight I ran, on the same host: the full `tests/unit` pytest suite (~6 min, 2085 tests),
+      two complete `bats --count tests/unit/` passes over 387 files, and a `bats` execution. I had
+      already flagged the risk for *latency* assertions (L-542: size is contention-invariant,
+      latency is not) and then under-estimated it — 310 connection refusals is a heavier failure
+      than contention alone comfortably explains, which is exactly why it cannot be attributed
+      either way from this log.
+
+      So this run supports **neither** verdict. It does not show a regression from the conversion
+      (no import error, no addressing failure, no assertion diff appears in it), and it does not
+      clear the conversion either, because a suite that could not reach its server cannot testify
+      about which address it used. Reporting it as a pass would be false; reporting it as a
+      T-2784 regression would be false in the other direction.
+
+      **What attempt 4 must do differently:** run it with nothing else touching the host, and
+      capture the fixture's own adoption line (`[watchtower_server] <action>: <reason>`, added by
+      T-2782) by running with `-q -s` or `--capture=no` so the decision is in the log. This run
+      printed no such line anywhere, so the server's fate is unreconstructible after the fact —
+      the one piece of evidence that would have settled it in seconds.
+      Log preserved at `.context/working/T-2784-after-run.log` (753KB).
+
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
