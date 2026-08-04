@@ -1145,3 +1145,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-148
+  text: "CLAUDE.md Quick Reference cites 'fw bvp rank' (attributed T-1919) but that verb does not exist: 'ERROR: unknown verb rank'. The real ranking verb is bare 'fw bvp'. Caught while verb-verifying T-2790's handoff doc. Sharp edge worth keeping: grepping the docs to check the verb would have CONFIRMED the wrong name, because the doc IS the source of the error - verification must EXECUTE the verb, not grep for it. Same class as feedback_handoff_docs_verify_cli_verbs."
+  captured: 2026-08-04T14:14:44Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-149
+  text: "Arc-exit criterion evaluates over an empty set: 0 of 2584 tasks carry confirmed 'bvp_scores:' while 2582 carry 'bvp_scores_proposed:'. Confirmation is a human sovereignty boundary (fw bvp confirm --i-am-human, T-1924) that has never been exercised. Consequence: bare 'fw bvp' returns 'No tasks have bvp_scores set yet' ALWAYS, and per IW-19 an empty HV/HC + HV/LC set IS the arc-exit condition - so the exit gate passes vacuously unless --include-proposed is passed. Third instance of the same shape this week: mechanism fully built, human-only trigger never pulled (cf. F-11 zero arcs ever closed; IW-12 zero of 2416 tasks ever set status:issues). The pattern is not neglect of any one feature - it is that agent-buildable substrate and human-only activation are filed as one 'done'."
+  captured: 2026-08-04T14:14:52Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null
