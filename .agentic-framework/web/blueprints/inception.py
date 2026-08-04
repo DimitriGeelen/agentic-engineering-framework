@@ -65,31 +65,6 @@ def _extract_recommendation_stance(rec_body):
 
 bp = Blueprint("inception", __name__)
 
-# T-2785: raw-markdown character cap for a single "extra" (generic G-036) section
-# before it is truncated with a link to the full task body. Sections like
-# "Open Questions" on long-running inceptions can carry tens of thousands of
-# characters of dialogue/RCA and blow the page height guard (T-2048) on their
-# own. Truncating the raw text (not hiding rendered HTML behind CSS) means the
-# bytes past the cap are never rendered on this page at all — the full text
-# stays reachable at /tasks/<id>.
-EXTRA_SECTION_CHAR_CAP = 3000
-
-
-def _truncate_section(task_id, heading, content):
-    """Truncate `content` to EXTRA_SECTION_CHAR_CAP chars at a paragraph
-    boundary, appending a link to the full task body. No-op under the cap."""
-    if len(content) <= EXTRA_SECTION_CHAR_CAP:
-        return content
-    cut = content.rfind("\n\n", 0, EXTRA_SECTION_CHAR_CAP)
-    if cut < EXTRA_SECTION_CHAR_CAP // 2:
-        cut = EXTRA_SECTION_CHAR_CAP
-    truncated = content[:cut].rstrip()
-    return (
-        f"{truncated}\n\n"
-        f"*(truncated — full “{heading}” text is in the "
-        f"[Task Body](/tasks/{task_id}#raw-task-body) on /tasks/{task_id})*"
-    )
-
 
 import time as _time_mod
 import copy as _copy_mod
@@ -407,7 +382,6 @@ def inception_detail(task_id):
         if heading.startswith("Recommendation Verdict"):
             continue
         if content:
-            content = _truncate_section(task_id, heading, content)
             extra_sections.append({"heading": heading, "content": _md(content)})
 
     # T-679: Pre-populate rationale from ## Recommendation section

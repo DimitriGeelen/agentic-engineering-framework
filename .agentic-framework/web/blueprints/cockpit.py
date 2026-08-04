@@ -26,9 +26,6 @@ from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("cockpit", __name__)
 
-# T-2785: cap on how many Work Direction rows render on the cockpit page.
-WORK_QUEUE_DISPLAY_CAP = 20
-
 
 
 def get_scan_age(scan_data: dict) -> str:
@@ -237,12 +234,7 @@ def get_cockpit_context(scan_data: dict) -> dict:
         "framework_recommends_total": len(scan_data.get("framework_recommends", [])),
         "opportunities": scan_data.get("opportunities", [])[:3],
         "opportunities_total": len(scan_data.get("opportunities", [])),
-        # T-2785: unbounded rendering of every active task blew the height guard
-        # (314 active tasks -> 16394px vs an 8000px cap). Render only the top N
-        # by priority and link to /tasks for the rest — the items beyond the cap
-        # are never generated into the HTML at all (not hidden via CSS).
-        "work_queue": scan_data.get("work_queue", [])[:WORK_QUEUE_DISPLAY_CAP],
-        "work_queue_total": len(scan_data.get("work_queue", [])),
+        "work_queue": scan_data.get("work_queue", []),
         "risks": scan_data.get("risks", []),
         "health": scan_data.get("project_health", {}),
         "antifragility": scan_data.get("antifragility", {}),

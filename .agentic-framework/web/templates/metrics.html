@@ -145,12 +145,7 @@
     </article>
 
     <article>
-        <h4 class="wt-section-title">
-            Needs Attention
-            {% if stale_tasks_total > stale_tasks|length %}
-            <span style="font-weight:400; text-transform:none; letter-spacing:normal;">(worst {{ stale_tasks|length }} of {{ stale_tasks_total }})</span>
-            {% endif %}
-        </h4>
+        <h4 class="wt-section-title">Needs Attention</h4>
         {% if stale_tasks %}
         <ul class="stale-list">
             {% for t in stale_tasks %}
@@ -162,13 +157,6 @@
             </li>
             {% endfor %}
         </ul>
-        {% if stale_tasks_total > stale_tasks|length %}
-        <p>
-            <a href="/tasks" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="font-size:0.85rem;">
-                + {{ stale_tasks_total - stale_tasks|length }} more &rarr; view all in /tasks
-            </a>
-        </p>
-        {% endif %}
         {% else %}
         <p class="text-muted italic">All tasks healthy.</p>
         {% endif %}
