@@ -230,6 +230,27 @@
   </section>
   {% endif %}
 
+  {#- T-2780: page window over tasks sorted by bvp_norm descending — page 1 is always the
+      highest-value tasks, not an arbitrary slice. Same pager pattern as /timeline (T-2775).
+      Defined outside the empty/else split below since the raw-data and per-driver-scores
+      sections call it unconditionally (task_page/task_page_count are always passed from the
+      route, even when there are zero scored tasks). -#}
+  {% macro bvp_pager(pos) %}
+  {% if task_page_count > 1 %}
+  <nav class="bvp-pager" data-pager="{{ pos }}" style="display:flex; gap:0.5rem; align-items:center; justify-content:center; margin:0.6rem 0;">
+      {% if task_page > 1 %}
+      <a href="/bvp?page=1" role="button" class="secondary outline">&laquo; Highest value</a>
+      <a href="/bvp?page={{ task_page - 1 }}" role="button" class="secondary outline">&lsaquo; Higher</a>
+      {% endif %}
+      <span style="opacity:0.7;">Page {{ task_page }} of {{ task_page_count }}</span>
+      {% if task_page < task_page_count %}
+      <a href="/bvp?page={{ task_page + 1 }}" role="button" class="secondary outline">Lower &rsaquo;</a>
+      <a href="/bvp?page={{ task_page_count }}" role="button" class="secondary outline">Lowest value &raquo;</a>
+      {% endif %}
+  </nav>
+  {% endif %}
+  {% endmacro %}
+
   {% if empty %}
     <p><strong>No scored entities yet.</strong> The scatter is empty until tasks/arcs carry confirmed <code>bvp_scores:</code> (via <code>fw bvp confirm T-XXX --i-am-human</code>) or estimator-proposed <code>bvp_scores_proposed:</code> (via the T-1922 worker; advisory). Proposed scores render at reduced opacity until confirmed.</p>
     <p>Once scoring lands, this page will show a four-quadrant scatter:</p>
@@ -240,9 +261,10 @@
       <li><strong>LV-HC</strong> (low value, high cost) — bottom-right, avoid</li>
     </ul>
   {% else %}
+    {{ bvp_pager('top') }}
     <div id="scatter-quadrant" data-quadrant="scatter" style="margin:1rem 0;"></div>
     <p><small>
-      Quadrant scatter — {{ task_points|length }} task(s), {{ arc_points|length }} arc(s).
+      Quadrant scatter — showing {{ task_range_start }}–{{ task_range_end }} of {{ total_tasks }} task(s) by value, page {{ task_page }} of {{ task_page_count }}; {{ arc_points|length }} arc(s).
       Hover a dot to see cost composite (blast_radius × 0.6 + tier × 0.3 + effort × 0.1) or T-shirt fallback (Q2).
     </small></p>
     <p id="bvp-scatter-legend"><small>
@@ -260,7 +282,7 @@
   {% endif %}
 
   <details>
-    <summary>Raw data ({{ task_points|length + arc_points|length }} point(s))</summary>
+    <summary>Raw data ({{ arc_points|length }} arc(s) + {{ task_points|length }} of {{ total_tasks }} task(s) — page {{ task_page }} of {{ task_page_count }}, sorted by BVP_norm desc)</summary>
     <table>
       <thead>
         <tr><th>Kind</th><th>ID</th><th>Name</th><th>WF</th><th>BVP_norm</th><th>Cost</th><th>Source</th><th>Status</th></tr>
@@ -293,6 +315,7 @@
         {% endfor %}
       </tbody>
     </table>
+    {{ bvp_pager('raw-data') }}
   </details>
 
   {#- T-2170 AC#1+#2+#6: per-driver score table — collapsed by default
@@ -307,7 +330,7 @@
       a Slice 2 sibling task. -#}
   {%- if not empty %}
   <details id="bvp-driver-scores-section" style="margin-top: 0.5rem;">
-    <summary>Per-driver scores ({{ task_points|length }} task(s) × {{ weights|length }} driver(s))</summary>
+    <summary>Per-driver scores ({{ task_points|length }} of {{ total_tasks }} task(s) — page {{ task_page }} of {{ task_page_count }} — × {{ weights|length }} driver(s))</summary>
     <p class="muted" style="font-size: 0.85rem; margin: 0.3rem 0 0.6rem;">
       Per-driver 0-5 scores. Headers carry <code>data-driver-id</code> + a
       <code>title=</code> rubric tooltip (hover the header). Confirmed scores
@@ -355,6 +378,7 @@
         {%- endfor %}
       </tbody>
     </table>
+    {{ bvp_pager('driver-scores') }}
   </details>
   {%- endif %}
 </article>

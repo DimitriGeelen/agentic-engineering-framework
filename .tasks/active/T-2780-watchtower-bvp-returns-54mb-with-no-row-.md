@@ -12,12 +12,12 @@ description: >
   so a verification line of the shape "cmd | grep -q PAT" exited 141 (SIGPIPE) and
   read as a failing check rather than a passing one (T-2743, L-387).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_all_routes_size.py, web/blueprints/timeline.py, web/templates/timeline.html, web/templates/timeline_session.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T22:21:59Z
-last_update: 2026-08-03T22:41:53Z
-date_finished:
+last_update: 2026-08-04T00:03:58Z
+date_finished: 2026-08-04T00:03:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,18 +82,31 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `/bvp` response size measured off the wire before and after, and lands under the
-      2,000,000-byte cap in `tests/playwright/test_all_routes_size.py`.
-- [ ] The `/bvp` entry is removed from `KNOWN_OVER_CAP` in that guard. The guard fails a
+- [x] `/bvp` response size measured off the wire before and after, and lands under the
+      2,000,000-byte cap in `tests/playwright/test_all_routes_size.py`. — Before: 5,391,073
+      bytes. After: 651,024 bytes (page 1), worst page across all 11 pages: 651,024 bytes.
+- [x] The `/bvp` entry is removed from `KNOWN_OVER_CAP` in that guard. The guard fails a
       route that is under cap but still listed, so a stale exemption cannot outlive the fix.
-- [ ] The bound is a window the reader can see and step past, not a truncation — same
+- [x] The bound is a window the reader can see and step past, not a truncation — same
       standard as T-2775 (`/timeline`): state the window, keep the remainder reachable.
-- [ ] Ranking is preserved across the window: `/bvp` exists to order tasks by value, so the
+      — Server-side paging (`?page=N`, 250 tasks/page, 11 pages for 2,579 tasks), pager
+      nav ("Highest value"/"Higher"/"Lower"/"Lowest value") on the scatter, raw-data table,
+      and per-driver-scores table; every task remains reachable on some page.
+- [x] Ranking is preserved across the window: `/bvp` exists to order tasks by value, so the
       window must be over a *sorted* set. Bounding it by "first N found" would silently
-      change what the page means while making it look fixed.
-- [ ] Re-check the T-2743 verification line that this page's size broke. At 5.4 MB it
+      change what the page means while making it look fixed. — `bvp_scatter()` now sorts
+      `_collect_task_points()`/`_collect_arc_points()` output by `bvp_norm` descending
+      *before* slicing; page 1 is always the highest-value tasks. Verified page 1's last
+      value (0.40) matches page 2's first value (0.40) — continuous ranking across the
+      page boundary, not a re-sort per page.
+- [x] Re-check the T-2743 verification line that this page's size broke. At 5.4 MB it
       overflowed the 64KB pipe buffer, so `cmd | grep -q PAT` exited 141 (SIGPIPE) and a
-      passing check read as failing. Confirm which shape that line now uses (L-387).
+      passing check read as failing. Confirm which shape that line now uses (L-387). —
+      T-2771 already moved T-1928's `/bvp` verification line to the redirect-to-file shape
+      (`curl -sf ".../bvp" -o /tmp/.t1928-bvp.html && grep -qi "..." /tmp/.t1928-bvp.html`,
+      T-1928 task file `## Verification`). That shape is SIGPIPE-safe regardless of byte
+      count (no pipe to grep at all), so it needed no further change — confirmed by reading
+      the current line, not by inference.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -125,6 +138,22 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+- [ ] [REVIEW] New pager UI on `/bvp` (scatter, raw-data table, per-driver-scores table)
+      reads clearly and doesn't look bolted-on
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<url>/bvp`
+  2. Confirm the page shows "showing 1–250 of N task(s) by value, page 1 of M" under the
+     scatter, and a "« Highest value / ‹ Higher ... Lower › / Lowest value »" nav row appears
+     above the scatter and below each of the two `<details>` tables
+  3. Click "Lower ›" once; confirm the URL becomes `/bvp?page=2` and the scatter/tables/JSON
+     redraw with a different (lower-value) set of tasks
+  4. Expand the "Raw data" and "Per-driver scores" `<details>` — confirm both summaries state
+     the page window (e.g. "page 1 of 11") rather than implying the table is the full set
+  **Expected:** pager controls are visually distinct from the rest of the page furniture,
+  labels are legible at a glance, paging actually changes what's rendered (not just the URL)
+  **If not:** note which element reads unclear (labels, spacing, missing state) and reopen
+  for a follow-up
 
 ## Verification
 
@@ -193,6 +222,10 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+! grep -q '"/bvp"' tests/playwright/test_all_routes_size.py
+curl -sf "$(bin/fw watchtower url)/bvp" -o /tmp/.t2780-bvp.html && wc -c < /tmp/.t2780-bvp.html | awk '{exit ($1<2000000)?0:1}'
+out=$(FW_TEST_PORT=3001 bin/fw test playwright -- tests/playwright/test_all_routes_size.py -k "bvp or timeline" 2>&1); echo "$out" | grep -qE "[0-9]+ passed" && ! echo "$out" | grep -qE "[0-9]+ failed"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -244,6 +277,53 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-04 — Windowing strategy: sort-then-page over all three rendered surfaces
+- **Chose:** Sort `_collect_task_points()` output by `bvp_norm` descending once in the
+  route, then slice a single 250-task page and reuse that same page for the scatter's
+  JSON payload, the raw-data table, and the per-driver-scores table. One page number
+  drives all three views; server-side `?page=N` paging, same UX pattern as `/timeline`
+  (T-2775).
+- **Why:** The task's own AC required the window to sit over a *sorted* set so page 1
+  means "highest value", not "first found on disk" — `/bvp`'s entire purpose is ranking.
+  Reusing one page index across all three renderings (rather than windowing them
+  independently) keeps "page 2" meaning the same 250 tasks everywhere on the page,
+  which matters because the per-driver-scores table and raw-data table are two
+  different views of the *same* task set, not independent lists.
+- **Rejected:** (a) Cap only the two `<details>` tables and leave the scatter's JSON
+  payload unbounded — rejected because the JSON payload alone (1.23 MB at 2,579 tasks)
+  will cross the 2 MB cap on its own as the task corpus grows, just later; this would
+  have re-created T-2775's "bounded on one axis, not the other" mistake with a longer
+  fuse instead of fixing the class. (b) Cap total points rendered by "first N found"
+  (glob order) — rejected explicitly by the AC itself: this is exactly the truncation
+  that "silently changes what the page means" the AC warns against.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** `/bvp` is fixed on the same axis T-2775 fixed `/timeline` on — server-side
+paging over a value-sorted list, with a pager that keeps every task reachable. All 5 Agent
+ACs are met with measured evidence, all 3 Verification commands pass, and the pre-existing
+`/bvp` Playwright suite (41 tests) has zero regressions. The one remaining Human AC is a
+`[REVIEW]` of the new pager UI's look/feel (labels, spacing, "bolted-on" gut-check) —
+genuine visual taste, not a correctness question I can self-certify.
+
+**Evidence:**
+- Size: 5,391,073 bytes → 651,024 bytes (page 1); all 11 pages measured, max 651,024 bytes,
+  well under the 2,000,000-byte cap (~3.1x headroom).
+- `tests/playwright/test_all_routes_size.py -k "bvp or timeline"` → 7 passed (was 1 xfail
+  for `/bvp`, now a real pass; `/bvp` removed from `KNOWN_OVER_CAP`).
+- `tests/playwright/test_bvp_scatter.py`, `test_bvp_sliders.py`, `test_bvp_form_htmx.py`,
+  `test_bvp_propose_queue.py`, `test_arc_detail_bvp.py` → 41 passed, 1 pre-existing failure
+  (`test_add_form_submit_keeps_user_on_bvp`, unrelated to this change — reproduced on
+  unmodified code via `git stash`; caused by the driver cap being at 9/9 in this repo's
+  live policy state, which the test doesn't account for).
+- Ranking preserved across the page boundary: page 1's last `bvp_norm` (0.40) equals page
+  2's first `bvp_norm` (0.40) — continuous sort, not independently-sorted pages.
+- Full sweep of `web/blueprints/bvp.py` / `web/templates/bvp.html` diff — no changes to
+  driver-add/remove/commit forms, slider logic, or proposal-queue rendering; the change is
+  scoped to windowing the three task-point renderings + adding the pager.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -260,3 +340,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2780-watchtower-bvp-returns-54mb-with-no-row-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-01fbb081
+- **Timestamp:** 2026-08-04T00:04:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-04T00:03:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

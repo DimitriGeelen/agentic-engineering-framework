@@ -42,7 +42,6 @@ SIZE_CAP_BYTES = 2_000_000
 # XPASS and the suite tells us to delete the entry, so this list cannot quietly outlive the
 # problem. Empty is the goal state.
 KNOWN_OVER_CAP = {
-    "/bvp": "T-2780 — 5,385,019 bytes, same unbounded-row class as /timeline was",
     "/project": "T-2781 — 2,274,276 bytes, 1.14x cap; the early-warning case",
 }
 
