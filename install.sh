@@ -264,6 +264,16 @@ link_fw() {
         # The shim walks up from CWD to find the project-local fw (bin/fw or .agentic-framework/bin/fw)
         # This means every project uses its own framework version — no global install dependency
         mkdir -p "$local_bin"
+        # T-2793 / T-1278: rm BEFORE cp. If ~/.local/bin/fw is the old symlink
+        # into the global install, a plain `cp` follows it and writes the router
+        # THROUGH the link, overwriting the global framework's bin/fw — the real
+        # CLI is replaced by a ~90-line router and every `fw` call then dies with
+        # "routing loop". Hit live on 2026-08-04 by running this exact cp by hand.
+        #
+        # lib/upgrade.sh step 4c has carried this guard since T-1278; install.sh
+        # never got it. The install path is the one that MOST often meets a
+        # pre-existing symlink, because that symlink is what it exists to replace.
+        rm -f "$local_bin/fw"
         cp "$shim_src" "$local_bin/fw"
         chmod +x "$local_bin/fw"
         # claude-fw still symlinks (it's a wrapper, not project-specific)

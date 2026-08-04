@@ -72,3 +72,36 @@ load ../test_helper
     [ -x "$tmp/bin/fw-router" ]
     rm -rf "$tmp"
 }
+
+@test "install.sh replaces an EXISTING symlink instead of writing through it" {
+    # T-2793 / T-1278, hit live: ~/.local/bin/fw is a symlink into the global
+    # install, so a bare `cp` follows it and overwrites the global framework's
+    # real bin/fw with the router. Every fw call then dies with "routing loop".
+    #
+    # The earlier sandbox check could not catch this: it used an EMPTY
+    # ~/.local/bin, so no symlink existed to write through. Testing the install
+    # into a clean directory grades the case that was never the problem.
+    cd "$FRAMEWORK_ROOT"
+    local tmp home global
+    tmp="$(mktemp -d)"; home="$tmp/home"; global="$tmp/global"
+    mkdir -p "$home/.local/bin" "$global/bin"
+    git archive HEAD bin/ | tar -x -C "$tmp"
+    printf '#!/bin/bash\necho REAL_CLI\n' > "$global/bin/fw"
+    chmod +x "$global/bin/fw"
+    ln -s "$global/bin/fw" "$home/.local/bin/fw"     # the pre-existing symlink
+
+    awk '/^link_fw\(\)/,/^}$/' install.sh > "$tmp/link_fw.sh"
+    bash -c "
+        info(){ :; }; warn(){ :; }; fatal(){ exit 1; }
+        INSTALL_DIR='$tmp'; HOME='$home'; MODIFY_PATH=false
+        source '$tmp/link_fw.sh'; link_fw
+    " >/dev/null 2>&1
+
+    # The global CLI must be untouched…
+    run bash "$global/bin/fw"
+    [ "$output" = "REAL_CLI" ]
+    # …and the PATH entry must be a real file now, not a link.
+    [ ! -L "$home/.local/bin/fw" ]
+    [ -x "$home/.local/bin/fw" ]
+    rm -rf "$tmp"
+}
