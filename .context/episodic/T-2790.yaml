@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2790: Arc continuous-delivery prompt: drive open arcs to closure on demo evidence
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T14:11:28Z
+# ============================================================================
+
+task_id: T-2790
+task_name: "Arc continuous-delivery prompt: drive open arcs to closure on demo evidence"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T14:03:08Z
+completed: 2026-08-04T14:11:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-04T16:10:59+02:00
+last_commit: 2026-08-04T16:10:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc continuous-delivery prompt — verb-verified against checkout
+
+# Key outcomes
+outcomes:
+  - 'Prompt exists at `.context/prompts/arc-continuous-delivery.md` and is tracked by git'
+  - '**Every `bin/fw` verb the prompt names resolves against this checkout.** A handoff doc'
+  - 'The prompt states no CLI command for arc closure as the primary affordance — closure is'
+  - 'Every framework claim the prompt makes is traceable: T-1671 (`fw arc close` refuses under'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/prompts/arc-continuous-delivery.md'
+  - '.tasks/active/T-2790-arc-continuous-delivery-prompt-drive-ope.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T16:10:59'
+    action: 'T-2790: arc continuous-delivery prompt — verb-verified against checkout'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 2
+  lines_added: 434
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2790-arc-continuous-delivery-prompt-drive-ope.md
+generated_by: context-agent-hybrid
