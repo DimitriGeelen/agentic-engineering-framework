@@ -232,6 +232,44 @@ test "$(bats --count tests/unit/ 2>/dev/null)" -gt 3076
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+## Recommendation
+
+**Recommendation:** GO — merge the guard, then clear filesystem root.
+
+**Rationale:** The guard is complete and its red state is the correct reading of a
+live hazard, not a defect in the guard. Every agent AC is closed with measurement
+rather than assertion: three control tests exercise the predicate against clean,
+fully-polluted and partially-polluted roots, and collection by the real runner is
+proven by a count delta rather than by the file existing in a directory.
+
+What remains is yours because it is Tier 0 and destructive at filesystem root —
+`sudo rm -rf /.tasks /.context`. I have deliberately not touched it. Please read
+the three stray files first (they are quoted in `## Findings`, all three are test
+fixtures) and confirm you agree none is real state before removing.
+
+Two things worth your attention beyond the removal:
+
+1. `test_hook_paths.py::test_noop_when_cwd_outside_any_project` has been red
+   because of this, and it is a **true positive** — while `/.tasks` exists, `/`
+   genuinely is a project root by the resolver's own rule. Clearing root turns
+   that test green without touching the resolver.
+2. The stray `/.context/working/.fw-secret-key` is a framework secret sitting in
+   a world-readable directory at filesystem root. Worth rotating rather than only
+   deleting, since it has been there since May 5.
+
+**Evidence:**
+- `tests/unit/no_root_framework_markers.bats` — 3 controls PASS, live assertion
+  FAIL with a diagnostic naming cause and remedy.
+- Runner collection: `bats --count tests/unit/` = 3080 with the guard, 3076
+  without (delta 4 = the guard's own tests).
+- Fixture provenance traced to `verification_unjudged_test_run.bats` (T-2738) and
+  the T-2732 port-literal work — slug, task id and Verification body all match.
+- Writer mechanism located: 106 bats files build paths on an unguarded
+  `$PROJECT_ROOT`; filed as T-2788 rather than folded in here.
+- OBS-145 filed separately: `tests/unit/*.py` (164 files, 2,095 tests) is
+  executed by no `fw` runner — which is why the 11 red unit tests went unnoticed,
+  and why this guard is `.bats`.
+
 ## Findings
 
 ### Live evidence, captured 2026-08-04 (unreproducible once root is cleared)
