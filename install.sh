@@ -229,13 +229,27 @@ scan_vendored_consumers() {
     echo ""
 }
 
-# --- Install Shim (T-664: project-detecting fw, replaces global symlinks) ---
+# --- Install the router (T-664 fw-shim → T-2793 fw-router: project-detecting fw,
+# --- replaces the global symlink) ---
 link_fw() {
-    local shim_src="$INSTALL_DIR/bin/fw-shim"
+    # T-2793: bin/fw-router supersedes bin/fw-shim. Same walk-up, plus an
+    # ANNOUNCED global fallback so `fw init` still works in a bare directory —
+    # the gap that made the old shim unsafe to install unconditionally.
+    local shim_src="$INSTALL_DIR/bin/fw-router"
+    [[ -x "$shim_src" ]] || shim_src="$INSTALL_DIR/bin/fw-shim"
     local local_bin="$HOME/.local/bin"
 
     if [[ ! -x "$shim_src" ]]; then
-        # Fallback for older installs that don't have fw-shim yet
+        # T-2793 — THIS BRANCH WAS THE BUG, not a benign legacy path.
+        # bin/fw-shim was committed mode 100644, so `! -x` was ALWAYS true on a
+        # fresh clone and every install silently symlinked ~/.local/bin/fw at the
+        # global CLI. Projects then ran the global CLI against their own vendored
+        # libs — the split brain T-2793 exists to end. The message below even
+        # said so accurately ("legacy — upgrade for project-local routing") and
+        # read as information rather than as the failure it was.
+        # Guarded by tests/unit/bin_executable_bits.bats.
+        #
+        # Fallback for older installs that genuinely predate the router
         local fw_path="$INSTALL_DIR/bin/fw"
         if [[ ! -x "$fw_path" ]]; then
             fatal "bin/fw not found in ${INSTALL_DIR} — clone may be corrupted"
@@ -254,7 +268,7 @@ link_fw() {
         chmod +x "$local_bin/fw"
         # claude-fw still symlinks (it's a wrapper, not project-specific)
         ln -sf "$INSTALL_DIR/bin/claude-fw" "$local_bin/claude-fw"
-        info "Installed fw shim → ${local_bin}/fw (project-detecting)"
+        info "Installed fw router → ${local_bin}/fw (project-detecting — each project runs its own framework)"
         info "Linked claude-fw → ${local_bin}/claude-fw"
 
         # Migrate notice if old symlink existed

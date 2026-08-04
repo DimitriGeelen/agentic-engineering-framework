@@ -1365,7 +1365,10 @@ CRONREGEOF
 
     # T-665: Migrate ~/.local/bin/fw from global symlink to project-detecting shim
     local local_bin="$HOME/.local/bin"
-    local shim_src="$FRAMEWORK_ROOT/bin/fw-shim"
+    # T-2793: prefer bin/fw-router (supersedes bin/fw-shim — same walk-up, plus
+    # an announced global fallback so `fw init` still works in a bare directory).
+    local shim_src="$FRAMEWORK_ROOT/bin/fw-router"
+    [ -f "$shim_src" ] || shim_src="$FRAMEWORK_ROOT/bin/fw-shim"
     if [ -f "$shim_src" ] && [ -d "$local_bin" ]; then
         local current_fw="$local_bin/fw"
         if [ -L "$current_fw" ]; then

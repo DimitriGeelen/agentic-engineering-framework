@@ -82,8 +82,17 @@ fi
 _self_real="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || printf '%s' "${BASH_SOURCE[0]}")"
 _target_real="$(readlink -f "$_target" 2>/dev/null || printf '%s' "$_target")"
 [ "$_self_real" != "$_target_real" ] || _fw_die 126 \
-    "fw: routing loop — $_target resolves to this router itself ($_self_real)." \
-    "  A project's .agentic-framework/bin/fw must be the framework CLI, not the router."
+    "fw: routing loop — the fw found here is this router itself." \
+    "" \
+    "  Path: $_target" \
+    "" \
+    "  The real CLI is missing from that location. Known causes (T-1278):" \
+    "    - bin/fw overwritten by an older 'fw upgrade' that wrote the router" \
+    "      through the destination symlink into a framework repo's bin/fw" \
+    "    - a manual mis-copy of the router over bin/fw" \
+    "" \
+    "  Restore, from the affected framework repo:" \
+    "    git checkout HEAD -- bin/fw"
 
 # --- 4. Hand over ---
 # Exported so the routing decision is observable from inside (fw doctor reads it).
