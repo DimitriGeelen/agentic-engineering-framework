@@ -525,7 +525,38 @@ UPSTREAM
 # If no project detected and command is not init/help/version, offer guided initialization
 if [ -z "$PROJECT_ROOT" ]; then
     _cmd="${1:-}"
-    if [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
+
+    # T-2798: a help query is never a mutation, wherever the flag sits.
+    #
+    # The list below inspects $1 ONLY. `fw doctor --help` puts --help in $2, so
+    # it fell straight through to auto-init: from a non-project directory it
+    # created a git repo and vendored ~90MB of framework into the caller's cwd,
+    # having been asked to print a usage string. Non-interactively (the onboarding
+    # agent's case) it does that with no prompt at all — the TTY branch below is
+    # the only one that asks.
+    #
+    # Field report 2026-08-04: an operator's onboarding agent ran `fw doctor
+    # --help` in an empty /opt/2345-test-install to check the verb existed. It
+    # got an init instead, was interrupted mid-vendor, and left the directory
+    # with .git + .agentic-framework/ and no .framework.yaml — a state in which
+    # every subsequent fw call fails "Cannot find framework installation", so
+    # the tool cannot repair what it created. (That second defect — init is not
+    # atomic and its debris is not fw-recoverable — is its own task.)
+    #
+    # Scanning all args rather than extending the $1 allowlist: the allowlist has
+    # to be right for every subcommand that exists now or later, and this one had
+    # already been wrong for every subcommand there is. `-h|--help` only — not
+    # the bare word `help`, which is a legitimate argument VALUE (`fw ask help`)
+    # and is already covered as $1 by the list below.
+    _is_help_query=false
+    for _a in "$@"; do
+        case "$_a" in
+            -h|--help) _is_help_query=true; break ;;
+        esac
+    done
+
+    if [ "$_is_help_query" = false ] && \
+       [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
        [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
        [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ "$_cmd" != "hook" ] && \
        [ "$_cmd" != "vendor" ] && [ -n "$_cmd" ]; then
