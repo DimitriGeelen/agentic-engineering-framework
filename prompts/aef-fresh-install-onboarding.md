@@ -33,13 +33,43 @@ python3 is missing, install via the platform package manager and say what you di
   command below with `env -u FRAMEWORK_ROOT -u PROJECT_ROOT`, or run this onboarding in a
   genuinely fresh shell/session.
 
-First check whether the framework is **already present** on this host:
+First check whether the framework is already present on this host:
 
   command -v fw && fw --version ; ls -d ~/.agentic-framework /opt/*/FRAMEWORK.md 2>/dev/null
 
-- **[dogfood]** If a framework is already installed locally (e.g. a dev checkout, or `~/.agentic-framework`),
-  prefer it — do NOT pipe a second copy from GitHub. Re-installing master creates version skew (the
-  dogfood machine had github-master v1.6.25 vs local dev v1.6.66) and a shadowing PATH shim.
+**Presence is not the question — freshness is, and the version NUMBER cannot answer it.**
+`fw v1.6.432` is `major.minor.<commits-since-the-newest-tag-that-clone-knows>` — a distance,
+not a version. It resets at every release tag, and a clone that has not fetched the recent
+tags measures from an older anchor and so reports a **larger** number while being **older**.
+Measured 2026-08-04: a global install three commits behind master reported `1.6.432` against
+master's `1.6.132`, and two separate agents read that pair in opposite directions, both wrong
+(OBS-150 / OBS-156, fixed in T-2796). Do not compare these numbers. Do not read a big one as
+reassuring or a small one as stale.
+
+Ask the commit instead — `fw --version` prints it (T-2796):
+
+  fw --version | sed -n 's/^Commit: *//p' | cut -d' ' -f1
+  git ls-remote https://github.com/DimitriGeelen/agentic-engineering-framework.git master | cut -c1-9
+
+(the `cut -d' '` drops the branch name `fw --version` appends, so the two lines are
+directly comparable — without it a strict `=` fails on two identical commits)
+
+- **Same SHA** → the install is current. Skip the installer.
+- **Different SHA** → the install is not upstream master. It may be newer (a dev checkout),
+  older, or on another branch, and the SHA alone does not say which — so **[ASK]** rather
+  than guessing a direction. `fw update` refreshes a git-based global install in place, which
+  is usually the right move and avoids piping a second copy.
+- **`Commit: (none — vendored copy…)`** → no git history, so nothing can be compared; the
+  `VERSION` file is the only identity that install has.
+- **No `Commit:` line at all** → the install predates T-2796, and is therefore old enough
+  that refreshing it is the safe default.
+
+- **[dogfood]** If a framework is already installed locally (e.g. a dev checkout, or
+  `~/.agentic-framework`), do NOT pipe a second copy from GitHub — that leaves two frameworks
+  and a shadowing PATH shim, and whichever one PATH happens to pick is the one every later
+  step silently runs. (The original note here justified this with "the dogfood machine had
+  github-master v1.6.25 vs local dev v1.6.66". Those two counters were never comparable, so
+  ignore the arithmetic — the conclusion stands on the shadowing, not on the skew.)
 - If the machine is genuinely fresh, **[ASK]** confirm before running a piped installer, then:
 
       curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
