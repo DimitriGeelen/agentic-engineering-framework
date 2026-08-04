@@ -355,7 +355,24 @@ verify() {
     fi
 
     # Step 3: Check fw doctor passes
-    if "$fw_path" doctor &>/dev/null; then
+    #
+    # T-2799: run this from INSTALL_DIR, NOT the caller's cwd. `fw doctor` in a
+    # directory that is not yet a project reaches bin/fw's auto-init branch, and
+    # under a pipe (no TTY) that branch initialises with defaults and never
+    # prompts. The `&>/dev/null` below then hid the whole narrative and we
+    # printed "Step 3/3: fw doctor passes ✓" over the top of it.
+    #
+    # Measured against GitHub master, 2026-08-04: `curl … | bash` run from an
+    # empty /tmp/t2799 left a complete initialised project in it —
+    # .agentic-framework/ (~90MB), .claude/, CLAUDE.md, .mcp.json, policy/,
+    # .context/, .tasks/, .git/, .framework.yaml — with the installer reporting
+    # nothing but a green checkmark. Every user following the documented
+    # one-liner got a project wherever they happened to be standing.
+    #
+    # INSTALL_DIR is a framework checkout, so PROJECT_ROOT resolves there and
+    # the branch is never reached. It also tests the thing step 3 means to test
+    # — that the installed binary runs — without writing to the user's disk.
+    if (cd "$INSTALL_DIR" && "$fw_path" doctor) &>/dev/null; then
         info "Step 3/3: fw doctor passes ✓"
     else
         warn "Step 3/3: fw doctor has warnings (non-fatal)"
