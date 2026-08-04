@@ -1,8 +1,10 @@
 ---
 id: T-2803
-name: "survey every dependency on $HOME/.agentic-framework before the T-2800 first build slice"
+name: "survey every dependency on $HOME/.agentic-framework before the T-2800 first
+  build slice"
 description: >
-  survey every dependency on $HOME/.agentic-framework before the T-2800 first build slice
+  survey every dependency on $HOME/.agentic-framework before the T-2800 first build
+  slice
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T21:22:08Z
-last_update: 2026-08-04T21:22:08Z
-date_finished: null
+last_update: 2026-08-04T21:34:27Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +36,65 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-04T21:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-04T21:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2803: survey every dependency on $HOME/.agentic-framework before the T-2800 first build slice
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2800 (operator GO, 2026-08-04) removes the framework from `$HOME`, leaving only
+the 5.5 KB router. IW-4 was deliberately deferred and **gates the first build
+slice**: nobody has enumerated what depends on `$HOME/.agentic-framework`. This
+survey bounds the migration cost before `install.sh` is touched.
+
+Design: `docs/reports/T-2800-home-install-architecture.md` (§Open risk).
+Scope note written at budget-critical: `.context/working/T-2803-survey-scope.md`.
+
+This task is a **survey only** — it enumerates and classifies. It changes no
+behaviour; the build slices come after.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every reference to the global install in shipped code is enumerated with
+      `file:line` — `$HOME/.agentic-framework` literals, `FW_GLOBAL_ROOT`, and
+      prose in docs/prompts that instructs a reader to rely on it
+- [x] Each call site is classed **must-migrate / can-delete / compat-shim-needed**
+      with a one-line reason
+- [x] The survey answers explicitly, with evidence: *does an existing install keep
+      working untouched?* (the GO was given on the understanding that this changes
+      how **new** projects are created)
+- [x] Findings written to `docs/reports/T-2803-global-install-dependency-survey.md`
+      and the count in that report matches a live re-run of the greps (non-vacuity)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +128,17 @@ date_finished: null
 -->
 
 ## Verification
+
+test -f docs/reports/T-2803-global-install-dependency-survey.md
+# Non-vacuity: the count asserted in the report must match a LIVE re-run of the
+# grep. If a site is added or removed later, this line goes red rather than the
+# report quietly describing a codebase that no longer exists.
+n=$(grep -rnE '(\$HOME|~|\$\{HOME[^}]*\})/\.agentic-framework' --include="*.sh" --include="fw" --include="fw-router" --include="fw-shim" --include="*.py" bin/ lib/ agents/ web/ install.sh 2>/dev/null | wc -l); grep -q "\*\*$n references, 6 files\*\*" docs/reports/T-2803-global-install-dependency-survey.md
+# Every enumerated site is classified — table row count equals the site count.
+test "$(grep -cE '^\| [0-9]+ \|' docs/reports/T-2803-global-install-dependency-survey.md)" -eq 12
+# The claude-fw symlink finding is load-bearing for the build slice: pin that the
+# survey's claim still matches install.sh (ln -sf, not cp).
+grep -q 'ln -sf "$INSTALL_DIR/bin/claude-fw"' install.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

@@ -216,6 +216,13 @@ Less than expected. Router refusal ✓ (wording aside), vendored-copy init ✓
   still ~183 MB; today's vendored copy is a subset: `agents bin docs lib web`)
 - install the router if absent, then run `<project>/.agentic-framework/bin/fw init`
 - write `channel:` alongside the existing `version_sha:` in `.framework.yaml`
+- **copy `claude-fw` onto PATH instead of symlinking it** — added after the T-2803
+  survey. `install.sh:259`/`:280` do `ln -sf "$INSTALL_DIR/bin/claude-fw"`, which
+  is safe only while `INSTALL_DIR` is permanent. Delete the global and
+  `~/.local/bin/claude-fw` dangles, silently disabling the auto-restart wrapper
+  (T-179) on every migrated host. `$HOME` therefore holds **two** small files, not
+  one. `bin/fw:1768`'s refresh advice (`bash ~/.agentic-framework/install.sh`)
+  becomes false at the same moment and must change with it.
 
 **Atomicity is a requirement, not a nicety.** OBS-157 (hit live in
 `/opt/2345-test-install` this session) is an interrupted init leaving
@@ -253,7 +260,23 @@ where a stale source silently governs a fresher consumer. Keep it as explicit
 7. **Install and init become one command per project**, forced by (1). Bare `fw`
    outside any project refuses with instructions instead of falling back.
 
-## Open risk — not yet surveyed
+## Open risk — SURVEYED (T-2803, 2026-08-04)
+
+**Resolved.** `docs/reports/T-2803-global-install-dependency-survey.md` enumerates
+**12 references across 6 files** (`bin/fw`, `bin/fw-router`, `bin/fw-shim`,
+`install.sh`, `lib/update.sh`, `lib/upgrade.sh`) — nothing in `agents/`, `web/`,
+or any Python. Classified 6 must-migrate / 3 compat-shim-needed / 3 can-delete,
+with an ordering constraint: **`install.sh` must be able to create a project
+before the router's global fallback is removed**, because that fallback is the
+only reason `fw init` works in a bare directory today.
+
+Answer to *"does an existing install keep working untouched?"* — **existing
+projects, yes** (the router finds them before ever consulting the global; proven
+in the spike above). **Two host-level affordances break**: the dangling
+`claude-fw` symlink, and `fw init` for the *next* project. Both are in-scope for
+slice 1.
+
+Original framing, kept for the record:
 
 **IW-4 is deferred, deliberately.** Nobody has enumerated what depends on
 `$HOME/.agentic-framework`. Known touch points: `fw upgrade` syncs to it (L-172),
