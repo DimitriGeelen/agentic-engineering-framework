@@ -372,16 +372,36 @@ def test_live_corpus_current_findings():
 
 
 def test_live_corpus_all_versions_census():
-    """T-2694 first census, pinned: 28 stored versions across the live store
+    """T-2694 first census, pinned: 32 stored versions across the live store
     (including drafts), 14 carrying findings — the default (latest-only)
     sweep above sees only 4. This is the count that motivated the task: most
     of the 14 were never judged by the current rule set before this mode
-    existed. Update deliberately when the store grows or a rule changes."""
+    existed. Update deliberately when the store grows or a rule changes.
+
+    T-2786 deliberate baseline move (28 → 32 versions, findings held at 14),
+    2026-08-04. The four added versions are `draft-arc-lifecycle` v1–v4, and
+    every one of them is clean — which is why the version count moved and the
+    findings count did not.
+
+    The load-bearing check was NOT that both numbers were re-derived; it was
+    that "14 then" and "14 now" are the SAME 14 rather than two changes that
+    cancelled. `tools/corpus_lint.py` had changed (+72/-4) since the pin, so
+    a rule-driven swap was live as a hypothesis. Ruled out by evidence, not
+    assumption: over that range every `.bpmn` change under the store is an
+    ADD (no M, no D — pre-existing bytes are untouched), and the corpus_lint
+    diff is purely additive reporting surface (`census_rows`, `_print_census`,
+    `--summary`) with no rule predicate touched. Same bytes through the same
+    rules yield the same verdicts, so the pre-existing 28 cannot have moved.
+
+    If you are updating this pin again: re-derive all three values, enumerate
+    the added versions by NAME, and if the findings count moves — especially
+    if a version DROPS out of the flagged set — stop. A drop means a rule
+    changed and is a different investigation, not a corpus-growth story."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 28, [n for n, _ in targets]
+    assert len(targets) == 32, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:
