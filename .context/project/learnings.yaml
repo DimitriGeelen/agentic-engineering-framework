@@ -4148,3 +4148,10 @@ X'` returning empty group."
   date: 2026-08-04
   context: Added via context agent
   application: TBD
+- id: L-546
+  learning: "A two-way population cross-check is only evidence if the two methods can fail DIFFERENTLY. Checking a .bpmn population with glob(rglob) vs find and diffing them is a real counter to L-545 (glob skips dot-directories) -- but only until both sides pass through a shared normalisation step. Normalising with os.path.lstrip('./') mangles '.context/x' to 'context/x' in BOTH sets identically, so the diff came back 0 and read as 'the two methods agree' when it meant 'both populations are corrupted the same way'. 32 of 51 files were silently unreadable and the check reported clean. The independence lives in the whole path from source to comparison, not in the two enumeration calls. Counter: assert the population SIZE against a third cheap oracle (ls | wc -l) and assert files are readable, before trusting a set difference of zero."
+  source: P-001
+  task: T-2791
+  date: 2026-08-04
+  context: Added via context agent
+  application: TBD
