@@ -181,6 +181,52 @@ signal than noise.
       the one piece of evidence that would have settled it in seconds.
       Log preserved at `.context/working/T-2784-after-run.log` (753KB).
 
+      **ATTEMPT 4 COMPLETED AND IS ALSO INVALID — DIFFERENT CAUSE, SAME CLASS.** Run with
+      `-s` this time, isolated (no concurrent suites on my part). Result: `137 failed, 761
+      passed, 5 skipped in 2948.50s (0:49:08)` against the 13-failure baseline. The
+      `[watchtower_server] start: nothing listening on the test port` line appears exactly
+      once at the top — the fixture correctly started its own fresh server, no adoption/
+      identity ambiguity this time.
+
+      The 137 failures are not scattered: `diff`-ing against the baseline shows the 13
+      known-pre-existing failures unchanged, plus a **contiguous alphabetical block** of 89
+      new failures (`test_review_*` through `test_verdict_ui.py`, the back third of the
+      file list) — exactly the shape of "server died partway through," not "these files
+      broke." Spot-checked `test_review_page.py::test_review_has_content`:
+      `playwright._impl._errors.Error: Page.goto: net::ERR_CONNECTION_REFUSED at
+      http://localhost:3099/review/T-1794`. Server was up, then wasn't.
+
+      `/tmp/watchtower-test-stderr.log` (the fixture's captured stderr, T-1954-era pipe-
+      buffer-deadlock fix) could not be used to diagnose the death: the fixture opens it
+      `"w"` (truncate) on every `start`, and a later diagnostic sub-run overwrote it before
+      I read it. No OOM entries in `dmesg`/`journalctl -k` for the window either way.
+
+      **This is a host-contention finding, not a self-contamination one — and it is
+      structural, not incidental.** `ps aux` mid-investigation showed **15 concurrent
+      `python3 -m web.app` processes** already running on this host (ports 3000-3200,
+      3098-3101, 4050 — other consumer projects' Watchtowers, per-project isolation working
+      as designed but sharing one machine's CPU/RAM), plus `free -h` showing 28GB/32GB swap
+      in use with only 842MB physically free (31GB "available" via reclaimable cache, so not
+      OOM-critical, but evidence of sustained pressure). A single-threaded Flask dev server
+      under a 49-minute continuous run is not resilient to a neighbour on the same host
+      spiking load or memory at the wrong moment — and on this host, multiple neighbours are
+      *always* running. Two independent 49-minute runs (attempt 3, contaminated by me;
+      attempt 4, isolated) both lost the server mid-run. The baseline run (13 failed) is the
+      only one of three that completed clean — which may itself have been luck rather than a
+      property of the earlier code.
+
+      Log preserved at `.context/working/.T-2784-after-run.log` (334KB, `-s` captured).
+
+      **Attempt 5 in flight** (2026-08-04 ~19:14): same invocation
+      (`FW_TEST_PORT=3099 python3 -m pytest tests/playwright/ -q -s`), backgrounded, logging
+      to `.context/working/.T-2784-after-run5.log`, nothing else run concurrently on my part.
+      If this one also loses the server mid-run, the AC's "same invocation" premise (a single
+      49-minute monolithic run, matching the baseline's shape exactly) may not be achievable
+      reliably on this host regardless of the code under test, and the fallback is chunked
+      re-verification of only the diff set (the 89 newly-failing tests) run in isolation
+      against a fresh short-lived server, cross-referenced with the already-completed AC #2
+      sample demonstration — not a fourth/fifth full-suite attempt for its own sake.
+
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
