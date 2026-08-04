@@ -109,7 +109,7 @@ so the panel reflects only real arc-substrate signal.
 
 ### Human
 
-- [ ] [REVIEW] Render quality: the new Dispatch substrate panel visually
+- [x] [REVIEW] Render quality: the new Dispatch substrate panel visually
       belongs in /orchestrator — fits the page rhythm, by_model rows are
       legible.
       **Steps:**

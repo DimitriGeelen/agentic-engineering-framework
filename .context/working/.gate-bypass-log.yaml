@@ -5811,3 +5811,24 @@ conftest.py adopted anything answering /health on FW_TEST_PORT, yielded '
   command: 'cd /opt/999-Agentic-Engineering-Framework
 FW_SWITCH_FOCUS=1 bin/fw context focus T-2786 >/dev/null 2>&1
 git add tests/unit/test_corpus_lint.py .tasks/active/T-2786-corpus-lint-all-versions-census-pinn'
+- timestamp: '2026-08-04T13:15:02Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2787'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bash -c set -eo pipefail; bats tests/unit/no_root_framework_markers.bats > /tmp/.t2787.out 2>&1 || true; grep -q "^ok 1 predicate reports a clean root" /tmp/'
+- timestamp: '2026-08-04T13:15:31Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2787'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bash -c set -eo pipefail; bats tests/unit/no_root_framework_markers.bats > /tmp/.t2787.out 2>&1 || true; grep -q "^ok 1 predicate reports a clean root" /tmp/'
+- timestamp: '2026-08-04T13:15:47Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2787'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bash -c set -eo pipefail; bats tests/unit/no_root_framework_markers.bats > /tmp/.t2787.out 2>&1 || true; grep -q "^ok 1 predicate reports a clean root" /tmp/'

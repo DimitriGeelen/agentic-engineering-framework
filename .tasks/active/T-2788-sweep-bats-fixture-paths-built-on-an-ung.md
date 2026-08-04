@@ -2,12 +2,16 @@
 id: T-2788
 name: "sweep: bats fixture paths built on an unguarded $PROJECT_ROOT"
 description: >
-  106 bats files build fixture paths as mkdir -p "$PROJECT_ROOT/.tasks/active" with $PROJECT_ROOT assigned inside each file's own setup(). Unset at that moment the path is literally /.tasks/active. This is the writer behind T-2787's filesystem-root pollution. Audit the 106 call sites, add a shared guard that refuses an empty or / root, and pin it with a test that proves the guard fires.
+  106 bats files build fixture paths as mkdir -p "$PROJECT_ROOT/.tasks/active" with
+  $PROJECT_ROOT assigned inside each file's own setup(). Unset at that moment the
+  path is literally /.tasks/active. This is the writer behind T-2787's filesystem-root
+  pollution. Audit the 106 call sites, add a shared guard that refuses an empty or
+  / root, and pin it with a test that proves the guard fires.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T13:10:55Z
-last_update: 2026-08-04T13:10:55Z
-date_finished: null
+last_update: '2026-08-04T13:15:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-04T13:14:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-04T13:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 3
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2788: sweep: bats fixture paths built on an unguarded $PROJECT_ROOT
@@ -46,8 +78,29 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every call site is enumerated, not sampled: the full list of files matching
+      `mkdir -p "$PROJECT_ROOT/…"` (106 at filing) is recorded in the task, and the
+      count is re-derived at close rather than quoted from here.
+- [ ] Each site is classified as SAFE (assigns `PROJECT_ROOT` before first use, in
+      a `setup()` that cannot be skipped) or EXPOSED. Classification is by reading
+      the assignment order, not by whether the file currently passes — a file that
+      passes because its `setup()` happens to succeed is still exposed.
+- [ ] A shared guard refuses an empty root, `/`, and any path outside the test
+      temp dir, and is reachable from every exposed site (a helper the sites call,
+      or a load-time assertion in `tests/test_helper.bash` — whichever actually
+      intercepts, verified by demonstration).
+- [ ] The guard is proven to fire: a deliberately-exposed fixture file fails with
+      the guard's message, and passes with a correct `PROJECT_ROOT` (L-530).
+- [ ] The guard runs under the runner that executes bats today, verified by
+      `bats --count tests/unit/` delta rather than by file presence (T-2696).
+- [ ] `tests/unit/no_root_framework_markers.bats` (T-2787) is green at close, or
+      the reason it is not is stated — it is the detective half of this fix and
+      its state is the outcome measure.
+- [ ] No fixture write escapes its temp dir during a full `bats tests/` run,
+      demonstrated by checking `/` for framework markers immediately before and
+      after the run and diffing — the before/after pair is the evidence, since a
+      clean "after" alone cannot distinguish "nothing escaped" from "root was
+      already polluted".
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,3 +267,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2788-sweep-bats-fixture-paths-built-on-an-ung.md
 - **Context:** Initial task creation
+
+### 2026-08-04T13:14:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

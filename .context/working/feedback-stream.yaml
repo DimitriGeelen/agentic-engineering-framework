@@ -26190,3 +26190,21 @@ scan_id: R-7e5a4c07
 task_id: T-2786
 payload:
   task_file: .tasks/active/T-2786-corpus-lint-all-versions-census-pinned-a.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T13:13:46Z'
+scan_id: R-f3083049
+task_id: T-2787
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T13:13:46Z'
+scan_id: R-f3083049
+task_id: T-2787
+payload:
+  task_file: .tasks/active/T-2787-test-fixtures-escaped-to-filesystem-root.md

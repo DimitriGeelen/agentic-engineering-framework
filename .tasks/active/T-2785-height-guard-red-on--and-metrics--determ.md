@@ -2,13 +2,21 @@
 id: T-2785
 name: "Height guard red on / and /metrics — determine whether the signal is honest"
 description: >
-  test_all_routes_height.py has 4 failures in the 2026-08-04 baseline: test_route_height_bounded[/] and [/metrics], plus test_parametrized_route_height_bounded[/inception/T-2715] and [/review/T-2715]. They predate T-2784 and nothing is acting on them (OBS-142).
+  test_all_routes_height.py has 4 failures in the 2026-08-04 baseline: test_route_height_bounded[/]
+  and [/metrics], plus test_parametrized_route_height_bounded[/inception/T-2715] and
+  [/review/T-2715]. They predate T-2784 and nothing is acting on them (OBS-142).
 
-  Worth investigating rather than muting: T-2775 established that the height axis can be satisfied by hiding overflow inside a collapsed <details> (display:none is excluded from scrollHeight) while still shipping every byte. A guard that is RED on that axis is therefore more likely to be reporting an honest unbounded page than to be broken — the failure direction is the informative one.
+  Worth investigating rather than muting: T-2775 established that the height axis
+  can be satisfied by hiding overflow inside a collapsed <details> (display:none is
+  excluded from scrollHeight) while still shipping every byte. A guard that is RED
+  on that axis is therefore more likely to be reporting an honest unbounded page than
+  to be broken — the failure direction is the informative one.
 
-  Determine, per failing route, whether the page genuinely exceeds the height bound (fix the page) or the guard's expectation has drifted (fix the guard). Do not raise the cap to make it green.
+  Determine, per failing route, whether the page genuinely exceeds the height bound
+  (fix the page) or the guard's expectation has drifted (fix the guard). Do not raise
+  the cap to make it green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T11:12:28Z
-last_update: 2026-08-04T11:12:28Z
-date_finished: null
+last_update: 2026-08-04T13:00:27Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,6 +46,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-04T11:15:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-04T11:15:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2785: Height guard red on / and /metrics — determine whether the signal is honest
@@ -229,3 +265,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2785-height-guard-red-on--and-metrics--determ.md
 - **Context:** Initial task creation
+
+### 2026-08-04T11:15:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

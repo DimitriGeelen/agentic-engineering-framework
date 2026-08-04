@@ -4,10 +4,10 @@ name: "corpus-lint all-versions census pinned at 28, live store now 32"
 description: >
   corpus-lint all-versions census pinned at 28, live store now 32
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T12:52:08Z
-last_update: 2026-08-04T12:52:08Z
-date_finished: null
+last_update: 2026-08-04T12:57:12Z
+date_finished: 2026-08-04T12:57:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -332,3 +332,15 @@ methods that have already been shown capable of disagreeing.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2786-corpus-lint-all-versions-census-pinned-a.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7e5a4c07
+- **Timestamp:** 2026-08-04T12:57:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-04T12:57:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

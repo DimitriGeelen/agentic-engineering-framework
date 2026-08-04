@@ -14,10 +14,10 @@ description: >
   degrade the very timings the suite exists to guard, and so future sessions don't
   re-diagnose this as host contention.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -32,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T23:25:34Z
-last_update: 2026-08-04T09:40:51Z
-date_finished:
+last_update: 2026-08-04T10:01:15Z
+date_finished: 2026-08-04T10:01:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,22 +99,38 @@ they close together rather than as separate tasks.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Adoption is identity-checked: before reusing a listener on `FW_TEST_PORT`, the fixture
+- [x] Adoption is identity-checked: before reusing a listener on `FW_TEST_PORT`, the fixture
       confirms it is a Watchtower serving the same `PROJECT_ROOT` as the test run. A mismatch
       fails loudly with both paths named — it must not silently adopt, and must not silently
       start a second server alongside it.
-- [ ] Adoption is staleness-bounded: a server that is reusable by identity but exceeds the age
+      Uses `/api/_identity` (T-1284), which already returned `service` + `project_root` and
+      needed no new endpoint — the fixture was simply asking `/health`, which answers
+      "something is listening" rather than "the right thing is listening".
+- [x] Adoption is staleness-bounded: a server that is reusable by identity but exceeds the age
       bound is recycled (terminated, fresh instance started and warmed) rather than adopted.
       The bound is a named constant with an env override, not a literal buried in the branch.
-- [ ] Adoption is visible in the run: every session states which path it took — started fresh,
+      `MAX_ADOPT_AGE_S` / `FW_TEST_SERVER_MAX_AGE_S`, default 1h. Recycling needs the pid of a
+      process the fixture did not spawn, so `/api/_identity` gained `pid`. Guard rail:
+      `_recycle` refuses when `FW_TEST_PORT` equals the project's live Watchtower port, so
+      mis-pointing the suite cannot kill the operator's session.
+- [x] Adoption is visible in the run: every session states which path it took — started fresh,
       adopted an existing server (with its age), or recycled a stale one. A reading that came
       off an adopted server can be attributed to it after the fact rather than re-diagnosed.
-- [ ] Regression-pinned by a test that exercises all three paths (fresh / adopt / reject on
+      All four observed live: `start: nothing listening on the test port`, `adopt: server is
+      ours and 0min old`, `recycle: server has been up 0.0h (bound 0.0h)`, and `reject: port
+      3099 is held by something that does not answer /api/_identity`.
+- [x] Regression-pinned by a test that exercises all three paths (fresh / adopt / reject on
       identity mismatch) against the real fixture logic, and that fails when the identity check
       or the age bound is removed — mutation-checked, not merely present (L-530).
-- [ ] `tests/playwright/test_all_routes_size.py` and `test_all_routes_load_time.py` stay green
+      `tests/unit/test_playwright_server_adoption.py`, 15 tests. Mutation-checked: neutering
+      the root comparison reds `test_foreign_project_is_rejected_not_adopted`, neutering the
+      age bound reds `test_our_stale_server_is_recycled_not_adopted`, and both revert clean.
+- [x] `tests/playwright/test_all_routes_size.py` and `test_all_routes_load_time.py` stay green
       through the change, and the load-time suite is confirmed to run against a server this
       fixture started rather than a pre-existing one.
+      Size 60/60, load-time 54/54 in 4:20, both printing `start: nothing listening on the test
+      port`. Getting there required fixing the reason the size suite had *never* started one —
+      see the `base_url` finding in RCA.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,6 +230,10 @@ they close together rather than as separate tasks.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_playwright_server_adoption.py -q > /tmp/.t2782-unit.out 2>&1 && grep -q "passed" /tmp/.t2782-unit.out
+grep -q "def base_url(watchtower_server)" tests/playwright/conftest.py
+curl -sf "$(bin/fw watchtower url)/api/_identity" -o /tmp/.t2782-id.out && grep -q '"pid"' /tmp/.t2782-id.out && grep -q '"project_root"' /tmp/.t2782-id.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -229,6 +249,52 @@ they close together rather than as separate tasks.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the Playwright suites' shared server was never recycled. T-2777 traced a
+reproducible "contention" misdiagnosis to one that had been up since the previous day at 656MB
+RSS / 66min CPU, serving routes at 13-16s that a fresh instance served in under 3s.
+
+**Root cause:** `conftest.py`'s reuse branch had no decision in it. If anything answered
+`/health` on `FW_TEST_PORT` it was adopted, `yield None`'d as unmanaged, and never torn down.
+Two failure modes came through that one door — unbounded staleness (the filed symptom) and
+unverified identity, since `/health` answers "something is listening" and every consumer
+project runs the same Flask app.
+
+**Why structurally allowed:** the check that would have caught the identity half already
+existed. `/api/_identity` has returned `service` + `project_root` since T-1284; the fixture
+just asked the wrong endpoint. Nothing connects "we have an identity endpoint" to "the code
+that needs to establish identity uses it", so the two sat a few lines apart for months.
+
+**A second, larger instance found while fixing it.** `base_url` did not depend on
+`watchtower_server`:
+
+```python
+@pytest.fixture
+def base_url():
+    return TEST_URL          # a URL, not a server
+```
+
+Tests taking only `base_url` — the whole of `test_all_routes_size.py` — therefore never
+started a server at all. They measured whatever already held the port, and since runs were
+invoked as `FW_TEST_PORT=$(bin/fw watchtower port)`, that was the operator's **live
+Watchtower on 3001**, not a test instance. Every size measurement recorded in T-2775, T-2780
+and T-2781 came off the live server. The numbers happen to be sound (same code, same corpus,
+and size is contention-invariant per L-542) but that was luck, not design: the suite had no
+opinion about what it was pointed at. Wiring the dependency is what let the "start" path be
+observed at all — before it, the fixture simply never ran for that suite.
+
+This is the same wrong-object class as the `:3000` false-greens in CLAUDE.md §Watchtower Port
+and the T-2762 foreign-source read: the object under test was never pinned, so the check
+answered about whatever was nearest.
+
+**Prevention:** three things, only the first of which is the filed fix.
+1. `_adoption_decision` is a pure function with four named outcomes (start / adopt / recycle /
+   reject), unit-tested per branch and mutation-checked — a branch with no alternatives cannot
+   be tested for taking the wrong one, which is why the old code had no test.
+2. `base_url` depends on `watchtower_server`, so a URL cannot be handed out without a verified
+   server behind it. This is the structural half: it closes the class rather than the instance.
+3. Every session prints the path it took, so a reading can be attributed to the server that
+   produced it instead of re-diagnosed from scratch — the specific waste T-2777 paid.
 
 ## Evolution
 
@@ -285,3 +351,15 @@ they close together rather than as separate tasks.
 ### 2026-08-04T00:04:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8f8e421d
+- **Timestamp:** 2026-08-04T10:01:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-04T10:01:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
