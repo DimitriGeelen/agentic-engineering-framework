@@ -49,6 +49,19 @@ def reanchor_project_root(payload: Mapping[str, Any] | None, fallback: str | Pat
     if not d.is_dir():
         return fb
     for cand in (d, *d.parents):
+        # T-2793: stop BEFORE the filesystem root. The shell twin
+        # (lib/paths.sh:fw_reanchor_from_cwd) has always had this floor —
+        # `while [ -n "$d" ] && [ "$d" != "/" ]` never tests "/" itself — but
+        # this loop walked `d.parents` all the way up and did. On a host where
+        # a stray `/.tasks` or `/.framework.yaml` exists (T-2787 filesystem-root
+        # pollution, real on the origin host), "/" satisfied the marker check
+        # and every python hook re-anchored to the entire filesystem.
+        #
+        # Two implementations of one predicate, disagreeing on their single
+        # most consequential input. `cand.parent == cand` is true only at a
+        # filesystem root and holds for Windows drive roots too.
+        if cand.parent == cand:
+            break
         if (cand / ".framework.yaml").is_file() or (cand / ".tasks").is_dir():
             return cand
     return fb

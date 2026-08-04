@@ -1173,3 +1173,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-152
+  text: "Python hook resolver returned / as PROJECT_ROOT for any cwd under /tmp — lib/hook_paths.py walked d.parents to the filesystem root while its shell twin lib/paths.sh stopped before it; with /.tasks present (T-2787) every python hook firing from an unmarked cwd re-anchored to the whole filesystem. Fixed in T-2793 (cand.parent == cand floor) + twin-parity test. Two impls of one predicate, each tested alone, disagreeing on their most consequential input."
+  captured: 2026-08-04T16:05:19Z
+  context_task: T-2793
+  tags: []
+  status: pending
+  promoted_to: null
