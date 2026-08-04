@@ -134,6 +134,108 @@ isn't measuring what it claims would repeat the session's central mistake.
 
 ---
 
+## Bootstrap spike — option (a) proven end to end
+
+Run 2026-08-04 via TermLink (the project-boundary hook correctly refused a direct
+`fw` invocation on a path outside this repo; the sanctioned path was used rather
+than worked around).
+
+**Setup.** A 28 MB vendored copy placed in an empty directory, and a `HOME`
+containing the 5.5 KB router and **no framework at all**:
+
+```
+emptyHOME_has_framework=NO
+vendored=28M
+```
+
+**Step 1 — can a vendored copy initialise a project with nothing in `$HOME`?**
+
+```
+env -i HOME=$B/emptyhome PATH=$B/emptyhome/.local/bin:... \
+  $B/proj2/.agentic-framework/bin/fw init $B/proj2 --provider claude
+→ rc=0
+  Done! Governance is active.
+  Onboarding tasks are ready — 5 tasks will guide you through setup.
+```
+
+**Yes.** This is the load-bearing claim of option (a) and it holds.
+
+**Step 2 — is it a real project, or a vacuous pass?** Artifacts written:
+`.agentic-framework .claude CLAUDE.md .context .framework.yaml .mcp.json policy
+.tasks`, with **5 onboarding tasks seeded**.
+
+**Step 3 — does the router close the loop afterwards?** Bare `fw`, still with an
+empty `HOME`:
+
+```
+fw v1.6.135
+Commit:    (none — vendored copy; VERSION file is the only identity)
+Framework: /tmp/t2799/proj2/.agentic-framework
+Mode:      vendored
+Project:   /tmp/t2799/proj2
+```
+
+The full loop runs with **zero framework bytes in `$HOME`**.
+
+### Two findings the spike surfaced
+
+**1. The IW-2 refuse path already exists and reads correctly.** From a directory
+with no project ancestor and an empty `HOME`:
+
+```
+fw: no framework found.
+
+  Looked for a vendored copy walking up from: /tmp/t2800nw
+  Looked for a global install at:             …/emptyhome/.agentic-framework
+
+  Install one, then run 'fw init' here to vendor it into this project.
+```
+
+Shape is right and already shipped. It needs one change under the new
+architecture — lead with the install one-liner rather than "install one", which is
+T-2794's lesson applied to this message. The second "Looked for a global install
+at" line disappears when there is no global to look for.
+
+**2. The router is immune to the filesystem-root pollution.** `/.context` and
+`/.tasks` exist on this host (T-2786-88), which made `/` resolve as a valid
+project for the *hook* resolver (OBS-152). The router was not fooled: it keys on
+`FRAMEWORK.md` + `bin/fw`, a strictly narrower predicate than `.tasks`. Worth
+recording because it means the two resolvers disagree by design, and the narrower
+one is the one on the bootstrap path.
+
+### What is therefore still to build
+
+Less than expected. Router refusal ✓ (wording aside), vendored-copy init ✓
+(proven). The gap is entirely in `install.sh`:
+
+- accept a target directory: `curl … | bash -s -- /opt/myproject`
+- resolve a ref from the channel (`stable` → latest release tag, `edge` → master,
+  `--ref X` → X)
+- fetch **as a tarball, not a clone** — this is what turns 352 MB into 28 MB, and
+  it is why `fw release` should publish a vendor-subset asset (the repo tarball is
+  still ~183 MB; today's vendored copy is a subset: `agents bin docs lib web`)
+- install the router if absent, then run `<project>/.agentic-framework/bin/fw init`
+- write `channel:` alongside the existing `version_sha:` in `.framework.yaml`
+
+**Atomicity is a requirement, not a nicety.** OBS-157 (hit live in
+`/opt/2345-test-install` this session) is an interrupted init leaving
+`.agentic-framework/` present and `.framework.yaml` absent — a state where every
+`fw` verb fails, so the tool cannot repair what it created. The new installer must
+fetch to a temp path and move into place, so an interruption leaves either nothing
+or a working project.
+
+### One optimisation, and why it must stay opt-in
+
+"After project one exists, seed project two from the nearest vendored copy" saves
+a download and works offline. But an automatic version of that reintroduces the
+exact defect this whole inception removes: the neighbour holds *its* pinned
+version, which may be months old, and nothing would say so. That is the
+stale-global bug wearing a new costume — and the T-2762 foreign-source class,
+where a stale source silently governs a fresher consumer. Keep it as explicit
+`--from <path>`; never a silent fallback.
+
+---
+
 ## Resolved design
 
 1. **`$HOME` holds the router and nothing else.** No framework, no cache, no
