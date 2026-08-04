@@ -1,4 +1,4 @@
-timestamp: 2026-08-04T12:00:01Z
+timestamp: 2026-08-04T13:00:01Z
 findings:
   - id: D4
     level: PASS
@@ -13,13 +13,13 @@ findings:
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=19 avg=55 ratio=0.3x)"
+    check: "D3: Commit velocity — normal (PASS today=27 avg=55 ratio=0.5x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 68_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 67_commits_24h)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=13.7 earlier=10.4)"
+    check: "D6: Completion velocity — normal (PASS recent=14.0 earlier=10.4)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"

@@ -1110,3 +1110,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-143
+  text: "Cron focus theft (T-100146) writes current_task: T-001 — a task id that does not exist in .tasks/active/ — rather than clearing focus. The P-002 gate then refuses EVERY Bash call with 'BLOCKED: Task T-001 is not active', including read-only diagnosis, until a human or agent notices and re-focuses. Observed 3x in one session (2026-08-04). Clearing focus degrades to 'no active task'; writing a dangling id degrades to a hard stop with a misleading message that names a task nobody chose. Whatever writes T-001 should either write a real id or write nothing."
+  captured: 2026-08-04T12:37:48Z
+  context_task: T-2784
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-144
+  text: "CORRECTION to OBS-143 — focus theft is NOT cron. Instrumented focus.yaml with a 2s poller logging concurrent processes; caught it in the act: '14:53:53 | T-2786 -> T-2785 | bin/fw context focus T-2785' running under a Claude Code shell-snapshot eval, i.e. INSIDE the session, not from crontab. Mechanism is a focus RESTORE overwriting current focus with a previously-saved value — which also explains the earlier 'current_task: T-001': not a bogus literal being written, but a stale saved value from a fresh-project era being restored. So the T-100146 'cron focus theft' attribution is wrong for these instances and the real suspect is whatever persists+restores focus (session.yaml / .continuous-mode.yaml / a Stop|SubagentStop hook). Evidence log: .context/working/.focus-writer-watch.log. Cost observed: 4 interruptions in one session, each hard-blocking ALL Bash via P-002 until noticed."
+  captured: 2026-08-04T12:57:08Z
+  context_task: T-2786
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-145
+  text: "tests/unit/*.py — 164 files, 2095 pytest tests — are executed by NO fw runner. 'fw test unit' runs 'bats $FRAMEWORK_ROOT/tests/unit/' (bin/fw:7638), which collects only the 387 .bats files there. 'fw test all' adds pytest but names 'web/test_app.py tests/web/' explicitly (bin/fw:7789) and never tests/unit. So 2095 tests run only when a human types 'python3 -m pytest tests/unit/' by hand. This is the T-2696 orphaned-suite class (tests/lint globbed by no runner, 7 tests, 51 days) at ~300x the scale, and it is the mechanism behind OBS-142's 11 unattended failures — nothing was running them to notice. Sharpest detail: the fix site already carries a T-2701 comment warning about exactly this ('both name the target explicitly, so a directory added to one and not the other stays invisible in the suite that matters most') — the lesson was learned for tests/web and not generalised to tests/unit. Fix is one target addition, but it will turn 'fw test all' red on the 11 existing failures, so it needs its own task and a decision on whether to fix-then-wire or wire-then-fix."
+  captured: 2026-08-04T13:07:16Z
+  context_task: T-2787
+  tags: []
+  status: pending
+  promoted_to: null

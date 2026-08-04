@@ -26172,3 +26172,21 @@ scan_id: R-932a205c
 task_id: T-2783
 payload:
   task_file: .tasks/active/T-2783-sweep-test-fixtures-for-targets-handed-o.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T12:57:16Z'
+scan_id: R-7e5a4c07
+task_id: T-2786
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T12:57:16Z'
+scan_id: R-7e5a4c07
+task_id: T-2786
+payload:
+  task_file: .tasks/active/T-2786-corpus-lint-all-versions-census-pinned-a.md
