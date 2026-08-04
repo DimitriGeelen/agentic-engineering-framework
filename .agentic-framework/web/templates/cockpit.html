@@ -262,7 +262,12 @@
 
 {# --- Work Direction ---------------------------------------- #}
 <article>
-    <h4 class="wt-section-title">Work Direction</h4>
+    <h4 class="wt-section-title">
+        Work Direction
+        {% if work_queue_total > work_queue|length %}
+        <span style="font-weight:400; text-transform:none; letter-spacing:normal;">(top {{ work_queue|length }} of {{ work_queue_total }})</span>
+        {% endif %}
+    </h4>
     {% if work_queue %}
     {% for item in work_queue %}
     <div class="wt-queue-item">
@@ -287,6 +292,13 @@
         </span>
     </div>
     {% endfor %}
+    {% if work_queue_total > work_queue|length %}
+    <p style="margin-top:calc(0.5rem * var(--wt-density-scale));">
+        <a href="/tasks" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="font-size:0.85rem;">
+            + {{ work_queue_total - work_queue|length }} more &rarr; view all in /tasks
+        </a>
+    </p>
+    {% endif %}
     {% else %}
     <p style="color:var(--pico-muted-color); font-style:italic;">No active tasks.</p>
     {% endif %}

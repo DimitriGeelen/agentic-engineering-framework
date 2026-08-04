@@ -13,6 +13,9 @@ from web.subprocess_utils import run_git_command
 
 bp = Blueprint("metrics", __name__)
 
+# T-2785: cap on how many "Needs Attention" rows render on the metrics page.
+STALE_TASKS_DISPLAY_CAP = 20
+
 
 def _task_counts():
     """Count active and completed tasks."""
@@ -97,7 +100,12 @@ def _recent_commits():
 
 
 def _stale_tasks():
-    """Find active tasks with issues or no update in >7 days."""
+    """Find active tasks with issues or no update in >7 days.
+
+    Sorted worst-first (issues, then most days stale) so that a capped
+    top-N view (T-2785) surfaces the most actionable entries rather than
+    an arbitrary filesystem-order slice.
+    """
     stale = []
     active_dir = PROJECT_ROOT / ".tasks" / "active"
     if not active_dir.exists():
@@ -115,7 +123,7 @@ def _stale_tasks():
         status = fm.get("status", "")
 
         if status == "issues":
-            stale.append({"id": tid, "name": name, "reason": "has issues"})
+            stale.append({"id": tid, "name": name, "reason": "has issues", "_sort_days": float("inf")})
             continue
 
         last_update = fm.get("last_update")
@@ -126,10 +134,13 @@ def _stale_tasks():
                     ts = ts.replace(tzinfo=timezone.utc)
                 days = (now - ts).days
                 if days > 7:
-                    stale.append({"id": tid, "name": name, "reason": f"no update in {days}d"})
+                    stale.append({"id": tid, "name": name, "reason": f"no update in {days}d", "_sort_days": days})
             except (ValueError, TypeError):
                 pass
 
+    stale.sort(key=lambda t: t["_sort_days"], reverse=True)
+    for t in stale:
+        del t["_sort_days"]
     return stale
 
 
@@ -142,6 +153,12 @@ def project_metrics():
     knowledge = _knowledge_counts()
     commits = _recent_commits()
     stale = _stale_tasks()
+    stale_total = len(stale)
+    # T-2785: unbounded rendering of every stale task blew the height guard
+    # (257 stale tasks -> 10364px vs an 8000px cap). Render only the worst N
+    # (see _stale_tasks sort) and link to /tasks for the rest — items beyond
+    # the cap are never generated into the HTML at all (not hidden via CSS).
+    stale = stale[:STALE_TASKS_DISPLAY_CAP]
 
     return render_page(
         "metrics.html",
@@ -154,4 +171,5 @@ def project_metrics():
         knowledge=knowledge,
         commits=commits,
         stale_tasks=stale,
+        stale_tasks_total=stale_total,
     )
