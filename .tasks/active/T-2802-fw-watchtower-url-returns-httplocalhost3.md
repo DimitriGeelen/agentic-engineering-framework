@@ -13,7 +13,7 @@ name: "fw watchtower url returns http://localhost:3000 from a NON-project direct
 description: >
   Promoted from observation OBS-158
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T20:54:48Z
-last_update: '2026-08-04T21:00:14Z'
+last_update: 2026-08-04T22:07:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,14 +77,53 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`bin/watchtower.sh:do_url` ends in `echo "http://localhost:$(fw_config PORT 3000)"`
+— a guess, emitted in the same shape as a verified answer. `lib/watchtower.sh`'s
+`_watchtower_url` was hardened against exactly this in T-1803 (Layer 3: "fail
+loud, never return a URL to a service we didn't positively identify"); the CLI
+accessor `fw watchtower url` was not, and it is the one CLAUDE.md tells agents to
+put inside `## Verification` blocks.
+
+On this host `:3000` belongs to **another project's** Watchtower, and consumer
+projects run the same Flask app — so the guess returns 200 for almost any path.
+That is the T-2732/T-2734 false-green class, which reached 371 verification lines
+before anyone noticed, because a green line that asserts nothing looks exactly
+like one that asserts everything.
+
+Observed live 2026-08-04 during fresh-install onboarding in
+`/opt/2345-test-install` (OBS-158): the agent captured the URL at Step 2 and
+curled it at Step 5.
+
+**Correction, made during the work.** This task was filed as "returns
+`http://localhost:3000` from a NON-project directory", and I initially added a
+guard for `PROJECT_ROOT` being empty — reasoning that `URL_FILE` would then be
+`/.context/working/watchtower.url`, and `/.context` exists on this host (OBS-152).
+The test written for it failed, which is how the claim got checked:
+`lib/paths.sh:39-46` always falls back to `FRAMEWORK_ROOT`, so `PROJECT_ROOT` is
+**never** empty for this entry point and the guard was unreachable.
+
+The hazard is real; the mechanism in the title is not. It is the port guess
+alone — a project *is* resolved, no Watchtower of its own is running, and the
+well-known port is answered by someone else's. Guard removed rather than shipped
+as dead code with a hazard comment attached to it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw watchtower url` never emits a URL it has not positively identified as
+      this project's Watchtower — the last-resort `http://localhost:<PORT>` guess
+      is gone
+- [x] When it cannot identify one it exits non-zero and the message **names which
+      ambiguity** it hit: nothing listening, or a foreign service holding the port
+- [x] The refusal names **which project** it was asked about — on a multi-project
+      host that is half the answer
+- [x] `fw watchtower port` still answers — a port is configuration, not a claim
+      that a server is there (non-vacuity for the split)
+- [x] Happy path unchanged: with Watchtower running,
+      `curl -sf "$(bin/fw watchtower url)/"` still succeeds
+- [x] Regression test covers nothing-listening → refusal, foreign holder →
+      foreign-specific refusal, triple-file → URL, and `WATCHTOWER_URL` → URL
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +157,14 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(bats tests/unit/watchtower_url_no_guess.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n bin/watchtower.sh
+# The guess is gone from the source, not just unreached by the tests.
+! grep -qE 'echo "http://localhost:\$p"' bin/watchtower.sh
+# Happy path: this repo's Watchtower is running, so the accessor must still answer.
+url=$(bin/fw watchtower url) && curl -sf "$url/" -o /dev/null
+cmp -s bin/watchtower.sh .agentic-framework/bin/watchtower.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -184,7 +231,68 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+## Recommendation
+
+**Recommendation:** GO — close as work-completed.
+
+**Rationale:** Six Agent ACs verified, including a live demonstration of the
+defect being prevented. `owner: human` is the `fw note promote` default; no Human
+AC was identified for this task.
+
+**Evidence:**
+
+- Live, from a project with no Watchtower of its own, the refusal named the
+  actual foreign holder: `Identity reported: {"project_root":
+  "/opt/832-Workflow-designer","service":"watchtower",…}` — exactly the server
+  OBS-158 predicted an onboarding agent would curl and get 200 from.
+- `tests/unit/watchtower_url_no_guess.bats` — 6/6, covering both refusal
+  branches and both legitimate-answer branches.
+- Happy path unaffected: `bin/fw watchtower url` → `http://192.168.10.107:3001`,
+  rc 0.
+- `bin/fw watchtower port` → `3001`, rc 0 — the split holds.
+
+**Two things to carry forward:**
+
+- **OBS-160** — four callers (`lib/verify-acs.sh:74`, `lib/arc.sh:680`, `:802`,
+  `:1046`) do `|| echo "http://localhost:3000"`, converting this refusal straight
+  back into the guess. `lib/verification-port.sh:25` shows the anti-pattern in a
+  doc comment as the example idiom. Producer/consumer parity class (L-399).
+- The title's stated mechanism was wrong; see the correction in Context.
+
 ## RCA
+
+**Symptom.** `fw watchtower url` returned `http://localhost:3000` for a project
+that had no Watchtower running. On this host that port is
+`/opt/832-Workflow-designer`'s Watchtower, and because consumer projects run the
+same Flask app it answers 200 for almost any path — so a `## Verification` line
+built on that URL passes without asserting anything about the project it is
+supposed to be testing.
+
+**Root cause.** `do_url`'s final branch (`bin/watchtower.sh`) emitted a
+configured-port guess in the same shape as a verified answer. Nothing downstream
+can tell the two apart: both are a string starting `http://`.
+
+**Why structurally allowed.** The identical defect was fixed in T-1803 — but in
+`lib/watchtower.sh`'s `_watchtower_url`, whose Layer 3 is explicitly "fail loud,
+never return a URL to a service we didn't positively identify". The CLI accessor
+`fw watchtower url` is a *different function in a different file* that answers the
+same question, and it was not updated. Two implementations of one predicate, one
+hardened and one not — the T-2735/T-2737 fabric-denominator shape.
+
+That the un-hardened one is the shell-facing accessor is what made it costly:
+CLAUDE.md tells agents to write `curl -sf "$(bin/fw watchtower url)/page"` in
+Verification blocks, so the guessing implementation is the one governance
+routes agents to.
+
+**Prevention.** The guess is deleted, not demoted — `do_url` now returns non-zero
+and explains which of the two states it is in (nothing listening → `fw serve`;
+foreign holder → pick another port, and do not curl that one). Pinned by
+`tests/unit/watchtower_url_no_guess.bats`, whose first assertion in each refusal
+test is that the old URL string is *absent* from the output, so a reintroduction
+fails loudly.
+
+**Not fixed here (OBS-160).** Four callers re-add the guess on the consumer side.
+The refusal is only as strong as the callers that propagate it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -251,3 +359,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2802-fw-watchtower-url-returns-httplocalhost3.md
 - **Context:** Initial task creation
+
+### 2026-08-04T22:07:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -332,7 +332,43 @@ do_port() {
     fi
 }
 
+# T-2802: what to say when we cannot identify a Watchtower of ours. Distinguishes
+# the two states an unverified port can be in, because they have different fixes
+# and the old code reported neither: nothing is listening (start one) vs. someone
+# ELSE is listening (do not curl it — that is the 371-line false-green class).
+_url_refuse() {
+    local _p="$1"
+    local _probe
+    log_error "Cannot identify a Watchtower for this project."
+    # PROJECT_ROOT is always set here — lib/paths.sh:39-46 falls back to
+    # FRAMEWORK_ROOT — so naming it is the useful thing to print: on a
+    # multi-project host, "which project am I actually being asked about" is
+    # half the answer.
+    echo "  Project: $PROJECT_ROOT" >&2
+    if _probe=$(curl -sf --max-time 2 "http://localhost:${_p}/api/_identity" 2>/dev/null); then
+        echo "  Something IS listening on localhost:${_p}, but it is not this" >&2
+        echo "  project's Watchtower. Do not treat it as ours — on a multi-project" >&2
+        echo "  host the same Flask app answers 200 for almost any path, so a curl" >&2
+        echo "  against it passes while asserting nothing." >&2
+        echo "" >&2
+        echo "  Identity reported: $(printf '%s' "$_probe" | head -c 200)" >&2
+        echo "  Start yours on another port: fw serve --port <N>" >&2
+    else
+        echo "  Nothing is listening on localhost:${_p}." >&2
+        echo "  Start one with: fw serve" >&2
+    fi
+    echo "  Or set WATCHTOWER_URL explicitly." >&2
+    return 1
+}
+
 do_url() {
+    # T-2802: env override first, for parity with lib/watchtower.sh's
+    # _watchtower_url — a caller who states the answer is not guessing.
+    if [ -n "${WATCHTOWER_URL:-}" ]; then
+        echo "$WATCHTOWER_URL"
+        return 0
+    fi
+
     # T-1622: when running, regenerate LAN URL from current detect_lan_ip — the
     # cached URL_FILE goes stale on DHCP IP rotation (T-1621). Witness: this host
     # bounced between .123 and .107 8x in one day, file kept first-write value
@@ -349,11 +385,19 @@ do_url() {
             echo "http://localhost:${p}"
         fi
     elif [ -f "$URL_FILE" ]; then
+        # Written by our own start (triple-file), so it is project-scoped by
+        # construction: "where it WAS running". Stale, but never someone else's.
         cat "$URL_FILE"
     else
+        # T-2802: this used to be `echo "http://localhost:$(fw_config PORT 3000)"`
+        # — a guess wearing the shape of an answer. lib/watchtower.sh's
+        # _watchtower_url has refused to do that since T-1803 ("never return a URL
+        # to a service we didn't positively identify"); this accessor, the one
+        # CLAUDE.md puts inside ## Verification blocks, kept doing it.
         local p
         p=$(fw_config "PORT" "$DEFAULT_PORT")
-        echo "http://localhost:$p"
+        _url_refuse "$p"
+        return 1
     fi
 }
 

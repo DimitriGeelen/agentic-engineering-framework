@@ -1229,3 +1229,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-160
+  text: "T-2802 hardened 'fw watchtower url' to refuse rather than guess http://localhost:3000, but FOUR callers convert the refusal straight back into the guess: lib/verify-acs.sh:74 (_watchtower_url ... || echo http://localhost:3000), lib/arc.sh:680, lib/arc.sh:802, lib/arc.sh:1046 ([ -z $wt_url ] && wt_url=http://localhost:3000). Each turns a loud, correct failure into a silent wrong answer -- the exact thing T-1803 and T-2802 exist to stop, re-added at the consumer end. Worse: lib/verification-port.sh:25 shows the anti-pattern IN A DOC COMMENT as the example idiom, so it teaches it. This is the L-399/T-1890 producer-consumer parity class: the contract shipped on one side only. Fix direction: callers should propagate the failure (no link) rather than substitute a well-known port; on this host :3000 is 832's Watchtower. Found 2026-08-05 during T-2802."
+  captured: 2026-08-04T22:22:21Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null
