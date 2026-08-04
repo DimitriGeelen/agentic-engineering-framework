@@ -126,6 +126,10 @@ EOF
     # 126 ("found, cannot execute"), not 127 — a loop is not a missing install.
     run -126 bash "$proj/.agentic-framework/bin/fw" status
     [[ "$output" == *"routing loop"* ]]
+    # T-2794: the primary remedy must not assume the reader knows this location
+    # is a git clone — lead with the installer, which self-heals unconditionally.
+    [[ "$output" == *"install.sh"* ]]
+    [[ "$output" == *"git checkout HEAD -- bin/fw"* ]]
 }
 
 @test "the walk-up stops before the filesystem root" {
