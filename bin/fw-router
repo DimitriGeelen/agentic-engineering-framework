@@ -1,0 +1,94 @@
+#!/bin/bash
+# fw-router — the `fw` entry point on PATH (T-2793, operator decision D-377).
+#
+# This file contains NO framework logic and has NO version of its own. Its only
+# job is to answer one question — *which* fw should run here? — and hand over.
+#
+# ── Why this exists ────────────────────────────────────────────────────────────
+#
+# Before T-2793, `~/.local/bin/fw` was a symlink to a full 7,836-line framework
+# CLI. That CLI resolved FRAMEWORK_ROOT to the project's vendored copy and then
+# re-exec'd *itself* (`exec "$0" "$@"`), so a vendored consumer ran:
+#
+#   CLI dispatch  ← the global install   (whatever version that happens to be)
+#   libs + agents ← the project's copy   (the version the project pinned)
+#
+# Vendoring isolated libraries but not tooling. Every consumer ran an untested
+# hybrid that changed shape whenever the global install drifted — silently, with
+# `fw --version` reporting the CLI and `Framework:` reporting the libs: two true
+# lines describing a split brain, which is why it read as a version-string bug
+# for as long as it did.
+#
+# With this router, `fw` in a project runs *that project's* CLI, libs, agents and
+# hooks. Nothing outside the project is consulted. `rm -rf ~/.agentic-framework`
+# (which `fw doctor` already recommends) stops being able to break a consumer.
+#
+# ── Resolution order ───────────────────────────────────────────────────────────
+#
+#   1. Walk up from $PWD. At each level, in order:
+#        a. <dir>/FRAMEWORK.md + <dir>/bin/fw   → the framework repo itself
+#        b. <dir>/.agentic-framework/bin/fw     → a vendored consumer
+#   2. No project found → the global install, ANNOUNCED on stderr. This is the
+#      bootstrap path: `fw init` cannot require the isolation it exists to create.
+#
+# The walk stops before "/" — a filesystem root is never a project. That floor is
+# the same one lib/paths.sh has always had and lib/hook_paths.py did not (T-2793,
+# OBS-152); with a stray /.tasks on the host, "/" otherwise resolves as a project.
+#
+# (a) before (b) matters in the framework repo, which carries both: a developer
+# there means bin/fw, not the self-vendored copy under .agentic-framework/.
+
+set -euo pipefail
+
+# 127 = "no framework found" (the shell's own not-found code, same meaning here).
+# 126 = "found it, cannot execute it" — used for the routing loop below, which is
+# a different failure and should not read as a missing install.
+_fw_die() { local rc="$1"; shift; printf '%s\n' "$@" >&2; exit "$rc"; }
+
+# --- 1. Walk up from cwd, floored below "/" ---
+_target=""
+_found_at=""
+_d="$PWD"
+while [ -n "$_d" ] && [ "$_d" != "/" ]; do
+    if [ -f "$_d/FRAMEWORK.md" ] && [ -x "$_d/bin/fw" ]; then
+        _target="$_d/bin/fw"; _found_at="$_d"; break
+    fi
+    if [ -x "$_d/.agentic-framework/bin/fw" ]; then
+        _target="$_d/.agentic-framework/bin/fw"; _found_at="$_d"; break
+    fi
+    _d="$(dirname "$_d")"
+done
+
+# --- 2. Bootstrap fallback: the global install, stated out loud ---
+if [ -z "$_target" ]; then
+    _global="${FW_GLOBAL_ROOT:-$HOME/.agentic-framework}"
+    [ -x "$_global/bin/fw" ] || _fw_die 127 \
+        "fw: no framework found." \
+        "" \
+        "  Looked for a vendored copy walking up from: $PWD" \
+        "  Looked for a global install at:             $_global" \
+        "" \
+        "  Install one, then run 'fw init' here to vendor it into this project."
+    # Announced, never silent: running the global CLI is the one case where the
+    # code executing does not belong to the project it is about to act on.
+    printf 'fw: no project found above %s — using global install at %s\n' \
+        "$PWD" "$_global" >&2
+    _target="$_global/bin/fw"
+fi
+
+# --- 3. Refuse to exec ourselves ---
+# A router that routes to a router loops forever. Cheapest correct check is
+# identity of the resolved files, which also catches symlink arrangements.
+_self_real="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || printf '%s' "${BASH_SOURCE[0]}")"
+_target_real="$(readlink -f "$_target" 2>/dev/null || printf '%s' "$_target")"
+[ "$_self_real" != "$_target_real" ] || _fw_die 126 \
+    "fw: routing loop — $_target resolves to this router itself ($_self_real)." \
+    "  A project's .agentic-framework/bin/fw must be the framework CLI, not the router."
+
+# --- 4. Hand over ---
+# Exported so the routing decision is observable from inside (fw doctor reads it).
+# The router deliberately sets nothing else: PROJECT_ROOT and FRAMEWORK_ROOT stay
+# the CLI's job, so routing cannot become a second, competing path resolver.
+export FW_ROUTED_FROM="${_found_at:-}"
+export FW_ROUTER_TARGET="$_target_real"
+exec "$_target" "$@"
