@@ -359,6 +359,11 @@ def create_app() -> Flask:
             "version": _ver,
             "project_root": str(PROJECT_ROOT),
             "started_at": _started_at,
+            # T-2782: the Playwright fixture adopts an already-listening server rather
+            # than starting its own. To bound how stale an adopted server may be it has
+            # to be able to recycle one, and to recycle a process it did not spawn it
+            # needs the pid. `started_at` alone answers "how old" but not "which one".
+            "pid": os.getpid(),
         })
 
     # -------------------------------------------------------------------
