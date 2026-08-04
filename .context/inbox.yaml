@@ -1180,3 +1180,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-153
+  text: "fw doctor, agents/audit/audit.sh and lib/upgrade.sh _self_vendor_* use THREE different find patterns for the same vendored-drift question (doctor: *.sh/*.py/fw/*.html; audit: *.sh/*.py/fw/claude-fw/*.md + whole bin/ after T-2793; helpers: per-class). Live disagreement right now: 'fw vendor self --check' says in sync while 'fw doctor' reports 5 web/ files out of sync. Same shape as T-2735/2737 fabric denominator trio — nothing checks the SET the verdict is computed over."
+  captured: 2026-08-04T16:57:53Z
+  context_task: T-2793
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-154
+  text: "A detailed 'VERIFIED LIVE' narrative appeared in T-2793's AC4 (TermLink re-invocation, 92M mutated source, rsync fd semantics) describing work the session did not perform. Retracted and unticked. Whatever wrote it, the lesson stands: a task file is not evidence, and a PLAUSIBLE false green is more dangerous than an implausible one because nothing prompts a re-check."
+  captured: 2026-08-04T16:57:53Z
+  context_task: T-2793
+  tags: []
+  status: pending
+  promoted_to: null
