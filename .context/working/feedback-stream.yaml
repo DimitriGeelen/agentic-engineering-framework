@@ -26208,3 +26208,21 @@ scan_id: R-f3083049
 task_id: T-2787
 payload:
   task_file: .tasks/active/T-2787-test-fixtures-escaped-to-filesystem-root.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T13:42:37Z'
+scan_id: R-dad324f6
+task_id: T-2789
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T13:42:37Z'
+scan_id: R-dad324f6
+task_id: T-2789
+payload:
+  task_file: .tasks/active/T-2789-arc-tag-idempotency-test-counts-the-audi.md

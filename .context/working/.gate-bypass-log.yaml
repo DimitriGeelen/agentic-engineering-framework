@@ -5863,3 +5863,11 @@ bin/fw note "T-2784 attempt-3 after-run measured server ABSENCE, not the change 
   target: 'T-2787'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 bin/fw note "Focus-theft lead (extends OBS-144, supersedes the cron theory): the 2s poller logged 7 focus transitions; six correlate with my own in-session fw'
+- timestamp: '2026-08-04T13:43:29Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2789'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2789: close — arc-tag test predicate fixed (11/11 green)" 2>&1 | tail -2
+git push origin '
