@@ -86,13 +86,15 @@ _target_real="$(readlink -f "$_target" 2>/dev/null || printf '%s' "$_target")"
     "" \
     "  Path: $_target" \
     "" \
-    "  The real CLI is missing from that location. Known causes (T-1278):" \
-    "    - bin/fw overwritten by an older 'fw upgrade' that wrote the router" \
-    "      through the destination symlink into a framework repo's bin/fw" \
-    "    - a manual mis-copy of the router over bin/fw" \
+    "  The real CLI is missing from that location (T-1278/T-2794): a 'fw upgrade' or" \
+    "  install.sh run wrote the router THROUGH a symlink instead of replacing it." \
     "" \
-    "  Restore, from the affected framework repo:" \
-    "    git checkout HEAD -- bin/fw"
+    "  Fix (works even if you don't know this location is a git clone):" \
+    "    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash" \
+    "  This re-syncs the install and overwrites the corrupted file." \
+    "" \
+    "  Framework developer shortcut (only if you recognise $_target as a git checkout):" \
+    "    cd \"\$(dirname \"\$(dirname \"$_target\")\")\" && git checkout HEAD -- bin/fw"
 
 # --- 4. Hand over ---
 # Exported so the routing decision is observable from inside (fw doctor reads it).

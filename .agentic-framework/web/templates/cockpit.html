@@ -262,31 +262,27 @@
 
 {# --- Work Direction ---------------------------------------- #}
 <article>
-    <h4 class="wt-section-title">Work Direction</h4>
+    <h4 class="wt-section-title">
+        Work Direction
+        {% if work_queue_total > work_queue_initial %}
+        <span style="font-size:0.75rem; color:var(--pico-muted-color); font-weight:400;">
+            (showing {{ work_queue_initial }} of {{ work_queue_total }})
+        </span>
+        {% endif %}
+    </h4>
     {% if work_queue %}
-    {% for item in work_queue %}
-    <div class="wt-queue-item">
-        <span>
-            <span class="wt-queue-rank">{{ item.priority }}.</span>
-            <span class="wt-queue-name">
-                <a href="/tasks/{{ item.task_id }}"
-                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-                    {{ item.task_id }}: {{ item.name }}
-                </a>
-            </span>
-            <span class="wt-queue-status {{ item.status }}">{{ item.status }}</span>
-        </span>
-        <span class="wt-card-actions">
-            <button class="outline" style="font-size:0.7rem; padding:0.15em 0.4em;"
-                    hx-post="/api/scan/focus/{{ item.task_id }}"
-                    hx-target="this"
-                    hx-swap="outerHTML"
-                    hx-headers='{"X-CSRF-Token": "{{ csrf_token() }}"}'>
-                Focus
-            </button>
-        </span>
+    <div id="wt-work-queue">
+        {% with items = work_queue %}{% include "_work_queue_items.html" %}{% endwith %}
     </div>
-    {% endfor %}
+    {% if work_queue_total > work_queue_initial %}
+    <div id="wq-more" style="margin-top:0.5rem;">
+        <a href="#" class="wt-show-all"
+           hx-get="/api/scan/work-queue-more"
+           hx-target="#wq-more" hx-swap="outerHTML">
+            Show {{ work_queue_total - work_queue_initial }} more &rarr;
+        </a>
+    </div>
+    {% endif %}
     {% else %}
     <p style="color:var(--pico-muted-color); font-style:italic;">No active tasks.</p>
     {% endif %}

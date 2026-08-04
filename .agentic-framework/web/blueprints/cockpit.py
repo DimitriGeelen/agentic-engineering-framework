@@ -218,6 +218,14 @@ def _get_test_counts() -> dict:
     return counts
 
 
+#  T-2785: initial render cap for the Work Direction queue. The full queue
+# tracks 1:1 with active-task count (318 today) and was rendering every row
+# unconditionally — the page's dominant height contributor (~45px/row).
+# Capped here (not via CSS) so the uncapped rows are genuinely absent from
+# the initial DOM, not display:none-hidden bytes still shipped over the wire.
+WORK_QUEUE_INITIAL = 20
+
+
 def get_cockpit_context(scan_data: dict) -> dict:
     """Build template context from scan data.
 
@@ -225,6 +233,7 @@ def get_cockpit_context(scan_data: dict) -> dict:
     inner walk over 171 active tasks was running twice per render.
     """
     human_verify = get_human_verify_tasks()
+    work_queue_full = scan_data.get("work_queue", [])
     return {
         "scan": scan_data,
         "scan_age": get_scan_age(scan_data),
@@ -234,7 +243,9 @@ def get_cockpit_context(scan_data: dict) -> dict:
         "framework_recommends_total": len(scan_data.get("framework_recommends", [])),
         "opportunities": scan_data.get("opportunities", [])[:3],
         "opportunities_total": len(scan_data.get("opportunities", [])),
-        "work_queue": scan_data.get("work_queue", []),
+        "work_queue": work_queue_full[:WORK_QUEUE_INITIAL],
+        "work_queue_total": len(work_queue_full),
+        "work_queue_initial": WORK_QUEUE_INITIAL,
         "risks": scan_data.get("risks", []),
         "health": scan_data.get("project_health", {}),
         "antifragility": scan_data.get("antifragility", {}),
@@ -386,6 +397,19 @@ def scan_focus(task_id):
         f'Failed: {_escape(stderr[:1500])}</p>',
         500,
     )
+
+
+@bp.route("/api/scan/work-queue-more")
+def scan_work_queue_more():
+    """T-2785: fetch the remainder of the work queue past the initial cap.
+
+    Renders the real remaining rows (not a display:none-hidden set already
+    shipped) — the "load more" trigger is replaced by the fetched rows, so a
+    route that never clicks it never pays for them.
+    """
+    scan_data = load_scan() or {}
+    work_queue_full = scan_data.get("work_queue", [])
+    return render_template("_work_queue_items.html", items=work_queue_full[WORK_QUEUE_INITIAL:])
 
 
 # ---------------------------------------------------------------------------

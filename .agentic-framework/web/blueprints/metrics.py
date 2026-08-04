@@ -5,13 +5,19 @@ import subprocess
 from datetime import datetime, timezone
 
 import yaml
-from flask import Blueprint
+from flask import Blueprint, render_template
 
 from web.context_loader import load_decisions, load_learnings, load_patterns, load_practices
 from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, parse_frontmatter
 from web.subprocess_utils import run_git_command
 
 bp = Blueprint("metrics", __name__)
+
+# T-2785: initial render cap for the "Needs Attention" stale-task list.
+# _stale_tasks() tracks 1:1 with active-task count (260 of 317 today) and
+# was rendering every row unconditionally. Capped in the DOM, not via CSS —
+# see WORK_QUEUE_INITIAL in web/blueprints/cockpit.py for the sibling fix.
+STALE_TASKS_INITIAL = 20
 
 
 def _task_counts():
@@ -153,5 +159,18 @@ def project_metrics():
         ac_coverage=ac_coverage,
         knowledge=knowledge,
         commits=commits,
-        stale_tasks=stale,
+        stale_tasks=stale[:STALE_TASKS_INITIAL],
+        stale_tasks_total=len(stale),
+        stale_tasks_initial=STALE_TASKS_INITIAL,
     )
+
+
+@bp.route("/api/metrics/stale-tasks-more")
+def stale_tasks_more():
+    """T-2785: fetch the remainder of the stale-task list past the initial cap.
+
+    Renders the real remaining rows (not a display:none-hidden set already
+    shipped) — mirrors cockpit.scan_work_queue_more's fix shape.
+    """
+    stale = _stale_tasks()
+    return render_template("_stale_tasks_items.html", items=stale[STALE_TASKS_INITIAL:])
