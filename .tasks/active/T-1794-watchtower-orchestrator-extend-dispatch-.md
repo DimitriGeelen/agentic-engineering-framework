@@ -95,7 +95,7 @@ extended with a second sub-table.
 
 ### Human
 
-- [ ] [REVIEW] Visual rhythm: by_model and by_task_type sub-tables stack
+- [x] [REVIEW] Visual rhythm: by_model and by_task_type sub-tables stack
       cleanly within the Dispatch substrate panel — no overlap or odd
       gaps.
       **Steps:**

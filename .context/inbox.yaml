@@ -1166,3 +1166,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-151
+  text: "fw vendor self syncs FILES but not VERSION: after a clean 'bin/fw vendor self' the vendored .agentic-framework/VERSION still read 1.6.234 while the repo VERSION read 1.6.108. Even the framework repo's own vendored copy misreports its version immediately after a successful sync. Once the CLI is vendored (total-isolation work), VERSION is what the deriver falls back to because a vendored dir has no .git — so a vendor step that does not sync VERSION makes every consumer report a stale number BY CONSTRUCTION. Whatever ships must sync VERSION as part of vendoring and assert it afterwards."
+  captured: 2026-08-04T15:51:38Z
+  context_task: T-2793
+  tags: []
+  status: pending
+  promoted_to: null
