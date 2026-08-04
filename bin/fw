@@ -7184,9 +7184,23 @@ PYSEARCH
                 _self_vendor_agents "$_vs_dry"
                 # T-2267: web/ drift class (6th class).
                 _self_vendor_web "$_vs_dry"
-                # T-2793 (OBS-151): VERSION drift class (7th) — the copy's own
-                # identity, which six content classes never covered.
-                _self_vendor_version "$_vs_dry"
+                # T-2793 (OBS-151): VERSION — the copy's own identity, which the
+                # six content classes never covered.
+                #
+                # SYNC-ONLY, deliberately outside --check. VERSION is rewritten in
+                # the working tree on every commit (it holds the git-derived
+                # major.minor.commits-since-tag), so a checked class would drift
+                # again the instant you commit the sync that cleared it: the
+                # pre-push gate would refuse, `fw vendor self` would fix it, the
+                # commit would re-break it. A gate that cannot be satisfied is
+                # worse than one that does not fire.
+                #
+                # This is knowingly the unwitnessable-check shape (T-2726) — a
+                # sync nothing verifies. It is the lesser evil ONLY because the
+                # drift is guaranteed, benign between vendor runs, and cleared by
+                # every mutating `fw vendor self`. If VERSION ever stops being
+                # per-commit, move this back inside the checked set.
+                [ "$_vs_dry" = true ] || _self_vendor_version false
             )
             [ -n "$_vs_out" ] && printf '%s\n' "$_vs_out"
             if [ "$_vs_check" = true ]; then

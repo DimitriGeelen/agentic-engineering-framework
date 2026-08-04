@@ -63,28 +63,33 @@ teardown() {
     [ -z "$output" ]
 }
 
-@test "syncs the VERSION file, NOT the git-derived version" {
-    # Deliberate: $FW_VERSION is `git describe` — commits-since-tag — so syncing
-    # it would drift one step after every commit, and the T-2240 pre-push gate
-    # would demand a re-vendor whose own commit re-opens the drift. A livelock in
-    # a gate whose whole purpose is to be satisfiable. The VERSION file moves only
-    # at release, so this class can be both synced AND checked.
-    body=$(awk '/^_self_vendor_version\(\)/,/^}/' "$BATS_TEST_DIRNAME/../../lib/upgrade.sh" | sed 's/[[:space:]]*#.*//')
-    run bash -c "printf '%s' \"\$body\" | grep -c 'FW_VERSION'"
-    [ "$output" = "0" ]
+@test "fw vendor self SYNCS a drifted VERSION" {
+    cd "$BATS_TEST_DIRNAME/../.."
+    unset FRAMEWORK_ROOT
+    orig="$(cat .agentic-framework/VERSION)"
+    echo "0.0.0-drift" > .agentic-framework/VERSION
+    run bin/fw vendor self
+    after="$(cat .agentic-framework/VERSION)"
+    printf '%s' "$orig" > .agentic-framework/VERSION
+    [ "$status" -eq 0 ]
+    [ "$after" != "0.0.0-drift" ]
 }
 
-@test "fw vendor self --check reports VERSION drift as drift" {
-    # End-to-end through the real verb: a class that syncs but is never CHECKED
-    # is only ever fixed by someone who already suspected it.
+@test "fw vendor self --check does NOT flag VERSION (sync-only by design)" {
+    # VERSION is rewritten in the working tree on every commit, so a checked
+    # class would go red again the instant you commit the sync that cleared it —
+    # the pre-push gate refuses, the fix re-breaks it. Knowingly the
+    # unwitnessable-check shape (T-2726); the alternative is an unsatisfiable
+    # gate. This test pins the choice so it cannot be reverted by accident.
     cd "$BATS_TEST_DIRNAME/../.."
-    # setup() exported FRAMEWORK_ROOT at a temp fixture; leaking it here would
-    # point the real verb at the wrong tree and grade a different question.
     unset FRAMEWORK_ROOT
     orig="$(cat .agentic-framework/VERSION)"
     echo "0.0.0-drift" > .agentic-framework/VERSION
     run bin/fw vendor self --check
+    after="$(cat .agentic-framework/VERSION)"
     printf '%s' "$orig" > .agentic-framework/VERSION
-    [ "$status" -ne 0 ]
-    [[ "$output" == *"VERSION"* ]]
+    # --check is read-only and must stay so.
+    [ "$after" = "0.0.0-drift" ]
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"would sync VERSION"* ]]
 }

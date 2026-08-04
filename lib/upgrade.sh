@@ -546,13 +546,23 @@ _self_vendor_web() {
 # no .git, so _derive_version falls through to this file, and VERSION becomes the
 # ONLY statement of which framework a consumer is running.
 #
-# Source is the repo's VERSION file, deliberately NOT $FW_VERSION. $FW_VERSION is
-# `git describe` — commits-since-tag — so it increments with every commit. Syncing
-# it would make the vendored copy drift one step after each commit, and the T-2240
-# pre-push gate would then demand a re-vendor whose own commit re-opens the drift:
-# a livelock, in a gate whose whole job is to be satisfiable. The VERSION file
-# moves only at release, so this class can be both synced AND checked — which is
-# the point of having drift classes at all.
+# SYNC-ONLY — bin/fw calls this outside the --check set, and that asymmetry is the
+# whole design. The VERSION file is rewritten in the working tree on every commit
+# (it carries the git-derived major.minor.commits-since-tag; measured 1.6.114 ->
+# 1.6.120 across six commits in one session). A checked class would therefore go
+# red again the moment you commit the sync that cleared it — the T-2240 pre-push
+# gate refuses, `fw vendor self` fixes it, the commit re-breaks it. A gate that
+# cannot be satisfied is worse than one that does not fire.
+#
+# Stated plainly because it IS the unwitnessable-check shape (T-2726): a sync with
+# no verifier. Accepted here only because the drift is guaranteed rather than
+# occasional, harmless between vendor runs, and cleared by every mutating run. If
+# VERSION ever stops moving per commit, this belongs back inside --check.
+#
+# (An earlier revision of this comment claimed VERSION "moves only at release" and
+# used that to justify checking it. That was wrong — the per-commit rewrite was
+# observed immediately afterwards. Left recorded rather than deleted: the claim
+# was load-bearing for the design and the correction is the reason it changed.)
 #
 # Inputs:  $1 — dry_run ("true"/"false")
 # Return:  0 always (nothing to sync, or consumer-skip)
