@@ -1159,3 +1159,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-150
+  text: "Fresh-install onboarding: fw version number is a DISTANCE, not a version. _derive_version (bin/fw:36-42) parses 'git describe' as base=tag, commits=distance, then emits major.minor.COMMITS -- discarding the tag's own patch. So v1.6.764 reports 1.6.764 while sitting on the tag, and 1.6.1 one commit later: the number COLLAPSES at every release tag and climbs again. Three live numbers on this host right now: repo 1.6.108 (=v1.6.764+108), vendored 1.6.234, machine-wide /root/.agentic-framework 1.6.8. None can be ordered against another. This is the same backwards jump recorded in T-2762 as 1.6.295 -> 1.6.121, which we then attributed to the stale-source guard -- true but partial; the deriver is the generator. Blast radius: any 'am I up to date' question, fw upgrade/update decisions, consumer pins in .framework.yaml, and the onboarding agent's Step-2 skip-the-installer call."
+  captured: 2026-08-04T14:43:02Z
+  context_task: T-2792
+  tags: []
+  status: pending
+  promoted_to: null
