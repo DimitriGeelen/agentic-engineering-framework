@@ -118,27 +118,29 @@ signal than noise.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] No `tests/playwright/test_*.py` defines its own port or host literal. All of them take
+- [x] No `tests/playwright/test_*.py` defines its own port or host literal. All of them take
       the target from one place, and that place is the same one `conftest.py` uses to decide
       which server to start, adopt or verify — so the address under test and the address under
       guard cannot diverge.
-- [ ] Setting `FW_TEST_PORT` moves the whole suite, demonstrated rather than asserted: run a
+- [x] Setting `FW_TEST_PORT` moves the whole suite, demonstrated rather than asserted: run a
       sample of the converted files against a non-default port and show they hit it. Before
       this change they would have gone to 3099 regardless.
-- [ ] The literal cannot come back: a check fails if a new test file introduces a bare
+- [x] The literal cannot come back: a check fails if a new test file introduces a bare
       `localhost:<port>` / `127.0.0.1:<port>`, and it is red before the fix and green after
       (mutation-checked, L-530). 81 files drifted into this shape one at a time; nothing
       noticed, which is the actual defect.
 - [ ] Full playwright suite result recorded before and after with the same invocation, so the
       conversion is shown not to have changed which tests pass. Any test that was already
       failing stays named rather than absorbed into the diff.
-      **PENDING — before-run done, after-run in flight.** Baseline recorded above (13 failed /
-      885 passed / 5 skipped, 52:49). The after-run is `FW_TEST_PORT=3099 python3 -m pytest
-      tests/playwright/ -q`, started 2026-08-04 14:02, streaming to
-      `/tmp/claude-0/-opt-999-Agentic-Engineering-Framework/629a235a-6890-4a29-889a-81d0f4009b85/tasks/bjdun6f10.output`.
-      **To finish:** wait for `EXIT=` / the summary line, then
-      `grep "^FAILED" <log> | sed 's/^FAILED //' | sort > /tmp/.after-failures.txt` and
-      `diff /tmp/.before-failures.txt /tmp/.after-failures.txt`. Expected: empty diff — the
+      **PENDING — before-run done, after-run in flight (3rd attempt).** Baseline recorded above
+      (13 failed / 885 passed / 5 skipped, 52:49), preserved at `/tmp/.before-failures.txt` and
+      inlined in the table above. The after-run is `FW_TEST_PORT=3099 python3 -m pytest
+      tests/playwright/ -q`, started 2026-08-04 ~15:16, logging to
+      `.context/working/.T-2784-after-run.log` (project-root path this time — the prior two
+      attempts lost their log to a `/tmp` session dir that got unlinked with the wrapper shell).
+      **To finish:** wait for `EXIT=` / the summary line at the end of that file, then
+      `grep "^FAILED" .context/working/.T-2784-after-run.log | sed 's/^FAILED //' | sort > /tmp/.after-failures.txt`
+      and `diff /tmp/.before-failures.txt /tmp/.after-failures.txt`. Expected: empty diff — the
       conversion changes only where the address comes from. A non-empty diff on the *added*
       side is a regression from this task and must be fixed, not accepted.
       Deliberately left unticked: two earlier attempts were lost (one to `--timeout=120`, which
