@@ -1,0 +1,12 @@
+{% for doc in docs %}
+<li>
+    <a href="{{ url_for('core.project_doc', doc=doc.doc_id) }}"
+       hx-get="{{ url_for('core.project_doc', doc=doc.doc_id) }}"
+       hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+        {{ doc.name }}
+    </a>
+    {% if '/' in doc.path %}
+    <span class="doc-path">{{ doc.path }}</span>
+    {% endif %}
+</li>
+{% endfor %}

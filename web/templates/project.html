@@ -40,13 +40,12 @@
 
 {% if categories %}
 <div class="docs-grid">
-    {% for cat_name, docs in categories.items() %}
-    {% set limit = 25 %}
+    {% for cat_name, cat in categories.items() %}
     <div class="docs-category">
-        <h3>{{ cat_name }} <small style="font-weight:normal; color: var(--pico-muted-color)">({{ docs|length }})</small></h3>
-        <ul>
-            {% for doc in docs %}
-            <li{% if loop.index > limit %} class="docs-overflow" style="display:none"{% endif %}>
+        <h3>{{ cat_name }} <small style="font-weight:normal; color: var(--pico-muted-color)">({{ cat.total }})</small></h3>
+        <ul id="docs-list-{{ loop.index }}">
+            {% for doc in cat.docs %}
+            <li>
                 <a href="{{ url_for('core.project_doc', doc=doc.doc_id) }}"
                    hx-get="{{ url_for('core.project_doc', doc=doc.doc_id) }}"
                    hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
@@ -58,10 +57,13 @@
             </li>
             {% endfor %}
         </ul>
-        {% if docs|length > limit %}
-        <a href="#" class="docs-show-all" onclick="wtShowAll(this);return false;"
+        {% if cat.total > cat.docs|length %}
+        <a href="#" class="docs-show-all"
+           hx-get="{{ url_for('core.project_expand', cat_name=cat_name) }}"
+           hx-target="#docs-list-{{ loop.index }}" hx-swap="beforeend"
+           onclick="this.style.display='none'"
            style="display:inline-block; margin-top:0.5rem; font-size:0.85rem;">
-            Show all {{ docs|length }} items &rarr;
+            Show all {{ cat.total }} items &rarr;
         </a>
         {% endif %}
     </div>

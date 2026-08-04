@@ -41,9 +41,7 @@ SIZE_CAP_BYTES = 2_000_000
 # here is a filed defect, not a silenced one: if a route drops under the cap the xfail turns
 # XPASS and the suite tells us to delete the entry, so this list cannot quietly outlive the
 # problem. Empty is the goal state.
-KNOWN_OVER_CAP = {
-    "/project": "T-2781 — 2,274,276 bytes, 1.14x cap; the early-warning case",
-}
+KNOWN_OVER_CAP = {}
 
 
 def _load_uxr():
@@ -131,6 +129,25 @@ def test_timeline_pages_bounded_not_just_the_first(base_url, page_num):
     assert size < SIZE_CAP_BYTES, (
         f"/timeline?page={page_num} returned {size:,} bytes, over the {SIZE_CAP_BYTES:,} cap. "
         "A single outlier session can blow up one page while page 1 stays small (T-2775)."
+    )
+
+
+@pytest.mark.parametrize("cat_name", ["Design", "Research"])
+def test_project_expand_bounded(base_url, cat_name):
+    """The remainder fetch behind "Show all" must stay bounded too (T-2781).
+
+    /project's fix windows the landing view to 25 rows/category and moves the rest behind
+    /project/expand/<cat>, fetched on demand. That route is parameterized so
+    discover_get_routes() can't see it (same blind spot the T-2775 paging tests exist for) —
+    it has to be measured explicitly. Design and Research are the two categories that
+    actually overflow the 25-row preview (1,673 and 2,457 entries respectively at time of
+    writing); the rest return empty and aren't worth measuring.
+    """
+    size = _measure(f"{base_url}/project/expand/{cat_name}")
+    assert size < SIZE_CAP_BYTES, (
+        f"/project/expand/{cat_name} returned {size:,} bytes, over the {SIZE_CAP_BYTES:,} cap "
+        "— the remainder fetch has re-entered the unbounded class the /project preview window "
+        "was fixed to avoid (T-2781)."
     )
 
 

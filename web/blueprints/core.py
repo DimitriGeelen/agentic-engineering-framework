@@ -4,7 +4,7 @@ import re as re_mod
 import time as _time_mod
 
 import markdown2
-from flask import Blueprint, abort
+from flask import Blueprint, abort, render_template
 
 from lib.arc_membership import scan_tasks_by_arc_membership
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
@@ -455,8 +455,19 @@ def index():
     )
 
 
-@bp.route("/project")
-def project():
+# T-2781: rows shown in the initial /project response before "Show all" is clicked.
+# Must match the limit the expand endpoint slices past, or items would either
+# duplicate (expand starts before this many) or go missing (expand starts after).
+PROJECT_DOCS_PREVIEW_LIMIT = 25
+
+
+def _build_project_categories():
+    """Discover project documentation and group it by category.
+
+    Shared by /project (preview) and /project/expand/<cat> (remainder) so both
+    routes see the same discovery pass rather than two copies of this logic
+    drifting apart.
+    """
     categories = {}
     skip = {".git", ".tasks", ".context", "node_modules", ".pytest_cache", ".playwright-mcp", "__pycache__"}
 
@@ -531,7 +542,31 @@ def project():
                 pass
             _add("Research", f, display_name=name)
 
-    return render_page("project.html", page_title="Project Documentation", categories=categories)
+    return categories
+
+
+@bp.route("/project")
+def project():
+    categories = _build_project_categories()
+    # T-2781: the "Research" category alone was 2,457 episodic entries — rendering
+    # every row (even hidden via CSS, T-2775's collapsed-<details> class of bug)
+    # shipped 2.27MB regardless of what the browser displayed. Slice server-side
+    # so bytes actually sent match what's visible; the rest is fetched on demand
+    # by /project/expand/<cat> (below), keeping the remainder reachable rather
+    # than hidden or dropped.
+    preview = {
+        cat: {"docs": docs[:PROJECT_DOCS_PREVIEW_LIMIT], "total": len(docs)}
+        for cat, docs in categories.items()
+    }
+    return render_page("project.html", page_title="Project Documentation", categories=preview)
+
+
+@bp.route("/project/expand/<cat_name>")
+def project_expand(cat_name):
+    """Remainder of a /project category, fetched on demand (T-2781)."""
+    categories = _build_project_categories()
+    docs = categories.get(cat_name, [])
+    return render_template("_project_docs_list.html", docs=docs[PROJECT_DOCS_PREVIEW_LIMIT:])
 
 
 @bp.route("/project/<doc>")
