@@ -14,10 +14,10 @@ description: >
   degrade the very timings the suite exists to guard, and so future sessions don't
   re-diagnose this as host contention.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -32,7 +32,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T23:25:34Z
-last_update: '2026-08-03T23:30:09Z'
+last_update: 2026-08-04T09:40:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,14 +78,43 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tests/playwright/conftest.py:34-45` — if anything answers `/health` on `FW_TEST_PORT`, the
+fixture adopts it, `yield None`s (declaring it unmanaged) and never tears it down. Two distinct
+gaps live in those ten lines:
+
+- **Staleness** (the filed symptom): an adopted server has no age or health bound, so a process
+  that has been accumulating state for days serves the suite. T-2777 measured one at 656MB RSS
+  / 66min CPU returning 13-16s on routes that a fresh instance served in under 3s.
+- **Identity**: the branch adopts *any* listener, with no check that it is our Watchtower
+  serving *this* `PROJECT_ROOT`. This is the framework's documented false-green anti-pattern
+  (CLAUDE.md §Watchtower Port — 371 verification lines asserted against another project's
+  Watchtower on `:3000`, and passed, because consumer projects run the same Flask app and low
+  task IDs collide). A latency suite pointed at the wrong server produces confident numbers
+  about something nobody is changing.
+
+Both are the same defect surface — unmanaged adoption of an unverified server — which is why
+they close together rather than as separate tasks.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Adoption is identity-checked: before reusing a listener on `FW_TEST_PORT`, the fixture
+      confirms it is a Watchtower serving the same `PROJECT_ROOT` as the test run. A mismatch
+      fails loudly with both paths named — it must not silently adopt, and must not silently
+      start a second server alongside it.
+- [ ] Adoption is staleness-bounded: a server that is reusable by identity but exceeds the age
+      bound is recycled (terminated, fresh instance started and warmed) rather than adopted.
+      The bound is a named constant with an env override, not a literal buried in the branch.
+- [ ] Adoption is visible in the run: every session states which path it took — started fresh,
+      adopted an existing server (with its age), or recycled a stale one. A reading that came
+      off an adopted server can be attributed to it after the fact rather than re-diagnosed.
+- [ ] Regression-pinned by a test that exercises all three paths (fresh / adopt / reject on
+      identity mismatch) against the real fixture logic, and that fails when the identity check
+      or the age bound is removed — mutation-checked, not merely present (L-530).
+- [ ] `tests/playwright/test_all_routes_size.py` and `test_all_routes_load_time.py` stay green
+      through the change, and the load-time suite is confirmed to run against a server this
+      fixture started rather than a pre-existing one.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -252,3 +281,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2782-playwright-shared-test-server-port-3099-.md
 - **Context:** Initial task creation
+
+### 2026-08-04T00:04:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
