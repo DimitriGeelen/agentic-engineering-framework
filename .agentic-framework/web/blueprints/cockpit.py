@@ -26,12 +26,6 @@ from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("cockpit", __name__)
 
-# T-2785: rows shown in the initial "/" Work Direction list before "Show all"
-# is clicked. Sibling to PROJECT_DOCS_PREVIEW_LIMIT (T-2781) — must match the
-# limit the expand endpoint slices past, or items would either duplicate
-# (expand starts before this many) or go missing (expand starts after).
-WORK_QUEUE_PREVIEW_LIMIT = 25
-
 
 
 def get_scan_age(scan_data: dict) -> str:
@@ -240,12 +234,7 @@ def get_cockpit_context(scan_data: dict) -> dict:
         "framework_recommends_total": len(scan_data.get("framework_recommends", [])),
         "opportunities": scan_data.get("opportunities", [])[:3],
         "opportunities_total": len(scan_data.get("opportunities", [])),
-        # T-2785: 316-item work_queue rendered unbounded shipped a 16,543px
-        # landing page (real height, not display:none-hidden — the height
-        # guard's failure was honest). Preview + on-demand expand, same
-        # windowing shape as /project (T-2781) and /timeline (T-2775).
-        "work_queue": scan_data.get("work_queue", [])[:WORK_QUEUE_PREVIEW_LIMIT],
-        "work_queue_total": len(scan_data.get("work_queue", [])),
+        "work_queue": scan_data.get("work_queue", []),
         "risks": scan_data.get("risks", []),
         "health": scan_data.get("project_health", {}),
         "antifragility": scan_data.get("antifragility", {}),
@@ -397,19 +386,6 @@ def scan_focus(task_id):
         f'Failed: {_escape(stderr[:1500])}</p>',
         500,
     )
-
-
-@bp.route("/api/scan/work-queue/expand")
-def work_queue_expand():
-    """Remainder of the "/" Work Direction queue, fetched on demand (T-2785).
-
-    Sibling to core.project_expand (T-2781): the landing page ships only the
-    first WORK_QUEUE_PREVIEW_LIMIT rows; the rest render here, appended
-    client-side, so bytes shipped up front match what's visible.
-    """
-    scan_data = load_scan() or {}
-    queue = scan_data.get("work_queue", [])
-    return render_template("_work_queue_items.html", items=queue[WORK_QUEUE_PREVIEW_LIMIT:])
 
 
 # ---------------------------------------------------------------------------
