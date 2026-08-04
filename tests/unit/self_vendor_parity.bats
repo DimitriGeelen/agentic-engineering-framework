@@ -19,8 +19,26 @@
 
 load ../test_helper
 
-# The audit's filter, verbatim from agents/audit/audit.sh:1752.
+# The audit's filter, verbatim from agents/audit/audit.sh:check_self_vendor_drift.
+#
+# T-2793: bin/ is now scanned WHOLE there (and by _self_vendor_shim), because a
+# name filter over a directory of executables can only ever be an incomplete list
+# of them — bin/fw-shim and bin/fw-router are extensionless and matched none of
+# *.sh / *.py / fw / claude-fw / *.md.
+#
+# Note what that meant for the test below it. "producer and gate scan sets are
+# IDENTICAL for bin/" applied THIS filter to both sides, so the two files missing
+# from the sync set were also missing from both sides of the comparison — the
+# parity test could not see the files whose absence it existed to catch. Same
+# shape as L-546: a cross-check is only evidence if the two sides can differ, and
+# a shared normalisation applied after enumeration destroys that independence.
 audit_scan() {   # audit_scan <root> <subdir>
+    if [ "$2" = "bin" ]; then
+        find "$1/$2" \
+            \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o \
+            -type f ! -name "*.pyc" -print 2>/dev/null | sed "s|^$1/$2/||" | sort
+        return
+    fi
     find "$1/$2" \
         \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o \
         -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) \
@@ -39,14 +57,26 @@ audit_scan() {   # audit_scan <root> <subdir>
     [ "$output" -ge 1 ]
 }
 
-@test "T-2711: the four previously-unsyncable bin/ scripts are in the helper's set" {
-    helper_set=$(awk '/^_self_vendor_shim\(\)/,/^}/' "$FRAMEWORK_ROOT/lib/upgrade.sh")
-    # A name-based helper would have to mention them; an enumerating one need not.
-    # So assert behaviourally: the find covers bin/ with the audit's filter.
-    echo "$helper_set" | grep -q '\-name "\*\.sh"'
-    echo "$helper_set" | grep -q '\-name "\*\.py"'
-    echo "$helper_set" | grep -q '\-name "\*\.md"'
-    echo "$helper_set" | grep -q '\-name "claude-fw"'
+@test "T-2793: the helper's find carries NO name filter for bin/" {
+    # T-2711 replaced two hardcoded names with a find that still carried a name
+    # FILTER, so the hole narrowed instead of closing and reopened the moment an
+    # extensionless file landed in bin/ (fw-shim had been in it the whole time;
+    # fw-router joined it). Comments stripped (L-519) — the fix quotes the old
+    # filter to explain itself, and a naive grep would match the explanation.
+    body=$(awk '/^_self_vendor_shim\(\)/,/^}/' "$FRAMEWORK_ROOT/lib/upgrade.sh" | sed 's/[[:space:]]*#.*//')
+    run bash -c "printf '%s' \"\$body\" | grep -c -- '-name \"\\*\\.sh\"'"
+    [ "$output" = "0" ]
+    printf '%s' "$body" | grep -q 'find '
+}
+
+@test "T-2793: extensionless bin/ files are covered by producer AND gate" {
+    # The concrete regression: fw-shim (T-664) and fw-router (T-2793) match no
+    # name pattern, so both sat outside the sync set and outside the audit gate.
+    for f in fw-shim fw-router; do
+        [ -f "$FRAMEWORK_ROOT/bin/$f" ] || skip "bin/$f not present"
+        audit_scan "$FRAMEWORK_ROOT" "bin" | grep -qx "$f"
+        audit_scan "$FRAMEWORK_ROOT/.agentic-framework" "bin" | grep -qx "$f"
+    done
 }
 
 @test "T-2711: producer and gate scan sets are IDENTICAL for bin/" {

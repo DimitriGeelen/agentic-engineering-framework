@@ -7184,6 +7184,9 @@ PYSEARCH
                 _self_vendor_agents "$_vs_dry"
                 # T-2267: web/ drift class (6th class).
                 _self_vendor_web "$_vs_dry"
+                # T-2793 (OBS-151): VERSION drift class (7th) — the copy's own
+                # identity, which six content classes never covered.
+                _self_vendor_version "$_vs_dry"
             )
             [ -n "$_vs_out" ] && printf '%s\n' "$_vs_out"
             if [ "$_vs_check" = true ]; then

@@ -380,7 +380,20 @@ _self_vendor_shim() {
     # would pass right now — and would silently re-open this exact hole the first
     # time someone adds bin/<subdir>/foo.sh. Parity means matching the gate's
     # traversal, not just its current results.
-    done < <(find "$FRAMEWORK_ROOT/bin" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) -print 2>/dev/null)
+    # T-2793: enumerate EVERY file in bin/, not a name list.
+    #
+    # T-2711 fixed this helper to enumerate the directory instead of naming two
+    # files — but kept a name FILTER (*.sh, *.py, fw, claude-fw, *.md), so the
+    # hole only narrowed. `bin/fw-shim` and `bin/fw-router` are extensionless and
+    # match none of them: neither was ever synced or gated. T-2304 added *.md,
+    # T-2502 added claude-fw, T-2711 added enumeration; each closed the instance
+    # in front of it and left the shape intact.
+    #
+    # bin/ holds executables and nothing else, so "every regular file" is the
+    # honest predicate. agents/audit/audit.sh:check_self_vendor_drift scans bin/
+    # the same way — the two must agree or the gate refuses what the helper
+    # cannot fix (L-399 producer/consumer parity).
+    done < <(find "$FRAMEWORK_ROOT/bin" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f ! -name "*.pyc" -print 2>/dev/null)
     if [ "$_svs_updated" -gt 0 ]; then
         # T-2711: report the real count. This printed a hardcoded "1 file(s)"
         # regardless of how many were copied — a status line that agreed with
@@ -514,6 +527,50 @@ _self_vendor_web() {
             echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svw_updated web/ file(s) to .agentic-framework/web/"
         else
             echo -e "  ${GREEN}Self-vendor:${NC} synced $_svw_updated web/ file(s) to .agentic-framework/web/"
+        fi
+    fi
+    return 0
+}
+
+# T-2793 (OBS-151): self-vendor the VERSION file. Seventh sibling of
+# _self_vendor_libs / _templates / _policy / _shim / _agents / _web.
+#
+# Why it was missing and why that matters more now. `fw vendor self` synced six
+# classes of CONTENT and never the copy's identity, so .agentic-framework/VERSION
+# held whatever the last full `do_vendor` wrote — measured at 1.6.234 against a
+# source at 1.6.114, a number from a different era. Anything comparing the two
+# (fw_version_relation, doctor's pinned-vs-installed, consumer-recovery ordering)
+# was reasoning about a version nothing had ever run.
+#
+# It stops being cosmetic once the CLI is vendored (T-2793): a vendored copy has
+# no .git, so _derive_version falls through to this file, and VERSION becomes the
+# ONLY statement of which framework a consumer is running.
+#
+# Source is the repo's VERSION file, deliberately NOT $FW_VERSION. $FW_VERSION is
+# `git describe` — commits-since-tag — so it increments with every commit. Syncing
+# it would make the vendored copy drift one step after each commit, and the T-2240
+# pre-push gate would then demand a re-vendor whose own commit re-opens the drift:
+# a livelock, in a gate whose whole job is to be satisfiable. The VERSION file
+# moves only at release, so this class can be both synced AND checked — which is
+# the point of having drift classes at all.
+#
+# Inputs:  $1 — dry_run ("true"/"false")
+# Return:  0 always (nothing to sync, or consumer-skip)
+_self_vendor_version() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    local _svv_src="$FRAMEWORK_ROOT/VERSION"
+    local _svv_dst="$_self_vendor/VERSION"
+    # Consumer-safety mirror of the siblings: a consumer's vendored copy has no
+    # nested .agentic-framework/, so this is the early exit there.
+    [ -d "$_self_vendor" ] || return 0
+    [ -f "$_svv_src" ] || return 0
+    if [ ! -f "$_svv_dst" ] || ! diff -q "$_svv_src" "$_svv_dst" >/dev/null 2>&1; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync VERSION ($(tr -d '\n' < "$_svv_dst" 2>/dev/null || echo none) → $(tr -d '\n' < "$_svv_src")) to .agentic-framework/"
+        else
+            cp "$_svv_src" "$_svv_dst"
+            echo -e "  ${GREEN}Self-vendor:${NC} synced VERSION ($(tr -d '\n' < "$_svv_src")) to .agentic-framework/"
         fi
     fi
     return 0

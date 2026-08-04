@@ -1824,7 +1824,16 @@ check_self_vendor_drift() {
     # vendored copy drifted undetected (sibling of T-2501's on-PATH drift). Parity:
     # `_self_vendor_shim` (lib/upgrade.sh) now syncs claude-fw too, so this FAIL is
     # clearable via `fw vendor self` (L-399 producer/consumer parity).
-    done < <(find "$FRAMEWORK_ROOT/.agentic-framework/bin" "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) 2>/dev/null)
+    # T-2793: bin/ is scanned WHOLE, the other three keep the name filter.
+    # bin/ holds executables and nothing else, so a name filter there could only
+    # ever be an incomplete list of them — and was: bin/fw-shim and bin/fw-router
+    # are extensionless and matched none of *.sh/*.py/fw/claude-fw/*.md, so both
+    # sat outside this gate AND outside _self_vendor_shim's sync set. Parity with
+    # lib/upgrade.sh:_self_vendor_shim, which now enumerates bin/ the same way.
+    done < <(
+        find "$FRAMEWORK_ROOT/.agentic-framework/bin" -type f ! -name "*.pyc" 2>/dev/null
+        find "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) 2>/dev/null
+    )
 
     # templates class: .agentic-framework/.tasks/templates/*.md vs source
     if [ -d "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" ]; then
