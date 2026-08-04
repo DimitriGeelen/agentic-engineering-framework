@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2797: onboarding Step 2 decides on presence, not freshness, and cites incomparable version counters as evidence
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T20:01:39Z
+# ============================================================================
+
+task_id: T-2797
+task_name: "onboarding Step 2 decides on presence, not freshness, and cites incomparable version counters as evidence"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T19:55:32Z
+completed: 2026-08-04T20:01:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-04T21:59:03+02:00
+last_commit: 2026-08-04T21:59:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  onboarding Step 2 asks freshness (commit SHA), not presence
+
+# Key outcomes
+outcomes:
+  - 'Step 2 states plainly that the version number is a commit distance and must not'
+  - 'Step 2 gives an executable freshness check (installed `Commit:` SHA vs'
+  - 'The "prefer the local install" instruction no longer rests on the incomparable'
+  - 'The [ASK] gate stays: a differing SHA does not by itself say which side is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'prompts/aef-fresh-install-onboarding.md'
+  - '.tasks/active/T-2797-onboarding-step-2-decides-on-presence-no.md'
+  - '.tasks/completed/T-2796-fw---version-reports-a-bare-counter-with.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T21:59:03'
+    action: 'T-2797: onboarding Step 2 asks freshness (commit SHA), not presence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 3
+  lines_added: 298
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2797-onboarding-step-2-decides-on-presence-no.md
+generated_by: context-agent-hybrid

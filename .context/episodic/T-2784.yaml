@@ -1,0 +1,220 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2784: Playwright tests hard-code port 3099, bypassing FW_TEST_PORT and the T-2782 identity check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T19:17:54Z
+# ============================================================================
+
+task_id: T-2784
+task_name: "Playwright tests hard-code port 3099, bypassing FW_TEST_PORT and the T-2782 identity check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T10:06:24Z
+completed: 2026-08-04T19:17:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-04T12:51:13+02:00
+last_commit: 2026-08-04T19:20:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  one source for the Playwright suite's target address. register new components in the fabric. refresh vendored web/app.py (T-2782 identity pid field). record pre-conversion baseline (13 failed / 885 passed / 5 skipped). record after-run as PENDING with the exact steps to finish it. refresh vendored copies. L-545 — glob('**') skips dot-dirs, so a census can omit the population it is about (uid census read 19 of 51 files, missing the entire live corpus). tick ACs 1-3 (converted, demonstrated, guard shipped in 6e0373c44); relaunch after-run with a project-root log path. attempt-3 after-run recorded INVALID — 310 failures are net::ERR_CONNECTION_REFUSED (server absent), self-contaminated by concurrent suites; AC stays unticked. attempt-4 after-run recorded INVALID — 137 failures are a contiguous mid-run net::ERR_CONNECTION_REFUSED block, diagnosed as host contention (15 concurrent Watchtower instances, heavy swap); attempt 5 launched isolated
+
+# Key outcomes
+outcomes:
+  - 'No `tests/playwright/test_*.py` defines its own port or host literal. All of them take'
+  - 'Setting `FW_TEST_PORT` moves the whole suite, demonstrated rather than asserted: run a'
+  - 'The literal cannot come back: a check fails if a new test file introduces a bare'
+  - 'Full playwright suite result recorded before and after with the same invocation, so the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/app.py'
+  - '.agentic-framework/web/blueprints/cockpit.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/blueprints/metrics.py'
+  - '.agentic-framework/web/templates/cockpit.html'
+  - '.agentic-framework/web/templates/metrics.html'
+  - '.agentic-framework/web/templates/task_detail.html'
+  - '.context/audits/2026-08-04.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.T-2784-after-run.log'
+  - '.context/working/T-2784-before-failures.txt'
+  - 'docs/generated/components/lib-verification-port.md'
+  - 'docs/generated/components/lib-verification-verdict.md'
+  - 'docs/generated/components/lib-verify_queue.md'
+  - 'docs/generated/components/tests-unit-episodic_frontmatter_extraction.md'
+  - 'docs/generated/components/tests-unit-episodic_yaml_timeline_escape.md'
+  - 'docs/generated/components/tests-unit-fabric_coverage_single_source.md'
+  - 'docs/generated/components/tests-unit-fabric_watch_pattern_fitness.md'
+  - 'docs/generated/components/tests-unit-init_project_shape_detection.md'
+  - 'docs/generated/components/tests-unit-reviewer_verdict_replacement_escape.md'
+  - 'docs/generated/components/tests-unit-t2759_upgrade_target_dir_shadowing.md'
+  - 'docs/generated/components/tests-unit-t2762_upgrade_foreign_source_sha.md'
+  - 'docs/generated/components/tests-unit-test_arcs_membership_cached.md'
+  - 'docs/generated/components/tests-unit-test_audit_frontmatter_variants.md'
+  - 'docs/generated/components/tests-unit-test_enrich_unresolved_targets.md'
+  - 'docs/generated/components/tests-unit-test_frontmatter_loader_equivalence.md'
+  - 'docs/generated/components/tests-unit-test_fw_json_stdout_purity.md'
+  - 'docs/generated/components/tests-unit-test_task_create_description_yaml.md'
+  - 'docs/generated/components/tests-unit-tier0_scope_boundary.md'
+  - 'docs/generated/components/tests-unit-validate_init_hook_path_expansion.md'
+  - 'docs/generated/components/tests-unit-verification_pipe_buffer.md'
+  - 'docs/generated/components/web-templates-timeline_session.md'
+  - '.fabric/components/tests-playwright-target.yaml'
+  - '.fabric/components/tests-unit-test_playwright_server_adoption.yaml'
+  - '.fabric/components/tests-unit-test_playwright_target_single_source.yaml'
+  - '.tasks/active/T-2784-playwright-tests-hard-code-port-3099-byp.md'
+  - '.tasks/completed/T-2783-sweep-test-fixtures-for-targets-handed-o.md'
+  - 'tests/playwright/conftest.py'
+  - 'tests/playwright/target.py'
+  - 'tests/playwright/test_api_config.py'
+  - 'tests/playwright/test_api_cron_jobs.py'
+  - 'tests/playwright/test_api_health.py'
+  - 'tests/playwright/test_api_index.py'
+  - 'tests/playwright/test_api_quality.py'
+  - 'tests/playwright/test_api_search.py'
+  - 'tests/playwright/test_approvals_content_tokens.py'
+  - 'tests/playwright/test_approvals.py'
+  - 'tests/playwright/test_approvals_style_tokens.py'
+  - 'tests/playwright/test_arc_badge.py'
+  - 'tests/playwright/test_arc_close.py'
+  - 'tests/playwright/test_arc_page_parity.py'
+  - 'tests/playwright/test_arcs_pages_tokens.py'
+  - 'tests/playwright/test_ask.py'
+  - 'tests/playwright/test_assumptions.py'
+  - 'tests/playwright/test_badge_contrast.py'
+  - 'tests/playwright/test_breadcrumb.py'
+  - 'tests/playwright/test_bulk_actions.py'
+  - 'tests/playwright/test_cockpit_activity.py'
+  - 'tests/playwright/test_cockpit_density_spacing.py'
+  - 'tests/playwright/test_cockpit_inline_tokens.py'
+  - 'tests/playwright/test_cockpit_knowledge_counts.py'
+  - 'tests/playwright/test_cockpit.py'
+  - 'tests/playwright/test_cockpit_status_pills.py'
+  - 'tests/playwright/test_cockpit_traceability.py'
+  - 'tests/playwright/test_command_palette.py'
+  - 'tests/playwright/test_config.py'
+  - 'tests/playwright/test_core.py'
+  - 'tests/playwright/test_costs.py'
+  - 'tests/playwright/test_cron.py'
+  - 'tests/playwright/test_directives.py'
+  - 'tests/playwright/test_discoveries.py'
+  - 'tests/playwright/test_discovery.py'
+  - 'tests/playwright/test_docs_detail.py'
+  - 'tests/playwright/test_docs.py'
+  - 'tests/playwright/test_enforcement.py'
+  - 'tests/playwright/test_fabric_coupling_token.py'
+  - 'tests/playwright/test_fabric_graph_cold_load.py'
+  - 'tests/playwright/test_fabric.py'
+  - 'tests/playwright/test_file_viewer.py'
+  - 'tests/playwright/test_filter_chips.py'
+  - 'tests/playwright/test_graduation.py'
+  - 'tests/playwright/test_health.py'
+  - 'tests/playwright/test_htmx_error_toast.py'
+  - 'tests/playwright/test_inception_decide_flow.py'
+  - 'tests/playwright/test_inception_page.py'
+  - 'tests/playwright/test_inception.py'
+  - 'tests/playwright/test_interactions.py'
+  - 'tests/playwright/test_kanban_drag.py'
+  - 'tests/playwright/test_metrics.py'
+  - 'tests/playwright/test_mobile_viewport.py'
+  - 'tests/playwright/test_navigation.py'
+  - 'tests/playwright/test_nav_layouts.py'
+  - 'tests/playwright/test_nav_subsections.py'
+  - 'tests/playwright/test_patterns.py'
+  - 'tests/playwright/test_pending_page.py'
+  - 'tests/playwright/test_pins.py'
+  - 'tests/playwright/test_project.py'
+  - 'tests/playwright/test_quality.py'
+  - 'tests/playwright/test_review_acs.py'
+  - 'tests/playwright/test_review_csrf.py'
+  - 'tests/playwright/test_review_htmx_target_inheritance.py'
+  - 'tests/playwright/test_review_interaction.py'
+  - 'tests/playwright/test_review_page.py'
+  - 'tests/playwright/test_review.py'
+  - 'tests/playwright/test_risks.py'
+  - 'tests/playwright/test_search_extended.py'
+  - 'tests/playwright/test_search.py'
+  - 'tests/playwright/test_sessions.py'
+  - 'tests/playwright/test_settings_nav_link.py'
+  - 'tests/playwright/test_settings.py'
+  - 'tests/playwright/test_shortcuts_overlay.py'
+  - 'tests/playwright/test_smoke.py'
+  - 'tests/playwright/test_task_detail.py'
+  - 'tests/playwright/test_task_panel_edit.py'
+  - 'tests/playwright/test_task_panel.py'
+  - 'tests/playwright/test_tasks.py'
+  - 'tests/playwright/test_terminal.py'
+  - 'tests/playwright/test_theme_toggle_contrast.py'
+  - 'tests/playwright/test_timeline.py'
+  - 'tests/playwright/test_verdict_ui.py'
+  - 'tests/unit/test_playwright_target_single_source.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T12:51:13'
+    action: 'T-2784: one source for the Playwright suite''s target address'
+  - time: '2026-08-04T12:53:25'
+    action: 'T-2784: register new components in the fabric'
+  - time: '2026-08-04T12:53:37'
+    action: 'T-2784: refresh vendored web/app.py (T-2782 identity pid field)'
+  - time: '2026-08-04T13:04:57'
+    action: 'T-2784: record pre-conversion baseline (13 failed / 885 passed / 5 skipped)'
+  - time: '2026-08-04T14:03:13'
+    action: 'T-2784: record after-run as PENDING with the exact steps to finish it'
+  - time: '2026-08-04T14:03:48'
+    action: 'T-2784: refresh vendored copies'
+  - time: '2026-08-04T14:30:50'
+    action: 'T-2784: L-545 — glob(''**'') skips dot-dirs, so a census can omit the population it is about (uid census read 19 of 51 files, missing the entire live corpus)'
+  - time: '2026-08-04T15:18:03'
+    action: 'T-2784: tick ACs 1-3 (converted, demonstrated, guard shipped in 6e0373c44); relaunch after-run with a project-root log path'
+  - time: '2026-08-04T15:22:58'
+    action: 'T-2784: attempt-3 after-run recorded INVALID — 310 failures are net::ERR_CONNECTION_REFUSED (server absent), self-contaminated by concurrent suites; AC stays unticked'
+  - time: '2026-08-04T19:20:28'
+    action: 'T-2784: attempt-4 after-run recorded INVALID — 137 failures are a contiguous mid-run net::ERR_CONNECTION_REFUSED block, diagnosed as host contention (15 concurrent Watchtower instances, heavy swap); attempt 5 launched isolated'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 551 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 551
+  commits: 11
+  files_changed: 128
+  lines_added: 8492
+  lines_removed: 135
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2784-playwright-tests-hard-code-port-3099-byp.md
+generated_by: context-agent-hybrid

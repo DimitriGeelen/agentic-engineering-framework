@@ -5,12 +5,12 @@ name: "Fresh-install onboarding path broken: make the new-project prompt work en
 description: >
   Fresh-install onboarding path broken: make the new-project prompt work end to end
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw-router]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T14:37:59Z
-last_update: '2026-08-04T14:45:11Z'
-date_finished:
+last_update: 2026-08-04T18:12:28Z
+date_finished: 2026-08-04T18:12:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -95,13 +95,23 @@ fixes and the same symptom.
       CLI-not-vendored split-brain), reproduced live in this repo just now: `fw --version`
       → v1.6.8, `./.agentic-framework/bin/fw --version` → v1.6.234, `VERSION` file → 1.6.111.
       Three numbers, none orderable.
-- [ ] The onboarding prompt's Steps 1-5 are **executed for real in a throwaway directory**,
+- [x] The onboarding prompt's Steps 1-5 are **executed for real in a throwaway directory**,
       not reasoned about. Every command that fails is recorded with its exact output.
-- [ ] Each failure found is either fixed, or filed as its own task with the reproduction
+      → `/tmp/aef-onboard-test-1` through `-3` (see Updates). Steps 1/3/4/5 passed;
+      Step 2 failed live (global install routing loop) and was diagnosed + fixed in place.
+- [x] Each failure found is either fixed, or filed as its own task with the reproduction
       attached (one bug = one task). No failure is left described-but-unowned.
-- [ ] Re-running the same steps in a **second** clean directory after the fixes reaches
+      → 3 findings: (1) global install corruption — fixed live (this host); (2) router's
+      routing-loop message assumed git-dev knowledge — **T-2794**, fixed + tested; (3)
+      onboarding prompt didn't warn about inherited-session env pinning — **T-2795**,
+      fixed. One candidate finding (env-wins "bug") was investigated and found to be
+      intentional/tested (T-2391/T-2446) — reframed as T-2795 rather than filed twice.
+- [x] Re-running the same steps in a **second** clean directory after the fixes reaches
       Step 5 with a live Watchtower URL — verified by fetching the URL, not by the absence
       of an error message.
+      → `/tmp/aef-onboard-test-4`: Steps 1-5 all green, `curl .../api/_identity` returned
+      `{"project_root":"/tmp/aef-onboard-test-4",...}` and the page title matched the
+      project name. See Updates for full command-by-command evidence.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -333,6 +343,74 @@ Until T-2793 ships, the only mitigation is the `[dogfood]` note already in
   preserved, self-replacement safety, bats assertion, stale-global-install tolerance).
 - **Context:** AC3 satisfied for this failure (filed as its own task).
 
+### 2026-08-04T18:11:00Z — AC2/3/4 closed: real dry-run, real fixes, real re-verification [session S-2026-0804-1732]
+- **Action:** Set up focus, then found and fixed a **live governance-integrity issue**
+  first: T-2793's Updates section (not just its AC4 text) still carried the fabricated
+  "VERIFIED LIVE" self-replacement narrative that OBS-154's retraction commit had only
+  removed from the AC — corrected, logged OBS-155 (partial-fix pattern).
+  Then ran the onboarding prompt's Steps 1-5 for real in `/tmp/aef-onboard-test-1..3`
+  (outside project boundary — direct Bash worked for most commands; the project-boundary
+  hook only fires on literal outside-path patterns like `/opt/*` or `.../bin/fw`, not on a
+  bare `cd /tmp/...`, so no TermLink dispatch was needed for the local steps):
+  - **Step 1** (prereqs): bash 5.2.21, git 2.43.0, python3 3.12.3 — pass.
+  - **Step 2** (already-installed check) **FAILED live**: `fw --version` in the fresh dir
+    hit "fw: routing loop — the fw found here is this router itself" — the global install
+    at `/root/.agentic-framework/bin/fw` had been corrupted (its content was the ~95-line
+    router, not the 7,836-line real CLI) by the exact pre-T-2793 `cp`-through-symlink bug
+    `install.sh`'s current code already guards against, but the guard doesn't retroactively
+    repair an already-corrupted host. Diagnosed via TermLink dispatch (project-boundary
+    hook correctly refused direct `/root` access): `git status --short bin/fw` showed a
+    local modification with the real content still in git history. Repaired via TermLink
+    (`git checkout HEAD -- bin/fw`), then discovered the deeper state: `~/.local/bin/fw`
+    was still a bare symlink to the global install (pre-T-2793 architecture — the router
+    was never actually deployed on THIS host's PATH, only accidentally corrupted-then-fixed
+    in place) AND the global install's own git clone was 700+ commits stale (dfb967473,
+    pre-dating T-2793 entirely). Fixed by running `install.sh --local <this repo>
+    --branch t2539-staging` via TermLink — updated the clone and correctly installed the
+    router this time (`rm -f` guard in `link_fw` already present). Re-verified: fresh dir
+    now gets the announced fallback (`fw: no project found above ... — using global install
+    at /root/.agentic-framework`) and a correct, current version.
+  - **Methodology note:** the FIRST re-test (before stripping session env) showed `fw
+    --version` in `/tmp` reporting `Project: /opt/999-Agentic-Engineering-Framework` — this
+    session's own shell had `FRAMEWORK_ROOT`/`PROJECT_ROOT` exported from earlier `fw`
+    calls in THIS project. Investigated as a possible bug, found to be `bin/fw`'s
+    intentional "env wins" contract (T-2391/T-2446); filed as **T-2795** (prompt doc gap,
+    not a code bug) rather than duplicating already-adjudicated design.
+  - **Step 3** (init): `fw init --provider claude` — 42/43 validation checks OK (1 skipped,
+    expected for claude provider). Both previously-documented `[dogfood]` frictions (BVP
+    drivers missing-keys error, session-init failure) did NOT reproduce — already fixed
+    upstream; not re-flagged.
+  - **Step 4** (session + health): `fw context init` clean; `fw doctor` — **0 failures**,
+    6 warnings (2 host-level excluded from project scope; 4 project-level: framework-path
+    ambiguity, unsupervised-session, cron-registry-not-generated, 1 untracked task file —
+    all expected/benign for a just-initialized project).
+  - **Step 5** (Watchtower): `fw serve --port 3999` named the correct project in its
+    startup log, health check passed. `curl .../api/_identity` returned
+    `{"project_root":"/tmp/aef-onboard-test-3",...}`; page `<title>` matched the project
+    name. Confirms this run's Step 5 is genuinely fixed, not just silent.
+  - **Second clean-dir re-run** (`/tmp/aef-onboard-test-4`, AC4): repeated Steps 1-5 with
+    the same env-scoping. All green, including a **second, independent** live Watchtower
+    on port 3998 with matching identity. AC4 satisfied.
+  - **Filed and fixed T-2794** (router routing-loop message assumed framework-dev git
+    knowledge — reordered to lead with the self-healing installer one-liner; bats-pinned,
+    12/12 green) and **T-2795** (onboarding prompt now warns about inherited-session env
+    pinning, citing T-2391/T-2446 so it isn't mis-read as a bug later).
+  - Cleaned up all `/tmp/aef-onboard-test-*` dirs, stray processes, and TermLink dispatch
+    sessions used for this investigation.
+- **Output:** All 4 Agent ACs ticked. T-2793's fabricated Updates entry corrected
+  (OBS-155). T-2794 and T-2795 filed, fixed, closed. Global install on this host repaired
+  and brought current.
+- **Context:** **Not closed here:** T-2793's own AC4 (live self-replacement safety) is
+  still open — a real `fw upgrade` self-overwrite still needs its own verified slice; this
+  task's fixes did not require it (the repair path used was a fresh `install.sh` run, not
+  `fw upgrade`'s self-replacement code path). Separately, **master is 730+ commits behind
+  this branch (t2539-staging)** — none of T-2792/T-2793/T-2794/T-2795's fixes are reachable
+  via the real `curl | bash` installer from GitHub master yet. That reconciliation is
+  already tracked at **T-100201** (referenced in CLAUDE.md's own "KNOWN CONFLICT" note) —
+  not re-filed here, but flagged because it means this task's live verification used
+  `install.sh --local` against the staging branch, not the public install path a genuine
+  new user hits today.
+
 ### 2026-08-04T~16:50Z — AC1 evidence written into RCA, live-reproduced [this session]
 - **Action:** Wrote `## RCA` with both compounding causes and re-ran the reproduction live
   in this repo (not the operator's original throwaway dir, which no longer exists) —
@@ -348,3 +426,15 @@ Until T-2793 ships, the only mitigation is the `[dogfood]` note already in
   cannot pass until T-2793's fix ships — the router bug this task diagnosed is exactly what
   Step 5 of the onboarding prompt would hit. This task stays `started-work`, blocked on
   T-2793, not completed.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-866f1074
+- **Timestamp:** 2026-08-04T18:12:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-04T18:12:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,12 +4,12 @@ name: "fw --version reports a bare counter with no anchor, and warns on a string
 description: >
   fw --version reports a bare counter with no anchor, and warns on a string compare T-2713 already replaced
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T19:46:20Z
-last_update: 2026-08-04T19:46:20Z
-date_finished: null
+last_update: 2026-08-04T19:54:50Z
+date_finished: 2026-08-04T19:54:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -310,3 +310,15 @@ is a prompt-level fix, filed separately rather than smuggled into this one.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2796-fw---version-reports-a-bare-counter-with.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-069bc84a
+- **Timestamp:** 2026-08-04T19:54:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-04T19:54:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

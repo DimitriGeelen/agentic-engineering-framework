@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2798: fw <cmd> --help auto-initialises a project: the exemption list inspects only $1
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T20:14:25Z
+# ============================================================================
+
+task_id: T-2798
+task_name: "fw <cmd> --help auto-initialises a project: the exemption list inspects only $1"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T20:08:14Z
+completed: 2026-08-04T20:14:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-04T22:11:41+02:00
+last_commit: 2026-08-04T22:11:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw <cmd> --help no longer auto-initialises a project
+
+# Key outcomes
+outcomes:
+  - '`fw <anysubcommand> --help` and `-h` from a non-project directory print help and'
+  - 'The exemption is evaluated over all arguments, not `$1` alone, so it holds for'
+  - 'Auto-init still fires for real commands from a non-project directory (the branch'
+  - 'bats coverage in `tests/unit/fw_help_no_autoinit.bats` — 4 tests green, each'
+  - 'Negative control: the pre-fix `bin/fw` was run directly and produced the debris'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.tasks/active/T-2798-fw-cmd---help-auto-initialises-a-project.md'
+  - '.tasks/completed/T-2797-onboarding-step-2-decides-on-presence-no.md'
+  - 'tests/unit/fw_help_no_autoinit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T22:11:41'
+    action: 'T-2798: fw <cmd> --help no longer auto-initialises a project'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 6
+  lines_added: 426
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2798-fw-cmd---help-auto-initialises-a-project.md
+generated_by: context-agent-hybrid

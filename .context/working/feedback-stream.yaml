@@ -26226,3 +26226,209 @@ scan_id: R-dad324f6
 task_id: T-2789
 payload:
   task_file: .tasks/active/T-2789-arc-tag-idempotency-test-counts-the-audi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T14:11:18Z'
+scan_id: R-545a7879
+task_id: T-2790
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T14:11:18Z'
+scan_id: R-545a7879
+task_id: T-2790
+payload:
+  task_file: .tasks/active/T-2790-arc-continuous-delivery-prompt-drive-ope.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T14:26:39Z'
+scan_id: R-61b69ec1
+task_id: T-2791
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T14:26:39Z'
+scan_id: R-61b69ec1
+task_id: T-2791
+payload:
+  task_file: .tasks/active/T-2791-seam-uid-derivation-reply-to-832--cross-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T18:04:23Z'
+scan_id: R-074cc03a
+task_id: T-2794
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T18:04:23Z'
+scan_id: R-074cc03a
+task_id: T-2794
+payload:
+  task_file: .tasks/active/T-2794-router-routing-loop-error-message-assume.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T18:10:39Z'
+scan_id: R-3e9d4d2a
+task_id: T-2795
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T18:10:39Z'
+scan_id: R-3e9d4d2a
+task_id: T-2795
+payload:
+  task_file: .tasks/active/T-2795-fw-silently-pins-to-a-stale-project-once.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T18:12:29Z'
+scan_id: R-866f1074
+task_id: T-2792
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T18:12:29Z'
+scan_id: R-866f1074
+task_id: T-2792
+payload:
+  task_file: .tasks/active/T-2792-fresh-install-onboarding-path-broken-mak.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T19:17:43Z'
+scan_id: R-0c6a63ff
+task_id: T-2784
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T19:17:43Z'
+scan_id: R-0c6a63ff
+task_id: T-2784
+payload:
+  task_file: .tasks/active/T-2784-playwright-tests-hard-code-port-3099-byp.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T19:54:53Z'
+scan_id: R-069bc84a
+task_id: T-2796
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T19:54:53Z'
+scan_id: R-069bc84a
+task_id: T-2796
+payload:
+  task_file: .tasks/active/T-2796-fw---version-reports-a-bare-counter-with.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T20:01:29Z'
+scan_id: R-95ddfc04
+task_id: T-2797
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T20:01:29Z'
+scan_id: R-95ddfc04
+task_id: T-2797
+payload:
+  task_file: .tasks/active/T-2797-onboarding-step-2-decides-on-presence-no.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T20:14:16Z'
+scan_id: R-bfd2053c
+task_id: T-2798
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T20:14:16Z'
+scan_id: R-bfd2053c
+task_id: T-2798
+payload:
+  task_file: .tasks/active/T-2798-fw-cmd---help-auto-initialises-a-project.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T21:16:28Z'
+scan_id: R-df0f3103
+task_id: T-2799
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T21:16:28Z'
+scan_id: R-df0f3103
+task_id: T-2799
+payload:
+  task_file: .tasks/active/T-2799-run-the-real-fresh-install-onboarding-en.md
+---
+kind: scan_emitted
+timestamp: '2026-08-04T21:16:53Z'
+scan_id: R-3ece300f
+task_id: T-2800
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-04T21:16:53Z'
+scan_id: R-3ece300f
+task_id: T-2800
+payload:
+  task_file: .tasks/active/T-2800-should-the-home-framework-install-exist-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-04T21:16:53Z'
+scan_id: RC-27dec2cb
+task_id: T-2800
+payload:
+  overall: CONFIRMED
+  claim_count: 5

@@ -86,19 +86,73 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Each of the 4 failing routes is measured and classified as either **page genuinely over
+- [x] Each of the 4 failing routes is measured and classified as either **page genuinely over
       the bound** or **guard expectation drifted**, with the measured height and the bound
       quoted for each. A verdict without a number is not a classification.
-- [ ] For any route classified "page over the bound", the page is bounded the way T-2775
+      - `/` — 16627px vs 8000px cap. **Genuinely over.** Correction to an earlier draft of
+        this classification, which had cited `_get_attention_items()`/`index.html`:
+        `core.index()` only falls back to `index.html`/`_get_attention_items()`
+        when `load_scan()` returns falsy; live, `load_scan()` is truthy (verified:
+        `python3 -c "from web.blueprints.core import load_scan; print(bool(load_scan()))"`
+        → `True`), so `/` actually renders `cockpit.html` via `get_cockpit_context()`.
+        The real dominant contributor is the "Work Direction" queue —
+        `get_cockpit_context()` passed `scan_data["work_queue"]` through unsliced
+        (1:1 with active-task count, 317 today, no cap) and `cockpit.html:262-292`
+        rendered one `.wt-queue-item` per entry unconditionally.
+      - `/metrics` — 10477px vs 8000px cap. **Genuinely over.** `metrics._stale_tasks()`
+        appends one entry per active task with `status=issues` or `last_update` >7d old
+        (260 of 317 today, no cap) — `web/templates/metrics.html:151` renders the full list.
+      - `/inception/T-2715` — 11104px vs 8000px cap. **Genuinely over.** T-2715's `## Open
+        Questions` section is 51,547 chars / 147 lines; it isn't in `inception.py`'s
+        `KNOWN_SECTIONS` set so it falls into `extra_sections` and renders in full via
+        `web/templates/inception_detail.html`'s generic section card — no truncation.
+      - `/review/T-2715` — same 11104px measurement. **Same root cause as above, not a
+        distinct page.** `web/blueprints/review.py:160` 302-redirects `/review/<id>` to
+        `/inception/<id>` when the task is `workflow_type: inception` (T-2125 class-correct
+        routing) — Playwright follows the redirect, so both parametrized-test IDs measure
+        the identical rendered HTML.
+- [x] For any route classified "page over the bound", the page is bounded the way T-2775
       bounded `/timeline`: render less, keep the remainder reachable. Raising the cap, hiding
       overflow behind `display:none`, or adding the route to a skip list are all explicitly
       out of scope — each makes the guard green while the page stays unbounded, which is the
       failure mode the guard exists to catch.
-- [ ] For any route classified "guard drifted", the reason the expectation no longer holds is
+      - `/` — `web/blueprints/cockpit.py`: `get_cockpit_context()` now slices
+        `work_queue` to `WORK_QUEUE_INITIAL = 20` (of 317) and exposes
+        `work_queue_total`/`work_queue_initial`; `cockpit.html` renders the capped
+        list plus a "Show N more" htmx link to the new
+        `GET /api/scan/work-queue-more` route, which renders the true remainder
+        via `_work_queue_items.html` on demand — the rows past 20 are absent from
+        the initial DOM, not `display:none`-hidden.
+      - `/metrics` — `web/blueprints/metrics.py`: `project_metrics()` slices `stale`
+        to `STALE_TASKS_INITIAL = 20` (of 260) and exposes `stale_tasks_total`/
+        `stale_tasks_initial`; `metrics.html` mirrors the same capped-list +
+        "Show N more" + `GET /api/metrics/stale-tasks-more` shape via
+        `_stale_tasks_items.html`.
+      - `/inception/T-2715` + `/review/T-2715` (same page, see AC1) —
+        `web/blueprints/inception.py`: `_build_extra_sections()` truncates any
+        extra section past `EXTRA_SECTION_TRUNCATE_CHARS = 2000`, cut on a
+        newline boundary; `inception_detail.html` renders the truncated card plus
+        a "Show full section (N chars)" htmx link to the new
+        `GET /inception/<task_id>/section-expand/<idx>` route, which returns the
+        untruncated card in place. `## Open Questions` (51,547 chars) now ships
+        ~2000 chars initially, not all 51,547.
+- [x] For any route classified "guard drifted", the reason the expectation no longer holds is
       named (route renamed, fixture task removed, selector changed), and the guard is corrected
       so it still fails on a genuinely over-height page — demonstrated by mutation, not asserted.
-- [ ] `test_all_routes_height.py` ends green, and the count of tests it runs is reported before
+      **N/A — vacuously satisfied.** All 4 failing routes were classified "page genuinely over
+      the bound" in AC1 (none guard-drifted), so there is nothing for this AC to act on. The
+      guard's own correctness (still fails on genuinely-over pages) is demonstrated by the
+      baseline re-run below reproducing the original 4 failures against the pre-fix code —
+      the guard was never broken, only honest.
+- [x] `test_all_routes_height.py` ends green, and the count of tests it runs is reported before
       and after so a route cannot go green by ceasing to be measured.
+      **Before (pre-fix code, reproduced via `git stash` of the 3 blueprint + 3 template +
+      2 new-partial files, then rerun):** `4 failed, 70 passed in 304.86s` — 74 tests total,
+      failures on exactly the 4 routes named in this task's description (`/`, `/metrics`,
+      `/inception/T-2715`, `/review/T-2715`).
+      **After (fix restored via `git stash pop`):** `74 passed in 299.14s` — same 74 tests
+      total, zero failures. Route count is identical before/after (74 == 74) — no route
+      dropped out of measurement; all 4 previously-failing routes are now passing for real.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -197,6 +251,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+out=$(python3 -m pytest tests/playwright/test_all_routes_height.py -q 2>&1); echo "$out" | grep -q " passed" && ! echo "$out" | grep -q " failed"
 
 ## RCA
 

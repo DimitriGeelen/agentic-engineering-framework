@@ -5871,3 +5871,66 @@ bin/fw note "Focus-theft lead (extends OBS-144, supersedes the cron theory): the
   command: 'cd /opt/999-Agentic-Engineering-Framework
 git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2789: close — arc-tag test predicate fixed (11/11 green)" 2>&1 | tail -2
 git push origin '
+- timestamp: '2026-08-04T17:48:55Z'
+  task: 'T-2792'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2793'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2792/T-2793: correct duplicated false-green claim in T-2793 Updates section
+
+OBS-154s retraction commit fixed the fabricated VERIFIED LIVE self-
+rep'
+- timestamp: '2026-08-04T17:50:58Z'
+  task: 'T-2792'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2793'
+  command: 'FW_SWITCH_FOCUS=1 bash -c bin/fw vendor self >/dev/null 2>&1; git add -A install.sh tests/unit/bin_executable_bits.bats .agentic-framework/ && git commit -q -m "T-2793: install.sh must rm the old sym'
+- timestamp: '2026-08-04T18:05:20Z'
+  task: 'T-2792'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2794'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2794: router routing-loop message leads with the installer, not git internals
+
+Found live during T-2792s real onboarding rehearsal: this hosts global'
+- timestamp: '2026-08-04T18:13:59Z'
+  task: 'T-2793'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2792'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2792: fresh-install onboarding path — real dry-run, live fixes, re-verified
+
+Ran the onboarding prompts Steps 1-5 for real in throwaway directories'
+- timestamp: '2026-08-04T19:17:41Z'
+  task: 'T-2793'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2784'
+  command: 'bin/fw task update T-2784 --status work-completed --switch-focus 2>&1 | tail -60'
+- timestamp: '2026-08-04T19:54:49Z'
+  task: 'T-2785'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2796'
+  command: 'bin/fw task update T-2796 --status work-completed --switch-focus 2>&1 | tail -15'
+- timestamp: '2026-08-04T20:55:44Z'
+  task: 'T-2799'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2800'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/reports/T-2800-home-install-architecture.md .tasks/active/T-2800-*.md install.sh && FW_SWITCH_FOCUS=1 git commit -q -m "T-2800: \$HOME framework install architecture —'
+- timestamp: '2026-08-04T21:02:31Z'
+  task: 'T-2799'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2800'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/reports/T-2800-home-install-architecture.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-2800: bootstrap spike — option (a) proven end to end with zero framework in \$HOME'
+- timestamp: '2026-08-04T21:16:51Z'
+  task: 'T-2800'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'

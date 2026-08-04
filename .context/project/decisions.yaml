@@ -2627,3 +2627,10 @@ decisions:
     date: 2026-08-04
     task: T-2793
     rationale: "Not specified"
+
+  - id: D-378
+    decision: "File this as a doc fix to `prompts/aef-fresh-install-onboarding.md`, not a"
+    scope: project
+    date: 2026-08-04
+    task: T-2795
+    rationale: "Auto-captured from task file on completion"

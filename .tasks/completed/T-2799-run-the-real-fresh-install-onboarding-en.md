@@ -6,12 +6,12 @@ description: >
   run the real fresh-install onboarding end to end from GitHub master in an isolated
   HOME; fix every break
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/install_verify_no_cwd_init.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T20:26:45Z
-last_update: '2026-08-04T20:30:12Z'
-date_finished:
+last_update: 2026-08-04T21:15:39Z
+date_finished: 2026-08-04T21:15:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -381,3 +381,20 @@ master both left 0.
 - **Context:** Not re-tested here: genuinely missing-prerequisite conditions (no git/
   python3/node on the machine) — this host has all three, so Step 1's failure branches
   are unexercised. That gap is pre-existing to this task and not newly introduced.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-df0f3103
+- **Timestamp:** 2026-08-04T21:16:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/install_verify_no_cwd_init.bats > /tmp/.t2799-verify.out 2>&1 && grep -q '^ok 1 ' /tmp/.t2799-verify.out`
+
+### 2026-08-04T21:15:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

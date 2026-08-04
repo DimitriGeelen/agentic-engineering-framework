@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2796: fw --version reports a bare counter with no anchor, and warns on a string compare T-2713 already replaced
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T19:55:03Z
+# ============================================================================
+
+task_id: T-2796
+task_name: "fw --version reports a bare counter with no anchor, and warns on a string compare T-2713 already replaced"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T19:46:20Z
+completed: 2026-08-04T19:54:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-04T21:52:15+02:00
+last_commit: 2026-08-04T21:52:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw --version prints the commit its counter is a distance from; pin relation via ancestry not string compare
+
+# Key outcomes
+outcomes:
+  - '`fw --version` prints the commit its counter is a distance from — SHA plus branch'
+  - 'A framework root with no `.git` (the vendored case) says so explicitly rather'
+  - 'The `Pinned:` comparison routes through `fw_version_relation` (git ancestry),'
+  - 'Line 1 (`fw v<counter>`) is byte-identical to before, so the `.framework.yaml`'
+  - '`tests/unit/fw_version_output.bats` — 9 tests, all green — including a'
+  - 'Negative control run: the same assertions against `git show HEAD:bin/fw` fail'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2796-fw---version-reports-a-bare-counter-with.md'
+  - 'tests/unit/fw_version_output.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T21:52:15'
+    action: 'T-2796: fw --version prints the commit its counter is a distance from; pin relation via ancestry not string compare'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 6
+  lines_added: 597
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2796-fw---version-reports-a-bare-counter-with.md
+generated_by: context-agent-hybrid

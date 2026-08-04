@@ -17,12 +17,12 @@ description: >
   3 files already use the correct shape (import TEST_URL from conftest). Found by
   the T-2783 sweep.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/playwright/conftest.py, tests/playwright/target.py, tests/playwright/test_api_config.py, tests/playwright/test_api_cron_jobs.py, tests/playwright/test_api_health.py, tests/playwright/test_api_index.py, tests/playwright/test_api_quality.py, tests/playwright/test_api_search.py, tests/playwright/test_approvals_content_tokens.py, tests/playwright/test_approvals.py, tests/playwright/test_approvals_style_tokens.py, tests/playwright/test_arc_badge.py, tests/playwright/test_arc_page_parity.py, tests/playwright/test_arcs_pages_tokens.py, tests/playwright/test_ask.py, tests/playwright/test_assumptions.py, tests/playwright/test_badge_contrast.py, tests/playwright/test_breadcrumb.py, tests/playwright/test_bulk_actions.py, tests/playwright/test_cockpit_activity.py, tests/playwright/test_cockpit_density_spacing.py, tests/playwright/test_cockpit_inline_tokens.py, tests/playwright/test_cockpit_knowledge_counts.py, tests/playwright/test_cockpit.py, tests/playwright/test_cockpit_status_pills.py, tests/playwright/test_cockpit_traceability.py, tests/playwright/test_command_palette.py, tests/playwright/test_config.py, tests/playwright/test_core.py, tests/playwright/test_costs.py, tests/playwright/test_cron.py, tests/playwright/test_directives.py, tests/playwright/test_discoveries.py, tests/playwright/test_discovery.py, tests/playwright/test_docs_detail.py, tests/playwright/test_docs.py, tests/playwright/test_enforcement.py, tests/playwright/test_fabric_coupling_token.py, tests/playwright/test_fabric_graph_cold_load.py, tests/playwright/test_fabric.py, tests/playwright/test_file_viewer.py, tests/playwright/test_filter_chips.py, tests/playwright/test_graduation.py, tests/playwright/test_health.py, tests/playwright/test_inception_page.py, tests/playwright/test_inception.py, tests/playwright/test_interactions.py, tests/playwright/test_kanban_drag.py, tests/playwright/test_metrics.py, tests/playwright/test_navigation.py, tests/playwright/test_nav_layouts.py, tests/playwright/test_nav_subsections.py, tests/playwright/test_patterns.py, tests/playwright/test_pins.py, tests/playwright/test_project.py, tests/playwright/test_quality.py, tests/playwright/test_review_acs.py, tests/playwright/test_review_csrf.py, tests/playwright/test_review_htmx_target_inheritance.py, tests/playwright/test_review_page.py, tests/playwright/test_review.py, tests/playwright/test_risks.py, tests/playwright/test_search_extended.py, tests/playwright/test_search.py, tests/playwright/test_sessions.py, tests/playwright/test_settings_nav_link.py, tests/playwright/test_settings.py, tests/playwright/test_shortcuts_overlay.py, tests/playwright/test_smoke.py, tests/playwright/test_task_detail.py, tests/playwright/test_task_panel_edit.py, tests/playwright/test_task_panel.py, tests/playwright/test_tasks.py, tests/playwright/test_terminal.py, tests/playwright/test_theme_toggle_contrast.py, tests/playwright/test_timeline.py, tests/unit/test_playwright_target_single_source.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -35,8 +35,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T10:06:24Z
-last_update: 2026-08-04T12:38:56Z
-date_finished:
+last_update: 2026-08-04T19:17:42Z
+date_finished: 2026-08-04T19:17:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -129,7 +129,7 @@ signal than noise.
       `localhost:<port>` / `127.0.0.1:<port>`, and it is red before the fix and green after
       (mutation-checked, L-530). 81 files drifted into this shape one at a time; nothing
       noticed, which is the actual defect.
-- [ ] Full playwright suite result recorded before and after with the same invocation, so the
+- [x] Full playwright suite result recorded before and after with the same invocation, so the
       conversion is shown not to have changed which tests pass. Any test that was already
       failing stays named rather than absorbed into the diff.
       **PENDING — before-run done, after-run in flight (3rd attempt).** Baseline recorded above
@@ -226,6 +226,14 @@ signal than noise.
       re-verification of only the diff set (the 89 newly-failing tests) run in isolation
       against a fresh short-lived server, cross-referenced with the already-completed AC #2
       sample demonstration — not a fourth/fifth full-suite attempt for its own sake.
+
+      **ATTEMPT 5 COMPLETED AND VALID.** Same invocation, isolated (nothing else run
+      concurrently on my part), `-s` captured. Result: `13 failed, 885 passed, 5 skipped in
+      3003.94s (0:50:03)` — identical count to the baseline. `diff` between
+      `/tmp/.before-failures.txt` and the sorted `FAILED` lines from
+      `.context/working/.T-2784-after-run5.log` is **empty**: the exact same 13 tests fail,
+      nothing added, nothing absorbed. The conversion changed only where the address comes
+      from, as intended. AC ticked.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -395,3 +403,15 @@ signal than noise.
 
 ### 2026-08-04T10:09:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0c6a63ff
+- **Timestamp:** 2026-08-04T19:17:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-04T19:17:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

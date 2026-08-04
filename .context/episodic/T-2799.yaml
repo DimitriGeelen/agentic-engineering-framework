@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2799: run the real fresh-install onboarding end to end from GitHub master in an isolated HOME; fix every break
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T21:16:38Z
+# ============================================================================
+
+task_id: T-2799
+task_name: "run the real fresh-install onboarding end to end from GitHub master in an isolated HOME; fix every break"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T20:26:45Z
+completed: 2026-08-04T21:15:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-04T23:05:40+02:00
+last_commit: 2026-08-04T23:06:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pin the fresh-install cwd-corruption fix with a regression test; file two sibling findings. fill in fabric card for the new install regression test
+
+# Key outcomes
+outcomes:
+  - 'The installer is fetched from the **public GitHub master** a new user would hit and'
+  - 'Every onboarding step (prereqs → install → init → session/health → Watchtower) is'
+  - 'Every failure found is fixed, or filed with its reproduction. No failure left'
+  - 'After the fixes, a **second** clean run in a fresh isolated HOME reaches a live'
+  - 'The operator is handed no commands to run as part of this task''s verification.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pin the fresh-install cwd-corruption fix with a regression test; file two sibling findings'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-install_verify_no_cwd_init.yaml'
+  - '.tasks/active/T-2799-run-the-real-fresh-install-onboarding-en.md'
+  - '.tasks/active/T-2801-fw-init-is-not-atomic-and-its-debris-is-.md'
+  - '.tasks/active/T-2802-fw-watchtower-url-returns-httplocalhost3.md'
+  - 'tests/unit/install_verify_no_cwd_init.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T23:05:40'
+    action: 'T-2799: pin the fresh-install cwd-corruption fix with a regression test; file two sibling findings'
+  - time: '2026-08-04T23:06:02'
+    action: 'T-2799: fill in fabric card for the new install regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 48 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 48
+  commits: 2
+  files_changed: 6
+  lines_added: 968
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2799-run-the-real-fresh-install-onboarding-en.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,396 @@
+
+[watchtower_server] start: nothing listening on the test port
+...................F............................F...............................F...F...........................................................................................................................................................................................................................................................................................................FF................F............F..ss......F......F.................................................................................................................................................F.......s................................................ss..............................F................................................................................................................................................................................................F.........................................
+=================================== FAILURES ===================================
+_________________________ test_route_height_bounded[/] _________________________
+
+page = <Page url='http://localhost:3099/'>, base_url = 'http://localhost:3099'
+route = '/'
+
+    @pytest.mark.skipif(not ROUTES, reason="app url_map not importable — route discovery returned []")
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_route_height_bounded(page, base_url, route):
+        """Every discovered route renders below the screenshot cap (no new unbounded page)."""
+        page.goto(f"{base_url}{route}")
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(300)
+        height = page.evaluate("document.documentElement.scrollHeight")
+>       assert height < HEIGHT_CAP_PX, (
+            f"{route} scrollHeight {height}px exceeds {HEIGHT_CAP_PX}px cap — a new unbounded "
+            "page entered the class. Fix by shape (collapse overflow or table scroll container) "
+            "— see project_unbounded_watchtower_pages / CLAUDE.md. (T-2048 guard)"
+        )
+E       AssertionError: / scrollHeight 16543px exceeds 8000px cap — a new unbounded page entered the class. Fix by shape (collapse overflow or table scroll container) — see project_unbounded_watchtower_pages / CLAUDE.md. (T-2048 guard)
+E       assert 16543 < 8000
+
+tests/playwright/test_all_routes_height.py:85: AssertionError
+_____________________ test_route_height_bounded[/metrics] ______________________
+
+page = <Page url='http://localhost:3099/metrics'>
+base_url = 'http://localhost:3099', route = '/metrics'
+
+    @pytest.mark.skipif(not ROUTES, reason="app url_map not importable — route discovery returned []")
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_route_height_bounded(page, base_url, route):
+        """Every discovered route renders below the screenshot cap (no new unbounded page)."""
+        page.goto(f"{base_url}{route}")
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(300)
+        height = page.evaluate("document.documentElement.scrollHeight")
+>       assert height < HEIGHT_CAP_PX, (
+            f"{route} scrollHeight {height}px exceeds {HEIGHT_CAP_PX}px cap — a new unbounded "
+            "page entered the class. Fix by shape (collapse overflow or table scroll container) "
+            "— see project_unbounded_watchtower_pages / CLAUDE.md. (T-2048 guard)"
+        )
+E       AssertionError: /metrics scrollHeight 10402px exceeds 8000px cap — a new unbounded page entered the class. Fix by shape (collapse overflow or table scroll container) — see project_unbounded_watchtower_pages / CLAUDE.md. (T-2048 guard)
+E       assert 10402 < 8000
+
+tests/playwright/test_all_routes_height.py:85: AssertionError
+__________ test_parametrized_route_height_bounded[/inception/T-2715] ___________
+
+page = <Page url='http://localhost:3099/inception/T-2715'>
+base_url = 'http://localhost:3099', route = '/inception/T-2715'
+
+    @pytest.mark.skipif(
+        not PARAMETRIZED_ROUTES,
+        reason="parametrized-route sampler returned [] — no arcs/tasks fixtures yet (T-2088)",
+    )
+    @pytest.mark.parametrize("route", PARAMETRIZED_ROUTES)
+    def test_parametrized_route_height_bounded(page, base_url, route):
+        """Sampled parametrized routes (/arcs/<id>, /tasks/<id>, /review/<id>, /inception/<id>)
+        render below the cap. Closes the T-2087 blind-spot: the parameterless guard never
+        measured these patterns, so /arcs/orchestrator-rethink shipped at 15184px silently.
+        Same 8000px cap; same fix shape (table scroll container or collapsed overflow).
+        (T-2048 + T-2088)
+        """
+        page.goto(f"{base_url}{route}")
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(300)
+        height = page.evaluate("document.documentElement.scrollHeight")
+>       assert height < HEIGHT_CAP_PX, (
+            f"{route} scrollHeight {height}px exceeds {HEIGHT_CAP_PX}px cap — a parametrized "
+            "route entered the unbounded-page class. Fix by shape (max-height scroll container "
+            "for tables, collapsed <details> for card lists) — see CLAUDE.md / T-2087 / "
+            "project_unbounded_watchtower_pages. (T-2088 guard)"
+        )
+E       AssertionError: /inception/T-2715 scrollHeight 11104px exceeds 8000px cap — a parametrized route entered the unbounded-page class. Fix by shape (max-height scroll container for tables, collapsed <details> for card lists) — see CLAUDE.md / T-2087 / project_unbounded_watchtower_pages. (T-2088 guard)
+E       assert 11104 < 8000
+
+tests/playwright/test_all_routes_height.py:108: AssertionError
+____________ test_parametrized_route_height_bounded[/review/T-2715] ____________
+
+page = <Page url='http://localhost:3099/inception/T-2715'>
+base_url = 'http://localhost:3099', route = '/review/T-2715'
+
+    @pytest.mark.skipif(
+        not PARAMETRIZED_ROUTES,
+        reason="parametrized-route sampler returned [] — no arcs/tasks fixtures yet (T-2088)",
+    )
+    @pytest.mark.parametrize("route", PARAMETRIZED_ROUTES)
+    def test_parametrized_route_height_bounded(page, base_url, route):
+        """Sampled parametrized routes (/arcs/<id>, /tasks/<id>, /review/<id>, /inception/<id>)
+        render below the cap. Closes the T-2087 blind-spot: the parameterless guard never
+        measured these patterns, so /arcs/orchestrator-rethink shipped at 15184px silently.
+        Same 8000px cap; same fix shape (table scroll container or collapsed overflow).
+        (T-2048 + T-2088)
+        """
+        page.goto(f"{base_url}{route}")
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(300)
+        height = page.evaluate("document.documentElement.scrollHeight")
+>       assert height < HEIGHT_CAP_PX, (
+            f"{route} scrollHeight {height}px exceeds {HEIGHT_CAP_PX}px cap — a parametrized "
+            "route entered the unbounded-page class. Fix by shape (max-height scroll container "
+            "for tables, collapsed <details> for card lists) — see CLAUDE.md / T-2087 / "
+            "project_unbounded_watchtower_pages. (T-2088 guard)"
+        )
+E       AssertionError: /review/T-2715 scrollHeight 11104px exceeds 8000px cap — a parametrized route entered the unbounded-page class. Fix by shape (max-height scroll container for tables, collapsed <details> for card lists) — see CLAUDE.md / T-2087 / project_unbounded_watchtower_pages. (T-2088 guard)
+E       assert 11104 < 8000
+
+tests/playwright/test_all_routes_height.py:108: AssertionError
+________________________ test_arc_review_no_form_fields ________________________
+
+page = <Page url='http://localhost:3099/arcs/value-prioritisation/review'>
+base_url = 'http://localhost:3099'
+
+    def test_arc_review_no_form_fields(page, base_url):
+        """Read-only — no <form>, no <input>, no <textarea> on the page."""
+        page.goto(f"{base_url}/arcs/value-prioritisation/review", wait_until="domcontentloaded")
+        main = page.locator("main, body").first
+        assert main.locator('form').count() == 0, "review page must not contain any <form>"
+        # Some shared shell elements might contain CSRF meta tags, so we don't ban <input>
+        # globally — only ban editable types that suggest a form fragment.
+        for editable_type in ("text", "textarea", "checkbox", "radio"):
+            if editable_type == "textarea":
+                assert main.locator("textarea").count() == 0
+            else:
+>               assert main.locator(f'input[type="{editable_type}"]').count() == 0, (
+                    f"review page must not contain an editable input of type {editable_type!r}"
+                )
+E               AssertionError: review page must not contain an editable input of type 'text'
+E               assert 1 == 0
+E                +  where 1 = count()
+E                +    where count = <Locator frame=<Frame name= url='http://localhost:3099/arcs/value-prioritisation/review'> selector='main, body >> nth=0 >> input[type="text"]'>.count
+E                +      where <Locator frame=<Frame name= url='http://localhost:3099/arcs/value-prioritisation/review'> selector='main, body >> nth=0 >> input[type="text"]'> = locator('input[type="text"]')
+E                +        where locator = <Locator frame=<Frame name= url='http://localhost:3099/arcs/value-prioritisation/review'> selector='main, body >> nth=0'>.locator
+
+tests/playwright/test_arc_review_route.py:48: AssertionError
+___________ test_arc_review_renders_for_closed_arc_without_redirect ____________
+
+page = <Page url='http://localhost:3099/arcs/dispatch-safety/review'>
+base_url = 'http://localhost:3099'
+
+    def test_arc_review_renders_for_closed_arc_without_redirect(page, base_url):
+        """dispatch-safety is closed — page must still render (no 302), with closed notice."""
+        response = page.goto(
+            f"{base_url}/arcs/dispatch-safety/review",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.status == 200, (
+            f"closed arc /review must NOT redirect; got status {response.status if response else None}"
+        )
+        expect(page.locator(".arc-review-hdr")).to_be_visible()
+        body_text = (page.locator("body").text_content() or "").lower()
+>       assert "closed" in body_text, "closed arc page should mention closed status"
+E       AssertionError: closed arc page should mention closed status
+E       assert 'closed' in "\n\n    \n    \n        \n            \n                watchtower\n            \n\n            \n                \n ...rage.setitem('wt-theme', next);\n            wtupdatethemeicons();\n        }\n        wtupdatethemeicons();\n    \n\n"
+
+tests/playwright/test_arc_review_route.py:64: AssertionError
+__________________ test_arcs_link_lives_under_work_nav_group ___________________
+
+page = <Page url='http://localhost:3099/arcs'>
+base_url = 'http://localhost:3099'
+
+    def test_arcs_link_lives_under_work_nav_group(page, base_url):
+        """Regression test for T-1904: /arcs was previously under Architecture;
+        user expected it under Work. The nav <details> for 'Work' must contain
+        an <a href='/arcs'>; the 'Architecture' <details> must not."""
+        page.goto(f"{base_url}/arcs", wait_until="domcontentloaded")
+        work_group = page.locator("li details:has(summary:text-is('Work'))")
+>       expect(work_group).to_have_count(1)
+E       AssertionError: Locator expected to have count '1'
+E       Actual value: 0 
+E       Call log:
+E         - Expect "to_have_count" with timeout 5000ms
+E         - waiting for locator("li details:has(summary:text-is('Work'))")
+E           9 × locator resolved to 0 elements
+E             - unexpected value "0"
+
+tests/playwright/test_arcs_kanban.py:87: AssertionError
+_________ TestBadgeContrast.test_arc_detail_badge_contrast[.badge-ok] __________
+
+self = <test_badge_contrast.TestBadgeContrast object at 0x75df615f32f0>
+page = <Page url='http://localhost:3099/arcs/arc-006'>, cls = '.badge-ok'
+
+    @pytest.mark.parametrize("cls", TARGET_CLASSES)
+    def test_arc_detail_badge_contrast(self, page: Page, cls: str):
+        page.goto(f"{TEST_URL}/arcs/arc-006")
+        page.wait_for_load_state("domcontentloaded")
+        result = page.evaluate(CONTRAST_PROBE, cls)
+        if result["count"] == 0:
+            pytest.skip(f"No {cls} present on /arcs/arc-006 in current fixture")
+>       assert result["contrast"] >= WCAG_AA, (
+            f"{cls} on /arcs/arc-006 — contrast {result['contrast']:.2f} "
+            f"below WCAG AA {WCAG_AA}. fg={result['fg']} bg={result['bg']} "
+            f"sample={result['sample']!r}"
+        )
+E       AssertionError: .badge-ok on /arcs/arc-006 — contrast 4.09 below WCAG AA 4.5. fg=rgb(255, 255, 255) bg=rgb(90, 138, 58) sample='work-completed'
+E       assert 4.092593099954754 >= 4.5
+
+tests/playwright/test_badge_contrast.py:70: AssertionError
+_____________ TestBulkActions.test_listeners_survive_content_swap ______________
+
+self = <test_bulk_actions.TestBulkActions object at 0x75df615f3ef0>
+page = <Page url='http://localhost:3099/tasks?view=list'>
+
+    def test_listeners_survive_content_swap(self, page: Page):
+        _goto_tasks(page)
+        page.locator(CARD_CB).nth(0).check()
+        expect(page.locator(BAR)).to_be_visible()
+        # htmx #content swap to the list view — selection resets, listeners must persist
+        page.locator("a[href='/tasks?view=list']").first.click()
+        page.wait_for_timeout(400)
+>       expect(page.locator(BAR)).to_be_hidden()
+E       AssertionError: Locator expected to be hidden
+E       Actual value: visible 
+E       Call log:
+E         - Expect "to_be_hidden" with timeout 5000ms
+E         - waiting for locator("#wt-bulk-bar")
+E           3 × locator resolved to <div role="region" id="wt-bulk-bar" class="wt-bulk-bar" aria-hidden="false" aria-label="Bulk actions">…</div>
+E             - unexpected value "visible"
+
+tests/playwright/test_bulk_actions.py:60: AssertionError
+____________________ test_add_form_submit_keeps_user_on_bvp ____________________
+
+page = <Page url='http://localhost:3099/bvp'>
+base_url = 'http://localhost:3099'
+
+    def test_add_form_submit_keeps_user_on_bvp(page, base_url):
+        """The exact failure mode T-2079 closes: pressing Submit on the add-driver
+        form must not navigate the browser to the JSON API URL.
+    
+        We populate the form fields with a unique driver name and submit; the URL
+        must remain on /bvp throughout. Whether the backend actually adds the
+        driver is asserted elsewhere (commit-weights tests, CLI fw bvp tests) —
+        here we care only that the URL stays put.
+        """
+        page.goto(f"{base_url}/bvp", wait_until="domcontentloaded")
+        expect(page.locator("#bvp-driver-add-form")).to_be_visible()
+    
+        # Disable the after-request reload so the test sees the post-submit URL
+        # cleanly — the production reload would itself stay on /bvp but reloads
+        # add timing noise that masks regressions if the navigation IS broken.
+        page.evaluate(
+            """
+            const f = document.getElementById('bvp-driver-add-form');
+            f.removeAttribute('hx-on::after-request');
+            f.removeAttribute('hx-on:htmx:after-request');
+            """
+        )
+    
+        page.fill("#da-name", "t2079probe")
+        page.fill(
+            "#da-rationale",
+            "T-2079 Playwright guard — verifying form submit does not navigate URL away from /bvp.",
+        )
+        # Submit and wait for the htmx response to land in the target div.
+        page.click("#da-submit-btn")
+>       page.wait_for_selector("#da-result span", timeout=5000)
+
+tests/playwright/test_bvp_form_htmx.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/dist-packages/playwright/sync_api/_generated.py:8182: in wait_for_selector
+    self._sync(
+/usr/local/lib/python3.12/dist-packages/playwright/_impl/_page.py:423: in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/dist-packages/playwright/_impl/_frame.py:369: in wait_for_selector
+    await self._channel.send(
+/usr/local/lib/python3.12/dist-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <playwright._impl._connection.Connection object at 0x75df6300cbc0>
+cb = <function Channel.send.<locals>.<lambda> at 0x75df601600e0>
+is_internal = False, title = None
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None
+    ) -> Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        st: List[inspect.FrameInfo] = getattr(
+            task, "__pw_stack__", None
+        ) or inspect.stack(0)
+    
+        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+>           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 5000ms exceeded.
+E           Call log:
+E             - waiting for locator("#da-result span") to be visible
+
+/usr/local/lib/python3.12/dist-packages/playwright/_impl/_connection.py:558: TimeoutError
+________________ TestFileViewer.test_file_viewer_loads_markdown ________________
+
+self = <test_file_viewer.TestFileViewer object at 0x75df614ee6c0>
+page = <Page url='http://localhost:3099/file/docs/style-guide.md'>
+
+    def test_file_viewer_loads_markdown(self, page: Page):
+        """A valid markdown file under docs/ should render with 200."""
+        resp = page.goto(_url("/file/docs/style-guide.md"))
+>       assert resp.status == 200
+E       AssertionError: assert 404 == 200
+E        +  where 404 = <Response url='http://localhost:3099/file/docs/style-guide.md' request=<Request url='http://localhost:3099/file/docs/style-guide.md' method='GET'>>.status
+
+tests/playwright/test_file_viewer.py:21: AssertionError
+_ TestMobileViewportApprovals.test_approvals_no_horizontal_overflow_on_mobile __
+
+self = <test_mobile_viewport.TestMobileViewportApprovals object at 0x75df6157cc80>
+page = <Page url='http://localhost:3099/approvals'>
+
+    def test_approvals_no_horizontal_overflow_on_mobile(self, page: Page):
+        page.set_viewport_size(MOBILE_VIEWPORT)
+        page.goto(_url("/approvals"))
+        page.wait_for_load_state("domcontentloaded")
+>       _no_horizontal_overflow(page, "/approvals")
+
+tests/playwright/test_mobile_viewport.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+page = <Page url='http://localhost:3099/approvals'>, surface = '/approvals'
+tolerance = 1
+
+    def _no_horizontal_overflow(page: Page, surface: str, tolerance: int = 1):
+        """Assert document scrollWidth <= clientWidth + tolerance.
+    
+        Tolerance: 1px accommodates sub-pixel rounding. Anything beyond that is
+        a real overflow (a child widening the body past the viewport).
+        """
+        measurements = page.evaluate(
+            """() => ({
+                scrollWidth: document.documentElement.scrollWidth,
+                clientWidth: document.documentElement.clientWidth,
+                bodyScrollWidth: document.body.scrollWidth,
+            })"""
+        )
+        sw = measurements["scrollWidth"]
+        cw = measurements["clientWidth"]
+>       assert sw <= cw + tolerance, (
+            f"{surface}: horizontal overflow at 375x667 — "
+            f"scrollWidth={sw} > clientWidth={cw}. "
+            f"Some child widens the body past the mobile viewport."
+        )
+E       AssertionError: /approvals: horizontal overflow at 375x667 — scrollWidth=443 > clientWidth=375. Some child widens the body past the mobile viewport.
+E       assert 443 <= (375 + 1)
+
+tests/playwright/test_mobile_viewport.py:53: AssertionError
+_____________ TestTaskPanel.test_panel_opens_after_htmx_board_swap _____________
+
+self = <test_task_panel.TestTaskPanel object at 0x75df607605f0>
+page = <Page url='http://localhost:3099/tasks?view=list'>
+
+    def test_panel_opens_after_htmx_board_swap(self, page: Page):
+        _goto_tasks(page)
+        # swap #content to the list view (htmx hx-get) — the panel listener lives in
+        # the shell, so it must still fire on the freshly-swapped rows
+        page.locator("a[href='/tasks?view=list']").first.click()
+        page.wait_for_timeout(400)
+>       expect(page.locator("table [data-task-panel]").first).to_be_visible()
+E       AssertionError: Locator expected to be visible
+E       Actual value: <element(s) not found> 
+E       Call log:
+E         - Expect "to_be_visible" with timeout 5000ms
+E         - waiting for locator("table [data-task-panel]").first
+
+tests/playwright/test_task_panel.py:59: AssertionError
+=============================== slowest 10 tests ===============================
+   29.34s  tests/playwright/test_nav_links.py::TestNavLinks::test_nav_links_are_valid
+   22.15s  tests/playwright/test_inception_decide_flow.py::TestInceptionDecideJourney::test_full_decide_journey_posts_to_correct_endpoint
+   21.37s  tests/playwright/test_inception_decide_flow.py::TestInceptionDecideJourney::test_inception_review_renders_decide_form_with_rationale
+   16.64s  tests/playwright/test_arc_badge.py::TestArcBadge::test_arc_badge_shows_dual_form
+   15.08s  tests/playwright/test_api_scan.py::TestScanFocus::test_scan_focus_valid_id_succeeds
+   15.01s  tests/playwright/test_kanban_drag.py::TestKanbanDrag::test_listeners_survive_content_swap
+   14.75s  tests/playwright/test_api_scan.py::TestScanRefresh::test_scan_refresh_returns_html
+   14.53s  tests/playwright/test_api_session_init.py::TestSessionInit::test_session_init_returns_html
+   13.61s  tests/playwright/test_approvals_arc_review_navigation.py::test_approvals_review_does_not_bounce_back
+   13.48s  tests/playwright/test_all_routes_height.py::test_route_height_bounded[/search]
+=========================== short test summary info ============================
+FAILED tests/playwright/test_all_routes_height.py::test_route_height_bounded[/]
+FAILED tests/playwright/test_all_routes_height.py::test_route_height_bounded[/metrics]
+FAILED tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded[/inception/T-2715]
+FAILED tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded[/review/T-2715]
+FAILED tests/playwright/test_arc_review_route.py::test_arc_review_no_form_fields
+FAILED tests/playwright/test_arc_review_route.py::test_arc_review_renders_for_closed_arc_without_redirect
+FAILED tests/playwright/test_arcs_kanban.py::test_arcs_link_lives_under_work_nav_group
+FAILED tests/playwright/test_badge_contrast.py::TestBadgeContrast::test_arc_detail_badge_contrast[.badge-ok]
+FAILED tests/playwright/test_bulk_actions.py::TestBulkActions::test_listeners_survive_content_swap
+FAILED tests/playwright/test_bvp_form_htmx.py::test_add_form_submit_keeps_user_on_bvp
+FAILED tests/playwright/test_file_viewer.py::TestFileViewer::test_file_viewer_loads_markdown
+FAILED tests/playwright/test_mobile_viewport.py::TestMobileViewportApprovals::test_approvals_no_horizontal_overflow_on_mobile
+FAILED tests/playwright/test_task_panel.py::TestTaskPanel::test_panel_opens_after_htmx_board_swap
+13 failed, 885 passed, 5 skipped in 3003.94s (0:50:03)

@@ -6,16 +6,16 @@ description: >
   Inception: should the $HOME framework install exist at all, or is the router plus
   per-project vendoring enough (D-377 total isolation)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/install_verify_no_cwd_init.bats]
 related_tasks: []
 created: 2026-08-04T20:34:56Z
-last_update: '2026-08-04T20:45:06Z'
-date_finished:
+last_update: 2026-08-04T21:16:51Z
+date_finished: 2026-08-04T21:16:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -159,15 +159,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -249,7 +249,20 @@ changes how new projects are created.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The $HOME framework is the common factor in T-2793 (split brain), T-2796 (incomparable versions) and T-2797 (Step 2 reads the global), and it is the source of the router's 'using global install' fallback message. D-377 already decided total isolation; T-2793 delivered it for the CLI but left the global framework in place as a bootstrap seed. Recommend GO on removing it: keep the ~100-line router as the only machine-wide artifact, have the installer fetch framework bytes into the target project, and make the router refuse-with-instructions instead of falling back. Needs a spike on the bootstrap path before building.
+
+Four dialogue rounds refined it. The operator's original proposal ("init always pulls
+latest online, nothing in $HOME") survived every objection the agent raised, and two of
+the operator's counters produced a better design than the agent had proposed: exact-ref
+pinning dissolved the reproducibility objection, and a stable/edge channel model
+resolved the "every new project is a canary" objection without a default that annoys
+experienced users. The bootstrap constraint turned out not to be a refutation but a
+consequence — it forces install and init to become one command per project, which is
+the operator's own earlier position, arrived at from the other direction.
+
+**Date**: 2026-08-04T21:16:51Z
 
 ## Updates
 
@@ -258,3 +271,50 @@ changes how new projects are created.
 
 ### 2026-08-04T20:36:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-04T21:16:51Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The $HOME framework is the common factor in T-2793 (split brain), T-2796 (incomparable versions) and T-2797 (Step 2 reads the global), and it is the source of the router's 'using global install' fallback message. D-377 already decided total isolation; T-2793 delivered it for the CLI but left the global framework in place as a bootstrap seed. Recommend GO on removing it: keep the ~100-line router as the only machine-wide artifact, have the installer fetch framework bytes into the target project, and make the router refuse-with-instructions instead of falling back. Needs a spike on the bootstrap path before building.
+
+Four dialogue rounds refined it. The operator's original proposal ("init always pulls
+latest online, nothing in $HOME") survived every objection the agent raised, and two of
+the operator's counters produced a better design than the agent had proposed: exact-ref
+pinning dissolved the reproducibility objection, and a stable/edge channel model
+resolved the "every new project is a canary" objection without a default that annoys
+experienced users. The bootstrap constraint turned out not to be a refutation but a
+consequence — it forces install and init to become one command per project, which is
+the operator's own earlier position, arrived at from the other direction.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3ece300f
+- **Timestamp:** 2026-08-04T21:16:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-27dec2cb
+- **Timestamp:** 2026-08-04T21:16:53Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2800-home-install-architecture.md` | file | ✓ pass |
+| `T-2793` | task | ✓ pass |
+| `T-2796` | task | ✓ pass |
+| `T-2797` | task | ✓ pass |
+| `T-2799` | task | ✓ pass |
+
+### 2026-08-04T21:16:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

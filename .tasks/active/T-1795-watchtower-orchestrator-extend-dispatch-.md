@@ -92,7 +92,7 @@ shift. Same synthetic-exclusion rule. Same missing-field exclusion.
 
 ### Human
 
-- [ ] [REVIEW] Three sub-tables stack cleanly — panel doesn't overflow
+- [x] [REVIEW] Three sub-tables stack cleanly — panel doesn't overflow
       or compress awkwardly.
       **Steps:**
       1. Open `http://localhost:3000/orchestrator` in a browser.

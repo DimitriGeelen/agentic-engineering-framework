@@ -28,7 +28,7 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-08-04T14:30:30Z
+last_update: 2026-08-04T17:32:30Z
 date_finished: 2026-05-22T19:04:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -323,4 +323,7 @@ url=$(bin/fw watchtower url 2>/dev/null); curl -sf "$url/" | grep -q "foundation
 - **Change:** horizon: now → now
 
 ### 2026-08-04T14:30:30Z — status-update [task-update-agent]
+- **Change:** horizon: now → now
+
+### 2026-08-04T17:32:30Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
