@@ -932,14 +932,48 @@ def bvp_driver_reject():
     return json.dumps({"ok": True, "rejected": proposal_id, "rationale_decision": rationale_decision}), 200, {"Content-Type": "application/json"}
 
 
+# T-2780: task points per page. /bvp rendered every scored task in three places at once
+# (the scatter's JSON payload, the raw-data table, the per-driver-scores table) with no
+# bound on any of them — same unbounded-row class T-2775 found on /timeline. At 2,574 scored
+# tasks that was 5,385,019 bytes, over the 2 MB size-guard cap (test_all_routes_size.py) and
+# large enough to overflow the 64KB pipe buffer on a `curl | grep -q` verification line
+# (T-2743, L-387; T-2771 already moved T-1928's check to redirect-to-file for this reason).
+#
+# /bvp exists to rank tasks by value, so the window has to be a slice of a *sorted* list —
+# bounding it by glob/filename order (the previous implicit order) would show an arbitrary
+# 250 tasks and call it "the scatter", silently changing what the page means. Sorting by
+# bvp_norm descending first means page 1 is always the highest-value tasks, and paging is a
+# window over the ranking rather than a truncation of it.
+#
+# 250 tasks/page * ~2,035 bytes/task (measured pre-fix, JSON + raw row + driver row combined)
+# is ~509 KB plus ~118 KB of page furniture — under 630 KB, ~3.2x headroom under the 2 MB cap
+# for corpus growth, in line with /timeline's ~3.9x margin (T-2775).
+_BVP_TASKS_PER_PAGE = 250
+
+
 @bp.route("/bvp")
 def bvp_scatter():
     policy = _load_policy()
     weights = _driver_weights(policy)
     driver_names = _driver_names(policy)
     driver_rubrics = _driver_rubrics(policy)
-    task_points = _collect_task_points(weights)
-    arc_points = _collect_arc_points(weights)
+
+    # Sort by value (bvp_norm) descending BEFORE windowing — the window must be a slice of a
+    # sorted set so "page 1" always means "highest ranked", not "first found on disk" (T-2780).
+    all_task_points = sorted(_collect_task_points(weights), key=lambda p: p["bvp_norm"], reverse=True)
+    arc_points = sorted(_collect_arc_points(weights), key=lambda p: p["bvp_norm"], reverse=True)
+
+    total_tasks = len(all_task_points)
+    task_page_count = max(1, (total_tasks + _BVP_TASKS_PER_PAGE - 1) // _BVP_TASKS_PER_PAGE)
+    try:
+        task_page = int(request.args.get("page", 1))
+    except (TypeError, ValueError):
+        task_page = 1
+    task_page = max(1, min(task_page, task_page_count))
+
+    start = (task_page - 1) * _BVP_TASKS_PER_PAGE
+    task_points = all_task_points[start:start + _BVP_TASKS_PER_PAGE]
+
     pending_proposals = _load_proposals(state_filter="pending")
     return render_template(
         "bvp.html",
@@ -951,5 +985,10 @@ def bvp_scatter():
         driver_names=driver_names,
         driver_rubrics=driver_rubrics,
         pending_proposals=pending_proposals,
-        empty=(not task_points and not arc_points),
+        empty=(not all_task_points and not arc_points),
+        task_page=task_page,
+        task_page_count=task_page_count,
+        total_tasks=total_tasks,
+        task_range_start=(start + 1) if total_tasks else 0,
+        task_range_end=min(start + _BVP_TASKS_PER_PAGE, total_tasks),
     )
