@@ -1208,3 +1208,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-157
+  text: "fw init is not atomic and its debris is not fw-recoverable. do_init vendors .agentic-framework/ BEFORE writing .framework.yaml, so any interruption (timeout, Ctrl-C, error) leaves a directory with .agentic-framework/ present and .framework.yaml absent. In that state every fw verb fails 'Cannot find framework installation' -- including fw init itself -- so the tool cannot repair or re-init what it created; only manual rm. Hit live 2026-08-04 in /opt/2345-test-install (via the T-2798 --help auto-init bug) and reproduced here exactly by killing a run at 12s. Fix direction: write .framework.yaml first (or a .fw-init-incomplete sentinel), and make fw init tolerate/clean a partial vendor. Sibling of T-2726/T-2727 init-ordering family (validation ran 114 lines BEFORE seeding what it validates)."
+  captured: 2026-08-04T20:14:33Z
+  context_task: null
+  tags: []
+  status: promoted
+  promoted_to: task
+- id: OBS-158
+  text: "fw watchtower url returns http://localhost:3000 from a NON-project directory (no triple-file, no fw_config) -- the documented last-resort fallback. Hazard: on this host :3000 is ANOTHER project's Watchtower (832's), and consumer projects run the same Flask app, so an onboarding agent that captures this URL at Step 2 and curls it at Step 5 gets 200 from a foreign server -- the exact T-2732/T-2734 false-green class (371 verification lines). Observed live 2026-08-04 during fresh-install onboarding in /opt/2345-test-install. Question: should 'fw watchtower url' return a URL at all when no project is resolved, or refuse with a message naming the ambiguity? Silent fallback to a well-known port is a wrong-object answer wearing a valid-looking shape."
+  captured: 2026-08-04T20:24:46Z
+  context_task: T-2785
+  tags: []
+  status: promoted
+  promoted_to: task
