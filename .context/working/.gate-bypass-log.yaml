@@ -5856,3 +5856,10 @@ T-2784: tick ACs 1-3 (converted, demon'
   target: 'T-2784'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 bin/fw note "T-2784 attempt-3 after-run measured server ABSENCE, not the change under test: 310 failed / 590 passed vs a 13/885 baseline, but the signature is'
+- timestamp: '2026-08-04T13:26:31Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2787'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bin/fw note "Focus-theft lead (extends OBS-144, supersedes the cron theory): the 2s poller logged 7 focus transitions; six correlate with my own in-session fw'

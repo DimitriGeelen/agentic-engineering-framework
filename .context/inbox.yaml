@@ -1138,3 +1138,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-147
+  text: "Focus-theft lead (extends OBS-144, supersedes the cron theory): the 2s poller logged 7 focus transitions; six correlate with my own in-session fw calls, but one does not — '2026-08-04T15:00:11 | current_task: null -> current_task: T-2785 | procs: 3101044 /bin/bash /opt/832-Workflow-designer/.agentic-framework/...'. A process running out of the PEER PROJECT's vendored framework was live at the moment our focus.yaml changed to one of OUR task ids. CORRELATIONAL NOT PROVEN — the procs column lists processes running within 20s of the change, not the writer, so this is a lead. But it is testable and it is the only transition not explained by my own calls. Plausible mechanism ties to T-2787: fw resolves PROJECT_ROOT by walking up from cwd for .framework.yaml/.tasks, and this host has /.tasks and /.context at filesystem ROOT, so a peer-project process with an unexpected cwd can resolve to a project that is not its own. Next step: instrument with a writer-identifying probe (fuser/lsof on focus.yaml, or an audit rule) rather than a concurrent-process sample. Evidence: .context/working/.focus-writer-watch.log"
+  captured: 2026-08-04T13:26:31Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null

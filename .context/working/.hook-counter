@@ -1,4 +1,4 @@
-audit-task-tools=3
+audit-task-tools=7
 ck-human-ac-tick=5
 check-inception-schema=23
 
@@ -6,17 +6,10 @@ check-heredoc-cmd-sub=18
 check-inception-decisions=19
 check-settings-edit=17
 check-arc-id=9
-check-project-boundary=104
-budget-gate=105
-check-active-task=100
-loop-detect=104
-audit-task-tools=97
-commit-cadence=14
-check-active-completed-dup=13
-check-tier0=90
-error-watchdog=79
-check-fabric-new-file=2
-
-post-compact-resume=1
-checkpoint=15
-check-human-ac-tick=1
+check-project-boundary=112
+budget-gate=113
+check-active-task=108
+loop-detect=109
+error-watchdog=3
+checkpoint=3
+check-tier0=4
