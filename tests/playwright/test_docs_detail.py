@@ -7,7 +7,7 @@ import os
 
 from playwright.sync_api import Page
 
-TEST_URL = "http://localhost:3099"
+from tests.playwright.target import TEST_URL
 DOCS_DIR = "/opt/999-Agentic-Engineering-Framework/docs/generated/components"
 
 

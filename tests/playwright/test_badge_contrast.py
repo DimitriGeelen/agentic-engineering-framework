@@ -15,7 +15,7 @@ class of bug — only computed-style sampling can. T-1575 codifies this rule.
 import pytest
 from playwright.sync_api import Page
 
-TEST_URL = "http://localhost:3099"
+from tests.playwright.target import TEST_URL
 
 # Per T-1970: classes we shipped fixes for. Their contrast is pinned in
 # arc_detail.html + arcs_index.html. Any future edit that drops contrast

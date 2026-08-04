@@ -5,7 +5,7 @@ Covers: fabric overview, component detail, graph view.
 import pytest
 from playwright.sync_api import Page
 
-TEST_URL = "http://localhost:3099"
+from tests.playwright.target import TEST_URL
 
 
 def _url(path: str) -> str:

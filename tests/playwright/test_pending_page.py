@@ -11,7 +11,7 @@ import pytest
 from playwright.sync_api import Page
 
 
-TEST_URL = "http://localhost:3099"
+from tests.playwright.target import TEST_URL
 PROJECT_ROOT = os.environ.get(
     "PROJECT_ROOT",
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),

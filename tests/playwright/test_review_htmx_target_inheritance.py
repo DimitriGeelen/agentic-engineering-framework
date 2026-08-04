@@ -36,7 +36,7 @@ import urllib.request
 
 from bs4 import BeautifulSoup
 
-TEST_URL = "http://localhost:3099"
+from tests.playwright.target import TEST_URL
 # T-2134 is a partial-complete arc-007 task we know exists in active/ at
 # filing time; its /review surface exercises both the wrapper-reset
 # (`<div hx-target="#content">` from T-2114) and the explicit override

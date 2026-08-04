@@ -1,14 +1,23 @@
 ---
 id: T-2784
-name: "Playwright tests hard-code port 3099, bypassing FW_TEST_PORT and the T-2782 identity check"
+name: "Playwright tests hard-code port 3099, bypassing FW_TEST_PORT and the T-2782
+  identity check"
 description: >
-  81 of 150 tests/playwright/test_*.py files define their own module-level TEST_URL = "http://localhost:3099" instead of taking it from conftest. None of them read FW_TEST_PORT.
+  81 of 150 tests/playwright/test_*.py files define their own module-level TEST_URL
+  = "http://localhost:3099" instead of taking it from conftest. None of them read
+  FW_TEST_PORT.
 
-  All 81 do depend on the page fixture, so a server IS established — that half is sound. But conftest starts/adopts/verifies a server on FW_TEST_PORT while these files send their requests to a literal 3099. When the two differ, the T-2782 identity check and staleness bound apply to a server the tests are not talking to, and if anything else holds 3099 (another project's Watchtower — every consumer runs the same Flask app) the suite asserts confidently against it.
+  All 81 do depend on the page fixture, so a server IS established — that half is
+  sound. But conftest starts/adopts/verifies a server on FW_TEST_PORT while these
+  files send their requests to a literal 3099. When the two differ, the T-2782 identity
+  check and staleness bound apply to a server the tests are not talking to, and if
+  anything else holds 3099 (another project's Watchtower — every consumer runs the
+  same Flask app) the suite asserts confidently against it.
 
-  3 files already use the correct shape (import TEST_URL from conftest). Found by the T-2783 sweep.
+  3 files already use the correct shape (import TEST_URL from conftest). Found by
+  the T-2783 sweep.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,8 +35,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T10:06:24Z
-last_update: 2026-08-04T10:06:24Z
-date_finished: null
+last_update: 2026-08-04T10:37:29Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,6 +47,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-04T10:09:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-04T10:15:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2784: Playwright tests hard-code port 3099, bypassing FW_TEST_PORT and the T-2782 identity check
@@ -50,8 +87,20 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] No `tests/playwright/test_*.py` defines its own port or host literal. All of them take
+      the target from one place, and that place is the same one `conftest.py` uses to decide
+      which server to start, adopt or verify — so the address under test and the address under
+      guard cannot diverge.
+- [ ] Setting `FW_TEST_PORT` moves the whole suite, demonstrated rather than asserted: run a
+      sample of the converted files against a non-default port and show they hit it. Before
+      this change they would have gone to 3099 regardless.
+- [ ] The literal cannot come back: a check fails if a new test file introduces a bare
+      `localhost:<port>` / `127.0.0.1:<port>`, and it is red before the fix and green after
+      (mutation-checked, L-530). 81 files drifted into this shape one at a time; nothing
+      noticed, which is the actual defect.
+- [ ] Full playwright suite result recorded before and after with the same invocation, so the
+      conversion is shown not to have changed which tests pass. Any test that was already
+      failing stays named rather than absorbed into the diff.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -218,3 +267,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2784-playwright-tests-hard-code-port-3099-byp.md
 - **Context:** Initial task creation
+
+### 2026-08-04T10:09:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

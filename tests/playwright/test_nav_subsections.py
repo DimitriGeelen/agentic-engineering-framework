@@ -12,7 +12,7 @@ import os
 
 from playwright.sync_api import Page, expect
 
-TEST_URL = "http://localhost:3099"
+from tests.playwright.target import TEST_URL
 
 GOVERN_SUBSECTIONS = ["Approvals & Decisions", "Enforcement", "Health", "Operations"]
 ARTEFACT = os.path.join(

@@ -12,7 +12,7 @@ import os
 
 from playwright.sync_api import Page, expect
 
-TEST_URL = "http://localhost:3099"
+from tests.playwright.target import TEST_URL
 ARTEFACT_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "web", "static", "ux-review",

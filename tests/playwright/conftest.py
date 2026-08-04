@@ -17,8 +17,11 @@ import urllib.error
 import pytest
 from playwright.sync_api import sync_playwright
 
-TEST_PORT = int(os.environ.get("FW_TEST_PORT", "3099"))
-TEST_URL = f"http://localhost:{TEST_PORT}"
+# T-2784: the address comes from one module, shared with every test file. Resolving it
+# here independently is what let 81 test files drift onto a literal 3099 while this file
+# started, identity-checked and age-bounded a server on FW_TEST_PORT — the guarantees
+# below would then attach to a server the suite was not addressing.
+from tests.playwright.target import TEST_PORT, TEST_URL  # noqa: E402
 
 # T-2782: how old an already-listening server may be before this fixture recycles it
 # instead of adopting it. An adopted server is unmanaged — nothing tears it down between
