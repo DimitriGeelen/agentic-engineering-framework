@@ -4141,3 +4141,10 @@ X'` returning empty group."
   date: 2026-08-03
   context: Added via context agent
   application: TBD
+- id: L-545
+  learning: "Python's glob('**/*.ext', recursive=True) silently skips dot-directories, so any census built on it excludes hidden populations while producing output indistinguishable from a complete measurement. A uid-coverage census over the BPMN corpus read 19 files and reported per-file rows plus a total; the real set was 51, because the entire live corpus lives under .context/designer/projects/. The denominator never contained the subject. Counter: compute the population two independent ways (glob vs find) and diff the counts BEFORE reading the result — if they disagree, the result describes neither set. Same family as T-2735 (nothing checked the SET the count is computed over), one layer lower: not a predicate that classifies wrongly, a denominator that omits the subject."
+  source: P-001
+  task: T-2784
+  date: 2026-08-04
+  context: Added via context agent
+  application: TBD
