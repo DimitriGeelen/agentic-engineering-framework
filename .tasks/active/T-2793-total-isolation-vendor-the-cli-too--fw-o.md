@@ -1,12 +1,11 @@
 ---
-id: T-2792
-name: "Fresh-install onboarding path broken: make the new-project prompt work end
-  to end"
+id: T-2793
+name: "Total isolation: vendor the CLI too — fw on PATH becomes a thin router"
 description: >
-  Fresh-install onboarding path broken: make the new-project prompt work end to end
+  Total isolation: vendor the CLI too — fw on PATH becomes a thin router
 
 status: started-work
-workflow_type: build
+workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
@@ -22,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-04T14:37:59Z
-last_update: '2026-08-04T14:45:11Z'
-date_finished:
+created: 2026-08-04T15:45:03Z
+last_update: 2026-08-04T15:45:03Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-04T14:45:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-04T14:45:11Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 1
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2792: Fresh-install onboarding path broken: make the new-project prompt work end to end
+# T-2793: Total isolation: vendor the CLI too — fw on PATH becomes a thin router
 
 ## Context
 
@@ -73,32 +44,65 @@ bvp_scores_proposed:
 
 ## Context
 
-Operator ran the new-project onboarding prompt in a fresh directory
-(`/opt/2345-test-install`) and it did not work. This is the failure class T-2715
-documented and that arc-015/016/017 were opened for — none of which has shipped a fix.
+**Operator decision, 2026-08-04:** *"it all needs to be vendored, we want total isolation."*
+The CLI dispatch layer must come from the project's own `.agentic-framework/`, exactly as
+libs and agents already do.
 
-First concrete signal, from the operator's screenshot and reproduced here: the
-machine-wide `fw` reports **v1.6.8** while this repo is at **1.6.108**. The onboarding
-agent read that as "already installed and up to date — skip the installer", so the
-operator's fresh install is being told it is current while running a build that may be
-~100 versions behind. Whether 1.6.8 is a genuinely stale vendored copy or a version
-string being mangled is the first thing to settle — the two have completely different
-fixes and the same symptom.
+**The defect this closes.** `bin/fw` re-execs **itself** (`exec "$0" "$@"`, bin/fw:563 and
+:657) — it never execs the vendored `bin/fw`. It sets `FRAMEWORK_ROOT` to the vendored copy,
+and 182 references pull libs/agents from there. So a vendored consumer runs a **hybrid**:
+
+| Layer | Source | Version observed |
+|---|---|---|
+| CLI dispatch (7,836 lines) | global `/root/.agentic-framework` | 1.6.8 |
+| libs + agents (182 refs) | project `.agentic-framework/` | 1.6.108 |
+
+Old CLI driving new libraries — an untested combination that shifts whenever the global
+install drifts from any project's vendored copy. Vendoring isolates libraries, not tooling.
+
+**Reproduction** (same directory, two invocations):
+```
+fw --version                          → 1.6.8     ← global CLI reporting itself
+./.agentic-framework/bin/fw --version → 1.6.108   ← vendored, correct
+.framework.yaml version: / .agentic-framework/VERSION → 1.6.108
+```
+
+**This subsumes the version bug (OBS-150), it does not need a separate fix.** `fw --version`
+was never lying — it accurately reports the CLI that is executing, while `Framework:`
+accurately reports where libs load from. Two true lines describing a split brain. Once the
+CLI is vendored, the vendored dir has no `.git`, so `_derive_version` falls to the VERSION
+file and reports 1.6.108 correctly *as a consequence*. Do not ship the deriver patch
+separately — it would mask this by making the split-brain print one number.
+
+**Operator context that reframed this:** most projects vendor. The operator is a *consumer*
+of AEF creating projects with it, not a developer of AEF. Analysis run from the framework
+repo missed this — `./.agentic-framework/bin/fw` behaving correctly is irrelevant because
+nobody types that path. What matters is what `fw` does.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **The v1.6.8-vs-1.6.108 discrepancy is explained with evidence**, and the explanation
-      distinguishes "stale vendored copy" from "version string parsed/formatted wrong".
-      Named because these present identically at the surface and the wrong diagnosis ships
-      the wrong fix.
-- [ ] The onboarding prompt's Steps 1-5 are **executed for real in a throwaway directory**,
-      not reasoned about. Every command that fails is recorded with its exact output.
-- [ ] Each failure found is either fixed, or filed as its own task with the reproduction
-      attached (one bug = one task). No failure is left described-but-unowned.
-- [ ] Re-running the same steps in a **second** clean directory after the fixes reaches
-      Step 5 with a live Watchtower URL — verified by fetching the URL, not by the absence
-      of an error message.
+- [ ] `fw` on PATH is a **thin router**: locate the nearest `.agentic-framework/bin/fw` from
+      cwd and `exec` it. No framework logic, no version of its own, no lib sourcing.
+- [ ] **The router's walk-up has a floor.** `lib/hook_paths.py:reanchor_project_root` iterates
+      `(d, *d.parents)` which reaches `/`, while its shell twin `lib/paths.sh` stops at
+      `[ "$d" != "/" ]`. Two implementations of one predicate, disagreeing — and `/.tasks` +
+      `/.context` exist on this host, so `/` currently satisfies the Python rule. The router
+      must not treat `/` as a project, and the two twins must agree.
+- [ ] **Bootstrap path preserved.** `fw init` / `fw upgrade` / `fw --version` must still work
+      in a directory with no `.agentic-framework/` — total isolation cannot be total for the
+      verb whose job is to create the isolation. Fallback is explicit and stated in output,
+      never silent.
+- [ ] **Self-replacement is safe.** `fw upgrade` rewrites the vendored CLI that is currently
+      executing (the T-2657 `do_vendor` chicken-and-egg). Verified by upgrading a vendored
+      consumer end-to-end, not by reading the code.
+- [ ] In a vendored consumer, `fw --version`, `.framework.yaml` `version:`, and
+      `.agentic-framework/VERSION` all agree — asserted in
+      `tests/unit/upgrade_fresh_machine_simulation.bats`, which is the harness that exists
+      for exactly the "works on the developer's box" class (T-1633).
+- [ ] A consumer with a **stale or absent** global install still works. This is the point of
+      the change: `rm -rf /root/.agentic-framework` (which `fw doctor` already recommends)
+      must not break `fw` for any vendored project.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,7 +265,7 @@ fixes and the same symptom.
 
 ## Updates
 
-### 2026-08-04T14:37:59Z — task-created [task-create-agent]
+### 2026-08-04T15:45:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2792-fresh-install-onboarding-path-broken-mak.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2793-total-isolation-vendor-the-cli-too--fw-o.md
 - **Context:** Initial task creation

@@ -2620,3 +2620,10 @@ decisions:
     date: 2026-08-04
     task: T-2780
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-377
+    decision: "Total isolation: the fw CLI dispatch layer is vendored per-project, not shared globally. 'fw' on PATH becomes a thin router that locates the nearest .agentic-framework/bin/fw and execs it. Rejected: patching _derive_version to report the vendored version -- that makes a split-brain system print one number, masking the fact that CLI and libs run at different versions. Operator decision 2026-08-04: 'it all needs to be vendored we want total isolation'. Evidence: bin/fw:563,657 exec $0 (never the vendored bin/fw) while 182 FRAMEWORK_ROOT refs load libs from the project -- a vendored consumer runs global CLI 1.6.8 against vendored libs 1.6.108."
+    scope: project
+    date: 2026-08-04
+    task: T-2793
+    rationale: "Not specified"
