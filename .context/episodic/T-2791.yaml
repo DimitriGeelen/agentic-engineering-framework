@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2791: Seam: uid derivation reply to 832 + cross-check independence learning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T14:26:48Z
+# ============================================================================
+
+task_id: T-2791
+task_name: "Seam: uid derivation reply to 832 + cross-check independence learning"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T14:21:48Z
+completed: 2026-08-04T14:26:37Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-04T16:26:32+02:00
+last_commit: 2026-08-04T16:26:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RAIL-441 to 832 — uid derivation answer + corpus measurement + L-546
+
+# Key outcomes
+outcomes:
+  - 'Our corpus''s `aef:uid` population is measured with the **correct byte shape**, and the'
+  - 'The claim "we are / are not exposed to the identity-permutation defect" is settled by'
+  - 'Reply posted to the 832 DM rail that (a) answers the third-party-write question with a'
+  - 'Learning captured for the cross-check-independence class: a two-way population check is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/rail-441-draft.txt'
+  - '.tasks/active/T-2791-seam-uid-derivation-reply-to-832--cross-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T16:26:32'
+    action: 'T-2791: RAIL-441 to 832 — uid derivation answer + corpus measurement + L-546'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 381
+  lines_removed: 40
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2791-seam-uid-derivation-reply-to-832--cross-.md
+generated_by: context-agent-hybrid
