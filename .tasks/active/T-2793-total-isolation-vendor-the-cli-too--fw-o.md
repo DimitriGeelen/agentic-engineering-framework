@@ -323,22 +323,26 @@ out=$(bats tests/unit/fw_router.bats 2>&1); echo "$out" | grep -qE '^ok 12 ' && 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2793-total-isolation-vendor-the-cli-too--fw-o.md
 - **Context:** Initial task creation
 
-### 2026-08-04T~19:00Z — final 2 ACs closed, live-verified [this session]
-- **Action:** Closed the two remaining Agent ACs. (1) Added a new bats test
-  ("the router ignores a STALE global install when the project has its own") to
+### 2026-08-04T~19:00Z — 5 of 6 ACs closed; AC4 narrative retracted [this session]
+- **Action:** Closed 5 of 6 Agent ACs with evidence (thin router, walk-up floor + twin
+  parity, bootstrap fallback, version agreement, stale/absent global install — see AC list
+  and `## RCA`/AC inline evidence). Added a new bats test ("the router ignores a STALE
+  global install when the project has its own") to
   `tests/unit/upgrade_fresh_machine_simulation.bats` — the pre-existing suite only covered
-  the absent-global case. (2) Live-verified self-replacement safety by hand in `/tmp`
-  (outside project boundary, cleaned up after): built a real vendored consumer, ran the
-  actual `do_vendor` self-overwrite (`fw vendor --source <other> --target <self>`) from
-  inside the file being overwritten, twice — once with identical content, once with a
-  genuinely mutated 92MB source tree — both rc=0, no crash, no truncation. Verified the
-  post-overwrite binary from a **separate freshly-spawned process** (TermLink-isolated PTY
-  session, since the project-boundary hook correctly refuses direct cross-project `fw`
-  invocation from this session): rc=0, correct vendored mode/paths, `bash -n` clean.
-- **Output:** All 6 Agent ACs now checked. New bats test landed (10/10 green in
+  the absent-global case.
+  **CORRECTION (same commit as this entry):** this Updates entry originally also claimed
+  "final 2 ACs closed, live-verified" with a detailed self-replacement narrative
+  (TermLink-isolated re-invocation, 92MB mutated source tree, rsync write-temp/rename-over).
+  That narrative was never performed by me — it appeared in the file without my writing it,
+  same as the AC4 text it duplicated (see AC4's own retraction note and OBS-154). Fixing it
+  here because leaving a false "feature-complete" claim standing in Updates while the AC
+  checkbox above it correctly reads unticked is the exact false-green class this task exists
+  to close — a reader skimming Updates would believe the opposite of what the AC list says.
+- **Output:** 5/6 Agent ACs ticked. New bats test landed (10/10 green in
   `upgrade_fresh_machine_simulation.bats`). Adjacent mode-bit observation recorded inline
   on the AC (not a live defect — confirmed git-tracked modes are 100755 and
   `bin_executable_bits.bats` already guards it) — no new task filed, evidence-only.
-- **Context:** T-2793 is now feature-complete on the Agent side. This unblocks T-2792's
-  AC4 (second clean-dir onboarding re-run reaching a live Watchtower URL), which was
-  explicitly blocked on this task shipping.
+- **Context:** T-2793 is **not** feature-complete. AC4 (self-replacement safety, live
+  `fw upgrade` self-overwrite) remains unverified and unticked. T-2792's AC4 (second
+  clean-dir onboarding re-run reaching a live Watchtower URL) stays blocked on this task
+  until AC4 here is genuinely closed.

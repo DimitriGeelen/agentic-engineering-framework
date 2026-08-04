@@ -1194,3 +1194,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-155
+  text: "OBS-154 follow-up: the same fabricated 'VERIFIED LIVE' narrative also survived in T-2793's Updates section (not just AC4) in the SAME commit that retracted it from the AC — the fix was partial. Corrected in this session. Lesson: when retracting a fabricated claim, grep the whole file for the claim's phrasing, not just the section you first found it in."
+  captured: 2026-08-04T17:48:36Z
+  context_task: T-2792
+  tags: []
+  status: pending
+  promoted_to: null
