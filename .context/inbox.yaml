@@ -1201,3 +1201,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-156
+  text: "fw --version is NOT comparable between installs. _derive_version (bin/fw:16) reports commits-since-the-newest-tag-THIS-CLONE-KNOWS and DISCARDS the tag's own patch: v1.6.764-132-g74bade -> 1.6.132. A clone that hasn't fetched recent tags measures from an older anchor and reports a LARGER number while being OLDER. Live: global install reports 1.6.432, master today reports 1.6.132 -- the bigger number is the stale one. Every 'is the installed fw current?' decision made on this string is unanswerable; only the commit SHA is comparable. Found via T-2792 onboarding Step 2 asking presence when it needed freshness."
+  captured: 2026-08-04T19:41:03Z
+  context_task: T-2793
+  tags: []
+  status: pending
+  promoted_to: null

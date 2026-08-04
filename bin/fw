@@ -825,6 +825,38 @@ show_help() {
 
 show_version() {
     echo "fw v$FW_VERSION"
+
+    # T-2796: print the commit the counter is a DISTANCE FROM.
+    #
+    # $FW_VERSION is major.minor.<commits-since-the-newest-tag-THIS-CLONE-KNOWS>
+    # (_derive_version, top of this file), which discards the tag's own patch:
+    # `v1.6.764-132-g74bade82e` renders as `1.6.132`. So the number resets at
+    # every tag AND depends on which tags the clone happens to have fetched —
+    # two installs of the same history report incomparable numbers.
+    #
+    # Measured 2026-08-04: a global install three commits behind master reported
+    # 1.6.432 while master reported 1.6.132. The bigger number was the stale one.
+    # Both the operator's onboarding agent and this session read the larger
+    # number as "newer" — the string is shaped like a semver patch, so it invites
+    # exactly the comparison it cannot support (OBS-150, OBS-156).
+    #
+    # Line 1 is left byte-identical for anything that greps it. The fix is to
+    # stop shipping a bare number with no anchor: the SHA is the only field here
+    # that answers "am I current?", and it costs one line to print.
+    local _v_sha="" _v_branch=""
+    if [ -d "$FRAMEWORK_ROOT/.git" ] || [ -f "$FRAMEWORK_ROOT/.git" ]; then
+        _v_sha=$(git -C "$FRAMEWORK_ROOT" rev-parse --short=9 HEAD 2>/dev/null || true)
+        _v_branch=$(git -C "$FRAMEWORK_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+    fi
+    if [ -n "$_v_sha" ]; then
+        echo "Commit:    $_v_sha${_v_branch:+ ($_v_branch)}"
+    else
+        # A vendored copy has no .git, so _derive_version fell back to the
+        # VERSION file. Say that rather than printing nothing — "no commit" is
+        # itself the answer to which identity this install is running on.
+        echo "Commit:    (none — vendored copy; VERSION file is the only identity)"
+    fi
+
     echo "Framework: $FRAMEWORK_ROOT"
     echo "Mode:      $(_detect_fw_mode)"
     echo "Project:   $PROJECT_ROOT"
@@ -835,8 +867,42 @@ show_version() {
         pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
         if [ -n "$pinned" ]; then
             echo "Pinned:    $pinned"
-            if [ "$pinned" != "$FW_VERSION" ]; then
-                echo -e "${YELLOW}WARNING: Pinned version ($pinned) differs from installed ($FW_VERSION)${NC}"
+            # T-2713 replaced `pinned != installed -> WARN` at three sites
+            # (bin/fw:2015, lib/upgrade.sh:849, lib/upgrade.sh:1742) because
+            # `sort -V` on a resetting counter is a guess wearing the costume of
+            # a comparison. This was a FOURTH site, still open-coded — and the
+            # most-read one, since it fires on every `fw --version`.
+            #
+            # L-536: a line that PRINTS a direction is a decision site. "differs
+            # from installed" reads as drift and gets acted on, when a pinned
+            # counter that merely resets differs from an identical tree.
+            local _pin_sha=""
+            _pin_sha=$(grep "^version_sha:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version_sha:[[:space:]]*//' || true)
+            if declare -f fw_version_relation >/dev/null 2>&1; then
+                # Bare call, NOT $(...): the reason travels via a global and a
+                # subshell would silently blank it (see lib/version-relation.sh).
+                fw_version_relation "$pinned" "$FW_VERSION" "$_pin_sha" "$FRAMEWORK_ROOT" >/dev/null
+                local _rel_phrase=""
+                case "$FW_VERSION_RELATION" in
+                    same)           _rel_phrase="" ;;
+                    behind)         _rel_phrase="Pinned is BEHIND the installed framework" ;;
+                    ahead)          _rel_phrase="Pinned is AHEAD of the installed framework" ;;
+                    diverged)       _rel_phrase="Pinned has DIVERGED from the installed framework" ;;
+                    foreign-source) _rel_phrase="Pinned records a commit this framework does not contain" ;;
+                    *)              _rel_phrase="Pinned/installed relation undetermined" ;;
+                esac
+                # if/then, not `[ -n ... ] && echo` — this file runs under
+                # `set -e`, so an AND-list whose left side is false returns 1 and
+                # kills the shell on the `same` (no-phrase) path.
+                if [ -n "$_rel_phrase" ]; then
+                    echo -e "${YELLOW}${_rel_phrase}${NC} — ${FW_VERSION_RELATION_REASON}"
+                fi
+            elif [ "$pinned" != "$FW_VERSION" ]; then
+                # version-relation.sh is sourced with `|| true` at the top of this
+                # file, so it can legitimately be absent. Fall back to the old
+                # string compare rather than going silent — a weak signal beats
+                # none — but say plainly that it cannot decide direction.
+                echo -e "${YELLOW}Pinned ($pinned) differs from installed ($FW_VERSION) — direction undecidable (both are resetting counters)${NC}"
             fi
         fi
     fi
