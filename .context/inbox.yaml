@@ -1089,3 +1089,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-140
+  text: "T-2775/T-2780/T-2781 response-size measurements were all taken off the operator's LIVE Watchtower on :3001, not a test instance — tests/playwright/test_all_routes_size.py takes only base_url, which (before T-2782) did not depend on watchtower_server, so that suite never started a server and measured whatever held the port. Numbers are sound (same code, same corpus, and size is contention-invariant per L-542) but by luck, not design. Fixed in T-2782 by making base_url depend on the fixture. Worth checking whether other suites take base_url-like fixtures that hand out a URL without a server behind it."
+  captured: 2026-08-04T10:01:42Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
