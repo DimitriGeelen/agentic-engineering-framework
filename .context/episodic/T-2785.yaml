@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2785: Height guard red on / and /metrics — determine whether the signal is honest
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-04T21:28:55Z
+# ============================================================================
+
+task_id: T-2785
+task_name: "Height guard red on / and /metrics — determine whether the signal is honest"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T11:12:28Z
+completed: 2026-08-04T21:23:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-04T13:14:09+02:00
+last_commit: 2026-08-04T14:06:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file height-guard investigation with anti-mute ACs. investigation complete — all 4 height failures are PAGE-OVER-BOUND
+
+# Key outcomes
+outcomes:
+  - 'Each of the 4 failing routes is measured and classified as either **page genuinely over'
+  - 'For any route classified "page over the bound", the page is bounded the way T-2775'
+  - 'For any route classified "guard drifted", the reason the expectation no longer holds is'
+  - '`test_all_routes_height.py` ends green, and the count of tests it runs is reported before'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-04.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-04.yaml'
+  - '.context/episodic/T-2783.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - 'docs/reports/T-2785-height-guard-investigation.md'
+  - '.tasks/active/T-2785-height-guard-red-on--and-metrics--determ.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T13:14:09'
+    action: 'T-2785: file height-guard investigation with anti-mute ACs'
+  - time: '2026-08-04T14:06:41'
+    action: 'T-2785: investigation complete — all 4 height failures are PAGE-OVER-BOUND'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 611 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 611
+  commits: 2
+  files_changed: 26
+  lines_added: 6891
+  lines_removed: 10392
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2785-height-guard-red-on--and-metrics--determ.md
+generated_by: context-agent-hybrid
