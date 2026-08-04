@@ -83,10 +83,40 @@ do_init() {
             # VCS metadata, editor/OS noise and placeholders are not evidence of a project.
             .git|.gitignore|.gitattributes|.gitmodules|.svn|.hg|.keep|.gitkeep|.DS_Store) continue ;;
             # A prior/partial framework install is scaffolding, not user content.
-            .agentic-framework|.claude|.framework.yaml|CLAUDE.md|FRAMEWORK.md|.mcp.json) continue ;;
+            # .fw-init-incomplete (T-2801) is ours by definition — it only exists
+            # because a previous run of THIS function put it there.
+            .agentic-framework|.claude|.framework.yaml|CLAUDE.md|FRAMEWORK.md|.mcp.json|.fw-init-incomplete) continue ;;
         esac
         preexisting_entries+=("$_b")
     done
+
+    # T-2801: mark the directory before touching it, clear the mark after the last
+    # step. Between those two points an interruption is *recognisable* — which is
+    # the whole fix. Previously the vendor ran at line ~129 and .framework.yaml was
+    # written at ~251, so a kill anywhere between (the ~90MB copy is most of the
+    # wall clock) left .agentic-framework/bin/fw present, .framework.yaml absent,
+    # and no way to tell that state apart from a corrupt install.
+    #
+    # The sentinel lives at the project root, not inside .agentic-framework/: a
+    # re-vendor is free to delete and recreate that directory, and a marker that
+    # its own recovery path can erase is not a marker.
+    local _init_incomplete_marker="$target_dir/.fw-init-incomplete"
+    # Captured BEFORE we write it — this is what tells a re-run that it is a
+    # recovery rather than a first init.
+    local _resuming_partial_init=false
+    [ -f "$_init_incomplete_marker" ] && _resuming_partial_init=true
+    {
+        echo "# fw init started here and has not finished."
+        echo "#"
+        echo "# While this file exists the .agentic-framework/ copy beside it may be"
+        echo "# partial. fw refuses to route into it (bin/fw-router) rather than run a"
+        echo "# CLI that cannot find its own framework."
+        echo "#"
+        echo "# Recover:  fw init $target_dir"
+        echo "# Discard:  rm -rf $target_dir/.agentic-framework $target_dir/.fw-init-incomplete"
+        echo "started_at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        echo "framework_version: ${FW_VERSION:-unknown}"
+    } > "$_init_incomplete_marker"
 
     local project_display
     project_display=$(basename "$target_dir")
@@ -99,6 +129,9 @@ do_init() {
         if ! do_preflight --quiet; then
             echo ""
             echo -e "${RED}Preflight failed. Run 'fw preflight' for details.${NC}"
+            # T-2801: nothing has been written yet — a refusal is not an unfinished
+            # init, and leaving the marker would report one.
+            rm -f "$_init_incomplete_marker"
             return 1
         fi
     fi
@@ -126,7 +159,15 @@ do_init() {
     fi
 
     # --- Vendor framework (T-498: full project isolation) ---
-    if [ ! -d "$target_dir/.agentic-framework" ] || [ "${force:-false}" = true ]; then
+    # T-2801: `.agentic-framework/ already exists` is not evidence that it is
+    # complete. When the marker says a previous init died mid-vendor, the existing
+    # directory is exactly the thing that needs replacing — skipping it is what
+    # made the debris permanent, because the SKIP branch is the one a recovery run
+    # would always take.
+    if [ ! -d "$target_dir/.agentic-framework" ] || [ "${force:-false}" = true ] || [ "$_resuming_partial_init" = true ]; then
+        if [ "$_resuming_partial_init" = true ] && [ -d "$target_dir/.agentic-framework" ]; then
+            echo -e "  ${YELLOW}RECOVER${NC}  Previous init did not finish — re-vendoring over the partial copy"
+        fi
         echo -e "${BOLD}Vendoring framework into project...${NC}"
         do_vendor --target "$target_dir"
         echo ""
@@ -584,6 +625,13 @@ CYAML
     fi
 
     # --- Done ---
+    # T-2801: last write of the function, deliberately. Everything above can be
+    # interrupted; clearing the marker is the single act that says it wasn't.
+    # Validation above is allowed to report errors without blocking this — a
+    # project that validated badly is still a finished init, and leaving the
+    # marker would send `fw` to the global install forever.
+    rm -f "$_init_incomplete_marker"
+
     echo ""
     echo -e "${GREEN}Done!${NC} Governance is active."
     echo ""

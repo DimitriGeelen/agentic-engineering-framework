@@ -13,7 +13,7 @@ name: "fw init is not atomic and its debris is not fw-recoverable. do_init vendo
 description: >
   Promoted from observation OBS-157
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T20:54:04Z
-last_update: '2026-08-04T21:00:14Z'
+last_update: 2026-08-04T21:44:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,14 +77,42 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`do_init` vendors `.agentic-framework/` at `lib/init.sh:129-135` and writes
+`.framework.yaml` at `:251` — ~120 lines and one ~90 MB copy apart. Interrupt
+anywhere between and the directory is left with a partial vendor and no project
+config. Hit live 2026-08-04 in `/opt/2345-test-install` via the T-2798 `--help`
+auto-init bug, and reproduced here by killing a run at 12s (OBS-157).
+
+The state is not just broken, it is **self-sealing**:
+
+- `bin/fw-router:56` routes on `[ -x "$_d/.agentic-framework/bin/fw" ]` alone. A
+  partial vendor that got as far as `bin/fw` captures the router.
+- The captured CLI resolves `FRAMEWORK_ROOT` relative to its own location — the
+  incomplete vendor — and fails `Cannot find framework installation` (`bin/fw:706`).
+- `fw init` is therefore unavailable *in the directory `fw init` created*, and
+  `lib/init.sh:133` would `SKIP  .agentic-framework/ already exists` even if it ran.
+
+Only `rm -rf` recovers it, which a new user has no reason to know.
+
+Also a **prerequisite for the T-2800 build slice**, which states atomicity as a
+requirement: an interruption must leave either nothing or a working project.
+Sibling of the T-2726/T-2727 init-ordering family.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw init` marks the target incomplete **before** it writes anything, and
+      clears the mark only after its last step — so the mark's presence is exactly
+      "an init started here and did not finish"
+- [x] Re-running `fw init` on interrupted debris **recovers** it (re-vendors and
+      completes) instead of `SKIP  .agentic-framework/ already exists`
+- [x] The router refuses to route into a vendor marked incomplete, and says what
+      the state is and how to recover — rather than exec'ing a broken CLI
+- [x] A regression test reproduces the interrupted state and asserts recovery
+      end-to-end (not just that the sentinel file exists)
+- [x] Non-vacuity: `fw init` on a clean directory still succeeds and leaves **no**
+      sentinel behind
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +146,14 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(bats tests/unit/fw_init_atomic.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# The router change touches the resolution order every fw call goes through.
+out=$(bats tests/unit/fw_router.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/lib_init.bats tests/unit/init_validation_ordering.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n lib/init.sh && bash -n bin/fw-router
+# Self-vendor parity: both changed files ship to consumers.
+out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q 'self-vendor drift'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -186,6 +222,57 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom.** An `fw init` interrupted mid-run leaves a directory that every `fw`
+verb refuses — `Cannot find framework installation` — including `fw init` itself.
+The tool cannot repair what it created; only `rm -rf` recovers. Hit live
+2026-08-04 in `/opt/2345-test-install`, and reproduced here by killing a run at
+1.2s (marker present, `.framework.yaml` absent, `.agentic-framework/bin/fw`
+executable).
+
+**Root cause.** Two independent decisions that are each locally reasonable and
+jointly produce a trap:
+
+1. `do_vendor`'s include list (`bin/fw:332`) copies **`bin` first** — sensible,
+   it is the smallest and most important directory — so the vendored CLI appears
+   within about a second and the rest of the framework arrives over the following
+   seconds.
+2. `bin/fw-router:56` treated `[ -x <dir>/.agentic-framework/bin/fw ]` as
+   sufficient evidence of a vendored project — sensible, that file *is* the thing
+   it needs to exec.
+
+Together: for essentially the whole duration of an init, the directory satisfies
+the router's predicate while not satisfying the CLI's own `resolve_framework`.
+The router hands over to a CLI that cannot find itself.
+
+**Why structurally allowed.** Nothing distinguished *in progress* from *finished*.
+`.framework.yaml` is the completion marker in practice, but it is written ~120
+lines after the vendor call, and its absence is indistinguishable from "this was
+never a project" — which is why the error message says "cannot find" rather than
+"did not finish". The failure had no vocabulary for the state it was in, so it
+reported a different state, and the reported state's remedy (install the
+framework) was one the user had already performed.
+
+This is the T-2726/T-2727 init-ordering family again — there, validation ran 114
+lines before the artifact it validated existed. Same shape: a step that reads
+state assumes an ordering the writer never guaranteed.
+
+**Prevention.** An explicit marker (`.fw-init-incomplete`) written before the
+first mutation and removed after the last, so partial states are *nameable*
+regardless of where the interruption lands — not inferred from the absence of
+some file that happens to be written late. The router refuses to route into a
+marked vendor and says which state it is in; `do_init` treats the marker as
+authorisation to re-vendor over the partial copy rather than `SKIP`.
+
+Pinned by `tests/unit/fw_init_atomic.bats`, whose fourth test kills a real init
+and recovers it end-to-end. Tests 2 and 5 are the non-vacuity pair — a router
+that refused everything, or an init that never wrote the marker, would otherwise
+both read as green.
+
+**Residual.** The marker is a file, so `rm -rf` on the project root during init
+still leaves nothing to recover from — which is the correct outcome. A crash
+between `mkdir .agentic-framework` and the marker write is not possible: the
+marker is written first.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -251,3 +338,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2801-fw-init-is-not-atomic-and-its-debris-is-.md
 - **Context:** Initial task creation
+
+### 2026-08-04T21:44:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -48,12 +48,27 @@ _fw_die() { local rc="$1"; shift; printf '%s\n' "$@" >&2; exit "$rc"; }
 # --- 1. Walk up from cwd, floored below "/" ---
 _target=""
 _found_at=""
+_incomplete_at=""
 _d="$PWD"
 while [ -n "$_d" ] && [ "$_d" != "/" ]; do
     if [ -f "$_d/FRAMEWORK.md" ] && [ -x "$_d/bin/fw" ]; then
         _target="$_d/bin/fw"; _found_at="$_d"; break
     fi
     if [ -x "$_d/.agentic-framework/bin/fw" ]; then
+        # T-2801: executable bin/fw is NOT sufficient evidence of a usable vendor.
+        # do_vendor copies `bin` FIRST and FRAMEWORK.md eighth, so from about one
+        # second into an init until it finishes, .agentic-framework/bin/fw exists
+        # and the framework it belongs to does not. Routing there execs a CLI that
+        # cannot resolve its own FRAMEWORK_ROOT and dies "Cannot find framework
+        # installation" — including for `fw init`, so the tool could not repair the
+        # directory it had just created. Only `rm -rf` recovered it.
+        #
+        # Do not walk further up on this: a parent project is the wrong answer, and
+        # silently succeeding in someone else's project is worse than failing here.
+        # Fall through to the bootstrap fallback, which CAN re-init this directory.
+        if [ -f "$_d/.fw-init-incomplete" ]; then
+            _incomplete_at="$_d"; break
+        fi
         _target="$_d/.agentic-framework/bin/fw"; _found_at="$_d"; break
     fi
     _d="$(dirname "$_d")"
@@ -62,6 +77,23 @@ done
 # --- 2. Bootstrap fallback: the global install, stated out loud ---
 if [ -z "$_target" ]; then
     _global="${FW_GLOBAL_ROOT:-$HOME/.agentic-framework}"
+    if [ -n "$_incomplete_at" ] && [ ! -x "$_global/bin/fw" ]; then
+        _fw_die 127 \
+            "fw: the framework in $_incomplete_at is incomplete." \
+            "" \
+            "  An 'fw init' started there and did not finish, so .agentic-framework/" \
+            "  holds a partial copy. Running it would fail in a way that looks like a" \
+            "  missing install rather than an interrupted one." \
+            "" \
+            "  Recover by re-installing — this re-fetches and completes the project:" \
+            "    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash" \
+            "" \
+            "  Or discard it:  rm -rf $_incomplete_at/.agentic-framework $_incomplete_at/.fw-init-incomplete"
+    fi
+    if [ -n "$_incomplete_at" ]; then
+        printf 'fw: %s has an unfinished init — using %s to complete it. Run: fw init %s\n' \
+            "$_incomplete_at" "$_global" "$_incomplete_at" >&2
+    fi
     [ -x "$_global/bin/fw" ] || _fw_die 127 \
         "fw: no framework found." \
         "" \
@@ -71,7 +103,9 @@ if [ -z "$_target" ]; then
         "  Install one, then run 'fw init' here to vendor it into this project."
     # Announced, never silent: running the global CLI is the one case where the
     # code executing does not belong to the project it is about to act on.
-    printf 'fw: no project found above %s — using global install at %s\n' \
+    # (Skipped when we already announced the unfinished-init case above — "no
+    # project found" would contradict the line that just named the project.)
+    [ -n "$_incomplete_at" ] || printf 'fw: no project found above %s — using global install at %s\n' \
         "$PWD" "$_global" >&2
     _target="$_global/bin/fw"
 fi
