@@ -180,8 +180,17 @@ def test_arc_tag_idempotent(project):
     _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
     _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
     # T-1851: tag lives on the task; re-tagging must not duplicate it. (T-1995.)
+    #
+    # T-2789: count the tag where the tag LIVES, not across the whole file. The
+    # question is "did re-tagging duplicate the entry", and `task_text.count(...)`
+    # answers "does this string occur once anywhere" — which the Updates audit
+    # line ("- **Change:** tags: +arc:alpha") also satisfies, so the assertion
+    # went red the moment update-task.sh started logging what it did. Tagging was
+    # idempotent throughout; the predicate was measuring the wrong object.
     task_text = (project / ".tasks" / "active" / "T-9001-seed.md").read_text()
-    assert task_text.count("arc:alpha") == 1, f"duplicate tag:\n{task_text}"
+    tags_lines = [ln for ln in task_text.splitlines() if ln.startswith("tags:")]
+    assert len(tags_lines) == 1, f"expected exactly one tags: line:\n{task_text}"
+    assert tags_lines[0].count("arc:alpha") == 1, f"duplicate tag:\n{task_text}"
 
 
 def test_arc_close_marks_status_and_clears_focus(project):
