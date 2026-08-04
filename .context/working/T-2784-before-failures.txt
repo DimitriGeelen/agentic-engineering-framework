@@ -1,0 +1,13 @@
+tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded[/inception/T-2715]
+tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded[/review/T-2715]
+tests/playwright/test_all_routes_height.py::test_route_height_bounded[/]
+tests/playwright/test_all_routes_height.py::test_route_height_bounded[/metrics]
+tests/playwright/test_arc_review_route.py::test_arc_review_no_form_fields
+tests/playwright/test_arc_review_route.py::test_arc_review_renders_for_closed_arc_without_redirect
+tests/playwright/test_arcs_kanban.py::test_arcs_link_lives_under_work_nav_group
+tests/playwright/test_badge_contrast.py::TestBadgeContrast::test_arc_detail_badge_contrast[.badge-ok]
+tests/playwright/test_bulk_actions.py::TestBulkActions::test_listeners_survive_content_swap
+tests/playwright/test_bvp_form_htmx.py::test_add_form_submit_keeps_user_on_bvp
+tests/playwright/test_file_viewer.py::TestFileViewer::test_file_viewer_loads_markdown
+tests/playwright/test_mobile_viewport.py::TestMobileViewportApprovals::test_approvals_no_horizontal_overflow_on_mobile
+tests/playwright/test_task_panel.py::TestTaskPanel::test_panel_opens_after_htmx_board_swap

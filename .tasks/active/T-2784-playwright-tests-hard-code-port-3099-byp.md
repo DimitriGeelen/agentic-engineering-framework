@@ -132,6 +132,18 @@ signal than noise.
 - [ ] Full playwright suite result recorded before and after with the same invocation, so the
       conversion is shown not to have changed which tests pass. Any test that was already
       failing stays named rather than absorbed into the diff.
+      **PENDING — before-run done, after-run in flight.** Baseline recorded above (13 failed /
+      885 passed / 5 skipped, 52:49). The after-run is `FW_TEST_PORT=3099 python3 -m pytest
+      tests/playwright/ -q`, started 2026-08-04 14:02, streaming to
+      `/tmp/claude-0/-opt-999-Agentic-Engineering-Framework/629a235a-6890-4a29-889a-81d0f4009b85/tasks/bjdun6f10.output`.
+      **To finish:** wait for `EXIT=` / the summary line, then
+      `grep "^FAILED" <log> | sed 's/^FAILED //' | sort > /tmp/.after-failures.txt` and
+      `diff /tmp/.before-failures.txt /tmp/.after-failures.txt`. Expected: empty diff — the
+      conversion changes only where the address comes from. A non-empty diff on the *added*
+      side is a regression from this task and must be fixed, not accepted.
+      Deliberately left unticked: two earlier attempts were lost (one to `--timeout=120`, which
+      this environment has no plugin for and which exits 4; one to the harness unlinking the
+      log when it killed the wrapper shell). Neither is evidence the suite passed.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
