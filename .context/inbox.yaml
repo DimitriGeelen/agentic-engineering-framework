@@ -1236,3 +1236,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-161
+  text: "Port config is write-only-by-hand: fw serve --port N is honoured at start and recorded in the triple-file (.context/working/watchtower.port), but NEVER written back to .framework.yaml. Measured on THIS project 2026-08-05: .framework.yaml has no PORT key, 'fw config get PORT' returns empty, so fw_config PORT falls back to 3000 -- while the Watchtower has actually been running on 3001. That divergence is precisely why the T-2802 guess pointed at 3000 (which is 832's Watchtower). Two halves exist and one is missing: port_in_use() at bin/watchtower.sh:61 detects a held port, and do_start refuses a FOREIGN holder (:153) telling the human to pass --port N -- but there is no find-next-free-port, and no persistence of the port that was actually chosen. Proposal: on a foreign-held port, scan upward for the first free port, start there, and persist it via fw config set PORT so every later resolution agrees. Question for operator: auto-select, or keep the refusal and just add persistence."
+  captured: 2026-08-04T22:26:56Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null
