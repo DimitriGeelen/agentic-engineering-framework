@@ -300,6 +300,20 @@ WGIT
             remote_url=$(git -C "$FRAMEWORK_ROOT" remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}') || true
         fi
         if [ -n "$remote_url" ]; then
+            # T-2817: strip any embedded credential BEFORE persisting. This value
+            # lands in .framework.yaml, which is a TRACKED file of the new project,
+            # so a framework cloned as https://TOKEN@host/... would write that token
+            # into every project it creates. upstream_repo is a LOCATION, not an
+            # authentication method — git resolves credentials from the credential
+            # helper or netrc at fetch time, so dropping userinfo costs nothing.
+            #
+            # Requires "://" so scp-style SSH remotes (git@host:owner/repo) are left
+            # alone; their "git@" is a username, not a secret, and mangling it would
+            # break the remote. The github.com branch below already dropped userinfo
+            # incidentally, by extracting owner/repo — this makes it deliberate and
+            # extends it to every other host (OneDev, GitLab, Gitea).
+            remote_url=$(printf '%s' "$remote_url" | sed -E 's|^([a-zA-Z][a-zA-Z0-9+.-]*://)[^/@]*@|\1|')
+
             # GitHub URLs: extract owner/repo for compact display
             if echo "$remote_url" | grep -q "github.com"; then
                 upstream_repo=$(echo "$remote_url" | sed -E 's|.*github\.com[:/]||;s|\.git$||')
