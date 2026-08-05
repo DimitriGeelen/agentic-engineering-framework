@@ -27914,3 +27914,21 @@ scan_id: R-e3e4125c
 task_id: T-2805
 payload:
   task_file: .tasks/active/T-2805-fresh-install-partial-vendor-makes-fw-un.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T11:38:18Z'
+scan_id: R-5a5732ee
+task_id: T-2806
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T11:38:18Z'
+scan_id: R-5a5732ee
+task_id: T-2806
+payload:
+  task_file: .tasks/active/T-2806-fw-serve---help-errors-instead-of-printi.md

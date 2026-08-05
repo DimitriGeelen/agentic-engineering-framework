@@ -1,9 +1,9 @@
-# Audit Results - 2026-08-05-0851
-timestamp: 2026-08-05T06:51:16Z
+# Audit Results - 2026-08-05-1335
+timestamp: 2026-08-05T11:35:41Z
 sections: "structure"
 summary:
   pass: 29
-  warn: 3
+  warn: 4
   fail: 0
 findings:
   - level: PASS
@@ -40,6 +40,9 @@ findings:
     check: "No stale-slice-references (L-417)"
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
+  - level: WARN
+    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
+    mitigation: "Run: fw fabric drift"
   - level: PASS
     check: "Fabric: 964 registered card(s)"
   - level: WARN
@@ -49,7 +52,7 @@ findings:
     check: "Fabric drift: 3 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 621 card(s) point at files no watch pattern covers"
+    check: "Fabric: 620 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"

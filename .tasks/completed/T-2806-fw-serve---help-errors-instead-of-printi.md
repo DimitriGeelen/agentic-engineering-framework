@@ -4,12 +4,12 @@ name: "fw serve --help errors instead of printing usage"
 description: >
   fw serve --help errors instead of printing usage
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/watchtower.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T11:33:32Z
-last_update: 2026-08-05T11:33:32Z
-date_finished: null
+last_update: 2026-08-05T11:38:16Z
+date_finished: 2026-08-05T11:38:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -230,3 +230,26 @@ bash -n bin/watchtower.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2806-fw-serve---help-errors-instead-of-printi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5a5732ee
+- **Timestamp:** 2026-08-05T11:38:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw serve --help >/dev/null 2>&1`
+  2. **empty-output-success** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw serve -h >/dev/null 2>&1`
+  3. **empty-output-success** (partial, heuristic) @ Verification:line 4
+     - evidence: `! bin/fw serve --nope >/dev/null 2>&1`
+  4. **empty-output-success** (partial, heuristic) @ Verification:line 5
+     - evidence: `bin/fw watchtower --help >/dev/null 2>&1`
+
+### 2026-08-05T11:38:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

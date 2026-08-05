@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2806: fw serve --help errors instead of printing usage
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T11:38:27Z
+# ============================================================================
+
+task_id: T-2806
+task_name: "fw serve --help errors instead of printing usage"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T11:33:32Z
+completed: 2026-08-05T11:38:16Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-05T13:35:20+02:00
+last_commit: 2026-08-05T13:35:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw serve --help prints usage instead of erroring. refresh vendored copies (self-vendor drift, T-2240)
+
+# Key outcomes
+outcomes:
+  - '`fw serve --help` prints usage and exits 0 (today: `[watchtower] Unknown'
+  - 'The usage text names the flags `serve` actually accepts (`--port`,'
+  - 'Non-vacuity: a genuinely unknown option (`--nope`) still errors and exits'
+  - 'No regression: `fw watchtower --help` (the top-level branch at'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw serve --help prints usage instead of erroring'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/watchtower.sh'
+  - '.tasks/active/T-2806-fw-serve---help-errors-instead-of-printi.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-05T13:35:20'
+    action: 'T-2806: fw serve --help prints usage instead of erroring'
+  - time: '2026-08-05T13:35:32'
+    action: 'T-2806: refresh vendored copies (self-vendor drift, T-2240)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 4
+  lines_added: 275
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2806-fw-serve---help-errors-instead-of-printi.md
+generated_by: context-agent-hybrid
