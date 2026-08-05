@@ -4,12 +4,12 @@ name: "fw watchtower missing from top-level help; serve advertises hard-coded po
 description: >
   fw watchtower missing from top-level help; serve advertises hard-coded port 3000
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tests/unit/fw_help_watchtower_discoverable.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T12:49:36Z
-last_update: 2026-08-05T12:49:36Z
-date_finished: null
+last_update: 2026-08-05T12:53:09Z
+date_finished: 2026-08-05T12:53:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -214,3 +214,24 @@ out=$(bats tests/unit/fw_help_watchtower_discoverable.bats 2>&1); echo "$out" | 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2808-fw-watchtower-missing-from-top-level-hel.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f6f544ba
+- **Timestamp:** 2026-08-05T12:53:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `out=$(bin/fw help 2>&1 | sed 's/\x1b\[[0-9;]*m//g'); echo "$out" | grep -E '^[[:space:]]*watchtower[[:space:]]' | grep -q 'port'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `out=$(bin/fw help 2>&1 | sed 's/\x1b\[[0-9;]*m//g'); ! echo "$out" | grep -q '3000'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `out=$(bin/fw help 2>&1 | sed 's/\x1b\[[0-9;]*m//g'); echo "$out" | grep -E '^[[:space:]]*serve[[:space:]]' | grep -q 'watchtower port'`
+
+### 2026-08-05T12:53:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
