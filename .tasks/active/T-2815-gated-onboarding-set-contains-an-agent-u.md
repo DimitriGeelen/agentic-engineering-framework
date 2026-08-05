@@ -12,7 +12,7 @@ description: >
   listed, no agent-reachable path to clear it. Arc-017's stated invariant: nothing
   owner:human or agent-unresolvable may sit in the gated onboarding set.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T20:52:27Z
-last_update: '2026-08-05T21:00:14Z'
+last_update: 2026-08-05T21:53:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,7 +76,46 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Root cause confirmed by reading `agents/context/check-active-task.sh:438-486` and the
+seed template `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` directly (not
+run live this session — see Updates for why). The onboarding gate's scan (line 448:
+`grep -q '^tags:.*onboarding'`) treats ANY active task carrying the substring
+`onboarding` in its tags as blocking until `status: work-completed`, with zero owner
+or workflow_type check. T-002 ships `owner: human`, `workflow_type: inception`,
+`tags: [onboarding, inception]`, an `### Agent` AC that itself requires
+`fw inception decide T-002 go` (blocked for agents under `$CLAUDECODE=1`, T-1259/T-1260),
+and an `### Agent`+`### Human` split where the Human AC can never be ticked by an agent.
+No agent-reachable path exists to flip T-002 to `work-completed` — the gate is a
+structural deadlock for any agent-only session.
+
+**Fix design (not yet implemented — see Updates):**
+1. **Gate scan exclusion** — in `check-active-task.sh`'s onboarding loop, skip tasks
+   whose frontmatter has `owner: human` when building `INCOMPLETE_ONBOARDING`. This
+   alone unblocks T-002 without touching its content — "readable but never blocking".
+2. **Retag, don't delete, to preserve intent-signalling** — keep `tags: [onboarding, inception]`
+   on T-002 (still discoverable via `fw task list --tag onboarding`, still surfaced by
+   `fw onboarding status`) rather than removing the tag; owner is already the
+   correct discriminator so no new tag vocabulary is needed.
+3. **Structural invariant guard (new PreToolUse check, likely extending
+   `check-active-task.sh` or a sibling hook alongside `check-arc-id.sh`)** — when
+   Write/Edit targets `.tasks/{active,completed}/T-*.md` and the resulting frontmatter
+   has `tags:` containing `onboarding` AND `owner` is NOT `human`, but the task is
+   otherwise agent-unresolvable (`workflow_type: inception`, or body contains an
+   unticked `### Human` AC subsection) — refuse (exit 2), naming the task id and the
+   specific reason (inception-decide-blocked / human-ac-present). This is the
+   complementary case the scan-exclusion in (1) does NOT cover: an onboarding task
+   that claims `owner: agent` but is still structurally stuck.
+4. **Both-states proof (L-530, AC3)** — add two bats fixtures under
+   `tests/unit/`: (a) an onboarding-tagged, `owner: human`, `workflow_type: inception`
+   task → confirm the gate SKIPS it (doesn't block) and the new PreToolUse guard does
+   NOT refuse it (owner:human is the sanctioned escape valve, not a violation); (b)
+   an onboarding-tagged, `owner: agent` task with an unticked `### Human` AC → confirm
+   the guard DOES refuse it. This exercises both the "exempted" and "genuinely broken"
+   branches so the invariant is falsifiable, not just documented.
+5. **End-to-end AC1 proof** — a bats/integration test that runs `fw init` (or
+   reuses the existing greenfield seed fixture) then simulates `CLAUDECODE=1` +
+   `fw work-on "..."` + an agent Write to a non-onboarding file, asserting exit 0
+   once T-002 is the only remaining incomplete onboarding task.
 
 ## Acceptance Criteria
 
@@ -261,3 +300,19 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2815-gated-onboarding-set-contains-an-agent-u.md
 - **Context:** Initial task creation
+
+### 2026-08-05T21:XX:XXZ — root-cause + design captured, budget-critical stop [worker-dispatch]
+- **Action:** Read `check-active-task.sh:438-486` and the T-002 seed template directly;
+  confirmed the root cause and wrote a concrete 5-step fix design into `## Context`
+  above. Did NOT implement — this dispatched worker session hit budget-gate critical
+  (~96% of context window) before any code edit, and the gate structurally restricts
+  Write/Edit to `.context/`/`.tasks/`/`.claude/` at that level. No source file was
+  touched; no test was run; status remains `captured`.
+- **Output:** Design in `## Context` above, ready for the next session/dispatch to
+  implement directly (all file paths, line numbers, and test-fixture shapes specified).
+- **Context:** Redispatch or resume with a fresh budget to execute steps 1-5 in Context.
+  Do not mark this task `work-completed` from this analysis alone — none of the four
+  Agent ACs have evidence yet.
+
+### 2026-08-05T21:53:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
