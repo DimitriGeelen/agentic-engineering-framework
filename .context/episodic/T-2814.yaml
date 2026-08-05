@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2814: fw init in a bare directory bootstraps itself instead of refusing with instructions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T15:34:05Z
+# ============================================================================
+
+task_id: T-2814
+task_name: "fw init in a bare directory bootstraps itself instead of refusing with instructions"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T15:25:18Z
+completed: 2026-08-05T15:33:52Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init in a bare directory bootstraps itself instead of refusing with instructions
+
+# Key outcomes
+outcomes:
+  - '`fw init` in a bare directory with no framework anywhere creates a working project instead of exiting 127. Verified live under an isolated `HOME` with no global install — the exact shape that fails today.'
+  - 'Flags are forwarded: `fw init --provider claude` yields a project with `provider: claude` in `.framework.yaml`. A bootstrap that silently drops the operator''s arguments is worse than a refusal, because the wrong answer is now persisted.'
+  - 'Scoped to `init` only. Every other verb still refuses with the T-2810 message. Pinned by test, because "any verb triggers a download" is the version of this change that is genuinely dangerous.'
+  - 'The bootstrap announces itself on **stderr** before fetching — what it is downloading and where it will write — and never on stdout (the T-2769/T-2771 stdout-purity contract).'
+  - '`FW_NO_BOOTSTRAP=1` restores the refusal, and the refusal text names the variable so the behaviour is discoverable from the output it replaces.'
+  - 'When the fetch is impossible (no `curl`, no network, non-200), the operator lands on the existing T-2810 refusal with its copy-pasteable one-step command — not on a raw curl error. Verified by forcing the failure, not by reading the branch.'
+  - 'Regression coverage, mutation-checked — shown to go red against the current refusal-only router.'
+  - '`tests/unit/fw_router.bats` and `tests/unit/router_refusal_names_one_step_install.bats` stay green; the T-2810 refusal is still reachable and still asserted.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-05 — bootstrap on `fw init` vs T-2800''s refuse-with-instructions'
+    chose: '`fw init` in a bare directory fetches the installer and runs it against'
+    rationale: 'T-2800''s refusal is about never silently running a *global* framework'
+    alternatives_rejected: ['(a) leaving the refusal and asking the operator to change their']
+  - decision: '2026-08-05 — `FW_INSTALL_URL` made overridable'
+    chose: '`_FW_INSTALL_URL` reads `${FW_INSTALL_URL:-<github raw>}`.'
+    rationale: 'the bootstrap is untestable without it — the alternative is a suite that'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2814-fw-init-in-a-bare-directory-bootstraps-i.md
+generated_by: context-agent-hybrid

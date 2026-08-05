@@ -50,7 +50,11 @@ _fw_die() { local rc="$1"; shift; printf '%s\n' "$@" >&2; exit "$rc"; }
 # framework bytes in the PROJECT, never in $HOME — so "install, then run fw init"
 # is two steps that no longer connect to each other. The third (routing loop,
 # below) is correctly bare: it refreshes the PATH router only, no project involved.
-_FW_INSTALL_URL="https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh"
+#
+# Overridable via FW_INSTALL_URL: the T-2814 bootstrap below fetches this, so the
+# override is what makes that path testable without a network — and is the seam an
+# air-gapped install would point at a local mirror or file:// path.
+_FW_INSTALL_URL="${FW_INSTALL_URL:-https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh}"
 
 # --- 1. Walk up from cwd, floored below "/" ---
 _target=""
@@ -131,6 +135,53 @@ if [ -z "$_target" ]; then
             "$_incomplete_at" "$_global" >&2
         printf 'fw: run `fw init` in that directory to complete it (this call already routes there).\n' >&2
     fi
+    # --- 2b. Bootstrap `fw init` by fetching, instead of refusing (T-2814) ---
+    #
+    # `fw init` in a bare directory is the one thing an operator can type that
+    # means "make a project here" and that this router cannot serve — init is
+    # framework code, and there is no framework. Until now it exited 127 with a
+    # message telling the operator to run install.sh, which does exactly what
+    # they just asked for. That is ceremony, not safety: they must retype a
+    # 130-character command to reach the same outcome.
+    #
+    # This is NOT the global fallback T-2800 refused. That refusal is about
+    # never silently running *someone else's framework* against this project —
+    # a correctness boundary, still enforced above. Fetching the framework INTO
+    # the directory the operator explicitly asked to init is the opposite: it is
+    # doing what was asked, in the place it was asked for, with bytes pinned to
+    # that project alone.
+    #
+    # Safety comes from the scope, not from a prompt:
+    #   - `init` only. Any other verb still refuses (a download on `fw status`
+    #     would be indefensible).
+    #   - Only when NO framework was found anywhere, which today is always a
+    #     hard 127. Nothing that works now can change behaviour.
+    #   - Announced on stderr before the network is touched, never on stdout.
+    #   - FW_NO_BOOTSTRAP=1 restores the refusal.
+    # Any fetch failure falls through to that same refusal, so the operator
+    # lands on the copy-pasteable command rather than a raw curl error.
+    if [ ! -x "$_global/bin/fw" ] && [ "${1:-}" = "init" ] && [ -z "${FW_NO_BOOTSTRAP:-}" ] \
+       && command -v curl >/dev/null 2>&1; then
+        _boot_target="$PWD"
+        shift                                  # drop `init`; forward the rest
+        printf 'fw: no framework here yet — bootstrapping into %s\n' "$_boot_target" >&2
+        printf 'fw: fetching %s\n' "$_FW_INSTALL_URL" >&2
+        printf 'fw: (set FW_NO_BOOTSTRAP=1 to refuse with instructions instead)\n' >&2
+        _boot_sh="$(mktemp -t fw-bootstrap-XXXXXX 2>/dev/null)" || _boot_sh=""
+        if [ -n "$_boot_sh" ] && curl -fsSL "$_FW_INSTALL_URL" -o "$_boot_sh" \
+           && [ -s "$_boot_sh" ]; then
+            # `if` suppresses set -e, so a failing installer reaches the cleanup
+            # and returns its own code rather than exiting here and leaking the
+            # temp file. Installer output goes to stdout, where `fw init`'s
+            # output belongs — only the bootstrap announcement above is stderr.
+            if bash "$_boot_sh" "$_boot_target" "$@"; then _boot_rc=0; else _boot_rc=$?; fi
+            rm -f "$_boot_sh"
+            exit "$_boot_rc"
+        fi
+        rm -f "$_boot_sh"
+        printf 'fw: bootstrap fetch failed — falling through to instructions.\n' >&2
+    fi
+
     [ -x "$_global/bin/fw" ] || _fw_die 127 \
         "fw: no framework found." \
         "" \

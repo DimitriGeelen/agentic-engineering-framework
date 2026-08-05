@@ -31,7 +31,15 @@ setup() {
 run_router_in() {
     # -127 is asserted here rather than tolerated: it is the router's documented
     # "no framework found" code, and it also silences bats' BW01 warning.
+    #
+    # FW_NO_BOOTSTRAP=1 (T-2814): `fw init` in a bare directory now bootstraps by
+    # fetching the installer rather than refusing, so the refusal these tests are
+    # about is reached via the opt-out, a non-init verb, or a failed fetch. Setting
+    # it here keeps the subject of the test the MESSAGE, and — just as important —
+    # stops this suite from reaching the network. The bootstrap path has its own
+    # coverage in tests/unit/router_bootstraps_bare_init.bats.
     run -127 env HOME="$FAKE_HOME" FW_GLOBAL_ROOT="$FAKE_HOME/.agentic-framework" \
+        FW_NO_BOOTSTRAP=1 \
         bash -c "cd '$1' && '$ROUTER' init"
 }
 
