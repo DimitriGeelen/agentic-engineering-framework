@@ -1250,3 +1250,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-163
+  text: "fw doctor tells operators to delete a directory two shipped mechanisms still depend on. bin/fw:2309 emits 'Consider: rm -rf $_global_dir (shim-based dispatch obsoletes it)' and bin/fw:1578 says 'can be removed'. But (1) install.sh:259,280 SYMLINK ~/.local/bin/claude-fw into the global, so deleting it silently breaks the T-179 auto-restart wrapper, and (2) bin/fw-router:99 still falls back to the global to bootstrap, so fw init in a bare directory stops working. The advice is only correct after T-2800 ships. Until then doctor is actively recommending an action that breaks two things. Observed 2026-08-05 from an operator onboarding session where the agent correctly refused to run it. Fix: gate the nudge on claude-fw being a copy AND the router no longer falling back, or reword to 'safe to remove once T-2800 lands'."
+  captured: 2026-08-05T11:50:54Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null

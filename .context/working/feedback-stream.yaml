@@ -27932,3 +27932,57 @@ scan_id: R-5a5732ee
 task_id: T-2806
 payload:
   task_file: .tasks/active/T-2806-fw-serve---help-errors-instead-of-printi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T11:43:12Z'
+scan_id: R-cd238bf2
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T11:43:12Z'
+scan_id: R-cd238bf2
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T11:43:12Z'
+scan_id: R-09ccf943
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T11:43:12Z'
+scan_id: R-09ccf943
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T11:43:13Z'
+scan_id: R-f0d23098
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T11:43:13Z'
+scan_id: R-f0d23098
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
