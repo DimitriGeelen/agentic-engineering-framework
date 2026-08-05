@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T13:10:55Z
-last_update: 2026-08-05T19:20:05Z
+last_update: 2026-08-05T21:32:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -295,7 +295,7 @@ reassignments).
 - [x] `tests/unit/no_root_framework_markers.bats` (T-2787) is green at close, or
       the reason it is not is stated — it is the detective half of this fix and
       its state is the outcome measure.
-- [ ] No fixture write escapes its temp dir during a full `bats tests/` run,
+- [x] No fixture write escapes its temp dir during a full `bats tests/` run,
       demonstrated by checking `/` for framework markers immediately before and
       after the run and diffing — the before/after pair is the evidence, since a
       clean "after" alone cannot distinguish "nothing escaped" from "root was
@@ -331,6 +331,25 @@ reassignments).
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+**Final AC evidence (2026-08-05, full `bats --recursive tests/`):**
+
+```
+total assertions : 3794       (136 red — pre-existing OBS-168 baseline,
+                               unrelated to fixture escape)
+markers at /     : .tasks .context   (both pre-existing, T-2787)
+created/modified since run start : NONE
+```
+
+The "before" is established by **mtime**, not a stored file list: every marker
+under `/` predates the run's 19:51:48 start (latest Aug 3 15:01), so
+`-newermt "<run start>"` *is* the diff. Strictly stronger than a name snapshot —
+it also catches an **overwrite** of an existing fixture, which a name-only
+comparison cannot see.
+
+Known limit, stated rather than papered over: a fixture created *and deleted*
+inside the run is invisible to both methods.
+
 
 ## Verification
 
