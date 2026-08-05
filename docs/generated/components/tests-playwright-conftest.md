@@ -6,7 +6,10 @@
 
 ## What It Does
 
-Check if already running on test port
+T-2784: the address comes from one module, shared with every test file. Resolving it
+here independently is what let 81 test files drift onto a literal 3099 while this file
+started, identity-checked and age-bounded a server on FW_TEST_PORT — the guarantees
+below would then attach to a server the suite was not addressing.
 
 ## Used By (43)
 
