@@ -164,9 +164,30 @@ do_init() {
     # directory is exactly the thing that needs replacing — skipping it is what
     # made the debris permanent, because the SKIP branch is the one a recovery run
     # would always take.
-    if [ ! -d "$target_dir/.agentic-framework" ] || [ "${force:-false}" = true ] || [ "$_resuming_partial_init" = true ]; then
+    #
+    # T-2805: the comment above was right and the test below was not wide enough.
+    # `_resuming_partial_init` reads the .fw-init-incomplete MARKER — a declared
+    # signal, absent from any vendor that predates T-2801 or that died before the
+    # marker was written. For those, this branch still took SKIP, so a recovery run
+    # printed "Validation passed: 42/43" over a directory with no FRAMEWORK.md and
+    # no VERSION. Init reported success and left the project broken; the only
+    # reason `fw` still ran there was the router falling back to the global install.
+    #
+    # Observed 2026-08-05 while verifying the router fix — the success message was
+    # convincing enough that the artefact had to be checked to catch it.
+    #
+    # So also test the OBSERVED signal: FRAMEWORK.md is what bin/fw resolves
+    # FRAMEWORK_ROOT by and what do_vendor now writes last, so its absence means
+    # the copy did not finish, whatever the marker says.
+    local _vendor_incomplete=false
+    if [ -d "$target_dir/.agentic-framework" ] && [ ! -f "$target_dir/.agentic-framework/FRAMEWORK.md" ]; then
+        _vendor_incomplete=true
+    fi
+    if [ ! -d "$target_dir/.agentic-framework" ] || [ "${force:-false}" = true ] || [ "$_resuming_partial_init" = true ] || [ "$_vendor_incomplete" = true ]; then
         if [ "$_resuming_partial_init" = true ] && [ -d "$target_dir/.agentic-framework" ]; then
             echo -e "  ${YELLOW}RECOVER${NC}  Previous init did not finish — re-vendoring over the partial copy"
+        elif [ "$_vendor_incomplete" = true ]; then
+            echo -e "  ${YELLOW}RECOVER${NC}  .agentic-framework/ exists but has no FRAMEWORK.md — re-vendoring over the partial copy"
         fi
         echo -e "${BOLD}Vendoring framework into project...${NC}"
         do_vendor --target "$target_dir"

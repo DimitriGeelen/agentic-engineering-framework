@@ -1,11 +1,15 @@
 #!/usr/bin/env bats
 # T-2801 — fw init must leave either nothing or a working project.
 #
-# do_vendor's include list copies `bin` FIRST and FRAMEWORK.md eighth, and
-# .framework.yaml is not written until ~120 lines after the vendor call. So from
-# roughly one second into an init until it finishes, the target directory holds
-# an executable .agentic-framework/bin/fw belonging to a framework that is not
-# all there yet.
+# do_vendor's include list copies `bin` FIRST, and .framework.yaml is not written
+# until ~120 lines after the vendor call. So from roughly one second into an init
+# until it finishes, the target directory holds an executable
+# .agentic-framework/bin/fw belonging to a framework that is not all there yet.
+#
+# T-2805 update: FRAMEWORK.md used to be copied eighth of twelve, inside that
+# window. It is now written LAST, after every other vendor write, and the router
+# tests for it — so the window is closed by an observed signal as well as by the
+# declared marker this file was written for. See tests/unit/fw_vendor_completeness.bats.
 #
 # bin/fw-router routed on `[ -x <dir>/.agentic-framework/bin/fw ]` alone, so it
 # exec'd that partial CLI, which failed "Cannot find framework installation" —
@@ -57,13 +61,22 @@ teardown() {
     # The partial CLI must NOT have run.
     ! echo "$output" | grep -q 'ROUTED-TO-VENDOR'
     echo "$output" | grep -q 'ROUTED-TO-GLOBAL'
-    # And the state must be named, not silently worked around.
-    echo "$output" | grep -q 'unfinished init'
+    # And the state must be named, not silently worked around. (T-2805 reworded
+    # this from "unfinished init" — the same state arises from debris with no
+    # init behind it at all, which the old phrasing misdescribed.)
+    echo "$output" | grep -q 'incomplete framework copy'
 }
 
 @test "without the marker the router still routes into the vendor" {
     # Non-vacuity for the test above: proves the refusal is caused by the marker
     # and not by the stub being unroutable for some unrelated reason.
+    #
+    # T-2805 made that caveat load-bearing. The router now ALSO refuses a vendor
+    # with no FRAMEWORK.md, so without the touch below this test would pass for
+    # the wrong reason — the stub really would be unroutable for an unrelated
+    # reason, which is precisely what it exists to rule out. Adding the sentinel
+    # isolates the marker as the single variable again.
+    touch "$TEST_TEMP_DIR/proj/.agentic-framework/FRAMEWORK.md"
     cd "$TEST_TEMP_DIR/proj"
     run env FW_GLOBAL_ROOT="$TEST_TEMP_DIR/global" "$(ROUTER)"
     [ "$status" -eq 0 ]
