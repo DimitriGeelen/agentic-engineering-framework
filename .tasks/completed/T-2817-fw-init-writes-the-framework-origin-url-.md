@@ -19,12 +19,12 @@ description: >
   are unaffected because that URL carries no credential. Do NOT paste the token value
   into any task, report, commit message or test fixture while fixing this.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh, tests/unit/init_strips_upstream_credentials.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -37,8 +37,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T21:11:19Z
-last_update: '2026-08-05T21:15:07Z'
-date_finished:
+last_update: 2026-08-05T21:17:54Z
+date_finished: 2026-08-05T21:17:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -296,3 +296,15 @@ d=$(mktemp -d); mkdir -p "$d/p"; bin/fw init "$d/p" >/dev/null 2>&1; ! grep -qE 
 
 ### 2026-08-05T21:12:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-db81c44d
+- **Timestamp:** 2026-08-05T21:17:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-05T21:17:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

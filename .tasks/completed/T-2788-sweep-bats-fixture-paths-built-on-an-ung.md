@@ -8,12 +8,12 @@ description: >
   pollution. Audit the 106 call sites, add a shared guard that refuses an empty or
   / root, and pin it with a test that proves the guard fires.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/integration/audit_blocks_review_and_decide.bats, tests/integration/cron_install.bats, tests/integration/fw_approvals.bats, tests/integration/fw_assumption.bats, tests/integration/fw_audit.bats, tests/integration/fw_bus.bats, tests/integration/fw_context.bats, tests/integration/fw_cron.bats, tests/integration/fw_decisions.bats, tests/integration/fw_doctor.bats, tests/integration/fw_fix_learned.bats, tests/integration/fw_gaps.bats, tests/integration/fw_git.bats, tests/integration/fw_handover.bats, tests/integration/fw_harvest.bats, tests/integration/fw_healing.bats, tests/integration/fw_inception.bats, tests/integration/fw_learnings.bats, tests/integration/fw_metrics.bats, tests/integration/fw_notify.bats, tests/integration/fw_onboarding.bats, tests/integration/fw_patterns.bats, tests/integration/fw_pickup.bats, tests/integration/fw_practices.bats, tests/integration/fw_promote.bats, tests/integration/fw_resume.bats, tests/integration/fw_search.bats, tests/integration/fw_task.bats, tests/integration/fw_tier0.bats, tests/integration/fw_timeline.bats, tests/integration/fw_traceability.bats, tests/integration/fw_upstream.bats, tests/integration/fw_validate_init.bats, tests/integration/fw_vendor.bats, tests/integration/fw_work_on.bats, tests/unit/arc_membership_agent_surfaces.bats, tests/unit/arc_membership_dual_id.bats, tests/unit/arc_membership_shared.bats, tests/unit/arc_membership_union.bats, tests/unit/audit_arc_progress_arc_id.bats, tests/unit/audit_ctl_arc_tag_only_pattern.bats, tests/unit/audit_d10_html_comment_blindness.bats, tests/unit/audit_stale_slice_reference.bats, tests/unit/checkpoint.bats, tests/unit/context_decision.bats, tests/unit/context_episodic.bats, tests/unit/context_focus.bats, tests/unit/context_init.bats, tests/unit/context_learning.bats, tests/unit/context_pattern.bats, tests/unit/context_status.bats, tests/unit/git_common.bats, tests/unit/git_log.bats, tests/unit/handover_checkpoint_push.bats, tests/unit/healing_diagnose.bats, tests/unit/hook_telemetry.bats, tests/unit/hook_threshold.bats, tests/unit/inception_defer_park.bats, tests/unit/lib_costs.bats, tests/unit/lib_keylock.bats, tests/unit/recommendation_gate_build_partial.bats, tests/unit/skip_ac_partial_complete.bats, tests/unit/test_mirror_stderr_capture.bats, tests/unit/test_mirror_sync.bats, tests/unit/test_orchestrator_status_synthetic_filter.bats, tests/unit/test_update_task_horizon_null_reclose.bats, tests/unit/update_task_horizon_null_on_close.bats, tests/unit/update_task_orphan_guard.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T13:10:55Z
-last_update: 2026-08-05T21:32:36Z
-date_finished:
+last_update: 2026-08-05T21:32:55Z
+date_finished: 2026-08-05T21:32:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -506,3 +506,15 @@ out=$(comm -13 <(printf '%s\n' tests/unit/no_root_framework_markers.bats tests/u
   Next session: run `bats tests/` (or at minimum `tests/unit/` +
   `tests/integration/`) and diff `/` for framework markers before/after, then
   tick the final AC and close.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c0fd644
+- **Timestamp:** 2026-08-05T21:32:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-05T21:32:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

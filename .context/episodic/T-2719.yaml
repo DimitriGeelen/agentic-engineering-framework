@@ -1,0 +1,127 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2719: Keystone: README five-minute path tested by-hand as its own persona
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T21:32:13Z
+# ============================================================================
+
+task_id: T-2719
+task_name: "Keystone: README five-minute path tested by-hand as its own persona"
+workflow_type: design
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-02T00:34:23Z
+completed: 2026-08-05T21:29:53Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-08-02T10:05:26+02:00
+last_commit: 2026-08-05T23:29:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-127 + retractions (OBS-125/126) + learning — grep-proxy sweep reproduced the class it hunted. OBS-127 — remove cross-project :3000 hazard from two verification blocks. scope arc-016 keystone from a live two-persona re-run; file T-2815. the README five-minute path gets a by-hand persona scenario. register persona-test fabric card; re-vendor lib/init.sh (T-2817 fix). arc-016 recommendation — GO on the task, arc stays OPEN on OBS-170
+
+# Key outcomes
+outcomes:
+  - 'Both personas are reproduced against **published** bytes (not the working tree)'
+  - 'README step 2 no longer asserts an outcome the by-hand reader cannot observe.'
+  - 'A by-hand persona scenario exists as an executable test that runs the README''s'
+  - 'The persona test fails loudly when the path regresses, proven by mutation:'
+  - 'The persona test is executed by a runner that actually runs today, verified by'
+  - 'The agent-persona dead end (T-002 human-owned + inception inside the gated'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'register persona-test fabric card; re-vendor lib/init.sh (T-2817 fix)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-08-01.yaml'
+  - '.context/audits/2026-08-02.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-02.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0802-0111.md'
+  - '.context/handovers/S-2026-0802-0920.md'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.fabric/components/tests-integration-readme_five_minute_by_hand.yaml'
+  - '.fabric/components/tests-unit-init_strips_upstream_credentials.yaml'
+  - 'README.md'
+  - '.tasks/active/T-2063-watchtower-complete-button-silent-fail.md'
+  - '.tasks/active/T-2064-task-surfaced-for-review-despite-zero-human-acs.md'
+  - '.tasks/active/T-2719-keystone-readme-five-minute-path-tested-.md'
+  - '.tasks/active/T-2815-gated-onboarding-set-contains-an-agent-u.md'
+  - '.tasks/completed/T-2817-fw-init-writes-the-framework-origin-url-.md'
+  - 'tests/integration/readme_five_minute_by_hand.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-02T10:05:26'
+    action: 'T-2719: OBS-127 + retractions (OBS-125/126) + learning — grep-proxy sweep reproduced the class it hunted'
+  - time: '2026-08-02T10:08:55'
+    action: 'T-2719: OBS-127 — remove cross-project :3000 hazard from two verification blocks'
+  - time: '2026-08-05T22:53:51'
+    action: 'T-2719: scope arc-016 keystone from a live two-persona re-run; file T-2815'
+  - time: '2026-08-05T23:26:22'
+    action: 'T-2719: the README five-minute path gets a by-hand persona scenario'
+  - time: '2026-08-05T23:26:43'
+    action: 'T-2719: register persona-test fabric card; re-vendor lib/init.sh (T-2817 fix)'
+  - time: '2026-08-05T23:29:48'
+    action: 'T-2719: arc-016 recommendation — GO on the task, arc stays OPEN on OBS-170'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 5575 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:readme-first-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5575
+  commits: 6
+  files_changed: 39
+  lines_added: 5038
+  lines_removed: 1113
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md
+generated_by: context-agent-hybrid

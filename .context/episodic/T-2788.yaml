@@ -1,0 +1,236 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2788: sweep: bats fixture paths built on an unguarded $PROJECT_ROOT
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T21:33:08Z
+# ============================================================================
+
+task_id: T-2788
+task_name: "sweep: bats fixture paths built on an unguarded $PROJECT_ROOT"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T13:10:55Z
+completed: 2026-08-05T21:32:55Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-08-04T15:19:46+02:00
+last_commit: 2026-08-05T23:32:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored copies (6 web/ files, T-2240 self-vendor parity). focus-theft lead — peer-project process correlates with an unexplained focus write (OBS-147); watcher evidence retained. OBS-148 (fw bvp rank cited in CLAUDE.md but does not exist) + OBS-149 (arc-exit gate evaluates over 0 confirmed BVP scores). add guard_project_root() and wire into all 106 bats fixture sites. refresh MCP manifest (pre-push drift, unrelated to this task). restore MCP manifest removed by pre-push vendor-sync side effect. checkpoint — guard shipped, final full-suite AC deferred (budget critical). OBS-163 — doctor recommends rm -rf of a still-load-bearing global. refresh vendored copies (self-vendor drift, T-2240). drop stray T-1434 drift sentinel from vendored colors.sh. fix missing load ../test_helper in 7 guard_project_root call sites. final AC — full suite run leaves / untouched
+
+# Key outcomes
+outcomes:
+  - 'Every call site is enumerated, not sampled: the full list of files matching'
+  - 'Each site is classified as SAFE (assigns `PROJECT_ROOT` before first use, in'
+  - 'A shared guard refuses an empty root, `/`, and any path outside the test'
+  - 'The guard is proven to fire: a deliberately-exposed fixture file fails with'
+  - 'The guard runs under the runner that executes bats today, verified by'
+  - '`tests/unit/no_root_framework_markers.bats` (T-2787) is green at close, or'
+  - 'No fixture write escapes its temp dir during a full `bats tests/` run,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix missing load ../test_helper in 7 guard_project_root call sites'
+    source: git-mined
+  - description: 'add guard_project_root() and wire into all 106 bats fixture sites'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/colors.sh'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/cockpit.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/blueprints/metrics.py'
+  - '.agentic-framework/web/templates/cockpit.html'
+  - '.agentic-framework/web/templates/metrics.html'
+  - '.agentic-framework/web/templates/task_detail.html'
+  - 'agents/mcp/framework-mcp-manifest.json'
+  - '.context/audits/2026-08-04.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-2788-sweep-bats-fixture-paths-built-on-an-ung.md'
+  - '.tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md'
+  - 'tests/governance/test_checkpoint_handover_recorded.bats'
+  - 'tests/governance/test_precompact_handover_robust.bats'
+  - 'tests/integration/audit_blocks_review_and_decide.bats'
+  - 'tests/integration/budget_gate.bats'
+  - 'tests/integration/check_active_task.bats'
+  - 'tests/integration/check_fabric_new_file.bats'
+  - 'tests/integration/check_project_boundary.bats'
+  - 'tests/integration/check_tier0.bats'
+  - 'tests/integration/cron_install.bats'
+  - 'tests/integration/fw_approvals.bats'
+  - 'tests/integration/fw_ask.bats'
+  - 'tests/integration/fw_assumption.bats'
+  - 'tests/integration/fw_audit.bats'
+  - 'tests/integration/fw_build.bats'
+  - 'tests/integration/fw_bus.bats'
+  - 'tests/integration/fw_consolidate.bats'
+  - 'tests/integration/fw_context.bats'
+  - 'tests/integration/fw_cron.bats'
+  - 'tests/integration/fw_decisions.bats'
+  - 'tests/integration/fw_dispatch.bats'
+  - 'tests/integration/fw_docs.bats'
+  - 'tests/integration/fw_doctor.bats'
+  - 'tests/integration/fw_enforcement.bats'
+  - 'tests/integration/fw_fix_learned.bats'
+  - 'tests/integration/fw_gaps.bats'
+  - 'tests/integration/fw_git.bats'
+  - 'tests/integration/fw_handover.bats'
+  - 'tests/integration/fw_harvest.bats'
+  - 'tests/integration/fw_healing.bats'
+  - 'tests/integration/fw_inception.bats'
+  - 'tests/integration/fw_learnings.bats'
+  - 'tests/integration/fw_mcp.bats'
+  - 'tests/integration/fw_metrics.bats'
+  - 'tests/integration/fw_note.bats'
+  - 'tests/integration/fw_notify.bats'
+  - 'tests/integration/fw_onboarding.bats'
+  - 'tests/integration/fw_patterns.bats'
+  - 'tests/integration/fw_pickup.bats'
+  - 'tests/integration/fw_plugin_audit.bats'
+  - 'tests/integration/fw_practices.bats'
+  - 'tests/integration/fw_promote.bats'
+  - 'tests/integration/fw_recall.bats'
+  - 'tests/integration/fw_resume.bats'
+  - 'tests/integration/fw_scan.bats'
+  - 'tests/integration/fw_search.bats'
+  - 'tests/integration/fw_self_audit.bats'
+  - 'tests/integration/fw_serve.bats'
+  - 'tests/integration/fw_setup.bats'
+  - 'tests/integration/fw_task.bats'
+  - 'tests/integration/fw_termlink.bats'
+  - 'tests/integration/fw_test_cmd.bats'
+  - 'tests/integration/fw_test_onboarding.bats'
+  - 'tests/integration/fw_tier0.bats'
+  - 'tests/integration/fw_timeline.bats'
+  - 'tests/integration/fw_traceability.bats'
+  - 'tests/integration/fw_update.bats'
+  - 'tests/integration/fw_upgrade.bats'
+  - 'tests/integration/fw_upstream.bats'
+  - 'tests/integration/fw_validate_init.bats'
+  - 'tests/integration/fw_vendor.bats'
+  - 'tests/integration/fw_work_on.bats'
+  - 'tests/integration/review_queue_arc.bats'
+  - 'tests/integration/t2499_supervision_notice.bats'
+  - 'tests/integration/verify_acs_arc.bats'
+  - 'tests/test_helper.bash'
+  - 'tests/unit/arc_membership_agent_surfaces.bats'
+  - 'tests/unit/arc_membership_dual_id.bats'
+  - 'tests/unit/arc_membership_shared.bats'
+  - 'tests/unit/arc_membership_union.bats'
+  - 'tests/unit/audit_arc_progress_arc_id.bats'
+  - 'tests/unit/audit_ctl_arc_tag_only_pattern.bats'
+  - 'tests/unit/audit_d10_html_comment_blindness.bats'
+  - 'tests/unit/audit_gate_bypass_log.bats'
+  - 'tests/unit/audit_stale_slice_reference.bats'
+  - 'tests/unit/checkpoint.bats'
+  - 'tests/unit/context_decision.bats'
+  - 'tests/unit/context_episodic.bats'
+  - 'tests/unit/context_focus.bats'
+  - 'tests/unit/context_init.bats'
+  - 'tests/unit/context_learning.bats'
+  - 'tests/unit/context_pattern.bats'
+  - 'tests/unit/context_status.bats'
+  - 'tests/unit/emit_review_ac_counter.bats'
+  - 'tests/unit/git_common.bats'
+  - 'tests/unit/git_log.bats'
+  - 'tests/unit/guard_project_root.bats'
+  - 'tests/unit/handover_checkpoint_push.bats'
+  - 'tests/unit/healing_diagnose.bats'
+  - 'tests/unit/healing_resolve_indent.bats'
+  - 'tests/unit/hook_telemetry.bats'
+  - 'tests/unit/hook_threshold.bats'
+  - 'tests/unit/inception_defer_park.bats'
+  - 'tests/unit/lib_costs.bats'
+  - 'tests/unit/lib_keylock.bats'
+  - 'tests/unit/lib_keylock_timeout.bats'
+  - 'tests/unit/lib_prompt.bats'
+  - 'tests/unit/rca_gate.bats'
+  - 'tests/unit/recommendation_gate_build_partial.bats'
+  - 'tests/unit/recommendation_gate_needs_human.bats'
+  - 'tests/unit/review_pipefail.bats'
+  - 'tests/unit/skip_ac_partial_complete.bats'
+  - 'tests/unit/task_verify_extraction.bats'
+  - 'tests/unit/test_mirror_stderr_capture.bats'
+  - 'tests/unit/test_mirror_sync.bats'
+  - 'tests/unit/test_orchestrator_status_synthetic_filter.bats'
+  - 'tests/unit/test_update_task_horizon_null_reclose.bats'
+  - 'tests/unit/update_task_horizon_null_on_close.bats'
+  - 'tests/unit/update_task_orphan_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T15:19:46'
+    action: 'T-2788: refresh vendored copies (6 web/ files, T-2240 self-vendor parity)'
+  - time: '2026-08-04T15:26:31'
+    action: 'T-2788: focus-theft lead — peer-project process correlates with an unexplained focus write (OBS-147); watcher evidence retained'
+  - time: '2026-08-04T16:14:59'
+    action: 'T-2788: OBS-148 (fw bvp rank cited in CLAUDE.md but does not exist) + OBS-149 (arc-exit gate evaluates over 0 confirmed BVP scores)'
+  - time: '2026-08-05T03:49:15'
+    action: 'T-2788: add guard_project_root() and wire into all 106 bats fixture sites'
+  - time: '2026-08-05T03:51:44'
+    action: 'T-2788: refresh MCP manifest (pre-push drift, unrelated to this task)'
+  - time: '2026-08-05T03:54:26'
+    action: 'T-2788: restore MCP manifest removed by pre-push vendor-sync side effect'
+  - time: '2026-08-05T03:57:12'
+    action: 'T-2788: checkpoint — guard shipped, final full-suite AC deferred (budget critical)'
+  - time: '2026-08-05T13:51:00'
+    action: 'T-2788: OBS-163 — doctor recommends rm -rf of a still-load-bearing global'
+  - time: '2026-08-05T13:51:23'
+    action: 'T-2788: refresh vendored copies (self-vendor drift, T-2240)'
+  - time: '2026-08-05T14:01:03'
+    action: 'T-2788: refresh vendored copies (self-vendor drift, T-2240)'
+  - time: '2026-08-05T14:02:26'
+    action: 'T-2788: drop stray T-1434 drift sentinel from vendored colors.sh'
+  - time: '2026-08-05T19:50:50'
+    action: 'T-2788: fix missing load ../test_helper in 7 guard_project_root call sites'
+  - time: '2026-08-05T23:32:50'
+    action: 'T-2788: final AC — full suite run leaves / untouched'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 13 commit(s), 1942 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1942
+  commits: 13
+  files_changed: 131
+  lines_added: 1061
+  lines_removed: 151
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2788-sweep-bats-fixture-paths-built-on-an-ung.md
+generated_by: context-agent-hybrid
