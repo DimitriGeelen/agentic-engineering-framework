@@ -1,22 +1,25 @@
 ---
-id: T-2815
-name: "Gated onboarding set contains an agent-unresolvable task (T-002 human+inception)"
+id: T-2816
+name: "commit-msg hook prints a framework-repo remedy path that no consumer has"
 description: >
-  T-532 onboarding gate (check-active-task.sh:443-480) requires every active tags:onboarding
-  task to reach work-completed before any other work. The seeded set contains T-002
-  'Define project goals' with tags [onboarding, inception] and owner: human.
-  An agent may never tick a ### Human AC, and fw inception decide refuses under CLAUDECODE=1
-  — so the exit condition of the gate is an action the assisting agent is structurally
-  forbidden to take. Measured 2026-08-05 against published bytes: fw init then fw
-  work-on 'Add authentication' then agent Write returns exit 2, five onboarding tasks
-  listed, no agent-reachable path to clear it. Arc-017's stated invariant: nothing
-  owner:human or agent-unresolvable may sit in the gated onboarding set.
+  agents/git/lib/hooks.sh:99 prints '2. Create a task: ./agents/task-create/create-task.sh'
+  when it refuses a commit with no task reference. That path exists only in the framework
+  repo; in a consumer project the vendored copy is at .agentic-framework/agents/task-create/create-task.sh,
+  so the remedy 404s for every consumer. This is the T-1257 class (bin/fw vs .agentic-framework/bin/fw)
+  reappearing in hook output. It matters more than a normal path bug because the commit-msg
+  hook is the ONLY framework gate the BY-HAND persona can observe -- the PreToolUse
+  task gate is a Claude Code hook and never fires for a human at a terminal. So this
+  is the first and possibly only enforcement message a non-agent operator ever reads,
+  and its remedy does not exist. Measured 2026-08-05 in a fresh consumer built from
+  published bytes during T-2719 persona work. Fix shape: print the documented one-step
+  entry (fw work-on) which resolves correctly in both project shapes, rather than
+  any script path.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:onboarding-curriculum]
+tags: []
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -29,8 +32,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-05T20:52:27Z
-last_update: '2026-08-05T21:00:14Z'
+created: 2026-08-05T20:57:07Z
+last_update: '2026-08-05T21:00:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -42,18 +45,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-05T21:00:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-05T21:00:14Z'
+  - ts: '2026-08-05T20:58:51Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -70,31 +63,63 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-05T21:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2815: Gated onboarding set contains an agent-unresolvable task (T-002 human+inception)
+# T-2816: commit-msg hook prints a framework-repo remedy path that no consumer has
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found while reproducing arc-016's by-hand persona under T-2719. The commit-msg
+hook refused a task-less commit correctly and then printed a remedy
+(`./agents/task-create/create-task.sh`) that exists only in the framework repo.
+
+Why this is worse than an ordinary broken path: the PreToolUse task gate is a
+Claude Code hook, so it never fires for a person typing at a terminal. The
+commit-msg hook is the **only** framework gate the by-hand persona can trip. Its
+remedy is therefore the first — and for a non-agent operator possibly the only —
+enforcement message the framework ever shows them, and it pointed at nothing.
+
+Fix: resolve the entry point at **hook runtime** rather than naming a script path.
+Runtime, not install time, for two reasons — the heredoc that writes the hook is
+quoted (`<< 'HOOK_EOF'`), so nothing interpolates at install; and the project can
+be re-shaped after the hook is written (PATH shim installed, framework vendored),
+which would strand an install-time answer.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The gated set's exit condition is reachable by the agent alone, demonstrated by
-      running the seeded set to completion under `$CLAUDECODE=1` — not by arguing that
-      it should be. Whatever the fix (ungate T-002, split it, make the curriculum
-      non-blocking), the proof is a clean run from `fw init` to a non-onboarding Write
-      that succeeds.
-- [ ] The invariant is enforced structurally, not documented: adding an `owner: human`
-      or otherwise agent-unresolvable task to the gated onboarding set is refused at
-      the point it is added, with a message naming which task and why.
-- [ ] The invariant guard is proven to fire — a deliberately human-owned onboarding
-      fixture is refused, and an all-agent set passes (L-530 both-states rule).
-- [ ] Sovereignty is preserved: the human curriculum still exists and is discoverable.
-      The fix must not delete the operator's onboarding content to satisfy a gate —
-      arc-017's mechanic is "readable but never blocking", not "removed".
+- [x] The refusal message names a command that resolves in **both** project shapes,
+      verified by running the printed command literally in a consumer built from
+      published bytes AND in the framework repo — not by reading the string.
+- [x] The commit-msg `# VERSION=` marker is bumped (PL-078). Without it
+      `install-hooks` short-circuits on the version match and consumers keep the
+      stale hook, so the fix would sit in the template indefinitely.
+- [x] `bash -n` passes on `agents/git/lib/hooks.sh` after the edit (L-408 — heredoc
+      and command-substitution constructs in generated hooks break silently).
+- [x] The generated hook still refuses a task-less commit (RC=1) and still accepts a
+      referenced one (RC=0) — proven by running both against a real fixture repo, so
+      the message fix cannot have broken the enforcement it decorates.
+
+**Evidence (measured 2026-08-05):**
+
+| Check | Consumer (published bytes) | Framework repo |
+|-------|---------------------------|----------------|
+| resolver output | `fw` (PATH shim present) | `bin/fw` |
+| printed command runs | yes | yes |
+| task-less commit | RC=1, refused | — |
+| referenced commit | RC=0, accepted | — |
+| deployed hook version | 1.11 | 1.11 (redeployed on the bump) |
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +153,16 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n agents/git/lib/hooks.sh
+grep -q '^# VERSION=1.11' agents/git/lib/hooks.sh
+grep -q '_fw_entry() {' agents/git/lib/hooks.sh
+! grep -q 'Create a task: \./agents/task-create/create-task\.sh' agents/git/lib/hooks.sh
+# `|| true` is load-bearing: the commit MUST fail (that is the behaviour under test),
+# and out=$(cmd) inherits the substitution's exit status, so set -e would abort the
+# line on the very outcome it is verifying. Caught by rehearsing under the gate's own
+# shell (T-2743) rather than by hand, where it passed.
+out=$(bash -c 'cd "$(mktemp -d)" && git init -q . && git config user.email t@e.c && git config user.name t && cp /opt/999-Agentic-Engineering-Framework/.git/hooks/commit-msg .git/hooks/ && echo x > f && git add -A && git commit -m "no ref" 2>&1' || true); echo "$out" | grep -q "No task reference found" && ! echo "$out" | grep -q "agents/task-create/create-task.sh"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -257,7 +292,10 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-05T20:52:27Z — task-created [task-create-agent]
+### 2026-08-05T20:57:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2815-gated-onboarding-set-contains-an-agent-u.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2816-commit-msg-hook-prints-a-framework-repo-.md
 - **Context:** Initial task creation
+
+### 2026-08-05T20:58:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
