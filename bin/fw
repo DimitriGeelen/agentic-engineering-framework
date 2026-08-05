@@ -811,7 +811,16 @@ show_help() {
     echo -e "  ${GREEN}peer${NC} <cmd>            v2 peer-consult (subscribe to TermLink inbox.queued + spawn responders)"
     echo -e "  ${GREEN}config${NC} <cmd>           Project config (set, get, list) — persistent settings in .framework.yaml"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
-    echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
+    # T-2808: this line used to read "(default port 3000)". The port is per-project
+    # (triple-file → FW_PORT → 3000), and stating 3000 as the default here is the
+    # exact literal the T-2732 close gate refuses inside Verification blocks — the
+    # CLI was teaching the anti-pattern the framework gates elsewhere. Origin: an
+    # onboarding agent read it, hard-coded :3000, and hit another project's server.
+    echo -e "  ${GREEN}serve${NC} [--port N]     Start the Watchtower web UI (port: see 'fw watchtower port')"
+    # T-2808: `watchtower` dispatches at bin/fw:5519 and had NO help entry, while
+    # CLAUDE.md instructs agents to resolve the port with exactly this command. The
+    # verb the port rule depends on was undiscoverable from `fw help`.
+    echo -e "  ${GREEN}watchtower${NC} <cmd>      Watchtower control (port, url, status, start, stop, restart)"
     echo -e "  ${GREEN}upstream${NC} <cmd>        Report issues to framework upstream (report, config, status)"
     echo -e "  ${GREEN}deploy${NC} <cmd>          Ring20 deployment (scaffold, status, routes, ports)"
     echo -e "  ${GREEN}ask${NC} <query>           Query project knowledge (RAG search)"
