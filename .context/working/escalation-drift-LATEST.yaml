@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-04T03:23:02.708904+00:00
-corpus_total: 2456
-bug_class_total: 482
+generated: 2026-08-05T03:23:02.901389+00:00
+corpus_total: 2475
+bug_class_total: 484
 bug_class_pct: 19
-h1_flagged: 356
+h1_flagged: 357
 h1_pct_of_bug_class: 73
-h2_repeat_patterns: 132
+h2_repeat_patterns: 134
 h3_flagged: 265
 h3_pct_of_bug_class: 54
-recent_30d_flagged: 15
+recent_30d_flagged: 16
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-100202-task-id-allocator-inflation--split-view-"
@@ -34,15 +34,15 @@ recent_sample:
     name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
 h2_top:
   - learning: "P-011"
-    task_count: 1465
+    task_count: 1520
   - learning: "L-387"
-    task_count: 1285
+    task_count: 1339
   - learning: "L-291"
-    task_count: 788
+    task_count: 807
   - learning: "L-398"
-    task_count: 560
+    task_count: 578
   - learning: "P-010"
-    task_count: 280
+    task_count: 292
   - learning: "L-006"
     task_count: 54
   - learning: "L-399"

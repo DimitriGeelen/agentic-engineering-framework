@@ -5934,3 +5934,18 @@ Ran the onboarding prompts Steps 1-5 for real in throwaway directories'
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'Inception decision: GO'
+- timestamp: '2026-08-04T22:23:39Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2802'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2802: fw watchtower url refuses rather than guessing localhost:3000
+
+do_urls last branch emitted a configured-port guess in the same shape as
+a verified answer. '
+- timestamp: '2026-08-04T22:27:03Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2802'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw fabric register tests/unit/watchtower_url_no_guess.bats >/dev/null 2>&1; FW_SWITCH_FOCUS=1 bin/fw fabric register tests/fixtures/foreign_watchtower.py >/dev/null 2>&1; git add'

@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2805: Fresh install: partial vendor makes fw unrecoverable in its own directory
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T06:54:42Z
+# ============================================================================
+
+task_id: T-2805
+task_name: "Fresh install: partial vendor makes fw unrecoverable in its own directory"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T06:37:26Z
+completed: 2026-08-05T06:53:31Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-05T08:50:14+02:00
+last_commit: 2026-08-05T08:50:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  partial vendor no longer traps fw in its own directory. fabric card for fw_vendor_completeness.bats. refresh vendored copies (self-vendor drift, T-2240)
+
+# Key outcomes
+outcomes:
+  - 'Router requires `FRAMEWORK.md` alongside `-x bin/fw` before routing into a'
+  - '`FRAMEWORK.md` is copied **last** in `do_vendor` — after VERSION,'
+  - '`fw init` run from **inside** a directory with a partial vendor and no'
+  - 'Non-vacuity: a *complete* vendor still routes to its own CLI'
+  - 'Regression test pins all behaviours, is globbed by `bats tests/unit/`'
+  - 'Fourth defect found during verification and fixed: `do_init` skipped'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/fw-router'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/validate-init.sh'
+  - '.agentic-framework/policy/value-drivers.yaml'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - 'bin/fw-router'
+  - 'docs/generated/components/bin-fw-router.md'
+  - 'docs/generated/components/tests-fixtures-foreign_watchtower.md'
+  - 'docs/generated/components/tests-playwright-conftest.md'
+  - 'docs/generated/components/tests-playwright-target.md'
+  - 'docs/generated/components/tests-unit-fw_init_atomic.md'
+  - 'docs/generated/components/tests-unit-install_verify_no_cwd_init.md'
+  - 'docs/generated/components/tests-unit-test_playwright_server_adoption.md'
+  - 'docs/generated/components/tests-unit-test_playwright_target_single_source.md'
+  - 'docs/generated/components/tests-unit-watchtower_url_no_guess.md'
+  - 'docs/generated/components/web-blueprints-metrics.md'
+  - '.fabric/components/tests-unit-fw_vendor_completeness.yaml'
+  - 'lib/init.sh'
+  - 'lib/validate-init.sh'
+  - '.tasks/active/T-2805-fresh-install-partial-vendor-makes-fw-un.md'
+  - 'tests/unit/fw_init_atomic.bats'
+  - 'tests/unit/fw_vendor_completeness.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-05T08:50:14'
+    action: 'T-2805: partial vendor no longer traps fw in its own directory'
+  - time: '2026-08-05T08:50:32'
+    action: 'T-2805: fabric card for fw_vendor_completeness.bats'
+  - time: '2026-08-05T08:50:58'
+    action: 'T-2805: refresh vendored copies (self-vendor drift, T-2240)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 3
+  files_changed: 24
+  lines_added: 936
+  lines_removed: 98
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2805-fresh-install-partial-vendor-makes-fw-un.md
+generated_by: context-agent-hybrid

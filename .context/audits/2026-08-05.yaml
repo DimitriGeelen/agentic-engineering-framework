@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-04-2356
-timestamp: 2026-08-04T21:56:59Z
+# Audit Results - 2026-08-05-0851
+timestamp: 2026-08-05T06:51:16Z
 sections: "structure"
 summary:
   pass: 29
@@ -41,15 +41,15 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 960 registered card(s)"
+    check: "Fabric: 964 registered card(s)"
   - level: WARN
-    check: "Fabric: 50/873 cards have no edges"
+    check: "Fabric: 54/877 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 3 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 617 card(s) point at files no watch pattern covers"
+    check: "Fabric: 621 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
