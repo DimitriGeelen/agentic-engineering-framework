@@ -10,6 +10,8 @@
 # Strategy: exercise only the check block — extract the AWK-pattern logic
 # directly. Running the full audit.sh per-test would be slow + flaky.
 
+load ../test_helper
+
 setup() {
     PROJECT_ROOT="$(mktemp -d)"
     guard_project_root

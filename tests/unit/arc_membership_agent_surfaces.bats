@@ -11,6 +11,8 @@
 #
 # Sibling to T-1874/T-1875/T-1876/T-1877 (web + CLI + audit).
 
+load ../test_helper
+
 setup() {
     FRAMEWORK_ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
     export PROJECT_ROOT="$(mktemp -d)"

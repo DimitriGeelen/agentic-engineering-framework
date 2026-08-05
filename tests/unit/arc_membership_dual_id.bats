@@ -12,6 +12,8 @@
 # arc had 32 slug-form tasks + 3 NNN-form tasks = 35 total constituents, but
 # `fw arc show arc-grooming` returned 32 while Watchtower returned 35.
 
+load ../test_helper
+
 setup() {
     export TEST_TMP="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TMP"

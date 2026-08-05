@@ -11,6 +11,8 @@
 # scan logic mirrors the production block, against a synthetic .tasks/ tree.
 # That pins the regex/union behavior independent of the full audit run.
 
+load ../test_helper
+
 setup() {
     export PROJECT_ROOT="$(mktemp -d)"
     guard_project_root

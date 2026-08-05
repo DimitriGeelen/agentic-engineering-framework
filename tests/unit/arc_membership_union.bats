@@ -7,6 +7,8 @@
 # tags. Both forms coexist during the transition; this test pins the union
 # semantics.
 
+load ../test_helper
+
 setup() {
     export PROJECT_ROOT="$(mktemp -d)"
     guard_project_root

@@ -3,6 +3,8 @@
 # Sibling to tests/unit/arc_membership_agent_surfaces.bats (which pins
 # consumer-site behaviour). This file pins the SHARED LIBRARY itself.
 
+load ../test_helper
+
 setup() {
     # Synthetic PROJECT_ROOT — isolated per-test fixture.
     PROJECT_ROOT="$(mktemp -d)"

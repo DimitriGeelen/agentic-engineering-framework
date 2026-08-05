@@ -11,6 +11,8 @@
 # Strategy: isolated synthetic PROJECT_ROOT + check-block logic extracted
 # inline (same pattern as audit_ctl_arc_tag_only_pattern.bats).
 
+load ../test_helper
+
 setup() {
     PROJECT_ROOT="$(mktemp -d)"
     guard_project_root
