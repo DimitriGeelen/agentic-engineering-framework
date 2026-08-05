@@ -4,12 +4,12 @@ name: "claude-fw on PATH must be a copy, not a symlink into the global install"
 description: >
   claude-fw on PATH must be a copy, not a symlink into the global install
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, tests/unit/claude_fw_copy_not_symlink.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T12:05:25Z
-last_update: 2026-08-05T12:21:28Z
-date_finished:
+last_update: 2026-08-05T12:26:13Z
+date_finished: 2026-08-05T12:26:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -109,14 +109,17 @@ design doc missed".
 - [x] The T-2501 drift detector (`bin/fw:1790-1805`) still reports OK for a freshly-copied claude-fw — a copy makes that check load-bearing rather than cosmetic, so it must not regress.
 
 ### Human
-- [ ] [REVIEW] On your own host, `claude-fw` still launches and supervises a session after the change
+- [ ] [REVIEW] A session started with the converted `claude-fw` is still supervised
+  Only you can answer this: it needs an interactive session actually launched under
+  the wrapper, and it changes a file in your `$HOME` — a host-level migration step,
+  not a repo change, so it is yours to run rather than mine.
   **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && ls -l ~/.local/bin/claude-fw` — note whether it is currently a symlink
-  2. Re-run the installer one-liner, or by hand: `rm -f ~/.local/bin/claude-fw && cp /opt/999-Agentic-Engineering-Framework/bin/claude-fw ~/.local/bin/claude-fw && chmod +x ~/.local/bin/claude-fw` — the `rm -f` matters, a bare `cp` onto the current symlink would write through it into the global install
-  3. `ls -l ~/.local/bin/claude-fw` — confirm it is now a regular file
-  4. Start a session with `claude-fw` and run `cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor 2>&1 | grep -i supervis`
-  **Expected:** step 3 shows a regular file (no `->`); step 4 prints `OK  Session supervised by claude-fw — budget auto-restart armed`
-  **If not:** paste the `ls -l` output and the doctor line; the wrapper may predate the `FW_CLAUDE_FW_SUPERVISED` export, which the T-2501 drift check will also flag
+  1. `cd /opt/999-Agentic-Engineering-Framework && ls -l ~/.local/bin/claude-fw` — today this is a symlink into the global install; that is the state being migrated
+  2. Convert it: `rm -f ~/.local/bin/claude-fw && cp /opt/999-Agentic-Engineering-Framework/bin/claude-fw ~/.local/bin/claude-fw && chmod +x ~/.local/bin/claude-fw`
+     The `rm -f` is load-bearing, not tidiness — a bare `cp` onto the current symlink follows it and overwrites `bin/claude-fw` **inside the global install**. Same defect that corrupted the router in T-2793.
+  3. Start a session with `claude-fw`, then in it run `cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor 2>&1 | grep -i supervis`
+  **Expected:** the session comes up normally under the wrapper and doctor reports supervision armed — i.e. budget auto-restart is live, which is the capability this whole change exists to protect.
+  **If not:** paste the doctor line and `ls -l ~/.local/bin/claude-fw`. Most likely cause is a wrapper predating the `FW_CLAUDE_FW_SUPERVISED` export; the T-2501 drift check in the same `doctor` run will say so. Reverting is one command: `ln -sf ~/.agentic-framework/bin/claude-fw ~/.local/bin/claude-fw`.
 
 ## Verification
 
@@ -285,6 +288,50 @@ folded in — it is a detector change, not this slice.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO — land as-is; the remaining Human AC is a check on your own
+host, not a blocker on the change.
+
+**Rationale:** All six Agent ACs verified, including the one that mattered most (the
+T-2501 drift detector still reports OK against a copied wrapper — a copy is only safe
+*because* that check exists). The change is small, reversible, and does not alter
+resolution: the global still exists after it, so nothing about how `fw` finds a
+framework moves. Its whole purpose is to be in place *before* T-2800 removes the
+global, because the ordering cannot be undone afterwards — by the time the symlink
+dangles, the wrapper that would have told you is the thing that broke.
+
+Your host is currently in the exact pre-migration state this fixes:
+`/root/.local/bin/claude-fw -> /root/.agentic-framework/bin/claude-fw`. The Human AC
+converts it. Step 2 keeps the `rm -f` deliberately — a bare `cp` onto that symlink
+would write through it into the global install.
+
+**Evidence:**
+
+- `install.sh` — `install_claude_fw()` used by both branches of `link_fw`; no
+  executable `ln -s` onto claude-fw remains (`grep -E '^[^#]*ln -s.*claude-fw'` empty).
+- `tests/unit/claude_fw_copy_not_symlink.bats` — 5/5 green, **mutation-checked**:
+  1/2/3/5 go red against the pre-fix `ln -sf`; 4 stays green by design and is
+  documented as the non-vacuity pin, not a detector.
+- `tests/unit/bin_executable_bits.bats` + `upgrade_fresh_machine_simulation.bats` —
+  15/15, no failures (consumer-facing command hygiene, T-1633).
+- Drift detector live-checked with a freshly-copied wrapper on PATH:
+  `OK  Installed claude-fw matches repo source`.
+- All 7 `## Verification` lines rehearsed under `bash -c 'set -eo pipefail; …'`, which
+  is the gate's condition and not the interactive shell's (T-2743).
+- Commits `6f79448cc`, `6b6412172` — pushed, `ahead 0`.
+
+**Correction carried in the record rather than quietly fixed:** the first draft of the
+RCA said this failure is "silent by construction", and the measurement behind it was
+contaminated — the host's own `claude-fw` sat later on PATH, so removing the test
+fixture appeared to leave `command -v` resolving. Re-measured under `env -i`. The
+mechanism is real but different: a dangling symlink is skipped, and the shell falls
+through to the next match. This host has three `claude-fw`. Filed as OBS-165.
+
+**Follow-on, not in this slice:** the next T-2800 step is `install.sh` fetching
+framework bytes into the target project. That is the operator-visible one (a new
+project with no 352 MB in `$HOME`) and a session's work on its own.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -312,3 +359,19 @@ folded in — it is a detector change, not this slice.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2807-claude-fw-on-path-must-be-a-copy-not-a-s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-117e1af0
+- **Timestamp:** 2026-08-05T12:27:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -f`
+
+### 2026-08-05T12:26:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

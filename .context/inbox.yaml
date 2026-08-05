@@ -1257,3 +1257,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-164
+  text: "tests/unit/fw_doctor_vendored_drift.bats appends a sentinel to the LIVE repo file .agentic-framework/lib/colors.sh (lines 37,45) and relies on teardown to restore it. An interrupted or killed run leaves the sentinel committed-adjacent in the working tree, which then trips the T-2240 self-vendor pre-push gate with a message that points at 'vendor self' rather than at the test. Hit repeatedly 2026-08-05. Fix: mutate a copy under a temp FRAMEWORK_ROOT, or make teardown a trap."
+  captured: 2026-08-05T12:04:51Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-165
+  text: "fw doctor's T-2501 claude-fw drift check reports on whichever claude-fw wins the PATH fall-through, and SKIPs when none resolves. A dangling symlink is not executable so command -v skips it silently: on a host with a second copy further down PATH (this host has 3 — ~/.local/bin symlink, /usr/bin copy, repo bin/) the operator runs a different wrapper with no notice; with none, SKIP reads as 'not applicable' rather than 'the wrapper you rely on is gone'. Under T-2800 the global goes away, which is exactly when this fires. Detector should enumerate all claude-fw on PATH and name the dangling case explicitly. Found during T-2807."
+  captured: 2026-08-05T12:20:54Z
+  context_task: T-2807
+  tags: []
+  status: pending
+  promoted_to: null
