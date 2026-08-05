@@ -229,6 +229,33 @@ scan_vendored_consumers() {
     echo ""
 }
 
+# --- Install claude-fw onto PATH by COPY (T-2807) ---
+#
+# It used to be `ln -sf "$INSTALL_DIR/bin/claude-fw"`, with the comment "claude-fw
+# still symlinks (it's a wrapper, not project-specific)". That was true while
+# $INSTALL_DIR was permanent, and it stops being true under T-2800, which makes the
+# fetched framework a temporary directory. A symlink into it dangles the moment it
+# is cleaned up — and what dangles is the T-179 auto-restart wrapper, so the failure
+# is a session that silently never recovers at budget-critical rather than an error
+# anyone sees. Copy now, before the thing it points at becomes temporary.
+#
+# The rm -f is the T-1278/T-2793 guard, not defensive noise: if $local_bin/claude-fw
+# is TODAY a symlink into the global install, a plain `cp` follows it and overwrites
+# the global's own bin/claude-fw. That is exactly how the router bug happened — the
+# install path is the one that most often meets the symlink it exists to replace.
+#
+# Trade-off accepted: a copy goes stale where a symlink self-updated. That is what
+# the T-2501 drift check in `fw doctor` is for, and this change is what makes it
+# load-bearing rather than cosmetic.
+install_claude_fw() {
+    local src="$1" local_bin="$2"
+    [[ -f "$src" ]] || return 0
+    rm -f "$local_bin/claude-fw"
+    cp "$src" "$local_bin/claude-fw"
+    chmod +x "$local_bin/claude-fw"
+    info "Installed claude-fw → ${local_bin}/claude-fw (copy — survives removal of ${INSTALL_DIR})"
+}
+
 # --- Install the router (T-664 fw-shim → T-2793 fw-router: project-detecting fw,
 # --- replaces the global symlink) ---
 link_fw() {
@@ -256,9 +283,8 @@ link_fw() {
         fi
         mkdir -p "$local_bin"
         ln -sf "$fw_path" "$local_bin/fw"
-        ln -sf "$INSTALL_DIR/bin/claude-fw" "$local_bin/claude-fw"
+        install_claude_fw "$INSTALL_DIR/bin/claude-fw" "$local_bin"
         info "Linked fw → ${local_bin}/fw (legacy — upgrade for project-local routing)"
-        info "Linked claude-fw → ${local_bin}/claude-fw"
     else
         # Install the shim: copies fw-shim as ~/.local/bin/fw
         # The shim walks up from CWD to find the project-local fw (bin/fw or .agentic-framework/bin/fw)
@@ -276,10 +302,8 @@ link_fw() {
         rm -f "$local_bin/fw"
         cp "$shim_src" "$local_bin/fw"
         chmod +x "$local_bin/fw"
-        # claude-fw still symlinks (it's a wrapper, not project-specific)
-        ln -sf "$INSTALL_DIR/bin/claude-fw" "$local_bin/claude-fw"
+        install_claude_fw "$INSTALL_DIR/bin/claude-fw" "$local_bin"
         info "Installed fw router → ${local_bin}/fw (project-detecting — each project runs its own framework)"
-        info "Linked claude-fw → ${local_bin}/claude-fw"
 
         # Migrate notice if old symlink existed
         if [[ -L "$local_bin/fw.bak" ]] 2>/dev/null; then
