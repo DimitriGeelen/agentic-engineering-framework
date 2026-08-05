@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2813: install-hooks prints Hooks Installed and exits 0 when every hook write failed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T18:30:10Z
+# ============================================================================
+
+task_id: T-2813
+task_name: "install-hooks prints Hooks Installed and exits 0 when every hook write failed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T14:33:47Z
+completed: 2026-08-05T18:29:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-05T20:29:30+02:00
+last_commit: 2026-08-05T20:29:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install-hooks verifies each hook landed before reporting success. register regression test in component fabric
+
+# Key outcomes
+outcomes:
+  - '`fw git install-hooks` exits non-zero when any hook fails to be written or made executable.'
+  - 'It does not print `=== Hooks Installed ===`, nor list hook paths as installed, for hooks that were not in fact installed. A path is only reported once the file exists and is executable — reported state is read back from disk, not predicted from the write it just attempted.'
+  - 'The failure names what went wrong and what to do about it, in the same register as the router''s refusals (bin/fw-router:124) — not a bare `cat: No such file or directory` leaking from a redirect.'
+  - 'Regression test drives the real failure mode (hooks directory absent), asserting non-zero exit AND absence of the success banner. Mutation-checked: shown to go red against the current code, which exits 0.'
+  - 'The success path is unchanged and still exits 0 with all four hooks reported — pinned so the new guard cannot pass by refusing everything.'
+  - 'Sweep `agents/git/lib/hooks.sh` for other writes that can fail into a success report; fix or file them. The `cat > "$hook" << ''EOF''` idiom fails silently at the redirect, before any command in the heredoc runs, so the pattern is likely to repeat wherever it appears.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/common.sh'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-t2813_install_hooks_write_failure.yaml'
+  - '.tasks/active/T-2813-install-hooks-prints-hooks-installed-and.md'
+  - 'tests/unit/t2813_install_hooks_write_failure.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-05T20:29:30'
+    action: 'T-2813: install-hooks verifies each hook landed before reporting success'
+  - time: '2026-08-05T20:29:50'
+    action: 'T-2813: register regression test in component fabric'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 236 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 236
+  commits: 3
+  files_changed: 10
+  lines_added: 848
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2813-install-hooks-prints-hooks-installed-and.md
+generated_by: context-agent-hybrid
