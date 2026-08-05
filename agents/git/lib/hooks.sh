@@ -1,8 +1,20 @@
 #!/bin/bash
 # Git Agent - Hook installation subcommand
 
+# T-2813: verify a hook actually landed by reading state back from disk,
+# rather than trusting that the `cat`/`chmod` calls that wrote it didn't
+# print an error. `cat > "$hook" << 'EOF'` fails silently at the redirect
+# (e.g. hooks directory missing) *before* any command in the heredoc body
+# runs, so neither a captured exit status nor the heredoc content itself
+# is a reliable signal — only the resulting file is.
+_verify_hook_written() {
+    [ -f "$1" ] && [ -x "$1" ]
+}
+
 do_install_hooks() {
     local force=false
+    local install_failed=false
+    local -a failed_hooks=()
 
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -265,6 +277,7 @@ exit 0
 HOOK_EOF
 
     chmod +x "$commit_msg_hook"
+    _verify_hook_written "$commit_msg_hook" || { install_failed=true; failed_hooks+=("$commit_msg_hook"); }
 
     # T-1844: Create pre-commit hook for secret-scan
     # Origin: T-1828/T-1834 — Azure DevOps PAT committed at 79e3361d (T-1736
@@ -409,6 +422,7 @@ exit 0
 HOOK_EOF
 
     chmod +x "$pre_commit_hook"
+    _verify_hook_written "$pre_commit_hook" || { install_failed=true; failed_hooks+=("$pre_commit_hook"); }
 
     # Create post-commit hook for bypass detection + context checkpoint
     cat > "$post_commit_hook" << 'HOOK_EOF'
@@ -535,6 +549,7 @@ fi
 HOOK_EOF
 
     chmod +x "$post_commit_hook"
+    _verify_hook_written "$post_commit_hook" || { install_failed=true; failed_hooks+=("$post_commit_hook"); }
 
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
@@ -867,6 +882,31 @@ exit 0
 HOOK_EOF
 
     chmod +x "$pre_push_hook"
+    _verify_hook_written "$pre_push_hook" || { install_failed=true; failed_hooks+=("$pre_push_hook"); }
+
+    # T-2813: report actual disk state, not the write that was attempted.
+    # A hook is only listed as installed once _verify_hook_written confirmed
+    # it exists and is executable — a hook whose write failed is reported as
+    # a failure, never silently folded into a success banner.
+    if [ "$install_failed" = true ]; then
+        echo -e "${RED}ERROR: hook installation failed — ${#failed_hooks[@]} of 4 hook(s) were not written:${NC}" >&2
+        echo "" >&2
+        for _fh in "${failed_hooks[@]}"; do
+            echo "  - $_fh" >&2
+        done
+        echo "" >&2
+        echo "Cause: the target file does not exist (or is not executable) after the" >&2
+        echo "write, which means the write to the hooks directory did not complete —" >&2
+        echo "most commonly because the hooks directory itself does not exist or is" >&2
+        echo "not writable." >&2
+        echo "" >&2
+        echo "Fix:" >&2
+        echo "  1. Check the resolved hooks dir exists and is writable:" >&2
+        echo "       git rev-parse --git-path hooks" >&2
+        echo "  2. Re-run: $(_emit_user_command "git install-hooks" 2>/dev/null || echo "fw git install-hooks")" >&2
+        echo "" >&2
+        exit 1
+    fi
 
     echo -e "${GREEN}=== Hooks Installed ===${NC}"
     echo ""

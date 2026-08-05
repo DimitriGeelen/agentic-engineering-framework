@@ -18,6 +18,23 @@ check_git_repo() {
     fi
 }
 
+# Resolve the git hooks directory for PROJECT_ROOT by asking git, not by
+# string-concatenating "$PROJECT_ROOT/.git/hooks" (T-2812). The latter is
+# only correct when .git is a directory sitting directly at PROJECT_ROOT —
+# it is wrong for a project created inside an enclosing repo (no local
+# .git at all), a worktree (.git is a file; hooks live in the common dir),
+# and a submodule (hooks live under the superproject's .git/modules/<name>/).
+# `git rev-parse --git-path hooks` resolves correctly for all three; its
+# output is relative to PROJECT_ROOT when not already absolute.
+resolve_git_hooks_dir() {
+    local rel
+    rel=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks 2>/dev/null) || return 1
+    case "$rel" in
+        /*) echo "$rel" ;;
+        *) echo "$PROJECT_ROOT/$rel" ;;
+    esac
+}
+
 # Extract task ID from message
 extract_task_id() {
     local message="$1"

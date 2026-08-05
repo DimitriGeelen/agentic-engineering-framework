@@ -2465,3 +2465,54 @@ concerns:
   created: 2026-07-30
   related_task: T-2665
   related_tasks: [T-2665, T-2667, G-071]
+
+- id: G-073
+  type: gap
+  title: "cat > \"$file\" << HEREDOC writes across the codebase have the same unchecked-redirect blind spot T-2813 fixed in hooks.sh"
+  description: |
+    T-2813 fixed `agents/git/lib/hooks.sh`: `cat > "$hook" << 'EOF'` fails
+    silently at the redirect (before any command in the heredoc body runs)
+    when the destination directory does not exist or is not writable, and
+    the subsequent `chmod +x` failure was likewise never checked — so the
+    function printed its unconditional success banner and exited 0 while
+    every hook write had failed.
+
+    A sweep of the same `cat > "$var" << EOF` idiom (heredoc-to-redirect,
+    no status check on the write) turned up ~40+ additional call sites
+    across agents/context/lib/*.sh, agents/handover/handover.sh,
+    agents/task-create/create-task.sh, agents/termlink/termlink.sh,
+    agents/designer/designer.sh, lib/init.sh, lib/upgrade.sh, lib/arc.sh,
+    lib/assumption.sh, lib/pending.sh, bin/fw, and others. Each is a
+    candidate for the same failure class: a caller that reports success
+    (or simply doesn't check) after a heredoc write whose target directory
+    may not exist, isn't writable, or is on a full filesystem.
+
+    Not all of these are equally exposed — many write to `.context/` and
+    `.tasks/` directories that `fw init`/`fw context init` already created
+    moments earlier in the same call graph, so the practical blast radius
+    per site varies. This entry registers the class; it does not claim
+    every site is live-exploitable, only that the idiom is unguarded
+    wherever it appears and T-2813 is proof the "it never actually fails
+    in practice" assumption was wrong at least once.
+  spec_reference: "agents/git/lib/hooks.sh (T-2813 fix + _verify_hook_written pattern), agents/context/lib/*.sh, agents/handover/handover.sh, lib/init.sh, lib/upgrade.sh, lib/arc.sh, bin/fw"
+  severity: low
+  trigger_fired: false
+  resolution_path: |
+    Not designed. Candidates for a follow-up task (file as build once
+    triaged — do not fix ad hoc under this entry, per task-sizing "one bug
+    = one task"):
+      1. A shared `_write_file_verified` helper (write via heredoc into a
+         var or temp file, then `mv`/`install`, verifying the result exists
+         with expected permissions) that call sites migrate to
+         incrementally, prioritised by blast radius (fw init / fw upgrade
+         first, since those run on a bare/partial target directory where
+         "directory doesn't exist yet" is the realistic failure mode).
+      2. A repo-wide lint/reviewer detector (`static_scan.py`) that flags
+         `cat > "$var" << ` sites with no read-back verification within N
+         lines, mirroring the mkdir-without-status-check smell.
+    Registering here (register-first) rather than fixing all sites under
+    T-2813, whose scope was `agents/git/lib/hooks.sh` only.
+  status: open
+  created: 2026-08-05
+  related_task: T-2813
+  related_tasks: [T-2813, T-2812]

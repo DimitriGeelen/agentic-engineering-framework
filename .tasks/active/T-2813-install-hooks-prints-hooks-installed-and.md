@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T14:33:47Z
-last_update: 2026-08-05T14:33:47Z
-date_finished: null
+last_update: '2026-08-05T14:45:11Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-05T14:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-05T14:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2813: install-hooks prints Hooks Installed and exits 0 when every hook write failed
@@ -79,12 +107,12 @@ generate an event, and so survives indefinitely.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw git install-hooks` exits non-zero when any hook fails to be written or made executable.
-- [ ] It does not print `=== Hooks Installed ===`, nor list hook paths as installed, for hooks that were not in fact installed. A path is only reported once the file exists and is executable — reported state is read back from disk, not predicted from the write it just attempted.
-- [ ] The failure names what went wrong and what to do about it, in the same register as the router's refusals (bin/fw-router:124) — not a bare `cat: No such file or directory` leaking from a redirect.
-- [ ] Regression test drives the real failure mode (hooks directory absent), asserting non-zero exit AND absence of the success banner. Mutation-checked: shown to go red against the current code, which exits 0.
-- [ ] The success path is unchanged and still exits 0 with all four hooks reported — pinned so the new guard cannot pass by refusing everything.
-- [ ] Sweep `agents/git/lib/hooks.sh` for other writes that can fail into a success report; fix or file them. The `cat > "$hook" << 'EOF'` idiom fails silently at the redirect, before any command in the heredoc runs, so the pattern is likely to repeat wherever it appears.
+- [x] `fw git install-hooks` exits non-zero when any hook fails to be written or made executable.
+- [x] It does not print `=== Hooks Installed ===`, nor list hook paths as installed, for hooks that were not in fact installed. A path is only reported once the file exists and is executable — reported state is read back from disk, not predicted from the write it just attempted.
+- [x] The failure names what went wrong and what to do about it, in the same register as the router's refusals (bin/fw-router:124) — not a bare `cat: No such file or directory` leaking from a redirect.
+- [x] Regression test drives the real failure mode (hooks directory absent), asserting non-zero exit AND absence of the success banner. Mutation-checked: shown to go red against the current code, which exits 0.
+- [x] The success path is unchanged and still exits 0 with all four hooks reported — pinned so the new guard cannot pass by refusing everything.
+- [x] Sweep `agents/git/lib/hooks.sh` for other writes that can fail into a success report; fix or file them. The `cat > "$hook" << 'EOF'` idiom fails silently at the redirect, before any command in the heredoc runs, so the pattern is likely to repeat wherever it appears.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +146,9 @@ generate an event, and so survives indefinitely.
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t2813_install_hooks_write_failure.bats tests/unit/git_install_hooks_git_path.bats 2>&1); echo "$out" | grep -q '^ok 1' && ! echo "$out" | grep -q '^not ok'
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -186,6 +217,35 @@ generate an event, and so survives indefinitely.
 
 ## RCA
 
+**Symptom:** `fw git install-hooks` printed `=== Hooks Installed ===` and listed all
+four hook paths as installed, exiting 0, even when every hook write failed (e.g.
+hooks directory missing or unwritable).
+
+**Root cause:** `do_install_hooks` wrote each hook via `cat > "$hook" << 'EOF' ...
+EOF` followed by an unchecked `chmod +x "$hook"`, then printed a single
+unconditional success banner at the end listing all four hook paths. The heredoc
+redirect (`cat > "$hook"`) fails at the moment the shell opens `$hook` for writing
+— before any line of the heredoc body is even read — so a missing/unwritable
+target directory produces a silent (from the caller's perspective) failure with no
+status check anywhere downstream. The success report was built from what the
+function *attempted* to write, not from what actually landed on disk.
+
+**Why structurally allowed:** No test exercised the write-failure path (only the
+happy path and the T-2812 path-resolution variants were covered). The function
+never read state back from disk before reporting it, so there was no seam where a
+failed write could be distinguished from a successful one — the report and the
+disk state had no dependency on each other.
+
+**Prevention:** `_verify_hook_written()` (agents/git/lib/hooks.sh) checks `[ -f
+"$hook" ] && [ -x "$hook" ]` after each write+chmod pair; `do_install_hooks` now
+accumulates failures and refuses to print the success banner (exits 1 with a named
+fix) if any hook did not verifiably land. Regression test
+`tests/unit/t2813_install_hooks_write_failure.bats` drives the real failure mode
+(hooks dir replaced by a plain file, blocking `mkdir -p` and every write beneath
+it) and is mutation-checked red against the pre-fix code. G-073 registers the
+broader class (same unchecked-heredoc-write idiom at ~40+ other call sites in the
+codebase) for future triage — out of scope to fix here per one-bug-one-task.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -251,3 +311,12 @@ generate an event, and so survives indefinitely.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2813-install-hooks-prints-hooks-installed-and.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f9df0199
+- **Timestamp:** 2026-08-05T18:28:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
