@@ -15,12 +15,12 @@ description: >
   entry (fw work-on) which resolves correctly in both project shapes, rather than
   any script path.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -33,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T20:57:07Z
-last_update: '2026-08-05T21:00:08Z'
-date_finished:
+last_update: 2026-08-05T21:02:04Z
+date_finished: 2026-08-05T21:02:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -299,3 +299,15 @@ out=$(bash -c 'cd "$(mktemp -d)" && git init -q . && git config user.email t@e.c
 
 ### 2026-08-05T20:58:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ee4cbe62
+- **Timestamp:** 2026-08-05T21:02:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-05T21:02:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
