@@ -45,6 +45,13 @@ set -euo pipefail
 # a different failure and should not read as a missing install.
 _fw_die() { local rc="$1"; shift; printf '%s\n' "$@" >&2; exit "$rc"; }
 
+# T-2810: one literal, three refusal messages. Two of them must append a target
+# directory (`| bash -s -- <dir>`) because since T-2800/T-2809 the installer puts
+# framework bytes in the PROJECT, never in $HOME — so "install, then run fw init"
+# is two steps that no longer connect to each other. The third (routing loop,
+# below) is correctly bare: it refreshes the PATH router only, no project involved.
+_FW_INSTALL_URL="https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh"
+
 # --- 1. Walk up from cwd, floored below "/" ---
 _target=""
 _found_at=""
@@ -106,9 +113,12 @@ if [ -z "$_target" ]; then
             "  'Cannot find framework installation', which reads like a missing install" \
             "  rather than an interrupted one." \
             "" \
-            "  There is no global install to repair it with, so install one first:" \
-            "    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash" \
-            "  then:  cd $_incomplete_at && fw init" \
+            "  There is no global install to repair it with — and since T-2800 there" \
+            "  is no such thing to install. Point the installer at the project instead;" \
+            "  it completes a partial copy in place:" \
+            "" \
+            "    curl -fsSL $_FW_INSTALL_URL | bash -s -- $_incomplete_at" \
+            "" \
             "" \
             "  Or discard it:  rm -rf $_incomplete_at/.agentic-framework $_incomplete_at/.fw-init-incomplete"
     fi
@@ -127,7 +137,13 @@ if [ -z "$_target" ]; then
         "  Looked for a vendored copy walking up from: $PWD" \
         "  Looked for a global install at:             $_global" \
         "" \
-        "  Install one, then run 'fw init' here to vendor it into this project."
+        "  Install the framework INTO this project — one step, nothing global:" \
+        "" \
+        "    curl -fsSL $_FW_INSTALL_URL | bash -s -- $PWD" \
+        "" \
+        "  Add --provider claude|cursor|generic to pick the agent integration." \
+        "  (There is no global install to fall back on by design — T-2800/D-377." \
+        "  That is why this is one command and not 'install, then fw init'.)"
     # Announced, never silent: running the global CLI is the one case where the
     # code executing does not belong to the project it is about to act on.
     # (Skipped when we already announced the unfinished-init case above — "no

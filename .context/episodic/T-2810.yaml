@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2810: router no-framework message names the obsolete two-step install instead of the one-step installer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T14:15:46Z
+# ============================================================================
+
+task_id: T-2810
+task_name: "router no-framework message names the obsolete two-step install instead of the one-step installer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T14:05:54Z
+completed: 2026-08-05T14:14:31Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  router no-framework message names the obsolete two-step install instead of the one-step installer
+
+# Key outcomes
+outcomes:
+  - 'The `no framework found` refusal (bin/fw-router:124-130) names the one-step installer with a concrete target directory, not "install one, then run ''fw init'' here".'
+  - 'The incomplete-copy refusal (bin/fw-router:100-113) does the same — its `curl … | bash` + `cd … && fw init` pair is the same obsolete two-step and is equally unfollowable now.'
+  - 'No refusal path in bin/fw-router still tells the operator to run bare `curl … | install.sh | bash` and then `fw init` as separate steps. Checked by grep over the whole file, not by reading only the two sites I happened to change.'
+  - 'Live: in a bare directory under an isolated HOME with the router on PATH and no global, `fw init` prints a command that, pasted verbatim, produces a working project. Verified by actually pasting it — not by inspecting the string.'
+  - 'Exit code of the refusal stays 127 (the router''s documented "no framework found" code, bin/fw-router:43). A message fix must not change routing semantics.'
+  - 'New regression coverage, mutation-checked — shown to go red against the current message text.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2810-router-no-framework-message-names-the-ob.md
+generated_by: context-agent-hybrid

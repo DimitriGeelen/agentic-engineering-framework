@@ -1271,3 +1271,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-166
+  text: "CORRECTION to OBS-164 (same defect, wrong cause stated). The sentinels are not left by an INTERRUPTED bats run — they are written by a CONCURRENTLY RUNNING one. A full 'bats -r tests/' from an earlier session (PID 484839, 2.8h in, 2811/3764) was still executing against the live repo. tests/unit/fw_doctor_vendored_drift.bats and tests/unit/t2243_doctor_self_vendor_templates.bats both append sentinels to files under .agentic-framework/ and restore in teardown, so during a run the working tree is dirty for seconds at a time with a DIFFERENT sentinel each test. Consequences: (1) the T-2240 pre-push gate blocks with a message naming 'fw vendor self', which does fix it — for the seconds until the next test dirties it again, so the operator sees an unfixable loop; (2) any git add of .agentic-framework/ during a suite run can COMMIT a sentinel, which is how one reached HEAD today. Fix is the same either way: these tests must mutate a copy under a temp FRAMEWORK_ROOT, never the live tree. Additionally the gate message should say 'a test run may be in progress' when a bats process is live. Found T-2807."
+  captured: 2026-08-05T12:39:37Z
+  context_task: T-2788
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-167
+  text: "fw_router.bats is 7/12 red on t2539-staging and has been for at least since T-2809 (which reported 6). The router is the single machine-wide artifact in the post-T-2800 architecture — every project's fw call goes through it — so its suite being 58% red is the highest-leverage untested surface in the onboarding path. Failures are pre-existing and reproduce with bin/fw-router stashed: routes-to-vendored-CLI, walks-up-from-nested, nearest-project-wins, exports-FW_ROUTED_FROM, refuses-routing-loop, arg-passthrough, exit-code-propagation. Confirmed unrelated to T-2810 by stash-compare (identical 7 both sides)."
+  captured: 2026-08-05T14:13:07Z
+  context_task: T-2810
+  tags: []
+  status: pending
+  promoted_to: null
