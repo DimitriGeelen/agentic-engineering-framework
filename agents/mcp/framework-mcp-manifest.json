@@ -102,12 +102,6 @@
       "description": "Show framework version (VERSION file, last git tag)"
     },
     {
-      "name": "fake_drift_tool_t2290",
-      "gated": false,
-      "fw_command": "",
-      "description": ""
-    },
-    {
       "name": "work_on",
       "gated": true,
       "fw_command": "work-on",
