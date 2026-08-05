@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2819: arc-016 closure evidence: capture the by-hand five-minute demo run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T22:24:25Z
+# ============================================================================
+
+task_id: T-2819
+task_name: "arc-016 closure evidence: capture the by-hand five-minute demo run"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T22:20:59Z
+completed: 2026-08-05T22:24:14Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T00:24:09+02:00
+last_commit: 2026-08-06T00:24:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture arc-016's by-hand demo — the mechanic fires on published bytes
+
+# Key outcomes
+outcomes:
+  - 'The run is performed on **published bytes** (GitHub mirror, confirmed in sync'
+  - 'The environment is genuinely fresh: `env -i`, isolated `HOME`, and **no'
+  - 'Every README step is run in order, with its real exit code recorded — including'
+  - 'The transcript is committed to `docs/reports/` (T-818: workers write to the'
+  - 'Contamination is stated where it exists rather than papered over: this host'
+  - 'Any new defect the run surfaces is filed rather than folded into this task.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - 'docs/reports/arc-016-byhand-demo-2026-08-06.md'
+  - 'docs/reports/arc-016-byhand-transcript-2026-08-06.log'
+  - '.tasks/active/T-2819-arc-016-closure-evidence-capture-the-by-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T00:24:09'
+    action: 'T-2819: capture arc-016''s by-hand demo — the mechanic fires on published bytes'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 3067
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2819-arc-016-closure-evidence-capture-the-by-.md
+generated_by: context-agent-hybrid
