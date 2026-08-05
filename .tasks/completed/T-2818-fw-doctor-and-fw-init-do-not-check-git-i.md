@@ -7,20 +7,25 @@ description: >
   so git commit fails RC=128 'Author identity unknown' BEFORE any framework hook runs.
   The seeded onboarding curriculum's T-003 is literally 'First governed commit', and
   the README five-minute path leads there, so a new operator's first instructed action
-  fails on an error the framework neither produces nor explains. fw doctor has no
-  git-identity check and fw init emits no warning. This is the last open blocker on
-  arc-016's headline mechanic ('a person reaches a working first task without hitting
-  a block they cannot clear') -- see T-2719 Recommendation. Measured 2026-08-05 under
-  isolated HOME during T-2719 persona work. Fix shape: a fw doctor check (WARN, with
-  the two git config commands as the remedy) plus a warning at fw init time when identity
-  is unset.
+  fails on an error the framework neither produces nor explains. CORRECTED PREMISE
+  (2026-08-06): the filed fix shape -- 'add a fw doctor check plus an fw init warning'
+  -- was a no-op; both already existed (bin/fw:1249 T-685, lib/init.sh:146 T-880).
+  The real defect is that every summarising surface CONTRADICTED those warnings: the
+  init tally had no identity check (Validation passed: 43/44), the closing line said
+  'Done! Governance is active.', and doctor scoped it [host] so the project verdict
+  read 0 failures. Shipped fix: state the blocker in init's CLOSING block with a
+  cd-prefixed remedy, and add func-identity to the validation tally (warn-shaped,
+  counted as passed -- host state must not redden CI). This is the last open blocker
+  on arc-016's headline mechanic ('a person reaches a working first task without
+  hitting a block they cannot clear') -- see T-2719 Recommendation. Measured
+  2026-08-05/06; the host itself has no global git identity.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh, lib/validate-init.sh, tests/unit/init_git_identity_blocker.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -33,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T21:45:18Z
-last_update: 2026-08-05T22:03:55Z
-date_finished:
+last_update: 2026-08-05T22:09:31Z
+date_finished: 2026-08-05T22:09:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +393,20 @@ path structurally cannot observe this one.
 
 ### 2026-08-05T21:46:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-347a68fc
+- **Timestamp:** 2026-08-05T22:10:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 75
+     - evidence: `bats --count tests/unit/ >/dev/null && bats --count tests/unit/init_git_identity_blocker.bats | grep -q '^7$'`
+
+### 2026-08-05T22:09:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

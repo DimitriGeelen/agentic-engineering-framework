@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2818: fw doctor and fw init do not check git identity; first governed commit dies RC=128
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T22:10:48Z
+# ============================================================================
+
+task_id: T-2818
+task_name: "fw doctor and fw init do not check git identity; first governed commit dies RC=128"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T21:45:18Z
+completed: 2026-08-05T22:09:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-05T23:46:12+02:00
+last_commit: 2026-08-06T00:08:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope the git-identity gap (OBS-170), arc-016's last open blocker. put the git-identity blocker where the operator reads it
+
+# Key outcomes
+outcomes:
+  - 'The filed premise is corrected in writing, with the pre-existing check'
+  - '`fw init`''s **closing** block states the blocker when identity is'
+  - 'The emitted remedy carries its own `cd` (T-609) and, **run verbatim as'
+  - '`fw init`''s validation tally counts `func-identity` in both states,'
+  - 'A bats test pins both states and is executed by a real runner'
+  - 'Mutation-checked: with both legs reverted, **5 of 7 go red**; the 2 survivors'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-06 — how hard the validation check should fail'
+    chose: 'warn-shaped row, counted as **passed**, following the `sem-fabric`'
+    rationale: 'this is host state, not project state — `git config user.email` flips it'
+    alternatives_rejected: ['counting it as `failed`. It would flip `do_validate_init`''s return']
+  - decision: '2026-08-06 — widening a test''s regex rather than changing the row marker'
+    chose: 'widen T-2726''s row pattern from `^  [✓✗-]` to `^  [✓✗!-]`.'
+    rationale: 'that test''s claim is that the summary''s denominator is *witnessable line'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/validate-init.sh'
+  - '.agentic-framework/VERSION'
+  - 'lib/init.sh'
+  - 'lib/validate-init.sh'
+  - '.tasks/active/T-2818-fw-doctor-and-fw-init-do-not-check-git-i.md'
+  - 'tests/unit/init_git_identity_blocker.bats'
+  - 'tests/unit/validate_init_check_type_join.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-05T23:46:12'
+    action: 'T-2818: scope the git-identity gap (OBS-170), arc-016''s last open blocker'
+  - time: '2026-08-06T00:08:52'
+    action: 'T-2818: put the git-identity blocker where the operator reads it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 2
+  files_changed: 9
+  lines_added: 651
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2818-fw-doctor-and-fw-init-do-not-check-git-i.md
+generated_by: context-agent-hybrid
