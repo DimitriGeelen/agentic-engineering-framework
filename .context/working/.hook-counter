@@ -1,11 +1,11 @@
 check-human-ac-tick=17
 
-error-watchdog=46
-check-active-task=64
-loop-detect=64
-budget-gate=65
+error-watchdog=57
+check-active-task=76
+loop-detect=76
+budget-gate=79
 check-active-completed-dup=16
-check-project-boundary=6
-audit-task-tools=5
-checkpoint=5
-check-tier0=4
+check-project-boundary=20
+audit-task-tools=17
+checkpoint=17
+check-tier0=18

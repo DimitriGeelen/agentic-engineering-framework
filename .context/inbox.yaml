@@ -1243,3 +1243,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-162
+  text: "fw init vendors from an ANCESTOR .agentic-framework instead of the framework the CLI is running from. Observed T-2805 2026-08-05: with a stale .agentic-framework in a parent directory, 'fw init' in a child printed Source: <ancestor>/.agentic-framework and vendored pre-fix code, while the global install it was invoked through had the fix. Artifacts were all present and validation passed, so the project looked correct and silently ran stale code. Real-world trigger: running fw init in a subdirectory of an already-initialised project. Also contaminated this task's own end-to-end verification until the source line was read. Suggest do_vendor prefer FRAMEWORK_ROOT (the CLI's own root) over an ancestor walk, or at minimum name the source and warn when it is not FRAMEWORK_ROOT."
+  captured: 2026-08-05T07:02:08Z
+  context_task: T-100201
+  tags: []
+  status: pending
+  promoted_to: null
