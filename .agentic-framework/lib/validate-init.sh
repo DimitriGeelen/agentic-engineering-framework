@@ -437,6 +437,36 @@ print(','.join(broken))
         fi
     fi
 
+    # 2b-bis. Vendored framework is complete (T-2805)
+    #
+    # Nothing here validated the framework copy itself, so `fw init` over a partial
+    # vendor printed "Validation passed: 42/43" while .agentic-framework/ held no
+    # FRAMEWORK.md and no VERSION. 43 green checks, every one of them about files
+    # init writes, none about the ~90MB of framework they depend on — the checks
+    # were all true and the project was broken.
+    #
+    # FRAMEWORK.md is the sentinel do_vendor writes last and bin/fw resolves
+    # FRAMEWORK_ROOT by; the rest are the pieces whose absence produces a
+    # confusing failure rather than a clear one.
+    if [ -d "$target_dir/.agentic-framework" ]; then
+        total=$((total + 1))
+        local missing_vendor=""
+        for _part in FRAMEWORK.md VERSION bin/fw lib agents; do
+            [ -e "$target_dir/.agentic-framework/$_part" ] || \
+                missing_vendor="${missing_vendor:+$missing_vendor, }$_part"
+        done
+        if [ -z "$missing_vendor" ]; then
+            passed=$((passed + 1))
+            [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} func-vendor Vendored framework is complete"
+        else
+            failed=$((failed + 1))
+            [ "$quiet" = false ] && {
+                echo -e "  ${RED}✗${NC} func-vendor Vendored framework INCOMPLETE — missing: $missing_vendor"
+                echo -e "       Re-vendor with: fw init --force  (or: fw vendor)"
+            }
+        fi
+    fi
+
     # 2c. CLAUDE.md has key governance sections
     local claude_md="$target_dir/CLAUDE.md"
     if [ -f "$claude_md" ]; then

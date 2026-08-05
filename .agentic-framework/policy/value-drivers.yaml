@@ -191,16 +191,17 @@ free_drivers:
       autonomy by replacing human gates with at-least-as-safe mechanical ones.
     polarity: positive
     rubric:
-      0: Adds nothing, OR would remove a safety-critical human gate
-         (that is a Sovereignty violation -- scores ZERO, never high).
-      1: Runs unattended only by hand-wiring; no durable reduction in human touch.
+      0: Adds nothing, OR would remove a safety-critical human gate (that is a 
+        Sovereignty violation -- scores ZERO, never high).
+      1: Runs unattended only by hand-wiring; no durable reduction in human 
+        touch.
       2: Narrow, single-use reduction in human relay.
       3: Closes a feedback loop so a signal reaches ACTION without a human relay
-         (e.g. wires observations back into dispatch).
-      4: Makes a class of low-risk work safely auto-eligible (bounded
-         auto_promote for HV/LC Captured->In Progress), caps intact.
-      5: Replaces a REDUNDANT human gate with an at-least-as-safe mechanical one,
-         or lands an L6 autonomy criterion. NEVER removes a Tier 0 gate.
+        (e.g. wires observations back into dispatch).
+      4: Makes a class of low-risk work safely auto-eligible (bounded 
+        auto_promote for HV/LC Captured->In Progress), caps intact.
+      5: Replaces a REDUNDANT human gate with an at-least-as-safe mechanical 
+        one, or lands an L6 autonomy criterion. NEVER removes a Tier 0 gate.
     guardrails: >
       Reducing oversight on consequential (Tier 0, irreversible, high-blast-radius)
       actions scores ZERO or NEGATIVE, never positive. Earn autonomy; don't
@@ -223,13 +224,15 @@ free_drivers:
     polarity: positive
     rubric:
       0: No prompt-quality dimension touched.
-      1: Tweaks one-off prompt phrasing or a single message; no reusable artifact.
+      1: Tweaks one-off prompt phrasing or a single message; no reusable 
+        artifact.
       2: Improves one AGENT.md / template / preamble; localized to one agent.
-      3: Adds a reusable prompt template, rubric, or naming convention agents
+      3: Adds a reusable prompt template, rubric, or naming convention agents 
         can pick up across tasks.
-      4: Closes a prompt-quality loop -- e.g. reviewer prompt pattern, sovereignty
-        preamble, multi-turn discipline guide enforced by hook/test/lint.
-      5: Improves the prompt-quality substrate itself -- meta-prompts,
+      4: Closes a prompt-quality loop -- e.g. reviewer prompt pattern, 
+        sovereignty preamble, multi-turn discipline guide enforced by 
+        hook/test/lint.
+      5: Improves the prompt-quality substrate itself -- meta-prompts, 
         prompts-as-data infrastructure, structural prompt-evolution mechanisms.
     guardrails: >
       Reward STRUCTURAL prompt improvements (reusable, gate-enforced) over
@@ -248,13 +251,13 @@ free_drivers:
     rubric:
       0: No memory-layer touched.
       1: Logs to one episodic file; session-scoped only.
-      2: Adds a working-memory entry; project-scoped but not retrievable across
+      2: Adds a working-memory entry; project-scoped but not retrievable across 
         sessions.
-      3: Writes to a layer with a retrieval contract -- project memory,
-        episodic with `fw recall`, fabric registration.
-      4: Closes a memory loop -- capture -> encode -> synced into instruction
+      3: Writes to a layer with a retrieval contract -- project memory, episodic
+        with `fw recall`, fabric registration.
+      4: Closes a memory loop -- capture -> encode -> synced into instruction 
         files / hooks / templates agents read on subsequent runs.
-      5: Improves the retrieval/synthesis substrate itself -- selective recall,
+      5: Improves the retrieval/synthesis substrate itself -- selective recall, 
         condensation, semantic search index, cross-memory linking.
     guardrails: >
       Score MEMORY LAYER STRUCTURE (working/project/episodic + retrieval
@@ -273,12 +276,12 @@ free_drivers:
     rubric:
       0: No fabric/topology touched.
       1: Registers one component card without edges.
-      2: Registers component with `depends_on` / `depended_by` populated but no
+      2: Registers component with `depends_on` / `depended_by` populated but no 
         blast-radius hook or audit detector.
       3: Adds fabric drift detection or enrichment for a subsystem.
-      4: Closes a fabric loop -- auto-enrichment cron, drift FAIL gate,
+      4: Closes a fabric loop -- auto-enrichment cron, drift FAIL gate, 
         post-commit blast-radius surface, audit detector wired to fabric.
-      5: Extends the fabric substrate itself -- new edge type, new drift class,
+      5: Extends the fabric substrate itself -- new edge type, new drift class, 
         cross-fabric correlation, fabric-fed audit dimension.
     guardrails: >
       Score TOPOLOGY UPLIFT, not "I touched a file". A card without edges is
@@ -288,10 +291,10 @@ free_drivers:
       pervasive across the codebase and incremental registration no longer
       surfaces meaningful signal.
 auto_promote:
-  enabled: false
+  enabled: true
   bvp_norm_min: 0.85    # only top-band value
   cost_max: 1           # only lowest-cost band
-  max_concurrent: 1     # at most one auto-promoted item in flight
+  max_concurrent: 999   # at most one auto-promoted item in flight
 
 # ---------------------------------------------------------------------------
 # Inception scoring exception (T-2189 / T-2186 slice 3)
@@ -303,47 +306,4 @@ auto_promote:
 # this only changes how the ESTIMATOR ranks `workflow_type: inception` tasks.
 #
 # Source of truth for the lifecycle and the human-facing semantics:
-# 050-Inceptions.md §Scoring Exception.
-#
-# Cost-side substitution (target_blast_radius)
-# --------------------------------------------
-# F8 = 0.6 × blast_radius + 0.3 × tier + 0.1 × effort
-# An inception's `components:` is empty by definition — the build doesn't
-# exist yet. blast_radius → 0 makes the inception look artificially cheap.
-# The estimator (`score_blast_radius()`) substitutes the inception's
-# `target_blast_radius` (T-2188 schema, int 0..9) — the anticipated
-# component count of the build work the inception authorises on GO.
-# Missing/malformed → falls back to the components-count path (returns 0).
-#
-# Value-side substitution (voi_score → all drivers)
-# -------------------------------------------------
-# Inceptions' value is captured by a single field, `voi_score` (T-2188
-# schema, float 0..1). The estimator (`_score_inception_voi()`) maps this
-# to the 0..5 BVP scale (round(voi × 5)) and returns the SAME score for
-# every requested driver — D1-D4 and free drivers alike. Rank between
-# inceptions is therefore determined by voi alone; rank between an
-# inception and a build is determined by the cost-substitution above
-# plus the voi-derived value contribution.
-#
-# Build-task scoring is unchanged. The exception is gated by
-# `workflow_type == "inception"` and never fires for any other type.
-#
-# Grandfathering
-# --------------
-# Inceptions filed before T-2188 (no `voi_score` field) return a neutral
-# mid-score (2) with evidence string `→2 (voi-absent-grandfathered)`.
-# T-2193 backfilled historic inceptions with `voi_score: 0.5` /
-# `target_blast_radius: 3` defaults so they rank rather than null out.
-inception_scoring_exception:
-  enabled: true
-  cost_substitution:
-    field: target_blast_radius
-    range: [0, 9]
-    fallback: components-count
-  value_substitution:
-    field: voi_score
-    range: [0.0, 1.0]
-    scale_to: [0, 5]
-    fallback_score: 2
-  source_of_truth: 050-Inceptions.md#scoring-exception
-  estimator_ref: "agents/termlink/bvp-estimator/estimator.py::_score_inception_voi"
+# 050-Inceptions.md §Scori

@@ -337,7 +337,10 @@ do_vendor() {
         docs
         policy
         .tasks/templates
-        FRAMEWORK.md
+        # T-2805: FRAMEWORK.md is NOT in this list any more — it is copied last,
+        # after every other write below, because it is the completeness sentinel
+        # the router and this CLI both test for. Eighth of twelve here meant a
+        # vendor could carry it and still be missing a third of its files.
         metrics.sh
         # T-2656 (832 T-276 finding 2): secret-scan DATA files. The scanner
         # script ships in agents/ but reads its pattern catalogue from the
@@ -380,6 +383,11 @@ do_vendor() {
                 echo -e "  ${GREEN}+${NC} $item ($size)"
             fi
         done
+        # T-2805: not in includes[] — copied last, after every other write. Listed
+        # here so the dry run still describes what a real run does.
+        if [ -e "$vendor_source/FRAMEWORK.md" ]; then
+            echo -e "  ${GREEN}+${NC} FRAMEWORK.md (last — completeness sentinel)"
+        fi
         echo ""
         echo "Would exclude: .git, .context, .tasks/{active,completed}, .fabric, install.sh"
         echo ""
@@ -511,6 +519,30 @@ UPSTREAM
 
     # Ensure bin/fw is executable
     chmod +x "$dest/bin/fw" 2>/dev/null || true
+
+    # T-2805: FRAMEWORK.md LAST — this is the commit point of the whole vendor.
+    #
+    # Three independent places already treat FRAMEWORK.md as "there is a usable
+    # framework here": bin/fw's own FRAMEWORK_ROOT resolution (:96,:128,:155),
+    # install.sh's vendored-consumer scan (:210), and now bin/fw-router's
+    # routability test. That makes it the de-facto sentinel, so it must be the
+    # last thing written — a sentinel that lands mid-copy asserts a state that
+    # has not been reached yet.
+    #
+    # It used to sit eighth in the includes[] array, which is copied in order,
+    # while `bin` sat first. Interrupt an init anywhere in that window and the
+    # directory looked routable, was not, and could not be repaired by `fw init`
+    # because that call routed straight into the broken copy. Only `rm -rf`
+    # recovered it. Copying it here inverts the window: everything a working
+    # framework needs is on disk before anything claims one is.
+    if [ -e "$vendor_source/FRAMEWORK.md" ]; then
+        cp "$vendor_source/FRAMEWORK.md" "$dest/FRAMEWORK.md"
+        echo -e "  ${GREEN}✓${NC} FRAMEWORK.md (written last — completeness sentinel)"
+    else
+        echo -e "  ${RED}ERROR${NC}  FRAMEWORK.md missing from source: $vendor_source" >&2
+        echo -e "         Refusing to leave a vendor that reads as complete." >&2
+        return 1
+    fi
 
     echo ""
     local final_size

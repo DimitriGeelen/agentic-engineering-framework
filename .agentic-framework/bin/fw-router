@@ -56,7 +56,7 @@ while [ -n "$_d" ] && [ "$_d" != "/" ]; do
     fi
     if [ -x "$_d/.agentic-framework/bin/fw" ]; then
         # T-2801: executable bin/fw is NOT sufficient evidence of a usable vendor.
-        # do_vendor copies `bin` FIRST and FRAMEWORK.md eighth, so from about one
+        # do_vendor copies `bin` FIRST and FRAMEWORK.md last, so from about one
         # second into an init until it finishes, .agentic-framework/bin/fw exists
         # and the framework it belongs to does not. Routing there execs a CLI that
         # cannot resolve its own FRAMEWORK_ROOT and dies "Cannot find framework
@@ -66,7 +66,27 @@ while [ -n "$_d" ] && [ "$_d" != "/" ]; do
         # Do not walk further up on this: a parent project is the wrong answer, and
         # silently succeeding in someone else's project is worse than failing here.
         # Fall through to the bootstrap fallback, which CAN re-init this directory.
-        if [ -f "$_d/.fw-init-incomplete" ]; then
+        #
+        # T-2805: two signals, and the second is the load-bearing one.
+        #
+        # The marker is DECLARED — do_init writes it on entry and removes it on
+        # success. It cannot cover a vendor that predates it, nor a crash before
+        # the write. The operator's /opt/2345-test-install was exactly that: debris
+        # with no marker, still fatal after T-2801 shipped. Absence of the marker
+        # was being read as evidence of completeness; it never was.
+        #
+        # FRAMEWORK.md is OBSERVED, and it is the same file bin/fw resolves
+        # FRAMEWORK_ROOT by (bin/fw:96,128,155) and install.sh scans for
+        # (install.sh:210). Using it here makes the router agree with the CLI it
+        # routes to. It did not before: the router accepted `-x bin/fw` alone, so
+        # it would hand over to a CLI that was about to reject the very same
+        # directory. Bisected 2026-08-05 — with FRAMEWORK.md absent every fw call
+        # fails whatever else is present; restoring it alone is sufficient.
+        #
+        # Keep both: the marker still catches a vendor interrupted after
+        # FRAMEWORK.md lands (nothing follows it now, but that is an ordering fact
+        # in another file, and this predicate should not depend on it holding).
+        if [ -f "$_d/.fw-init-incomplete" ] || [ ! -f "$_d/.agentic-framework/FRAMEWORK.md" ]; then
             _incomplete_at="$_d"; break
         fi
         _target="$_d/.agentic-framework/bin/fw"; _found_at="$_d"; break
@@ -79,20 +99,27 @@ if [ -z "$_target" ]; then
     _global="${FW_GLOBAL_ROOT:-$HOME/.agentic-framework}"
     if [ -n "$_incomplete_at" ] && [ ! -x "$_global/bin/fw" ]; then
         _fw_die 127 \
-            "fw: the framework in $_incomplete_at is incomplete." \
+            "fw: the framework copy in $_incomplete_at is incomplete." \
             "" \
-            "  An 'fw init' started there and did not finish, so .agentic-framework/" \
-            "  holds a partial copy. Running it would fail in a way that looks like a" \
-            "  missing install rather than an interrupted one." \
+            "  .agentic-framework/ has a bin/fw but no FRAMEWORK.md, so it is a partial" \
+            "  copy — usually an 'fw init' that did not finish. Running it would fail as" \
+            "  'Cannot find framework installation', which reads like a missing install" \
+            "  rather than an interrupted one." \
             "" \
-            "  Recover by re-installing — this re-fetches and completes the project:" \
+            "  There is no global install to repair it with, so install one first:" \
             "    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash" \
+            "  then:  cd $_incomplete_at && fw init" \
             "" \
             "  Or discard it:  rm -rf $_incomplete_at/.agentic-framework $_incomplete_at/.fw-init-incomplete"
     fi
     if [ -n "$_incomplete_at" ]; then
-        printf 'fw: %s has an unfinished init — using %s to complete it. Run: fw init %s\n' \
-            "$_incomplete_at" "$_global" "$_incomplete_at" >&2
+        # Say which directory and what to type. The failure this replaces sent the
+        # user back to `fw init` from inside the broken directory — the command
+        # that had just failed — so the instruction here has to be one that works
+        # from where they are standing. It does: this fallback IS that repair path.
+        printf 'fw: %s holds an incomplete framework copy — using the global install at %s to repair it.\n' \
+            "$_incomplete_at" "$_global" >&2
+        printf 'fw: run `fw init` in that directory to complete it (this call already routes there).\n' >&2
     fi
     [ -x "$_global/bin/fw" ] || _fw_die 127 \
         "fw: no framework found." \
