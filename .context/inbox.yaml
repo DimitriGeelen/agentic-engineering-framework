@@ -1299,3 +1299,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-170
+  text: "Fresh-machine by-hand persona: git commit fails RC=128 'Author identity unknown' before any framework hook runs, because a truly fresh HOME has no global git user.name/user.email. Onboarding task T-003 is 'First governed commit' and the README five-minute path leads there, so the first thing a new operator is told to do dies on a git error the framework never mentions and fw doctor does not check. Measured 2026-08-05 under isolated HOME during T-2719 persona work. Candidate: fw init warns or fw doctor checks git identity."
+  captured: 2026-08-05T20:55:05Z
+  context_task: T-2719
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-171
+  text: "fw init <dir> refuses a non-existent target with 'ERROR: Directory does not exist: ' and the path is EMPTY in the message — the variable is not interpolated, so the operator is told a directory does not exist without being told which. Two defects in one line: (a) fw init does not create the target directory, unlike install.sh which does, so 'fw init ./new-project' fails where the analogous install command succeeds; (b) the error names no path. Measured 2026-08-05 during T-2719 persona-test work."
+  captured: 2026-08-05T21:07:02Z
+  context_task: T-2719
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-172
+  text: "README five-minute step 4 lists a bare 'fw serve' with no --port. On any host where :3000 is already taken (common — any second project, or another Watchtower), the by-hand operator follows the walkthrough straight into an error. fw serve refuses correctly and names --port N, so the block is clearable, but the README should not lead them there. Found during the arc-016 by-hand demo capture (T-2819); on this host :3000 belongs to /opt/832-Workflow-designer. Same paragraph also presents 'fw audit' without noting exit 1 is expected on a day-zero project (T-2740 class)."
+  captured: 2026-08-05T22:23:01Z
+  context_task: T-2819
+  tags: []
+  status: pending
+  promoted_to: null
