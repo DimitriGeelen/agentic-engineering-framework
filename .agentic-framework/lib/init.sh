@@ -667,9 +667,40 @@ CYAML
     # marker would send `fw` to the global install forever.
     rm -f "$_init_incomplete_marker"
 
+    # T-2818 / OBS-170: a fresh machine has no global git identity, so `git commit`
+    # dies RC=128 "Author identity unknown" *before any framework hook runs* — which
+    # makes onboarding task T-003 ("First governed commit") impossible to complete.
+    #
+    # This was not an unwarned condition. It was warned THREE times: here at ~line 4
+    # of ~120 lines of init output, by `fw doctor`, and by the git-identity block
+    # above. What made it invisible is that every line the operator reads AFTER the
+    # warning contradicts it — 43/44 validation checks green, "Done! Governance is
+    # active.", "Next step: start your AI agent". The last thing read wins, and the
+    # last thing read said the project was ready.
+    #
+    # So the fix is not another warning; it is putting this one where the eye lands.
+    # Re-check at the end rather than reusing a flag from the earlier block: init may
+    # have SET the identity in between (inherited from global), and a stale flag
+    # would report a blocker that no longer exists.
+    local _identity_missing=false
+    git -C "$target_dir" config user.email >/dev/null 2>&1 || _identity_missing=true
+
     echo ""
-    echo -e "${GREEN}Done!${NC} Governance is active."
+    if [ "$_identity_missing" = true ]; then
+        echo -e "${GREEN}Done!${NC} Governance is active — ${YELLOW}but this machine cannot commit yet.${NC}"
+    else
+        echo -e "${GREEN}Done!${NC} Governance is active."
+    fi
     echo ""
+    if [ "$_identity_missing" = true ]; then
+        echo -e "  ${YELLOW}${BOLD}Do this first:${NC} set a git identity, or every commit fails with"
+        echo -e "  \"Author identity unknown\" — including onboarding task T-003."
+        echo ""
+        echo -e "    cd $target_dir && git config user.email 'you@example.com' && git config user.name 'Your Name'"
+        echo ""
+        echo -e "  (Drop ${BOLD}--global${NC} in, or set it on this repo only as above.)"
+        echo ""
+    fi
     echo -e "  ${BOLD}Next step:${NC} Start your AI agent (e.g. Claude Code) in this directory."
     if [ "$has_existing_tasks" = false ] && [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
         local onboard_count

@@ -202,7 +202,17 @@ _failed_count() {
     mkdir -p "$proj"
     local out; out=$("$FRAMEWORK_ROOT/bin/fw" init "$proj" 2>&1 | sed 's/\x1b\[[0-9;]*m//g')
     local block; block=$(printf '%s\n' "$out" | sed -n '/^Validating/,/^  Validation/p')
-    local rows;  rows=$(printf '%s\n' "$block" | grep -cE '^  [✓✗-]')
+    # T-2818: '!' belongs in this class. The marker was already in use (sem-fabric)
+    # when this test was written, but only on a path a fresh init never takes — the
+    # component count is 0 there, so sem-fabric always printed '✓' and the omission
+    # stayed latent. func-identity is the first check whose warn row fires on a fresh
+    # init, which surfaced it: rows=44 against total=45.
+    #
+    # Widening the pattern rather than changing the row's marker, because the claim
+    # this test makes is that the denominator is *witnessable* — and a '!' row is as
+    # witnessable as a '✓'. Narrowing the regex instead would have made a visible
+    # line count as invisible to satisfy the assertion, which inverts the intent.
+    local rows;  rows=$(printf '%s\n' "$block" | grep -cE '^  [✓✗!-]')
     local total; total=$(printf '%s\n' "$block" | grep -E "Validation" | head -1 \
                          | sed -n 's/.*[^0-9]\([0-9][0-9]*\) checks.*/\1/p')
     echo "rows=$rows total=$total"

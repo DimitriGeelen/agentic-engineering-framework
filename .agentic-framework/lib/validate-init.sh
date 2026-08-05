@@ -520,6 +520,31 @@ print(','.join(bad))
         fi
     fi
 
+    # 2f. Git identity resolves (T-2818 / OBS-170)
+    #
+    # Without one, `git commit` dies RC=128 "Author identity unknown" before any
+    # framework hook runs, so onboarding task T-003 ("First governed commit") cannot
+    # be completed. The tally is the line operators read as the verdict, and on a
+    # fresh machine it said "Validation passed: 43/44" about a project that could not
+    # commit — 44 checks, none of them about the one condition blocking the next step.
+    #
+    # Warn-shaped, counted as passed, following the sem-fabric precedent below: this
+    # is HOST state, not project state (`fw doctor` scopes it [host] for the same
+    # reason). Re-running after `git config user.email` flips it green with no
+    # re-init, and failing here would redden every CI job that legitimately runs
+    # without an identity — training people to ignore validation output, which is
+    # the exact failure mode this check exists to prevent.
+    total=$((total + 1))
+    passed=$((passed + 1))
+    if git -C "$target_dir" config user.email >/dev/null 2>&1; then
+        [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} func-identity Git identity resolves"
+    else
+        [ "$quiet" = false ] && {
+            echo -e "  ${YELLOW}!${NC} func-identity Git identity not set — commits will fail (host, not project)"
+            echo -e "       git config user.email 'you@example.com' && git config user.name 'Your Name'"
+        }
+    fi
+
     # --- Tier 3: Semantic Checks (T-462) ---
     # Catch knowledge leakage — framework-specific content in consumer projects
     # Only runs when target has .framework.yaml (consumer project, not the framework itself)
