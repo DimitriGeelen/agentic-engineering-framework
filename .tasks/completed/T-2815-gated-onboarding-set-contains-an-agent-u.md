@@ -12,12 +12,12 @@ description: >
   listed, no agent-reachable path to clear it. Arc-017's stated invariant: nothing
   owner:human or agent-unresolvable may sit in the gated onboarding set.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:onboarding-curriculum]
-components: []
+components: [agents/git/lib/hooks.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T20:52:27Z
-last_update: 2026-08-05T22:24:33Z
-date_finished:
+last_update: 2026-08-05T23:34:44Z
+date_finished: 2026-08-05T23:34:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -121,19 +121,44 @@ structural deadlock for any agent-only session.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The gated set's exit condition is reachable by the agent alone, demonstrated by
+- [x] The gated set's exit condition is reachable by the agent alone, demonstrated by
       running the seeded set to completion under `$CLAUDECODE=1` — not by arguing that
       it should be. Whatever the fix (ungate T-002, split it, make the curriculum
       non-blocking), the proof is a clean run from `fw init` to a non-onboarding Write
       that succeeds.
-- [ ] The invariant is enforced structurally, not documented: adding an `owner: human`
+      Evidence: `tests/unit/t2815_onboarding_e2e_reachable.bats` seeds a real project
+      via `fw init`, flips T-001/T-003/T-004/T-005 to `work-completed`, leaves T-002
+      untouched (`owner: human`, `status: captured`), and asserts the PreToolUse gate
+      returns exit 0 on a Write to a non-onboarding file. Passes; proven to fail
+      without the fix (reverted `check-active-task.sh`, re-ran, got exit 2 / "Onboarding
+      tasks incomplete... T-002").
+- [x] The invariant is enforced structurally, not documented: adding an `owner: human`
       or otherwise agent-unresolvable task to the gated onboarding set is refused at
       the point it is added, with a message naming which task and why.
-- [ ] The invariant guard is proven to fire — a deliberately human-owned onboarding
+      Evidence: `agents/context/check-onboarding-gate.py` (wired via `check-onboarding-gate.sh`,
+      registered PreToolUse Write|Edit in `.claude/settings.json`) refuses Write/Edit on
+      `.tasks/{active,completed}/T-*.md` when `tags:` contains `onboarding`, `owner != human`,
+      and the task is agent-unresolvable — block message names the task id and reason
+      (`inception-decide-blocked` / `human-ac-present`).
+- [x] The invariant guard is proven to fire — a deliberately human-owned onboarding
       fixture is refused, and an all-agent set passes (L-530 both-states rule).
-- [ ] Sovereignty is preserved: the human curriculum still exists and is discoverable.
+      Evidence: `tests/unit/check_onboarding_gate.bats` (11/11 pass) exercises both
+      states directly on the hook — owner:human PASSES (test 3), owner:agent+inception
+      and owner:agent+unticked-Human-AC both BLOCK (tests 4, 5), owner:agent all-Agent-AC
+      PASSES (test 6). `tests/unit/onboarding_gate_owner_human_exempt.bats` (4/4 pass)
+      exercises the same both-states split on the gate SCAN in `check-active-task.sh`.
+- [x] Sovereignty is preserved: the human curriculum still exists and is discoverable.
       The fix must not delete the operator's onboarding content to satisfy a gate —
       arc-017's mechanic is "readable but never blocking", not "removed".
+      Evidence: `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` was not
+      touched by this task — its content, `tags: [onboarding, inception]`, and
+      `owner: human` are unchanged. Only the gate SCAN in `check-active-task.sh` was
+      edited to skip `owner: human` tasks when computing `INCOMPLETE_ONBOARDING` (a
+      `continue` in the tag-matching loop, not a tag/content removal). The e2e test
+      (AC1 evidence above) asserts T-002's `owner: human` / `status: captured` are
+      still present in the seeded project's task file after the proof runs — it still
+      exists, is still tagged `onboarding`, and still requires a human
+      `fw inception decide T-002 go|no-go|defer` to close.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -233,44 +258,59 @@ structural deadlock for any agent-only session.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/check_onboarding_gate.bats 2>&1); echo "$out" | grep -q "^ok 11 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/onboarding_gate_owner_human_exempt.bats 2>&1); echo "$out" | grep -q "^ok 4 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/t2815_onboarding_e2e_reachable.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/greenfield_seed_audit_prototype.bats tests/unit/check_active_task_cwd_resolution.bats tests/unit/check_active_task_memory_exempt.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+bin/fw enforcement baseline
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** A fresh `fw init` project handed to an agent-only session deadlocks
+immediately: `fw work-on 'Add authentication'` then a Write to any non-onboarding
+file returns exit 2 forever, because T-002 (seeded `owner: human`,
+`workflow_type: inception`, `tags: [onboarding, inception]`) never reaches
+`work-completed` — no agent action can make it do so.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `check-active-task.sh`'s onboarding-gate scan (T-535) treated
+every active task carrying the `onboarding` tag as equally blocking, regardless
+of `owner`. It never distinguished "an onboarding task the current agent session
+can finish" from "an onboarding task only a human can finish" — the scan checked
+tag + status only, not resolvability.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** T-532/T-535 were written for the common case
+(agent completes the curriculum solo) and never had a fixture exercising the
+`owner: human` seed (T-002) in combination with the gate's blocking branch.
+Nothing tested the *set*, only individual onboarding subcommands (`fw onboarding
+status`).
+
+**Prevention:** (1) the gate scan now skips `owner: human` tasks when building
+`INCOMPLETE_ONBOARDING` (`check-active-task.sh`); (2) a new PreToolUse hook
+(`check-onboarding-gate.py`) refuses the complementary drift — an onboarding
+task that claims `owner: agent` but is still agent-unresolvable (inception
+workflow_type or an unticked `### Human` AC) — so the exemption in (1) can't be
+used to smuggle a real deadlock past the scan; (3) `tests/unit/t2815_onboarding_e2e_reachable.bats`
+pins the end-to-end path with a real `fw init` seed and is proven to fail
+without the fix (verified by reverting `check-active-task.sh` and re-running).
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
+### 2026-08-06 — implementation session
+- **What changed:** The prior dispatched session (2026-08-05) had already done
+  the root-cause read and written the 5-step fix design into `## Context`
+  before hitting budget-critical with zero code changes. This session executed
+  that design as written — no material deviation. The one addition not
+  explicit in the original design: printing the raw `reason` code
+  (`inception-decide-blocked` / `human-ac-present`) on its own stderr line in
+  the new hook's block message, so the reason is grep-able by both humans and
+  the bats fixtures without depending on prose wording.
+- **Plan impact:** None — steps 1-5 in `## Context` were implemented as
+  specified, including the both-states bats fixtures (step 4) and the AC1
+  end-to-end proof (step 5).
+- **Triggered:** No new sub-tasks. `.claude/settings.json` required
+  `fw hook-enable` (not a direct Write) to register the new hook — B-005
+  blocks agent Write/Edit on that file — and `bin/fw enforcement baseline`
+  was re-run per L-398 since the hook set changed.
 -->
 
 ## Decisions
@@ -316,3 +356,20 @@ structural deadlock for any agent-only session.
 
 ### 2026-08-05T21:53:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6bbd2f5b
+- **Timestamp:** 2026-08-05T23:35:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/check_onboarding_gate.bats 2>&1); echo "$out" | grep -q "^ok 11 " && ! echo "$out" | grep -q "^not ok"`
+
+### 2026-08-05T23:34:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

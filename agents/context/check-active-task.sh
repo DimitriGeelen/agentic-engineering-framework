@@ -439,6 +439,17 @@ esac
 # If incomplete onboarding tasks exist, only allow work on onboarding tasks.
 # Detection: tasks with tags containing "onboarding" in .tasks/active/.
 # Fast path: .context/working/.onboarding-complete marker means all done.
+#
+# T-2815: owner:human onboarding tasks are exempt from the block. An agent
+# session can never satisfy fw inception decide (blocked under CLAUDECODE=1,
+# T-1259/T-1260) nor tick a ### Human AC — so an owner:human task in this set
+# is a structural deadlock, not a checklist item. "readable but never
+# blocking": the task still exists, still carries the onboarding tag, still
+# shows up in `fw task list --tag onboarding` / `fw onboarding status` — it
+# just doesn't gate the agent's other work. The complementary case (an
+# onboarding task claiming owner:agent that is still agent-unresolvable) is
+# refused at write-time by check-onboarding-gate.py so this exemption cannot
+# be used to smuggle a real deadlock past the scan.
 ONBOARDING_MARKER="$PROJECT_ROOT/.context/working/.onboarding-complete"
 if [ ! -f "$ONBOARDING_MARKER" ]; then
     # Check if any active tasks have onboarding tag and are not completed
@@ -446,6 +457,8 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
     for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
         [ -f "$tf" ] || continue
         if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+            tf_owner=$({ grep "^owner:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
+            [ "$tf_owner" = "human" ] && continue
             tf_status=$({ grep "^status:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
             if [ "$tf_status" != "work-completed" ]; then
                 tf_id=$({ grep "^id:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/id:[[:space:]]*//')

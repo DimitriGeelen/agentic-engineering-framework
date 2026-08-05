@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2815: Gated onboarding set contains an agent-unresolvable task (T-002 human+inception)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T23:35:39Z
+# ============================================================================
+
+task_id: T-2815
+task_name: "Gated onboarding set contains an agent-unresolvable task (T-002 human+inception)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T20:52:27Z
+completed: 2026-08-05T23:34:44Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-05T23:53:32+02:00
+last_commit: 2026-08-05T23:53:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture root cause + fix design for onboarding gate deadlock
+
+# Key outcomes
+outcomes:
+  - 'The gated set''s exit condition is reachable by the agent alone, demonstrated by'
+  - 'The invariant is enforced structurally, not documented: adding an `owner: human`'
+  - 'The invariant guard is proven to fire — a deliberately human-owned onboarding'
+  - 'Sovereignty is preserved: the human curriculum still exists and is discoverable.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'capture root cause + fix design for onboarding gate deadlock'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2815-gated-onboarding-set-contains-an-agent-u.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-05T23:53:32'
+    action: 'T-2815: capture root cause + fix design for onboarding gate deadlock'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 162 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:onboarding-curriculum]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 162
+  commits: 1
+  files_changed: 1
+  lines_added: 58
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2815-gated-onboarding-set-contains-an-agent-u.md
+generated_by: context-agent-hybrid
