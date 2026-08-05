@@ -72,7 +72,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.10
+# VERSION=1.11
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -87,6 +87,27 @@ if [ -d ".git/rebase-merge" ] || [ -d ".git/rebase-apply" ]; then
     exit 0
 fi
 
+# Resolve the fw entry point for THIS project shape (T-2816, T-1257 class).
+# The framework repo carries bin/fw at its root; a consumer carries only
+# .agentic-framework/bin/fw unless the PATH shim is installed. This hook is the
+# ONLY framework gate a by-hand operator ever trips — the PreToolUse task gate
+# is a Claude Code hook and never fires for a human at a terminal — so a remedy
+# that does not exist here is the first and possibly only enforcement message
+# that operator ever reads. Resolved at hook runtime, not at install time: the
+# heredoc that writes this file is quoted, and the project may be re-shaped
+# (shim installed, framework vendored) long after the hook was written.
+_fw_entry() {
+    if [ -x "./bin/fw" ] && [ -f "./FRAMEWORK.md" ]; then
+        echo "bin/fw"
+    elif command -v fw >/dev/null 2>&1; then
+        echo "fw"
+    elif [ -x "./.agentic-framework/bin/fw" ]; then
+        echo ".agentic-framework/bin/fw"
+    else
+        echo "fw"
+    fi
+}
+
 # Check for task reference
 if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo ""
@@ -96,7 +117,7 @@ if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo ""
     echo "To fix:"
     echo "  1. Add task reference: git commit -m \"T-XXX: your message\""
-    echo "  2. Create a task: ./agents/task-create/create-task.sh"
+    echo "  2. Create a task: $(_fw_entry) work-on \"your task name\" --type build"
     echo ""
     echo "Bypass: git commit --no-verify"
     echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
