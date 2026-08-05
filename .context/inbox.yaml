@@ -1292,3 +1292,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-169
+  text: "fw git install-hooks exits 0 and prints '=== Hooks Installed ===' when every hook write failed. Reproduced clean 2026-08-05: a project initialised inside an existing git repo has no PROJECT_ROOT/.git, hooks.sh:53 writes to a hard-coded PROJECT_ROOT/.git/hooks/, every cat> redirect fails with 'No such file or directory', chmod fails, banner prints, exit 0. Result: no commit-msg task-reference enforcement (P-002), no pre-commit secret scan (T-1844), no pre-push audit — and fw doctor's own remedy ('run: fw git install-hooks') reports success without changing anything, so the WARN looks unfixable. Split into T-2812 (hooks dir must be resolved via git rev-parse --git-path hooks, correct for worktrees and submodules too) and T-2813 (loud failure + report state read back from disk). Same false-green family as T-2732 and T-2738."
+  captured: 2026-08-05T14:35:08Z
+  context_task: T-2813
+  tags: []
+  status: pending
+  promoted_to: null
