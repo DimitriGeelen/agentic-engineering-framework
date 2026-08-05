@@ -29,3 +29,4 @@ if [[ ( -t 1 || -t 2 ) && -z "${NO_COLOR:-}" ]]; then
 else
     RED='' GREEN='' YELLOW='' CYAN='' BOLD='' DIM='' NC=''
 fi
+# T-1434 drift sentinel
