@@ -1,0 +1,143 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2793: Total isolation: vendor the CLI too — fw on PATH becomes a thin router
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T00:21:28Z
+# ============================================================================
+
+task_id: T-2793
+task_name: "Total isolation: vendor the CLI too — fw on PATH becomes a thin router"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-04T15:45:03Z
+completed: 2026-08-05T00:20:24Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-04T17:46:53+02:00
+last_commit: 2026-08-05T02:20:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  operator decision — total isolation, vendor the CLI too. refresh vendored copies (self-vendor drift gate). OBS — fw vendor self does not sync VERSION (vendored 1.6.234 vs repo 1.6.108). walk-up floor — python hook resolver stopped at filesystem root, shell twin did not. bin/fw-router — the thin entry point that ends the split brain. bin/fw-shim shipped non-executable — this is the fresh-install root cause. close the two holes that made the vendored copy unverifiable. install.sh and fw upgrade install the router, not the global symlink. fresh-machine simulation asserts version agreement and no-global-install. CORRECTION — VERSION is sync-only, not a checked drift class. tick 5 of 6 ACs; retract an unattestable AC4 verification claim. install.sh must rm the old symlink before copying the router. refresh vendored copies (bin/fw-router, web/, VERSION 1.6.127). AC4 self-replacement genuinely live-verified this time
+
+# Key outcomes
+outcomes:
+  - '`fw` on PATH is a **thin router**: locate the nearest `.agentic-framework/bin/fw` from'
+  - '**The router''s walk-up has a floor.** `lib/hook_paths.py:reanchor_project_root` iterates'
+  - '**Bootstrap path preserved.** `fw init` / `fw upgrade` / `fw --version` must still work'
+  - '**Self-replacement is safe.** `fw upgrade` rewrites the vendored CLI that is currently'
+  - 'In a vendored consumer, `fw --version`, `.framework.yaml` `version:`, and'
+  - 'A consumer with a **stale or absent** global install still works. This is the point of'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/fw-router'
+  - '.agentic-framework/lib/hook_paths.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/cockpit.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/blueprints/metrics.py'
+  - '.agentic-framework/web/templates/cockpit.html'
+  - '.agentic-framework/web/templates/inception_detail.html'
+  - '.agentic-framework/web/templates/metrics.html'
+  - '.agentic-framework/web/templates/_stale_tasks_items.html'
+  - '.agentic-framework/web/templates/_work_queue_items.html'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'bin/fw-router'
+  - 'bin/fw-shim'
+  - '.context/inbox.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.fabric/components/bin-fw-router.yaml'
+  - 'install.sh'
+  - 'lib/hook_paths.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-1794-watchtower-orchestrator-extend-dispatch-.md'
+  - '.tasks/active/T-1991-watchtower-foundation-tokens--6-palettes.md'
+  - '.tasks/active/T-2788-sweep-bats-fixture-paths-built-on-an-ung.md'
+  - '.tasks/active/T-2792-fresh-install-onboarding-path-broken-mak.md'
+  - '.tasks/active/T-2793-total-isolation-vendor-the-cli-too--fw-o.md'
+  - '.tasks/active/T-449-deep-dive-articles-02-06-editing-pass--s.md'
+  - '.tasks/completed/T-2804-arc-delivery-session-prompt--continuous-.md'
+  - 'tests/unit/bin_executable_bits.bats'
+  - 'tests/unit/fw_router.bats'
+  - 'tests/unit/self_vendor_parity.bats'
+  - 'tests/unit/self_vendor_version.bats'
+  - 'tests/unit/test_hook_paths.py'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-04T17:46:53'
+    action: 'T-2793: operator decision — total isolation, vendor the CLI too'
+  - time: '2026-08-04T17:47:16'
+    action: 'T-2793: refresh vendored copies (self-vendor drift gate)'
+  - time: '2026-08-04T17:51:38'
+    action: 'T-2793: OBS — fw vendor self does not sync VERSION (vendored 1.6.234 vs repo 1.6.108)'
+  - time: '2026-08-04T18:05:27'
+    action: 'T-2793: walk-up floor — python hook resolver stopped at filesystem root, shell twin did not'
+  - time: '2026-08-04T18:10:19'
+    action: 'T-2793: bin/fw-router — the thin entry point that ends the split brain'
+  - time: '2026-08-04T18:17:31'
+    action: 'T-2793: bin/fw-shim shipped non-executable — this is the fresh-install root cause'
+  - time: '2026-08-04T18:23:51'
+    action: 'T-2793: close the two holes that made the vendored copy unverifiable'
+  - time: '2026-08-04T18:26:41'
+    action: 'T-2793: install.sh and fw upgrade install the router, not the global symlink'
+  - time: '2026-08-04T18:29:15'
+    action: 'T-2793: fresh-machine simulation asserts version agreement and no-global-install'
+  - time: '2026-08-04T18:32:57'
+    action: 'T-2793: CORRECTION — VERSION is sync-only, not a checked drift class'
+  - time: '2026-08-04T18:58:04'
+    action: 'T-2793: tick 5 of 6 ACs; retract an unattestable AC4 verification claim'
+  - time: '2026-08-04T18:58:15'
+    action: 'T-2793: refresh vendored copies (self-vendor drift gate)'
+  - time: '2026-08-04T19:50:59'
+    action: 'T-2793: install.sh must rm the old symlink before copying the router'
+  - time: '2026-08-04T21:36:32'
+    action: 'T-2793: refresh vendored copies (bin/fw-router, web/, VERSION 1.6.127)'
+  - time: '2026-08-05T02:20:18'
+    action: 'T-2793: AC4 self-replacement genuinely live-verified this time'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 16 commit(s), 515 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 515
+  commits: 16
+  files_changed: 38
+  lines_added: 2112
+  lines_removed: 457
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2793-total-isolation-vendor-the-cli-too--fw-o.md
+generated_by: context-agent-hybrid

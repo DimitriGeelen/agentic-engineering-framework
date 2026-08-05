@@ -4,12 +4,12 @@ name: "Total isolation: vendor the CLI too — fw on PATH becomes a thin router"
 description: >
   Total isolation: vendor the CLI too — fw on PATH becomes a thin router
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, bin/fw, bin/fw-router, bin/fw-shim, lib/hook_paths.py, lib/upgrade.sh, tests/unit/self_vendor_parity.bats, tests/unit/upgrade_fresh_machine_simulation.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T15:45:03Z
-last_update: 2026-08-04T20:05:40Z
-date_finished:
+last_update: 2026-08-05T00:20:24Z
+date_finished: 2026-08-05T00:20:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -356,3 +356,20 @@ out=$(bats tests/unit/fw_router.bats 2>&1); echo "$out" | grep -qE '^ok 12 ' && 
   `fw upgrade` self-overwrite) remains unverified and unticked. T-2792's AC4 (second
   clean-dir onboarding re-run reaching a live Watchtower URL) stays blocked on this task
   until AC4 here is genuinely closed.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8f192dd9
+- **Timestamp:** 2026-08-05T00:21:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 11 ' && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-08-05T00:20:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
