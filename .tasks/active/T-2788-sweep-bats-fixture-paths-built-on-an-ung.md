@@ -447,3 +447,16 @@ out=$(comm -13 <(printf '%s\n' tests/unit/no_root_framework_markers.bats tests/u
 ### 2026-08-04T13:14:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-08-05T00:00:00Z — checkpoint [dispatched-worker, budget critical]
+- **Action:** Committed and pushed the guard implementation: `guard_project_root()`
+  in `tests/test_helper.bash`, wired into all 106 real call sites, plus the new
+  proof file `tests/unit/guard_project_root.bats`. Commits `4d5d9ae0b` and
+  `19455f0b0`/`32be62ac8` (unrelated pre-existing MCP-manifest/self-vendor push
+  drift, fixed only to unblock the push) — pushed to `t2539-staging`.
+- **Not done:** the last Agent AC (full `bats tests/` run with a `/`
+  before/after framework-marker diff) was not executed this session — context
+  hit critical budget (97%) before a full-suite run could be attempted safely.
+  Next session: run `bats tests/` (or at minimum `tests/unit/` +
+  `tests/integration/`) and diff `/` for framework markers before/after, then
+  tick the final AC and close.
