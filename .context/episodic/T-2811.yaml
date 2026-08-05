@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2811: fw_router.bats fixtures predate T-2805 FRAMEWORK.md requirement — 7 of 12 tests red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T14:25:46Z
+# ============================================================================
+
+task_id: T-2811
+task_name: "fw_router.bats fixtures predate T-2805 FRAMEWORK.md requirement — 7 of 12 tests red"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T14:21:42Z
+completed: 2026-08-05T14:25:33Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw_router.bats fixtures predate T-2805 FRAMEWORK.md requirement — 7 of 12 tests red
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/fw_router.bats` is 12/12 green.'
+  - 'The fix is to the **fixtures**, not to `bin/fw-router`. T-2805 made `.agentic-framework/FRAMEWORK.md` load-bearing (bin/fw-router:96) and refusing an incomplete vendor is correct behaviour; the fixtures build a project shape that cannot exist. `git diff --stat bin/fw-router` is empty at close.'
+  - '`_stub_cli` produces a *complete* framework copy — the FRAMEWORK.md it writes sits where the router looks for it, for both layouts the helper is used with (`<proj>/.agentic-framework/bin/fw` and `<repo>/bin/fw`). Verified by both layouts still passing, not by reading the path arithmetic.'
+  - 'The routing-loop test (test 9) reaches the 126 branch rather than dying at 127 on the incompleteness check — i.e. it tests what its name says.'
+  - 'T-2805''s contract is not silently erased by the fixture change: an incomplete vendored copy still refuses, still pinned by a test. Pinned by `tests/unit/router_refusal_names_one_step_install.bats` test 3 ("incomplete-copy refusal names the one-step installer with the project dir"), which builds the no-FRAMEWORK.md shape deliberately and asserts the 127 refusal.'
+  - 'Determine whether any runner (`fw test unit`, cron, pre-push) actually executes this suite, and record the answer. ANSWER: it does — `bin/fw:7801` runs bats over tests/unit/. Nothing gates on the exit code, and the last full run was 189 red of 3764. Filed as OBS-168. If nothing runs it, that is the reason 7 red tests survived and it gets its own observation or task — a green fixture in an unrun suite fixes nothing.'
+  - 'Each repaired test is shown to be non-vacuous: it goes red when the router''s routing decision is broken, not merely when the fixture is malformed.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2811-fwrouterbats-fixtures-predate-t-2805-fra.md
+generated_by: context-agent-hybrid

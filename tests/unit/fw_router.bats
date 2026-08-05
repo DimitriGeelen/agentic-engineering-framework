@@ -28,8 +28,22 @@ teardown() {
 }
 
 # _stub_cli <path> — a fake framework CLI that reports which copy it is.
+#
+# T-2811: also writes the FRAMEWORK.md that makes the copy COMPLETE. T-2805 made
+# that file load-bearing (bin/fw-router:96): a vendored .agentic-framework with an
+# executable bin/fw but no FRAMEWORK.md is an interrupted init, and the router
+# refuses it with 127 rather than routing there. These fixtures predated that and
+# built a project shape that cannot exist, so 7 of 12 tests were asserting against
+# a refusal — red for a year of router changes without ever being about the router.
+#
+# The path arithmetic is "two levels up from the CLI", which lands correctly for
+# BOTH layouts the helper is called with, because it is the same walk the router
+# itself does:
+#   <proj>/.agentic-framework/bin/fw  ->  <proj>/.agentic-framework/FRAMEWORK.md
+#   <repo>/bin/fw                     ->  <repo>/FRAMEWORK.md
 _stub_cli() {
     mkdir -p "$(dirname "$1")"
+    : > "$(dirname "$(dirname "$1")")/FRAMEWORK.md"
     cat > "$1" <<'EOF'
 #!/bin/bash
 echo "CLI=$0"
@@ -121,6 +135,10 @@ EOF
 @test "refuses to exec itself (routing loop)" {
     local proj="$TEST_TEMP_DIR/looper"
     mkdir -p "$proj/.agentic-framework/bin"
+    # T-2811: complete the copy (see _stub_cli). Without FRAMEWORK.md the router
+    # dies at the incompleteness check with 127 and never reaches the loop check,
+    # so this test asserted 126 against a message about interrupted inits.
+    : > "$proj/.agentic-framework/FRAMEWORK.md"
     cp "$ROUTER" "$proj/.agentic-framework/bin/fw"
     cd "$proj"
     # 126 ("found, cannot execute"), not 127 — a loop is not a missing install.
@@ -154,6 +172,10 @@ EOF
 @test "propagates the CLI's exit code" {
     local proj="$TEST_TEMP_DIR/consumer"
     mkdir -p "$proj/.agentic-framework/bin"
+    # T-2811: this test builds its stub inline rather than via _stub_cli, so it
+    # needs the completeness marker of its own. Without it the router refuses at
+    # 127 and the 42 never gets a chance to propagate.
+    : > "$proj/.agentic-framework/FRAMEWORK.md"
     printf '#!/bin/bash\nexit 42\n' > "$proj/.agentic-framework/bin/fw"
     chmod +x "$proj/.agentic-framework/bin/fw"
     cd "$proj"

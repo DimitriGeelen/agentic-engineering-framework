@@ -1285,3 +1285,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-168
+  text: "fw test unit runs 3764 bats tests with 189 red (5%), and NOTHING gates on the result — no pre-push hook, no cron registry entry, no audit check. Verified: bin/fw:7801 runs bats over tests/unit/ so the suite is not orphaned (unlike the T-2696 tests/lint/ case), but its exit code reaches no gate. Consequence measured on T-2811: fw_router.bats sat 7/12 red across the entire T-2793->T-2809 router rework — the suite covering the single machine-wide artifact every fw call routes through — and no one noticed, because 7 reds inside 189 is indistinguishable from background. This is the T-2743 'guard red 28 days in a 25-red suite' pattern at 7.5x scale. Two candidate rails: (a) a red-count ratchet that fails when reds increase vs a committed baseline, which tolerates the existing 189 while stopping new ones; (b) per-suite ownership so a suite's redness is attributable. (a) is cheap and does not require fixing 189 tests first."
+  captured: 2026-08-05T14:24:43Z
+  context_task: T-2811
+  tags: []
+  status: pending
+  promoted_to: null
