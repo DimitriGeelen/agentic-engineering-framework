@@ -254,6 +254,48 @@ first governed commit dies RC=128 before any hook runs) and **OBS-171**
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+## Recommendation
+
+**Recommendation:** GO on this task — **do NOT close arc-016 yet.**
+
+**Rationale:**
+
+This task's deliverable is done and proven: the by-hand persona has its own
+scenario, it extracts the README's commands instead of copying them, and it goes
+red when the document regresses (mutation-checked). arc-016's *second* clause —
+"a persona test that fails loudly if that stops being true" — is satisfied.
+
+Its *first* clause is not. The mechanic requires a person to "reach a working
+first task without hitting a block they cannot clear". Walking it end to end
+surfaced three blocks, two now fixed (T-2816, T-2817) and one open:
+
+**OBS-170** — on a genuinely fresh machine there is no global git identity, so
+`git commit` dies `RC=128 Author identity unknown` *before any framework hook
+runs*. The seeded curriculum's T-003 is literally "First governed commit". The
+framework never mentions git identity and `fw doctor` does not check it. A new
+operator's first instructed action fails on an error the framework did not
+produce and does not explain.
+
+That is exactly the class arc-016 exists to catch, found by the persona work and
+not yet fixed. Closing the arc now would repeat the §ACD pattern the framework
+has recorded four times: substrate shipped, mechanic never demonstrated.
+
+**What closes it:** fix OBS-170 (a `fw doctor` check plus an `fw init` warning is
+the cheap shape), then run the by-hand path once more on a clean machine and
+capture that run as the arc's `--demo`. The demo should be the *mechanic firing*
+— a person reaching a working first task — not the test suite going green.
+
+**Evidence:**
+
+- by hand, published bytes: `echo x > src.txt` → **RC=0** (README claimed refusal)
+- agent: Write → **exit 2**, T-532, five untouched onboarding tasks
+- persona suite 4/4 green; mutation → test 2 red; runner delta **532 − 528 = 4**
+- T-2816 fixed: refusal remedy now resolves in both project shapes
+- T-2817 fixed: `fw init` no longer writes a credential into tracked config; a
+  fresh project's first commit went RC=1 (secret-scan block) → **RC=0**
+- open: OBS-170 (git identity), OBS-171 (`fw init` error names no path)
+- filed: T-2815 — the gated onboarding set holds an agent-unresolvable task
+
 ## Verification
 
 out=$(bats tests/integration/readme_five_minute_by_hand.bats 2>&1); echo "$out" | grep -q '^ok 4 ' && ! echo "$out" | grep -q '^not ok'
