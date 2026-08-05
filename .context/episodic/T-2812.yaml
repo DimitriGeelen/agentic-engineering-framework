@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2812: install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing when .git is elsewhere
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-05T17:24:55Z
+# ============================================================================
+
+task_id: T-2812
+task_name: "install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing when .git is elsewhere"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-05T14:32:19Z
+completed: 2026-08-05T17:24:44Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing when .git is elsewhere
+
+# Key outcomes
+outcomes:
+  - 'The hooks directory is resolved by asking git (`git rev-parse --git-path hooks`, which is correct for a plain repo, a worktree, and a submodule alike) rather than by string-concatenating `$PROJECT_ROOT/.git/hooks`.'
+  - 'A project initialised inside an existing git repo gets its hooks installed into the repo that will actually run them, and a commit from that project is subject to the commit-msg task-reference check. Verified by making a real commit that should be rejected and observing the rejection — not by checking that files exist.'
+  - 'The plain-repo case (project owns its own `.git`) is unchanged: all four hooks still land in `<proj>/.git/hooks/`. Pinned by test, since this is the path everyone currently uses and the one a refactor is most likely to break silently.'
+  - 'Decide and record in `## Decisions` whether installing into an *enclosing* repo is correct at all, or whether `fw init` should instead refuse / warn when the target is inside someone else''s repo. Writing hooks into a repo the operator did not point us at has its own blast radius — this AC exists so that choice is made deliberately rather than falling out of the path fix.'
+  - 'Regression coverage for the non-`$PROJECT_ROOT/.git` shape, mutation-checked — shown to go red against the current hard-coded path.'
+  - '`bin/fw doctor`''s hook checks agree with the new resolution, so a correctly-installed project stops being reported as missing hooks (and an incorrectly-installed one still is).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-05 — Install into the enclosing repo (don''t refuse/warn) in this task; scope a warn separately'
+    chose: 'When `PROJECT_ROOT` has no local `.git` and resolves to an'
+    rationale: 'Git hooks cannot be scoped to a subdirectory — the enclosing'
+    alternatives_rejected: ['Making `install-hooks` (or `fw init`) refuse/warn when the']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 172 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 172
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2812-install-hooks-writes-to-a-hard-coded-pro.md
+generated_by: context-agent-hybrid

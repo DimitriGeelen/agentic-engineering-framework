@@ -23,7 +23,12 @@ do_install_hooks() {
 
     check_git_repo
 
-    local hooks_dir="$PROJECT_ROOT/.git/hooks"
+    local hooks_dir
+    hooks_dir=$(resolve_git_hooks_dir) || {
+        echo -e "${RED}ERROR: Could not resolve git hooks directory${NC}"
+        exit 1
+    }
+    mkdir -p "$hooks_dir"
     local commit_msg_hook="$hooks_dir/commit-msg"
     local pre_commit_hook="$hooks_dir/pre-commit"
     local post_commit_hook="$hooks_dir/post-commit"

@@ -1,13 +1,15 @@
 ---
 id: T-2812
-name: "install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing when .git is elsewhere"
+name: "install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing
+  when .git is elsewhere"
 description: >
-  install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing when .git is elsewhere
+  install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing
+  when .git is elsewhere
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-05T14:32:19Z
-last_update: 2026-08-05T14:32:19Z
-date_finished: null
+last_update: 2026-08-05T17:24:44Z
+date_finished: 2026-08-05T17:24:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-05T14:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-05T14:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2812: install-hooks writes to a hard-coded PROJECT_ROOT/.git/hooks and installs nothing when .git is elsewhere
@@ -83,12 +114,12 @@ all four hooks install correctly. So this is specifically about `.git` not being
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The hooks directory is resolved by asking git (`git rev-parse --git-path hooks`, which is correct for a plain repo, a worktree, and a submodule alike) rather than by string-concatenating `$PROJECT_ROOT/.git/hooks`.
-- [ ] A project initialised inside an existing git repo gets its hooks installed into the repo that will actually run them, and a commit from that project is subject to the commit-msg task-reference check. Verified by making a real commit that should be rejected and observing the rejection — not by checking that files exist.
-- [ ] The plain-repo case (project owns its own `.git`) is unchanged: all four hooks still land in `<proj>/.git/hooks/`. Pinned by test, since this is the path everyone currently uses and the one a refactor is most likely to break silently.
-- [ ] Decide and record in `## Decisions` whether installing into an *enclosing* repo is correct at all, or whether `fw init` should instead refuse / warn when the target is inside someone else's repo. Writing hooks into a repo the operator did not point us at has its own blast radius — this AC exists so that choice is made deliberately rather than falling out of the path fix.
-- [ ] Regression coverage for the non-`$PROJECT_ROOT/.git` shape, mutation-checked — shown to go red against the current hard-coded path.
-- [ ] `bin/fw doctor`'s hook checks agree with the new resolution, so a correctly-installed project stops being reported as missing hooks (and an incorrectly-installed one still is).
+- [x] The hooks directory is resolved by asking git (`git rev-parse --git-path hooks`, which is correct for a plain repo, a worktree, and a submodule alike) rather than by string-concatenating `$PROJECT_ROOT/.git/hooks`.
+- [x] A project initialised inside an existing git repo gets its hooks installed into the repo that will actually run them, and a commit from that project is subject to the commit-msg task-reference check. Verified by making a real commit that should be rejected and observing the rejection — not by checking that files exist.
+- [x] The plain-repo case (project owns its own `.git`) is unchanged: all four hooks still land in `<proj>/.git/hooks/`. Pinned by test, since this is the path everyone currently uses and the one a refactor is most likely to break silently.
+- [x] Decide and record in `## Decisions` whether installing into an *enclosing* repo is correct at all, or whether `fw init` should instead refuse / warn when the target is inside someone else's repo. Writing hooks into a repo the operator did not point us at has its own blast radius — this AC exists so that choice is made deliberately rather than falling out of the path fix.
+- [x] Regression coverage for the non-`$PROJECT_ROOT/.git` shape, mutation-checked — shown to go red against the current hard-coded path.
+- [x] `bin/fw doctor`'s hook checks agree with the new resolution, so a correctly-installed project stops being reported as missing hooks (and an incorrectly-installed one still is).
 
 
 ### Human
@@ -123,6 +154,11 @@ all four hooks install correctly. So this is specifically about `.git` not being
 -->
 
 ## Verification
+
+bash -n agents/git/lib/hooks.sh
+bash -n agents/git/lib/common.sh
+bash -n bin/fw
+out=$(bats tests/unit/git_install_hooks_git_path.bats 2>&1); echo "$out" | grep -q "^1..4" && ! echo "$out" | grep -q "^not ok"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -191,19 +227,33 @@ all four hooks install correctly. So this is specifically about `.git` not being
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw git install-hooks` reported success and installed zero hooks
+when run against a project created inside an existing repo (no local `.git`).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `agents/git/lib/hooks.sh` computed the hooks directory by
+string-concatenating `"$PROJECT_ROOT/.git/hooks"`. That expression assumes
+`.git` is a directory sitting directly at `PROJECT_ROOT` — true only for the
+plain, top-level-repo shape. It is false for a project nested inside an
+enclosing repo (no local `.git` at all — `fw init` deliberately skips
+`git init` there, `lib/init.sh:140`), a worktree (`.git` is a file pointing
+at `<main>/.git/worktrees/<name>`, and hooks live in the *common* dir, not
+that per-worktree dir), and a submodule (hooks live under the superproject's
+`.git/modules/<name>/hooks`).
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the hard-coded path was written when the
+plain-repo shape was the only shape ever exercised (dev machine, `fw init`
+with no enclosing repo). Nothing checked the *assumption* that `.git` is a
+directory at `PROJECT_ROOT` — no test exercised any other shape, and the
+silent-failure-reports-success half of the symptom (filed separately as
+T-2813) meant a wrong path never surfaced as an error either.
+
+**Prevention:** `resolve_git_hooks_dir()` (`agents/git/lib/common.sh`) and
+the equivalent inline resolution in `bin/fw doctor` now ask git itself
+(`git rev-parse --git-path hooks`), which is correct for all three shapes by
+construction — there is no second hard-coded path to drift. Regression
+coverage: `tests/unit/git_install_hooks_git_path.bats` (4 tests: plain repo,
+nested project + a real rejected commit, worktree) — mutation-checked, 3 of
+4 go red against the pre-fix hard-coded path.
 
 ## Evolution
 
@@ -231,14 +281,32 @@ all four hooks install correctly. So this is specifically about `.git` not being
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-05 — Install into the enclosing repo (don't refuse/warn) in this task; scope a warn separately
+
+- **Chose:** When `PROJECT_ROOT` has no local `.git` and resolves to an
+  enclosing repo's hooks dir, `install-hooks` still installs there — it does
+  not refuse. This is what AC2 requires (a commit from the nested project
+  must actually be subject to the commit-msg check), and matches `fw init`'s
+  existing choice not to nest a repo (`lib/init.sh:140`): if the framework
+  already decided this project shares the enclosing repo, hooks belong where
+  commits are actually made.
+- **Why:** Git hooks cannot be scoped to a subdirectory — the enclosing
+  repo's `commit-msg`/`pre-push` hooks fire for *every* commit in that repo,
+  not just ones touching the nested project's files. That's real blast
+  radius (an operator's unrelated commits elsewhere in the enclosing repo
+  would suddenly require a `T-XXX` reference), but it's inherent to git's
+  design, not something a path fix can avoid — the only alternative to
+  "install into the enclosing repo" is "don't install at all", which
+  reproduces the original bug (silent no-op enforcement) under a different
+  name.
+- **Rejected:** Making `install-hooks` (or `fw init`) refuse/warn when the
+  target is nested inside another repo. Left as a follow-up rather than
+  folded into this task's scope fence — it's a UX/warning question about
+  *whether a human should be told*, decoupled from *where the bytes land
+  once they decide to proceed*, and doesn't need the path-resolution fix to
+  land first. Not filed as a separate task since it's speculative (no
+  operator has hit this shape and asked for a warning yet); if it recurs in
+  practice, file then with a concrete case.
 
 ## Decision
 
@@ -256,3 +324,15 @@ all four hooks install correctly. So this is specifically about `.git` not being
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2812-install-hooks-writes-to-a-hard-coded-pro.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-802e4b90
+- **Timestamp:** 2026-08-05T17:24:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-05T17:24:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
