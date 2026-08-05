@@ -1,19 +1,14 @@
 ---
-id: T-2719
-name: "Keystone: README five-minute path tested by-hand as its own persona"
+id: T-2815
+name: "Gated onboarding set contains an agent-unresolvable task (T-002 human+inception)"
 description: >
-  Arc keystone for T-2715 GO item 3. IW-11 reproduced: the README's own five-minute
-  walkthrough reaches the T-532 block by instruction, not by misclassification — fw
-  init then fw work-on 'Add authentication' then an agent Write hits exit 2 with five
-  untouched onboarding tasks listed. The by-hand failure is structurally invisible
-  to the agent-assisted test, so the two personas need separate scenarios rather than
-  one shared path. Carries the arc's closure Recommendation.
+  T-532 onboarding gate (check-active-task.sh:443-480) requires every active tags:onboarding task to reach work-completed before any other work. The seeded set contains T-002 'Define project goals' with tags [onboarding, inception] and owner: agent human. An agent may never tick a ### Human AC, and fw inception decide refuses under CLAUDECODE=1 — so the exit condition of the gate is an action the assisting agent is structurally forbidden to take. Measured 2026-08-05 against published bytes: fw init then fw work-on 'Add authentication' then agent Write returns exit 2, five onboarding tasks listed, no agent-reachable path to clear it. Arc-017's stated invariant: nothing owner:human or agent-unresolvable may sit in the gated onboarding set.
 
-status: started-work
-workflow_type: design
-owner: agent
+status: captured
+workflow_type: build
+owner:
 horizon: now
-tags: [arc:readme-first-run]
+tags: [arc:onboarding-curriculum]
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -26,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-02T00:34:23Z
-last_update: '2026-08-03T00:45:06Z'
-date_finished:
+created: 2026-08-05T20:52:27Z
+last_update: 2026-08-05T20:52:27Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,141 +34,32 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-02T00:45:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 3
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-08-03T00:45:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 3
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-02T00:45:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2719: Keystone: README five-minute path tested by-hand as its own persona
+# T-2815: Gated onboarding set contains an agent-unresolvable task (T-002 human+inception)
 
 ## Context
 
-Arc-016 keystone. Both personas were re-run end to end on 2026-08-05 against the
-**published GitHub bytes** (mirror at `970da8a9d`), isolated `HOME`, no global
-framework. IW-11 still reproduces, and the re-run found a *second*, distinct
-defect that the original framing did not name.
-
-### Persona A — by hand (no agent)
-
-README.md:350-351 step 2 reads:
-
-```
-# 2. Try to edit without a task — the gate refuses
-#    (You will see the BLOCKED message from §Clear Direction above.)
-```
-
-Measured: `echo "some change" > src.txt` → **RC=0, file created**. No block, no
-message. The task gate is a Claude Code `PreToolUse` hook
-(`.claude/settings.json` → `fw hook check-active-task`); it fires on the *agent's*
-Write/Edit/Bash tool calls. A person typing into a terminal is not routed through
-it and never can be.
-
-So the walkthrough's one demonstration of the framework's headline property —
-"nothing gets done without a task" — **silently no-ops for the persona the
-walkthrough is written for.** It does not fail; it produces the opposite of the
-documented outcome while looking like nothing happened. This is the arc's thesis
-in one line: the by-hand failure is structurally invisible to the agent-assisted
-test, because in the agent-assisted run that same step *does* block and the step
-is marked correct.
-
-### Persona B — agent-assisted
-
-Steps 1 and 3 exactly as written, then an agent Write:
-
-```
-STEP 1  install.sh my-project --provider claude        RC=0
-STEP 3  fw work-on "Add authentication" --type build   RC=0, focus=T-006
-Write   → BLOCKED  exit 2   Policy: T-532 (Onboarding Enforcement Gate)
-```
-
-Reproduced by firing the real `agents/context/check-active-task.sh` against the
-seeded fixture — exit 2, five untouched onboarding tasks listed.
-
-**The block is not the defect; the block is correct.** The defect is that it
-cannot be cleared. `check-active-task.sh:443-480` requires *every* active
-`tags:.*onboarding` task to reach `work-completed`, and the seeded set contains:
-
-| Task | tags | owner | agent can complete? |
-|------|------|-------|--------------------|
-| T-001 | `[onboarding]` | agent | yes |
-| **T-002** | `[onboarding, inception]` | **human** | **no** — human-owned *and* inception |
-| T-003/4/5 | `[onboarding]` | agent | yes |
-
-T-002 is unresolvable by the agent twice over: an agent may never tick a `### Human`
-AC, and `fw inception decide` refuses under `$CLAUDECODE=1`. So step 3's own
-instruction walks the user into a gate whose exit requires an action the assisting
-agent is structurally forbidden to take.
-
-That second finding is **arc-017's invariant**, not this arc's ("nothing
-`owner: human` or agent-unresolvable may sit in the gated onboarding set"). It is
-filed separately rather than fixed here — see Decisions.
-
-### What this task delivers
-
-The persona split, made permanent: the by-hand path gets its own scenario that
-runs the README's literal commands and fails loudly when they stop being true.
-Scope fence: this task does **not** redesign the onboarding set (arc-017) and does
-not touch the T-532 gate.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Both personas are reproduced against **published** bytes (not the working tree)
-      under an isolated `HOME` with no global framework, and each result is recorded
-      with its exit code — the by-hand edit's RC and the agent Write's RC. A claim that
-      a step "works" is not evidence; the RC is.
-- [ ] README step 2 no longer asserts an outcome the by-hand reader cannot observe.
-      Either the step states which persona sees the block, or it is replaced by a
-      command a person at a terminal can actually run and see refuse. Verified by
-      running the corrected text literally, not by reading it.
-- [ ] A by-hand persona scenario exists as an executable test that runs the README's
-      five-minute commands **extracted from README.md**, not retyped into the test —
-      so the test tracks the document rather than a copy of it that can drift.
-- [ ] The persona test fails loudly when the path regresses, proven by mutation:
-      break one README step, watch the test go red, restore it, watch it go green
-      (L-530 — a guard that has only ever seen the passing state is evidence it is
-      implemented, not that it works).
-- [ ] The persona test is executed by a runner that actually runs today, verified by
-      a `bats --count` delta rather than by file presence (T-2696 — `tests/lint/`
-      sat red for 51 days because no runner globbed it).
-- [ ] The agent-persona dead end (T-002 human-owned + inception inside the gated
-      onboarding set) is filed as its own task against arc-017 with the measured
-      evidence, and is NOT fixed here (one bug = one task; scope fence above).
+- [ ] The gated set's exit condition is reachable by the agent alone, demonstrated by
+      running the seeded set to completion under `$CLAUDECODE=1` — not by arguing that
+      it should be. Whatever the fix (ungate T-002, split it, make the curriculum
+      non-blocking), the proof is a clean run from `fw init` to a non-onboarding Write
+      that succeeds.
+- [ ] The invariant is enforced structurally, not documented: adding an `owner: human`
+      or otherwise agent-unresolvable task to the gated onboarding set is refused at
+      the point it is added, with a message naming which task and why.
+- [ ] The invariant guard is proven to fire — a deliberately human-owned onboarding
+      fixture is refused, and an all-agent set passes (L-530 both-states rule).
+- [ ] Sovereignty is preserved: the human curriculum still exists and is discoverable.
+      The fix must not delete the operator's onboarding content to satisfy a gate —
+      arc-017's mechanic is "readable but never blocking", not "removed".
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -229,8 +115,42 @@ not touch the T-532 gate.
 # Single pipe only — no intermediate tail/awk/sed stages between capture and grep
 # (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
 # the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+# stdin on. grep scans the whole captured string anyway, so the tail-3 was
+# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+#
+# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
+# for the captures they were written about, and both invert above the pipe
+# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
+# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
+# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
+# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
+# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
+# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
+# For anything that might be large, redirect to a file:
+#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
+#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
+# This is the better default even when size is not a concern: `&&` keeps the
+# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
+# the T-2738 problem one layer down. A 404 from curl fails the line instead of
+# silently producing an empty capture for grep to not-match.
+#
+# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
+# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
+# 141 under P-011, from the same directory, the same second. To rehearse for real:
+#     bash -c 'set -eo pipefail; <your verification line>'
+#
+# BUT NOT for a test runner (T-2738): the capture above discards the command's
+# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
+# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
+# that exit code WAS the verdict, and the pass marker you grep instead survives
+# a partial failure: a suite printing "3 failed, 9 passed" satisfies
+# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
+# same output. Either keep the exit code:
+#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
+# or add the guard the exit code used to supply:
+#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -302,29 +222,7 @@ not touch the T-532 gate.
 
 ## Updates
 
-### 2026-08-02T00:34:23Z — task-created [task-create-agent]
+### 2026-08-05T20:52:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2719-keystone-readme-five-minute-path-tested-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2815-gated-onboarding-set-contains-an-agent-u.md
 - **Context:** Initial task creation
-
-### 2026-08-02T00:36:51Z — status-update [task-update-agent]
-- **Change:** tags: +arc:readme-first-run
-
-### 2026-08-02T07:26:11Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-0a876f68
-- **Timestamp:** 2026-08-02T08:29:40Z
-- **Catalogue:** v1.3-seed
-- **Overall:** FAIL
-- **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — [First criterion]
-  - **empty-body** (severe, deterministic) — `- [ ] [First criterion]`
-- **AC#2 (Agent)** — [Second criterion]
-  - **empty-body** (severe, deterministic) — `- [ ] [Second criterion]`
