@@ -7,6 +7,7 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
 
     # shellcheck source=/dev/null
     source "${BATS_TEST_DIRNAME}/../../lib/prompt.sh"

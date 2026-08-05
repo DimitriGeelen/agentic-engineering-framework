@@ -11,6 +11,7 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" "$PROJECT_ROOT/.context/working"
     echo "framework_path: $FRAMEWORK_ROOT" > "$PROJECT_ROOT/.framework.yaml"
     # Synthetic limbo task: inception + started-work + DEFER recorded + ACs ticked.

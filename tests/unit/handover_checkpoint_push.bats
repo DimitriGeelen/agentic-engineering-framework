@@ -19,6 +19,7 @@ setup() {
     git init -q --bare "$BARE_REMOTE"
 
     PROJECT_ROOT="$TEST_TEMP_DIR/project"
+    guard_project_root
     export PROJECT_ROOT
     mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"
     mkdir -p "$PROJECT_ROOT/.context/working" "$PROJECT_ROOT/.context/project"

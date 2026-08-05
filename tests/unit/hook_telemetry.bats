@@ -20,6 +20,7 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.context/working"
     # shellcheck disable=SC1091
     source "$FRAMEWORK_ROOT/lib/hook-telemetry.sh"

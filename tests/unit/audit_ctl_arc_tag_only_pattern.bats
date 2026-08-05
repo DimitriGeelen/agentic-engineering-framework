@@ -12,6 +12,7 @@
 
 setup() {
     PROJECT_ROOT="$(mktemp -d)"
+    guard_project_root
     export PROJECT_ROOT
     mkdir -p "$PROJECT_ROOT/lib" "$PROJECT_ROOT/web/blueprints" \
              "$PROJECT_ROOT/agents/foo" "$PROJECT_ROOT/tests/unit" \

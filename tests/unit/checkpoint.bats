@@ -10,6 +10,7 @@ CHECKPOINT="$FRAMEWORK_ROOT/agents/context/checkpoint.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export CONTEXT_DIR="$PROJECT_ROOT/.context"
     mkdir -p "$PROJECT_ROOT/.context/working"
 

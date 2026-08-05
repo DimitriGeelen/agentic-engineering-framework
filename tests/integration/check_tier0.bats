@@ -13,6 +13,7 @@ TIER0_SCRIPT="$FRAMEWORK_ROOT/agents/context/check-tier0.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.context/working"
 }
 

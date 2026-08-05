@@ -14,6 +14,7 @@
 setup() {
     FRAMEWORK_ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
     export PROJECT_ROOT="$(mktemp -d)"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.tasks/active"
     mkdir -p "$PROJECT_ROOT/.tasks/completed"
     mkdir -p "$PROJECT_ROOT/.context/arcs"

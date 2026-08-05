@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T13:10:55Z
-last_update: 2026-08-04T14:37:11Z
+last_update: 2026-08-04T23:48:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,28 +72,200 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2787 is the detective (asserts `/` carries no framework markers, currently
+RED — the operator's Tier-0 cleanup is out of scope here). T-2788 is the
+writer-side fix: `tests/test_helper.bash` gained `guard_project_root()`,
+called immediately after the `PROJECT_ROOT` assignment in every real call
+site, refusing empty/`/`/out-of-temp-dir values before any `mkdir` runs.
+
+## Call Site Inventory (re-derived at close)
+
+`grep -rl 'mkdir -p "\$PROJECT_ROOT' tests/ --include='*.bats'` returns 108
+hits today (was 107 at filing — the delta is `tests/unit/guard_project_root.bats`,
+this task's own proof file, added below). Two hits are **not** real call
+sites — they mention the pattern in prose/demonstration strings, not in a
+live fixture-building `setup()`:
+
+- `tests/unit/no_root_framework_markers.bats` — T-2787's detective test;
+  the string appears only in a comment and in the operator-facing remedy
+  message it prints on failure.
+- `tests/unit/guard_project_root.bats` — this task's own proof file; the
+  string appears inside a `run bash -c "..."` demonstration body.
+
+That leaves **106 real call sites**, matching the count at filing. Full list:
+
+<details>
+<summary>106 files (click to expand)</summary>
+
+- tests/governance/test_checkpoint_handover_recorded.bats
+- tests/governance/test_precompact_handover_robust.bats
+- tests/integration/audit_blocks_review_and_decide.bats
+- tests/integration/budget_gate.bats
+- tests/integration/check_active_task.bats
+- tests/integration/check_fabric_new_file.bats
+- tests/integration/check_project_boundary.bats
+- tests/integration/check_tier0.bats
+- tests/integration/cron_install.bats
+- tests/integration/fw_approvals.bats
+- tests/integration/fw_ask.bats
+- tests/integration/fw_assumption.bats
+- tests/integration/fw_audit.bats
+- tests/integration/fw_build.bats
+- tests/integration/fw_bus.bats
+- tests/integration/fw_consolidate.bats
+- tests/integration/fw_context.bats
+- tests/integration/fw_cron.bats
+- tests/integration/fw_decisions.bats
+- tests/integration/fw_dispatch.bats
+- tests/integration/fw_docs.bats
+- tests/integration/fw_doctor.bats
+- tests/integration/fw_enforcement.bats
+- tests/integration/fw_fix_learned.bats
+- tests/integration/fw_gaps.bats
+- tests/integration/fw_git.bats
+- tests/integration/fw_handover.bats
+- tests/integration/fw_harvest.bats
+- tests/integration/fw_healing.bats
+- tests/integration/fw_inception.bats
+- tests/integration/fw_learnings.bats
+- tests/integration/fw_mcp.bats
+- tests/integration/fw_metrics.bats
+- tests/integration/fw_note.bats
+- tests/integration/fw_notify.bats
+- tests/integration/fw_onboarding.bats
+- tests/integration/fw_patterns.bats
+- tests/integration/fw_pickup.bats
+- tests/integration/fw_plugin_audit.bats
+- tests/integration/fw_practices.bats
+- tests/integration/fw_promote.bats
+- tests/integration/fw_recall.bats
+- tests/integration/fw_resume.bats
+- tests/integration/fw_scan.bats
+- tests/integration/fw_search.bats
+- tests/integration/fw_self_audit.bats
+- tests/integration/fw_serve.bats
+- tests/integration/fw_setup.bats
+- tests/integration/fw_task.bats
+- tests/integration/fw_termlink.bats
+- tests/integration/fw_test_cmd.bats
+- tests/integration/fw_test_onboarding.bats
+- tests/integration/fw_tier0.bats
+- tests/integration/fw_timeline.bats
+- tests/integration/fw_traceability.bats
+- tests/integration/fw_update.bats
+- tests/integration/fw_upgrade.bats
+- tests/integration/fw_upstream.bats
+- tests/integration/fw_validate_init.bats
+- tests/integration/fw_vendor.bats
+- tests/integration/fw_work_on.bats
+- tests/integration/review_queue_arc.bats
+- tests/integration/t2499_supervision_notice.bats
+- tests/integration/verify_acs_arc.bats
+- tests/unit/arc_membership_agent_surfaces.bats
+- tests/unit/arc_membership_dual_id.bats
+- tests/unit/arc_membership_shared.bats
+- tests/unit/arc_membership_union.bats
+- tests/unit/audit_arc_progress_arc_id.bats
+- tests/unit/audit_ctl_arc_tag_only_pattern.bats
+- tests/unit/audit_d10_html_comment_blindness.bats
+- tests/unit/audit_gate_bypass_log.bats
+- tests/unit/audit_stale_slice_reference.bats
+- tests/unit/checkpoint.bats
+- tests/unit/context_decision.bats
+- tests/unit/context_episodic.bats
+- tests/unit/context_focus.bats
+- tests/unit/context_init.bats
+- tests/unit/context_learning.bats
+- tests/unit/context_pattern.bats
+- tests/unit/context_status.bats
+- tests/unit/emit_review_ac_counter.bats
+- tests/unit/git_common.bats
+- tests/unit/git_log.bats
+- tests/unit/handover_checkpoint_push.bats
+- tests/unit/healing_diagnose.bats
+- tests/unit/healing_resolve_indent.bats
+- tests/unit/hook_telemetry.bats
+- tests/unit/hook_threshold.bats
+- tests/unit/inception_defer_park.bats
+- tests/unit/lib_costs.bats
+- tests/unit/lib_keylock.bats
+- tests/unit/lib_keylock_timeout.bats
+- tests/unit/lib_prompt.bats
+- tests/unit/rca_gate.bats
+- tests/unit/recommendation_gate_build_partial.bats
+- tests/unit/recommendation_gate_needs_human.bats
+- tests/unit/review_pipefail.bats
+- tests/unit/skip_ac_partial_complete.bats
+- tests/unit/task_verify_extraction.bats
+- tests/unit/test_mirror_stderr_capture.bats
+- tests/unit/test_mirror_sync.bats
+- tests/unit/test_orchestrator_status_synthetic_filter.bats
+- tests/unit/test_update_task_horizon_null_reclose.bats
+- tests/unit/update_task_horizon_null_on_close.bats
+- tests/unit/update_task_orphan_guard.bats
+
+</details>
+
+## Classification
+
+105 of 106 sites are **SAFE by assignment order**: each has exactly one real
+`PROJECT_ROOT=` assignment, textually and execution-order first, inside a
+`setup()` bats calls unconditionally before every `@test` in the file (or,
+in the two dual-var files, inside their own locally-scoped equivalent —
+`arc_membership_dual_id.bats` uses `$TEST_TMP`, `test_mirror_sync.bats`/
+`test_mirror_stderr_capture.bats` use subpaths of `$TEST_TEMP_DIR`). Under
+correct bats execution `mktemp -d` always runs first, so `PROJECT_ROOT` is
+never empty *by construction* — but "SAFE by order" is not "immune": if
+`mktemp -d` ever fails, or a helper is invoked outside the bats lifecycle
+(T-2787's documented failure modes), the assignment silently degrades to
+empty. All 105 now carry the guard as defense-in-depth, not because order
+was wrong.
+
+1 of 106 sites is **EXPOSED by construction**, found only by reading
+assignment order rather than trusting current pass/fail:
+`tests/unit/audit_d10_html_comment_blindness.bats:57` computes
+`PROJECT_ROOT="$(dirname "$task_file")"` where `$task_file="$TEST_TEMP_DIR/${task_id}.md"`.
+If `$TEST_TEMP_DIR` is empty, `$task_file` becomes `/${task_id}.md` and
+`dirname` returns literally `/` — the exact T-2787 failure shape, reached
+indirectly through `dirname` rather than a direct assignment. This site
+gets the same `guard_project_root` call as the other 105.
+
+## Guard Implementation
+
+`tests/test_helper.bash:guard_project_root()` — refuses empty, `/`, or any
+root not prefixed by a recognised OS temp directory (`$TMPDIR`, `/tmp`,
+`/var/folders`, `/private/tmp`, `/private/var/folders`). Checked against a
+temp-prefix rather than the literal `$TEST_TEMP_DIR` variable name because
+3 of the 106 sites mint their own differently-named temp var
+(`$TEST_TMP`, `.../work`, `.../proj`) instead of reusing the shared one —
+the invariant that matters is "inside *some* process-private temp dir", not
+"inside this specific variable". Called once per file, immediately after
+that file's one real `PROJECT_ROOT=` assignment (verified: none of the 106
+files has more than one genuine assignment — the higher `grep -c PROJECT_ROOT=`
+counts on ~60 of them are read-only references inside
+`PROJECT_ROOT='$PROJECT_ROOT'` passed to a nested `run bash -c "..."`, not
+reassignments).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every call site is enumerated, not sampled: the full list of files matching
+- [x] Every call site is enumerated, not sampled: the full list of files matching
       `mkdir -p "$PROJECT_ROOT/…"` (106 at filing) is recorded in the task, and the
       count is re-derived at close rather than quoted from here.
-- [ ] Each site is classified as SAFE (assigns `PROJECT_ROOT` before first use, in
+- [x] Each site is classified as SAFE (assigns `PROJECT_ROOT` before first use, in
       a `setup()` that cannot be skipped) or EXPOSED. Classification is by reading
       the assignment order, not by whether the file currently passes — a file that
       passes because its `setup()` happens to succeed is still exposed.
-- [ ] A shared guard refuses an empty root, `/`, and any path outside the test
+- [x] A shared guard refuses an empty root, `/`, and any path outside the test
       temp dir, and is reachable from every exposed site (a helper the sites call,
       or a load-time assertion in `tests/test_helper.bash` — whichever actually
       intercepts, verified by demonstration).
-- [ ] The guard is proven to fire: a deliberately-exposed fixture file fails with
+- [x] The guard is proven to fire: a deliberately-exposed fixture file fails with
       the guard's message, and passes with a correct `PROJECT_ROOT` (L-530).
-- [ ] The guard runs under the runner that executes bats today, verified by
+- [x] The guard runs under the runner that executes bats today, verified by
       `bats --count tests/unit/` delta rather than by file presence (T-2696).
-- [ ] `tests/unit/no_root_framework_markers.bats` (T-2787) is green at close, or
+- [x] `tests/unit/no_root_framework_markers.bats` (T-2787) is green at close, or
       the reason it is not is stated — it is the detective half of this fix and
       its state is the outcome measure.
 - [ ] No fixture write escapes its temp dir during a full `bats tests/` run,
@@ -134,6 +306,10 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+grep -q 'guard_project_root()' tests/test_helper.bash
+out=$(bats tests/unit/guard_project_root.bats 2>&1); echo "$out" | grep -q '^ok 7 ' && ! echo "$out" | grep -q '^not ok'
+out=$(comm -13 <(printf '%s\n' tests/unit/no_root_framework_markers.bats tests/unit/guard_project_root.bats | sort) <(grep -rl 'mkdir -p "\$PROJECT_ROOT' tests/ --include='*.bats' | sort)); [ "$(echo "$out" | grep -c .)" -eq 106 ] && [ -z "$(echo "$out" | xargs grep -L 'guard_project_root')" ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

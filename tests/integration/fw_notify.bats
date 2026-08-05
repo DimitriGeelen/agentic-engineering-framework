@@ -16,6 +16,7 @@ FW="$FRAMEWORK_ROOT/bin/fw"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export FRAMEWORK_ROOT
     mkdir -p "$PROJECT_ROOT/.context"
     # Create minimal .framework.yaml so fw resolves PROJECT_ROOT

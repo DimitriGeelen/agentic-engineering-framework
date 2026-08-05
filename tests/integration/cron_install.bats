@@ -11,6 +11,7 @@ FW="$FRAMEWORK_ROOT/bin/fw"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export TASKS_DIR="$PROJECT_ROOT/.tasks"
     export CONTEXT_DIR="$PROJECT_ROOT/.context"
     export FW_CRON_INSTALL_DIR="$TEST_TEMP_DIR/etc-cron.d"

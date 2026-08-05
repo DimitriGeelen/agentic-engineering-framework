@@ -13,6 +13,7 @@
 
 setup() {
     PROJECT_ROOT="$(mktemp -d)"
+    guard_project_root
     export PROJECT_ROOT
     mkdir -p \
         "$PROJECT_ROOT/web/templates" \

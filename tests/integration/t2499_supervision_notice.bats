@@ -17,6 +17,7 @@ NOTICE="Unsupervised session (not under claude-fw)"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.context/working" "$PROJECT_ROOT/.tasks/active"
     export HOME="$TEST_TEMP_DIR/home"
     mkdir -p "$HOME"

@@ -55,6 +55,7 @@ run_d10_python() {
     # Run the D10 Python block stand-alone against a single task file.
     local task_file="$1"
     PROJECT_ROOT="$(dirname "$task_file")"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.tasks/completed"
     mv "$task_file" "$PROJECT_ROOT/.tasks/completed/"
     PROJECT_ROOT="$PROJECT_ROOT" python3 <<'PY'

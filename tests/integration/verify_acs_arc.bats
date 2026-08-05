@@ -16,6 +16,7 @@ FW="$FRAMEWORK_ROOT/bin/fw"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export NO_COLOR=1
     unset _FW_PATHS_LOADED
     mkdir -p "$PROJECT_ROOT/.tasks/active" \

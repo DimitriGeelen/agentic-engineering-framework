@@ -6,6 +6,7 @@
 setup() {
     # Synthetic PROJECT_ROOT — isolated per-test fixture.
     PROJECT_ROOT="$(mktemp -d)"
+    guard_project_root
     export PROJECT_ROOT
     mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"
 

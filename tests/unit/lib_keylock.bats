@@ -8,6 +8,7 @@ load ../test_helper
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export FRAMEWORK_ROOT
 
     # Reset guard to allow re-sourcing

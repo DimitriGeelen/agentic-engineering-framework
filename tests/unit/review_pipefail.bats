@@ -22,6 +22,7 @@ load ../test_helper
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export WATCHTOWER_URL="http://localhost:3000"
     mkdir -p "$PROJECT_ROOT/.tasks/active" \
              "$PROJECT_ROOT/.context/working"

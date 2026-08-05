@@ -17,6 +17,7 @@ HOOK="$FRAMEWORK_ROOT/agents/context/budget-gate.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export TASKS_DIR="$PROJECT_ROOT/.tasks"
     export CONTEXT_DIR="$PROJECT_ROOT/.context"
     mkdir -p "$PROJECT_ROOT/.context/working" "$PROJECT_ROOT/.tasks/active"

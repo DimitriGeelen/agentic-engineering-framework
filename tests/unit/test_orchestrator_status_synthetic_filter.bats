@@ -13,6 +13,7 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     export PROJECT_ROOT
     mkdir -p "$PROJECT_ROOT/.context"
     FW_BIN="$FRAMEWORK_ROOT/bin/fw"

@@ -9,6 +9,7 @@
 
 setup() {
     export PROJECT_ROOT="$(mktemp -d)"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" \
              "$PROJECT_ROOT/.context/arcs"
 

@@ -12,6 +12,7 @@ load ../test_helper
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.context/project"
     export TASKS_DIR="$PROJECT_ROOT/.tasks"
     export PATTERNS_FILE="$PROJECT_ROOT/.context/project/patterns.yaml"

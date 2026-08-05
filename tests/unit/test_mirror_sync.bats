@@ -14,6 +14,7 @@ setup() {
 
     # Local working repo
     PROJECT_ROOT="$TEST_TEMP_DIR/work"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT"
     cd "$PROJECT_ROOT"
     git init -q -b master

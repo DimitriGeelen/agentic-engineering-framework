@@ -13,6 +13,7 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     PROJECT_ROOT="$TEST_TEMP_DIR/proj"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.context/working"
     export PROJECT_ROOT
     # Build a tiny git repo with an origin remote that always rejects pushes

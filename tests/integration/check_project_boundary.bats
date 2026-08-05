@@ -15,6 +15,7 @@ HOOK="$FRAMEWORK_ROOT/agents/context/check-project-boundary.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     unset _FW_PATHS_LOADED
     mkdir -p "$PROJECT_ROOT/.context/working" "$PROJECT_ROOT/.tasks/active"
 }

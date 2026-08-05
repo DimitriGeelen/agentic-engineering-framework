@@ -12,6 +12,7 @@ HOOK="$FRAMEWORK_ROOT/agents/context/check-fabric-new-file.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.fabric/components"
 }
 

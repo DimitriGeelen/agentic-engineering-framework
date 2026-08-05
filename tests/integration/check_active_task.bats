@@ -18,6 +18,7 @@ HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
     # Override derivative vars to prevent stale exports from parent (e.g., update-task.sh verification gate)
     export TASKS_DIR="$PROJECT_ROOT/.tasks"
     export CONTEXT_DIR="$PROJECT_ROOT/.context"

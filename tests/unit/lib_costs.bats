@@ -8,6 +8,7 @@ load ../test_helper
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR/project"
+    guard_project_root
     export FRAMEWORK_ROOT
     export NO_COLOR=1
     mkdir -p "$PROJECT_ROOT"

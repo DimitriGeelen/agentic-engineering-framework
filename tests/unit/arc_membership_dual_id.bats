@@ -15,6 +15,7 @@
 setup() {
     export TEST_TMP="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TMP"
+    guard_project_root
     mkdir -p "$PROJECT_ROOT/.context/arcs"
     mkdir -p "$PROJECT_ROOT/.tasks/active"
     mkdir -p "$PROJECT_ROOT/.tasks/completed"
