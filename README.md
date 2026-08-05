@@ -347,11 +347,16 @@ Every bypass is logged. Every approval is auditable.
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh \
   | bash -s -- my-project --provider claude
 
-# 2. Try to edit without a task — the gate refuses
-#    (You will see the BLOCKED message from §Clear Direction above.)
+# 2. Try to commit without a task — the gate refuses
+cd my-project
+echo "hello" > hello.txt && git add -A && git commit -m "no task yet"
+#    Refused: "No task reference found in commit message".
+#    This one is git-level, so you see it whether you typed it yourself or
+#    an agent did. The stronger gate — refusing the EDIT before it happens
+#    (§Clear Direction above) — is an AI-agent hook and will not fire for
+#    you at a terminal.
 
 # 3. Create a task and start working
-cd my-project
 fw work-on "Add authentication" --type build
 
 # 4. Run a compliance audit + open the dashboard

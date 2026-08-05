@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:34:23Z
-last_update: '2026-08-05T21:00:12Z'
+last_update: 2026-08-05T21:18:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -179,27 +179,49 @@ not touch the T-532 gate.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Both personas are reproduced against **published** bytes (not the working tree)
+- [x] Both personas are reproduced against **published** bytes (not the working tree)
       under an isolated `HOME` with no global framework, and each result is recorded
       with its exit code — the by-hand edit's RC and the agent Write's RC. A claim that
       a step "works" is not evidence; the RC is.
-- [ ] README step 2 no longer asserts an outcome the by-hand reader cannot observe.
+- [x] README step 2 no longer asserts an outcome the by-hand reader cannot observe.
       Either the step states which persona sees the block, or it is replaced by a
       command a person at a terminal can actually run and see refuse. Verified by
       running the corrected text literally, not by reading it.
-- [ ] A by-hand persona scenario exists as an executable test that runs the README's
+- [x] A by-hand persona scenario exists as an executable test that runs the README's
       five-minute commands **extracted from README.md**, not retyped into the test —
       so the test tracks the document rather than a copy of it that can drift.
-- [ ] The persona test fails loudly when the path regresses, proven by mutation:
+- [x] The persona test fails loudly when the path regresses, proven by mutation:
       break one README step, watch the test go red, restore it, watch it go green
       (L-530 — a guard that has only ever seen the passing state is evidence it is
       implemented, not that it works).
-- [ ] The persona test is executed by a runner that actually runs today, verified by
+- [x] The persona test is executed by a runner that actually runs today, verified by
       a `bats --count` delta rather than by file presence (T-2696 — `tests/lint/`
       sat red for 51 days because no runner globbed it).
-- [ ] The agent-persona dead end (T-002 human-owned + inception inside the gated
+- [x] The agent-persona dead end (T-002 human-owned + inception inside the gated
       onboarding set) is filed as its own task against arc-017 with the measured
       evidence, and is NOT fixed here (one bug = one task; scope fence above).
+
+**Evidence (measured 2026-08-05):**
+
+| AC | Proof |
+|----|-------|
+| both personas reproduced | published mirror `970da8a9d`, isolated HOME. By hand: `echo x > src.txt` **RC=0, file created**. Agent: Write → **exit 2**, T-532 |
+| step 2 corrected | now demonstrates the *commit* gate, which is git-level and fires for both personas; the edit-time gate is named as agent-only |
+| commands extracted | `five_minute_block()` awk-parses the fenced block under the README heading; test 1 is the non-vacuity guard on that extraction |
+| fails loudly | mutation: restored the old wording → **test 2 red**; restored → green |
+| real runner | `bats --count tests/integration/` **532 with / 528 without = delta 4**; `bin/fw:7827` runs that directory |
+| dead end filed | T-2815 (arc-017), with the measured table and a fence against deleting the curriculum |
+
+Two defects surfaced *by* this work and fixed under their own tasks:
+**T-2816** (the by-hand persona's only observable gate printed a remedy path no
+consumer has) and **T-2817** (`fw init` wrote the framework's origin URL,
+credential included, into the new project's tracked `.framework.yaml` — the new
+project's first commit was refused by the framework's own secret-scan hook).
+Neither was visible from the agent-assisted path.
+
+Also recorded, unfixed: **OBS-170** (fresh machine has no git identity, so the
+first governed commit dies RC=128 before any hook runs) and **OBS-171**
+(`fw init` refuses a non-existent target and names no path in the error).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -233,6 +255,12 @@ not touch the T-532 gate.
 -->
 
 ## Verification
+
+out=$(bats tests/integration/readme_five_minute_by_hand.bats 2>&1); echo "$out" | grep -q '^ok 4 ' && ! echo "$out" | grep -q '^not ok'
+! grep -qE '^#.*(edit|write).*(gate refuses|BLOCKED)' README.md
+grep -q '2. Try to commit without a task' README.md
+test "$(bats --count tests/integration/readme_five_minute_by_hand.bats)" -eq 4
+
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
