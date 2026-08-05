@@ -1797,7 +1797,15 @@ else:
             echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw drifted from repo source — supervision export may be stale"
             echo -e "         on PATH: $_cfw_real"
             echo -e "         repo:    $_cfw_src"
-            echo -e "         Refresh: bash ~/.agentic-framework/install.sh   # git reset --hard origin/master + relink, then relaunch claude-fw"
+            # T-2807: this used to say `bash ~/.agentic-framework/install.sh`, which
+            # assumes a git checkout in $HOME. It is already fragile (the global may
+            # be absent or not a checkout) and becomes false under T-2800, which
+            # removes the global entirely. Both lines below work with nothing in
+            # $HOME; the direct copy is the one that needs no network.
+            echo -e "         Refresh: rm -f \"$_cfw_path\" && cp \"$_cfw_src\" \"$_cfw_path\" && chmod +x \"$_cfw_path\""
+            echo -e "                  (rm -f first — a bare cp onto a symlink writes through it)"
+            echo -e "         Or:      curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash"
+            echo -e "         Then relaunch the session with: claude-fw"
             warnings=$((warnings + 1))
         fi
     elif [ -z "$_cfw_path" ]; then
