@@ -85,35 +85,31 @@ STEP 1 — Prerequisites
   do NOT proceed on 3.2. If git or python3 is missing, install it via the platform package
   manager and tell me what you did.
 
-STEP 2 — Install the framework (once per machine)
-  [ASK] Confirm with me before running a piped installer, then run:
-    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-  Self-heal: on a transient GitHub failure (network / 5xx / rate-limit) retry once after a
-  short pause, then stop and report. If `fw` is not found afterwards, add ~/.local/bin to PATH
-  (or re-source the shell) and confirm `fw --version` prints a version.
+STEP 2 — Install and initialise the project (one command)
+  [ASK] Confirm with me (a) before running a piped installer, and (b) the new directory name and
+  the provider — claude / cursor / generic. (Pick `claude` if you are Claude Code: it gets full
+  pre-action enforcement; other agents get git hooks + CLI tooling.) Then:
+    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash -s -- <dir> --provider <choice>
+  This fetches the framework into <dir> — not into $HOME — and initialises it in the same step;
+  install and init are one command per project (nothing is left in $HOME beyond the `fw` and
+  `claude-fw` PATH tools). Self-heal: on a transient GitHub failure (network / 5xx / rate-limit)
+  retry once after a short pause, then stop and report. If `fw` is not found afterwards, add
+  ~/.local/bin to PATH (or re-source the shell) and confirm `fw --version` prints a version. If
+  <dir> already contains a .framework.yaml it is already initialised — STOP and ask me rather
+  than re-running.
 
-STEP 3 — Create and initialise the project
-  [ASK] Confirm (a) the new directory name and (b) the provider — claude / cursor / generic.
-  (Pick `claude` if you are Claude Code: it gets full pre-action enforcement; other agents get
-  git hooks + CLI tooling.) Then:
-    mkdir <dir> && cd <dir> && git init       # recent fw init also auto-creates git
-    fw init --provider <choice>
-  Self-heal: if the directory already contains a .framework.yaml it is already initialised —
-  STOP and ask me rather than overwriting. If `fw init` reports "not a git repository" on an
-  older fw, run `git init` first and retry.
-
-STEP 4 — Verify health
+STEP 3 — Verify health
   Run `fw doctor`. A non-zero exit is a real failure: show me the output, fix what is clearly
   fixable (PATH; re-wire hooks with `fw git install-hooks --force`), and re-run. If it still
   fails, stop and report. A zero exit with warnings is fine — note them and proceed.
 
-STEP 5 — Start Watchtower (it does NOT auto-start today)
+STEP 4 — Start Watchtower (it does NOT auto-start today)
     fw serve &                 # background the dashboard
     fw watchtower url          # print the URL
   Self-heal: if the port is busy, start on another with `fw serve --port <N>` and re-print the
   URL. Give me the URL and say what it shows (task board, audit, fabric, BVP).
 
-STEP 6 — Guide me into building
+STEP 5 — Guide me into building
   In one short message, tell me:
    - The one rule: nothing gets edited without an active task — you WILL hit the gate if you
      skip this.
@@ -151,26 +147,23 @@ STEP 1 — Prerequisites
   bash 4.4+ / git 2.20+ / python3 3.8+. Self-heal: macOS bash 3.2 → `brew install bash` and use
   it (do not proceed on 3.2); install any missing tool and report.
 
-STEP 2 — Install the framework (once per machine)
-  [ASK] Confirm before the piped installer, then:
-    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-  Self-heal: retry once on a transient GitHub failure; if `fw` is not found, add ~/.local/bin
-  to PATH and confirm `fw --version`.
-
-STEP 3 — Initialise IN PLACE
-  [ASK] Confirm this is the right repo and the provider (claude / cursor / generic).
-  From the repo root:
-    fw init --provider <choice>
-  fw init is ADDITIVE: it adds .tasks/, .context/, .fabric/, hook wiring, a CLAUDE.md, and
-  onboarding tasks; it does not rewrite your source. Self-heal: if already initialised
-  (.framework.yaml present), STOP and ask. If init wants to overwrite an existing CLAUDE.md or
+STEP 2 — Install and initialise IN PLACE (one command)
+  [ASK] Confirm this is the right repo and the provider (claude / cursor / generic), then from
+  the repo root:
+    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash -s -- "$(pwd)" --provider <choice>
+  This fetches the framework into a temporary path, vendors it into THIS repo's .agentic-framework/
+  (not $HOME), and initialises in the same step. fw init is ADDITIVE: it adds .tasks/, .context/,
+  .fabric/, hook wiring, a CLAUDE.md, and onboarding tasks; it does not rewrite your source.
+  Self-heal: retry once on a transient GitHub failure; if `fw` is not found afterwards, add
+  ~/.local/bin to PATH and confirm `fw --version`. If already initialised (.framework.yaml
+  present), STOP and ask — do not re-run. If init wants to overwrite an existing CLAUDE.md or
   agent settings, show me the diff and ask before touching it.
 
-STEP 4 — Verify health
+STEP 3 — Verify health
   Run `fw doctor`. Non-zero exit → show me, fix the clearly-fixable, re-run, else report. Zero
   with warnings → note and proceed.
 
-STEP 5 — Ingest the codebase into the Component Fabric
+STEP 4 — Ingest the codebase into the Component Fabric
   Goal: a topology card for every real component — no unregistered files, no orphaned cards.
   Discover the real path with `fw fabric --help` (expected: `fw fabric drift` to find
   unregistered/orphaned, `fw fabric register <path>` to add a component, `fw fabric overview`
@@ -185,7 +178,7 @@ STEP 5 — Ingest the codebase into the Component Fabric
   unbounded — if drift is not converging after a few passes, stop and show me what will not
   resolve.
 
-STEP 6 — Audit and housekeeping to a clean baseline
+STEP 5 — Audit and housekeeping to a clean baseline
   Run `fw audit`. Work the findings down, classifying each as governance, codebase, or
   environmental:
    - Record fixes as patterns:  fw healing diagnose <id>  /  fw healing resolve <id> --mitigation "..."
@@ -195,13 +188,13 @@ STEP 6 — Audit and housekeeping to a clean baseline
   [ASK] If a finding implies a change to my source beyond housekeeping (a refactor, a
   behavioural fix), do NOT make it silently — surface it as a proposed task for me to approve.
 
-STEP 7 — Start Watchtower (it does NOT auto-start today)
+STEP 6 — Start Watchtower (it does NOT auto-start today)
     fw serve &
     fw watchtower url          # --port <N> if the default is busy, then re-print
   Point me at the fabric graph — now populated from my own codebase — plus the audit and BVP
   views, and give me the URL.
 
-STEP 8 — Guide me into a new feature
+STEP 7 — Guide me into a new feature
   In one short message, then [ASK] which feature I want:
    - Start it under governance:  fw work-on "<feature>" --type build
    - Before editing, check impact:  fw fabric blast-radius HEAD  and  fw fabric deps <file> —
@@ -349,26 +342,25 @@ Every bypass is logged. Every approval is auditable.
 ## See it work in five minutes
 
 ```bash
-# 1. Install the framework globally (one machine, once)
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+# 1. Install AND initialise a project — one command, one step per project.
+#    Fetches framework bytes into ./my-project (not $HOME) and inits it.
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh \
+  | bash -s -- my-project --provider claude
 
-# 2. Initialise a project
-mkdir my-project && cd my-project && git init
-fw init --provider claude
-
-# 3. Try to edit without a task — the gate refuses
+# 2. Try to edit without a task — the gate refuses
 #    (You will see the BLOCKED message from §Clear Direction above.)
 
-# 4. Create a task and start working
+# 3. Create a task and start working
+cd my-project
 fw work-on "Add authentication" --type build
 
-# 5. Run a compliance audit + open the dashboard
+# 4. Run a compliance audit + open the dashboard
 fw audit                  # 260+ checks across 26 sections
 fw serve                  # Watchtower dashboard
 fw watchtower url         # prints the URL to open
 ```
 
-Five commands. The repo now has task-traced commits, structural enforcement,
+Four commands. The repo now has task-traced commits, structural enforcement,
 continuous audit, persistent memory, and a dashboard. The dashboard does not
 auto-start today — `fw serve` is one step. T-1611 is the active task to move
 Watchtower to a service model so it surfaces automatically.

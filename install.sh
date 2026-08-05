@@ -1,19 +1,34 @@
 #!/usr/bin/env bash
 # Agentic Engineering Framework — Install Script
 #
+# T-2800/T-2809 (D-377 total isolation): this installer does NOT write a
+# framework into $HOME. It fetches framework bytes to a TEMPORARY path,
+# vendors them into a named target project, installs the ~100-line router
+# (bin/fw-router) plus claude-fw onto PATH, then deletes the temporary
+# fetch — the only things that persist outside the project are those two
+# small files. "Install" and "init" are one command per project (T-2800
+# IW-3): omit the target and you get PATH tooling only (no project is
+# created, nothing is written outside $HOME/.local/bin — this is also the
+# "refresh the router" path bin/fw's doctor check points at).
+#
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-#   bash install.sh --local /path/to/repo    # install/update from local clone
+#   curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash -s -- /path/to/project
+#   bash install.sh /path/to/project             # create/init a project (fetch+vendor+init, one step)
+#   bash install.sh                              # PATH tooling only — no project created
+#   bash install.sh --local /path/to/repo /path/to/project   # fetch from a local clone instead of GitHub
 #
 # Configuration (environment variables):
-#   INSTALL_DIR   — Where to install (default: ~/.agentic-framework)
 #   REPO_URL      — Git clone URL (default: GitHub)
 #   BRANCH        — Branch to clone (default: master)
+#   INSTALL_DIR   — Advanced: override the temporary fetch location (default: mktemp -d).
+#                   Not a persistent install path — it is deleted at the end of the run.
 
 set -euo pipefail
 
 # --- Configuration ---
-INSTALL_DIR="${INSTALL_DIR:-$HOME/.agentic-framework}"
+INSTALL_DIR="${INSTALL_DIR:-}"
+TARGET_DIR=""
+PROVIDER="${PROVIDER:-generic}"
 REPO_URL="${REPO_URL:-https://github.com/DimitriGeelen/agentic-engineering-framework.git}"
 BRANCH="${BRANCH:-master}"
 MODIFY_PATH="${MODIFY_PATH:-false}"
@@ -54,6 +69,13 @@ parse_args() {
                 BRANCH="$2"
                 shift 2
                 ;;
+            --provider)
+                if [[ -z "${2:-}" ]]; then
+                    fatal "--provider requires a value (claude, cursor, generic)"
+                fi
+                PROVIDER="$2"
+                shift 2
+                ;;
             --install-dir)
                 if [[ -z "${2:-}" ]]; then
                     fatal "--install-dir requires a path"
@@ -66,21 +88,42 @@ parse_args() {
                 shift
                 ;;
             -h|--help)
-                echo "Usage: install.sh [options]"
+                echo "Usage: install.sh [target-dir] [options]"
+                echo ""
+                echo "Arguments:"
+                echo "  target-dir            Project directory to create/initialise (fetch+vendor+init,"
+                echo "                        one step). Omit to install/refresh PATH tooling only — no"
+                echo "                        project is created and nothing is written to \$HOME beyond"
+                echo "                        \$HOME/.local/bin/{fw,claude-fw}."
                 echo ""
                 echo "Options:"
-                echo "  --local <path>       Install/update from a local git repo"
-                echo "  --branch <name>      Branch to use (default: master)"
-                echo "  --install-dir <path> Install location (default: ~/.agentic-framework)"
-                echo "  --no-scan            Skip vendored-consumer scan (CI/automation)"
-                echo "  -h, --help           Show this help"
+                echo "  --local <path>        Fetch from a local git repo instead of GitHub"
+                echo "  --branch <name>       Branch to use (default: master)"
+                echo "  --provider <name>     fw init provider: claude, cursor, generic (default: generic)"
+                echo "  --install-dir <path>  Advanced: override the temporary fetch location"
+                echo "  --no-scan             Skip vendored-consumer scan (CI/automation)"
+                echo "  -h, --help            Show this help"
                 exit 0
                 ;;
-            *)
+            -*)
                 fatal "Unknown option: $1 (use --help for usage)"
+                ;;
+            *)
+                if [[ -n "$TARGET_DIR" ]]; then
+                    fatal "Unexpected extra argument: '$1' (target directory already set to '$TARGET_DIR')"
+                fi
+                TARGET_DIR="$1"
+                shift
                 ;;
         esac
     done
+
+    if [[ -n "$TARGET_DIR" ]]; then
+        case "$TARGET_DIR" in
+            /*) : ;;
+            *) TARGET_DIR="$PWD/$TARGET_DIR" ;;
+        esac
+    fi
 }
 
 # --- Prerequisite Checks ---
@@ -129,58 +172,39 @@ check_prereqs() {
     fi
 }
 
-# --- Install ---
+# --- Fetch (T-2800/T-2809: bytes go to a TEMPORARY path, never $HOME) ---
+#
+# Previously this cloned into a permanent $HOME/.agentic-framework and, on a
+# second run, updated it in place (fetch/checkout/reset --hard). Under D-377
+# total isolation there is nothing to update in place: INSTALL_DIR is a fresh
+# mktemp every run, deleted by cleanup_fetch() once the router/claude-fw are
+# on PATH and (if requested) the target project is vendored. A shallow,
+# single-branch clone is enough — do_vendor only needs a working tree, and
+# this fetch dir does not outlive the run.
 do_install() {
-    if [[ -d "$INSTALL_DIR/.git" ]]; then
-        info "Existing installation found — updating..."
+    if [[ -z "$INSTALL_DIR" ]]; then
+        INSTALL_DIR="$(mktemp -d -t agentic-fw-fetch-XXXXXX)"
+    fi
 
-        # Ensure fileMode is off (macOS HFS+/APFS reports permission diffs as changes)
-        git -C "$INSTALL_DIR" config core.fileMode false
-
-        local old_hash
-        old_hash=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
-
-        if [[ -n "$LOCAL_REPO" ]]; then
-            # Update from local repo — add as temporary remote
-            local remote_name="local-install"
-            git -C "$INSTALL_DIR" remote remove "$remote_name" 2>/dev/null || true
-            git -C "$INSTALL_DIR" remote add "$remote_name" "$LOCAL_REPO"
-            git -C "$INSTALL_DIR" fetch "$remote_name" "$BRANCH" --quiet
-            git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
-            if ! git -C "$INSTALL_DIR" diff --quiet 2>/dev/null; then
-                warn "Local modifications in $INSTALL_DIR will be overwritten"
-            fi
-            git -C "$INSTALL_DIR" reset --hard "${remote_name}/$BRANCH" --quiet
-            git -C "$INSTALL_DIR" remote remove "$remote_name" 2>/dev/null || true
-        else
-            # Update from origin
-            git -C "$INSTALL_DIR" fetch origin "$BRANCH" --quiet
-            git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
-            if ! git -C "$INSTALL_DIR" diff --quiet 2>/dev/null; then
-                warn "Local modifications in $INSTALL_DIR will be overwritten"
-            fi
-            git -C "$INSTALL_DIR" reset --hard "origin/$BRANCH" --quiet
-        fi
-
-        local new_hash
-        new_hash=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
-
-        if [[ "$old_hash" == "$new_hash" ]]; then
-            info "Already up to date (${new_hash})"
-        else
-            info "Updated ${old_hash} → ${new_hash}"
-        fi
+    if [[ -n "$LOCAL_REPO" ]]; then
+        info "Fetching framework from local repo (temporary path, not \$HOME)..."
+        git clone --branch "$BRANCH" --single-branch --depth 1 --quiet "$LOCAL_REPO" "$INSTALL_DIR"
     else
-        if [[ -n "$LOCAL_REPO" ]]; then
-            info "Cloning framework from local repo to ${INSTALL_DIR}..."
-            git clone --branch "$BRANCH" --single-branch --quiet "$LOCAL_REPO" "$INSTALL_DIR"
-        else
-            info "Cloning framework to ${INSTALL_DIR}..."
-            git clone --branch "$BRANCH" --single-branch --quiet "$REPO_URL" "$INSTALL_DIR"
-        fi
-        # Disable fileMode for macOS compatibility (HFS+/APFS permission diffs)
-        git -C "$INSTALL_DIR" config core.fileMode false
-        info "Cloned successfully"
+        info "Fetching framework from ${REPO_URL} (temporary path, not \$HOME)..."
+        git clone --branch "$BRANCH" --single-branch --depth 1 --quiet "$REPO_URL" "$INSTALL_DIR"
+    fi
+    # Disable fileMode for macOS compatibility (HFS+/APFS permission diffs)
+    git -C "$INSTALL_DIR" config core.fileMode false
+
+    local hash
+    hash=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    info "Fetched ${hash} → ${INSTALL_DIR} (temporary)"
+}
+
+# --- Cleanup (T-2809) — the fetch dir never persists past this run ---
+cleanup_fetch() {
+    if [[ -n "${INSTALL_DIR:-}" ]] && [[ -d "$INSTALL_DIR" ]]; then
+        rm -rf "$INSTALL_DIR"
     fi
 }
 
@@ -349,59 +373,87 @@ link_fw() {
     fi
 }
 
+# --- Project init (T-2800/T-2809) — install and init become ONE command per
+# --- project (T-2800 IW-3), forced: `fw init` is framework code, so nothing
+# --- can run it in a bare directory until this installer has fetched some.
+#
+# `cd "$INSTALL_DIR"` before invoking its own bin/fw matters: bin/fw's
+# resolve_framework() prefers an inherited PROJECT_ROOT's OWN vendored copy
+# over FW_BIN_DIR-origin when one is found walking up from cwd. If the
+# installer were invoked from inside an unrelated already-vendored project,
+# an un-cd'd `"$INSTALL_DIR/bin/fw" init "$TARGET_DIR"` would vendor THAT
+# project's (possibly stale) framework into the new target instead of the
+# bytes this run just fetched — the T-2762 foreign-source class one layer up.
+# Running from inside $INSTALL_DIR itself removes the ambiguity: candidate ==
+# PROJECT_ROOT == FRAMEWORK_ROOT == the fetch.
+do_project_init() {
+    mkdir -p "$TARGET_DIR"
+    echo ""
+    info "Initialising project at ${TARGET_DIR}..."
+    if (cd "$INSTALL_DIR" && "$INSTALL_DIR/bin/fw" init "$TARGET_DIR" --provider "$PROVIDER"); then
+        info "Project initialised: ${TARGET_DIR}"
+    else
+        warn "fw init reported an issue (see above)."
+        warn "If ${TARGET_DIR} was already initialised, it was left untouched — this is expected (fw init is not --force by default)."
+    fi
+}
+
 # --- Verify ---
 verify() {
-    local fw_path="$INSTALL_DIR/bin/fw"
     local ok=true
 
     echo ""
     info "Post-install verification..."
     echo ""
 
-    # Step 1: Check fw binary exists
-    if [[ -x "$fw_path" ]]; then
-        info "Step 1/3: fw binary exists ✓"
-    else
-        error "Step 1/3: fw binary not found"
-        echo "  Fix: git clone $REPO_URL $INSTALL_DIR"
-        ok=false
-    fi
+    if [[ -n "$TARGET_DIR" ]]; then
+        # T-2809: verify the PROJECT that was actually created, not the fetch
+        # dir (which cleanup_fetch deletes right after this) — the project is
+        # the end-to-end outcome the operator gets from running this script.
+        if [[ -f "$TARGET_DIR/.framework.yaml" ]]; then
+            info "Step 1/3: project initialised (${TARGET_DIR}/.framework.yaml) ✓"
+        else
+            error "Step 1/3: ${TARGET_DIR}/.framework.yaml not found"
+            ok=false
+        fi
 
-    # Step 2: Check fw version works
-    if "$fw_path" version &>/dev/null; then
-        local ver
-        ver=$("$fw_path" version 2>&1 | head -1 || true)
-        info "Step 2/3: fw version works ✓ ($ver)"
-    else
-        error "Step 2/3: fw version failed"
-        echo "  Fix: Check $fw_path is not corrupted"
-        ok=false
-    fi
+        # T-2805's completeness sentinel — do_vendor writes this LAST, so its
+        # presence is the strongest available evidence the vendor finished.
+        if [[ -f "$TARGET_DIR/.agentic-framework/FRAMEWORK.md" ]]; then
+            info "Step 2/3: vendored framework complete (FRAMEWORK.md present) ✓"
+        else
+            error "Step 2/3: ${TARGET_DIR}/.agentic-framework/FRAMEWORK.md missing — vendor incomplete"
+            ok=false
+        fi
 
-    # Step 3: Check fw doctor passes
-    #
-    # T-2799: run this from INSTALL_DIR, NOT the caller's cwd. `fw doctor` in a
-    # directory that is not yet a project reaches bin/fw's auto-init branch, and
-    # under a pipe (no TTY) that branch initialises with defaults and never
-    # prompts. The `&>/dev/null` below then hid the whole narrative and we
-    # printed "Step 3/3: fw doctor passes ✓" over the top of it.
-    #
-    # Measured against GitHub master, 2026-08-04: `curl … | bash` run from an
-    # empty /tmp/t2799 left a complete initialised project in it —
-    # .agentic-framework/ (~90MB), .claude/, CLAUDE.md, .mcp.json, policy/,
-    # .context/, .tasks/, .git/, .framework.yaml — with the installer reporting
-    # nothing but a green checkmark. Every user following the documented
-    # one-liner got a project wherever they happened to be standing.
-    #
-    # INSTALL_DIR is a framework checkout, so PROJECT_ROOT resolves there and
-    # the branch is never reached. It also tests the thing step 3 means to test
-    # — that the installed binary runs — without writing to the user's disk.
-    if (cd "$INSTALL_DIR" && "$fw_path" doctor) &>/dev/null; then
-        info "Step 3/3: fw doctor passes ✓"
+        local target_fw="$TARGET_DIR/.agentic-framework/bin/fw"
+        if [[ -x "$target_fw" ]] && (cd "$TARGET_DIR" && "$target_fw" doctor) &>/dev/null; then
+            info "Step 3/3: fw doctor passes ✓"
+        else
+            warn "Step 3/3: fw doctor has warnings (non-fatal)"
+            echo "  To see details:"
+            echo "    cd $TARGET_DIR && $target_fw doctor"
+        fi
     else
-        warn "Step 3/3: fw doctor has warnings (non-fatal)"
-        echo "  To see details:"
-        echo "    $fw_path doctor"
+        # T-2799/T-2809: no target given — PATH tooling only. Nothing was
+        # written to $HOME beyond the router and claude-fw (T-2807), so that
+        # is the whole of what there is to verify. Running `fw doctor` here
+        # would exercise the router's bootstrap fallback against whatever
+        # directory the caller happens to be standing in — the exact
+        # unannounced-cwd-init class T-2799 exists to prevent.
+        local router_path="$HOME/.local/bin/fw"
+        if [[ -x "$router_path" ]]; then
+            info "Step 1/2: fw router installed → ${router_path} ✓"
+        else
+            error "Step 1/2: fw router not found on PATH (${router_path})"
+            ok=false
+        fi
+
+        if [[ -x "$HOME/.local/bin/claude-fw" ]]; then
+            info "Step 2/2: claude-fw installed → $HOME/.local/bin/claude-fw ✓"
+        else
+            warn "Step 2/2: claude-fw not installed (optional wrapper)"
+        fi
     fi
 
     echo ""
@@ -432,26 +484,40 @@ main() {
     link_fw
     echo ""
 
+    if [[ -n "$TARGET_DIR" ]]; then
+        do_project_init
+        echo ""
+    fi
+
     verify
     echo ""
 
+    cleanup_fetch
+
     echo -e "${GREEN}${BOLD}Installation complete!${NC}"
     echo ""
-    echo "  Next step — initialize your project:"
-    echo ""
-    echo "    cd /path/to/your/project"
-    echo "    fw init"
-    echo ""
-    echo "  What happens:"
-    echo "    - Creates governance structure (.tasks/, .context/)"
-    echo "    - Installs git hooks for commit traceability"
-    echo "    - Seeds onboarding tasks to guide your first session"
-    echo ""
-    echo "  Then start your AI agent (e.g. Claude Code) in the project directory."
-    echo "  The onboarding tasks will guide you through setup."
-    echo ""
-    echo "  Dashboard:      fw serve"
-    echo "  Documentation:  ${INSTALL_DIR}/FRAMEWORK.md"
+    if [[ -n "$TARGET_DIR" ]]; then
+        echo "  Project ready: ${TARGET_DIR}"
+        echo ""
+        echo "    cd ${TARGET_DIR}"
+        echo "    fw doctor       # verify health"
+        echo "    fw serve        # start the dashboard"
+        echo ""
+        echo "  Onboarding tasks were seeded to guide your first session — start your AI"
+        echo "  agent (e.g. Claude Code) in the project directory."
+    else
+        echo "  fw router + claude-fw are installed onto PATH."
+        echo ""
+        echo "  Next — create/initialise a project (one command per project):"
+        echo ""
+        echo "    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash -s -- /path/to/project"
+        echo ""
+        echo "  What happens:"
+        echo "    - Fetches framework bytes into that project (not \$HOME)"
+        echo "    - Creates governance structure (.tasks/, .context/)"
+        echo "    - Installs git hooks for commit traceability"
+        echo "    - Seeds onboarding tasks to guide your first session"
+    fi
     echo ""
 }
 
