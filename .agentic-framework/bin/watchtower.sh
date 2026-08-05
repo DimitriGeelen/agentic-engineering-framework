@@ -122,6 +122,27 @@ do_start() {
         case "$1" in
             --port|-p) port="$2"; shift 2 ;;
             --debug)   debug_flag="--debug"; shift ;;
+            # T-2806: `fw serve --help` routes here, not to the top-level help
+            # branch below — `--help` arrives as an ARGUMENT to start, so the
+            # catch-all rejected it: "[watchtower] Unknown option: --help",
+            # exit 1. Asking a command how to use it is never an error, and the
+            # failure taught the opposite: an operator's onboarding agent read it
+            # as "the verb does not exist" and went looking elsewhere.
+            -h|--help)
+                echo "Usage: fw serve [--port N] [--debug]"
+                echo ""
+                echo "Start the Watchtower web UI for this project."
+                echo ""
+                echo "Options:"
+                echo "  --port N, -p N   Listen port (default: resolved per-project,"
+                echo "                   not hard-coded — see 'fw watchtower port')"
+                echo "  --debug          Run in the foreground with debug logging"
+                echo ""
+                echo "Related:"
+                echo "  fw watchtower status|port|url    Inspect a running instance"
+                echo "  fw watchtower stop|restart       Lifecycle"
+                exit 0
+                ;;
             *)         log_error "Unknown option: $1"; exit 1 ;;
         esac
     done
