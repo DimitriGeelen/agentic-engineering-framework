@@ -210,12 +210,54 @@ TASK
     [[ "$output" == *"Commit blocked"* ]]
 }
 
-# NOTE on live (non-dry-run) upgrade: the full vendor copy takes ~8 minutes
-# (~65MB rsync of lib/ + docs/ + components regen) — impractical for a unit
-# test gate. The "framework -> consumer" path beyond re-exec is already
-# covered by tests/unit/lib_upgrade.bats; the re-exec handoff is asserted by
-# the dry-run test above. A docker-container variant of the full live
-# upgrade is the natural release-gate follow-up (see T-1635 ## Evolution).
+# NOTE on live (non-dry-run) upgrade: a network-backed upgrade against a real
+# remote (git fetch/clone over the wire, plus docs/component regen) can run
+# minutes long — impractical for a unit test gate. The "framework -> consumer"
+# path beyond re-exec is already covered by tests/unit/lib_upgrade.bats; the
+# re-exec handoff is asserted by the dry-run test above. A docker-container
+# variant of that full network-backed upgrade is the natural release-gate
+# follow-up (see T-1635 ## Evolution).
+#
+# What IS practical, and load-bearing enough to gate on: the self-replacement
+# hazard in isolation (T-2793 AC4). `fw upgrade`'s bare-from-consumer path
+# clones upstream to a TEMPDIR first, then do_vendor's rsync overwrites the
+# consumer's bin/, lib/, agents/, etc. — including the bin/fw file the running
+# process was exec'd from. With a local file:// upstream (no network), that
+# whole path runs in a few seconds, so it belongs in the gate.
+@test "T-2793 AC4: live (non-dry-run) fw upgrade safely overwrites its own currently-executing bin/fw" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/selfrepl-proj"
+    make_upstream_bare "$upstream_bare"
+
+    # A genuinely vendored consumer (do_vendor's rsync copy, no .git — same
+    # shape `fw init`/`fw vendor` produce), pointed at a LOCAL upstream so the
+    # bare-from-consumer auto-clone needs no network and carries no creds.
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null
+    cat > "$proj/.framework.yaml" <<YAML
+project_name: selfrepl-proj
+version: $(tr -d '\n' < "$proj/.agentic-framework/VERSION")
+provider: claude
+upstream_repo: file://$upstream_bare
+YAML
+
+    local fw_bin="$proj/.agentic-framework/bin/fw"
+    # Distinguishing marker in the file the process is about to run FROM —
+    # proves a real overwrite happened, not a same-content no-op copy.
+    sed -i '2a # T2793-SELFREPLACE-MARKER-STALE' "$fw_bin"
+    grep -q "T2793-SELFREPLACE-MARKER-STALE" "$fw_bin"
+
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj"
+    [ "$status" -eq 0 ]
+
+    # The file the process executed from must now be different (marker gone)
+    # AND still be a valid, runnable script (rename-over-open-fd did not
+    # leave a truncated/corrupt file).
+    ! grep -q "T2793-SELFREPLACE-MARKER-STALE" "$fw_bin"
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" bash -c "cd '$proj' && '$fw_bin' --version"
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ [0-9]+\.[0-9]+\.[0-9]+ ]]
+    [[ "$output" == *"$proj/.agentic-framework"* ]]
+}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # T-2793 — total isolation: the version a consumer reports, and whether it works
@@ -277,5 +319,40 @@ make_vendored_consumer() {
     vfile="$(tr -d '\n' < "$proj/.agentic-framework/VERSION")"
     [[ "$output" == *"$vfile"* ]] || { echo "expected $vfile, got: $output"; false; }
     # And it must be THIS project's framework, not something found elsewhere.
+    [[ "$output" == *"$proj/.agentic-framework"* ]]
+}
+
+@test "T-2793: the router ignores a STALE global install when the project has its own" {
+    # Dual to the "absent" case above: here $HOME/.agentic-framework EXISTS
+    # but is a different (older/mismatched) version. The walk-up finds the
+    # project's own vendored copy first and must never fall through to the
+    # global one, stale or not.
+    local proj="$TEST_TEMP_DIR/vproj3"
+    make_vendored_consumer "$proj"
+    mkdir -p "$TEST_TEMP_DIR/home3/.local/bin"
+    cp "$FRAMEWORK_ROOT/bin/fw-router" "$TEST_TEMP_DIR/home3/.local/bin/fw"
+    chmod +x "$TEST_TEMP_DIR/home3/.local/bin/fw"
+
+    # A stale global install: same shape as a vendored project, deliberately
+    # stamped with a VERSION that cannot collide with the real one.
+    mkdir -p "$TEST_TEMP_DIR/home3/.agentic-framework/bin"
+    cp "$FRAMEWORK_ROOT/bin/fw-router" "$TEST_TEMP_DIR/home3/.agentic-framework/bin/fw-router"
+    printf '0.0.1-stale\n' > "$TEST_TEMP_DIR/home3/.agentic-framework/VERSION"
+    cat > "$TEST_TEMP_DIR/home3/.agentic-framework/bin/fw" <<'SCRIPT'
+#!/bin/bash
+echo "fw v0.0.1-stale (WRONG — this is the stale global install, not the project's)"
+exit 0
+SCRIPT
+    chmod +x "$TEST_TEMP_DIR/home3/.agentic-framework/bin/fw"
+
+    mkdir -p "$proj/src/nested"
+    run bash -c "cd '$proj/src/nested' && env -i \
+        PATH='$TEST_TEMP_DIR/home3/.local/bin:/usr/local/bin:/usr/bin:/bin' \
+        HOME='$TEST_TEMP_DIR/home3' fw --version"
+    [ "$status" -eq 0 ]
+    local vfile
+    vfile="$(tr -d '\n' < "$proj/.agentic-framework/VERSION")"
+    [[ "$output" == *"$vfile"* ]] || { echo "expected $vfile, got: $output"; false; }
+    [[ "$output" != *"stale"* ]] || { echo "router fell through to the stale global install: $output"; false; }
     [[ "$output" == *"$proj/.agentic-framework"* ]]
 }

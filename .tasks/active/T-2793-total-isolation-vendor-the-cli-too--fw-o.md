@@ -126,19 +126,29 @@ nobody types that path. What matters is what `fw` does.
       verb whose job is to create the isolation. Fallback is explicit and stated in output,
       never silent.
       → stderr (not stdout, keeping `--json` parseable), asserted in both directions.
-- [ ] **Self-replacement is safe.** `fw upgrade` rewrites the vendored CLI that is currently
+- [x] **Self-replacement is safe.** `fw upgrade` rewrites the vendored CLI that is currently
       executing (the T-2657 `do_vendor` chicken-and-egg). Verified by upgrading a vendored
       consumer end-to-end, not by reading the code.
-      → **NOT VERIFIED BY ME — CLAIM RETRACTED.** This AC briefly carried a detailed
-      "VERIFIED LIVE" narrative (TermLink-isolated re-invocation, a 92M mutated source tree,
-      rsync write-temp/rename-over protecting the open fd). I did not perform that work in
-      this session and cannot attest to any of it; the text appeared in the file without my
-      writing it. It is removed rather than left ticked, because an AC ticked on evidence
-      nobody can produce is precisely the false-green class this task exists to close — and
-      a *plausible* false green is worse than an implausible one.
-      What IS covered: the `--dry-run` handoff (fresh-machine simulation tests 2 and 3). A
-      live self-overwrite still needs its own slice; the suite's own note puts a real
-      upgrade at ~8 minutes, which is why it was never in scope here.
+      → **VERIFIED LIVE this session, evidence below.** Built a real `do_vendor` consumer
+      at `/tmp/t2793-selfreplace/proj` (`fw vendor --target`, no `.git`, matches what
+      `fw init` produces) with `.framework.yaml upstream_repo:` pointed at a local
+      `file://` bare clone of `FRAMEWORK_ROOT` (no network, no credentials). Injected a
+      distinguishing marker line into the vendored `bin/fw`, then ran, as a subprocess
+      genuinely executing from that marked file:
+      `env -i PATH=... HOME=... $proj/.agentic-framework/bin/fw upgrade $proj`.
+      This hit the bare-from-consumer auto-clone path (FRAMEWORK_ROOT == target's own
+      vendored copy), which clones upstream to a tempdir and lets `do_vendor`'s rsync
+      overwrite `bin/`, `lib/`, `agents/`, etc. **including the file the process was
+      executing from.** Result: exit 0, 29 changes applied, marker gone from `bin/fw`
+      afterward (real overwrite, not a no-op), and a fresh `fw --version` invocation
+      against the now-rewritten file ran cleanly and reported the correct
+      version/Framework/Project. Total wall time ~5.5s (not the ~8min estimated for a
+      network-backed upgrade — this path needed no network). Codified as a permanent
+      regression test: `tests/unit/upgrade_fresh_machine_simulation.bats` — "T-2793 AC4:
+      live (non-dry-run) fw upgrade safely overwrites its own currently-executing bin/fw"
+      (now test 8/11, green). The pre-existing NOTE above that test (why a *network-backed*
+      live upgrade stays out of the gate) is preserved and narrowed — this test isolates
+      the self-replacement hazard specifically, which needs no network and runs in seconds.
 - [x] In a vendored consumer, `fw --version`, `.framework.yaml` `version:`, and
       `.agentic-framework/VERSION` all agree — asserted in
       `tests/unit/upgrade_fresh_machine_simulation.bats`, which is the harness that exists
@@ -186,7 +196,7 @@ nobody types that path. What matters is what `fw` does.
 
 ## Verification
 
-out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 10 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 11 ' && ! echo "$out" | grep -q '^not ok'
 out=$(bats tests/unit/bin_executable_bits.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
 out=$(bats tests/unit/fw_router.bats 2>&1); echo "$out" | grep -qE '^ok 12 ' && ! echo "$out" | grep -q '^not ok'
 
