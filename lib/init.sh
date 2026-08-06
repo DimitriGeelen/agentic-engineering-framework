@@ -514,6 +514,51 @@ CYAML
         fi
     fi
 
+    # --- Bootstrap commit: give the project a resolvable HEAD (T-2821) ---
+    # `git init` alone leaves HEAD unborn (`git rev-parse HEAD` → exit 128).
+    # Claude Code's background-session isolation (`EnterWorktree`) preflights
+    # with exactly that check and refuses to isolate — and refuses to isolate
+    # means refuses every Write/Edit — deadlocking the very first background
+    # session before it can write anything, including its own task file.
+    #
+    # Empty commit only: no files change, so this makes no decision about
+    # which framework files get tracked (that stays a separate question — see
+    # T-2821 Decisions) and does not touch onboarding task T-003 ("First
+    # governed commit"), which asks the operator to create and commit real
+    # project content.
+    #
+    # Placed AFTER git hooks are installed (above) so this commit is validated
+    # BY the project's own commit-msg + pre-commit hooks (task-ref check,
+    # T-1844 secret-scan, T-1845 large-file, T-1863 dup-task-id) rather than
+    # bypassing them with --no-verify — shipping every project with a bypass
+    # in its first commit would be worse than the bug (T-2821 hard rule).
+    # An empty commit has no staged diff, so the scan/large-file/dup-id hooks
+    # are trivially satisfied; the commit-msg hook only requires a `T-[0-9]+`
+    # pattern, so `T-000` — the framework's own established placeholder for
+    # "no real task applies" (agents/handover/handover.sh:57) — passes it.
+    #
+    # Author/committer identity is scoped to this one commit via env vars, not
+    # written to git config, so it succeeds even when neither global nor local
+    # git identity is configured (T-2818: the common case on a fresh machine,
+    # not a corner case — the identity warning above is about the OPERATOR's
+    # future commits, and is deliberately left unaffected by this bootstrap).
+    #
+    # Guarded on unborn HEAD so this is a no-op for existing-project inits
+    # (already have a HEAD) and idempotent under --force re-init.
+    if ! git -C "$target_dir" rev-parse -q --verify HEAD >/dev/null 2>&1; then
+        local _bootstrap_err
+        if _bootstrap_err=$(GIT_AUTHOR_NAME="fw init" GIT_AUTHOR_EMAIL="fw-init@localhost" \
+            GIT_COMMITTER_NAME="fw init" GIT_COMMITTER_EMAIL="fw-init@localhost" \
+            git -C "$target_dir" commit --allow-empty -q \
+                -m "T-000: fw init bootstrap commit (empty — gives the project a resolvable HEAD)" 2>&1); then
+            echo -e "  ${GREEN}✓${NC}  Bootstrap commit created (resolvable HEAD for worktree isolation)"
+        else
+            echo -e "  ${YELLOW}⚠${NC}   Bootstrap commit failed — HEAD remains unresolved:"
+            echo "       run manually: cd \"$target_dir\" && git commit -q --allow-empty -m \"T-000: bootstrap\""
+            [ -n "$_bootstrap_err" ] && echo "$_bootstrap_err" | sed 's/^/      /' >&2
+        fi
+    fi
+
     # --- Enforcement baseline (T-880/F5: auto-create for drift detection) ---
     if [ ! -f "$target_dir/.context/project/enforcement-baseline.sha256" ]; then
         local fw_bin="$target_dir/.agentic-framework/bin/fw"
