@@ -246,6 +246,53 @@ YAML
     [ "$status" -eq 0 ]
 }
 
+# T-2833: Pattern 3 target-extraction regressions --------------------------
+# Prior form was two independent regexes ANDed ("git commit" present anywhere
+# AND a "T-N:" pattern present anywhere), so the extracted id needed not
+# belong to the commit's own -m/--message value. Fixed by anchoring
+# extraction to the flag's value. Both directions pinned below.
+
+@test "T-2833: false negative fixed — prose naming focus ahead of a commit targeting a different task now blocks" {
+    # Pre-fix: leftmost 'T-1730:' (in the echo prose) was read as the target,
+    # which equals the focused task, so drift went undetected (fail-open) even
+    # though the real -m value targets T-1716.
+    set_focus T-1730
+    create_task T-1730
+    create_task T-1716
+    run_hook_with_bash_cmd 'echo "See T-1730: prior context" && git commit -m "T-1716: actual fix"'
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "FOCUS-DRIFT"
+    echo "$output" | grep -q "T-1716"
+}
+
+@test "T-2833: false positive fixed — a grep pattern mentioning another task id no longer supplies TARGET_TASK" {
+    # Pre-fix: leftmost 'T-1716:' (inside the grep pattern argument) was read
+    # as the target even though the real commit's -m value targets the
+    # focused task T-1730 — wrongly blocked.
+    set_focus T-1730
+    create_task T-1730
+    run_hook_with_bash_cmd 'grep -rn "T-1716:" docs/ && git commit -m "T-1730: fix docs"'
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2833: true drift still blocked — -am combined flag" {
+    set_focus T-1730
+    create_task T-1730
+    create_task T-1716
+    run_hook_with_bash_cmd 'git commit -am "T-1716: cherry-pick fix"'
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "FOCUS-DRIFT"
+}
+
+@test "T-2833: true drift still blocked — --message= long flag" {
+    set_focus T-1730
+    create_task T-1730
+    create_task T-1716
+    run_hook_with_bash_cmd 'git commit --message="T-1716: cherry-pick fix"'
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "FOCUS-DRIFT"
+}
+
 @test "lib/init.sh: settings generator emits Bash in check-active-task matcher (source-of-truth)" {
     # Source-of-truth check: any future fw upgrade must propagate the fix
     python3 -c "

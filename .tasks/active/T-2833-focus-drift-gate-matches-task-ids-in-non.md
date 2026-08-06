@@ -4,10 +4,10 @@ name: "focus-drift gate matches task IDs in non-target argument text"
 description: >
   focus-drift gate matches task IDs in non-target argument text
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T17:50:42Z
-last_update: 2026-08-06T18:17:36Z
+last_update: 2026-08-06T18:18:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,19 +95,22 @@ mechanism was never measured.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Probe harness exists and records the measured matrix (focus state × command
+- [x] Probe harness exists and records the measured matrix (focus state × command
       shape) for `check-active-task.sh`, run against a sandbox PROJECT_ROOT so the
       live session focus is never written
-- [ ] The focus-drift target-extraction regexes are verb-anchored: a task id
+- [x] The focus-drift target-extraction regexes are verb-anchored: a task id
       appearing only as non-target argument text (grep pattern, quoted string,
       echoed prose) does NOT set `TARGET_TASK`
-- [ ] Commands that genuinely target a different task (`fw task update T-N`,
+- [x] Commands that genuinely target a different task (`fw task update T-N`,
       `git commit -m "T-N: …"`) still trip the gate — the fix narrows false
       positives without widening the hole
-- [ ] Regression test pins both directions (false-positive shape allowed, true
+- [x] Regression test pins both directions (false-positive shape allowed, true
       drift shape still blocked)
-- [ ] Existing hook test suites still pass
-- [ ] OBS-180 and OBS-182 corrected in the inbox with the measured result, so the
+- [x] Existing hook test suites still pass (109/109: focus_drift_gate.bats,
+      check_active_task_fp_fix.bats, check_active_task_switch_focus.bats,
+      context_safe_commands.bats, test_safe_commands_git_commit.bats,
+      safe_commands_chain.bats)
+- [x] OBS-180 and OBS-182 corrected in the inbox with the measured result, so the
       unreproduced mechanism is not carried forward as fact
 
 ### Human
@@ -208,6 +211,10 @@ mechanism was never measured.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash tests/spikes/focus-drift-target-extraction-probe.sh
+out=$(bats tests/unit/focus_drift_gate.bats tests/unit/check_active_task_fp_fix.bats tests/unit/check_active_task_switch_focus.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -c "import yaml; yaml.safe_load(open('.context/inbox.yaml'))"
+
 ## Measured behaviour (2026-08-06)
 
 Probe harness: `scratchpad/obs180/probe{1..5}.sh` — pipes crafted PreToolUse JSON
@@ -266,6 +273,36 @@ because it fails open on the primary task gate, not just on drift.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** The T-1730 focus-drift gate's Pattern 3 (`git commit ... T-NNNN:`)
+either missed real drift (a commit whose `-m` message targets a different task
+than focus, when unrelated prose earlier in the command happened to name the
+focused task with a trailing colon) or wrongly blocked innocent commands (a
+`grep`/`echo` argument mentioning another task id with a trailing colon, ahead
+of a commit that correctly targets the focused task).
+
+**Root cause:** Pattern 3 was two independent regexes ANDed together —
+`git[[:space:]]+commit` present *anywhere* in the string, AND `(T-[0-9]+):`
+present *anywhere* in the string (leftmost match) — rather than one regex
+requiring the id to be the value of the commit's own `-m`/`--message` flag.
+`BASH_REMATCH` on the second, unrelated regex supplied `TARGET_TASK`
+regardless of whether that occurrence had anything to do with the commit
+being run.
+
+**Why structurally allowed:** The T-1730 gate ships with bats coverage
+(`focus_drift_gate.bats`) that only ever exercises the id in its intended
+position (`git commit -m "T-N: msg"`) — never a case where a second `T-N:`-
+shaped token exists elsewhere in the same command. A single-scenario-per-
+pattern test suite can't surface the "two independent regexes ANDed" failure
+mode, because both regexes happen to agree whenever there is only one id in
+the string.
+
+**Prevention:** `tests/spikes/focus-drift-target-extraction-probe.sh` pins a
+matrix (10 rows) run against a real sandbox PROJECT_ROOT + the actual hook
+binary, including the two-id-in-one-command shape that the prior suite never
+exercised; `focus_drift_gate.bats` gained 4 new cases pinning both directions.
+Re-running the probe against the pre-fix file (`git stash`) reproduces exactly
+2 failures (d5-A, d6-B) — the fix is falsifiable, not just plausible.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -301,6 +338,26 @@ because it fails open on the primary task gate, not just on drift.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-06 — Scope: fix Pattern 3 only, leave Defect B's quote-nesting case and Pattern 2 unfixed
+- **Chose:** Anchor Pattern 3's id extraction to the `-m`/`--message` flag
+  value. Leave (a) the case where a doc-write's payload literally contains a
+  working `git commit -m "T-N: ..."` example (Defect B — bash regex cannot see
+  quote-nesting) and (b) Pattern 2 (`fw context add-* --task T-N`), which has
+  the same two-independent-regex shape but was not part of the measured
+  reproduction, unfixed.
+- **Why:** Defect B is a genuine limit of regex-only extraction (no shell
+  parser), is low severity (the T-1890 bypass mechanisms cover any resulting
+  false block), and "fixing" it would require detecting quote-nesting depth —
+  a much larger change for a rare shape (an agent writing documentation whose
+  body is a copy-pasteable example commit line). Pattern 2 was left alone
+  because it was not measured in this task's probe matrix and touching it
+  without evidence risks a same-shaped but unverified change; it is the
+  natural next probe row if it recurs.
+- **Rejected:** A full shell-aware parser (out of proportion to the bug);
+  fixing Pattern 2 speculatively without a measured reproduction (violates the
+  "measured not assumed" discipline this task exists to enforce, per OBS-179/
+  OBS-180/OBS-182's shared failure shape).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -329,3 +386,7 @@ because it fails open on the primary task gate, not just on drift.
 ### 2026-08-06T18:17:36Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-08-06T18:18:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
