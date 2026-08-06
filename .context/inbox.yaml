@@ -1376,3 +1376,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-181
+  text: "tests/unit/create_task.bats clobbers the LIVE session focus. setup() line 19 does 'export PROJECT_ROOT=$FRAMEWORK_ROOT' (the real repo) while sandboxing only TASKS_DIR. Tasks are created in the sandbox — where the first allocated id is T-001 — but create-task.sh --start writes focus via PROJECT_ROOT, so the live .context/working/focus.yaml ends up with 'current_task: T-001', a task that does not exist in the live active/. The check-active-task PreToolUse hook then refuses EVERY Bash call ('Task T-001 is not active'), so running 'fw test unit' from inside a live session denies service to that session until the agent notices and runs 'fw context focus T-XXX' by hand. Measured 2026-08-06 by bisecting 8 suites: only create_task.bats leaks; the others isolate CONTEXT_DIR or do not set focus. Same family as L-404 (sandbox that half-isolates, read direction) and T-2807 (bats dirties live tree) — this is the WRITE direction and it is worse, because the damage is to session-control state rather than to a data file. Fix candidates: export CONTEXT_DIR to the sandbox in setup(); or snapshot+restore focus.yaml in setup/teardown; or drop --start from the tests that do not assert on it."
+  captured: 2026-08-06T16:12:22Z
+  context_task: T-2830
+  tags: []
+  status: pending
+  promoted_to: null

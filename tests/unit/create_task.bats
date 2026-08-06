@@ -18,6 +18,17 @@ setup() {
     export TASKS_DIR="$TEST_DIR"
     export PROJECT_ROOT="$FRAMEWORK_ROOT"
 
+    # T-2832: sandbox CONTEXT_DIR too, or this suite writes the LIVE session's focus.
+    # PROJECT_ROOT deliberately points at the real repo (template resolution), and
+    # create-task.sh --start calls context.sh focus, which writes
+    # $CONTEXT_DIR/working/focus.yaml. With CONTEXT_DIR unset that resolved to the
+    # real .context/, so a run from inside a live session left it focused on the
+    # SANDBOX's first task id (T-001) — absent from the live active/ — after which
+    # the check-active-task PreToolUse hook refused every subsequent Bash call.
+    # TASKS_DIR alone is not isolation: --start crosses into .context/.
+    export CONTEXT_DIR="$TEST_DIR/.context"
+    mkdir -p "$CONTEXT_DIR/working" "$CONTEXT_DIR/project" "$CONTEXT_DIR/episodic"
+
     # T-100185 hermeticity (L-490 sibling): when this suite runs from inside a
     # Claude Code session it inherits CLAUDECODE=1, which arms the T-2207
     # inception recommendation gate in create-task.sh — the inception-filing
@@ -39,6 +50,43 @@ teardown() {
     # tests fail locally while passing in clean CI.
     [ -z "${CLAUDECODE:-}" ]
     [ -z "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" ]
+}
+
+# --- T-2832: suite hermeticity vs the LIVE session's focus file ---
+
+@test "T-2832: setup sandboxes CONTEXT_DIR (live-focus clobber pin)" {
+    # Static half of the pin: CONTEXT_DIR must point inside the sandbox, never at
+    # the real repo. If this ever regresses, --start writes the live focus.yaml.
+    [ -n "${CONTEXT_DIR:-}" ]
+    [[ "$CONTEXT_DIR" == "$TEST_DIR"* ]]
+    [[ "$CONTEXT_DIR" != "$FRAMEWORK_ROOT"* ]]
+}
+
+@test "T-2832: --start writes focus inside the sandbox, not the live .context" {
+    # Behavioural half — the one that actually witnesses the bug. A path
+    # assertion alone would stay green if focus.sh started resolving the file
+    # some other way, so take the real live file's hash and prove it is untouched
+    # by a --start run.
+    local live_focus="$FRAMEWORK_ROOT/.context/working/focus.yaml"
+
+    # Precondition: the live file must exist, or "unchanged" is vacuous
+    # (T-2828 lesson — a control that cannot fail proves nothing).
+    [ -f "$live_focus" ]
+    local before
+    before="$(md5sum "$live_focus" | cut -d' ' -f1)"
+
+    run "$CREATE_TASK" --name "focus isolation probe" --description "d" \
+        --type build --owner agent --start
+    [ "$status" -eq 0 ]
+
+    # The sandbox got the focus...
+    [ -f "$CONTEXT_DIR/working/focus.yaml" ]
+    grep -q "^current_task: T-" "$CONTEXT_DIR/working/focus.yaml"
+
+    # ...and the live session did not.
+    local after
+    after="$(md5sum "$live_focus" | cut -d' ' -f1)"
+    [ "$before" = "$after" ]
 }
 
 # --- T-100160 (OBS-086): no-tty fail-fast instead of hanging prompts ---
