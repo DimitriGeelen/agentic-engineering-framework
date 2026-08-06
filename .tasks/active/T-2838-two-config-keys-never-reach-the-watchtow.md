@@ -4,12 +4,12 @@ name: "two config keys never reach the Watchtower config page"
 description: >
   two config keys never reach the Watchtower config page
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T21:03:02Z
-last_update: 2026-08-06T21:03:02Z
-date_finished: null
+last_update: 2026-08-06T21:06:14Z
+date_finished: 2026-08-06T21:06:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -240,6 +240,28 @@ curl -sf "$(bin/fw watchtower url)/config" -o /tmp/t2838-config.html && grep -q 
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The change is two rows in a list of twenty-two, using the
+canonical registry's own defaults and descriptions. Both keys were already
+live in the CLI — this makes them visible, it does not change behaviour. The
+functional side is verified live, not inferred: 4/4 verification commands pass,
+and the page was re-fetched after a Watchtower restart because the first fetch
+returned 200 while rendering neither key. The remaining Human AC is a look-at-it
+check on wrapping, since these two descriptions are the longest in the table.
+
+**Evidence:**
+- `web/blueprints/config.py` `SETTINGS` — 20 → 22 entries, defaults matched to
+  `lib/config.sh:167-168` (`""` and `0.80`).
+- `tests/lint/config-registry-parity.bats` tests 1 and 3 now pass (key sets and
+  counts agree). Test 2 is a scoped-out policy conflict, filed separately.
+- `/config` fetched via `bin/fw watchtower url` renders both keys; verified
+  after restart, and the pre-restart 200-with-neither-key is recorded in the AC
+  so the false-green is on the record rather than tidied away.
+- No behaviour change to config resolution: `lib/config.sh` untouched.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -267,3 +289,15 @@ curl -sf "$(bin/fw watchtower url)/config" -o /tmp/t2838-config.html && grep -q 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2838-two-config-keys-never-reach-the-watchtow.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bd3e1707
+- **Timestamp:** 2026-08-06T21:06:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-06T21:06:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
