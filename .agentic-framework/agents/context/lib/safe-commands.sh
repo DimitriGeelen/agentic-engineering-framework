@@ -16,8 +16,86 @@
 #   5. System utilities (6 patterns)
 #   6. Validation (2 patterns)
 
+# --- T-2834: chain-aware entry point -------------------------------------
+#
+# _fw_chain_split emits one segment per line, splitting on chain operators that
+# are NOT inside quotes: `&&`, `||`, `&`, `|`, `;`, and newline. Quote tracking
+# matters — without it `grep -q "a && b"` splits into two bogus segments and a
+# read-only command starts blocking.
+#
+# Deliberately NOT handled: command substitution. `echo $(git commit -m 'T-X: y')`
+# still reads as safe. Extracting `$(...)` as a segment would also catch the
+# framework's own documented idiom `curl -sf "$(bin/fw watchtower url)/page"` —
+# `fw watchtower` is not on the allowlist, so that verification pattern would
+# start blocking whenever no task is active, which is exactly the recovery state
+# where friction hurts most. Chain operators are the measured, high-frequency
+# hole; substitution is narrower and is filed rather than papered over (OBS-185).
+_fw_chain_split() {
+    local cmd="$1" seg="" q="" ch nxt i n=${#1}
+    for (( i=0; i<n; i++ )); do
+        ch="${cmd:i:1}"
+        if [ -n "$q" ]; then
+            seg+="$ch"
+            [ "$ch" = "$q" ] && q=""
+            continue
+        fi
+        case "$ch" in
+            "'"|'"') q="$ch"; seg+="$ch" ;;
+            '\')     seg+="$ch"; i=$((i+1)); [ "$i" -lt "$n" ] && seg+="${cmd:i:1}" ;;
+            '&'|'|')
+                nxt="${cmd:i+1:1}"
+                [ "$nxt" = "$ch" ] && i=$((i+1))
+                printf '%s\n' "$seg"; seg="" ;;
+            ';'|$'\n') printf '%s\n' "$seg"; seg="" ;;
+            *)       seg+="$ch" ;;
+        esac
+    done
+    printf '%s\n' "$seg"
+}
+
+# A compound command is safe only if EVERY segment is safe.
+#
+# The predecessor asserted the opposite in a comment — "for compound commands,
+# the first word is still the primary command" — and judged `echo hi && git
+# commit -m 'T-X: y'` by `echo` alone, exiting the caller (check-active-task.sh
+# :95) before the no-active-task check, the task-is-active check, the G-020
+# readiness gate and the T-1730 focus-drift gate ever ran. Everything after `&&`
+# was unexamined. OBS-184 has the measured matrix.
+#
+# Failure direction is asymmetric and this errs the safe way: misjudging a safe
+# chain as unsafe merely sends it to the task gate, which allows it whenever a
+# task is active; misjudging an unsafe chain as safe skips every gate there is.
 is_bash_safe_command() {
+    local _cmd="$1" _seg _n=0
+    local -a _segs=() _kept=()
+    mapfile -t _segs < <(_fw_chain_split "$_cmd")
+    for _seg in "${_segs[@]}"; do
+        [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
+        _kept+=("$_seg"); _n=$((_n+1))
+    done
+    if [ "$_n" -gt 1 ]; then
+        for _seg in "${_kept[@]}"; do
+            _fw_single_command_is_safe "$_seg" || return 1
+        done
+        return 0
+    fi
+    _fw_single_command_is_safe "$_cmd"
+}
+
+# Single (non-compound) command classification. This is the original
+# is_bash_safe_command body, unchanged apart from the name.
+_fw_single_command_is_safe() {
     local cmd="$1"
+
+    # T-2834: trim surrounding whitespace. Chain segments arrive with the space
+    # that followed the operator (`ls && FW_X=1 fw work-on T-1` → segment 2 is
+    # " FW_X=1 fw work-on T-1"), and the T-1908 env-prefix regex below is
+    # ^-anchored — a leading space defeats it, the base extracts as the env
+    # assignment, nothing matches, and the segment reads unsafe. Caught by
+    # tests/unit/safe_commands_chain.bats "env-var prefix is stripped per
+    # segment", which failed on the first run of this very fix.
+    cmd="${cmd#"${cmd%%[![:space:]]*}"}"
+    cmd="${cmd%"${cmd##*[![:space:]]}"}"
 
     # T-1908: strip leading env-var prefixes (`KEY=val [KEY2=val2 ...] cmd args`).
     # Without this, the L-399 / T-1890 bypass-mechanism contract that promises
@@ -31,7 +109,10 @@ is_bash_safe_command() {
     done
 
     # Extract the base command (first word, strip path).
-    # For compound commands, the first word is still the primary command.
+    # Callers must pass a SINGLE command — is_bash_safe_command splits compound
+    # commands into segments before reaching here (T-2834). The previous version
+    # of this comment claimed the first word was still the primary command for
+    # compound commands; it is not, and that assumption was the whole defect.
     local base
     base=$(echo "$cmd" | awk '{print $1}' | sed 's|.*/||')
 

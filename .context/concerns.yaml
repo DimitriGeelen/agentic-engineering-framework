@@ -1,4 +1,27 @@
 
+# T-2834 — the Bash task gate's fast path judges a chain by its first word only,
+# so every gate below it can be skipped by prefixing an allowlisted command.
+# Registered BEFORE the fix per CLAUDE.md §"register first, fix second".
+- id: OBS-184
+  type: bug
+  severity: high
+  surface: "agents/context/lib/safe-commands.sh:36 (is_bash_safe_command base extraction); consumed by agents/context/check-active-task.sh:95"
+  detected_in: T-2833 probe harness (measuring OBS-180, whose stated mechanism did not reproduce)
+  symptom: "A Bash command whose FIRST word is on the safe-command allowlist skips every gate that follows, however unsafe the rest of the chain is. Measured in a sandbox PROJECT_ROOT: with focus on task A, bare `git commit -m 'B: x'` blocks but `echo hi && git commit -m 'B: x'` is ALLOWED; bare `fw task update B --status work-completed` blocks but `ls && fw task update B --status work-completed` is ALLOWED. With NO active task, `echo hi && bash deploy.sh` and `ls && python3 mutate.py` are ALLOWED — the allowlist deliberately admits `bash` only with `-n` and `python3` only with `-c` and no write indicators, and the chain form defeats both conditions. Arbitrary script execution is the sharp end, because Tier 0 is documented (CLAUDE.md) as matching the command string only and never inspecting the contents of a file that command runs. The gates skipped are the no-active-task check, the task-is-active check, the G-020 build-readiness gate and the T-1730 focus-drift gate."
+  correction: "An earlier draft of this entry claimed `echo hi && rm -rf <dir>` is allowed with no active task. That is WRONG and was withdrawn before the fix landed. It was inferred from a probe run whose sandbox still had an active anchor task from the previous probe — so the observed `allow` meant 'a task was active', not 'the gate was bypassed'. Re-measured with `current_task: null` (scratchpad/obs180/probe6.sh): both bare and chained `rm` BLOCK, because has_bash_write_pattern runs before the allowlist and greps the WHOLE string. Recorded rather than silently edited: the near-miss is the reason the fast path reads as string-aware when it is only word-aware."
+  root_cause: "is_bash_safe_command derives the command base with `awk '{print $1}'` and its own comment asserts the assumption out loud — 'For compound commands, the first word is still the primary command' (safe-commands.sh:34). That is false for `A && B`, `A; B`, `A || B`. check-active-task.sh:95 treats a safe verdict as terminal and exits 0 at line 97, so nothing downstream ever sees segment B. The reason this survived is that the fast path was designed as a READ-ONLY exemption and reviewed as one: has_bash_write_pattern runs first and DOES scan the whole string, so the obvious chain (`echo x > file`) is caught, and that near-miss makes the path look string-aware when it is only word-aware."
+  prevention: "PENDING — T-2834. Fix must classify every segment of a chain, not the first word. Both directions need pinning: chained-unsafe must block, and chained-ALL-safe (`ls && git status`, `cd /x && fw doctor`) must keep passing, since that shape is used constantly and a naive fix would deny service."
+  blast_radius: cross-cutting
+  observed: 2026-08-06
+  status: open
+  scope_bound: "Measured, not assumed: Tier 0 is a SEPARATE hook that pattern-matches the whole command string. `echo hi && git push --force` and `echo hi && git reset --hard` remain blocked by check-tier0.sh (scratchpad/obs180/probe5.sh). This is a task-gate and focus-gate bypass, NOT a destructive-action bypass."
+  related:
+  - T-2834
+  - T-2833
+  - T-2054   # L-433 warned that allowlisting a verb short-circuits later gates — but about WHICH verbs, never the base extraction
+  - OBS-180  # the observation whose unreproduced mechanism led here
+  - OBS-182
+
 # T-2421 sibling observation — emit_review human-AC counter false-enters when
 # task title/description contains literal "### Human" string.
 - id: OBS-079
