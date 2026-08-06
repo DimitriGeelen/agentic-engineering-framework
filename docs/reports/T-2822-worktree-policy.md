@@ -133,11 +133,80 @@ background-session isolation is a harness default AEF never chose. Confirmed.
 
 ## S2 — Source-only spike
 
-*Status: not started.*
+**Status: complete.** It reframed the question, which is the useful outcome of a spike.
+
+Created a scratch worktree (`git worktree add --detach`) and asked what a source-only
+worktree would have to *not* contain. It contains all of it, immediately:
+
+```
+PRESENT .context   PRESENT .tasks   PRESENT .agentic-framework   PRESENT .claude
+```
+
+Because governance state is **tracked content**:
+
+| Path | Tracked files |
+|---|---|
+| `.tasks/` | 2812 |
+| `.context/` | 4582 |
+| `.context/working/` | 96 |
+
+Only `.context/working/.budget-status` is gitignored. Everything else — `focus.yaml`,
+task files, decisions, learnings, handovers — is committed content that `git checkout`
+reproduces in every worktree, by definition.
+
+**This is the mechanism of the entire defect class, and it had not been named:**
+
+> Governance state is tracked content. A worktree is a second checkout of tracked
+> content. Therefore **a worktree is by construction a fork of the governance state**,
+> and it begins diverging the moment either side writes.
+
+Measured directly: `focus.yaml` already **differed** between the two trees moments
+after the worktree was created.
+
+Two consequences that change the shape of the answer:
+
+1. **Source-only cannot be implemented by absence.** You cannot decline to put
+   governance state in a worktree; git puts it there. Untracking it is not a bounded
+   fix — 7394 files, and it would destroy the audit trail that makes the state useful.
+2. **So enforcement must be at the *write* layer, not the presence layer** — refuse
+   writes to `.context/`/`.tasks/` when cwd is a linked worktree, and let the read-only
+   copy sit there harmlessly. That answers IW-3 by elimination rather than preference.
+
+**The cost of source-only, measured:** any framework verb that writes governance state
+stops working inside a worktree — `fw work-on`, `fw task update`, `fw context focus`,
+`fw handover`, `fw note`, the PostToolUse counters. Under T-100196 that is not a
+regression, because the session is supposed to be on master and the worktree is
+supposed to build and land source. It *is* a regression for anyone using a worktree as
+a full second workspace, which is what the two stranded worktrees were doing.
+
+**Detection primitive is one line and reliable** (verified both directions):
+
+```sh
+[ "$(git rev-parse --git-dir)" != "$(git rev-parse --git-common-dir)" ]   # true iff linked worktree
+```
 
 ## S3 — Shared-state spike
 
-*Status: not started.*
+**Status: not run as a spike — the question was already answered by production, which
+is stronger evidence than a spike would have been.**
+
+S3 was to ask whether sharing governance state into a worktree closes the seams or
+merely moves them. The shared-state premise has been running live in this repo for
+five weeks across two worktrees. Result on record (S1b/S1c):
+
+- 43 commits unlanded and unnoticed
+- an inception on this very question lost
+- gap G-083 filed and lost with it
+- the task-ID space forked, `T-2505` and `T-2506` each naming two different tasks
+
+The seams moved. A spike showing "it works once" would have been a weaker claim than
+five weeks of it not working, and running one now would risk manufacturing a green
+result about the wrong object — the failure mode this session has already been burned
+by repeatedly.
+
+**A2 verdict:** confirmed, with the mechanism corrected. Source-only is implementable,
+but not as originally framed (keep state out); only as write-refusal (let the fork
+exist read-only and refuse to write to it).
 
 ## Dialogue Log
 
@@ -161,13 +230,77 @@ policy and is nearly done.
 
 ## Findings
 
-*Populated as spikes complete.*
+**F1 — The root cause, named precisely.** Governance state is tracked content, so a
+worktree is a *fork of the governance state*, not a view onto it. Every "worktree
+bug" on record is a consequence: either a consumer read the wrong fork (81% of the
+defect record) or the two forks diverged and one was lost (the 43 stranded commits).
+
+**F2 — The prior in the task file was right about the answer and wrong about the
+mechanism.** Source-only wins, but it cannot be implemented by keeping state out of
+the worktree — git puts it there. It is implemented by refusing *writes*.
+
+**F3 — Source-only buys 81%, not 100%.** The branch/ref lifecycle class (T-2393,
+T-100199) and the creation-precondition class (T-2821) are untouched by it. Selling
+this decision as "fixes worktree problems" would repeat the overclaim pattern.
+
+**F4 — Ambient isolation is a harness default AEF never chose.** No `worktree` key in
+`.claude/settings.json`. The deadlock that started this was the harness creating a
+worktree in a repo with no HEAD, for a policy reason AEF never adopted.
+
+**F5 — There is no invisibility guard.** Sibling worktrees are excluded from
+`git status` via `.git/info/exclude`, and `fw doctor`'s `diverged-fork` check watches
+only the session's own branch. Nothing was lying — nothing was looking. This is why
+five weeks passed.
+
+**F6 — The decision has already been made once and lost.** T-2505 exists. That is
+itself the strongest argument for landing this one on master before doing anything
+else with it.
 
 ## Recommendation
 
-*Pending S1. Filed DEFER at creation — a genuine evidence gap, not a hedge: no spike
-has run.*
+**Recommendation: GO — source-only, enforced at the write layer.**
 
-**Prior (to be killed or confirmed, not assumed):** source-only, with governance
-writes structurally refused inside a worktree. It matches T-100196 and removes the
-split rather than managing it. Recorded here explicitly so S1–S3 can falsify it.
+Answering the question as asked: **only source may live inside a worktree.** The
+governance-state copy that git necessarily checks out is to be treated as read-only,
+and writes to `.context/` and `.tasks/` from a linked worktree are to be refused.
+
+**Rationale.** The evidence does not present a balanced trade-off. The shared-state
+option is not hypothetical — it has been running in this repo for five weeks and its
+measured output is 43 lost commits, a lost gap, a forked task-ID space, and a lost
+inception on this exact question. The source-only option costs the ability to run
+governance verbs from inside a worktree, which under the already-recorded T-100196
+session-on-master flow is not something we are supposed to be doing. One option's cost
+is measured and severe; the other's is a workflow we have already decided against.
+
+**Bounded fix path**, in dependency order — each is a separate build slice:
+
+1. **Detection + refusal.** One-line worktree detection in the existing PreToolUse
+   path (the hooks already share `fw_reanchor_from_cwd`, `lib/paths.sh:110`); refuse
+   Write/Edit to `.context/`/`.tasks/` when cwd is a linked worktree, with a block
+   message naming the correct move (do it on master). Bypass env-var per L-399, and —
+   per T-1890 — every *fw verb* the gate can block must accept the bypass end to end,
+   not just the hook.
+2. **Visibility.** `fw doctor` reports sibling worktrees with unlanded-commit counts
+   and age. F5 is the reason five weeks passed; without this, slice 1 prevents new
+   strands but never surfaces existing ones.
+3. **Turn off ambient isolation** (IW-2) — set the harness key explicitly rather than
+   inheriting a default, so worktree creation is a decision with a trigger.
+4. **Retire or re-target the shared-state code** (IW-4) — `fw_reanchor_from_cwd` and
+   the worktree-aware audit/doctor/budget work. **Not** a delete: under source-only,
+   read-path re-anchoring is still correct and still wanted; it is the *write* paths
+   that become unreachable. This slice is an audit, not a removal.
+
+**Explicitly out of the GO**, and each needs its own task: recovering the 43 stranded
+commits (OBS-174), the duplicate `T-2505`/`T-2506` IDs (T-100202 class), the
+branch/ref lifecycle class (F3), and T-2821.
+
+**Evidence:** S1a classification table (16 defects, 13 in the root-split class); S1b
+live worktree inventory (`git worktree list`, `git rev-list --count`); S1c stranded
+`54adb1fcf`; S2 tracked-file counts (2812 + 4582) and the measured `focus.yaml`
+divergence; S2 detection primitive verified in both directions; A3 re-verified against
+`.claude/settings.json`.
+
+**What would change this recommendation:** evidence that a real workflow needs
+governance writes from inside a worktree and cannot be restructured onto master. Slice
+1 should ship behind a logged bypass precisely so that, if such a workflow exists, it
+shows up in the bypass log as data instead of as a silent workaround.
