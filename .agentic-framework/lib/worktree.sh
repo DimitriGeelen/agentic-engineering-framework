@@ -312,6 +312,171 @@ do_worktree_create() {
     return 0
 }
 
+# ── fw worktree remove (T-2825, G-076) ───────────────────────────────────────
+# Sanctioned teardown path. `git worktree remove` on its own has no opinion about
+# whether the branch it points at is reachable from anywhere but this one working
+# directory -- remove the worktree and any commits on that branch become invisible
+# to the normal workflow (no cwd left to push from). Origin: T-2428/T-2825 -- a
+# 6-commit branch survived `git worktree remove` only because that command doesn't
+# delete branches, and sat unpushed for 5 weeks because nothing ever re-surfaced it.
+#
+# Guard: refuse removal when the worktree's branch holds commits that are absent
+# from EVERY configured remote (i.e. no remote has all of the branch's commits).
+# `--force` proceeds anyway and logs a Tier-2 entry to
+# .context/working/.gate-bypass-log.yaml (same convention as lib/inception.sh,
+# lib/review.sh). A repo with zero remotes configured cannot prove anything is
+# pushed, so it is treated as unpushed too (fail closed).
+
+# _wt_remove_resolve <name-or-path> -> sets _WT_REMOVE_PATH / _WT_REMOVE_BRANCH
+# Returns 1 (nothing printed) when no linked worktree matches.
+_wt_remove_resolve() {
+    local needle="$1"
+    local -a _WT_PATH _WT_HEAD _WT_BRANCH
+    _wt_parse
+    local main_root="${_WT_PATH[0]}"
+    local abs=""
+    abs="$(cd "$needle" 2>/dev/null && pwd || true)"
+    local i
+    for i in "${!_WT_PATH[@]}"; do
+        [ "$i" = "0" ] && continue
+        if [ -n "$abs" ] && [ "${_WT_PATH[$i]}" = "$abs" ]; then
+            _WT_REMOVE_PATH="${_WT_PATH[$i]}"; _WT_REMOVE_BRANCH="${_WT_BRANCH[$i]}"
+            return 0
+        fi
+        if [ "${_WT_PATH[$i]}" = "$main_root/.claude/worktrees/$needle" ]; then
+            _WT_REMOVE_PATH="${_WT_PATH[$i]}"; _WT_REMOVE_BRANCH="${_WT_BRANCH[$i]}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# _wt_unpushed_summary <branch> -> prints a non-empty summary (one line per
+# remote lacking the branch's tip) and returns 1 when NO remote has every commit
+# on <branch>; prints nothing and returns 0 when at least one remote is fully
+# caught up.
+_wt_unpushed_summary() {
+    local branch="$1"
+    local -a remotes=()
+    while IFS= read -r r; do [ -n "$r" ] && remotes+=("$r"); done < <(git remote 2>/dev/null)
+
+    if [ "${#remotes[@]}" -eq 0 ]; then
+        echo "no git remotes configured -- cannot verify anything is pushed"
+        return 1
+    fi
+
+    local r remote_ref count any_caught_up=0
+    local -a lines=()
+    for r in "${remotes[@]}"; do
+        remote_ref="refs/remotes/$r/$branch"
+        if ! git rev-parse --verify --quiet "$remote_ref" >/dev/null 2>&1; then
+            lines+=("$r: branch '$branch' not present on remote")
+            continue
+        fi
+        count="$(git rev-list --count "${remote_ref}..refs/heads/$branch" 2>/dev/null || echo "")"
+        if [ "${count:-0}" = "0" ]; then
+            any_caught_up=1
+        else
+            lines+=("$r: $count commit(s) on '$branch' not on $r/$branch (git log $r/$branch..$branch)")
+        fi
+    done
+
+    if [ "$any_caught_up" = "1" ]; then
+        return 0
+    fi
+    printf '%s\n' "${lines[@]}"
+    return 1
+}
+
+# do_worktree_remove <name-or-path> [--force]
+do_worktree_remove() {
+    local target="" force=0
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --force) force=1 ;;
+            -h|--help)
+                echo "usage: fw worktree remove <name-or-path> [--force]"
+                echo "  Removes the worktree directory (branch is kept). Refuses when the"
+                echo "  branch holds commits absent from every remote unless --force is given"
+                echo "  (logged Tier-2 to .context/working/.gate-bypass-log.yaml)."
+                return 0 ;;
+            -*) echo "worktree remove: unknown option: $1" >&2; return 2 ;;
+            *)
+                if [ -z "$target" ]; then target="$1"
+                else echo "worktree remove: unexpected argument: $1" >&2; return 2; fi
+                ;;
+        esac
+        shift
+    done
+
+    if [ -z "$target" ]; then
+        echo "usage: fw worktree remove <name-or-path> [--force]" >&2
+        return 2
+    fi
+
+    git rev-parse --git-dir >/dev/null 2>&1 || {
+        echo "worktree remove: not inside a git repository" >&2; return 1; }
+
+    local _WT_REMOVE_PATH="" _WT_REMOVE_BRANCH=""
+    if ! _wt_remove_resolve "$target"; then
+        echo "worktree remove: no linked worktree matches '$target'" >&2
+        echo "  Run 'fw worktree status' to see registered worktrees." >&2
+        return 1
+    fi
+
+    # T-2825 gotcha: bin/fw runs under `set -euo pipefail` -- `summary="$(cmd)"; rc=$?`
+    # aborts the whole script the instant cmd returns non-zero (a plain assignment
+    # statement is not exempt from errexit). `|| rc=$?` keeps the statement's own
+    # exit status 0 so errexit never fires.
+    local summary rc=0
+    summary="$(_wt_unpushed_summary "$_WT_REMOVE_BRANCH")" || rc=$?
+
+    if [ "$rc" != "0" ] && [ "$force" != "1" ]; then
+        echo "worktree remove: REFUSED -- branch '$_WT_REMOVE_BRANCH' has commits not on any remote" >&2
+        echo "$summary" | sed 's/^/  /' >&2
+        echo "" >&2
+        echo "  Removing this worktree now would strand those commits (no cwd left to push" >&2
+        echo "  from -- origin: T-2428/T-2825, a branch that sat unpushed for 5 weeks this way)." >&2
+        echo "" >&2
+        echo "  Push first:   git -C $_WT_REMOVE_PATH push origin $_WT_REMOVE_BRANCH" >&2
+        echo "  Or override:  fw worktree remove $target --force   (logged Tier-2)" >&2
+        return 1
+    fi
+
+    if [ "$rc" != "0" ] && [ "$force" = "1" ]; then
+        echo "worktree remove: --force override -- proceeding with unpushed commits:" >&2
+        echo "$summary" | sed 's/^/  /' >&2
+        _wt_log_tier2_bypass "$_WT_REMOVE_BRANCH" "$summary"
+    fi
+
+    if git worktree remove "$_WT_REMOVE_PATH" 2>/dev/null; then
+        echo "Removed worktree: $_WT_REMOVE_PATH (branch '$_WT_REMOVE_BRANCH' kept)"
+    elif [ "$force" = "1" ] && git worktree remove --force "$_WT_REMOVE_PATH" 2>/dev/null; then
+        echo "Removed worktree --force: $_WT_REMOVE_PATH (branch '$_WT_REMOVE_BRANCH' kept)"
+    else
+        echo "worktree remove: git worktree remove failed (dirty/locked?) -- inspect manually: $_WT_REMOVE_PATH" >&2
+        return 1
+    fi
+    return 0
+}
+
+# _wt_log_tier2_bypass <branch> <summary> — append a Tier-2 entry, same append-only
+# YAML-list-of-blocks convention as lib/inception.sh:_log_file / lib/review.sh.
+_wt_log_tier2_bypass() {
+    local branch="$1" summary="$2"
+    local log_file="${PROJECT_ROOT:-.}/.context/working/.gate-bypass-log.yaml"
+    local ts; ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    mkdir -p "$(dirname "$log_file")" 2>/dev/null
+    {
+        echo "- timestamp: '$ts'"
+        echo "  branch: '$branch'"
+        echo "  flag: '--force'"
+        echo "  caller: 'do_worktree_remove'"
+        echo "  reason: 'worktree teardown unpushed-commit guard (G-076, T-2825)'"
+        printf '  summary: %s\n' "$(printf '%s' "$summary" | head -1 | tr -d '\n' | sed "s/'/''/g" | sed "s/^/'/; s/\$/'/")"
+    } >> "$log_file" 2>/dev/null
+}
+
 # ── fw worktree gc (T-100196 slice 2) ────────────────────────────────────────
 # Reclaim landed worktrees + branches. The core problem (T-100199 finding):
 # `git cherry` compares patch-ids, which NEVER match after re-derivation
