@@ -2241,11 +2241,23 @@ _t2094_emit_doctor_advisory() {
     # was not selected` — the harness describing itself, read for a long time as
     # a consumer fault. Fall back to FRAMEWORK_ROOT for consumers that genuinely
     # have no vendored copy (shared-tooling / global installs).
+    #
+    # BOTH the binary and FRAMEWORK_ROOT must move together. `fw` honours an
+    # inherited FRAMEWORK_ROOT over its own location, and T-2099's fork-bomb fix
+    # exports it scoped to the temp clone — so invoking the consumer's binary
+    # while that export is still live puts the consumer's fw back into global
+    # mode against the clone, and the output is byte-identical to not having
+    # changed anything. Measured: same binary, clean env → "Active mode:
+    # vendored"; with FRAMEWORK_ROOT inherited → "Active mode: global … vendored
+    # copy exists but was not selected".
     local _doctor_fw="$FRAMEWORK_ROOT/bin/fw"
+    local _doctor_fw_root="$FRAMEWORK_ROOT"
     if [ -x "$target_dir/.agentic-framework/bin/fw" ]; then
         _doctor_fw="$target_dir/.agentic-framework/bin/fw"
+        _doctor_fw_root="$target_dir/.agentic-framework"
     fi
-    _doctor_out=$(PROJECT_ROOT="$target_dir" "$_doctor_fw" doctor 2>&1) || _doctor_rc=$?
+    _doctor_out=$(PROJECT_ROOT="$target_dir" FRAMEWORK_ROOT="$_doctor_fw_root" \
+                  "$_doctor_fw" doctor 2>&1) || _doctor_rc=$?
     echo "$_doctor_out" | awk 'NR<=20 {print "    " $0}'
     echo ""
     if [ "$_doctor_rc" -ne 0 ]; then

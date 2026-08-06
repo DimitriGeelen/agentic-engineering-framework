@@ -15,9 +15,15 @@ setup() {
     FW_ROOT="$BATS_TEST_DIRNAME/../.."
 
     # Stand in for the temporary upstream clone.
+    # The stubs echo the FRAMEWORK_ROOT they were handed as well as their own
+    # identity. Both channels matter: `fw` honours an inherited FRAMEWORK_ROOT
+    # over its own location, so running the consumer's binary with the clone's
+    # FRAMEWORK_ROOT still exercises the clone. The first version of this fix
+    # switched only the binary, these tests passed, and live behaviour was
+    # completely unchanged — which is why the env is asserted here too.
     UPSTREAM="$BATS_TEST_TMPDIR/upstream/fw"
     mkdir -p "$UPSTREAM/bin"
-    printf '#!/usr/bin/env bash\necho UPSTREAM_FW_RAN\n' > "$UPSTREAM/bin/fw"
+    printf '#!/usr/bin/env bash\necho UPSTREAM_FW_RAN\necho "FR=$FRAMEWORK_ROOT"\n' > "$UPSTREAM/bin/fw"
     chmod +x "$UPSTREAM/bin/fw"
 
     # Stand in for the consumer project.
@@ -32,7 +38,8 @@ setup() {
 
 _give_consumer_vendored_fw() {
     mkdir -p "$CONSUMER/.agentic-framework/bin"
-    printf '#!/usr/bin/env bash\necho CONSUMER_FW_RAN\n' > "$CONSUMER/.agentic-framework/bin/fw"
+    printf '#!/usr/bin/env bash\necho CONSUMER_FW_RAN\necho "FR=$FRAMEWORK_ROOT"\n' \
+        > "$CONSUMER/.agentic-framework/bin/fw"
     chmod +x "$CONSUMER/.agentic-framework/bin/fw"
 }
 
@@ -43,10 +50,21 @@ _give_consumer_vendored_fw() {
     [[ "$output" != *"UPSTREAM_FW_RAN"* ]]
 }
 
-@test "no vendored copy: advisory falls back to FRAMEWORK_ROOT's fw" {
+@test "vendored consumer: FRAMEWORK_ROOT moves with the binary" {
+    # The load-bearing assertion. Switching only the binary leaves the consumer's
+    # fw resolving against the temp clone, and the observable behaviour is
+    # identical to no fix at all.
+    _give_consumer_vendored_fw
+    run _t2094_emit_doctor_advisory "$CONSUMER"
+    [[ "$output" == *"FR=$CONSUMER/.agentic-framework"* ]]
+    [[ "$output" != *"FR=$UPSTREAM"* ]]
+}
+
+@test "no vendored copy: advisory falls back to FRAMEWORK_ROOT's fw and root" {
     # Shared-tooling / global consumers must keep working.
     run _t2094_emit_doctor_advisory "$CONSUMER"
     [[ "$output" == *"UPSTREAM_FW_RAN"* ]]
+    [[ "$output" == *"FR=$UPSTREAM"* ]]
 }
 
 @test "non-executable vendored fw falls back rather than failing" {
