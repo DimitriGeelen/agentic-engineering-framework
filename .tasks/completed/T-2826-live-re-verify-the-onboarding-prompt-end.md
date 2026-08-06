@@ -4,10 +4,10 @@ name: "live re-verify the onboarding prompt end-to-end after T-2818 + T-2821"
 description: >
   live re-verify the onboarding prompt end-to-end after T-2818 + T-2821
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T13:14:08Z
-last_update: '2026-08-06T13:15:11Z'
-date_finished:
+last_update: 2026-08-06T13:19:56Z
+date_finished: 2026-08-06T13:19:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -340,3 +340,22 @@ grep -q 'MEASURED RED' .tasks/active/T-2826-live-re-verify-the-onboarding-prompt
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2826-live-re-verify-the-onboarding-prompt-end.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8ac05a09
+- **Timestamp:** 2026-08-06T13:19:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 16
+     - evidence: `ls .tasks/active/T-2827-*.md >/dev/null 2>&1 || ls .tasks/completed/T-2827-*.md >/dev/null 2>&1`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 19
+     - evidence: `grep -q 'MEASURED RED' .tasks/active/T-2826-live-re-verify-the-onboarding-prompt-end.md || grep -q 'MEASURED RED' .tasks/completed/T-2826-live-re-verify-the-onboarding-prompt-end.md`
+
+### 2026-08-06T13:19:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

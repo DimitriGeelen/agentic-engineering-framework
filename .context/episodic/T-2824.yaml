@@ -1,0 +1,117 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2824: triage and recover the two stranded worktrees before source-only enforcement
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T11:30:03Z
+# ============================================================================
+
+task_id: T-2824
+task_name: "triage and recover the two stranded worktrees before source-only enforcement"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T11:19:57Z
+completed: 2026-08-06T11:29:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T13:22:57+02:00
+last_commit: 2026-08-06T13:27:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  recover stranded governance artifacts — 26 handovers, T-2323/T-2324 inception reports (the strand's T-2324 carries a 4-candidate CSMA/CD analysis master never got), P-051 pickup, T-2505 report as T-2822 prior art, and G-083 re-minted as G-074 (worktree-allocated IDs are not authoritative; master ran to G-073). recover the worktree-teardown remediation — strand T-2428 re-minted as T-2825, its gaps G-071/G-072 re-minted as G-075/G-076 (master's G-071/G-072 are DIFFERENT gaps: the split-view collision extends to the gap ID space, not just tasks). triage table, RCA and pruning proposal — all 11 artifacts disposed, 9 verification lines rehearsed under pipefail; branch deletion left to the operator (Tier 0) and branches held as T-2825's evidence base
+
+# Key outcomes
+outcomes:
+  - 'Every governance artifact absent from master is recovered or explicitly declined, with the decision recorded per path — see the triage table above; all 11 rows disposed'
+  - 'The three colliding IDs are re-minted, not overwritten: `T-2505`/`T-2506`/`T-2428` on master are untouched; the recovered task was minted through the allocator as T-2825, not hand-written'
+  - '`bash agents/git/lib/dup-task-scan.sh scan-worktree` and `scan-staged` both exit 0 after recovery'
+  - 'Strand-B source files are explicitly NOT recovered — no path under `lib/`, `agents/`, or `bin/` appears in this task''s commits'
+  - 'Dated handovers from both strands are recovered (26); `LATEST.md` left untouched so the current pointer is not rewound'
+  - 'The gap is present on master after recovery — re-minted as G-074 rather than restored as G-083, because worktree-allocated IDs are not authoritative; G-075/G-076 recovered on the same basis'
+  - 'Branch pruning is proposed to the operator with counts, and NOT executed under agent authority — see §Recommendation; branch deletion is Tier 0'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/handovers/S-2026-0618-0837.md'
+  - '.context/handovers/S-2026-0618-1245.md'
+  - '.context/handovers/S-2026-0618-1432.md'
+  - '.context/handovers/S-2026-0619-0011.md'
+  - '.context/handovers/S-2026-0619-1252.md'
+  - '.context/handovers/S-2026-0620-0838.md'
+  - '.context/handovers/S-2026-0620-1050.md'
+  - '.context/handovers/S-2026-0621-0813.md'
+  - '.context/handovers/S-2026-0621-0926.md'
+  - '.context/handovers/S-2026-0621-1126.md'
+  - '.context/handovers/S-2026-0621-1213.md'
+  - '.context/handovers/S-2026-0621-1327.md'
+  - '.context/handovers/S-2026-0621-1404.md'
+  - '.context/handovers/S-2026-0621-1647.md'
+  - '.context/handovers/S-2026-0621-1746.md'
+  - '.context/handovers/S-2026-0622-1100.md'
+  - '.context/handovers/S-2026-0622-1222.md'
+  - '.context/handovers/S-2026-0622-1346.md'
+  - '.context/handovers/S-2026-0623-0840.md'
+  - '.context/handovers/S-2026-0623-1048.md'
+  - '.context/handovers/S-2026-0623-1801.md'
+  - '.context/handovers/S-2026-0623-2226.md'
+  - '.context/handovers/S-2026-0624-0039.md'
+  - '.context/handovers/S-2026-0624-0833.md'
+  - '.context/handovers/S-2026-0624-1242.md'
+  - '.context/handovers/S-2026-0701-1342.md'
+  - '.context/handovers/S-2026-0805-2352.md'
+  - '.context/pickup/processed/P-051-feature-proposal.yaml'
+  - '.context/project/concerns.yaml'
+  - 'docs/reports/T-2323-yield-point-granularity-inception.md'
+  - 'docs/reports/T-2324-disjoint-write-set-policy-inception.md'
+  - 'docs/reports/T-2822-prior-art-stranded-worktree-usage-policy.md'
+  - '.tasks/active/T-2824-triage-and-recover-the-two-stranded-work.md'
+  - '.tasks/active/T-2825-worktree-teardown-strands-unpushed-commi.md'
+  - '.tasks/completed/T-2823-duplicate-task-id-check-blocks-the-incep.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T13:22:57'
+    action: 'T-2824: recover stranded governance artifacts — 26 handovers, T-2323/T-2324 inception reports (the strand''s T-2324 carries a 4-candidate CSMA/CD analysis master never got), P-051 pickup, T-2505 report as T-2822 prior art, and G-083 re-minted as G-074 (worktree-allocated IDs are not authoritative; master ran to G-073)'
+  - time: '2026-08-06T13:25:47'
+    action: 'T-2824: recover the worktree-teardown remediation — strand T-2428 re-minted as T-2825, its gaps G-071/G-072 re-minted as G-075/G-076 (master''s G-071/G-072 are DIFFERENT gaps: the split-view collision extends to the gap ID space, not just tasks)'
+  - time: '2026-08-06T13:27:20'
+    action: 'T-2824: triage table, RCA and pruning proposal — all 11 artifacts disposed, 9 verification lines rehearsed under pipefail; branch deletion left to the operator (Tier 0) and branches held as T-2825''s evidence base'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 3
+  files_changed: 35
+  lines_added: 30539
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2824-triage-and-recover-the-two-stranded-work.md
+generated_by: context-agent-hybrid

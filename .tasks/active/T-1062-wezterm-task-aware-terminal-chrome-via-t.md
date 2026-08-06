@@ -13,7 +13,7 @@ tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:02Z
-last_update: 2026-07-30T00:41:04Z
+last_update: 2026-08-06T12:03:43Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2821: fw init leaves a project with no HEAD, hard-blocking background agent sessions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T10:57:51Z
+# ============================================================================
+
+task_id: T-2821
+task_name: "fw init leaves a project with no HEAD, hard-blocking background agent sessions"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T06:38:23Z
+completed: 2026-08-06T10:57:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T08:40:58+02:00
+last_commit: 2026-08-06T12:44:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init leaves no HEAD — hard-deadlocks the first background agent session. refresh vendored copies (init.sh identity block from T-2818)
+
+# Key outcomes
+outcomes:
+  - 'A fresh `fw init` leaves the project with a resolvable `HEAD`, proven by'
+  - '`git worktree add` succeeds in a freshly-initialised project — the actual'
+  - 'The chosen mechanism does **not** steal onboarding task T-003 ("First governed'
+  - 'The initial commit passes the framework''s own hooks (commit-msg task'
+  - 'Decide and record whether the framework payload is committed or left untracked.'
+  - 'Both states pinned by a bats test executed by a real runner'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-06 — bootstrap-commit mechanism'
+    chose: '(a) empty root commit (`git commit --allow-empty`), created in'
+    rationale: 'Gives `rev-parse HEAD` a real answer with the smallest possible'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/VERSION'
+  - '.tasks/active/T-2821-fw-init-leaves-a-project-with-no-head-ha.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T08:40:58'
+    action: 'T-2821: fw init leaves no HEAD — hard-deadlocks the first background agent session'
+  - time: '2026-08-06T12:44:19'
+    action: 'T-2821: refresh vendored copies (init.sh identity block from T-2818)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 259 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 259
+  commits: 2
+  files_changed: 3
+  lines_added: 308
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2821-fw-init-leaves-a-project-with-no-head-ha.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2823: duplicate task ID check blocks the inception-decide commit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T11:19:43Z
+# ============================================================================
+
+task_id: T-2823
+task_name: "duplicate task ID check blocks the inception-decide commit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T11:05:46Z
+completed: 2026-08-06T11:19:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T13:17:07+02:00
+last_commit: 2026-08-06T13:17:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  not reproducible — index clean, both scan modes rc=0; RCA records the hypothesis without shipping an unfalsifiable fix, and routes the real exposure (cross-view duplicate IDs) to OBS-174 + T-2822 slices
+
+# Key outcomes
+outcomes:
+  - 'The recorded GO decision on T-2822 is committed and pushed — `cff8d0899`, `git rev-list --count origin/master..HEAD` = 0'
+  - 'Index state captured at investigation time: `git ls-files --cached` lists **only** `.tasks/completed/T-2822-*.md`; on-disk holds only the completed path; `git status` shows a clean `RM` rename'
+  - 'Both scanner modes re-run and shown passing: `dup-task-scan.sh scan-staged` rc=0, `scan-worktree` rc=0'
+  - 'No fix shipped, therefore nothing to regression-test or mutation-check — `git diff` shows `agents/git/lib/dup-task-scan.sh` unmodified'
+  - 'The real duplicate-ID exposure found during investigation is filed where it can be acted on (OBS-174, and the cross-view doctor check folded into T-2822''s slices) rather than closed with this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'not reproducible — index clean, both scan modes rc=0; RCA records the hypothesis without shipping an unfalsifiable fix, and routes the real exposure (cross-view duplicate IDs) to OBS-174 + T-2822 slices'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2823-duplicate-task-id-check-blocks-the-incep.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T13:17:07'
+    action: 'T-2823: not reproducible — index clean, both scan modes rc=0; RCA records the hypothesis without shipping an unfalsifiable fix, and routes the real exposure (cross-view duplicate IDs) to OBS-174 + T-2822 slices'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 1
+  lines_added: 303
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2823-duplicate-task-id-check-blocks-the-incep.md
+generated_by: context-agent-hybrid

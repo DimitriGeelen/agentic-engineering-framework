@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2826: live re-verify the onboarding prompt end-to-end after T-2818 + T-2821
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T13:20:09Z
+# ============================================================================
+
+task_id: T-2826
+task_name: "live re-verify the onboarding prompt end-to-end after T-2818 + T-2821"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T13:14:08Z
+completed: 2026-08-06T13:19:56Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T15:19:49+02:00
+last_commit: 2026-08-06T15:19:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  onboarding prompt re-verified LIVE on published bytes (7b143ad5e) — by-hand path GREEN end-to-end (init 0, HEAD resolvable, no credential leak, work-on 0, governed commit 0, commit-msg gate fires on negative control); worktree-isolation leg MEASURED RED — T-2821's --allow-empty bootstrap yields a zero-file tree so git worktree add still produces an empty worktree (OBS-178, fix task T-2827); window bounded to fw-init-to-first-content-commit, which is exactly the onboarding window
+
+# Key outcomes
+outcomes:
+  - 'Published mirror is at or ahead of the local commit carrying T-2818 + T-2821, so the'
+  - 'A fresh `fw init` in an empty directory exits 0 and leaves a **resolvable HEAD**'
+  - 'The worktree-isolation precondition is **measured** end-to-end (not inferred from'
+  - 'The initialised project''s tracked `.framework.yaml` contains **no credential**'
+  - '`fw work-on` in the fresh project creates a first task and exits 0, and the resulting'
+  - 'Findings recorded in the task body with an explicit verdict per prompt-shape, and any'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'onboarding prompt re-verified LIVE on published bytes (7b143ad5e) — by-hand path GREEN end-to-end (init 0, HEAD resolvable, no credential leak, work-on 0, governed commit 0, commit-msg gate fires on negative control); worktree-isolation leg MEASURED RED — T-2821''s --allow-empty bootstrap yields a zero-file tree so git worktree add still produces an empty worktree (OBS-178, fix task T-2827); window bounded to fw-init-to-first-content-commit, which is exactly the onboarding window'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2826-live-re-verify-the-onboarding-prompt-end.md'
+  - '.tasks/active/T-2827-fw-init-bootstrap-commit-has-an-empty-tr.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T15:19:49'
+    action: 'T-2826: onboarding prompt re-verified LIVE on published bytes (7b143ad5e) — by-hand path GREEN end-to-end (init 0, HEAD resolvable, no credential leak, work-on 0, governed commit 0, commit-msg gate fires on negative control); worktree-isolation leg MEASURED RED — T-2821''s --allow-empty bootstrap yields a zero-file tree so git worktree add still produces an empty worktree (OBS-178, fix task T-2827); window bounded to fw-init-to-first-content-commit, which is exactly the onboarding window'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 3
+  lines_added: 593
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2826-live-re-verify-the-onboarding-prompt-end.md
+generated_by: context-agent-hybrid
