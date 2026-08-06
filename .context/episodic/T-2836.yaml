@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2836: 20 router verbs are undiscoverable from fw help
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T20:59:00Z
+# ============================================================================
+
+task_id: T-2836
+task_name: "20 router verbs are undiscoverable from fw help"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T20:50:31Z
+completed: 2026-08-06T20:58:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T22:55:27+02:00
+last_commit: 2026-08-06T22:55:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw help lists the 20 verbs that only the router knew about. refresh vendored copies (bin/fw help entries)
+
+# Key outcomes
+outcomes:
+  - 'All 20 missing verbs have a `show_help()` entry with an accurate one-line'
+  - 'Each description is derived from the verb''s actual dispatch target —'
+  - '`tests/lint/help-router-parity.bats` passes both tests (was red before'
+  - '`bash -n bin/fw` clean and `fw help` still exits 0.'
+  - 'No added description hard-codes a port literal (`3000`) — the exact'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.tasks/active/T-2836-20-router-verbs-are-undiscoverable-from-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T22:55:27'
+    action: 'T-2836: fw help lists the 20 verbs that only the router knew about'
+  - time: '2026-08-06T22:55:55'
+    action: 'T-2836: refresh vendored copies (bin/fw help entries)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 4
+  lines_added: 349
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2836-20-router-verbs-are-undiscoverable-from-.md
+generated_by: context-agent-hybrid
