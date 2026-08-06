@@ -37,6 +37,11 @@ SETTINGS = [
     # this parity since T-1187 and was failing unread — see T-2837.
     ("DISPATCH_MODEL_DEFAULT", "", "Default LLM model for fw termlink dispatch when --model omitted (e.g. sonnet, haiku, opus); T-1643/W3"),
     ("ARC_COMPLETION_THRESHOLD", "0.80", "Ratio of completed children at which fw audit warns an in-progress arc (G-062 mechanism #2); T-1656"),
+    # T-2842: honoured by shipped code and documented in CLAUDE.md, but absent
+    # from the registry — so they were env-var-only and never rendered here.
+    ("BRANCH_BEHIND_WARN", "50", "Commits-behind-origin/master threshold for the branch-hygiene WARN and handover merge-back nudge; T-100143/T-100144"),
+    ("STALE_ARC_DAYS", "30", "Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale; T-1855"),
+    ("RETIRE_WHEN_ADVISORY", "1", "Enable the audit retire_when advisory rail for free drivers; 0 silences the section; T-2169"),
 ]
 
 
