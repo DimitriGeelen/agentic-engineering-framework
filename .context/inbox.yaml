@@ -1327,3 +1327,38 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-174
+  text: "T-2822/S1: 3 live git worktrees under .claude/worktrees/ hold 43 unlanded commits dormant 5 weeks — inception-gov-payload-mediation (6) and rca-worktree-push-strand (37). Invisible to every surface: .git/info/exclude keeps git status clean, and fw doctor diverged-fork watches only the session branch, not sibling worktrees. Contents include the stranded T-2505 worktree-usage-policy inception and gap G-083 (MAIN<->worktree divergence blindness), neither of which exists on master. Task IDs T-2505/T-2506 are duplicated across the two views. Needs a recovery/triage task separate from the T-2822 policy decision."
+  captured: 2026-08-06T10:51:58Z
+  context_task: T-2822
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-175
+  text: "T-2821 root-cause correction (verified live, git 2.43.0): 'git worktree add needs a HEAD' is FALSE. On a repo with unborn HEAD it returns RC=0, prints 'No possible source branch, inferring --orphan', and silently produces an EMPTY orphan worktree containing only .git — zero project files, HEAD still unresolvable inside it. So the deadlock is not refusal, it is EMPTINESS: the background session isolates into a valid-looking worktree with no .claude/, no .agentic-framework/, no source. A git-level false-green. The T-2821 fix is still correct and now more clearly motivated; only the prose Context was wrong. tests/unit/init_head_bootstrap.bats test 2 already asserted the right thing ('checks out from the real HEAD, not an orphan')."
+  captured: 2026-08-06T10:59:35Z
+  context_task: T-2822
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-176
+  text: "Structural gap found while recovering T-2821: a TermLink worker closed the task (--status work-completed passed P-010/P-011) but died before committing, leaving the entire deliverable (lib/init.sh bootstrap block + tests/unit/init_head_bootstrap.bats) uncommitted on disk with the task in completed/. Two holes: (1) nothing detects 'task work-completed but its referenced deliverable is uncommitted/untracked' — the close gate runs verification, not git state; (2) the task cannot be reopened, since update-task.sh has no work-completed -> issues|started-work transition, so recovery requires either a new task or hand-moving the file out of completed/. Sibling of the T-2036 post-completion focus deadlock."
+  captured: 2026-08-06T10:59:39Z
+  context_task: T-2822
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-177
+  text: "T-2825 worktree-remove guard ships a false-positive that makes --force routine. lib/worktree.sh compares only against the SAME-NAMED remote branch (origin/<branch>..<branch>). Under the T-100196 flow, work FF-lands onto master and the per-branch remote ref is stale or absent, so the predicate reports unlanded work that is fully landed. Measured live: t100199-close refused with 'REFUSED -- branch has commits not on any remote / 31 commit(s)', while git rev-list --count origin/master..t100199-close = 0 AND git log t100199-close --not --remotes = 0. The message's own claim ('not on any remote') is false; the check never consults any remote but one. Exit code is correct (1) on both paths, so the refusal is real, not cosmetic. Effect: every worktree whose work landed on master is permanently unremovable except via --force, which reinstates the exact bypass habit the guard exists to prevent. Correct predicate is reachability from ANY remote ref (git log <branch> --not --remotes), or content comparison per T-100142 fw worktree gc, which was written this way precisely because re-derivation defeats naive ref comparison. Guard is otherwise sound: refuses correctly on the genuinely-stranded worktrees, message is clear and names both remedies."
+  captured: 2026-08-06T12:31:24Z
+  context_task: T-100196
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-178
+  text: "T-2821 moved the empty-worktree deadlock, it did not remove it. Measured live on published bytes (7b143ad5e): fw init now leaves a resolvable HEAD, but that HEAD is the --allow-empty T-000 bootstrap commit whose tree contains ZERO files. git worktree add at that HEAD returns RC=0 and yields a worktree containing only .git — same user-visible failure as OBS-175, different mechanism (empty tree checked out, vs orphan inference). Bounded: after the project's first CONTENT commit a new worktree populates correctly (10 entries, CLAUDE.md + .tasks present). So the exposure window is exactly fw-init-to-first-content-commit, which is precisely the onboarding window in which a fresh consumer would dispatch a background agent. fw init leaves 11 entries uncommitted, so nothing closes the window automatically. Candidate fix: bootstrap commit should commit the scaffolding fw init just created rather than being empty; or worktree creation preflights for an empty tree, not just an unresolvable HEAD. T-2821's unit tests assert HEAD resolvability, which is why they are green on a state that still fails the real use."
+  captured: 2026-08-06T13:17:41Z
+  context_task: T-2826
+  tags: []
+  status: pending
+  promoted_to: null
