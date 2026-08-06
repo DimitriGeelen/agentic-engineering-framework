@@ -629,6 +629,37 @@ fw inception decide T-608 go --rationale "approved"
 - **T-609:** User ran `fw inception decide` from `/home/dimitri-mint-dev/` — got "No framework project detected". Three errors from one missing `cd`.
 - **T-1257:** Agent on `/003-NTB-ATC-Plugin` (consumer) told user to run `bin/fw` — consumer has no `bin/` at root, only `.agentic-framework/bin/fw`. The generic rule "use `bin/fw`" was correct for the framework repo but wrong for consumers.
 
+**6. Worktree durability (T-2825, G-075):** if the command's `cd` prefix targets a
+`.claude/worktrees/<name>` path AND the command outlives the current session (a push,
+a Tier 0 approval, a review handoff — anything the human might run minutes, hours, or
+days later), use the **durable main-repo path plus an explicit branch ref** instead.
+A worktree is ephemeral by construction (`fw worktree remove` / `fw worktree gc` can
+delete the directory at any time — see §Trunk-Based Session Flow); the branch survives
+teardown, the directory does not. Handing off a `cd .../.claude/worktrees/<name> && …`
+one-liner for anything other than immediate, same-session use bets the command on a
+path that may already be gone by the time the human runs it.
+
+- **Bad — worktree cwd for a command that outlives the session:**
+  ```
+  cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/livefire-t2389 && git push origin t2353-audit-emit-tasks
+  ```
+  If the worktree is torn down before the human pastes this, `cd` fails and the push
+  never happens — the branch's commits sit unpushed with no surfaced reason why
+  (origin: T-2428 — exactly this shape, 6 commits stranded 5 weeks).
+- **Good — durable main-repo path, explicit branch ref:**
+  ```
+  cd /opt/999-Agentic-Engineering-Framework && git push origin t2353-audit-emit-tasks
+  ```
+  Works whether the worktree still exists or was already removed — `git push
+  origin <branch>` only needs the branch ref in the main checkout's repo, not the
+  worktree directory.
+
+The distinction is **lifetime**, not location: a command you expect the human to run
+in the next few seconds while still inside the worktree (e.g. `fw work-on "…"` right
+after `fw worktree create`) may legitimately use the worktree cwd. Anything you are
+handing off for *later* — push, Tier 0 approval, `fw task review`, `fw inception
+decide` — must not.
+
 ### Inception Discipline
 When the active task has `workflow_type: inception`:
 1. **State the phase** — Say "This is an inception/exploration task" before doing any work

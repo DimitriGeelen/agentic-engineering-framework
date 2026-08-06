@@ -2581,6 +2581,23 @@ concerns:
   created: 2026-07-01
   last_reviewed: 2026-07-01
   related_task: T-2825
+  status: resolved
+  fixed_in: T-2825
+  fixed_date: 2026-08-06
+  resolution: |
+    Both proposed mechanisms shipped. (1) CLAUDE.md §Copy-Pasteable Commands gained
+    a "Worktree durability" clause (point 6): a handoff command whose `cd` prefix
+    targets `.claude/worktrees/<name>` AND whose chained verb outlives the session
+    (push, Tier 0 approval, task/arc review, inception decide) must use the durable
+    main-repo path + explicit branch ref instead, with worked Bad/Good examples
+    mirroring the T-2428 origin failure. (2) lib/reviewer/static_scan.py:
+    detect_worktree_handoff_durability (pattern_id worktree-handoff-durability,
+    heuristic/partial → CONCERN) scans task bodies for the offending
+    `cd .../.claude/worktrees/<name> && ... <push|tier0 approve|task review|
+    inception decide|arc close|arc approve-driver>` shape, wired into scan_task's
+    detector pipeline. 15 tests: tests/unit/test_reviewer_worktree_handoff_durability.py
+    (11, incl. same-session-use and durable-path negatives) +
+    tests/unit/t2825_worktree_remove.bats (7, covers G-076 below).
 - id: G-076
   type: gap
   title: "Worktree teardown strands unpushed commits — no unpushed-commit guard on worktree removal / session-exit cleanup"
@@ -2611,3 +2628,27 @@ concerns:
   created: 2026-07-01
   last_reviewed: 2026-07-01
   related_task: T-2825
+  status: resolved
+  fixed_in: T-2825
+  fixed_date: 2026-08-06
+  resolution: |
+    Shipped as the `fw worktree remove` wrapper mechanism (lib/worktree.sh:
+    do_worktree_remove, wired at `fw worktree remove <name> [--force]`), the
+    first of the two proposed mechanisms. For each configured remote it checks
+    whether the worktree's branch tip is fully caught up (`git rev-list --count
+    <remote>/<branch>..<branch>`); refuses removal unless at least one remote has
+    every commit. A repo with zero remotes configured fails closed (cannot prove
+    anything is pushed). `--force` proceeds and appends a Tier-2 entry to
+    .context/working/.gate-bypass-log.yaml (same append-only convention as
+    lib/inception.sh / lib/review.sh). The worktree directory is removed; the
+    branch is kept (branch deletion stays Tier-0, matching `fw worktree gc`).
+    Regression: tests/unit/t2825_worktree_remove.bats (7/7 — unpushed-refused,
+    pushed-succeeds, zero-commits-ahead-succeeds, --force-overrides-and-logs,
+    no-remotes-fails-closed, unknown-name-errors, missing-arg-usage).
+    Mutation-checked live: neutralising the refusal branch (`&& false`) turned
+    tests 1 and 5 red; restored and re-verified green.
+    Live-proven against the two worktrees this task's own T-2824 triage measured:
+    `fw worktree remove inception-gov-payload-mediation` reports 3 commits on
+    neither origin nor github; `fw worktree remove rca-worktree-push-strand`
+    reports the branch itself absent from both remotes — both REFUSED, matching
+    `git log <remote>/<branch>..<branch>` run by hand.

@@ -2498,6 +2498,63 @@ def detect_write_set_underdeclared(meta: dict | None, body: str) -> list[Finding
     return findings
 
 
+# ───── worktree-handoff-durability detector (T-2825, G-075 static backstop) ─────
+#
+# CLAUDE.md §Copy-Pasteable Commands (T-2825 worktree-durability clause): a handoff
+# command whose `cd` prefix targets `.claude/worktrees/<name>` and whose chained
+# verb outlives the current session (push, Tier 0 approval, task/arc review or
+# decision handoff) bets the command on a directory that may already be torn down
+# by the time the human runs it — `fw worktree remove` / `fw worktree gc` can
+# delete it at any point after the session ends. Origin: T-2428 — a handoff
+# one-liner `cd .../.claude/worktrees/livefire-t2389 && …` failed with `cd: No
+# such file or directory` days later; the branch's 6 commits sat unpushed for 5
+# weeks because nothing ever re-surfaced the failure.
+#
+# Single-line match (CLAUDE.md's own "no bare multi-line" rule for handoff
+# commands means the cd-prefix and the outliving verb are chained with `&&` on
+# one line): `cd <path containing .claude/worktrees/NAME> && ... <verb>`.
+_WORKTREE_HANDOFF_VERB_RE = (
+    r"(?:git\s+push|push\s+origin|fw\s+tier0\s+approve|tier0\s+approve|"
+    r"fw\s+task\s+review(?:-batch)?|task\s+review(?:-batch)?|"
+    r"fw\s+inception\s+decide|inception\s+decide|"
+    r"fw\s+arc\s+close|arc\s+close|fw\s+arc\s+approve-driver)"
+)
+_WORKTREE_HANDOFF_RE = re.compile(
+    r"cd\s+\S*\.claude/worktrees/[^\s&]+[^\n]*?&&[^\n]*?\b" + _WORKTREE_HANDOFF_VERB_RE + r"\b",
+    re.IGNORECASE,
+)
+
+
+def detect_worktree_handoff_durability(body: str) -> list[Finding]:
+    """Handoff command chains a `.claude/worktrees/` cd-prefix to a verb that
+    outlives the session (push / tier0 approve / task review / inception decide
+    / arc close|approve-driver).
+
+    Heuristic, partial lie-severity → CONCERN, needs_human=no.
+    Origin: T-2825 (G-075 static backstop), CLAUDE.md §Copy-Pasteable Commands
+    worktree-durability clause.
+    """
+    findings: list[Finding] = []
+    if not body:
+        return findings
+
+    for lineno, raw_line in enumerate(body.splitlines(), start=1):
+        m = _WORKTREE_HANDOFF_RE.search(raw_line)
+        if not m:
+            continue
+        findings.append(
+            Finding(
+                pattern_id="worktree-handoff-durability",
+                pattern_name="Handoff command uses ephemeral .claude/worktrees/ cwd for a verb that outlives the session (T-2825, G-075)",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location=f"body:line {lineno}",
+                evidence=m.group(0).strip()[:200],
+            )
+        )
+    return findings
+
+
 # ───────────────────────── Orchestration ─────────────────────────
 
 
@@ -2603,6 +2660,10 @@ def scan_task(
     # v1.7 +1: T-2504 — write-set-underdeclared (T-2324 IW-4); write_set:
     # declared but body references source-dir paths not covered by any glob.
     findings.extend(detect_write_set_underdeclared(meta, body))
+    # v1.7 +2: T-2825 — worktree-handoff-durability (G-075 static backstop);
+    # handoff command chains a `.claude/worktrees/` cd-prefix to a verb that
+    # outlives the session.
+    findings.extend(detect_worktree_handoff_durability(body))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

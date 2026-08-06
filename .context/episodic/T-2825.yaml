@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2825: worktree teardown strands unpushed commits and handoff commands use ephemeral worktree paths
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T12:02:23Z
+# ============================================================================
+
+task_id: T-2825
+task_name: "worktree teardown strands unpushed commits and handoff commands use ephemeral worktree paths"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T11:24:15Z
+completed: 2026-08-06T12:02:06Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Recovered from stranded worktree (T-2824); fixes G-075 (handoff commands hard-code ephemeral worktree cwd) and G-076 (worktree teardown has no unpushed-commit guard)
+
+# Key outcomes
+outcomes:
+  - '**G-076 teardown guard (primary):** a WorktreeRemove hook or `fw worktree remove` wrapper runs `git log <remote>/<branch>..<branch>` and refuses when the worktree''s branch holds commits absent from all remotes; a Tier-2-logged `--force` proceeds. Regression test stages an unpushed-branch worktree and asserts the guard fires'
+  - 'Mutation-checked: reverting the guard makes that regression test go red'
+  - '**G-075 handoff durability:** CLAUDE.md §Copy-Pasteable Commands gains a worktree-durability clause — commands that outlive the session (push, tier0 approve, review handoff) use the durable main-repo path plus an explicit branch ref, never a `.claude/worktrees/<name>` cwd'
+  - '**G-075 static backstop:** the reviewer static scan flags a handoff command that combines a `.claude/worktrees/` cd-prefix with a push/approve/review verb'
+  - 'Guard is proven against the live case, not a synthetic one: run it against the two worktrees T-2824 triaged and show it reporting their actual unlanded counts'
+  - 'On close: G-075 and G-076 updated with `fixed_in: T-2825`; RCA finalised; `bin/fw reviewer T-2825` PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 37
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2825-worktree-teardown-strands-unpushed-commi.md
+generated_by: context-agent-hybrid

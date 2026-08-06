@@ -6,10 +6,10 @@ description: >
   Recovered from stranded worktree (T-2824); fixes G-075 (handoff commands hard-code
   ephemeral worktree cwd) and G-076 (worktree teardown has no unpushed-commit guard)
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T11:24:15Z
-last_update: '2026-08-06T11:30:07Z'
-date_finished:
+last_update: 2026-08-06T12:02:06Z
+date_finished: 2026-08-06T12:02:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,6 +45,24 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-06T11:30:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -86,12 +104,12 @@ outside its 81%.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **G-076 teardown guard (primary):** a WorktreeRemove hook or `fw worktree remove` wrapper runs `git log <remote>/<branch>..<branch>` and refuses when the worktree's branch holds commits absent from all remotes; a Tier-2-logged `--force` proceeds. Regression test stages an unpushed-branch worktree and asserts the guard fires
-- [ ] Mutation-checked: reverting the guard makes that regression test go red
-- [ ] **G-075 handoff durability:** CLAUDE.md §Copy-Pasteable Commands gains a worktree-durability clause — commands that outlive the session (push, tier0 approve, review handoff) use the durable main-repo path plus an explicit branch ref, never a `.claude/worktrees/<name>` cwd
-- [ ] **G-075 static backstop:** the reviewer static scan flags a handoff command that combines a `.claude/worktrees/` cd-prefix with a push/approve/review verb
-- [ ] Guard is proven against the live case, not a synthetic one: run it against the two worktrees T-2824 triaged and show it reporting their actual unlanded counts
-- [ ] On close: G-075 and G-076 updated with `fixed_in: T-2825`; RCA finalised; `bin/fw reviewer T-2825` PASS
+- [x] **G-076 teardown guard (primary):** a WorktreeRemove hook or `fw worktree remove` wrapper runs `git log <remote>/<branch>..<branch>` and refuses when the worktree's branch holds commits absent from all remotes; a Tier-2-logged `--force` proceeds. Regression test stages an unpushed-branch worktree and asserts the guard fires
+- [x] Mutation-checked: reverting the guard makes that regression test go red
+- [x] **G-075 handoff durability:** CLAUDE.md §Copy-Pasteable Commands gains a worktree-durability clause — commands that outlive the session (push, tier0 approve, review handoff) use the durable main-repo path plus an explicit branch ref, never a `.claude/worktrees/<name>` cwd
+- [x] **G-075 static backstop:** the reviewer static scan flags a handoff command that combines a `.claude/worktrees/` cd-prefix with a push/approve/review verb
+- [x] Guard is proven against the live case, not a synthetic one: run it against the two worktrees T-2824 triaged and show it reporting their actual unlanded counts
+- [x] On close: G-075 and G-076 updated with `fixed_in: T-2825`; RCA finalised; `bin/fw reviewer T-2825` PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -191,21 +209,67 @@ outside its 81%.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/worktree.sh
+bash -n bin/fw
+out=$(bats tests/unit/t2825_worktree_remove.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m pytest tests/unit/test_reviewer_worktree_handoff_durability.py -q > /tmp/.t2825-pytest.out 2>&1 && grep -q passed /tmp/.t2825-pytest.out
+python3 -m pytest tests/unit/test_reviewer_static_scan.py tests/unit/test_reviewer_write_set_underdeclared.py -q > /tmp/.t2825-pytest2.out 2>&1 && grep -q passed /tmp/.t2825-pytest2.out
+out=$(bin/fw reviewer T-2825 2>&1); echo "$out" | grep -q "Overall.*PASS"
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** A worktree branch (`t2353-audit-emit-tasks`, tip `b508ceef1`, 6 commits)
+was removed via `git worktree remove` while its commits existed on no remote. The
+handoff one-liner that would have pushed them (`cd .../.claude/worktrees/livefire-t2389
+&& fw tier0 approve && git push ...`) failed days later with `cd: No such file or
+directory` because the worktree directory no longer existed. The commits sat local-only
+and undiscovered for 5 weeks (measured again, still live, by T-2822/S1 — 43 unlanded
+commits across two worktrees at time of this task's filing).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause (two compounding gaps, G-075 + G-076):**
+1. **G-076 — no guard on the teardown path.** `git worktree remove` has exactly one
+   job: detach the worktree directory from git's bookkeeping. It has no opinion about
+   whether the branch it points at is reachable anywhere else. Nothing between "worktree
+   removed" and "branch reachable only from a local ref" ever fires — no hook, no CLI
+   wrapper, no warning.
+2. **G-075 — handoff commands assume the worktree cwd persists.** CLAUDE.md's own
+   Copy-Pasteable Commands rule (T-609/T-1257) mandates `cd <path> && ...`, correctly
+   generalizing across framework-repo vs consumer-project paths, but it never
+   distinguished a *durable* path (the main checkout) from an *ephemeral* one (a
+   worktree). A command meant to run later inherited a cwd with no persistence
+   guarantee.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Worktree teardown was never treated as a governed
+transition — `fw worktree create` (T-2469) and `fw worktree gc` (T-100196) both exist,
+but `git worktree remove` itself was always a raw, ungated git primitive, reachable
+directly by any Bash call. The session-end handover guard (T-1144,
+agents/handover/handover.sh:1016) pushes to all remotes at *session* end, but a
+worktree can be torn down independently of any session boundary, so that guard never
+sees it. Two governed lifecycle events (worktree birth, session end) existed; the third
+(worktree death) did not.
+
+**Prevention:**
+- `fw worktree remove <name> [--force]` (lib/worktree.sh:do_worktree_remove) is now the
+  sanctioned teardown path: for every configured remote it checks whether the branch
+  tip is fully caught up, refuses when none are, and requires a logged `--force` to
+  proceed. No-remotes-configured fails closed. tests/unit/t2825_worktree_remove.bats
+  (7/7) pins the guard; mutation-checked (neutralising the refusal turns 2 of 7 red).
+- CLAUDE.md §Copy-Pasteable Commands gained a worktree-durability clause (point 6):
+  any handoff command that outlives the session must use the durable main-repo path
+  + explicit branch ref, never a worktree cwd.
+- `lib/reviewer/static_scan.py:detect_worktree_handoff_durability` is the author-time
+  backstop for the doc rule — it flags the exact
+  `cd .../.claude/worktrees/<name> && <push|approve|review|decide>` shape in any task
+  body, CONCERN severity, 11 tests in
+  tests/unit/test_reviewer_worktree_handoff_durability.py.
+- This closes the mechanism gap, not the historical instance: `fw worktree remove` only
+  protects removals that go through it. A raw `git worktree remove` from the Bash tool
+  is still possible and outside Tier 0's string-matching scope (see CLAUDE.md's own
+  Tier 0 scope-boundary note) — the sanctioned path is the mitigation, not an absolute
+  block. G-074 (fw doctor surfacing sibling-worktree unlanded-commit counts, T-2822
+  slice 2) is the complementary passive detector for whatever slips past this active
+  guard.
 
 ## Evolution
 
@@ -258,3 +322,18 @@ outside its 81%.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2825-worktree-teardown-strands-unpushed-commi.md
 - **Context:** Initial task creation
+
+### 2026-08-06T11:52:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b8eb5c27
+- **Timestamp:** 2026-08-06T12:02:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-06T12:02:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

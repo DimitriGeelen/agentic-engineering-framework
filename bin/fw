@@ -4062,11 +4062,21 @@ EOF
                 ( cd "$PROJECT_ROOT" && do_worktree_gc "$@" )
                 exit $?
                 ;;
+            remove)
+                # T-2825, G-076: sanctioned teardown -- refuses when the worktree's
+                # branch holds commits absent from every remote (would strand them,
+                # T-2428 origin). --force overrides, logged Tier-2.
+                # shellcheck source=lib/worktree.sh
+                . "$FRAMEWORK_ROOT/lib/worktree.sh"
+                ( cd "$PROJECT_ROOT" && do_worktree_remove "$@" )
+                exit $?
+                ;;
             ""|--help|-h|help)
                 cat <<'EOF'
 fw worktree status [--json]            topology of the framework checkout (read-only)
 fw worktree create <name> [--from R]   spin up an isolated worktree in one safe step
 fw worktree gc [--apply] [--json]      reclaim landed worktrees/branches (content-verified)
+fw worktree remove <name> [--force]    sanctioned teardown -- refuses if branch is unpushed to every remote
 
 Reports the git-worktree topology so parallel work + merge-back is legible:
   - which branch the MAIN checkout is on, and whether merging to master goes LIVE
@@ -4088,11 +4098,21 @@ create (T-2469) spins up an isolated worktree in one safe step:
 merge-back is `fw integrate run` (T-2471, run from inside the worktree) — not a
 worktree subcommand, to avoid duplicating the arc-011 integrate surface.
 
+remove (T-2825, G-076) is the sanctioned teardown path: `git worktree remove` alone
+has no opinion about whether the branch it points at is reachable anywhere else, so
+tearing down the worktree can silently strand unpushed commits (origin: a 6-commit
+branch sat unpushed for 5 weeks this way). `fw worktree remove` refuses when the
+branch holds commits absent from every configured remote; `--force` proceeds and
+logs a Tier-2 entry. Prefer this over a raw `git worktree remove` for any worktree
+that might hold unlanded commits.
+
 Examples:
   fw worktree status
   fw worktree status --json
   fw worktree create my-feature
   fw worktree create hotfix --from origin/master
+  fw worktree remove my-feature
+  fw worktree remove my-feature --force
 EOF
                 exit 0
                 ;;
