@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2829: OBS-177: worktree remove guard consults only origin/branch so master-landed worktrees are unremovable except via --force
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T15:38:20Z
+# ============================================================================
+
+task_id: T-2829
+task_name: "OBS-177: worktree remove guard consults only origin/branch so master-landed worktrees are unremovable except via --force"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T15:32:26Z
+completed: 2026-08-06T15:38:07Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T17:37:55+02:00
+last_commit: 2026-08-06T17:37:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  worktree remove guard asks the reachability question (OBS-177)
+
+# Key outcomes
+outcomes:
+  - '`_wt_unpushed_summary` asks *"is any commit on this branch absent from **every** remote'
+  - 'Live regression: the guard **no longer refuses** a worktree whose branch is fully on'
+  - 'The genuine-strand case still REFUSES: `worktree-inception-gov-payload-mediation`'
+  - 'The refusal message''s claim matches what the code measures — it says *"not on any'
+  - 'Regression test pins **both directions** and is mutation-checked.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - 'lib/worktree.sh'
+  - '.tasks/active/T-2829-obs-177-worktree-remove-guard-consults-o.md'
+  - 'tests/unit/worktree_remove_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T17:37:55'
+    action: 'T-2829: worktree remove guard asks the reachability question (OBS-177)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 460
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2829-obs-177-worktree-remove-guard-consults-o.md
+generated_by: context-agent-hybrid

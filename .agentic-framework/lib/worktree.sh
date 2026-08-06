@@ -351,10 +351,28 @@ _wt_remove_resolve() {
     return 1
 }
 
-# _wt_unpushed_summary <branch> -> prints a non-empty summary (one line per
-# remote lacking the branch's tip) and returns 1 when NO remote has every commit
-# on <branch>; prints nothing and returns 0 when at least one remote is fully
-# caught up.
+# _wt_unpushed_summary <branch> -> prints a non-empty summary and returns 1 when
+# <branch> holds commits reachable from NO remote-tracking ref; prints nothing
+# and returns 0 when every commit is already on some remote.
+#
+# T-2829 / OBS-177 -- the question this answers is "would removing this worktree
+# STRAND anything?", i.e. "is any commit here absent from every remote?". The
+# original implementation asked a narrower question -- "is refs/remotes/<r>/<branch>
+# caught up?" -- and reported the answer using the wider question's words
+# ("not on any remote"), while consulting exactly one ref per remote.
+#
+# Those two questions come apart under the T-100196 flow, which is the NORMAL
+# flow here: work FF-lands onto **master**, so origin/<branch> is stale or was
+# never created, while every commit sits safely on origin/master. Measured on
+# t100199-close: `origin/<branch>..<branch>` = 31, `<branch> --not --remotes` = 0.
+# Effect: every master-landed worktree was unremovable except via --force,
+# reinstating exactly the bypass habit the guard exists to prevent.
+#
+# `--not --remotes` is the primitive that matches the claim: reachable from the
+# branch, reachable from no remote-tracking ref. (`fw worktree gc` uses content
+# comparison instead -- deliberately, per T-100142, because re-derivation defeats
+# ref comparison. Different question, different primitive: gc asks "did this work
+# LAND", remove asks "would this work be LOST".)
 _wt_unpushed_summary() {
     local branch="$1"
     local -a remotes=()
@@ -365,8 +383,38 @@ _wt_unpushed_summary() {
         return 1
     fi
 
-    local r remote_ref count any_caught_up=0
+    # Undecidable ⇒ REFUSE, never allow. If the branch ref does not resolve we
+    # cannot compute reachability at all, and an empty `rev-list` result must not
+    # be read as "nothing stranded". Caught during T-2829's own live test: passing
+    # a worktree DIRECTORY name (which is not always the branch name -- here
+    # `.claude/worktrees/rca-worktree-push-strand` is on branch
+    # `worktree-rca-worktree-push-strand`) made rev-list print nothing, and the
+    # first draft's `${stranded:-0}` turned that silence into rc=0 "safe to
+    # remove". The predicate it replaced failed SAFE in this case (missing remote
+    # ref => refuse), so the fix would have been a regression in the one direction
+    # that loses work. Same class as the bug being fixed: a value that is empty
+    # for two different reasons, read as though it had only one.
+    if ! git rev-parse --verify --quiet "refs/heads/$branch" >/dev/null 2>&1; then
+        echo "branch '$branch' does not resolve -- cannot verify what would be stranded"
+        return 1
+    fi
+
+    # The actual gate: reachable from <branch>, reachable from no remote ref.
+    local stranded
+    stranded="$(git rev-list --count "refs/heads/$branch" --not --remotes 2>/dev/null || echo "")"
+    if [ -z "$stranded" ]; then
+        echo "could not compute reachability for '$branch' -- refusing rather than guessing"
+        return 1
+    fi
+    if [ "$stranded" = "0" ]; then
+        return 0
+    fi
+
+    # Only now -- once something IS genuinely stranded -- build the per-remote
+    # detail, so the operator can see which remote to push to.
+    local r remote_ref count
     local -a lines=()
+    lines+=("$stranded commit(s) on '$branch' are on no remote (git log $branch --not --remotes)")
     for r in "${remotes[@]}"; do
         remote_ref="refs/remotes/$r/$branch"
         if ! git rev-parse --verify --quiet "$remote_ref" >/dev/null 2>&1; then
@@ -374,16 +422,10 @@ _wt_unpushed_summary() {
             continue
         fi
         count="$(git rev-list --count "${remote_ref}..refs/heads/$branch" 2>/dev/null || echo "")"
-        if [ "${count:-0}" = "0" ]; then
-            any_caught_up=1
-        else
+        [ "${count:-0}" = "0" ] || \
             lines+=("$r: $count commit(s) on '$branch' not on $r/$branch (git log $r/$branch..$branch)")
-        fi
     done
 
-    if [ "$any_caught_up" = "1" ]; then
-        return 0
-    fi
     printf '%s\n' "${lines[@]}"
     return 1
 }
