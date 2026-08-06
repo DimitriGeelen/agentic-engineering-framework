@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2837: tests/lint red is invisible to every runner
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T21:40:00Z
+# ============================================================================
+
+task_id: T-2837
+task_name: "tests/lint red is invisible to every runner"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T20:59:22Z
+completed: 2026-08-06T21:39:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T23:01:57+02:00
+last_commit: 2026-08-06T23:15:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope the invariant-suite blindness — runner exists (T-2697), schedule does not. audit runs the structural invariant suite every 30 min
+
+# Key outcomes
+outcomes:
+  - '`tests/lint/` suite runtime is measured and recorded in `## Decisions`;'
+  - 'Some automated, unattended surface fails or warns when a `tests/lint/`'
+  - 'The signal reaches somewhere an agent actually reads at session start'
+  - 'If the mechanism is a cron entry: registry → generated → deployed chain is'
+  - 'The negative control is stated: with all invariants green, the new surface'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-06 — Scheduling mechanism (measured runtime → existing 30-min section, not a new cron)'
+    chose: 'Wire `tests/lint/` into `agents/audit/audit.sh`''s `STRUCTURE` section'
+    rationale: '5.6s is negligible against a 30-minute budget (<0.4% duty cycle) — no'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-2837-testslint-red-is-invisible-to-every-runn.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T23:01:57'
+    action: 'T-2837: scope the invariant-suite blindness — runner exists (T-2697), schedule does not'
+  - time: '2026-08-06T23:15:16'
+    action: 'T-2837: audit runs the structural invariant suite every 30 min'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 40 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 40
+  commits: 2
+  files_changed: 2
+  lines_added: 303
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2837-testslint-red-is-invisible-to-every-runn.md
+generated_by: context-agent-hybrid
