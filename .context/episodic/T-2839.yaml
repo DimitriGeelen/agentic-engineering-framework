@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2839: fw upgrade turns a local upstream path into a bogus github URL
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T21:33:45Z
+# ============================================================================
+
+task_id: T-2839
+task_name: "fw upgrade turns a local upstream path into a bogus github URL"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T21:15:21Z
+completed: 2026-08-06T21:26:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T23:26:22+02:00
+last_commit: 2026-08-06T23:26:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade stops guessing GitHub when upstream_repo is a local path
+
+# Key outcomes
+outcomes:
+  - 'An `upstream_repo` beginning `/`, `./`, `../` or `~` is used verbatim as a'
+  - 'A value that is neither a recognised URL, nor a local path, nor a strict'
+  - 'The refusal message states that the value came from `.framework.yaml`'
+  - 'Regression test covers: absolute path, `./` relative, `~`, valid'
+  - 'Existing `owner/repo` shorthand still expands to'
+  - 'Classification is applied to **all three** resolution legs (`--from-upstream`,'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2839-fw-upgrade-turns-a-local-upstream-path-i.md'
+  - 'tests/unit/t2839_upstream_source_classification.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T23:26:22'
+    action: 'T-2839: fw upgrade stops guessing GitHub when upstream_repo is a local path'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 3
+  lines_added: 481
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2839-fw-upgrade-turns-a-local-upstream-path-i.md
+generated_by: context-agent-hybrid

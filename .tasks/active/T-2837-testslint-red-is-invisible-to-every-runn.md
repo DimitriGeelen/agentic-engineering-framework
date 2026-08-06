@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T20:59:22Z
-last_update: 2026-08-06T21:06:39Z
-date_finished: null
+last_update: 2026-08-06T21:33:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-06T21:15:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-06T21:15:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2837: tests/lint red is invisible to every runner
@@ -70,18 +98,18 @@ first piece of work. Recorded in `## Decisions` once measured.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `tests/lint/` suite runtime is measured and recorded in `## Decisions`;
+- [x] `tests/lint/` suite runtime is measured and recorded in `## Decisions`;
       the chosen mechanism is justified against that number (a 30-min audit leg
       and a daily cron have very different budgets).
-- [ ] Some automated, unattended surface fails or warns when a `tests/lint/`
+- [x] Some automated, unattended surface fails or warns when a `tests/lint/`
       test is red — demonstrated by making one temporarily red and observing
       the surface change, not by reading the wiring.
-- [ ] The signal reaches somewhere an agent actually reads at session start
+- [x] The signal reaches somewhere an agent actually reads at session start
       (audit output, `fw doctor`, or the handover), not only a cron log file.
-- [ ] If the mechanism is a cron entry: registry → generated → deployed chain is
+- [x] If the mechanism is a cron entry: registry → generated → deployed chain is
       verified per CLAUDE.md (`fw doctor` reports "Cron registry in sync" and
       not "edited but not generated").
-- [ ] The negative control is stated: with all invariants green, the new surface
+- [x] The negative control is stated: with all invariants green, the new surface
       is quiet — no permanent WARN that would train readers to ignore it.
 
 ### Human
@@ -182,6 +210,11 @@ first piece of work. Recorded in `## Decisions` once measured.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+grep -q "check_invariant_suite" agents/audit/audit.sh
+grep -q "check_invariant_suite" agents/audit/audit.sh && grep -q "^check_invariant_suite$" agents/audit/audit.sh
+out=$(bats tests/lint/ 2>&1); echo "$out" | grep -qE '^[0-9]+\.\.[0-9]+$'
+rm -rf /tmp/t2837-verify; bin/fw audit --section structure --quiet --output /tmp/t2837-verify >/dev/null 2>&1; grep -q "Invariant suite" /tmp/t2837-verify/LATEST-CRON.yaml
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -232,6 +265,52 @@ first piece of work. Recorded in `## Decisions` once measured.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-08-06 — Scheduling mechanism (measured runtime → existing 30-min section, not a new cron)
+- **Measured:** `time bats tests/lint/` → 51 tests, `real 0m5.560s` (`user 0m3.734s`, `sys 0m2.408s`).
+- **Chose:** Wire `tests/lint/` into `agents/audit/audit.sh`'s `STRUCTURE` section
+  (`check_invariant_suite()`, `agents/audit/audit.sh:1897-1930` — landed as a prior
+  step in this same task's work, commit `55744e9e`) rather than a dedicated cron
+  entry. `structural-30m` (`.context/cron-registry.yaml`) already runs
+  `fw audit --section structure,compliance,quality,discovery` every 30 minutes and
+  on the pre-push audit path — placing the check inside an already-scheduled
+  section means it inherits that cadence for free.
+- **Why:** 5.6s is negligible against a 30-minute budget (<0.4% duty cycle) — no
+  case for a separate, coarser (e.g. daily) cron just to keep the check cheap.
+  Reusing the section means **zero `.context/cron-registry.yaml` edits**, so the
+  CLAUDE.md cron-touching-task Verification requirement (registry → generated →
+  deployed chain) does not apply here — nothing was registered, generated, or
+  redeployed. Confirmed via `fw doctor` that cron state is unaffected by this
+  change (see Verification).
+- **Rejected:** A new dedicated cron job — would be the registry's 26th entry for
+  a check cheap enough to ride along on an existing 30-min leg; also would have
+  required the full registry→generate→deploy chain for no benefit.
+
+### 2026-08-06 — Live demonstration (AC2) and negative control (AC5)
+- **Demonstrated live:** appended a deliberately-failing `@test` to
+  `tests/lint/no-force-in-framework.bats`, ran
+  `bin/fw audit --section structure --output /tmp/t2837-demo`, observed the
+  invariant check flip from `FAIL "Invariant suite: 1 of 51 ... RED"` to
+  `FAIL "Invariant suite: 2 of 52 ... RED"` — the count moved live off a real
+  bats run, not a cached/stale value. Reverted with `git checkout --`, reran,
+  confirmed it returned to exactly `FAIL "Invariant suite: 1 of 51 ... RED"`.
+- **Unplanned but stronger evidence:** the baseline itself was not a clean pass —
+  `config-registry-parity.bats` test 2 (17 keys present in `lib/config.sh` but
+  absent from the CLAUDE.md config table) is a genuine, pre-existing red that
+  this newly-wired check surfaced on its very first live run in this session.
+  That red is already tracked separately in **T-2698** (`status: captured`,
+  filed 2026-07-31, predates this task) — fixing it is out of scope here per
+  "one bug = one task"; it is cited only as proof the mechanism catches real
+  drift, unprompted, which is the exact failure mode this task exists to end.
+- **Negative control (AC5), stated from code since the live suite is not
+  currently all-green (see above):** `check_invariant_suite()` emits exactly
+  one line when `_red -eq 0` — `pass "Invariant suite: $_total ... green"`
+  (`agents/audit/audit.sh:1921-1924`). There is no WARN path on a clean run;
+  WARN fires only on `bats` being absent or producing zero TAP results (a
+  "not checked" state, deliberately distinct from "checked and clean" per the
+  function's header comment) — never as a permanent artifact of a green suite.
+  So a fully-green `tests/lint/` produces a single quiet PASS line, not a
+  standing WARN that readers would learn to ignore.
 
 ## Decision
 
