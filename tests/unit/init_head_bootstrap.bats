@@ -61,16 +61,40 @@ setup_file() {
     run git -C "$HDIR/fresh-wt" rev-parse HEAD
     [ "$status" -eq 0 ]
     [ "$output" != "0000000000000000000000000000000000000000" ]
+
+    # T-2827 / OBS-178 — EVERY assertion above passed while the worktree was
+    # EMPTY. They measure the ref; the deadlock lives in the TREE. A bootstrap
+    # commit with a zero-file tree resolves, is not an orphan, and checks out
+    # nothing — so a background agent isolates into a directory containing only
+    # `.git`, which is the identical user-visible failure OBS-175 described.
+    # Resolvability was a PROXY for "HEAD has content" and diverged from it.
+    # Measured live on published bytes in T-2826: 1 entry, no CLAUDE.md.
+    #
+    # Assert the thing, not the proxy: the worktree must actually be populated
+    # with what a governed session needs to function.
+    [ -f "$HDIR/fresh-wt/CLAUDE.md" ]
+    [ -d "$HDIR/fresh-wt/.tasks" ]
+    [ -d "$HDIR/fresh-wt/.claude" ]
+    # Without the vendored CLI there is no `fw` in the worktree and no
+    # governance runs at all — a populated-looking but non-functional worktree.
+    [ -d "$HDIR/fresh-wt/.agentic-framework" ]
+
     git -C "$HDIR/fresh" worktree remove "$HDIR/fresh-wt" --force
 }
 
-@test "fresh init: bootstrap commit uses the T-000 placeholder convention and is empty" {
+@test "fresh init: bootstrap commit uses the T-000 placeholder convention and has a NON-EMPTY tree" {
     run git -C "$HDIR/fresh" log -1 --format=%s
     [ "$status" -eq 0 ]
     [[ "$output" == *"T-000"* ]]
-    run git -C "$HDIR/fresh" show --stat --format="" HEAD
+
+    # T-2827 supersedes T-2821's "and is empty" assertion. An empty tree was the
+    # OBS-178 defect, not the intended state — see T-2827 Decisions for why the
+    # framework tracks the scaffolding it created.
+    run git -C "$HDIR/fresh" ls-tree -r --name-only HEAD
     [ "$status" -eq 0 ]
-    [ -z "$output" ]
+    [ -n "$output" ]
+    [[ "$output" == *"CLAUDE.md"* ]]
+    [[ "$output" == *".tasks/"* ]]
 }
 
 @test "fresh init: exactly one commit — no double-bootstrap" {
@@ -121,12 +145,21 @@ setup_file() {
     [[ "$output" == *"task"* ]]
 }
 
-@test "fresh init: framework payload stays untracked — T-003 keeps a real first commit to make" {
+@test "fresh init: framework scaffolding IS tracked, and the tree is clean afterwards" {
+    # T-2827 inverts T-2821's assertion. The old test pinned "payload stays
+    # untracked" so T-003 would have a real first commit to make; the cost was a
+    # zero-file tree and therefore an empty worktree (OBS-178). T-003 still has
+    # a real first commit to make — of the OPERATOR's project content, which a
+    # freshly initialised project contains none of. See T-2827 Decisions.
+    run git -C "$HDIR/fresh" ls-files
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"CLAUDE.md"* ]]
+    [[ "$output" == *".agentic-framework/"* ]]
+
+    # Nothing left dangling: a fresh init is a VALID git state, which is the
+    # property worktree isolation actually requires.
     run git -C "$HDIR/fresh" status --porcelain
     [ "$status" -eq 0 ]
-    [[ "$output" == *"?? .agentic-framework/"* ]]
-    [[ "$output" == *"?? CLAUDE.md"* ]] || [[ "$output" == *"?? .framework.yaml"* ]]
-    run git -C "$HDIR/fresh" show --stat --format="" HEAD
     [ -z "$output" ]
 }
 

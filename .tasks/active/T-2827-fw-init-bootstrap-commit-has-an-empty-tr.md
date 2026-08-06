@@ -1,10 +1,12 @@
 ---
 id: T-2827
-name: "fw init bootstrap commit has an EMPTY tree — worktree isolation still yields an empty worktree (OBS-178)"
+name: "fw init bootstrap commit has an EMPTY tree — worktree isolation still yields
+  an empty worktree (OBS-178)"
 description: >
-  T-2821's --allow-empty bootstrap gives a resolvable HEAD but a zero-file tree, so git worktree add checks out nothing. Fix the tree, not just the ref.
+  T-2821's --allow-empty bootstrap gives a resolvable HEAD but a zero-file tree, so
+  git worktree add checks out nothing. Fix the tree, not just the ref.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T13:18:27Z
-last_update: 2026-08-06T13:18:27Z
-date_finished: null
+last_update: 2026-08-06T14:46:11Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +36,107 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-06T13:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-06T13:30:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2827: fw init bootstrap commit has an EMPTY tree — worktree isolation still yields an empty worktree (OBS-178)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**OBS-178, measured live in T-2826 against published bytes `7b143ad5e`.**
+
+T-2821 gave a fresh project a resolvable HEAD via an `--allow-empty` bootstrap commit. The
+HEAD resolves — but its **tree contains zero files**, so `git worktree add` checks out
+nothing and yields a worktree holding only `.git`. The user-visible failure is identical to
+OBS-175 (a background agent isolates into an empty worktree); only the mechanism changed,
+from orphan-inference to empty-tree checkout.
+
+Window measured at both ends: empty at bootstrap HEAD; correct (10 entries, `CLAUDE.md` +
+`.tasks/` present) after the first **content** commit. `fw init` leaves its scaffolding
+uncommitted, so nothing closes the window automatically — and the window is exactly the
+onboarding window in which a background agent would first be dispatched.
+
+**T-2821's "empty commit only" was deliberate**, and its stated reasons are real
+(`lib/init.sh:524-528`): an empty commit makes no decision about which framework files get
+tracked, and does not pre-empt onboarding task T-003 ("First governed commit"). Any fix
+must either honour those reasons or explicitly supersede them with a recorded decision —
+not silently `git add -A`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The tracking question is settled from evidence, not assumption: what `fw init`
+      actually creates, what its `.gitignore` already excludes, and what onboarding T-003
+      asks the operator to do — recorded in `## Decisions` before the code changes.
+      → 9 top-level entries / 2353 files, **no `.gitignore` written**, all framework-owned.
+- [x] `fw init` on an empty dir leaves a HEAD whose **tree is non-empty** and contains the
+      governance scaffolding a background agent needs (`CLAUDE.md`, `.tasks/`, `.claude/`).
+      → `TREE_FILES=2729`, `TREE_ONBOARDING_TASKS=5`, `DIRTY_AFTER_INIT=0`.
+- [x] `git worktree add` immediately after `fw init` (no intervening commit) yields a
+      **populated** worktree — the OBS-178 failure, measured the same way T-2826 measured it.
+      → `WT_ENTRIES=9`, `WT_CLAUDEMD=yes`, `WT_FW_EXECUTABLE=yes`, `WT_ACTIVE_TASKS=5`.
+      Was 1 entry / no CLAUDE.md before the fix.
+- [x] The bootstrap commit still passes the project's own hooks with **no `--no-verify`**
+      (commit-msg task-ref, T-1844 secret-scan, T-1845 large-file, T-1863 dup-task-id) —
+      T-2821's hard rule, which a non-empty diff now actually exercises rather than
+      trivially satisfying. → `INIT_RC=0` with 2729 staged files; bats test 5 green.
+- [x] Existing-project and re-init paths remain no-ops (guard on unborn HEAD preserved).
+      → bats tests 7 + 8 green; `tests/unit/upgrade_fresh_machine_simulation.bats` **11/11**
+      (CLAUDE.md §Consumer-Facing Command Hygiene hard rule).
+- [x] `tests/unit/init_head_bootstrap.bats` extended to assert **tree non-emptiness**, not
+      just HEAD resolvability — the proxy/thing divergence that let OBS-178 ship green —
+      and mutation-checked (revert the fix ⇒ the new assertion goes red).
+      → 8/8 green. Mutation (staging step neutralised): **tests 2, 3, 6 go red**; 1, 4, 5, 7, 8
+      survive. Test 1 (*"HEAD resolves"*) surviving is the correct signature — it is the
+      proxy assertion, and its staying green on a broken tree is exactly the F4 gap.
+
+## Second defect found while fixing (placement)
+
+The staging change alone was not sufficient. The bootstrap sat ~150 lines after hook
+install, so it committed an **intermediate** state: it captured the `.fw-init-incomplete`
+sentinel that init then *deletes*, and ran before the enforcement baseline and before all
+five onboarding tasks were seeded. Measured leftovers: 4 dirty entries including
+`?? .tasks/active/` — a worktree cut from that commit had `.tasks/` but **no tasks in it**,
+the populated-looking-but-broken state this fix exists to prevent.
+
+Moved to the end of `do_init`, immediately after the marker clear. This is the **same
+argument T-2727 already made** for post-init validation: the verdict — here, the tree — must
+describe what the user is actually left with, not a state that no longer exists by the time
+init returns. Result: `DIRTY_AFTER_INIT=0`, sentinel absent from the tree, 5 onboarding
+tasks present.
+
+**Process note:** the first move landed the block in the *wrong* place — a `python3` splice
+matched the **first** `rm -f "$_init_incomplete_marker"` (the preflight-failure branch) rather
+than the last. `bash -n` passed, because the result was syntactically valid and semantically
+wrong. Caught by re-reading the placement rather than trusting the syntax check — the same
+class as the false-green family this task belongs to.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +170,23 @@ date_finished: null
 -->
 
 ## Verification
+
+# Syntax (L-408 — this task spliced blocks with python3; bash -n is necessary not sufficient)
+bash -n lib/init.sh
+
+# The staging step exists — this IS the fix (mutation-checked: removing it reds tests 2,3,6)
+grep -q 'git -C "$target_dir" add -A' lib/init.sh
+
+# The bootstrap runs AFTER the marker clear, not in the preflight-failure branch.
+# Guards the placement defect: a python3 splice matched the FIRST marker-clear and
+# bash -n passed on the wrong result.
+python3 -c "import sys; s=open('lib/init.sh').read(); sys.exit(0 if s.rindex('rm -f \"\$_init_incomplete_marker\"') < s.index('--- Bootstrap commit: give the project a resolvable HEAD') else 1)"
+
+# Suite green, with the guard L-387/T-2738 requires (pass marker AND no failures)
+out=$(bats tests/unit/init_head_bootstrap.bats 2>&1); echo "$out" | grep -q '^ok 8 ' && ! echo "$out" | grep -q '^not ok'
+
+# CLAUDE.md hard rule: any fw init change keeps the consumer-facing simulation green
+out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 11 ' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -149,19 +255,48 @@ date_finished: null
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw init` reports success and leaves a resolvable HEAD, but a background agent
+isolating into a worktree immediately afterwards lands in a directory containing only
+`.git` — no `CLAUDE.md`, no `fw`, no tasks. Every Write/Edit then fails, deadlocking the
+first background session before it can write its own task file.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the bootstrap commit was `--allow-empty`, so HEAD pointed at a **zero-file
+tree**. `git worktree add` faithfully checked out that empty tree. Compounding it, the
+commit ran ~150 lines before the end of `do_init`, so even once populated it would have
+captured an intermediate state — the `.fw-init-incomplete` sentinel init later deletes, and
+none of the five onboarding tasks.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** T-2821 fixed the *ref* and its tests asserted the *ref*.
+`git rev-parse HEAD` succeeding was adopted as the definition of "worktree isolation works"
+because that is the check Claude Code's preflight performs. But the preflight is not the
+requirement — it is one necessary condition of it. The property the real use needs is
+"HEAD has content", and **resolvability was a proxy that diverged from the thing** (T-1828 /
+T-2735 class). The suite's worktree test asserted `status 0`, not-orphan, and HEAD ≠ zeros —
+all three of which are true of an empty tree. It passed on the broken state and still does:
+in the mutation run, test 1 survives while 2, 3 and 6 go red. That surviving green is the
+defect's signature, not noise.
+
+The deeper enabler is that the fix was authored against the *narrative* of OBS-175
+("worktree add refuses on unborn HEAD") rather than its *mechanism*. T-2822 F7 had already
+falsified that narrative — `git worktree add` returns **RC=0** and yields an empty worktree —
+so the failure mode was emptiness all along. The fix removed the unborn HEAD and left the
+emptiness, because emptiness was never what it was aimed at.
+
+**Prevention (distinct from the fix):**
+1. `tests/unit/init_head_bootstrap.bats` now asserts the **tree**, not just the ref —
+   `ls-tree` non-empty, and the worktree must actually contain `CLAUDE.md`, `.tasks/`,
+   `.claude/` and `.agentic-framework/`. Mutation-checked: neutralising the staging step
+   reds exactly those assertions.
+2. A **runtime** guard: when the staged count is 0, init now prints an explicit OBS-178
+   warning naming the consequence, so the failure is legible at the point it is created
+   rather than at the point a background agent deadlocks.
+3. A verification line pins the **placement** (bootstrap must follow the last marker-clear),
+   because the first attempt at moving it silently landed in the preflight-failure branch
+   and `bash -n` passed.
+
+**Escalation level:** C (tooling) for the fix; B (technique) for the authoring lesson —
+*when a fix targets a reported mechanism, verify the mechanism report first.* T-2822 F7 had
+already corrected it and the correction did not propagate into T-2821's test design.
 
 ## Evolution
 
@@ -189,14 +324,53 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-06 — what the bootstrap commit tracks
+
+**Evidence gathered first (AC1):**
+- `fw init` creates **9 top-level entries / 2353 files**: `.agentic-framework/`, `.claude/`,
+  `.context/`, `.framework.yaml`, `.mcp.json`, `.tasks/`, `.termlink-task`, `CLAUDE.md`,
+  `policy/`. `.agentic-framework/` (the vendored CLI) is the bulk.
+- `fw init` writes **no `.gitignore`** — so there is no pre-existing encoded tracking
+  decision to respect or violate. The question is genuinely open.
+- All 9 entries are **framework-owned**. None is operator project content.
+- T-2826 LEG6 already proved empirically that staging all 2353 and committing **passes the
+  project's own hooks with no `--no-verify`** (`LEG6_COMMIT_RC=0`).
+
+- **Chose:** the bootstrap commit stages everything `fw init` created (`git add -A`) and
+  commits it, falling back to `--allow-empty` only if there is genuinely nothing staged.
+- **Why:**
+  1. **A partially-populated worktree is a worse false-green than an empty one.** A
+     background agent needs `CLAUDE.md`, `.claude/`, `.tasks/`, `.context/`, *and*
+     `.agentic-framework/` (without the vendored CLI, `fw` does not exist in the worktree
+     and no governance runs at all). Committing a curated subset yields a worktree that
+     looks populated and is still broken — the T-2726 unwitnessable class.
+  2. **This is not a decision about the operator's content.** All 9 entries are files the
+     framework itself just wrote. The framework tracking what the framework created leaves
+     the operator's content decision entirely intact.
+  3. **It makes "freshly initialised" a valid git state.** That property is precisely what
+     worktree isolation requires; leaving 2353 files uncommitted means a fresh project is
+     git-valid in name (HEAD resolves) but not in substance (tree empty) — the exact
+     proxy/thing gap that produced OBS-178.
+  4. Tracking the vendored `.agentic-framework/` is the **established pattern**, not a new
+     one (D-377 total isolation; this repo tracks its own).
+- **Rejected — keep `--allow-empty` and fix at the worktree layer.** The framework does not
+  control Claude Code's `EnterWorktree` preflight, so there is no layer there to fix.
+- **Rejected — commit a curated governance subset.** See reason 1: yields a functional-looking
+  but non-functional worktree.
+- **Supersedes** T-2821's stated "empty commit only" rationale (`lib/init.sh:524-528`). That
+  reasoning was sound about *tracking neutrality* but was not weighed against the deadlock
+  it left open, because the deadlock was believed fixed. It was not (OBS-178).
+
+**Interaction with T-2822 (recorded, not resolved here):** committing `.tasks/` and
+`.context/` means every worktree forks governance state — which is exactly what T-2822
+identified. That is **already true** the moment those files are tracked at all, and T-2822's
+GO answers it at the correct layer (*refuse writes*, since git puts the files there
+regardless). This task does not change that surface; it removes a precondition failure that
+sits underneath it. Noted so the two are not later mistaken for conflicting fixes.
+
+**T-003 remains meaningful:** it asks the operator for their first governed commit of
+*project content*, which this does not pre-empt — a freshly initialised project still has
+no operator content in it.
 
 ## Decision
 
@@ -214,3 +388,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2827-fw-init-bootstrap-commit-has-an-empty-tr.md
 - **Context:** Initial task creation
+
+### 2026-08-06T14:46:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
