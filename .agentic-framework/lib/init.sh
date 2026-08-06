@@ -554,7 +554,7 @@ CYAML
             echo -e "  ${GREEN}✓${NC}  Bootstrap commit created (resolvable HEAD for worktree isolation)"
         else
             echo -e "  ${YELLOW}⚠${NC}   Bootstrap commit failed — HEAD remains unresolved:"
-            echo "       run manually: git -C \"$target_dir\" commit --allow-empty -m \"T-000: bootstrap\""
+            echo "       run manually: cd \"$target_dir\" && git commit -q --allow-empty -m \"T-000: bootstrap\""
             [ -n "$_bootstrap_err" ] && echo "$_bootstrap_err" | sed 's/^/      /' >&2
         fi
     fi
