@@ -854,6 +854,37 @@ show_help() {
     echo -e "  ${GREEN}docs${NC} <cmd>            Documentation lookup (article, show)"
     echo -e "  ${GREEN}enforcement${NC} <cmd>     Enforcement baseline (status, baseline)"
     echo -e "  ${GREEN}fabric${NC} <cmd>          Component Fabric (overview, deps, impact, search, drift, register)"
+    # T-2836: the 20 entries added across this function dispatched fine but had no
+    # help entry, so `fw help` — the one place an operator or onboarding agent looks
+    # — did not list them. Several are load-bearing in CLAUDE.md (worktree, integrate,
+    # sync, reviewer, arc, write-set, pause, pending), which is the T-2808 shape one
+    # line up: documentation instructing agents to run a verb the CLI never mentions.
+    # tests/lint/help-router-parity.bats derives the expected set from the dispatch
+    # case block and guards this both ways — it was red for the whole interval.
+    echo -e "  ${GREEN}arc${NC} <cmd>             Arc workspace (create, focus, list, show, tag, close, migrate)"
+    echo -e "  ${GREEN}bvp${NC} <cmd>             Business Value Points ranking (rank, arcs, T-XXX, --quadrant)"
+    echo -e "  ${GREEN}reviewer${NC} <cmd>        Anti-pattern static scan (T-XXX, audit, drift, reverify, override)"
+    echo -e "  ${GREEN}pause${NC} <cmd>           Paused-dispatch chain (list, resolve)"
+    echo -e "  ${GREEN}pending${NC} <cmd>         Blocked cross-project actions (register, list, resolve, remind)"
+    echo -e "  ${GREEN}policy${NC} <cmd>          Proxy governance policy (emit, status, install)"
+    echo ""
+    echo -e "${BOLD}Trunk flow & release:${NC}"
+    echo -e "  ${GREEN}worktree${NC} <cmd>       Isolated worktrees (status, create, gc, remove)"
+    echo -e "  ${GREEN}integrate${NC} <cmd>      Land a worktree branch onto master (check, classify, run)"
+    echo -e "  ${GREEN}sync${NC}                 Reconcile the session branch with origin/master (rebase + push)"
+    echo -e "  ${GREEN}mirror${NC} <cmd>         Mirror cascade auto-recovery (sync, status)"
+    echo -e "  ${GREEN}release${NC} <cmd>        Tag + push + GitHub Release (status, major, minor, patch)"
+    echo ""
+    echo -e "${BOLD}Dispatch substrate:${NC}"
+    echo -e "  ${GREEN}orchestrator${NC} <cmd>   Dispatch graph + telemetry (status, next-dispatch, pre-flight, routes, improve)"
+    echo -e "  ${GREEN}resolver${NC} <cmd>       Workflow lookup + prompt assembly (workflows, dispatch, run, explain)"
+    echo -e "  ${GREEN}outcome${NC} <cmd>        Outcome evaluation + back-prop (evaluate, backprop, read, list)"
+    echo -e "  ${GREEN}write-set${NC} check <T-A> <T-B>  Disjoint write-set validator (0=disjoint, 1=overlap, 2=undecidable)"
+    echo ""
+    echo -e "${BOLD}Design & corpus:${NC}"
+    echo -e "  ${GREEN}designer${NC} <cmd>       Vendor + serve the pinned Workflow Designer build"
+    echo -e "  ${GREEN}bpmn${NC} <cmd>           Compile a BPMN diagram into AEF task skeletons"
+    echo -e "  ${GREEN}corpus${NC} <cmd>         Spec-driven corpus authoring (derive, generate, canon, diff, prove, lint, explain)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
@@ -885,6 +916,8 @@ show_help() {
     echo ""
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
+    echo -e "  ${GREEN}ux-review${NC} <url>       Browser-driving UX review of an interactive render surface"
+    echo -e "  ${GREEN}gpu${NC} <cmd>             GPU coordination (recover)"
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
     echo -e "  ${GREEN}traceability${NC} baseline Set traceability baseline (imported projects)"
     echo -e "  ${GREEN}preflight${NC}            Check OS dependencies (interactive install)"
