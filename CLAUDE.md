@@ -408,7 +408,9 @@ Agent-relevant settings:
 - `FW_ALLOW_ARC_ID_DRIFT` (0) — T-1849: single-use bypass for the `arc_id:` validation hook when the field doesn't resolve to an existing arc YAML. Logged Tier-2 to `.context/working/.gate-bypass-log.yaml`.
 - `FW_RETIRE_WHEN_ADVISORY` (1) — T-2169: audit retire_when advisory rail. For each ACTIVE `free_drivers[]` entry in `policy/value-drivers.yaml` with `retire_when:` text, audit runs a per-driver recognition heuristic against the corpus and emits a WARN when the condition appears recognisably met (F-RECALL: 4/4 signals; F-ORCH: T-1643 cleanly in completed/ OR G-064 closed). Drivers with `retire_when:` text but no dedicated heuristic emit an INFO (not WARN). WARN-only, never blocks. Set to `0` to silence the section entirely.
 
-Full reference (handover timeouts, bash timeout, stale-task days, call-level fallbacks, inception commit limit, etc.): `fw config list`, `env | grep FW_`, or Watchtower `/config`. `fw doctor` warns on out-of-range values.
+**The list above is a deliberate subset, not an incomplete one (T-2841).** It carries the settings an agent may actually need to reason about mid-session; internal tuning constants are omitted on purpose, because this file is loaded into every agent context on every session and duplicating the registry here is a permanent cost for a lookup that is one command away. The complete, authoritative list is `lib/config.sh` `FW_CONFIG_REGISTRY`, surfaced by `fw config list`, `env | grep FW_`, and Watchtower `/config`; every key carries its own description there. `fw doctor` warns on out-of-range values.
+
+`tests/lint/config-registry-parity.bats` enforces the direction that matters: **this file must not name an `FW_` key the registry does not define.** A documented setting that does not exist reads as authoritative and is worse than an undocumented live one. It deliberately does *not* require every registry key to appear here — that assertion contradicted this paragraph, was red for months unnoticed, and would have been satisfiable only by the bloat described above.
 
 ## Sub-Agent Dispatch Protocol
 

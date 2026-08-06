@@ -1,28 +1,16 @@
 ---
-id: T-2840
-name: "render-surface gate git-grep is unanchored, misattributes cross-referenced
-  task's commits"
+id: T-2841
+name: "config table parity test contradicts CLAUDE.md curated-subset design"
 description: >
-  lib/render_surface.sh:_render_surface_git_touched_paths uses `git log --grep "$task_id"
-  --name-only` with a loose substring match, not anchored to the commit subject/task-attribution.
-  Any commit whose BODY prose cites another task id (e.g. "origin: T-2837" inside
-  a T-2838 commit) gets its changed files misattributed to that cited task. Confirmed
-  live on T-2837: commit 8b41090b4 (T-2838's own commit, touches web/blueprints/config.py)
-  matched --grep "T-2837" purely because its body reads '...was failing unread (T-2837).'
-  — 8b41090b4 does not belong to T-2837 at all. This falsely tripped the T-1766 render-surface
-  Human-AC gate on T-2837, which never touched web/blueprints/config.py. Given this
-  framework's heavy culture of parenthetical cross-task citations in commit bodies,
-  this is likely to misfire broadly, not just on T-2837. Fix: anchor the grep to the
-  commit SUBJECT's task-id prefix (e.g. --grep '^T-XXXX:' or parse the subject line
-  specifically) instead of matching the whole message body.
+  config table parity test contradicts CLAUDE.md curated-subset design
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [gate-bug, render-surface]
+tags: []
 components: []
-related_tasks: [T-2837, T-1766, T-2838]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -33,7 +21,7 @@ related_tasks: [T-2837, T-1766, T-2838]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-06T21:38:56Z
+created: 2026-08-06T21:39:56Z
 last_update: '2026-08-06T21:45:11Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
@@ -52,8 +40,8 @@ cost_estimate_proposed:
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -63,31 +51,90 @@ bvp_scores_proposed:
       D1: 4
       D2: 0
       D3: 3
-      D4: 2
+      D4: 3
       F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2840: render-surface gate git-grep is unanchored, misattributes cross-referenced task's commits
+# T-2841: config table parity test contradicts CLAUDE.md curated-subset design
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tests/lint/config-registry-parity.bats` test 2 requires **every** key in
+`lib/config.sh` `FW_CONFIG_REGISTRY` to appear as `` `FW_<KEY>` `` in CLAUDE.md.
+17 of 22 do not, and it has been red long enough that nobody knows how long.
+
+CLAUDE.md's §Configuration section states its table lists **"Agent-relevant
+settings"** and points at `fw config list` / Watchtower `/config` for the rest.
+So the test asserts total documentation parity against a document that
+explicitly documents a curated subset. One of the two is wrong; they have
+disagreed silently for months because nothing ran the test (T-2837).
+
+**Disclosure — this task changes a guard that is currently blocking me.** The
+T-2837 audit check makes a red invariant a push-blocking FAIL, and this is the
+red. That is a real conflict of interest, so the reasoning below has to stand
+without it: the alternative (document all 17 keys) was fully available, costs
+about 17 lines, and was rejected on merit, not on effort.
+
+**Why the subset is right, not the parity.** CLAUDE.md is loaded into every
+agent context on every session. Keys like `KEYLOCK_TIMEOUT`,
+`TOKEN_CHECK_INTERVAL`, `BUDGET_RECHECK_INTERVAL` and `CALL_WARN/URGENT/CRITICAL`
+are internal tuning constants an agent never sets; carrying them in
+always-loaded context is a permanent cost for a lookup that `fw config list`
+answers on demand. Every key already carries a description inline in
+`lib/config.sh`, and T-2838 made `/config` complete, so nothing is undocumented —
+only un-duplicated.
+
+**The direction that would catch real rot is not tested at all.** Nothing
+currently detects CLAUDE.md referencing an `FW_` key that no longer exists — a
+stale doc pointing at a removed setting, which is strictly worse than an
+undocumented-but-live one because it reads as authoritative. The strict test
+enforces the low-value direction and leaves the high-value one open.
+
+Fix: invert test 2 to phantom-detection, and make the subset intentional in
+CLAUDE.md rather than accidental, so the test and the document agree about what
+the table is for.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Test 2 asserts the **phantom** direction: every `` `FW_<KEY>` `` referenced
+      in CLAUDE.md's Configuration section resolves to a real key in
+      `lib/config.sh`. A documented key that does not exist fails.
+- [x] Test 2 no longer requires every registry key to appear in CLAUDE.md, and
+      its comment states why (curated subset by design; full list via
+      `fw config list`), so the next reader does not "restore" the strict form.
+- [x] The phantom direction is proven to actually fire — verified three ways,
+      because the first attempt was a false negative:
+      1. **Real finding on first run.** It immediately flagged
+         `FW_BRANCH_BEHIND_WARN`, `FW_STALE_ARC_DAYS`, `FW_RETIRE_WHEN_ADVISORY`
+         — all genuine, all invisible to the old direction. Fixed in T-2842.
+      2. **Deliberate probe.** Appending `` `FW_TOTALLY_FAKE_KEY` `` to CLAUDE.md
+         turned test 2 red naming the key; CLAUDE.md restored and confirmed clean
+         against git.
+      3. **Unplanned self-catch.** The CLAUDE.md paragraph written for AC #4
+         mentioned `` `FW_CONFIG_REGISTRY` `` and went red — the array's name, not
+         a setting. Allowlisted with the reason recorded.
+
+      **The first probe was vacuous and returned the expected answer.** The fake
+      key ended in `_T2841`, and the extraction regex was `[A-Z_]+` — digits
+      excluded — so the key was never extracted and the test passed while
+      "proving" nothing. A negative control that passes for the wrong reason is
+      indistinguishable from a working check. The regex now accepts digits.
+- [x] CLAUDE.md's §Configuration section states the table is a deliberate subset,
+      names `lib/config.sh` / `fw config list` / `/config` as the complete list,
+      and states which direction the test enforces and why — so the paragraph and
+      the test cannot silently drift apart again.
+- [x] `tests/lint/` is fully green (51/51, zero red), so the T-2837 audit check
+      reports PASS rather than a standing FAIL that readers learn to ignore.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -187,6 +234,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/lint/config-registry-parity.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# Whole suite, since the point of this task is that the T-2837 audit check reports
+# PASS rather than a standing FAIL. Asserts 51 results AND zero red — a suite that
+# silently stopped running would satisfy 'no failures' on its own.
+out=$(bats tests/lint/ 2>&1); [ "$(echo "$out" | grep -cE '^(ok|not ok) ')" -eq 51 ] && [ "$(echo "$out" | grep -c '^not ok')" -eq 0 ]
+# The phantom direction must still fire. Probe in a scratch copy so CLAUDE.md is
+# never mutated by verification; a digit-free key, because [A-Z0-9_]+ vs [A-Z_]+
+# is exactly what made the first probe vacuous.
+# `|| true` on the capture is REQUIRED, not defensive: this probe exists to make
+# bats exit non-zero, and under the gate's `set -e` a failing $(…) aborts the line
+# AT THE ASSIGNMENT — so the grep that reads the verdict never runs and the line
+# fails while the check underneath it is working perfectly.
+d=$(mktemp -d); cp -r lib tests CLAUDE.md web "$d"/ 2>/dev/null; printf '\nProbe: `FW_PHANTOM_PROBE_KEY`\n' >> "$d/CLAUDE.md"; out=$(cd "$d" && bats tests/lint/config-registry-parity.bats 2>&1) || true; rm -rf "$d"; echo "$out" | grep -q '^not ok 2'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -250,7 +311,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-06T21:38:56Z — task-created [task-create-agent]
+### 2026-08-06T21:39:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2840-render-surface-gate-git-grep-is-unanchor.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2841-config-table-parity-test-contradicts-cla.md
 - **Context:** Initial task creation
