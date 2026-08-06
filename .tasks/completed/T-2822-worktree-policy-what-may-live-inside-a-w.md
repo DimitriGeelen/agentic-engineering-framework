@@ -4,16 +4,16 @@ name: "worktree policy: what may live inside a worktree"
 description: >
   Inception: worktree policy: what may live inside a worktree
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-06T10:47:14Z
-last_update: 2026-08-06T10:51:44Z
-date_finished:
+last_update: 2026-08-06T11:04:25Z
+date_finished: 2026-08-06T11:04:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -38,6 +38,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-06T11:00:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -198,7 +208,7 @@ is what let this accumulate.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -289,7 +299,54 @@ refusing writes. That is why IW-3 resolves to "structural" by elimination, not p
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — source-only, enforced at the write layer
+
+Rationale:
+
+Only source may live inside a worktree. The governance-state copy that git
+necessarily checks out is read-only; writes to `.context/`/`.tasks/` from a linked
+worktree are refused.
+
+The evidence does not present a balanced trade-off. Shared-state is not a hypothesis —
+it has been running in this repo for five weeks, and its measured output is 43 unlanded
+commits, a lost gap (G-083), a forked task-ID space, and a lost inception on this exact
+question (T-2505, filed 2026-07-01 at this operator's request). Source-only costs the
+ability to run governance verbs from inside a worktree, which under the already-recorded
+T-100196 session-on-master flow is not something we should be doing. One option's cost is
+measured and severe; the other's is a workflow we already decided against.
+
+S2 corrected the mechanism: source-only cannot be implemented by keeping state out —
+7394 tracked governance files mean git puts it there regardless. It is implemented by
+refusing writes. That is why IW-3 resolves to "structural" by elimination, not preference.
+
+Bounded fix path (each a separate build slice, in dependency order):
+1. Detection + refusal in the existing PreToolUse path, with an L-399/T-1890-compliant
+   bypass honoured end-to-end by every fw verb the gate can block.
+2. `fw doctor` surfaces sibling worktrees with unlanded-commit counts and age (F5 — this
+   is why five weeks passed unnoticed).
+3. Turn off ambient harness isolation; make worktree creation an explicit trigger (IW-2).
+4. Audit — not delete — the shared-state code: read paths stay, write paths become
+   unreachable (IW-4).
+
+Honest bound: this addresses 81% of the defect record. The branch/ref lifecycle class
+(T-2393, T-100199) and the creation-precondition class (T-2821) are untouched by it.
+
+Out of the GO, each needing its own task: recovering the 43 stranded commits
+(OBS-174), the duplicate T-2505/T-2506 IDs (T-100202 class), the lifecycle class, T-2821.
+
+Evidence:
+
+- S1a — 16 defects classified; 13 in the root-split class. Table in `docs/reports/T-2822-worktree-policy.md`.
+- S1b — `git worktree list` + `git rev-list --count origin/master..<branch>`: 6 and 37 unlanded commits, last activity 5 weeks ago; third worktree clean.
+- S1c — stranded commit `54adb1fcf` carries `T-2505-worktree-usage-policy` — the same question, previously filed and lost. `T-2505`/`T-2506` each name two different tasks depending on which tree is read.
+- S2 — `git ls-files`: 2812 tracked under `.tasks/`, 4582 under `.context/`; only `.budget-status` ignored. `focus.yaml` measured to differ between trees immediately after worktree creation.
+- S2 — detection primitive `git rev-parse --git-dir != --git-common-dir` verified in both directions (main checkout and linked worktree).
+- A3 — `.claude/settings.json` contains no `worktree`/isolation key; re-verified this run.
+- D-026 (2026-04-25, T-1483) is the only recorded worktree usage decision and is audit-specific — there has never been a decision authorising worktrees as a general per-task default.
+
+**Date**: 2026-08-06T11:04:25Z
 
 ## Updates
 
@@ -298,3 +355,92 @@ refusing writes. That is why IW-3 resolves to "structural" by elimination, not p
 
 ### 2026-08-06T10:48:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-06T11:04:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — source-only, enforced at the write layer
+
+Rationale:
+
+Only source may live inside a worktree. The governance-state copy that git
+necessarily checks out is read-only; writes to `.context/`/`.tasks/` from a linked
+worktree are refused.
+
+The evidence does not present a balanced trade-off. Shared-state is not a hypothesis —
+it has been running in this repo for five weeks, and its measured output is 43 unlanded
+commits, a lost gap (G-083), a forked task-ID space, and a lost inception on this exact
+question (T-2505, filed 2026-07-01 at this operator's request). Source-only costs the
+ability to run governance verbs from inside a worktree, which under the already-recorded
+T-100196 session-on-master flow is not something we should be doing. One option's cost is
+measured and severe; the other's is a workflow we already decided against.
+
+S2 corrected the mechanism: source-only cannot be implemented by keeping state out —
+7394 tracked governance files mean git puts it there regardless. It is implemented by
+refusing writes. That is why IW-3 resolves to "structural" by elimination, not preference.
+
+Bounded fix path (each a separate build slice, in dependency order):
+1. Detection + refusal in the existing PreToolUse path, with an L-399/T-1890-compliant
+   bypass honoured end-to-end by every fw verb the gate can block.
+2. `fw doctor` surfaces sibling worktrees with unlanded-commit counts and age (F5 — this
+   is why five weeks passed unnoticed).
+3. Turn off ambient harness isolation; make worktree creation an explicit trigger (IW-2).
+4. Audit — not delete — the shared-state code: read paths stay, write paths become
+   unreachable (IW-4).
+
+Honest bound: this addresses 81% of the defect record. The branch/ref lifecycle class
+(T-2393, T-100199) and the creation-precondition class (T-2821) are untouched by it.
+
+Out of the GO, each needing its own task: recovering the 43 stranded commits
+(OBS-174), the duplicate T-2505/T-2506 IDs (T-100202 class), the lifecycle class, T-2821.
+
+Evidence:
+
+- S1a — 16 defects classified; 13 in the root-split class. Table in `docs/reports/T-2822-worktree-policy.md`.
+- S1b — `git worktree list` + `git rev-list --count origin/master..<branch>`: 6 and 37 unlanded commits, last activity 5 weeks ago; third worktree clean.
+- S1c — stranded commit `54adb1fcf` carries `T-2505-worktree-usage-policy` — the same question, previously filed and lost. `T-2505`/`T-2506` each name two different tasks depending on which tree is read.
+- S2 — `git ls-files`: 2812 tracked under `.tasks/`, 4582 under `.context/`; only `.budget-status` ignored. `focus.yaml` measured to differ between trees immediately after worktree creation.
+- S2 — detection primitive `git rev-parse --git-dir != --git-common-dir` verified in both directions (main checkout and linked worktree).
+- A3 — `.claude/settings.json` contains no `worktree`/isolation key; re-verified this run.
+- D-026 (2026-04-25, T-1483) is the only recorded worktree usage decision and is audit-specific — there has never been a decision authorising worktrees as a general per-task default.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2d9e0d29
+- **Timestamp:** 2026-08-06T11:04:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-a5bb7410
+- **Timestamp:** 2026-08-06T11:04:26Z
+- **Overall:** CONFIRMED
+- **Claims:** 11
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2822-worktree-policy.md` | file | ✓ pass |
+| `T-2505` | task | ✓ pass |
+| `T-2506` | task | ✓ pass |
+| `.claude/settings.json` | file | ✓ pass |
+| `T-100196` | task | ✓ pass |
+| `T-1890` | task | ✓ pass |
+| `T-2393` | task | ✓ pass |
+| `T-100199` | task | ✓ pass |
+| `T-2821` | task | ✓ pass |
+| `T-100202` | task | ✓ pass |
+| `T-1483` | task | ✓ pass |
+
+### 2026-08-06T11:04:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

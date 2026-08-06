@@ -4,10 +4,10 @@ name: "triage and recover the two stranded worktrees before source-only enforcem
 description: >
   triage and recover the two stranded worktrees before source-only enforcement
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T11:19:57Z
-last_update: 2026-08-06T11:25:48Z
-date_finished: null
+last_update: 2026-08-06T11:29:50Z
+date_finished: 2026-08-06T11:29:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -325,3 +325,22 @@ raised to an inception rather than another fix.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2824-triage-and-recover-the-two-stranded-work.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a1123ebb
+- **Timestamp:** 2026-08-06T11:29:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 8
+     - evidence: `ls .tasks/active/T-2825-*.md >/dev/null`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `! git diff --name-only origin/master..HEAD | grep -qE '^(lib|agents|bin|web)/'`
+
+### 2026-08-06T11:29:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
