@@ -2231,7 +2231,21 @@ _t2094_emit_doctor_advisory() {
     local _doctor_rc=0
     echo ""
     echo -e "  ${BOLD}Post-upgrade health check (advisory):${NC}"
-    _doctor_out=$(PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" doctor 2>&1) || _doctor_rc=$?
+
+    # T-2845: run the CONSUMER's own fw, not $FRAMEWORK_ROOT's. During
+    # `fw upgrade`, FRAMEWORK_ROOT is the temporary upstream clone
+    # (/tmp/fw-upstream-XXXXXX/fw), so using it health-checked the upstream and
+    # merely pointed it at the consumer's directory. The vendored copy the
+    # operator will actually run was never exercised, and every advisory for a
+    # vendored project reported `Active mode: global … vendored copy exists but
+    # was not selected` — the harness describing itself, read for a long time as
+    # a consumer fault. Fall back to FRAMEWORK_ROOT for consumers that genuinely
+    # have no vendored copy (shared-tooling / global installs).
+    local _doctor_fw="$FRAMEWORK_ROOT/bin/fw"
+    if [ -x "$target_dir/.agentic-framework/bin/fw" ]; then
+        _doctor_fw="$target_dir/.agentic-framework/bin/fw"
+    fi
+    _doctor_out=$(PROJECT_ROOT="$target_dir" "$_doctor_fw" doctor 2>&1) || _doctor_rc=$?
     echo "$_doctor_out" | awk 'NR<=20 {print "    " $0}'
     echo ""
     if [ "$_doctor_rc" -ne 0 ]; then
