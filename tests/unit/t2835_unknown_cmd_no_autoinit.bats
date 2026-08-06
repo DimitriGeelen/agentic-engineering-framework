@@ -17,6 +17,15 @@
 setup() {
     FW="$BATS_TEST_DIRNAME/../../bin/fw"
     TEST_TEMP_DIR="$(mktemp -d)"
+    # Every test here measures how fw resolves a project from an EMPTY cwd, so
+    # an inherited PROJECT_ROOT changes the thing under test: fw takes the
+    # caller's project instead of deciding about $PWD, and the auto-init branch
+    # never runs. Standalone `bats` leaves it unset; the P-011 close gate runs
+    # verification with it EXPORTED (update-task.sh:1137 unsets only
+    # TASKS_DIR/CONTEXT_DIR/_FW_PATHS_LOADED — correctly, since most
+    # verification lines need PROJECT_ROOT for relative paths). Without this
+    # unset the suite is green by hand and red at close, from the same bytes.
+    unset PROJECT_ROOT
 }
 
 teardown() {
@@ -78,6 +87,19 @@ teardown() {
     # be non-zero on a freshly created project.
     [ -e "$TEST_TEMP_DIR/.framework.yaml" ]
     [ -e "$TEST_TEMP_DIR/.agentic-framework" ]
+}
+
+@test "an inherited PROJECT_ROOT suppresses auto-init (why setup unsets it)" {
+    # Discovered by the P-011 gate refusing this very task: the suite was green
+    # by hand and red at close. Pinned rather than merely worked around, so the
+    # next author sees the mechanism instead of rediscovering it. Note this is
+    # NOT a bug in fw — an explicit PROJECT_ROOT means "you are already in that
+    # project", and honouring it is right. It is a bug in any test that asserts
+    # bootstrap behaviour without controlling the variable.
+    cd "$TEST_TEMP_DIR"
+    run env PROJECT_ROOT="$BATS_TEST_DIRNAME/../.." timeout 300 "$FW" doctor </dev/null
+    [ ! -e "$TEST_TEMP_DIR/.framework.yaml" ]
+    [ -z "$(ls -A "$TEST_TEMP_DIR")" ]
 }
 
 @test "fw init in an empty directory still works" {
