@@ -4,12 +4,12 @@ name: "unknown fw subcommand auto-inits the caller cwd instead of erroring"
 description: >
   unknown fw subcommand auto-inits the caller cwd instead of erroring
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T18:32:38Z
-last_update: '2026-08-06T18:45:10Z'
-date_finished:
+last_update: 2026-08-06T20:41:49Z
+date_finished: 2026-08-06T20:41:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -345,3 +345,29 @@ suites test `fw <valid-command>`; nobody had typed a wrong one.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2835-unknown-fw-subcommand-auto-inits-the-cal.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e623ab16
+- **Timestamp:** 2026-08-06T20:47:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — `tests/lint/help-router-parity.bats` is **not made worse** by this change.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/lint/help-router-parity.bats in: `tests/lint/help-router-parity.bats` is **not made worse** by this change.`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/t2835_unknown_cmd_no_autoinit.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-08-06T20:41:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

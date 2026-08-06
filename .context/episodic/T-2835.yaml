@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2835: unknown fw subcommand auto-inits the caller cwd instead of erroring
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T20:47:56Z
+# ============================================================================
+
+task_id: T-2835
+task_name: "unknown fw subcommand auto-inits the caller cwd instead of erroring"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T18:32:38Z
+completed: 2026-08-06T20:41:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T20:56:18+02:00
+last_commit: 2026-08-06T22:41:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  an unknown fw subcommand no longer initialises the caller's cwd. test suite controls PROJECT_ROOT so it measures the same thing at close as by hand
+
+# Key outcomes
+outcomes:
+  - 'An unrecognised subcommand in a non-project directory exits non-zero with'
+  - 'The known-command set is derived from the dispatch `case` block itself, not'
+  - 'Known verbs still auto-init in a non-project directory — T-2770''s question'
+  - '`fw init` in an empty directory still works end to end'
+  - 'Both the non-interactive (`[ ! -t 0 ]`) and interactive branches are'
+  - 'Regression test pins unknown-creates-nothing AND known-still-inits, so a'
+  - '`tests/lint/help-router-parity.bats` is **not made worse** by this change.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2835-unknown-fw-subcommand-auto-inits-the-cal.md'
+  - 'tests/unit/t2835_unknown_cmd_no_autoinit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T20:56:18'
+    action: 'T-2835: an unknown fw subcommand no longer initialises the caller''s cwd'
+  - time: '2026-08-06T22:41:40'
+    action: 'T-2835: test suite controls PROJECT_ROOT so it measures the same thing at close as by hand'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 129 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 129
+  commits: 2
+  files_changed: 6
+  lines_added: 520
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2835-unknown-fw-subcommand-auto-inits-the-cal.md
+generated_by: context-agent-hybrid
