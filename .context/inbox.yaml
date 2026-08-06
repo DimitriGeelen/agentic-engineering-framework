@@ -1404,3 +1404,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-186
+  text: "tests/lint/help-router-parity.bats has been red with 20 router commands missing from show_help(): arc bpmn bvp corpus designer gpu integrate mirror orchestrator outcome pause pending policy release resolver reviewer sync ux-review worktree write-set. Measured as PRE-EXISTING during T-2835 (stashed the T-2835 change out, still 1 red), so not collateral from that fix. Matters for onboarding specifically: an operator following the onboarding prompt discovers commands from 'fw help', and these 20 are undiscoverable there even though they dispatch correctly. Also worth noting the lint suite is red in the tree right now, which means its signal is already being ignored -- a red guard nobody acts on is indistinguishable from no guard. Two legs: (1) add the 20 to show_help(); (2) ask why a lint suite can sit red without surfacing -- fw doctor and audit do not appear to fail on tests/lint red, which is the same orphaned-suite class as T-2696/T-2786."
+  captured: 2026-08-06T18:55:37Z
+  context_task: T-2835
+  tags: []
+  status: pending
+  promoted_to: null

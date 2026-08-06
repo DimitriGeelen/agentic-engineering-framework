@@ -587,11 +587,38 @@ if [ -z "$PROJECT_ROOT" ]; then
         esac
     done
 
+    # T-2835: an UNRECOGNISED verb must never reach auto-init. The condition below
+    # excludes a handful of named commands but never asks whether $_cmd exists at
+    # all, so `fw doctro` (or any verb absent from an older install) ran do_init on
+    # the caller's cwd — git init plus a ~27M vendored tree — and re-execed, while
+    # the `Unknown command:` error further down was never reached because the
+    # mutation happens hundreds of lines earlier. Found from a live onboarding run
+    # where `fw doctor` against an older global install began bootstrapping the
+    # operator's test directory.
+    #
+    # The known set is derived from the dispatch `case` block itself rather than
+    # written out again here: a second list is a second thing to forget, and the
+    # bug being fixed IS an out-of-date list. Same extraction as
+    # tests/lint/help-router-parity.bats, which pins the shape this depends on.
+    # Cost is one awk fork, paid only on the not-a-project path — never on the
+    # common path, where this whole branch is skipped.
+    #
+    # Deliberately NOT deciding T-2770 (should a known read-only verb like
+    # `fw status` auto-init at all?). That question has consumer blast radius and
+    # stays open; this guard only removes the case with no defensible reading.
+    _fw_cmd_is_known() {
+        [ -n "${1:-}" ] || return 1
+        awk '/^case "\$cmd" in/,/^esac/' "$FW_REAL_PATH" 2>/dev/null \
+            | grep -E '^[[:space:]]{4}[a-z][-a-z0-9|]+\)' \
+            | sed 's/[[:space:]]*)//; s/^[[:space:]]*//' \
+            | tr '|' '\n' | grep -qx -- "$1"
+    }
+
     if [ "$_is_help_query" = false ] && \
        [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
        [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
        [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ "$_cmd" != "hook" ] && \
-       [ "$_cmd" != "vendor" ] && [ -n "$_cmd" ]; then
+       [ "$_cmd" != "vendor" ] && [ -n "$_cmd" ] && _fw_cmd_is_known "$_cmd"; then
 
         # Non-TTY: use defaults (cwd + claude), announcing on stderr only.
         #
