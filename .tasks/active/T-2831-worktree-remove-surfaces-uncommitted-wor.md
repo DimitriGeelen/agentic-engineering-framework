@@ -107,19 +107,19 @@ shape that trains `--force`, and `--force` discards it without a word.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw worktree remove` classifies dirty paths into **regenerable machine-local
+- [x] `fw worktree remove` classifies dirty paths into **regenerable machine-local
       state** (counters, `.loop-detect.json`, `.pre-compact.*`, `session.yaml`,
       `focus.yaml`, `.hook-counter`) vs **content registers / work**
       (`.tasks/**`, `decisions.yaml`, `learnings.yaml`, `concerns.yaml`,
       `feedback-stream.yaml`, and anything outside `.context/working/`).
-- [ ] When only regenerable state is dirty, the refusal says so and names the safe
+- [x] When only regenerable state is dirty, the refusal says so and names the safe
       remedy; when any content register is dirty, the refusal **names the files and
       shows the diffstat**, so the operator sees what `--force` would destroy.
-- [ ] Content registers are **never** auto-discarded — no code path resets them without
+- [x] Content registers are **never** auto-discarded — no code path resets them without
       an explicit, separately-named operator action.
-- [ ] `tests/unit/worktree_remove_dirty_class.bats` pins both classes, each asserting
+- [x] `tests/unit/worktree_remove_dirty_class.bats` pins both classes, each asserting
       its precondition before its assertion (T-2828 vacuous-control lesson).
-- [ ] Mutation-checked: reverting the classifier turns the content-register test red.
+- [x] Mutation-checked: reverting the classifier turns the content-register test red.
 
 ### Human
 - [ ] [REVIEW] Decide the fate of the real unlanded work found in
@@ -164,6 +164,10 @@ shape that trains `--force`, and `--force` discards it without a word.
 -->
 
 ## Verification
+
+bash -n lib/worktree.sh
+out=$(bats tests/unit/worktree_remove_dirty_class.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2825_worktree_remove.bats tests/unit/worktree_remove_guard.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -232,19 +236,41 @@ shape that trains `--force`, and `--force` discards it without a word.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw worktree remove` on a dirty (but strand-guard-clean) worktree either
+fails with git's raw `dirty/locked?` error, or — with `--force` — silently discards
+whatever is dirty via `git worktree remove --force`, with no indication of value.
+Live measurement on `.claude/worktrees/t100199-close` found 17 dirty files including
+a task completion's metadata and two decision-register entries, a month unlanded.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the framework had two guards for worktree removal — a commit-reachability
+guard (T-2829, "would this strand any commit?") and git's own working-tree dirtiness
+check — and no guard for "would this destroy uncommitted *content*?" sat between them.
+Uncommitted work is structurally invisible to the commit guard (it only walks `git
+rev-list`), so a worktree can read "0 commits stranded" while holding real unlanded
+governance state. The only thing standing between that state and deletion was git's
+opaque dirty refusal, which names nothing and trains the operator toward `--force` —
+and `--force` (`git worktree remove --force`) discards dirt indiscriminately, with no
+distinction between a stale `.hook-counter` and an unlanded task completion.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** OBS-179 (this task's origin) initially misdiagnosed the
+dirt as main-session-hook noise and proposed offering to reset it — the opposite of
+correct, since the dirt's mtimes predate any main-session hook run. No prior task had
+classified worktree dirt by content-vs-noise; the guards that did exist (T-2825 strand,
+T-2829 reachability question) both operate purely on commits, so "is anything valuable
+in the working tree" was never asked at all.
+
+**Prevention:** `_wt_dirty_summary` (lib/worktree.sh) now classifies every dirty path
+via an explicit, narrow allowlist (`_wt_is_regenerable_path`) BEFORE `do_worktree_remove`
+ever calls `git worktree remove`. Content-register dirt is refused unconditionally —
+`--force` cannot reach it, because `--force` is the named strand-override flag, not a
+content-discard action. Only paths on the allowlist (counters, `.loop-detect.json`,
+`.pre-compact.*`, `session.yaml`, `focus.yaml`) are treated as safe, and the allowlist
+is exact-match rather than directory-prefix — `.context/working/feedback-stream.yaml`
+sits inside `.context/working/` but is content (a sovereignty log), and a prefix rule
+would have misclassified it. Pinned by `tests/unit/worktree_remove_dirty_class.bats`,
+including a dedicated test for that exact prefix-vs-exact-match trap, and mutation-
+checked: reverting the classifier to always-regenerable turns the content-register
+tests red.
 
 ## Evolution
 
@@ -280,6 +306,54 @@ shape that trains `--force`, and `--force` discards it without a word.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-08-06 — implemented by a dispatched worker; verified independently
+
+Implementation was produced by TermLink worker `tl-d016e051`, dispatched automatically by
+the `lib/resolver.py loop --dispatch` daemon ~20 minutes after this task was filed (the
+framework's own v1 dispatch substrate; dispatch `419c5e0b-835…`). The worker built in the
+**shared working tree**, not a worktree — see the Gotcha note below.
+
+The worker ticked AC5 ("mutation-checked") and stated the result in prose in `## RCA`, but
+recorded no evidence. Re-run independently rather than taken on trust:
+
+| Mutation | t1 regen-only | t2 content | t3 feedback-stream | t4 clean |
+|---|---|---|---|---|
+| `_wt_is_regenerable_path` → always regenerable | ok | **red** | **red** | ok |
+| (none) | ok | ok | ok | ok |
+
+Claim confirmed, and the discrimination is the right shape: t1 and t4 *should* survive
+that mutation (regenerable-only dirt and clean worktrees behave identically either way),
+so their green is signal, not slack. `lib/worktree.sh` restored to `c8e95689…` after.
+
+Live end-to-end on the case that motivated the task — `.claude/worktrees/t100199-close`,
+17 dirty files: REFUSED, 11 content-register files named with per-file diffstats,
+including `.tasks/completed/T-2509-*.md`, `decisions.yaml` and `feedback-stream.yaml`.
+Worktree left present with all 17 files intact. Uncommitted state backed up to a patch
+before running, since that worktree is the only copy.
+
+### 2026-08-06 — fail-safe classification (worker's call, endorsed)
+
+- **Chose:** exact-match allowlist of regenerable paths; everything unlisted — including
+  unrecognised files *inside* `.context/working/` — classified as content and refused.
+- **Why:** the failure directions are not symmetric. Misclassifying content as
+  regenerable destroys unrecoverable work silently; misclassifying regenerable state as
+  content costs one extra `--force`. `.context/working/feedback-stream.yaml` is the
+  proof case: it sits in the runtime directory but is the T-1985 sovereignty log.
+- **Rejected:** a directory-prefix rule (`.context/working/*` → regenerable), which is
+  what my own AC text implied and which would have discarded that file.
+- **Note:** `--force` deliberately does **not** override the content refusal. `--force`
+  is the named strand-override; overloading it into a content-discard action is what
+  OBS-179's original "offer to reset those paths" proposal would have produced.
+
+### 2026-08-06 — Gotcha: the worker built in the shared tree
+
+`bin/fw vendor self`, run for an unrelated task, swept the worker's half-written
+`lib/worktree.sh` into `.agentic-framework/`; the T-2240 self-vendor push gate caught it
+and blocked the push. Reverted, and the vendored copy re-synced only after the worker
+finished. Two agents editing one tree is the same fork hazard T-2822 describes, minus the
+git-level isolation — check `ps` for `resolver.py loop` before attributing unexplained
+tree changes to yourself.
 
 ## Decision
 

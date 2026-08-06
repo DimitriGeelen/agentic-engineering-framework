@@ -351,6 +351,78 @@ _wt_remove_resolve() {
     return 1
 }
 
+# _wt_is_regenerable_path <relpath> -> 0 (true) when <relpath> is machine-local
+# state that is safe to discard (recreated by hooks/runtime on next use), 1
+# otherwise.
+#
+# T-2831 -- the allowlist is deliberately narrow and exact-match, not "anything
+# under .context/working/". `.context/working/feedback-stream.yaml` sits in that
+# directory but is a content register (T-1985 sovereignty log of human overrides)
+# -- measured live holding real, non-regenerable decisions. A directory-prefix
+# rule would have classified it regenerable and let --force discard it silently,
+# which is the exact failure mode OBS-179 nearly shipped (T-2828 origin note).
+# Every path NOT explicitly listed here -- including unrecognised files inside
+# .context/working/ -- is treated as content and refused. Fail-safe, not fail-open.
+_wt_is_regenerable_path() {
+    local p="$1"
+    case "$p" in
+        .context/working/*-counter|.context/working/.loop-detect.json| \
+        .context/working/.pre-compact.*|.context/working/session.yaml| \
+        .context/working/focus.yaml)
+            return 0 ;;
+        *)
+            return 1 ;;
+    esac
+}
+
+# _wt_dirty_summary <worktree_path> -> classifies `git status --porcelain` for
+# the worktree into regenerable machine-local state vs content registers.
+# Prints a human-readable report. Return codes:
+#   0 = clean (nothing dirty)
+#   1 = at least one content-register path is dirty (names files + diffstat --
+#       this is the case --force must NEVER bypass, T-2831 AC3)
+#   2 = dirty, but ONLY regenerable machine-local state (names the safe remedy)
+_wt_dirty_summary() {
+    local wt_path="$1"
+    local -a content=() regen=()
+    local line code path
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        code="${line:0:2}"
+        path="${line:3}"
+        if _wt_is_regenerable_path "$path"; then
+            regen+=("$path")
+        else
+            content+=("$code:$path")
+        fi
+    done < <(git -C "$wt_path" status --porcelain --untracked-files=all 2>/dev/null)
+
+    if [ "${#content[@]}" -eq 0 ] && [ "${#regen[@]}" -eq 0 ]; then
+        return 0
+    fi
+
+    if [ "${#content[@]}" -gt 0 ]; then
+        echo "${#content[@]} content-register file(s) dirty in $wt_path -- NOT regenerable:"
+        local entry code path lines_n
+        for entry in "${content[@]}"; do
+            code="${entry%%:*}"
+            path="${entry#*:}"
+            if [ "$code" = "??" ]; then
+                lines_n="$(wc -l < "$wt_path/$path" 2>/dev/null | tr -d ' ')"
+                echo "  $path (untracked, ${lines_n:-0} line(s))"
+            else
+                git -C "$wt_path" diff --stat HEAD -- "$path" 2>/dev/null | sed 's/^/  /'
+            fi
+        done
+        return 1
+    fi
+
+    echo "${#regen[@]} regenerable machine-local file(s) dirty in $wt_path (safe to discard):"
+    local p
+    for p in "${regen[@]}"; do echo "  $p"; done
+    return 2
+}
+
 # _wt_unpushed_summary <branch> -> prints a non-empty summary and returns 1 when
 # <branch> holds commits reachable from NO remote-tracking ref; prints nothing
 # and returns 0 when every commit is already on some remote.
@@ -441,6 +513,10 @@ do_worktree_remove() {
                 echo "  Removes the worktree directory (branch is kept). Refuses when the"
                 echo "  branch holds commits absent from every remote unless --force is given"
                 echo "  (logged Tier-2 to .context/working/.gate-bypass-log.yaml)."
+                echo "  Also refuses when the worktree is dirty: regenerable machine-local"
+                echo "  state (counters, session.yaml, focus.yaml, ...) can be cleared with"
+                echo "  --force; dirty content registers (.tasks/**, decisions.yaml, ...) are"
+                echo "  refused unconditionally -- --force never discards them."
                 return 0 ;;
             -*) echo "worktree remove: unknown option: $1" >&2; return 2 ;;
             *)
@@ -463,6 +539,36 @@ do_worktree_remove() {
     if ! _wt_remove_resolve "$target"; then
         echo "worktree remove: no linked worktree matches '$target'" >&2
         echo "  Run 'fw worktree status' to see registered worktrees." >&2
+        return 1
+    fi
+
+    # T-2831 -- classify uncommitted dirt BEFORE ever attempting `git worktree
+    # remove`. Uncommitted work is invisible to the strand guard below (it only
+    # counts commits), and git's own dirty refusal gives no indication of value --
+    # exactly the shape that trains --force, and --force (via `git worktree
+    # remove --force`) discards uncommitted content with no warning. Content
+    # registers are refused UNCONDITIONALLY, --force included: this flag is the
+    # named strand-override, not a content-discard action (AC3).
+    local dirty_summary dirty_rc=0
+    dirty_summary="$(_wt_dirty_summary "$_WT_REMOVE_PATH")" || dirty_rc=$?
+
+    if [ "$dirty_rc" = "1" ]; then
+        echo "worktree remove: REFUSED -- content-register files are dirty in '$_WT_REMOVE_PATH'" >&2
+        echo "$dirty_summary" | sed 's/^/  /' >&2
+        echo "" >&2
+        echo "  These are content, not runtime noise -- --force will NOT discard them." >&2
+        echo "  Review the diff, then either land it or explicitly discard per file:" >&2
+        echo "    git -C $_WT_REMOVE_PATH diff HEAD -- <file>     (inspect)" >&2
+        echo "    git -C $_WT_REMOVE_PATH checkout HEAD -- <file> (discard, per file, on purpose)" >&2
+        return 1
+    fi
+
+    if [ "$dirty_rc" = "2" ] && [ "$force" != "1" ]; then
+        echo "worktree remove: REFUSED -- regenerable machine-local state is dirty in '$_WT_REMOVE_PATH'" >&2
+        echo "$dirty_summary" | sed 's/^/  /' >&2
+        echo "" >&2
+        echo "  Safe remedy: git -C $_WT_REMOVE_PATH checkout HEAD -- ." >&2
+        echo "  Or override:  fw worktree remove $target --force" >&2
         return 1
     fi
 
