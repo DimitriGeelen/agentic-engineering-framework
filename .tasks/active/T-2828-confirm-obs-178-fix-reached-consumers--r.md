@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T15:21:03Z
-last_update: 2026-08-06T15:21:03Z
+last_update: 2026-08-06T15:26:22Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -206,19 +206,45 @@ out=$(bats tests/unit/init_head_bootstrap.bats 2>&1); echo "$out" | grep -q '^ok
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+Scope note: T-2827 carries the RCA for OBS-178 itself. This RCA covers the **two measurement
+defects in this verification run** — the gate fires on the title's "fix", and the harness
+failures are worth the entry on their own.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Symptom:** a verification run reported two legs whose printed results were not about the
+thing being tested. L5 reported a successful `fw work-on` that had operated on the *wrong
+project*; L7 reported a negative control passing when no control had been exercised.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Root cause:**
+- L5/L6 — the harness ran the test project's vendored `fw` **from this repo's cwd**. `env -i`
+  clears `PROJECT_ROOT`, so cwd becomes the deciding input. The tool resolved this repo,
+  correctly, and minted T-2829 here.
+- L7 — the control asserted only the exit status. `git commit` exits 1 both when a hook
+  refuses and when there is nothing staged. L6's `add -A` had already consumed `probe.txt`,
+  so the second condition held and produced the same code as the first.
+
+**Why structurally allowed:** both are the same shape — **a signal that is not unique to the
+condition it is read as evidence for.** An exit code of 1 is shared by "refused" and "nothing
+to do"; a project root inferred from cwd is shared by "the project I meant" and "the project
+I happen to be standing in". Neither harness asserted the precondition that would separate
+them, so both produced confident output about the wrong object (T-2782 / T-2796 class).
+
+Note the asymmetry that made L7 the more dangerous of the two: L5's wrong answer was *loud*
+(T-2829 is visibly not T-006), while L7's was **the answer I expected**. A control that
+returns the expected value for the wrong reason is indistinguishable from a working control,
+and would have been reported as evidence that the commit gate fires.
+
+**Prevention:**
+1. Negative controls must assert their **precondition**, not just their outcome. The re-run
+   prints `STAGED_COUNT=1` before committing and confirms the file is still uncommitted
+   afterwards — three facts, so no single shared failure mode can fake all of them.
+2. Harnesses that exercise another project must `cd` into it, and assert they did — the
+   re-run prints `cwd=` and `L5_LIVE_REPO_UNPOLLUTED=0`.
+3. Verification pins the stray-task cleanup so the pollution cannot silently return.
+
+**Escalation level:** B (technique). The tools behaved correctly in both cases; the
+measurement did not. L-538 already names this class for e2e exit-status assertions — this is
+its second recorded instance, and the first where the vacuous control was *self-authored in
+the same session* as the rule it violated.
 
 ## Evolution
 
