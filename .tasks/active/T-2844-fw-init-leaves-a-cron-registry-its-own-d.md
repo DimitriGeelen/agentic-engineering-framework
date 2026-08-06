@@ -1,8 +1,8 @@
 ---
-id: T-2843
-name: "doctor path-ambiguity WARN fires on every vendored consumer (category error)"
+id: T-2844
+name: "fw init leaves a cron registry its own doctor calls ungenerated"
 description: >
-  doctor path-ambiguity WARN fires on every vendored consumer (category error)
+  fw init leaves a cron registry its own doctor calls ungenerated
 
 status: started-work
 workflow_type: build
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-06T22:28:49Z
-last_update: '2026-08-06T22:30:12Z'
+created: 2026-08-06T22:36:25Z
+last_update: '2026-08-06T22:45:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -35,83 +35,96 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-06T22:30:07Z'
+  - ts: '2026-08-06T22:45:06Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-06T22:30:12Z'
+  - ts: '2026-08-06T22:45:10Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 3
       D4: 2
       F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2843: doctor path-ambiguity WARN fires on every vendored consumer (category error)
+# T-2844: fw init leaves a cron registry its own doctor calls ungenerated
 
 ## Context
 
-`fw doctor` check 2 (`bin/fw:1148-1161`, T-1097/G-028) compares `upstream_repo`
-from `.framework.yaml` against the running `FRAMEWORK_ROOT` and WARNs when they
-differ. But `upstream_repo` is a **pull source** and `FRAMEWORK_ROOT` is **the
-copy you are running**. In vendored mode — the D-377 default — the running fw is
-by design the project's own `.agentic-framework/`, so the two can never be equal.
-The WARN therefore fires on every vendored consumer, unconditionally, from the
-moment `fw init` finishes.
+`fw init` into an empty directory, then `fw doctor` in that directory:
 
-Two independent live instances:
-1. Operator's by-hand onboarding of `/opt/001-test-install` (`upstream_repo` = a
-   local path) — WARN present in their pasted `fw doctor` output.
-2. Scratch `fw init` reproduction on current bytes (`upstream_repo` = a URL) —
-   WARN present, one of 5 on a brand-new project.
+```
+WARN  Cron registry present but not generated — run: fw cron install
+```
 
-Note case 1 also shows `realpath -m` being applied to something that may be a
-URL; `realpath -m "https://host/x"` yields `$PWD/https:/host/x`, which is
-meaningless to compare against anything.
+A project seconds old is already reporting drift it did nothing to cause. Sibling
+to T-2740 (greenfield seed tasks failed `fw audit` on day zero) and to T-2843
+(day-zero path-ambiguity WARN, fixed) — the same class on a third surface: `fw init`
+seeds state that a downstream check immediately reads as stale.
 
-This is the same epistemic shape as T-2839 (`fw upgrade` gluing `https://github.com/`
-onto a local path): two values of different kinds compared as if they were the
-same kind, with inequality read as a defect.
+This is the last remaining project-scope WARN on a greenfield project. After
+T-2843, `fw doctor` on a fresh install reports 4 WARNs, of which two are
+`[host]`-scoped (git identity, global install size) and one is
+session-environmental (unsupervised session). This is the only one the framework
+both causes and complains about.
+
+Why it matters beyond tidiness: CLAUDE.md documents cron drift as a three-stage
+chain (registry → generated → deployed) with a mandatory Verification command for
+any cron-touching task. A brand-new project starts in stage-1 drift, so the
+day-zero state of every consumer is indistinguishable from the failure the chain
+exists to detect. The operator hit exactly this on their by-hand onboarding run.
+
+**Open question for the fix (resolve before choosing a mechanism):** should
+`fw init` generate the cron artefacts, or should it not seed a registry until the
+operator opts in? Generating implies installing crontab entries on the host at
+init time, which is a side effect outside the project directory and may not be
+wanted. Not seeding means the registry appears later, on first `fw cron` use.
+Doctor's own advice (`run: fw cron install`) presumes the first.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Vendored project whose `upstream_repo` is a **URL** produces no "Framework path ambiguity" WARN from `fw doctor`
-- [x] Vendored project whose `upstream_repo` is a **local path** produces no such WARN either (the operator's case)
-- [x] Non-vendored (global/shared-tooling) mode with a local-path `upstream_repo` that differs from the running framework **still WARNs** — the check keeps the purpose T-1097 gave it
-- [x] `realpath` is never applied to a value carrying a URL scheme
-- [x] Regression test committed covering all three cases above, green
+- [x] Root cause identified: which init step seeds `.context/cron-registry.yaml`, and why nothing generates from it
+- [x] Decision recorded in `## Decisions` on generate-at-init vs seed-on-demand, with the host-side-effect trade-off stated
+- [x] `fw init` into an empty directory followed by `fw doctor` emits no cron-related WARN
+- [x] Genuine registry→generated drift (edit the registry, don't regenerate) still WARNs — the check keeps the purpose T-1942 gave it
+- [x] Regression test committed covering both the greenfield-quiet and drift-still-detected cases, green
+- [x] `fw audit` fixed in parity with `fw doctor` — the same defect emitted from both surfaces
 
-**Live evidence** (real `fw doctor`, not the predicate in isolation):
+**Live evidence** (real `fw init` into an empty directory, then the real checkers):
 
-| Scenario | `Active mode` | Verdict |
+| Surface | Registry state | Verdict |
 |---|---|---|
-| vendored, `upstream_repo: https://example.com/…` | vendored | quiet |
-| vendored, `upstream_repo: /opt/agentic-engineering-framework` | vendored | quiet |
-| global, `upstream_repo: /opt/some-other-framework` | global | **WARN, as intended** |
+| `fw doctor` | `jobs: []` (as seeded) | `SKIP  registry declares no jobs (nothing to generate)` |
+| `fw doctor` | one job added, not generated | `WARN  Cron registry present but not generated` |
+| `fw audit` | `jobs: []` (as seeded) | `INFO  registry declares no jobs (nothing to generate)` |
+| `fw audit` | one job added, not generated | `WARN  Cron drift: registry present but not generated` |
 
-Greenfield: `fw init` into an empty directory then `fw doctor` — WARN count 5 → 4,
-with the path-ambiguity line gone. Of the remaining four, two are `[host]`-scoped
-(git identity, global install size), one is session-environmental (unsupervised
-session). The one genuine project-scope day-zero WARN left is "Cron registry
-present but not generated", which is a distinct defect and filed separately.
+Greenfield `fw doctor` WARN count: **4 → 3**, and all three remaining are
+`[host]`-scoped or session-environmental. Combined with T-2843 (5 → 4), a freshly
+initialised project now reports **zero project-scope warnings**.
+
+**Observed, not fixed here:** greenfield `fw audit` also emits
+`WARN CTL-020: No cron audit files in last hour`, which is the same day-zero class
+on a third surface — a project minutes old cannot have an hour of audit history.
+Left out of scope deliberately (one bug, one task); noted so it is not lost.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -211,39 +224,39 @@ present but not generated", which is a distinct defect and filed separately.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(bats tests/unit/t2843_doctor_upstream_ambiguity.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# Live end-to-end: a real vendored project running the real doctor must not emit the WARN.
-r=$PWD; d=$(mktemp -d); mkdir -p "$d/.tasks/active" "$d/.context/working"; ln -s "$r" "$d/.agentic-framework"; printf 'project_name: t2843-probe\nversion: 0.0.0\nupstream_repo: https://example.com/agentic-engineering-framework\n' > "$d/.framework.yaml"; out=$(cd "$d" && PROJECT_ROOT="$d" "$r/bin/fw" doctor 2>&1) || true; rm -rf "$d"; ! echo "$out" | grep -q 'Framework path ambiguity'
-# Same, with a LOCAL PATH upstream — the operator's /opt/001-test-install shape.
-r=$PWD; d=$(mktemp -d); mkdir -p "$d/.tasks/active" "$d/.context/working"; ln -s "$r" "$d/.agentic-framework"; printf 'project_name: t2843-probe\nversion: 0.0.0\nupstream_repo: /opt/agentic-engineering-framework\n' > "$d/.framework.yaml"; out=$(cd "$d" && PROJECT_ROOT="$d" "$r/bin/fw" doctor 2>&1) || true; rm -rf "$d"; ! echo "$out" | grep -q 'Framework path ambiguity'
+out=$(bats tests/unit/t2844_cron_registry_job_count.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# Both cron-touching surfaces were edited, so the CLAUDE.md L-364 cron gate applies.
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
 
 ## RCA
 
-**Symptom:** Every vendored consumer — including one three seconds old — greets
-its owner with `WARN Framework path ambiguity`, listing an `upstream_repo` and a
-`running fw` that are supposed to differ.
+**Symptom:** `fw init` into an empty directory, then `fw doctor` — a project
+seconds old reports `WARN Cron registry present but not generated`. `fw audit`
+reports the same finding independently.
 
-**Root cause:** The check compares a *pull source* to *the copy being run* and
-treats inequality as a defect. In vendored mode those are different kinds of
-thing by construction, so the comparison has no true branch. Secondary: `realpath -m`
-was applied to `upstream_repo` without first establishing it was path-shaped, so
-a URL was silently rewritten to `$PWD/https:/host/path` before comparison.
+**Root cause:** The registry→generated→deployed drift checks were gated on the
+registry *file existing*, never on it *declaring any jobs*. `fw init` seeds
+`jobs: []`; an empty registry has no generated form, so the absence of
+`.context/cron/agentic-audit.crontab` is the correct end state rather than drift.
+The checks conflated "nothing to generate" with "something to generate that was
+not generated".
 
-**Why structurally allowed:** The check was written under T-1097/G-028 when
-running fw *from* a shared framework checkout was normal, and equality was
-achievable. D-377 then made vendoring the default — inverting the check's premise
-without revisiting it. Nothing failed: a WARN that is always on is
-indistinguishable from a WARN that is correctly on, and `fw doctor` still exits 0
-with warnings. The greenfield suites assert `fw init` succeeds and `fw audit`
-passes (T-2740); no suite asserts a *newly initialised project's doctor is quiet*.
-So the signal degraded to noise and stayed there.
+**Why structurally allowed:** The three-leg cron chain was built incrementally
+against real drift incidents — T-1771 (generated→deployed), T-1942/T-1943
+(registry→generated, after a job sat undeployed 3+ days). Every one of those was
+diagnosed on a *populated* registry, where file-existence and job-existence
+coincide, so the distinction never had to be drawn. The empty case only appears
+at init, and no suite asserted anything about a freshly initialised project's
+doctor output. T-2740 had already fixed the same class for `fw audit`'s seed
+tasks — the pattern was known; this surface just wasn't looked at.
 
-**Prevention:** The predicate moves to `lib/doctor-upstream.sh` as a pure function
-with a bats suite pinning all three modes, including the negative control that
-global mode still WARNs — so a future change that re-broadens the check goes red
-instead of going quiet. The live verification lines run the real `fw doctor`
-against a real vendored project for both upstream shapes, which is the assertion
-that was missing.
+**Prevention:** The predicate lives in `lib/cron-registry.sh` with a bats suite
+that pins the empty, missing-key, null, populated and malformed cases. The
+malformed case is load-bearing: it must return -1 rather than 0, or an unreadable
+registry would silently skip drift detection — swapping a false positive for a
+false negative, which is the worse trade. Both emitters now share the one
+predicate, so the surfaces cannot drift apart again (L-399 producer/consumer
+parity).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -285,14 +298,29 @@ that was missing.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-07 — the filed question had a wrong premise
+
+- **Chose:** Neither generate-at-init nor seed-on-demand. Fix the *checker*, not
+  `fw init`.
+- **Why:** The Context section above framed this as "should init generate the
+  cron artefacts, or not seed a registry at all", and both options presume there
+  is something to generate. Inspecting the seeded file settled it: the registry
+  contains `jobs: []`. There is no work declared, so `fw cron generate` correctly
+  produces nothing, and the missing crontab is the right end state. `fw init` is
+  behaving correctly; the drift checks were asking the wrong question. Leaving
+  the framing uncorrected would have shipped a fix to a component that had no bug.
+- **Rejected — generate at init:** would install crontab entries on the host
+  during `fw init`, a side effect outside the project directory that the operator
+  has not asked for. Doctor's own advice (`run: fw cron install`) implies this and
+  is misleading on an empty registry. That advice is now unreachable when the
+  registry is empty, which is the point.
+- **Rejected — don't seed a registry:** the seeded file is a useful, documented
+  template (it carries the header comments explaining what the file is for) and
+  Watchtower's cron page reads it. Removing it to silence a checker bug would
+  trade a real affordance for a cosmetic win.
+- **Also decided — malformed returns -1, not 0:** so an unparseable registry
+  keeps warning instead of silently skipping the drift checks. "We could not tell"
+  must not read the same as "we checked and it was fine".
 
 ## Decision
 
@@ -306,7 +334,7 @@ that was missing.
 
 ## Updates
 
-### 2026-08-06T22:28:49Z — task-created [task-create-agent]
+### 2026-08-06T22:36:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2843-doctor-path-ambiguity-warn-fires-on-ever.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2844-fw-init-leaves-a-cron-registry-its-own-d.md
 - **Context:** Initial task creation

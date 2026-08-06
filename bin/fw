@@ -2472,8 +2472,15 @@ else:
             [ -n "$_wt_line" ] && echo -e "  ${CYAN}INFO${NC}  $_wt_line"
         fi
     fi
+    source "$FRAMEWORK_ROOT/lib/cron-registry.sh"
     if [ -f "$cron_registry" ] && [ "$_fw_is_wt" = "1" ]; then
         echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+    elif [ -f "$cron_registry" ] && [ "$(cron_registry_job_count "$cron_registry")" = "0" ]; then
+        # T-2844: `fw init` seeds `jobs: []`. An empty registry has no generated
+        # form, so "not generated" is correct rather than drift — every freshly
+        # initialised project used to WARN here. A malformed registry returns -1,
+        # not 0, and falls through to the checks below on purpose.
+        echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — registry declares no jobs (nothing to generate)"
     elif [ -f "$cron_registry" ]; then
         local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
         local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
