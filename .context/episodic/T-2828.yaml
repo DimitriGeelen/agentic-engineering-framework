@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2828: confirm OBS-178 fix reached consumers — re-run onboarding verification on published bytes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T15:31:26Z
+# ============================================================================
+
+task_id: T-2828
+task_name: "confirm OBS-178 fix reached consumers — re-run onboarding verification on published bytes"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T15:21:03Z
+completed: 2026-08-06T15:28:54Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T17:26:22+02:00
+last_commit: 2026-08-06T17:28:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-178 fix CONFIRMED on published bytes — worktree immediately after fw init is now populated (9 entries, CLAUDE.md, executable fw, 5 onboarding tasks; was 1 entry). Full 8-leg onboarding set green from a fresh clone of the public mirror. Two harness defects recorded: a missing cd measured the wrong project (minted T-2829 in the live repo, removed), and the negative control was vacuous on first pass (RC=1 from 'nothing to commit', not the gate) — re-run with an asserted staged-count precondition. RCA — both measurement defects are one shape (a signal not unique to the condition it is read as evidence for); the vacuous control was the dangerous one because it returned the expected value
+
+# Key outcomes
+outcomes:
+  - 'The public mirror (`github.com/DimitriGeelen/agentic-engineering-framework`) carries the'
+  - 'A fresh clone **of the mirror** (not the working tree) runs `fw init` → immediate'
+  - 'The full T-2826 leg set re-runs green on those published bytes — init RC, HEAD'
+  - 'The answer to *"can we reliably run the onboarding prompt?"* is stated with the leg'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'OBS-178 fix CONFIRMED on published bytes — worktree immediately after fw init is now populated (9 entries, CLAUDE.md, executable fw, 5 onboarding tasks; was 1 entry). Full 8-leg onboarding set green from a fresh clone of the public mirror. Two harness defects recorded: a missing cd measured the wrong project (minted T-2829 in the live repo, removed), and the negative control was vacuous on first pass (RC=1 from ''nothing to commit'', not the gate) — re-run with an asserted staged-count precondition'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2828-confirm-obs-178-fix-reached-consumers--r.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T17:26:22'
+    action: 'T-2828: OBS-178 fix CONFIRMED on published bytes — worktree immediately after fw init is now populated (9 entries, CLAUDE.md, executable fw, 5 onboarding tasks; was 1 entry). Full 8-leg onboarding set green from a fresh clone of the public mirror. Two harness defects recorded: a missing cd measured the wrong project (minted T-2829 in the live repo, removed), and the negative control was vacuous on first pass (RC=1 from ''nothing to commit'', not the gate) — re-run with an asserted staged-count precondition'
+  - time: '2026-08-06T17:28:53'
+    action: 'T-2828: RCA — both measurement defects are one shape (a signal not unique to the condition it is read as evidence for); the vacuous control was the dangerous one because it returned the expected value'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 1
+  lines_added: 313
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2828-confirm-obs-178-fix-reached-consumers--r.md
+generated_by: context-agent-hybrid
