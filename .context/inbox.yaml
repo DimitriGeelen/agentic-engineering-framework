@@ -1369,3 +1369,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-180
+  text: "T-2036 deadlock, sharper form: after closing a task, the check-active-task hook blocks the very commands its own block message recommends. Measured this session: with no focus, 'bin/fw work-on ...' was refused, and so was 'bin/fw task create --name ... --start' — which is option 1 in the block text verbatim. Only option 2 ('bin/fw context focus T-XXX', pointed at an already-active task) got through, after which work-on succeeded normally. So the recovery path exists but the message lists a non-working option first and the working option second, and the working one requires the agent to already know an unrelated active task ID to borrow. Suggested fix: allow task-create/work-on through the hook when no focus is set at all (creating a task is the sanctioned way OUT of no-task state, never a governance bypass), or reorder the block message to put 'context focus' first with a hint that any active T-ID works. Hit 3x in one session."
+  captured: 2026-08-06T15:41:00Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
