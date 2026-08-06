@@ -32,6 +32,11 @@ SETTINGS = [
     ("INCEPTION_COMMIT_LIMIT", "2", "Max exploration commits before inception decision gate"),
     ("CONSUMER_SCAN_DIRS", "/opt", "Colon-separated directories to scan for consumer projects"),
     ("NTFY_URL", "", "ntfy server base URL for push notifications (empty = dispatcher default; each install sets its own instance, no host-local fallback; T-2439)"),
+    # T-2838: both keys shipped in lib/config.sh and were honoured by the CLI while
+    # never appearing on /config. tests/lint/config-registry-parity.bats has asserted
+    # this parity since T-1187 and was failing unread — see T-2837.
+    ("DISPATCH_MODEL_DEFAULT", "", "Default LLM model for fw termlink dispatch when --model omitted (e.g. sonnet, haiku, opus); T-1643/W3"),
+    ("ARC_COMPLETION_THRESHOLD", "0.80", "Ratio of completed children at which fw audit warns an in-progress arc (G-062 mechanism #2); T-1656"),
 ]
 
 
