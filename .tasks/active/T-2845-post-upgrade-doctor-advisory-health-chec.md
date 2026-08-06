@@ -110,11 +110,25 @@ Found while verifying T-2839 live on a consumer with a local-path upstream.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The advisory invokes the consumer's own `.agentic-framework/bin/fw` when that exists
-- [ ] Advisory output for a vendored consumer reports `Active mode: vendored`
-- [ ] Advisory output no longer contains "vendored copy exists … but was not selected"
-- [ ] Falls back to `$FRAMEWORK_ROOT/bin/fw` when the consumer has no vendored copy (shared-tooling / global consumers keep working)
-- [ ] Regression test committed covering both the vendored and no-vendored-copy cases, green
+- [x] The advisory invokes the consumer's own `.agentic-framework/bin/fw` when that exists
+- [x] `FRAMEWORK_ROOT` is scoped to match the chosen binary (added mid-task — see Decisions)
+- [x] Advisory output for a vendored consumer reports `Active mode: vendored`
+- [x] Advisory output no longer contains "vendored copy exists … but was not selected"
+- [x] Falls back to `$FRAMEWORK_ROOT/bin/fw` when the consumer has no vendored copy (shared-tooling / global consumers keep working)
+- [x] Regression test committed covering both the vendored and no-vendored-copy cases, green
+
+**Live evidence** — real `fw upgrade` on a consumer with a local-path upstream:
+
+Before:
+```
+  WARN  [host] Active mode: global (/tmp/fw-upstream-r73EGA/fw) — vendored copy
+        exists at <project>/.agentic-framework but was not selected
+```
+After:
+```
+  OK  Active mode: vendored (<project>/.agentic-framework)
+  Advisory: doctor PASS (exit 0).
+```
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,7 +228,40 @@ Found while verifying T-2839 live on a consumer with a local-path upstream.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t2845_upgrade_doctor_advisory_target.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
+
+**Symptom:** Every `fw upgrade` of a vendored consumer ended with
+`WARN [host] Active mode: global (/tmp/fw-upstream-XXXXXX/fw) — vendored copy
+exists at <project>/.agentic-framework but was not selected`.
+
+**Root cause:** `_t2094_emit_doctor_advisory` invoked `$FRAMEWORK_ROOT/bin/fw`,
+and during upgrade `FRAMEWORK_ROOT` is the temporary upstream clone. The health
+check ran the upstream's fw pointed at the consumer's directory, so the vendored
+copy the operator actually runs was never exercised.
+
+**Second root cause, found only by live verification:** switching the binary was
+not sufficient. `fw` honours an inherited `FRAMEWORK_ROOT` over its own location,
+and T-2099's fork-bomb fix exports it scoped to the clone. Invoking the
+consumer's binary under that export put it straight back into global mode against
+the clone — live output byte-identical to no fix at all, while the unit tests
+stayed green because the stubs ignored the environment. **Which binary runs** and
+**which framework it believes it is** are two independent channels; changing one
+without the other changes nothing observable.
+
+**Why structurally allowed:** doctor reported the anomaly in plain language in
+every upgrade's output. It read as a finding *about the consumer* rather than
+about the harness that produced it, because that is the only voice doctor has —
+it cannot say "I am being run wrong". The advisory was added (T-2094 F10) as a
+convenience at the end of a long command where output is skimmed, and its verdict
+line (`Advisory: doctor PASS`) was accurate about the run it actually performed.
+
+**Prevention:** `tests/unit/t2845_upgrade_doctor_advisory_target.bats` makes the
+two candidate binaries distinguishable by marker and asserts both which one ran
+and which `FRAMEWORK_ROOT` it received. Negative control performed: tests go red
+against the pre-fix line. The env-parity test exists specifically because the
+first fix passed the binary-only tests while changing nothing live.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -256,14 +303,28 @@ Found while verifying T-2839 live on a consumer with a local-path upstream.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-07 — the first fix was incomplete and its tests could not tell
+
+- **Chose:** Scope `FRAMEWORK_ROOT` to the chosen binary, and make the test stubs
+  echo the `FRAMEWORK_ROOT` they receive.
+- **Why:** The first commit switched only which `fw` was invoked. All four tests
+  passed, the negative control went red on the old line, and live behaviour was
+  completely unchanged — because `fw` prefers an inherited `FRAMEWORK_ROOT` to its
+  own location, and T-2099's fork-bomb scoping had it exported at the temp clone.
+  The tests could not detect this because the stubs printed a fixed marker and
+  ignored the environment, so they answered "which binary ran?" when the live
+  behaviour depended on "which binary ran, **and** what did it think it was".
+- **Rejected — unset FRAMEWORK_ROOT and let fw derive it:** would work for the
+  vendored case but silently changes resolution for global/shared-tooling
+  consumers, where the export is load-bearing. Setting it explicitly keeps both
+  paths deliberate.
+- **Rejected — asserting on doctor's own output instead of stub markers:** would
+  couple the test to doctor's wording and, worse, would have passed against either
+  binary in the fallback case. The marker approach asserts the thing that is
+  actually wrong.
+- **Kept on the record:** the intermediate commit is in history rather than
+  squashed. A fix that passes its tests and changes nothing live is the exact
+  shape worth being able to point at later.
 
 ## Decision
 
