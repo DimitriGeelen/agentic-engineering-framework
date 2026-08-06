@@ -1,0 +1,67 @@
+pickup_id: P-051
+version: 1
+type: feature-proposal
+source:
+  project: termlink-substrate-agent
+  task_id: T-2323
+  agent: claude-code
+  timestamp: '2026-06-25T14:03:03Z'
+payload:
+  summary: 'Cross-layer coordination: substrate doorbell+mail SHIPPED; §5 flag-poll
+    design is path for parallel-build harness'
+  detail: 'SENDER: termlink-substrate-agent (2026-06-25). ADRs: docs/architecture/parallel-execution-substrate.md
+    + docs/architecture/parallel-execution-aef.md.
+
+
+    SUBSTRATE STATUS (verified by substrate agent this session — do not re-derive):
+
+
+    1. PTY doorbell+mail SHIPPED (T-1800): termlink inject = raw PTY-master write
+    (crates/termlink-session/src/pty.rs:249); scripts/agent-send.sh (mail=channel
+    post + doorbell=inject /check-arc) and agent-respond.sh; listener-heartbeat.sh
+    posts presence to agent-presence hub topic; agent-listeners.sh classifies LIVE/STALE/OFFLINE;
+    /be-reachable, /peers, /check-arc skills; fleet-doorbell-mail health canary; full
+    operator runbooks.
+
+
+    2. CRITICAL: AEF ADR §5 EXPLICITLY REJECTS PTY injection for the parallel-build
+    harness. Reason: ''it delivers into the input stream the agent is currently consuming...
+    preemption is the wrong model''; ''the doorbell survives as intent, dies as implementation...
+    the flag is a file/KV entry, not a keystroke''. Conclusion: SHIPPED PTY doorbell
+    serves human-paced agent-to-agent HANDOFF; the uninterruptible parallel-BUILD
+    harness needs §5''s chosen design — a deterministic sidecar (no LLM) holding the
+    TermLink connection, writing an OUT-OF-BAND flag (file/KV) + heartbeat timestamp;
+    agent cooperatively polls flag AND computes now-last_heartbeat at yield points;
+    stale timestamp => listener dead => agent deaf => STOP BEFORE ACTING (self-check-ears);
+    sender-side missing-ack => retry (symmetric backstop).
+
+
+    3. SUBSTRATE READINESS FOR §5 DESIGN: KV store already EXISTS (termlink kv set/get/watch)
+    — natural home for out-of-band flag + heartbeat timestamp. Offline-queue/reconnect
+    primitive partially shipped (substrate T-2051). OPEN SUBSTRATE GAP named in §5:
+    ack-with-retry (''TermLink receipts are advisory today'').
+
+
+    4. T-2323 (AEF-IC-1) = substrate ADR §6.1 yield-point granularity — pure AEF-side
+    harness decision, NO substrate dependency. Leading candidate: check flag+ear BEFORE
+    every file-write tool call; heartbeat lean 5s tick / 30s staleness threshold (6-beat
+    window).
+
+
+    5. T-2324 (AEF-IC-2) = substrate ADR §6.2 + §3 disjoint write-set policy — conservative-at-launch
+    forced (CSMA/CD reasoning: no filesystem-write observation => optimistic-on-honour-system
+    unsafe => bias to cheap error). Derive disjointness from declared artifactsWrites
+    globs + depends_on ordering; serialize when disjointness cannot be proven.
+
+
+    ACTION TAKEN BY AEF AGENT: T-2323 and T-2324 un-parked to started-work/now; research
+    artifacts seeded at docs/reports/T-2323-yield-point-granularity-inception.md and
+    docs/reports/T-2324-disjoint-write-set-policy-inception.md. NO GO/NO-GO decision
+    made. Awaiting human dialogue sessions.'
+  priority: high
+  tags:
+  - parallel-execution
+  - harness
+  - termlink
+  - coordination
+  - arc-parallel-execution-aef

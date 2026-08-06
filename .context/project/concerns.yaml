@@ -2516,3 +2516,39 @@ concerns:
   created: 2026-08-05
   related_task: T-2813
   related_tasks: [T-2813, T-2812]
+- id: G-074
+  type: gap
+  title: No detector for MAIN-checkout ↔ worktree stranded divergence — work sits unlanded and unnoticed
+  description: 'The framework has no doctor/audit check for state that diverges between
+    the MAIN checkout and a sibling worktree. Recovered from a stranded worktree
+    (T-2824) where it had been filed as G-083 on 2026-07-01 and never landed — the gap
+    about invisible worktree divergence was itself invisible for five weeks, which is
+    the strongest available evidence for it. Two observed shapes: (a) MAIN accumulating
+    uncommitted source diverging from both origin/master and a feature branch, hit in
+    the original filing; (b) sibling worktrees holding unlanded commits, measured by
+    T-2822/S1 at 43 commits across two worktrees, invisible because .git/info/exclude
+    keeps git status clean and fw doctor diverged-fork watches only the session branch.
+
+    '
+  spec_reference: CLAUDE.md §Post-Fix Root Cause Escalation (G-019); T-2822 finding F5
+  severity: high
+  decision_trigger: 'A go-live, merge-back, or worktree teardown is attempted and
+    unlanded work is discovered with no prior warning from fw doctor / fw audit.
+
+    '
+  trigger_check:
+    type: manual
+    hint: 'Until the T-2822 slice-2 doctor check ships: `git worktree list` then
+      `git rev-list --count origin/master..<branch>` per worktree; non-zero = unlanded.'
+  status: watching
+  created: 2026-07-01
+  recovered: 2026-08-06
+  related_task: T-2822
+  what_remains: 'PREVENTION NOT YET SHIPPED. Addressed by T-2822 slice 2 (fw doctor
+    surfaces sibling worktrees with unlanded-commit counts and age) under the GO
+    recorded 2026-08-06. Stays open until that detector exists — tasks archive,
+    this keeps the blindness visible (G-019 discipline). Recovered from stranded
+    G-083; re-minted because IDs allocated inside a worktree are not authoritative
+    (master ran to G-073). Related: T-2822, T-2824, OBS-174.
+
+    '
