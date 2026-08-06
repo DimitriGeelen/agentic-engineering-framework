@@ -1,10 +1,10 @@
 ---
-id: T-2824
-name: "triage and recover the two stranded worktrees before source-only enforcement"
+id: T-2825
+name: "worktree teardown strands unpushed commits and handoff commands use ephemeral worktree paths"
 description: >
-  triage and recover the two stranded worktrees before source-only enforcement
+  Recovered from stranded worktree (T-2824); fixes G-075 (handoff commands hard-code ephemeral worktree cwd) and G-076 (worktree teardown has no unpushed-commit guard)
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-06T11:19:57Z
-last_update: 2026-08-06T11:23:01Z
+created: 2026-08-06T11:24:15Z
+last_update: 2026-08-06T11:24:15Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,42 +36,50 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2824: triage and recover the two stranded worktrees before source-only enforcement
+# T-2825: worktree teardown strands unpushed commits and handoff commands use ephemeral worktree paths
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Recovered from a stranded worktree by T-2824.** Originally filed 2026-07-01 as a
+HIGH-PRIORITY operator-requested remediation, committed only inside
+`.claude/worktrees/rca-worktree-push-strand`, and never landed. Re-minted here because
+its original ID (`T-2428`) now names a different task on master — worktree-allocated
+IDs are not authoritative.
 
-## Context
+Original RCA, unchanged: branch `t2353-audit-emit-tasks` accrued 6 commits (tip
+`b508ceef1`) inside worktree `livefire-t2389`. The push was blocked by three sequential
+pre-push gates; the only route left was a human-run `--no-verify` bypass. The handoff
+one-liner hard-coded `cd .../.claude/worktrees/livefire-t2389 && …`. Days passed, the
+worktree was removed, and the operator's paste failed at `cd: No such file or
+directory`. **The commits never reached origin.** They survived only because
+`git worktree remove` does not delete the branch.
 
-T-2822/S1 found three live worktrees under `.claude/worktrees/`, two of them stranded
-with **43 unlanded commits dormant five weeks** (OBS-174). The operator directed that
-these be triaged **before** the T-2822 source-only refusal ships — once writes into a
-worktree are refused, reaching this work gets harder, not easier.
+Two gaps, recovered alongside this task and re-minted for the same reason:
 
-Triage established before starting:
+- **G-075** [medium] — handoff commands tied to the ephemeral worktree cwd. The
+  Copy-Pasteable Commands rule (T-609/T-1257) mandates a `cd <path> &&` prefix but is
+  worktree-blind: it assumes the path persists.
+- **G-076** [high] — worktree teardown has no unpushed-commit guard.
 
-- **Source is superseded, not lost.** Strand B's 21 `lib/` + agents/bin changes date
-  2026-06-18…07-01; master's versions of the same files are 5–6 weeks newer
-  (`lib/paths.sh` master 07-31 vs strand 06-23, `agents/audit/audit.sh` 08-04 vs 06-24).
-  Its commit subjects are `T-2481: go live — sync code to origin/master`, i.e. the code
-  was travelling *toward* master. Nothing to recover here.
-- **Governance artifacts are genuinely absent from master** — verified per path with
-  `git cat-file -e origin/master:<path>`.
-- **Three recovered task IDs collide with different tasks on master** (T-2505, T-2506,
-  T-2428), so they must be re-IDed, not restored in place. Two others (T-2323, T-2324)
-  already landed on master under the same IDs and need no recovery.
+**This task is not history.** T-2822/S1 measured the same failure still running: 43
+unlanded commits across two worktrees, dormant five weeks — this task's own commit
+among them. It is the second-order instance of the very defect it was filed to fix.
+
+**Relationship to T-2822** (GO recorded 2026-08-06, source-only): T-2822 stops
+governance *writes* inside a worktree. It does **not** stop a worktree branch from
+holding unpushed source commits, which is this task's subject. The two are
+complementary, not overlapping — T-2822's own honest bound puts the lifecycle class
+outside its 81%.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every governance artifact absent from master is recovered or explicitly declined, with the decision recorded per path: strand A — `T-2505` task + `docs/reports/T-2505-worktree-usage-policy.md`, `T-2506` task, gap `G-083`; strand B — `T-2428` task, `docs/reports/T-2323-*`, `docs/reports/T-2324-*`, `.context/pickup/processed/P-051-feature-proposal.yaml`
-- [ ] The three colliding IDs are re-minted, not overwritten: no `T-2505`/`T-2506`/`T-2428` file on master is modified, verified by `git diff --stat origin/master..HEAD -- .tasks/` showing only additions under new IDs
-- [ ] `bash agents/git/lib/dup-task-scan.sh scan-worktree` and `scan-staged` both exit 0 after recovery
-- [ ] Strand-B source files are explicitly NOT recovered, evidenced by `git diff --name-only origin/master..HEAD` containing no path under `lib/`, `agents/`, or `bin/`
-- [ ] Dated handovers from both strands are recovered (`.context/handovers/S-*.md`); `LATEST.md` is left untouched so the current pointer is not rewound
-- [ ] G-083 is present in `.context/project/concerns.yaml` on master after recovery, or a recorded rationale explains why it was superseded by T-2822
-- [ ] Branch pruning is proposed to the operator with counts, and NOT executed under agent authority (branch deletion is Tier 0)
+- [ ] **G-076 teardown guard (primary):** a WorktreeRemove hook or `fw worktree remove` wrapper runs `git log <remote>/<branch>..<branch>` and refuses when the worktree's branch holds commits absent from all remotes; a Tier-2-logged `--force` proceeds. Regression test stages an unpushed-branch worktree and asserts the guard fires
+- [ ] Mutation-checked: reverting the guard makes that regression test go red
+- [ ] **G-075 handoff durability:** CLAUDE.md §Copy-Pasteable Commands gains a worktree-durability clause — commands that outlive the session (push, tier0 approve, review handoff) use the durable main-repo path plus an explicit branch ref, never a `.claude/worktrees/<name>` cwd
+- [ ] **G-075 static backstop:** the reviewer static scan flags a handoff command that combines a `.claude/worktrees/` cd-prefix with a push/approve/review verb
+- [ ] Guard is proven against the live case, not a synthetic one: run it against the two worktrees T-2824 triaged and show it reporting their actual unlanded counts
+- [ ] On close: G-075 and G-076 updated with `fixed_in: T-2825`; RCA finalised; `bin/fw reviewer T-2825` PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -234,7 +242,7 @@ Triage established before starting:
 
 ## Updates
 
-### 2026-08-06T11:19:57Z — task-created [task-create-agent]
+### 2026-08-06T11:24:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2824-triage-and-recover-the-two-stranded-work.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2825-worktree-teardown-strands-unpushed-commi.md
 - **Context:** Initial task creation

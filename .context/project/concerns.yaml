@@ -2552,3 +2552,62 @@ concerns:
     (master ran to G-073). Related: T-2822, T-2824, OBS-174.
 
     '
+- id: G-075
+  type: gap
+  title: "Handoff commands tied to ephemeral worktree cwd — outlives-session commands break when the worktree is reaped"
+  description: >
+    When the agent works inside a git worktree (.claude/worktrees/<name>) and hands
+    the operator a copy-pasteable command that runs LATER (a Tier-0 push, a tier0
+    approve, a review handoff), the command hard-codes the worktree cwd per the
+    Copy-Pasteable Commands rule (T-609/T-1257: always `cd /path && ...`). That rule
+    mandates a path prefix but is worktree-BLIND — it assumes the path persists.
+    Worktrees are transient: auto-cleaned on session exit, or removed by the operator.
+    If the worktree is gone by the time the operator pastes the command, `cd` errors
+    and nothing runs. The branch (the durable object) is fine; the handoff is not.
+  spec_reference: CLAUDE.md §Copy-Pasteable Commands (T-609/T-1257)
+  severity: medium
+  likelihood: 3
+  impact: 3
+  score: 9
+  ranking: medium
+  evidence:
+  - 'Origin (2026-06-27 → 07-01): branch t2353-audit-emit-tasks accrued 6 commits (T-2416/T-2390/T-2419/T-2388 + vendor refresh, tip b508ceef1) in worktree livefire-t2389. Push was blocked by three sequential pre-push gates; the only route was a human-run --no-verify bypass. The handoff one-liner hard-coded `cd .../.claude/worktrees/livefire-t2389 && fw tier0 approve && git push ...`. Days elapsed, the worktree was removed, and the operator paste failed at `cd: No such file or directory`. Commits never reached origin. RCA in T-2825.'
+  trigger: 'Agent in a worktree hands the operator a command (push / approval / handoff) that runs after the session or after teardown. Symptom: `cd: <worktree path>: No such file or directory` on paste; the intended action never runs.'
+  status: watching
+  closure_criteria: 'Copy-Pasteable Commands rule extended with a worktree-durability clause AND a reviewer/static check that flags a handoff command containing a `.claude/worktrees/` path prefix for an outlives-session verb (push/approve/review). Correct form: durable main-repo path + explicit branch ref (`cd /opt/999-Agentic-Engineering-Framework && git push --no-verify origin <branch>`).'
+  proposed_mechanisms:
+  - 'Doc: add a worktree-durability clause to CLAUDE.md §Copy-Pasteable Commands — outlives-session commands use the main-repo path + branch ref, never the worktree cwd.'
+  - 'Reviewer detector: flag chat/handoff commands that combine a `.claude/worktrees/` cd-prefix with a push/approve/review verb.'
+  created: 2026-07-01
+  last_reviewed: 2026-07-01
+  related_task: T-2825
+- id: G-076
+  type: gap
+  title: "Worktree teardown strands unpushed commits — no unpushed-commit guard on worktree removal / session-exit cleanup"
+  description: >
+    The framework prevents ending a SESSION with unpushed commits via the handover
+    path (agents/handover/handover.sh:1016 pushes to all remotes, T-1144). But the
+    WORKTREE-REMOVAL path is a separate teardown that the handover guard does not
+    cover: a worktree can be `git worktree remove`'d, or reaped on session exit, while
+    its branch holds commits that are on no remote — with no warning and no block. The
+    WorktreeRemove hook is unconfigured (docs/claude-code-settings.md: WorktreeRemove =
+    No coverage). Result: a branch's work can be stranded local-only, discoverable only
+    by chance later. Distinct from G-071 (that is the handoff-command fragility; this is
+    the teardown having no safety net at all).
+  spec_reference: CLAUDE.md §Session End Protocol; agents/handover/handover.sh:1016 (T-1144)
+  severity: high
+  likelihood: 3
+  impact: 4
+  score: 12
+  ranking: high
+  evidence:
+  - 'Origin (2026-06-27 → 07-01): worktree livefire-t2389 was removed while branch t2353-audit-emit-tasks held 6 commits absent from origin (the push was gate-blocked and the bypass handoff failed — see G-071). Nothing warned that teardown was stranding unpushed work. Commits survived only because a git worktree remove does not delete the branch. RCA in T-2825.'
+  trigger: 'A worktree is removed (manually or on session exit) while its branch has commits not present on any remote. Symptom: work appears "gone" (worktree deleted, cwd reset) though the branch is intact local-only.'
+  status: watching
+  closure_criteria: 'A WorktreeRemove guard (hook or `fw worktree remove` wrapper) that refuses/warns when the worktree branch has commits absent from all remotes — mirroring the T-1144 handover push guard onto the teardown path AND a regression test staging an unpushed-branch worktree and asserting the guard fires.'
+  proposed_mechanisms:
+  - 'WorktreeRemove hook (or `fw worktree remove` wrapper) that runs `git log <remote>/<branch>..<branch>` and refuses/warns on non-empty output; offer `--force` (Tier-2 logged) to proceed anyway.'
+  - 'Extend the handover T-1144 push guard to also fire on the worktree-teardown path, not only session-end handover.'
+  created: 2026-07-01
+  last_reviewed: 2026-07-01
+  related_task: T-2825
