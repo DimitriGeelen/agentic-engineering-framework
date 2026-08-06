@@ -1148,16 +1148,17 @@ do_doctor() {
             # T-1097/G-028: Reconcile upstream_repo vs running FRAMEWORK_ROOT
             local upstream_repo
             upstream_repo=$(grep "^upstream_repo:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^upstream_repo:[[:space:]]*//' || true)
-            if [ -n "$upstream_repo" ]; then
-                local resolved_upstream resolved_fw
-                resolved_upstream=$(realpath -m "$upstream_repo" 2>/dev/null || echo "$upstream_repo")
-                resolved_fw=$(realpath -m "$FRAMEWORK_ROOT" 2>/dev/null || echo "$FRAMEWORK_ROOT")
-                if [ "$resolved_upstream" != "$resolved_fw" ]; then
-                    echo -e "  ${YELLOW}WARN${NC}  Framework path ambiguity:"
-                    echo -e "         upstream_repo: $upstream_repo"
-                    echo -e "         running fw:    $FRAMEWORK_ROOT"
-                    warnings=$((warnings + 1))
-                fi
+            # T-2843: the predicate moved to lib/doctor-upstream.sh. It is NOT a
+            # plain inequality — in vendored mode (the D-377 default) the running
+            # fw is this project's own .agentic-framework by design, so it can
+            # never equal the pull source and the comparison says nothing. See
+            # that file for why this fired on every consumer for so long.
+            source "$FRAMEWORK_ROOT/lib/doctor-upstream.sh"
+            if doctor_upstream_ambiguous "$upstream_repo" "$FRAMEWORK_ROOT" "$_mode"; then
+                echo -e "  ${YELLOW}WARN${NC}  Framework path ambiguity:"
+                echo -e "         upstream_repo: $upstream_repo"
+                echo -e "         running fw:    $FRAMEWORK_ROOT"
+                warnings=$((warnings + 1))
             fi
         else
             echo -e "  ${RED}FAIL${NC}  .framework.yaml missing in $PROJECT_ROOT"
@@ -2471,8 +2472,15 @@ else:
             [ -n "$_wt_line" ] && echo -e "  ${CYAN}INFO${NC}  $_wt_line"
         fi
     fi
+    source "$FRAMEWORK_ROOT/lib/cron-registry.sh"
     if [ -f "$cron_registry" ] && [ "$_fw_is_wt" = "1" ]; then
         echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+    elif [ -f "$cron_registry" ] && [ "$(cron_registry_job_count "$cron_registry")" = "0" ]; then
+        # T-2844: `fw init` seeds `jobs: []`. An empty registry has no generated
+        # form, so "not generated" is correct rather than drift — every freshly
+        # initialised project used to WARN here. A malformed registry returns -1,
+        # not 0, and falls through to the checks below on purpose.
+        echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — registry declares no jobs (nothing to generate)"
     elif [ -f "$cron_registry" ]; then
         local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
         local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"

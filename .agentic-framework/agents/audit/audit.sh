@@ -1607,6 +1607,14 @@ if [ -f "$_cron_registry" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
     # worktree artifact, not content drift. Skip with INFO (counts as PASS; never blocks
     # a worktree push). The real registry→generated→deployed chain is gated on main.
     info "Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+elif [ -f "$_cron_registry" ] && \
+     { source "$FRAMEWORK_ROOT/lib/cron-registry.sh"; [ "$(cron_registry_job_count "$_cron_registry")" = "0" ]; }; then
+    # T-2844: `fw init` seeds `jobs: []`. An empty registry has no generated form,
+    # so "present but not generated" is the correct state, not drift. Parity with
+    # the same guard in `fw doctor` (bin/fw) — both surfaces emitted this on every
+    # freshly initialised project. A malformed registry returns -1, not 0, and
+    # falls through to the checks below on purpose.
+    info "Cron drift checks skipped — registry declares no jobs (nothing to generate)"
 elif [ -f "$_cron_registry" ]; then
     _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
