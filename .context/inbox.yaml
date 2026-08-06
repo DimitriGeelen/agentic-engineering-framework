@@ -1362,3 +1362,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-179
+  text: "OBS-177 fix (T-2829) lets the guard pass, but 'fw worktree remove t100199-close' still fails — now on git's own dirty check, with 17 modified .context/ files inside the worktree (decisions.yaml, metrics-history, .hook-counter, .loop-detect.json, .gate-bypass-log, .pre-compact.*). No bats running, so this is not T-2807. This is T-2822's mechanism observed live: governance state is TRACKED, so the worktree holds a fork of it, and hooks firing in the main session mutate the worktree's copy independently. Consequence: master-landed worktrees remain unremovable without --force even after the predicate is corrected — the blocker just moved from the guard to the dirty check. Two follow-ups: (1) 'fw worktree remove' should distinguish 'would strand commits' (real, keep refusing) from 'runtime governance state drifted' (discardable, offer to reset those paths) — right now both surface as opaque refusals and both train the operator toward --force; (2) this is direct evidence for T-2822 slice 1 (refuse writes into worktree governance paths), since the drift here was written by hooks, not by an agent editing files."
+  captured: 2026-08-06T15:36:07Z
+  context_task: T-2829
+  tags: []
+  status: pending
+  promoted_to: null
