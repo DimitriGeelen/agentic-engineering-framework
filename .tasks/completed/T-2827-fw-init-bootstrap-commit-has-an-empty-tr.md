@@ -6,12 +6,12 @@ description: >
   T-2821's --allow-empty bootstrap gives a resolvable HEAD but a zero-file tree, so
   git worktree add checks out nothing. Fix the tree, not just the ref.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T13:18:27Z
-last_update: 2026-08-06T14:46:11Z
-date_finished:
+last_update: 2026-08-06T15:09:02Z
+date_finished: 2026-08-06T15:09:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -391,3 +391,19 @@ no operator content in it.
 
 ### 2026-08-06T14:46:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b4418c3c
+- **Timestamp:** 2026-08-06T15:17:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -f`
+
+### 2026-08-06T15:09:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2827: fw init bootstrap commit has an EMPTY tree — worktree isolation still yields an empty worktree (OBS-178)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T15:18:03Z
+# ============================================================================
+
+task_id: T-2827
+task_name: "fw init bootstrap commit has an EMPTY tree — worktree isolation still yields an empty worktree (OBS-178)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T13:18:27Z
+completed: 2026-08-06T15:09:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-06T17:08:54+02:00
+last_commit: 2026-08-06T17:08:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init bootstrap commits the scaffolding (non-empty tree) and runs last — closes OBS-178
+
+# Key outcomes
+outcomes:
+  - 'The tracking question is settled from evidence, not assumption: what `fw init`'
+  - '`fw init` on an empty dir leaves a HEAD whose **tree is non-empty** and contains the'
+  - '`git worktree add` immediately after `fw init` (no intervening commit) yields a'
+  - 'The bootstrap commit still passes the project''s own hooks with **no `--no-verify`**'
+  - 'Existing-project and re-init paths remain no-ops (guard on unborn HEAD preserved).'
+  - '`tests/unit/init_head_bootstrap.bats` extended to assert **tree non-emptiness**, not'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-06 — what the bootstrap commit tracks'
+    chose: 'the bootstrap commit stages everything `fw init` created (`git add -A`) and'
+    rationale: ''
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/init.sh'
+  - '.tasks/active/T-2827-fw-init-bootstrap-commit-has-an-empty-tr.md'
+  - 'tests/unit/init_head_bootstrap.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T17:08:54'
+    action: 'T-2827: fw init bootstrap commits the scaffolding (non-empty tree) and runs last — closes OBS-178'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 110 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 110
+  commits: 1
+  files_changed: 3
+  lines_added: 333
+  lines_removed: 80
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2827-fw-init-bootstrap-commit-has-an-empty-tr.md
+generated_by: context-agent-hybrid
