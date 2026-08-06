@@ -1320,3 +1320,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-173
+  text: "Onboarding INSIDE an existing git repo silently disables secret scanning. 'fw init inner' in a dir that is already inside a git work tree vendors the framework to outer/inner/.agentic-framework, but git resolves hooks to outer/.git/hooks, so the installed pre-commit hook computes PROJECT_ROOT=outer and looks for outer/.agentic-framework/agents/git/lib/secret-scan.sh -- which does not exist. Every commit then goes through with NO secret scan. The warning is loud (T-2813 made it so), but the remedy it prints ('cd outer && .agentic-framework/bin/fw upgrade') points at a path that does not exist, so the operator cannot clear it. Note this disables the exact layer that caught the T-2817 credential leak. commit-msg gate DOES still fire (T-2812/2813 fix works). Measured 2026-08-06 under T-2820 on published bytes, isolated HOME."
+  captured: 2026-08-06T06:29:07Z
+  context_task: T-2820
+  tags: []
+  status: pending
+  promoted_to: null
