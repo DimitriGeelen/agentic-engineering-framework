@@ -55,6 +55,13 @@ while [[ $# -gt 0 ]]; do
         --recommendation) RECOMMENDATION="$2"; shift 2 ;;
         --rationale) RATIONALE="$2"; shift 2 ;;
         --i-am-human) I_AM_HUMAN=true; shift ;;
+        # T-1890: focus-drift hook sentinel; consumed silently. Sibling of the
+        # identical branch in update-task.sh:1290. T-2830 found this leg missing:
+        # `fw work-on <name> --switch-focus` shells to THIS script on the create
+        # path, so a contract that only update-task.sh honours is incomplete
+        # (L-399 — a bypass mechanism must be honoured by every consumer the
+        # gating hook can route to, or the caller is pushed onto an ungoverned path).
+        --switch-focus) shift ;;
         -h|--help)
             echo "Usage: create-task.sh [options]"
             echo ""

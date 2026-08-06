@@ -6426,7 +6426,19 @@ PYREVQ
             wo_defaults=()
             [ "$wo_has_desc" = false ] && wo_defaults+=(--description "$wo_target")
             [ "$wo_has_owner" = false ] && wo_defaults+=(--owner agent)
-            wo_output=$("$AGENTS_DIR/task-create/create-task.sh" --name "$wo_target" --start "${wo_defaults[@]}" "$@" 2>&1)
+            # T-2830: capture-then-echo is fatal under `set -euo pipefail` (line 12).
+            # When the substitution exits non-zero, set -e terminates fw AT THE
+            # ASSIGNMENT — so the message create-task.sh just wrote into wo_output is
+            # discarded and the caller sees RC=1 with zero bytes on both streams.
+            # Measured live: `fw work-on X --type build --switch-focus` printed nothing
+            # at all, which is what made the (trivial) missing --switch-focus branch
+            # in create-task.sh unfindable. `if !` suppresses set -e for the condition,
+            # so the failure is surfaced and the exit code still propagates.
+            if ! wo_output=$("$AGENTS_DIR/task-create/create-task.sh" --name "$wo_target" --start "${wo_defaults[@]}" "$@" 2>&1); then
+                [ -n "$wo_output" ] && echo "$wo_output" >&2
+                echo -e "${RED}work-on: task creation failed (see above) — no task created, focus unchanged${NC}" >&2
+                exit 1
+            fi
             echo "$wo_output"
 
             # Extract task ID from output
