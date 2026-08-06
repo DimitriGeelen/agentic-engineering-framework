@@ -256,6 +256,40 @@ five weeks passed.
 itself the strongest argument for landing this one on master before doing anything
 else with it.
 
+**F7 — `git worktree add` on an unborn HEAD does not fail; it silently produces an
+empty worktree.** Verified live on git 2.43.0 while checking T-2821's stated premise:
+
+```
+$ git init && git worktree add ./w1
+No possible source branch, inferring '--orphan'
+Preparing worktree (new branch 'w1')
+RC=0                       # succeeds
+$ ls -a w1  →  . .. .git   # one entry. no project files.
+$ git -C w1 rev-parse HEAD →  fatal: ambiguous argument 'HEAD'
+```
+
+T-2821's Context said `git worktree add` *requires* a HEAD and refuses without one.
+That is wrong, and the truth is worse: **RC=0 asserting success while producing an
+unusable result.** The fresh-project deadlock is therefore not caused by refusal — it
+is caused by the harness isolating a session into a valid-looking worktree that
+contains no `.claude/`, no `.agentic-framework/`, no source, and no governance state.
+
+Corrected in OBS-175. The T-2821 fix stands and is better motivated by the real
+mechanism; only the narrative was wrong. Its test already asserted the right thing
+("checks out from the real HEAD, not an orphan"), so the code was never at risk — the
+*explanation* was.
+
+Two consequences for this inception:
+
+- **It strengthens the GO, not weakens it.** An empty-orphan worktree is the most
+  extreme case of the S2 finding: worktree state is a fork of the main checkout's, and
+  here the fork is empty. Same fault, maximal amplitude.
+- **It adds a preflight to slice 3.** Whatever creates a worktree must verify HEAD
+  resolves *first*, because git will not tell you. This is the same false-green class
+  the framework has been fixing all session (T-2732, T-2774, T-2793) — and this
+  instance is in git itself, so no amount of AEF hardening removes it; only a
+  preflight does.
+
 ## Recommendation
 
 **Recommendation: GO — source-only, enforced at the write layer.**
