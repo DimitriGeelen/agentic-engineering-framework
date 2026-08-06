@@ -1877,6 +1877,58 @@ check_self_vendor_drift() {
 }
 check_self_vendor_drift
 
+# T-2837: run the structural invariant suite (tests/lint/) from audit.
+#
+# The suite had a runner since T-2697 (`fw test invariants`, and inside
+# `fw test all`) but nothing invoked it on a schedule: 25 cron jobs, of which
+# five run `fw audit`, and none ran any test suite. So a red invariant could sit
+# unread indefinitely while every automated surface stayed green — which is what
+# happened. `help-router-parity` was red while 20 verbs drifted out of `fw help`
+# (T-2836), and `config-registry-parity` was red for two config keys that never
+# reached /config (T-2838). Both were found by hand, not by the guards that were
+# already asserting them correctly.
+#
+# Placed in the STRUCTURE section so it inherits the */30 cron and the pre-push
+# audit. Cost is 51 tests in ~6s, measured — negligible against a 30-minute job.
+#
+# A missing bats emits WARN, never a silent pass: "not checked" and "checked and
+# clean" are different states, and collapsing them is the exact failure mode this
+# check exists to end.
+check_invariant_suite() {
+    local _dir="$FRAMEWORK_ROOT/tests/lint"
+    [ -d "$_dir" ] || return 0
+    ls "$_dir"/*.bats >/dev/null 2>&1 || return 0
+
+    if ! command -v bats >/dev/null 2>&1; then
+        warn "Invariant suite NOT CHECKED — bats is not installed (T-2837)" \
+             "tests/lint/ holds the structural invariants (router↔help parity, config-registry parity, single-vendor-writer); none were evaluated this run" \
+             "Install bats, or run the suite where bats exists: fw test invariants"
+        return 0
+    fi
+
+    local _out _red _total
+    _out=$(cd "$FRAMEWORK_ROOT" && timeout 300 bats tests/lint/ 2>&1) || true
+    _red=$(printf '%s\n' "$_out" | grep -c '^not ok' || true)
+    _total=$(printf '%s\n' "$_out" | grep -cE '^(not ok|ok) ' || true)
+
+    if [ "$_total" -eq 0 ]; then
+        warn "Invariant suite produced no TAP results (T-2837)" \
+             "bats ran but emitted neither 'ok' nor 'not ok' — a harness error, not a green suite" \
+             "Run manually and read the output: fw test invariants"
+        return 0
+    fi
+
+    if [ "$_red" -eq 0 ]; then
+        pass "Invariant suite: $_total structural invariant(s) green (tests/lint/)"
+        return 0
+    fi
+
+    fail "Invariant suite: $_red of $_total structural invariant(s) RED (T-2837)" \
+         "$(printf '%s\n' "$_out" | grep '^not ok' | head -3 | sed 's/^not ok [0-9]* //' | tr '\n' ';')" \
+         "Run: fw test invariants"
+}
+check_invariant_suite
+
 # T-2577 (T-2571 S4): designer ghost↔task drift sweep, both directions.
 # The save-time mint is non-fatal by contract (a failed mint must never break
 # /api/save), so this sweep is the backstop that keeps the failure visible:
