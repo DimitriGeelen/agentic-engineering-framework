@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2832: create_task.bats clobbers live session focus via half-isolated sandbox
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T16:34:59Z
+# ============================================================================
+
+task_id: T-2832
+task_name: "create_task.bats clobbers live session focus via half-isolated sandbox"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T16:15:36Z
+completed: 2026-08-06T16:34:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T18:22:38+02:00
+last_commit: 2026-08-06T18:22:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  create_task.bats no longer clobbers the live session focus
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/create_task.bats` sandboxes `CONTEXT_DIR` so no test in it can write the'
+  - 'A hermeticity pin test in that suite fails if the isolation is ever removed —'
+  - 'Measured proof: live `focus.yaml` is byte-identical before and after a full run of'
+  - 'Sweep: every other `tests/unit/*.bats` that points `PROJECT_ROOT` at the real repo'
+  - 'Mutation-checked: removing the `CONTEXT_DIR` export turns the pin red.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-06 — sweep measured by execution, not by grep'
+  - decision: '2026-08-06 — fix the isolation, not the caller'
+    chose: 'sandbox `CONTEXT_DIR` in `setup()`.'
+    rationale: 'it is the smallest change that makes the suite''s isolation match what the code'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2831-worktree-remove-surfaces-uncommitted-wor.md'
+  - '.tasks/active/T-2832-createtaskbats-clobbers-live-session-foc.md'
+  - 'tests/unit/create_task.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T18:22:38'
+    action: 'T-2832: create_task.bats no longer clobbers the live session focus'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 4
+  lines_added: 668
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2832-createtaskbats-clobbers-live-session-foc.md
+generated_by: context-agent-hybrid

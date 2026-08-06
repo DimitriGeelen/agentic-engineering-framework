@@ -8,12 +8,12 @@ description: >
   landed). The strand guard counts COMMITS only, so uncommitted work is invisible
   to it, and the `--force` the refusal trains toward destroys that work silently.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, worktree]
-components: [lib/worktree.sh]
+components: [lib/worktree.sh, tests/unit/create_task.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T16:02:15Z
-last_update: '2026-08-06T16:15:10Z'
-date_finished:
+last_update: 2026-08-06T16:33:57Z
+date_finished: 2026-08-06T16:33:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -365,9 +365,59 @@ tree changes to yourself.
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO — the code change is done and verified; the open Human AC is a
+selective-recovery call on the work found in `.claude/worktrees/t100199-close`, and my
+advisory is to recover one thing, re-file one thing, and discard the rest.
+
+**Rationale:** the guard now does its job — live-verified refusing the real worktree and
+naming all 11 content files. What remains is a judgment about a month-old fork of
+governance state, and the three parts of it have genuinely different answers:
+
+| What | Advisory | Why |
+|---|---|---|
+| `.tasks/completed/T-2509-*.md` completion metadata | **Recover** | Not a preference — a factual correction. The task's work shipped in `25dafc99c` and the file already lives in `completed/`, but its frontmatter still reads `status: started-work` with empty `date_finished`. Main is currently self-inconsistent; the worktree holds the correct values. |
+| `.context/project/decisions.yaml` D-316 / D-317 | **Re-file under fresh IDs, do not replay** | The IDs are already taken in main by unrelated decisions (T-2510, T-2529). Replaying verbatim would create two duplicate-ID pairs in the register. The *content* — the T-2505 recreation call and the T-2509 scoping call — is worth keeping if still true; the IDs are not. |
+| VERSION, `lib/ts/dist/loop-detect.js`, metrics-history, session-metrics, gate-bypass-log, continuous-mode, 2 untracked audit files | **Discard** | Superseded by a month of main-line activity. VERSION there is 1.6.258 against main's 1.6.259+; the logs are append-only streams whose main-line copies already contain everything after that date. |
+
+Once resolved, that worktree becomes removable through the normal path — no `--force`,
+because the content refusal will have nothing left to refuse.
+
+I am not making this call myself: replaying another session's month-old governance state
+into the live registers is a content decision with an ID-collision hazard, which is
+sovereignty territory rather than initiative.
+
+**Evidence:**
+- Live refusal output (11 content files + diffstats): `bin/fw worktree remove t100199-close`
+- Uncommitted state backed up before any test touched it — 491-line patch, 17 files
+- Main's inconsistency: `.tasks/completed/T-2509-*.md` line 7 `status: started-work`, while
+  `git log --oneline -- .tasks/completed/T-2509*` shows `25dafc99c T-2509: complete`
+- ID collision: worktree D-316 = "Recreate T-2505's scoped decision…" (T-2509, 2026-07-06);
+  main D-316 = "Surface the F-ORCH retire_when finding…" (T-2510, 2026-07-07)
+- mtimes of all 17 dirty files: 2026-07-06 — predating any main-session hook run, which is
+  what falsifies OBS-179's "hook noise, therefore discardable" premise
+- Tests: 4/4 new, 5/5 T-2829 guard, mutation-checked independently (see `## Decisions`)
+
 ## Updates
 
 ### 2026-08-06T16:02:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2831-worktree-remove-surfaces-uncommitted-wor.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99abac96
+- **Timestamp:** 2026-08-06T16:34:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `destroy`
+
+### 2026-08-06T16:33:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

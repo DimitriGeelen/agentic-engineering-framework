@@ -2634,3 +2634,94 @@ decisions:
     date: 2026-08-04
     task: T-2795
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-379
+    decision: "left untouched in this slice."
+    scope: project
+    date: 2026-08-05
+    task: T-2809
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-380
+    decision: "`install.sh` takes an optional positional `target-dir`. Given, it"
+    scope: project
+    date: 2026-08-05
+    task: T-2809
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-381
+    decision: "`git clone --depth 1 --single-branch` into a `mktemp -d` temp"
+    scope: project
+    date: 2026-08-05
+    task: T-2809
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-382
+    decision: "`fw init` in a bare directory fetches the installer and runs it against"
+    scope: project
+    date: 2026-08-05
+    task: T-2814
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-383
+    decision: "`_FW_INSTALL_URL` reads `${FW_INSTALL_URL:-<github raw>}`."
+    scope: project
+    date: 2026-08-05
+    task: T-2814
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-384
+    decision: "When `PROJECT_ROOT` has no local `.git` and resolves to an"
+    scope: project
+    date: 2026-08-05
+    task: T-2812
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-385
+    decision: "warn-shaped row, counted as **passed**, following the `sem-fabric`"
+    scope: project
+    date: 2026-08-05
+    task: T-2818
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-386
+    decision: "widen T-2726's row pattern from `^  [✓✗-]` to `^  [✓✗!-]`."
+    scope: project
+    date: 2026-08-05
+    task: T-2818
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-387
+    decision: "(a) empty root commit (`git commit --allow-empty`), created in"
+    scope: project
+    date: 2026-08-06
+    task: T-2821
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-388
+    decision: "the bootstrap commit stages everything `fw init` created (`git add -A`) and"
+    scope: project
+    date: 2026-08-06
+    task: T-2827
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-389
+    decision: "exact-match allowlist of regenerable paths; everything unlisted — including"
+    scope: project
+    date: 2026-08-06
+    task: T-2831
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-390
+    decision: "sandbox `CONTEXT_DIR` in `setup()`."
+    scope: project
+    date: 2026-08-06
+    task: T-2832
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-391
+    decision: "ship the `--switch-focus` no-op *and* the non-swallowing guard in one"
+    scope: project
+    date: 2026-08-06
+    task: T-2830
+    rationale: "Auto-captured from task file on completion"

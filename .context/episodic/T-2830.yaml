@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2830: fw work-on --switch-focus fails silently (RC=1, zero output)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T16:35:41Z
+# ============================================================================
+
+task_id: T-2830
+task_name: "fw work-on --switch-focus fails silently (RC=1, zero output)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T15:58:14Z
+completed: 2026-08-06T16:35:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T18:12:43+02:00
+last_commit: 2026-08-06T18:12:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw work-on --switch-focus no longer fails silently
+
+# Key outcomes
+outcomes:
+  - '`create-task.sh` accepts `--switch-focus` as a silent no-op (consumes the flag,'
+  - '`bin/fw work-on <name> --type build --switch-focus` creates the task and exits 0.'
+  - 'A downstream `create-task.sh` failure under `fw work-on` reaches the terminal'
+  - '`tests/unit/work_on_switch_focus.bats` pins all three, including a'
+  - 'Mutation-checked: reverting each leg independently turns the corresponding'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-06 — fix both legs, not just the flag'
+    chose: 'ship the `--switch-focus` no-op *and* the non-swallowing guard in one'
+    rationale: 'T-1890''s own authoring rule — "if you can''t ship end-to-end in one commit,'
+    alternatives_rejected: ['dropping `set -e` for the create path (too broad — `set -e` is load-']
+  - decision: '2026-08-06 — mutation check, both directions'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'agents/task-create/create-task.sh'
+  - 'bin/fw'
+  - '.tasks/active/T-2830-work-on-switch-focus-fails-silently.md'
+  - 'tests/unit/work_on_switch_focus.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T18:12:43'
+    action: 'T-2830: fw work-on --switch-focus no longer fails silently'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 37
+  commits: 1
+  files_changed: 8
+  lines_added: 480
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2830-work-on-switch-focus-fails-silently.md
+generated_by: context-agent-hybrid

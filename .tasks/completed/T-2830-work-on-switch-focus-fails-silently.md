@@ -8,12 +8,12 @@ description: >
   script at the command-substitution assignment that captured the error message,
   before the line that would have printed it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, governance]
-components: [bin/fw, agents/task-create/create-task.sh]
+components: [agents/task-create/create-task.sh, bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T15:58:14Z
-last_update: '2026-08-06T16:00:14Z'
-date_finished:
+last_update: 2026-08-06T16:35:23Z
+date_finished: 2026-08-06T16:35:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,16 +96,16 @@ the hook regex — an incomplete contract pushes the caller onto an ungoverned p
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `create-task.sh` accepts `--switch-focus` as a silent no-op (consumes the flag,
+- [x] `create-task.sh` accepts `--switch-focus` as a silent no-op (consumes the flag,
       does not treat it as the task name, does not error) — per L-399 step 2.
-- [ ] `bin/fw work-on <name> --type build --switch-focus` creates the task and exits 0.
-- [ ] A downstream `create-task.sh` failure under `fw work-on` reaches the terminal
+- [x] `bin/fw work-on <name> --type build --switch-focus` creates the task and exits 0.
+- [x] A downstream `create-task.sh` failure under `fw work-on` reaches the terminal
       instead of being swallowed — the captured output is printed and the exit code
       propagated, rather than `set -e` aborting at the assignment.
-- [ ] `tests/unit/work_on_switch_focus.bats` pins all three, including a
+- [x] `tests/unit/work_on_switch_focus.bats` pins all three, including a
       **negative control that asserts the silent-swallow is gone** (a genuinely
       failing create still prints something and still exits non-zero).
-- [ ] Mutation-checked: reverting each leg independently turns the corresponding
+- [x] Mutation-checked: reverting each leg independently turns the corresponding
       test red, and the result recorded in ## Decisions.
 
 ### Human
@@ -349,3 +349,15 @@ test is riding on the other's fix. Files restored to `dda9da9c…` (bin/fw) and
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2830-probe-task-name.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-804df508
+- **Timestamp:** 2026-08-06T16:35:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-06T16:35:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
