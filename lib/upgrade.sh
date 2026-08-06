@@ -634,6 +634,50 @@ fw_upgrade_render_pin_line() {
     esac
 }
 
+# T-2839: classify an upstream_repo value into something `git clone` can use.
+#
+# Prints the resolved clone source and returns 0; returns 2 when the value is
+# not classifiable. Split out of do_upgrade so it can be tested directly — the
+# bug it fixes was one inline `if` whose else-branch was unreachable by any test.
+#
+# Origin: a consumer carried `upstream_repo: /opt/agentic-engineering-framework`.
+# The old logic recognised a fixed set of URL prefixes and treated EVERYTHING
+# else as GitHub owner/repo shorthand, so an absolute path became
+# `https://github.com//opt/agentic-engineering-framework.git` and the operator
+# got `Repository not found` from GitHub — pointing at the wrong system, since
+# the fault was in local config. "Not a URL I recognise" is not evidence of
+# GitHub shorthand; it is evidence of not knowing, and that now refuses.
+_fw_classify_upstream_source() {
+    local _v="$1"
+    [ -n "$_v" ] || return 2
+
+    # Recognised URL schemes and git's SSH shorthand — pass through untouched.
+    if printf '%s' "$_v" | grep -qE '^(https?|ssh|git|file)://|^git@'; then
+        printf '%s\n' "$_v"
+        return 0
+    fi
+
+    # Local filesystem paths. git clones these natively; they are never GitHub
+    # shorthand. This is the leg whose absence caused the reported failure.
+    # The tilde is QUOTED on purpose: bash performs tilde expansion on `case`
+    # patterns, so an unquoted ~/* silently becomes /root/* (or whatever $HOME
+    # is) and never matches a literal "~/…". Caught by exercising the classifier
+    # rather than by reading it.
+    case "$_v" in
+        /*|./*|../*|'~'/*|'~') printf '%s\n' "$_v"; return 0 ;;
+    esac
+
+    # Strict GitHub shorthand: exactly owner/repo, both segments non-empty, no
+    # leading or trailing slash. Deliberately strict — the previous permissive
+    # fallback is what manufactured the bogus URL.
+    if printf '%s' "$_v" | grep -qE '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$'; then
+        printf 'https://github.com/%s.git\n' "$_v"
+        return 0
+    fi
+
+    return 2
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -804,14 +848,6 @@ do_upgrade() {
                 | sed -E 's/^upstream_repo:[[:space:]]*//' \
                 | sed -E 's/[[:space:]]+$//')
             [ -n "$_upstream_url" ] && _upstream_source=".framework.yaml upstream_repo:"
-            # Normalise GitHub shorthand (owner/repo) to full URL.
-            # Recognised URL prefixes: http(s)://, ssh://, git://, file://,
-            # git@host:path (SSH shorthand). Everything else is treated as
-            # owner/repo and expanded to a GitHub HTTPS URL.
-            if [ -n "$_upstream_url" ] \
-               && ! echo "$_upstream_url" | grep -qE '^(https?|ssh|git|file)://|^git@'; then
-                _upstream_url="https://github.com/${_upstream_url}.git"
-            fi
         fi
         # T-2232 leg 3: vendored .upstream sentinel (written by do_vendor in
         # bin/fw — see the parallel block there). Read first line that is not
@@ -849,6 +885,29 @@ do_upgrade() {
             echo "" >&2
             return 1
         fi
+
+        # T-2839: classify before cloning, and refuse rather than guess. Applied
+        # to all three resolution legs (flag, .framework.yaml, sentinel) so the
+        # rule cannot differ by where the value came from — the reported failure
+        # existed on the yaml leg only, which is exactly how it stayed unnoticed.
+        local _upstream_clone_src
+        if ! _upstream_clone_src=$(_fw_classify_upstream_source "$_upstream_url"); then
+            echo -e "${RED}ERROR: upstream repo value is not a clone source fw can use${NC}" >&2
+            echo "" >&2
+            echo "  Value:        $_upstream_url" >&2
+            echo "  Supplied by:  $_upstream_source" >&2
+            echo "" >&2
+            echo "  fw accepts:" >&2
+            echo "    - a URL:            https://… ssh://… git://… file://… git@host:path" >&2
+            echo "    - a local path:     /abs/path, ./rel, ../rel, ~/path" >&2
+            echo "    - GitHub shorthand: owner/repo  (exactly two segments)" >&2
+            echo "" >&2
+            echo "  Fix the value named above — this is local configuration, not a" >&2
+            echo "  problem with any remote. No changes made." >&2
+            echo "" >&2
+            return 1
+        fi
+        _upstream_url="$_upstream_clone_src"
 
         echo -e "${BOLD}Bare-from-consumer detected — auto-cloning upstream${NC}"
         echo "  Upstream URL:  $_upstream_url"
