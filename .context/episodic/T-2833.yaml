@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2833: focus-drift gate matches task IDs in non-target argument text
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T19:53:47Z
+# ============================================================================
+
+task_id: T-2833
+task_name: "focus-drift gate matches task IDs in non-target argument text"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T17:50:42Z
+completed: 2026-08-06T19:53:13Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-08-06T21:06:58+02:00
+last_commit: 2026-08-06T21:06:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  focus-drift gate anchors git-commit id extraction to the -m/--message flag
+
+# Key outcomes
+outcomes:
+  - 'Probe harness exists and records the measured matrix (focus state × command'
+  - 'The focus-drift target-extraction regexes are verb-anchored: a task id'
+  - 'Commands that genuinely target a different task (`fw task update T-N`,'
+  - 'Regression test pins both directions (false-positive shape allowed, true'
+  - 'Existing hook test suites still pass (109/109: focus_drift_gate.bats,'
+  - 'OBS-180 and OBS-182 corrected in the inbox with the measured result, so the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-06 — Scope: fix Pattern 3 only, leave Defect B''s quote-nesting case and Pattern 2 unfixed'
+    chose: 'Anchor Pattern 3''s id extraction to the `-m`/`--message` flag'
+    rationale: 'Defect B is a genuine limit of regex-only extraction (no shell'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-active-task.sh'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2833-focus-drift-gate-matches-task-ids-in-non.md'
+  - 'tests/spikes/focus-drift-target-extraction-probe.sh'
+  - 'tests/unit/focus_drift_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T21:06:58'
+    action: 'T-2833: focus-drift gate anchors git-commit id extraction to the -m/--message flag'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 122 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 122
+  commits: 1
+  files_changed: 5
+  lines_added: 240
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2833-focus-drift-gate-matches-task-ids-in-non.md
+generated_by: context-agent-hybrid

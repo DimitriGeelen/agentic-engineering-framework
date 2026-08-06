@@ -312,10 +312,24 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
     elif [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+context[[:space:]]+add- ]] && \
          [[ "$BASH_CMD" =~ --task[[:space:]=]+(T-[0-9]+) ]]; then
         TARGET_TASK="${BASH_REMATCH[1]}"
-    # Pattern 3: git commit ... T-NNNN: (the canonical T-XXX: prefix marker)
+    # Pattern 3: git commit ... -m/--message "T-NNNN: ..." (the canonical
+    # T-XXX: prefix marker). T-2833: anchored to the actual -m/--message flag
+    # value, not "leftmost T-N: anywhere in the string". The prior form was
+    # two independent regexes ANDed together — "git commit" present anywhere
+    # AND a T-N: pattern present anywhere — so the extracted id need not
+    # belong to the commit's own message at all. That produced a fail-open
+    # false negative (prose naming the focused task ahead of a commit that
+    # actually targets a different one read as "no drift") and a false
+    # positive (a grep pattern or earlier command's text supplying a T-N: the
+    # real commit doesn't target). Anchoring to the flag matches the P-002
+    # commit-msg convention the id is meant to describe in the first place.
+    # Known residual limit, not fixed here: a doc-write whose payload
+    # literally contains a working `git commit -m "T-N: ..."` example still
+    # matches, since bash regex cannot see quote-nesting — low severity, the
+    # T-1890 bypass mechanisms cover it. See T-2833 Measured Behaviour.
     elif [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit ]] && \
-         [[ "$BASH_CMD" =~ (T-[0-9]+): ]]; then
-        TARGET_TASK="${BASH_REMATCH[1]}"
+         [[ "$BASH_CMD" =~ (^|[[:space:]])(-[a-zA-Z]*m[a-zA-Z]*|--message)(=|[[:space:]]+)[\'\"]?(T-[0-9]+): ]]; then
+        TARGET_TASK="${BASH_REMATCH[4]}"
     fi
 
     # If a target was identified and differs from focused task: drift
