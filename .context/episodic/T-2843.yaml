@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2843: doctor path-ambiguity WARN fires on every vendored consumer (category error)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T22:36:09Z
+# ============================================================================
+
+task_id: T-2843
+task_name: "doctor path-ambiguity WARN fires on every vendored consumer (category error)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T22:28:49Z
+completed: 2026-08-06T22:35:56Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T00:35:43+02:00
+last_commit: 2026-08-07T00:35:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor stops warning that a vendored project is vendored
+
+# Key outcomes
+outcomes:
+  - 'Vendored project whose `upstream_repo` is a **URL** produces no "Framework path ambiguity" WARN from `fw doctor`'
+  - 'Vendored project whose `upstream_repo` is a **local path** produces no such WARN either (the operator''s case)'
+  - 'Non-vendored (global/shared-tooling) mode with a local-path `upstream_repo` that differs from the running framework **still WARNs** — the check keeps the purpose T-1097 gave it'
+  - '`realpath` is never applied to a value carrying a URL scheme'
+  - 'Regression test committed covering all three cases above, green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.fabric/components/lib-doctor-upstream.yaml'
+  - 'lib/doctor-upstream.sh'
+  - '.tasks/active/T-2843-doctor-path-ambiguity-warn-fires-on-ever.md'
+  - 'tests/unit/t2843_doctor_upstream_ambiguity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T00:35:43'
+    action: 'T-2843: doctor stops warning that a vendored project is vendored'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 5
+  lines_added: 478
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2843-doctor-path-ambiguity-warn-fires-on-ever.md
+generated_by: context-agent-hybrid

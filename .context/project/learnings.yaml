@@ -4162,3 +4162,10 @@ X'` returning empty group."
   date: 2026-08-06
   context: Added via context agent
   application: TBD
+- id: L-548
+  learning: "A subprocess's identity has two independent channels: which binary is invoked, and what the environment tells it to be. fw honours an inherited FRAMEWORK_ROOT over its own location, so switching the binary alone left behaviour byte-identical (T-2845). Tests with stubs that ignore the environment cannot detect this — they answer 'which binary ran?' when the behaviour depends on 'which binary ran AND what did it think it was'. When redirecting a subprocess, move its env scoping with it, and make stubs echo the env they receive."
+  source: P-001
+  task: T-2845
+  date: 2026-08-06
+  context: Added via context agent
+  application: TBD

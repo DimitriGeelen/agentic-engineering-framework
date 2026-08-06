@@ -1411,3 +1411,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-187
+  text: "P-011 verification inherits PROJECT_ROOT, so a suite can be green by hand and red at close from identical bytes. update-task.sh:1137 runs each verification line as (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; cd $PROJECT_ROOT && eval cmd) — an exclusion list of three vars, while PROJECT_ROOT itself stays exported. That is correct for most lines (they need it for relative paths), but it silently changes the thing under test for any suite exercising project-root RESOLUTION or bootstrap: with PROJECT_ROOT set, fw takes the caller's project instead of deciding about PWD, so the auto-init branch never runs. Measured on T-2835: 7/7 green standalone, test 6 red under PROJECT_ROOT=/opt/999-... , which is exactly what the close gate produces. Cost me two closes that looked like they had succeeded. Generalisable: 'green in my shell' and 'green at the gate' are different environments, and nothing tells the test author which vars differ. Candidate fixes: document the exported set in the Verification template hint block, or have the gate print the vars it exports on failure. Note the shape — an exclusion list enumerating what to unset is the same failure mode as T-2835's own root cause (exclusion list of verbs not to auto-init on) one layer up."
+  captured: 2026-08-06T20:42:03Z
+  context_task: T-2835
+  tags: []
+  status: pending
+  promoted_to: null

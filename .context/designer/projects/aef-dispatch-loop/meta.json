@@ -11,9 +11,14 @@
       "v": 2,
       "note": "promoted from draft-dispatch-loop-relabel v2 (operator GO 2026-07-28, T-2671; 832 pre-validated rail 294): pause-gateway branches relabeled to enforced ADR-0004 outcome enum (paused / success / error); agt_7_handoff_back lane membership fixed; enriched code-truth notes from the pair-round kept. Canonical uuid unchanged.",
       "ts": 1785268936
+    },
+    {
+      "v": 3,
+      "note": "",
+      "ts": 1785967450
     }
   ],
-  "latest": 2,
-  "updated": 1785268936,
+  "latest": 3,
+  "updated": 1785967450,
   "uuid": "e32a518c-01de-4243-aafc-691cc99caf0d"
 }

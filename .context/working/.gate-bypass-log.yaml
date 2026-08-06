@@ -5949,3 +5949,270 @@ a verified answer. '
   caller: 'check-active-task focus-drift'
   target: 'T-2802'
   command: 'FW_SWITCH_FOCUS=1 bin/fw fabric register tests/unit/watchtower_url_no_guess.bats >/dev/null 2>&1; FW_SWITCH_FOCUS=1 bin/fw fabric register tests/fixtures/foreign_watchtower.py >/dev/null 2>&1; git add'
+- timestamp: '2026-08-05T12:00:22Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-012'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-012: Session handover S-2026-0805-1354" 2>&1 | tail -15'
+- timestamp: '2026-08-05T12:28:02Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2807'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2807: close — partial-complete, Human AC is the host-side claude-fw conversion
+
+Reviewer PASS after re-routing the Human AC: the first drafts Expected clause was'
+- timestamp: '2026-08-05T12:28:16Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2807'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2807: refresh vendored VERSION (self-vendor drift, T-2240)" 2>&1 | tail -2 && git push origin t2539-staging t2539-staging:master 2>&1 | tail -4; echo "---AHEAD---"; '
+- timestamp: '2026-08-05T12:39:09Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2807'
+  command: 'bin/fw vendor self >/dev/null 2>&1; git add .agentic-framework/ 2>/dev/null
+if ! git diff --cached --quiet; then FW_SWITCH_FOCUS=1 git commit -q -m "T-2807: refresh vendored copies (self-vendor drift,'
+- timestamp: '2026-08-05T13:46:25Z'
+  task: 'T-2807'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2809'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2809: installer fetches framework bytes into the target project, not $HOME
+
+install.sh now fetches framework bytes to a temporary path (mktemp -d) and'
+- timestamp: '2026-08-05T13:46:56Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2809'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2809: installer fetches framework bytes into the target project, not $HOME
+
+install.sh now fetches framework bytes to a temporary path (mktemp -d) and'
+- timestamp: '2026-08-05T17:25:29Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2812'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2812: resolve git hooks dir via git rev-parse instead of hard-coded PROJECT_ROOT/.git
+
+install-hooks assumed .git was always a directory sitting direct'
+- timestamp: '2026-08-05T18:32:46Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2813'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2813: mark work-completed, generate episodic summary"'
+- timestamp: '2026-08-05T19:04:53Z'
+  task: 'T-2788'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2812'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2812: re-vendor .agentic-framework with the git-path hooks resolution
+
+The T-2240 self-vendor gate blocked the push because the vendored copy
+still carried the ha'
+- timestamp: '2026-08-05T21:03:06Z'
+  task: 'T-2719'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2816'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2816: re-vendor hooks.sh with the runtime fw entry resolver
+
+The T-2240 gate caught it: consumers vendoring from origin would have
+inherited the dead remedy path '
+- timestamp: '2026-08-05T21:46:11Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2818'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+python3 - <<PY
+import glob
+p=glob.glob(.tasks/active/T-2818-*.md)[0]
+s=open(p).read()
+acs = """- [ ] `fw doctor` reports git identity: OK when both user.n'
+- timestamp: '2026-08-05T21:56:46Z'
+  task: 'T-2815'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-999'
+  command: 'export FW_SWITCH_FOCUS=1
+rm -rf /tmp/freshid && mkdir -p /tmp/freshid/fakehome && cd /tmp/freshid && mkdir t1 && cd t1 && git init -q .
+export HOME=/tmp/freshid/fakehome
+export GIT_CONFIG_GLOBAL=/tmp/'
+- timestamp: '2026-08-05T21:59:46Z'
+  task: 'T-2818'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-003'
+  command: 'export FW_SWITCH_FOCUS=1
+# Extract the emitted command verbatim from the log — testing the string init
+# actually printed, not my retyping of it.
+CMD=$(sed -e s/\x1b\[[0-9;]*m//g /tmp/idA/init.log'
+- timestamp: '2026-08-05T22:11:17Z'
+  task: 'T-2815'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2818'
+  command: 'export FW_SWITCH_FOCUS=1
+timeout 300 bin/fw git commit -m "T-2818: close — corrected premise, both legs shipped and mutation-checked
+
+Gates: verification 5/5, 6 Agent ACs, RCA accepted. Episodic gen'
+- timestamp: '2026-08-06T10:58:41Z'
+  task: 'T-2822'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2821'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-2821 --status issues --note "reopened: deliverable never committed; stated root cause contradicted by live test" 2>&1 | tail -3; echo "---"; ls .tasks/active/T-2'
+- timestamp: '2026-08-06T10:58:46Z'
+  task: 'T-2822'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2821'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-2821 --status issues 2>&1 | tail -3; echo "---"; ls .tasks/active/T-2821-* 2>&1 | head -1'
+- timestamp: '2026-08-06T11:00:11Z'
+  task: 'T-2822'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2821'
+  command: 'bin/fw vendor self >/dev/null 2>&1; git add .agentic-framework/ && FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-2821: refresh vendored copies (init.sh bootstrap commit)" 2>&1 | tail -2; echo "=== push =='
+- timestamp: '2026-08-06T11:04:25Z'
+  task: 'T-2822'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-08-06T12:04:02Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2825'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2825: fw worktree remove guard + worktree-durability handoff rule (G-075, G-076)
+
+G-076: `fw worktree remove '
+- timestamp: '2026-08-06T12:05:15Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2825'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "T-2825: refresh vendored copies (self-vendor drift, T-2240)
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" 2>&1 | '
+- timestamp: '2026-08-06T16:36:10Z'
+  task: 'T-100196'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2830'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2830: close T-2830 + T-2832; T-2831 to partial-complete
+
+T-2830 (fw work-on --switch-focus silent failure) and T-2832 (c'
+- timestamp: '2026-08-06T18:16:33Z'
+  task: 'T-2833'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2834'
+  command: 'bin/fw context add-learning "A fast-path exemption in a gate must classify the WHOLE command, not its first token. is_bash_safe_command derived the base with awk first-word, so echo hi && anything w'
+- timestamp: '2026-08-06T18:16:48Z'
+  task: 'T-2833'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2834'
+  command: 'bin/fw context add-learning "A fast-path exemption in a gate must classify the WHOLE command, not its first token. is_bash_safe_command derived the base with awk first-word, so echo hi && anything w'
+- timestamp: '2026-08-06T18:17:48Z'
+  task: 'T-2833'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2834'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2834: close — episodic, learning, fabric card; T-2833 parked to next
+
+Learning captured: a fast-path exemption must classify the whole command, not
+its first to'
+- timestamp: '2026-08-06T18:17:58Z'
+  task: 'T-2833'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2834'
+  command: 'bin/fw work-on T-2833 2>&1 | tail -1
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2834: close — episodic, learning, fabric card
+
+Learning captured: a fast-path exemption must classify the whole command, no'
+- timestamp: '2026-08-06T18:18:13Z'
+  task: 'T-2833'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2834'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2834: close — episodic, learning, fabric card
+
+Learning captured: a fast-path exemption must classify the whole command, not
+its first token; and a confidently-'
+- timestamp: '2026-08-06T18:55:53Z'
+  task: 'T-2835'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1730'
+  command: 'FW_SWITCH_FOCUS=1 bash -c cat > /tmp/test_regex.sh << EOF
+#!/bin/bash
+test_case() {
+    local BASH_CMD="$1"
+    local expect="$2"
+    if [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit ]] &'
+- timestamp: '2026-08-06T21:06:52Z'
+  task: 'T-2837'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2838'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .tasks/active/ .context/episodic/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2838: close — partial-complete, /config render review pending (owner: human)" && git log --one'
+- timestamp: '2026-08-06T21:07:21Z'
+  task: 'T-2837'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2838'
+  command: 'timeout 280 bin/fw vendor self 2>&1 | tail -3 && FW_SWITCH_FOCUS=1 git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2838: refresh vendored copies (web/blueprints/config.py)" && tim'
+- timestamp: '2026-08-06T21:39:49Z'
+  task: 'T-2837'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: False positive from render_surface.sh''s unanchored git --grep: it attributed web/blueprints/config.py to T-2837 via commit 8b41090b4, which is T-2838''s own commit (body cites ''(T-2837)'' as an origin note, not attribution). T-2837 never touched web/blueprints/config.py — confirmed via git status/log; T-2837''s only source change is agents/audit/audit.sh (already committed in 55744e9ee, not a render surface). Gate bug filed as T-2840.'
+  reason: ''
+- timestamp: '2026-08-06T21:52:34Z'
+  task: 'T-2841'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-2841 touched no render surface (git show --stat 2c1b25466: CLAUDE.md, one bats file, task files). The gate''s predicate greps commit MESSAGES unanchored (lib/render_surface.sh:91), so T-2842''s commit 93bb606c4 matches --grep T-2841 purely because its message reads ''Found by T-2841s inverted parity test'', and its web/blueprints/config.py is attributed here. That file''s render review is already an open Human AC on T-2842, where it belongs. Live reproduction of T-2840.'
+  reason: ''
+- timestamp: '2026-08-06T22:22:25Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2842'
+  command: 'FW_SWITCH_FOCUS=1 git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2842: refresh vendored copies (config registry + /config settings)
+
+Consumers vendoring from origin would otherwi'
+- timestamp: '2026-08-06T22:48:03Z'
+  task: 'T-2844'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2843'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2843-doctor-path-ambiguity-warn-fires-on-ever.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-2843: archive task file on close
+
+Co-Authored-By: Claude Opus 5 ('
+- timestamp: '2026-08-06T22:51:57Z'
+  task: 'T-100196'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2844'
+  command: 'FW_SWITCH_FOCUS=1 git add .agentic-framework/ .tasks/completed/T-2844-fw-init-leaves-a-cron-registry-its-own-d.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-2844: refresh vendored copies + archive task '
+- timestamp: '2026-08-06T23:28:08Z'
+  task: 'T-100196'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2845'
+  command: 'bin/fw context add-learning "A subprocesss identity has two independent channels: which binary is invoked, and what the environment tells it to be. fw honours an inherited FRAMEWORK_ROOT over its own'

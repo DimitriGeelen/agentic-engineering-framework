@@ -27986,3 +27986,2579 @@ scan_id: R-f0d23098
 task_id: T-9899
 payload:
   task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:24:34Z'
+scan_id: R-a46b878c
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:24:34Z'
+scan_id: R-a46b878c
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:24:35Z'
+scan_id: R-1bf9e692
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:24:35Z'
+scan_id: R-1bf9e692
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:24:35Z'
+scan_id: R-cec1fe76
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:24:35Z'
+scan_id: R-cec1fe76
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:25:26Z'
+scan_id: R-a2c5efa1
+task_id: T-2807
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:25:26Z'
+scan_id: R-a2c5efa1
+task_id: T-2807
+payload:
+  task_file: .tasks/active/T-2807-claude-fw-on-path-must-be-a-copy-not-a-s.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:26:05Z'
+scan_id: R-8de31591
+task_id: T-2807
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:26:05Z'
+scan_id: R-8de31591
+task_id: T-2807
+payload:
+  task_file: .tasks/active/T-2807-claude-fw-on-path-must-be-a-copy-not-a-s.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:27:08Z'
+scan_id: R-117e1af0
+task_id: T-2807
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:27:08Z'
+scan_id: R-117e1af0
+task_id: T-2807
+payload:
+  task_file: .tasks/active/T-2807-claude-fw-on-path-must-be-a-copy-not-a-s.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:19Z'
+scan_id: R-b0df34cf
+task_id: T-9952
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:19Z'
+scan_id: R-b0df34cf
+task_id: T-9952
+payload:
+  task_file: .tasks/active/T-9952-aud-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:19Z'
+scan_id: R-ef23aff2
+task_id: T-9953
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:19Z'
+scan_id: R-ef23aff2
+task_id: T-9953
+payload:
+  task_file: .tasks/active/T-9953-aud-neg-reanchor-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:20Z'
+scan_id: R-03c29ce0
+task_id: T-9954
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:20Z'
+scan_id: R-03c29ce0
+task_id: T-9954
+payload:
+  task_file: .tasks/active/T-9954-aud-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:20Z'
+scan_id: R-49dbb624
+task_id: T-9955
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:20Z'
+scan_id: R-49dbb624
+task_id: T-9955
+payload:
+  task_file: .tasks/active/T-9955-aud-neg-reviewer-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:20Z'
+scan_id: R-77144f87
+task_id: T-9956
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:20Z'
+scan_id: R-77144f87
+task_id: T-9956
+payload:
+  task_file: .tasks/active/T-9956-aud-neg-opt-out-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:21Z'
+scan_id: R-2e7bf59b
+task_id: T-9957
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:21Z'
+scan_id: R-2e7bf59b
+task_id: T-9957
+payload:
+  task_file: .tasks/active/T-9957-defer-positive-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T12:40:21Z'
+scan_id: RC-1d53a5e5
+task_id: T-9957
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:21Z'
+scan_id: R-ad53003f
+task_id: T-9958
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:21Z'
+scan_id: R-ad53003f
+task_id: T-9958
+payload:
+  task_file: .tasks/active/T-9958-defer-neg-go-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T12:40:21Z'
+scan_id: RC-de7df762
+task_id: T-9958
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:22Z'
+scan_id: R-07ed4ef8
+task_id: T-9959
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:22Z'
+scan_id: R-07ed4ef8
+task_id: T-9959
+payload:
+  task_file: .tasks/active/T-9959-defer-neg-one-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T12:40:22Z'
+scan_id: RC-2d0b3f26
+task_id: T-9959
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:22Z'
+scan_id: R-b4694c37
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:22Z'
+scan_id: R-b4694c37
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:23Z'
+scan_id: R-7dd037bd
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:23Z'
+scan_id: R-7dd037bd
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:23Z'
+scan_id: R-43e0110a
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:23Z'
+scan_id: R-43e0110a
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:23Z'
+scan_id: R-03484fe6
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:23Z'
+scan_id: R-03484fe6
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:24Z'
+scan_id: R-f8ab5eb3
+task_id: T-9960
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:24Z'
+scan_id: R-f8ab5eb3
+task_id: T-9960
+payload:
+  task_file: .tasks/active/T-9960-review-link-homework-positive.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:25Z'
+scan_id: R-0d2606ed
+task_id: T-9961
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:25Z'
+scan_id: R-0d2606ed
+task_id: T-9961
+payload:
+  task_file: .tasks/active/T-9961-review-link-homework-neg-full-url.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:40:25Z'
+scan_id: R-3ce23a91
+task_id: T-9962
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:40:25Z'
+scan_id: R-3ce23a91
+task_id: T-9962
+payload:
+  task_file: .tasks/active/T-9962-review-link-homework-neg-opt-out.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T12:53:11Z'
+scan_id: R-f6f544ba
+task_id: T-2808
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T12:53:11Z'
+scan_id: R-f6f544ba
+task_id: T-2808
+payload:
+  task_file: .tasks/active/T-2808-fw-watchtower-missing-from-top-level-hel.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:23Z'
+scan_id: R-7109bc5d
+task_id: T-9952
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:23Z'
+scan_id: R-7109bc5d
+task_id: T-9952
+payload:
+  task_file: .tasks/active/T-9952-aud-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:23Z'
+scan_id: R-90a131bc
+task_id: T-9953
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:23Z'
+scan_id: R-90a131bc
+task_id: T-9953
+payload:
+  task_file: .tasks/active/T-9953-aud-neg-reanchor-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:24Z'
+scan_id: R-9b1450a1
+task_id: T-9954
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:24Z'
+scan_id: R-9b1450a1
+task_id: T-9954
+payload:
+  task_file: .tasks/active/T-9954-aud-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:24Z'
+scan_id: R-206f776f
+task_id: T-9955
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:24Z'
+scan_id: R-206f776f
+task_id: T-9955
+payload:
+  task_file: .tasks/active/T-9955-aud-neg-reviewer-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:24Z'
+scan_id: R-94b3ee08
+task_id: T-9956
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:24Z'
+scan_id: R-94b3ee08
+task_id: T-9956
+payload:
+  task_file: .tasks/active/T-9956-aud-neg-opt-out-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:25Z'
+scan_id: R-b15596cc
+task_id: T-9957
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:25Z'
+scan_id: R-b15596cc
+task_id: T-9957
+payload:
+  task_file: .tasks/active/T-9957-defer-positive-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T13:20:25Z'
+scan_id: RC-e127cf57
+task_id: T-9957
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:25Z'
+scan_id: R-a45307e0
+task_id: T-9958
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:25Z'
+scan_id: R-a45307e0
+task_id: T-9958
+payload:
+  task_file: .tasks/active/T-9958-defer-neg-go-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T13:20:25Z'
+scan_id: RC-e1341954
+task_id: T-9958
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:26Z'
+scan_id: R-7e6581f8
+task_id: T-9959
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:26Z'
+scan_id: R-7e6581f8
+task_id: T-9959
+payload:
+  task_file: .tasks/active/T-9959-defer-neg-one-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T13:20:26Z'
+scan_id: RC-9b4e4349
+task_id: T-9959
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:26Z'
+scan_id: R-2016f2e6
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:26Z'
+scan_id: R-2016f2e6
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:27Z'
+scan_id: R-740a70b5
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:27Z'
+scan_id: R-740a70b5
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:27Z'
+scan_id: R-4c63131d
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:27Z'
+scan_id: R-4c63131d
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:27Z'
+scan_id: R-d80113d3
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:27Z'
+scan_id: R-d80113d3
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:28Z'
+scan_id: R-7e1083ad
+task_id: T-9960
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:28Z'
+scan_id: R-7e1083ad
+task_id: T-9960
+payload:
+  task_file: .tasks/active/T-9960-review-link-homework-positive.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:28Z'
+scan_id: R-47807fda
+task_id: T-9961
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:28Z'
+scan_id: R-47807fda
+task_id: T-9961
+payload:
+  task_file: .tasks/active/T-9961-review-link-homework-neg-full-url.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:20:29Z'
+scan_id: R-04798a27
+task_id: T-9962
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:20:29Z'
+scan_id: R-04798a27
+task_id: T-9962
+payload:
+  task_file: .tasks/active/T-9962-review-link-homework-neg-opt-out.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T13:45:06Z'
+scan_id: R-46e4f5ce
+task_id: T-2809
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T13:45:06Z'
+scan_id: R-46e4f5ce
+task_id: T-2809
+payload:
+  task_file: .tasks/active/T-2809-installer-fetches-framework-bytes-into-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T14:14:19Z'
+scan_id: R-7b570118
+task_id: T-2810
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T14:14:19Z'
+scan_id: R-7b570118
+task_id: T-2810
+payload:
+  task_file: .tasks/active/T-2810-router-no-framework-message-names-the-ob.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T14:15:36Z'
+scan_id: R-1e5d396f
+task_id: T-2810
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T14:15:36Z'
+scan_id: R-1e5d396f
+task_id: T-2810
+payload:
+  task_file: .tasks/active/T-2810-router-no-framework-message-names-the-ob.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T14:25:28Z'
+scan_id: R-040de567
+task_id: T-2811
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T14:25:28Z'
+scan_id: R-040de567
+task_id: T-2811
+payload:
+  task_file: .tasks/active/T-2811-fwrouterbats-fixtures-predate-t-2805-fra.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T14:25:36Z'
+scan_id: R-7f540310
+task_id: T-2811
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T14:25:36Z'
+scan_id: R-7f540310
+task_id: T-2811
+payload:
+  task_file: .tasks/active/T-2811-fwrouterbats-fixtures-predate-t-2805-fra.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T15:15:29Z'
+scan_id: R-edd33ad2
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T15:15:29Z'
+scan_id: R-edd33ad2
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T15:15:29Z'
+scan_id: R-00bdee2a
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T15:15:29Z'
+scan_id: R-00bdee2a
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T15:15:30Z'
+scan_id: R-10ae8045
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T15:15:30Z'
+scan_id: R-10ae8045
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T15:33:47Z'
+scan_id: R-c1152756
+task_id: T-2814
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T15:33:47Z'
+scan_id: R-c1152756
+task_id: T-2814
+payload:
+  task_file: .tasks/active/T-2814-fw-init-in-a-bare-directory-bootstraps-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T15:33:55Z'
+scan_id: R-28f18492
+task_id: T-2814
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T15:33:55Z'
+scan_id: R-28f18492
+task_id: T-2814
+payload:
+  task_file: .tasks/active/T-2814-fw-init-in-a-bare-directory-bootstraps-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:08Z'
+scan_id: R-56e3d089
+task_id: T-9952
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:08Z'
+scan_id: R-56e3d089
+task_id: T-9952
+payload:
+  task_file: .tasks/active/T-9952-aud-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:09Z'
+scan_id: R-71ef4d00
+task_id: T-9953
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:09Z'
+scan_id: R-71ef4d00
+task_id: T-9953
+payload:
+  task_file: .tasks/active/T-9953-aud-neg-reanchor-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:09Z'
+scan_id: R-6ff4fedb
+task_id: T-9954
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:09Z'
+scan_id: R-6ff4fedb
+task_id: T-9954
+payload:
+  task_file: .tasks/active/T-9954-aud-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:09Z'
+scan_id: R-4c436851
+task_id: T-9955
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:09Z'
+scan_id: R-4c436851
+task_id: T-9955
+payload:
+  task_file: .tasks/active/T-9955-aud-neg-reviewer-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:10Z'
+scan_id: R-b11a0c2d
+task_id: T-9956
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:10Z'
+scan_id: R-b11a0c2d
+task_id: T-9956
+payload:
+  task_file: .tasks/active/T-9956-aud-neg-opt-out-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:10Z'
+scan_id: R-504eed0f
+task_id: T-9957
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:10Z'
+scan_id: R-504eed0f
+task_id: T-9957
+payload:
+  task_file: .tasks/active/T-9957-defer-positive-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T16:10:10Z'
+scan_id: RC-5afa91a7
+task_id: T-9957
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:11Z'
+scan_id: R-b51f8793
+task_id: T-9958
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:11Z'
+scan_id: R-b51f8793
+task_id: T-9958
+payload:
+  task_file: .tasks/active/T-9958-defer-neg-go-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T16:10:11Z'
+scan_id: RC-e7dd209f
+task_id: T-9958
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:11Z'
+scan_id: R-4d80e325
+task_id: T-9959
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:11Z'
+scan_id: R-4d80e325
+task_id: T-9959
+payload:
+  task_file: .tasks/active/T-9959-defer-neg-one-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T16:10:11Z'
+scan_id: RC-5fd864f4
+task_id: T-9959
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:12Z'
+scan_id: R-b0208ad3
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:12Z'
+scan_id: R-b0208ad3
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:12Z'
+scan_id: R-d7ef8a0a
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:12Z'
+scan_id: R-d7ef8a0a
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:12Z'
+scan_id: R-256fb571
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:12Z'
+scan_id: R-256fb571
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:13Z'
+scan_id: R-8f19fc85
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:13Z'
+scan_id: R-8f19fc85
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:14Z'
+scan_id: R-6ca4aa09
+task_id: T-9960
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:14Z'
+scan_id: R-6ca4aa09
+task_id: T-9960
+payload:
+  task_file: .tasks/active/T-9960-review-link-homework-positive.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:14Z'
+scan_id: R-517ea725
+task_id: T-9961
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:14Z'
+scan_id: R-517ea725
+task_id: T-9961
+payload:
+  task_file: .tasks/active/T-9961-review-link-homework-neg-full-url.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T16:10:14Z'
+scan_id: R-9614e738
+task_id: T-9962
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T16:10:14Z'
+scan_id: R-9614e738
+task_id: T-9962
+payload:
+  task_file: .tasks/active/T-9962-review-link-homework-neg-opt-out.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T17:24:46Z'
+scan_id: R-802e4b90
+task_id: T-2812
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T17:24:46Z'
+scan_id: R-802e4b90
+task_id: T-2812
+payload:
+  task_file: .tasks/active/T-2812-install-hooks-writes-to-a-hard-coded-pro.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T18:28:14Z'
+scan_id: R-f9df0199
+task_id: T-2813
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T18:28:14Z'
+scan_id: R-f9df0199
+task_id: T-2813
+payload:
+  task_file: .tasks/active/T-2813-install-hooks-prints-hooks-installed-and.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T18:29:57Z'
+scan_id: R-a441f411
+task_id: T-2813
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T18:29:57Z'
+scan_id: R-a441f411
+task_id: T-2813
+payload:
+  task_file: .tasks/active/T-2813-install-hooks-prints-hooks-installed-and.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T20:23:19Z'
+scan_id: R-533c6c71
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T20:23:19Z'
+scan_id: R-533c6c71
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T20:23:19Z'
+scan_id: R-099cbf56
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T20:23:19Z'
+scan_id: R-099cbf56
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T20:23:20Z'
+scan_id: R-1a1a93a2
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T20:23:20Z'
+scan_id: R-1a1a93a2
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:02:06Z'
+scan_id: R-ee4cbe62
+task_id: T-2816
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:02:06Z'
+scan_id: R-ee4cbe62
+task_id: T-2816
+payload:
+  task_file: .tasks/active/T-2816-commit-msg-hook-prints-a-framework-repo-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:17:58Z'
+scan_id: R-db81c44d
+task_id: T-2817
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:17:58Z'
+scan_id: R-db81c44d
+task_id: T-2817
+payload:
+  task_file: .tasks/active/T-2817-fw-init-writes-the-framework-origin-url-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:18Z'
+scan_id: R-59f398fa
+task_id: T-9952
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:18Z'
+scan_id: R-59f398fa
+task_id: T-9952
+payload:
+  task_file: .tasks/active/T-9952-aud-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:19Z'
+scan_id: R-4b3285ac
+task_id: T-9953
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:19Z'
+scan_id: R-4b3285ac
+task_id: T-9953
+payload:
+  task_file: .tasks/active/T-9953-aud-neg-reanchor-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:19Z'
+scan_id: R-02b584ce
+task_id: T-9954
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:19Z'
+scan_id: R-02b584ce
+task_id: T-9954
+payload:
+  task_file: .tasks/active/T-9954-aud-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:19Z'
+scan_id: R-fc61ca71
+task_id: T-9955
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:19Z'
+scan_id: R-fc61ca71
+task_id: T-9955
+payload:
+  task_file: .tasks/active/T-9955-aud-neg-reviewer-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:20Z'
+scan_id: R-c74678a0
+task_id: T-9956
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:20Z'
+scan_id: R-c74678a0
+task_id: T-9956
+payload:
+  task_file: .tasks/active/T-9956-aud-neg-opt-out-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: R-8a036858
+task_id: T-9957
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: R-8a036858
+task_id: T-9957
+payload:
+  task_file: .tasks/active/T-9957-defer-positive-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: RC-fe4f66f0
+task_id: T-9957
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: R-db9486f7
+task_id: T-9958
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: R-db9486f7
+task_id: T-9958
+payload:
+  task_file: .tasks/active/T-9958-defer-neg-go-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: RC-7c82be03
+task_id: T-9958
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: R-b965dfe7
+task_id: T-9959
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: R-b965dfe7
+task_id: T-9959
+payload:
+  task_file: .tasks/active/T-9959-defer-neg-one-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-05T21:19:21Z'
+scan_id: RC-184bd1ec
+task_id: T-9959
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:22Z'
+scan_id: R-2e2989c2
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:22Z'
+scan_id: R-2e2989c2
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:22Z'
+scan_id: R-b15cbf58
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:22Z'
+scan_id: R-b15cbf58
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:23Z'
+scan_id: R-08156c4e
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:23Z'
+scan_id: R-08156c4e
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:23Z'
+scan_id: R-a07f6627
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:23Z'
+scan_id: R-a07f6627
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:24Z'
+scan_id: R-3037589b
+task_id: T-9960
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:24Z'
+scan_id: R-3037589b
+task_id: T-9960
+payload:
+  task_file: .tasks/active/T-9960-review-link-homework-positive.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:24Z'
+scan_id: R-8fab70d8
+task_id: T-9961
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:24Z'
+scan_id: R-8fab70d8
+task_id: T-9961
+payload:
+  task_file: .tasks/active/T-9961-review-link-homework-neg-full-url.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:19:25Z'
+scan_id: R-11661e16
+task_id: T-9962
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:19:25Z'
+scan_id: R-11661e16
+task_id: T-9962
+payload:
+  task_file: .tasks/active/T-9962-review-link-homework-neg-opt-out.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:32:02Z'
+scan_id: R-22d48871
+task_id: T-2719
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:32:02Z'
+scan_id: R-22d48871
+task_id: T-2719
+payload:
+  task_file: .tasks/active/T-2719-keystone-readme-five-minute-path-tested-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T21:32:56Z'
+scan_id: R-3c0fd644
+task_id: T-2788
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T21:32:56Z'
+scan_id: R-3c0fd644
+task_id: T-2788
+payload:
+  task_file: .tasks/active/T-2788-sweep-bats-fixture-paths-built-on-an-ung.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T22:10:38Z'
+scan_id: R-347a68fc
+task_id: T-2818
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T22:10:38Z'
+scan_id: R-347a68fc
+task_id: T-2818
+payload:
+  task_file: .tasks/active/T-2818-fw-doctor-and-fw-init-do-not-check-git-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T22:24:15Z'
+scan_id: R-380479d9
+task_id: T-2819
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T22:24:15Z'
+scan_id: R-380479d9
+task_id: T-2819
+payload:
+  task_file: .tasks/active/T-2819-arc-016-closure-evidence-capture-the-by-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-05T23:35:29Z'
+scan_id: R-6bbd2f5b
+task_id: T-2815
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-05T23:35:29Z'
+scan_id: R-6bbd2f5b
+task_id: T-2815
+payload:
+  task_file: .tasks/active/T-2815-gated-onboarding-set-contains-an-agent-u.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T00:14:38Z'
+scan_id: R-93ffa8f9
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T00:14:38Z'
+scan_id: R-93ffa8f9
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T00:14:39Z'
+scan_id: R-1dd74967
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T00:14:39Z'
+scan_id: R-1dd74967
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T00:14:39Z'
+scan_id: R-3f4d6d48
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T00:14:39Z'
+scan_id: R-3f4d6d48
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:10Z'
+scan_id: R-4fbe87ee
+task_id: T-9952
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:10Z'
+scan_id: R-4fbe87ee
+task_id: T-9952
+payload:
+  task_file: .tasks/active/T-9952-aud-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:11Z'
+scan_id: R-8a797471
+task_id: T-9953
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:11Z'
+scan_id: R-8a797471
+task_id: T-9953
+payload:
+  task_file: .tasks/active/T-9953-aud-neg-reanchor-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:11Z'
+scan_id: R-2b537165
+task_id: T-9954
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:11Z'
+scan_id: R-2b537165
+task_id: T-9954
+payload:
+  task_file: .tasks/active/T-9954-aud-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:12Z'
+scan_id: R-a4fe21de
+task_id: T-9955
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:12Z'
+scan_id: R-a4fe21de
+task_id: T-9955
+payload:
+  task_file: .tasks/active/T-9955-aud-neg-reviewer-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:12Z'
+scan_id: R-242fac3f
+task_id: T-9956
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:12Z'
+scan_id: R-242fac3f
+task_id: T-9956
+payload:
+  task_file: .tasks/active/T-9956-aud-neg-opt-out-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: R-025f4bef
+task_id: T-9957
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: R-025f4bef
+task_id: T-9957
+payload:
+  task_file: .tasks/active/T-9957-defer-positive-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: RC-ae513005
+task_id: T-9957
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: R-ee4e5d64
+task_id: T-9958
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: R-ee4e5d64
+task_id: T-9958
+payload:
+  task_file: .tasks/active/T-9958-defer-neg-go-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: RC-f977ab95
+task_id: T-9958
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: R-7cad0895
+task_id: T-9959
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: R-7cad0895
+task_id: T-9959
+payload:
+  task_file: .tasks/active/T-9959-defer-neg-one-fixture.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-06T01:09:13Z'
+scan_id: RC-d77447fc
+task_id: T-9959
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:14Z'
+scan_id: R-fc11d7bf
+task_id: T-9947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:14Z'
+scan_id: R-fc11d7bf
+task_id: T-9947
+payload:
+  task_file: .tasks/active/T-9947-rev-prose-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:14Z'
+scan_id: R-9ae54a94
+task_id: T-9948
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:14Z'
+scan_id: R-9ae54a94
+task_id: T-9948
+payload:
+  task_file: .tasks/active/T-9948-rev-prose-neg-grepable-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:15Z'
+scan_id: R-4712c7a0
+task_id: T-9949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:15Z'
+scan_id: R-4712c7a0
+task_id: T-9949
+payload:
+  task_file: .tasks/active/T-9949-rev-prose-neg-review-prefix-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:15Z'
+scan_id: R-3fe9e73a
+task_id: T-9950
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:15Z'
+scan_id: R-3fe9e73a
+task_id: T-9950
+payload:
+  task_file: .tasks/active/T-9950-rev-prose-neg-agent-subhead-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:16Z'
+scan_id: R-fb0d7f7c
+task_id: T-9960
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:16Z'
+scan_id: R-fb0d7f7c
+task_id: T-9960
+payload:
+  task_file: .tasks/active/T-9960-review-link-homework-positive.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:16Z'
+scan_id: R-6e95c472
+task_id: T-9961
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:16Z'
+scan_id: R-6e95c472
+task_id: T-9961
+payload:
+  task_file: .tasks/active/T-9961-review-link-homework-neg-full-url.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T01:09:17Z'
+scan_id: R-808e5f35
+task_id: T-9962
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T01:09:17Z'
+scan_id: R-808e5f35
+task_id: T-9962
+payload:
+  task_file: .tasks/active/T-9962-review-link-homework-neg-opt-out.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T06:30:41Z'
+scan_id: R-b7ab1538
+task_id: T-2820
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T06:30:41Z'
+scan_id: R-b7ab1538
+task_id: T-2820
+payload:
+  task_file: .tasks/active/T-2820-verify-the-onboarding-prompt-runs-reliab.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T10:57:40Z'
+scan_id: R-8f549a91
+task_id: T-2821
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T10:57:40Z'
+scan_id: R-8f549a91
+task_id: T-2821
+payload:
+  task_file: .tasks/active/T-2821-fw-init-leaves-a-project-with-no-head-ha.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T11:04:26Z'
+scan_id: R-2d9e0d29
+task_id: T-2822
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T11:04:26Z'
+scan_id: R-2d9e0d29
+task_id: T-2822
+payload:
+  task_file: .tasks/active/T-2822-worktree-policy-what-may-live-inside-a-w.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-06T11:04:26Z'
+scan_id: RC-a5bb7410
+task_id: T-2822
+payload:
+  overall: CONFIRMED
+  claim_count: 11
+---
+kind: scan_emitted
+timestamp: '2026-08-06T11:19:33Z'
+scan_id: R-6cf75bfb
+task_id: T-2823
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T11:19:33Z'
+scan_id: R-6cf75bfb
+task_id: T-2823
+payload:
+  task_file: .tasks/active/T-2823-duplicate-task-id-check-blocks-the-incep.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T11:29:52Z'
+scan_id: R-a1123ebb
+task_id: T-2824
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T11:29:52Z'
+scan_id: R-a1123ebb
+task_id: T-2824
+payload:
+  task_file: .tasks/active/T-2824-triage-and-recover-the-two-stranded-work.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T12:00:34Z'
+scan_id: R-2952ff5b
+task_id: T-2825
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T12:00:34Z'
+scan_id: R-2952ff5b
+task_id: T-2825
+payload:
+  task_file: .tasks/active/T-2825-worktree-teardown-strands-unpushed-commi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T12:01:17Z'
+scan_id: R-7409a2ed
+task_id: T-2825
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T12:01:17Z'
+scan_id: R-7409a2ed
+task_id: T-2825
+payload:
+  task_file: .tasks/active/T-2825-worktree-teardown-strands-unpushed-commi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T12:02:10Z'
+scan_id: R-4d8095d6
+task_id: T-2825
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T12:02:10Z'
+scan_id: R-4d8095d6
+task_id: T-2825
+payload:
+  task_file: .tasks/active/T-2825-worktree-teardown-strands-unpushed-commi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T12:02:12Z'
+scan_id: R-b8eb5c27
+task_id: T-2825
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T12:02:12Z'
+scan_id: R-b8eb5c27
+task_id: T-2825
+payload:
+  task_file: .tasks/active/T-2825-worktree-teardown-strands-unpushed-commi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T13:19:58Z'
+scan_id: R-8ac05a09
+task_id: T-2826
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T13:19:58Z'
+scan_id: R-8ac05a09
+task_id: T-2826
+payload:
+  task_file: .tasks/active/T-2826-live-re-verify-the-onboarding-prompt-end.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T15:17:52Z'
+scan_id: R-b4418c3c
+task_id: T-2827
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T15:17:52Z'
+scan_id: R-b4418c3c
+task_id: T-2827
+payload:
+  task_file: .tasks/active/T-2827-fw-init-bootstrap-commit-has-an-empty-tr.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T15:31:15Z'
+scan_id: R-ca1c72bd
+task_id: T-2828
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T15:31:15Z'
+scan_id: R-ca1c72bd
+task_id: T-2828
+payload:
+  task_file: .tasks/active/T-2828-confirm-obs-178-fix-reached-consumers--r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T15:38:10Z'
+scan_id: R-3768ddec
+task_id: T-2829
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T15:38:10Z'
+scan_id: R-3768ddec
+task_id: T-2829
+payload:
+  task_file: .tasks/active/T-2829-obs-177-worktree-remove-guard-consults-o.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T16:34:01Z'
+scan_id: R-99abac96
+task_id: T-2831
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T16:34:01Z'
+scan_id: R-99abac96
+task_id: T-2831
+payload:
+  task_file: .tasks/active/T-2831-worktree-remove-surfaces-uncommitted-wor.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T16:34:49Z'
+scan_id: R-ca23dc35
+task_id: T-2832
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T16:34:49Z'
+scan_id: R-ca23dc35
+task_id: T-2832
+payload:
+  task_file: .tasks/active/T-2832-createtaskbats-clobbers-live-session-foc.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T16:35:30Z'
+scan_id: R-804df508
+task_id: T-2830
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T16:35:30Z'
+scan_id: R-804df508
+task_id: T-2830
+payload:
+  task_file: .tasks/active/T-2830-work-on-switch-focus-fails-silently.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T18:15:32Z'
+scan_id: R-48adda12
+task_id: T-2834
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T18:15:32Z'
+scan_id: R-48adda12
+task_id: T-2834
+payload:
+  task_file: .tasks/active/T-2834-safe-command-fast-path-exits-before-the-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T19:53:36Z'
+scan_id: R-40c7589b
+task_id: T-2833
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T19:53:36Z'
+scan_id: R-40c7589b
+task_id: T-2833
+payload:
+  task_file: .tasks/active/T-2833-focus-drift-gate-matches-task-ids-in-non.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T20:47:45Z'
+scan_id: R-e623ab16
+task_id: T-2835
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T20:47:45Z'
+scan_id: R-e623ab16
+task_id: T-2835
+payload:
+  task_file: .tasks/active/T-2835-unknown-fw-subcommand-auto-inits-the-cal.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T20:58:50Z'
+scan_id: R-7b78d29c
+task_id: T-2836
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T20:58:50Z'
+scan_id: R-7b78d29c
+task_id: T-2836
+payload:
+  task_file: .tasks/active/T-2836-20-router-verbs-are-undiscoverable-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T21:06:16Z'
+scan_id: R-bd3e1707
+task_id: T-2838
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T21:06:16Z'
+scan_id: R-bd3e1707
+task_id: T-2838
+payload:
+  task_file: .tasks/active/T-2838-two-config-keys-never-reach-the-watchtow.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T21:33:34Z'
+scan_id: R-06d40acd
+task_id: T-2839
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T21:33:34Z'
+scan_id: R-06d40acd
+task_id: T-2839
+payload:
+  task_file: .tasks/active/T-2839-fw-upgrade-turns-a-local-upstream-path-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T21:39:49Z'
+scan_id: R-ab5110dd
+task_id: T-2837
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T21:39:49Z'
+scan_id: R-ab5110dd
+task_id: T-2837
+payload:
+  task_file: .tasks/active/T-2837-testslint-red-is-invisible-to-every-runn.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T21:50:14Z'
+scan_id: R-9c01446a
+task_id: T-2842
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T21:50:14Z'
+scan_id: R-9c01446a
+task_id: T-2842
+payload:
+  task_file: .tasks/active/T-2842-three-honoured-settings-are-absent-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T21:52:34Z'
+scan_id: R-8f535c9c
+task_id: T-2841
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T21:52:34Z'
+scan_id: R-8f535c9c
+task_id: T-2841
+payload:
+  task_file: .tasks/active/T-2841-config-table-parity-test-contradicts-cla.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T22:35:58Z'
+scan_id: R-6a064dd8
+task_id: T-2843
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T22:35:58Z'
+scan_id: R-6a064dd8
+task_id: T-2843
+payload:
+  task_file: .tasks/active/T-2843-doctor-path-ambiguity-warn-fires-on-ever.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T22:51:20Z'
+scan_id: R-4ab20799
+task_id: T-2844
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T22:51:20Z'
+scan_id: R-4ab20799
+task_id: T-2844
+payload:
+  task_file: .tasks/active/T-2844-fw-init-leaves-a-cron-registry-its-own-d.md
+---
+kind: scan_emitted
+timestamp: '2026-08-06T23:25:12Z'
+scan_id: R-8d9f6f74
+task_id: T-2845
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-06T23:25:12Z'
+scan_id: R-8d9f6f74
+task_id: T-2845
+payload:
+  task_file: .tasks/active/T-2845-post-upgrade-doctor-advisory-health-chec.md

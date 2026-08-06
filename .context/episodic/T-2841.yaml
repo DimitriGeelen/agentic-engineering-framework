@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2841: config table parity test contradicts CLAUDE.md curated-subset design
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T21:52:45Z
+# ============================================================================
+
+task_id: T-2841
+task_name: "config table parity test contradicts CLAUDE.md curated-subset design"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T21:39:56Z
+completed: 2026-08-06T21:52:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T23:50:54+02:00
+last_commit: 2026-08-06T23:50:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  config parity test asserts the direction that catches rot
+
+# Key outcomes
+outcomes:
+  - 'Test 2 asserts the **phantom** direction: every `` `FW_<KEY>` `` referenced'
+  - 'Test 2 no longer requires every registry key to appear in CLAUDE.md, and'
+  - 'The phantom direction is proven to actually fire — verified three ways,'
+  - 'CLAUDE.md''s §Configuration section states the table is a deliberate subset,'
+  - '`tests/lint/` is fully green (51/51, zero red), so the T-2837 audit check'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'CLAUDE.md'
+  - '.tasks/active/T-2840-render-surface-gate-git-grep-is-unanchor.md'
+  - '.tasks/active/T-2841-config-table-parity-test-contradicts-cla.md'
+  - '.tasks/active/T-2842-three-honoured-settings-are-absent-from-.md'
+  - 'tests/lint/config-registry-parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T23:50:54'
+    action: 'T-2841: config parity test asserts the direction that catches rot'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 5
+  lines_added: 433
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2841-config-table-parity-test-contradicts-cla.md
+generated_by: context-agent-hybrid

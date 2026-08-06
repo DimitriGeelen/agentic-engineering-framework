@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-05T03:23:02.901389+00:00
-corpus_total: 2475
+generated: 2026-08-06T03:23:02.369869+00:00
+corpus_total: 2490
 bug_class_total: 484
 bug_class_pct: 19
 h1_flagged: 357
@@ -34,15 +34,15 @@ recent_sample:
     name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
 h2_top:
   - learning: "P-011"
-    task_count: 1520
+    task_count: 1564
   - learning: "L-387"
-    task_count: 1339
+    task_count: 1383
   - learning: "L-291"
-    task_count: 807
+    task_count: 822
   - learning: "L-398"
-    task_count: 578
+    task_count: 594
   - learning: "P-010"
-    task_count: 292
+    task_count: 305
   - learning: "L-006"
     task_count: 54
   - learning: "L-399"

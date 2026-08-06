@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2845: post-upgrade doctor advisory health-checks the upstream temp clone, not the consumer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T23:25:23Z
+# ============================================================================
+
+task_id: T-2845
+task_name: "post-upgrade doctor advisory health-checks the upstream temp clone, not the consumer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T23:13:07Z
+completed: 2026-08-06T23:25:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T01:15:46+02:00
+last_commit: 2026-08-07T01:25:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  post-upgrade health check exercises the consumer, not the upstream clone. FRAMEWORK_ROOT must move with the binary, not just the binary. task record — RCA, decisions, live before/after evidence
+
+# Key outcomes
+outcomes:
+  - 'The advisory invokes the consumer''s own `.agentic-framework/bin/fw` when that exists'
+  - '`FRAMEWORK_ROOT` is scoped to match the chosen binary (added mid-task — see Decisions)'
+  - 'Advisory output for a vendored consumer reports `Active mode: vendored`'
+  - 'Advisory output no longer contains "vendored copy exists … but was not selected"'
+  - 'Falls back to `$FRAMEWORK_ROOT/bin/fw` when the consumer has no vendored copy (shared-tooling / global consumers keep working)'
+  - 'Regression test committed covering both the vendored and no-vendored-copy cases, green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-07 — the first fix was incomplete and its tests could not tell'
+    chose: 'Scope `FRAMEWORK_ROOT` to the chosen binary, and make the test stubs'
+    rationale: 'The first commit switched only which `fw` was invoked. All four tests'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/VERSION'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2845-post-upgrade-doctor-advisory-health-chec.md'
+  - 'tests/unit/t2845_upgrade_doctor_advisory_target.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T01:15:46'
+    action: 'T-2845: post-upgrade health check exercises the consumer, not the upstream clone'
+  - time: '2026-08-07T01:21:33'
+    action: 'T-2845: FRAMEWORK_ROOT must move with the binary, not just the binary'
+  - time: '2026-08-07T01:25:10'
+    action: 'T-2845: task record — RCA, decisions, live before/after evidence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 3
+  files_changed: 5
+  lines_added: 505
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2845-post-upgrade-doctor-advisory-health-chec.md
+generated_by: context-agent-hybrid

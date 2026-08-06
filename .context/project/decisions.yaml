@@ -2725,3 +2725,45 @@ decisions:
     date: 2026-08-06
     task: T-2830
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-392
+    decision: "split on unquoted chain operators (`&&`, `||`, `&`, `|`, `;`,"
+    scope: project
+    date: 2026-08-06
+    task: T-2834
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-393
+    decision: "a character walk that tracks single/double quote state and escapes."
+    scope: project
+    date: 2026-08-06
+    task: T-2834
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-394
+    decision: "Anchor Pattern 3's id extraction to the `-m`/`--message` flag"
+    scope: project
+    date: 2026-08-06
+    task: T-2833
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-395
+    decision: "Wire `tests/lint/` into `agents/audit/audit.sh`'s `STRUCTURE` section"
+    scope: project
+    date: 2026-08-06
+    task: T-2837
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-396
+    decision: "Neither generate-at-init nor seed-on-demand. Fix the *checker*, not"
+    scope: project
+    date: 2026-08-06
+    task: T-2844
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-397
+    decision: "Scope `FRAMEWORK_ROOT` to the chosen binary, and make the test stubs"
+    scope: project
+    date: 2026-08-06
+    task: T-2845
+    rationale: "Auto-captured from task file on completion"

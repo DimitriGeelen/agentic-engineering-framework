@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2844: fw init leaves a cron registry its own doctor calls ungenerated
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T22:51:30Z
+# ============================================================================
+
+task_id: T-2844
+task_name: "fw init leaves a cron registry its own doctor calls ungenerated"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T22:36:25Z
+completed: 2026-08-06T22:48:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T00:47:53+02:00
+last_commit: 2026-08-07T00:47:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  an empty cron registry is not drift
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified: which init step seeds `.context/cron-registry.yaml`, and why nothing generates from it'
+  - 'Decision recorded in `## Decisions` on generate-at-init vs seed-on-demand, with the host-side-effect trade-off stated'
+  - '`fw init` into an empty directory followed by `fw doctor` emits no cron-related WARN'
+  - 'Genuine registry→generated drift (edit the registry, don''t regenerate) still WARNs — the check keeps the purpose T-1942 gave it'
+  - 'Regression test committed covering both the greenfield-quiet and drift-still-detected cases, green'
+  - '`fw audit` fixed in parity with `fw doctor` — the same defect emitted from both surfaces'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-07 — the filed question had a wrong premise'
+    chose: 'Neither generate-at-init nor seed-on-demand. Fix the *checker*, not'
+    rationale: 'The Context section above framed this as "should init generate the'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.fabric/components/lib-cron-registry.yaml'
+  - 'lib/cron-registry.sh'
+  - '.tasks/active/T-2844-fw-init-leaves-a-cron-registry-its-own-d.md'
+  - 'tests/unit/t2844_cron_registry_job_count.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T00:47:53'
+    action: 'T-2844: an empty cron registry is not drift'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 6
+  lines_added: 279
+  lines_removed: 87
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2844-fw-init-leaves-a-cron-registry-its-own-d.md
+generated_by: context-agent-hybrid

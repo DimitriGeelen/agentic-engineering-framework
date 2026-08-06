@@ -1,8 +1,0 @@
-command_hash: d45fc748c2b35f14db8829f955c35f5264a18952bc6e26b78bdab5b7d4a9e1f9
-command_preview: "rm -f /tmp/bats-full-run.log\n{\n  echo \"=== root listing ===\"\
-  \n  ls -la / 2>&1\n  echo \"=== /.tasks recursive ===\"\n  find /.tasks 2>&1 | sort\n\
-  \  echo \"=== /.context recursive ===\"\n  find /.context 2>&1 | "
-risk: 'RECURSIVE DELETE: Targets root filesystem (/)'
-status: pending
-timestamp: '2026-08-05T11:01:46Z'
-type: tier0
