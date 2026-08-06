@@ -4155,3 +4155,10 @@ X'` returning empty group."
   date: 2026-08-04
   context: Added via context agent
   application: TBD
+- id: L-547
+  learning: "A fast-path exemption in a gate must classify the WHOLE command, not its first token. is_bash_safe_command derived the base with awk first-word, so 'echo hi && anything' was judged by 'echo' and check-active-task.sh exited 0 before four downstream gates ever ran. Three things kept it invisible for its whole lifetime: (1) the wrong assumption was WRITTEN DOWN in the function's own comment ('for compound commands, the first word is still the primary command'), which reads as a considered decision rather than an oversight, so nobody re-derived it; (2) a near-miss made the path look string-aware -- has_bash_write_pattern runs first and DOES scan the whole string, so the shape that comes to mind first ('echo x > file') is caught, returning the right answer for the wrong reason; (3) the failure is silent and shaped like success -- a gate that wrongly blocks gets reported instantly, a gate that wrongly allows just produces a command that works, and nothing distinguishes 'allowed because judged safe' from 'allowed because the judgement never happened'. Generalisation: when auditing any allowlist-style exemption, test the COMPOSED form (A-and-B, A-semicolon-B, nesting) and not just the canonical single form, and treat a confidently-worded assumption in a comment as a claim to falsify rather than a decision to respect. Choose the failure direction deliberately: here misjudging a safe chain as unsafe only routes it to the task gate (which allows it whenever a task is active), while misjudging an unsafe chain as safe skips every gate there is -- so the classifier errs toward unsafe."
+  source: P-002
+  task: T-2834
+  date: 2026-08-06
+  context: Added via context agent
+  application: TBD

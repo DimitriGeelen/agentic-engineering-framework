@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2834: safe-command fast path exits before the task and focus gates for A-and-B chains
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-06T18:15:43Z
+# ============================================================================
+
+task_id: T-2834
+task_name: "safe-command fast path exits before the task and focus gates for A-and-B chains"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-06T17:57:06Z
+completed: 2026-08-06T18:15:18Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-06T20:12:37+02:00
+last_commit: 2026-08-06T20:12:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  safe-command fast path judges every segment of a chain, not the first word
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command` returns non-safe for a chained command whose later'
+  - 'A chain whose segments are **all** safe stays safe — `ls && git status`,'
+  - 'Bare safe commands are unaffected (`ls`, `git status`, `bin/fw doctor`)'
+  - 'The false-open rows in the Context table now block, verified by re-running'
+  - 'Regression test pins both directions — chained-unsafe blocks, chained-safe'
+  - '`tests/unit` suites covering the hook and safe-commands stay green'
+  - 'Gap registered in `.context/concerns.yaml` before the fix lands'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-06 — fix chain operators, leave command substitution open'
+    chose: 'split on unquoted chain operators (`&&`, `||`, `&`, `|`, `;`,'
+    rationale: 'the two legs have opposite cost profiles. Chain operators are the'
+    alternatives_rejected: ['closing both legs now (regresses everyday commands); shelling out']
+  - decision: '2026-08-06 — quote-aware splitting rather than naive `tr`'
+    chose: 'a character walk that tracks single/double quote state and escapes.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/concerns.yaml'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2833-focus-drift-gate-matches-task-ids-in-non.md'
+  - '.tasks/active/T-2834-safe-command-fast-path-exits-before-the-.md'
+  - 'tests/unit/safe_commands_chain.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-06T20:12:37'
+    action: 'T-2834: safe-command fast path judges every segment of a chain, not the first word'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 8
+  lines_added: 1075
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2834-safe-command-fast-path-exits-before-the-.md
+generated_by: context-agent-hybrid
