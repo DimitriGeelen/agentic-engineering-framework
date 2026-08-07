@@ -90,11 +90,14 @@ but does NOT modify PATH by default — add `~/.local/bin` to PATH (or re-source
 - `fw init` **auto-creates git** (confirmed in dogfood) — no separate `git init` needed on recent fw.
 - Self-heal: if `{{dir}}` already contains `.framework.yaml` it is **already initialised** — STOP and ask
   rather than overwriting.
-- **[dogfood]** A fresh greenfield init currently emits friction (until P-048 lands):
-  - `Validation: 1 error … yaml-2bv BVP value-drivers … missing keys: drivers` — known greenfield
-    template gap; not fatal.
-  - `⚠ Session init failed — run 'fw context init' manually` — run **`fw context init`** to recover
-    (it succeeds). The install is otherwise complete.
+- **What a healthy init looks like** (measured on greenfield 2026-08-07, T-2846): exit 0 and a
+  `Validation passed: 44/45 checks OK (1 skipped)` line — the skip is the provider's unused rules
+  file. Anything less than "Validation passed", or a non-zero exit, is a real failure: report it
+  rather than working around it.
+  Two failures this step used to warn about — a `yaml-2bv` BVP value-drivers validation error, and
+  `⚠ Session init failed — run 'fw context init' manually` — **no longer occur** and the workaround
+  text for them has been removed (T-2848). If you see either one, you are running an install old
+  enough that STEP 2's freshness check should have caught it; go back and re-check.
 - **[dogfood]** The install is almost entirely **dotfiles** — use `ls -la` to see it
   (`.agentic-framework/`, `.framework.yaml`, `.context/`, `.tasks/`, `.claude/`, `.mcp.json` + visible
   `CLAUDE.md`, `policy/`). A plain `ls` looks empty and is NOT a failure.

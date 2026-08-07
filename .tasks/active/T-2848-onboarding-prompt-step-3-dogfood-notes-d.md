@@ -2,9 +2,14 @@
 id: T-2848
 name: "onboarding prompt STEP 3 dogfood notes describe friction that no longer exists"
 description: >
-  The prompt tells the onboarding agent to expect two failures at fw init: a yaml-2bv BVP value-drivers validation error, and 'Session init failed - run fw context init manually'. Measured 2026-08-07 on greenfield: yaml-2bv is a PASS and session init succeeds (44/45 OK, RC=0). The prompt's own text says to remove these once the cited fix ships. Stale workaround instructions make an agent self-heal a non-problem. Found in T-2846.
+  The prompt tells the onboarding agent to expect two failures at fw init: a yaml-2bv
+  BVP value-drivers validation error, and 'Session init failed - run fw context init
+  manually'. Measured 2026-08-07 on greenfield: yaml-2bv is a PASS and session init
+  succeeds (44/45 OK, RC=0). The prompt's own text says to remove these once the cited
+  fix ships. Stale workaround instructions make an agent self-heal a non-problem.
+  Found in T-2846.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T05:17:16Z
-last_update: 2026-08-07T05:17:16Z
-date_finished: null
+last_update: 2026-08-07T05:31:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +39,70 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-07T05:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-07T05:30:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2848: onboarding prompt STEP 3 dogfood notes describe friction that no longer exists
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found during the T-2846 greenfield run. STEP 3 told the onboarding agent to expect two
+specific `fw init` failures and how to recover from each. Neither occurs any more:
+measured 2026-08-07 on a project created from scratch, `yaml-2bv` is a ✓ pass and session
+init succeeds (`Validation passed: 44/45 checks OK`, RC=0).
+
+Stale workaround text is worse than no text. It invites an agent to "recover" a healthy
+install, and it teaches that a clean run is abnormal — so a genuinely broken init reads as
+the expected case. The prompt's own note said to remove these once the cited fix shipped;
+the fix shipped and the removal did not follow, because nothing connects "fix lands" to
+"prose that describes the bug".
+
+Replaced with a positive statement of what a healthy init looks like, so the step still
+carries signal rather than just losing a paragraph.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The two stale STEP 3 `[dogfood]` **workaround instructions** are gone from
+      `prompts/aef-fresh-install-onboarding.md` — the agent is no longer told to expect,
+      or recover from, the `yaml-2bv` validation error or the `Session init failed`
+      message. Both names survive only inside an explicit "no longer occur" statement,
+      so a plain absent-string check would be the wrong verification and is not used.
+- [x] Removal is justified by a *measurement*, not by an assumption that the fix landed —
+      the task records the greenfield run that shows `yaml-2bv` passing and session init
+      succeeding (T-2846 evidence)
+- [x] The surviving STEP 3 text still tells the agent what a healthy init looks like, so
+      the prune does not simply delete signal and leave the step silent
+- [x] No other `[dogfood]` note is removed in this task — each remaining one is either
+      still accurate or gets its own task (they were not all measured)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +136,15 @@ date_finished: null
 -->
 
 ## Verification
+
+# The prune landed: the step now states these failures no longer occur.
+out=$(cat prompts/aef-fresh-install-onboarding.md); echo "$out" | grep -q "no longer occur"
+# The stale framing ("until P-048 lands") is gone.
+out=$(cat prompts/aef-fresh-install-onboarding.md); ! echo "$out" | grep -q "until P-048 lands"
+# The step still tells the agent what a healthy init looks like (AC 3).
+out=$(cat prompts/aef-fresh-install-onboarding.md); echo "$out" | grep -q "Validation passed"
+# The recovery instruction the agent was told to run is gone (AC 1).
+out=$(cat prompts/aef-fresh-install-onboarding.md); ! echo "$out" | grep -q "to recover"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -214,3 +278,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2848-onboarding-prompt-step-3-dogfood-notes-d.md
 - **Context:** Initial task creation
+
+### 2026-08-07T05:31:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
