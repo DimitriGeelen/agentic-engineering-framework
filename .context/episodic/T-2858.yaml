@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2858: fw_init_atomic test 1 asserts the global fallback T-2854 removed — the 7th instance T-2856 missed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-07T17:30:39Z
+# ============================================================================
+
+task_id: T-2858
+task_name: "fw_init_atomic test 1 asserts the global fallback T-2854 removed — the 7th instance T-2856 missed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T15:47:31Z
+completed: 2026-08-07T17:28:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-07T19:09:41+02:00
+last_commit: 2026-08-07T19:28:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw_init_atomic test 1 observed the marker refusal through the global fallback T-2854 removed. tick ACs, fix stale Verification line vs. revised stub-keep decision
+
+# Key outcomes
+outcomes:
+  - 'Test 1 observes the property directly — refusal + exit status — with no reference to a global install, and the `ROUTED-TO-GLOBAL` assertion is gone'
+  - 'The non-vacuity pairing with test 2 still holds: test 2 proves the refusal is caused by the marker, not by the stub being unroutable for an unrelated reason'
+  - '`tests/unit/fw_init_atomic.bats` is green (5/5, or 4/5 with test 4 skipped by its own kill-window guard)'
+  - 'The `ROUTED-TO-GLOBAL` stub in `setup()` is KEPT and its comment says why: tests 1 and 2 assert its absence, and a present, executable stub is what makes those negatives non-vacuous. (Revised from "remove it" once test 2 was read — removing it would make both negatives vacuously true, the exact failure the stub guards against.)'
+  - 'A comment records why the assertion changed (T-2854 removed the mechanism), matching the convention T-2856 used in the sibling suites'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'tick ACs, fix stale Verification line vs. revised stub-keep decision'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-07 — stale Verification line vs. revised AC #4'
+    chose: 'Rewrote the `## Verification` line that checked for the total'
+    rationale: 'AC #4 was revised mid-task ("Revised from ''remove it'' once test 2'
+    alternatives_rejected: ['Leaving the old Verification line as-is and using `--force` to']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2858-fwinitatomic-test-1-asserts-the-global-f.md'
+  - 'tests/unit/fw_init_atomic.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T19:09:41'
+    action: 'T-2858: fw_init_atomic test 1 observed the marker refusal through the global fallback T-2854 removed'
+  - time: '2026-08-07T19:28:27'
+    action: 'T-2858: tick ACs, fix stale Verification line vs. revised stub-keep decision'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 101 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 101
+  commits: 2
+  files_changed: 2
+  lines_added: 63
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2858-fwinitatomic-test-1-asserts-the-global-f.md
+generated_by: context-agent-hybrid
