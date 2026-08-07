@@ -8,10 +8,10 @@ description: >
   the T-559 project-boundary hook refuses the command. The prompt cannot execute its
   own step. Found in T-2846 live e2e run.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T05:16:37Z
-last_update: 2026-08-07T05:33:56Z
-date_finished:
+last_update: 2026-08-07T05:37:35Z
+date_finished: 2026-08-07T05:37:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -274,3 +274,24 @@ out=$(cd /tmp && fw --version 2>&1); echo "$out" | grep -q "Framework:"
 
 ### 2026-08-07T05:33:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5a49fbf3
+- **Timestamp:** 2026-08-07T05:37:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `out=$(cat prompts/aef-fresh-install-onboarding.md); ! echo "$out" | grep -qF '/opt/*/FRAMEWORK.md'`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-project`
+
+### 2026-08-07T05:37:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
