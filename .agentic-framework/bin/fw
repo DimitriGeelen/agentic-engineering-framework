@@ -263,6 +263,46 @@ _detect_fw_mode() {
     echo "global"
 }
 
+# T-2849: translate repo-root-relative exclude patterns into the coordinate system
+# a per-include rsync actually uses, and add the source repo's own ignore rules.
+#
+# Args: $1 = include path (e.g. "lib"), $2 = vendor source root, $3.. = patterns
+#       in repo-root form. Emits transfer-root-form patterns, one per line.
+#
+# Two classes of pattern, treated differently because rsync treats them
+# differently:
+#   - no '/'  → matched as a basename at any depth. Passes through unchanged.
+#   - has '/' → anchored to the transfer root. Only meaningful for the include it
+#               names; the leading "<include>/" must be stripped, and patterns
+#               naming a DIFFERENT include must be dropped (leaving them in would
+#               anchor them at the wrong root and silently match nothing, which is
+#               the bug this function exists to fix).
+#
+# Then, when the source is a git checkout, its own ignore rules are appended.
+# That is the authoritative statement of "this is not source", and unlike the
+# hand-maintained list above it cannot drift: a new ignored tree under an include
+# is excluded the day it appears. `--directory` collapses whole ignored dirs to a
+# single pattern (lib/ts/node_modules/ rather than 305 file paths). Silently a
+# no-op when the source is not a git repo (tarball, already-vendored copy).
+_vendor_excludes_for() {
+    local inc="$1" src="$2"
+    shift 2
+    local pat
+    for pat in "$@"; do
+        case "$pat" in
+            */*)  case "$pat" in "$inc"/*) printf '%s\n' "${pat#"$inc"/}" ;; esac ;;
+            *)    printf '%s\n' "$pat" ;;
+        esac
+    done
+    if [ -d "$src/.git" ] || git -C "$src" rev-parse --git-dir >/dev/null 2>&1; then
+        git -C "$src" ls-files -o -i --exclude-standard --directory -- "$inc" 2>/dev/null \
+            | while IFS= read -r ig; do
+                  [ -n "$ig" ] || continue
+                  case "$ig" in "$inc"/*) printf '/%s\n' "${ig#"$inc"/}" ;; esac
+              done
+    fi
+}
+
 # --- Vendor (T-482/T-497, moved before auto-init for T-519) ---
 # Copy complete framework into project/.agentic-framework/ for full isolation.
 # Must be defined before auto-init dialogue because do_init calls do_vendor.
@@ -358,7 +398,22 @@ do_vendor() {
         status-transitions.yaml
     )
 
-    # What to exclude within copied dirs
+    # What to exclude within copied dirs.
+    #
+    # These are written RELATIVE TO THE REPO ROOT, which is how a human reads them
+    # and how .gitignore reads. They are NOT what rsync receives — the copy loop
+    # below runs one rsync per include, so each transfer root is
+    # "$vendor_source/<include>/", and rsync anchors any pattern containing a '/'
+    # to the transfer root. `_vendor_excludes_for` translates repo-root form into
+    # transfer-root form at the point of use. Do not pass this array to rsync raw.
+    #
+    # T-2849: it was passed raw for the entire life of this function. Every
+    # slash-bearing entry below was therefore inert — rsync matched
+    # "lib/ts/node_modules" against a tree whose paths began "ts/", so all 305
+    # node_modules files shipped into every consumer. The three slashless entries
+    # DID work (rsync matches a pattern with no '/' as a basename at any depth),
+    # which is exactly why nobody caught it: spot-checking the vendored tree for
+    # __pycache__ returns a clean answer and reads as proof the list works.
     local excludes=(
         __pycache__
         "*.pyc"
@@ -403,13 +458,10 @@ do_vendor() {
     echo -e "Target:  $dest"
     echo ""
 
-    # Build rsync exclude args as array (SC2086)
-    local -a rsync_args=()
-    for item in "${excludes[@]}"; do
-        rsync_args+=(--exclude="$item")
-    done
-
-    # Copy each include
+    # Copy each include. Exclude patterns are resolved PER INCLUDE (T-2849) —
+    # see _vendor_excludes_for. Building one exclude array up front is what made
+    # every slash-bearing pattern inert, because there is no single transfer root
+    # the repo-root form could have been correct against.
     for item in "${includes[@]}"; do
         if [ -e "$vendor_source/$item" ]; then
             local dest_dir
@@ -417,14 +469,38 @@ do_vendor() {
             mkdir -p "$dest_dir"
 
             if [ -d "$vendor_source/$item" ]; then
+                local -a _item_excludes=()
+                while IFS= read -r _pat; do
+                    [ -n "$_pat" ] && _item_excludes+=("$_pat")
+                done < <(_vendor_excludes_for "$item" "$vendor_source" "${excludes[@]}")
+
                 if command -v rsync &>/dev/null; then
+                    local -a rsync_args=()
+                    local _pat
+                    for _pat in "${_item_excludes[@]}"; do
+                        rsync_args+=(--exclude="$_pat")
+                    done
                     rsync -a --delete --delete-excluded "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
                 else
+                    # The fallback used to honour only the three slashless patterns,
+                    # via the find calls below — so even after the rsync anchoring
+                    # was fixed, a host without rsync would still ship node_modules.
+                    # Both branches now consume the same resolved list.
                     rm -rf "${dest:?}/${item:?}"
                     cp -r "$vendor_source/$item" "$dest/$item"
-                    find "$dest/$item" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-                    find "$dest/$item" -name "*.pyc" -delete 2>/dev/null || true
-                    find "$dest/$item" -name ".DS_Store" -delete 2>/dev/null || true
+                    local _pat _target
+                    for _pat in "${_item_excludes[@]}"; do
+                        case "$_pat" in
+                            /*)  # transfer-root-anchored: an exact path under this include
+                                _target="$dest/$item/${_pat#/}"
+                                rm -rf "${_target%/}" 2>/dev/null || true ;;
+                            */*) # anchored by virtue of containing a slash
+                                _target="$dest/$item/$_pat"
+                                rm -rf "${_target%/}" 2>/dev/null || true ;;
+                            *)   # basename at any depth — matches rsync's semantics
+                                find "$dest/$item" -name "$_pat" -exec rm -rf {} + 2>/dev/null || true ;;
+                        esac
+                    done
                 fi
             else
                 cp "$vendor_source/$item" "$dest/$item"
