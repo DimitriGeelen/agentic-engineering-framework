@@ -105,10 +105,23 @@ while [ -n "$_d" ] && [ "$_d" != "/" ]; do
     _d="$(dirname "$_d")"
 done
 
-# --- 2. Bootstrap fallback: the global install, stated out loud ---
+# --- 2. No project here: refuse, or bootstrap `fw init` into this directory ---
+#
+# T-2854, completing D-377: there is NO global-install fallback. T-2800/T-2809
+# removed the producer — install.sh clones to a mktemp dir and deletes it — but
+# every consumer of a global lingered, so a pre-T-2800 residue directory stayed
+# alive AND authoritative. The contradiction was visible in this file: the
+# refusal below already asserted "There is no global install to fall back on by
+# design", and it was only ever printed when no global happened to exist. Where
+# one did, the code twenty lines above ran it.
+#
+# That is not a cosmetic inconsistency. It routed `fw` in an unrelated directory
+# into someone else's framework bytes, which is what T-2853 surfaced (fw update
+# misrouting) and what left an operator unable to tell which framework was
+# running. Nothing here reads $HOME/.agentic-framework anymore; a residue copy is
+# inert. `fw doctor` still reports it, so the host learns it should be removed.
 if [ -z "$_target" ]; then
-    _global="${FW_GLOBAL_ROOT:-$HOME/.agentic-framework}"
-    if [ -n "$_incomplete_at" ] && [ ! -x "$_global/bin/fw" ]; then
+    if [ -n "$_incomplete_at" ]; then
         _fw_die 127 \
             "fw: the framework copy in $_incomplete_at is incomplete." \
             "" \
@@ -125,15 +138,6 @@ if [ -z "$_target" ]; then
             "" \
             "" \
             "  Or discard it:  rm -rf $_incomplete_at/.agentic-framework $_incomplete_at/.fw-init-incomplete"
-    fi
-    if [ -n "$_incomplete_at" ]; then
-        # Say which directory and what to type. The failure this replaces sent the
-        # user back to `fw init` from inside the broken directory — the command
-        # that had just failed — so the instruction here has to be one that works
-        # from where they are standing. It does: this fallback IS that repair path.
-        printf 'fw: %s holds an incomplete framework copy — using the global install at %s to repair it.\n' \
-            "$_incomplete_at" "$_global" >&2
-        printf 'fw: run `fw init` in that directory to complete it (this call already routes there).\n' >&2
     fi
     # --- 2b. Bootstrap `fw init` by fetching, instead of refusing (T-2814) ---
     #
@@ -160,7 +164,12 @@ if [ -z "$_target" ]; then
     #   - FW_NO_BOOTSTRAP=1 restores the refusal.
     # Any fetch failure falls through to that same refusal, so the operator
     # lands on the copy-pasteable command rather than a raw curl error.
-    if [ ! -x "$_global/bin/fw" ] && [ "${1:-}" = "init" ] && [ -z "${FW_NO_BOOTSTRAP:-}" ] \
+    # T-2854: the guard used to also require that no global install existed. On a
+    # host still carrying pre-T-2800 residue that condition was false, so `fw init`
+    # in a bare directory refused instead of bootstrapping — the residue silently
+    # disabled the feature. Bootstrap now depends only on there being no project
+    # here, which is the question actually being asked.
+    if [ "${1:-}" = "init" ] && [ -z "${FW_NO_BOOTSTRAP:-}" ] \
        && command -v curl >/dev/null 2>&1; then
         _boot_target="$PWD"
         shift                                  # drop `init`; forward the rest
@@ -182,26 +191,23 @@ if [ -z "$_target" ]; then
         printf 'fw: bootstrap fetch failed — falling through to instructions.\n' >&2
     fi
 
-    [ -x "$_global/bin/fw" ] || _fw_die 127 \
+    # No project, and not a bootstrappable `init`. Refuse — there is nothing else
+    # to run. The "Looked for a global install at ..." line that used to sit here
+    # was removed with the fallback itself (T-2854): reporting a search that no
+    # longer happens is how the previous contradiction read as documentation.
+    _fw_die 127 \
         "fw: no framework found." \
         "" \
         "  Looked for a vendored copy walking up from: $PWD" \
-        "  Looked for a global install at:             $_global" \
         "" \
         "  Install the framework INTO this project — one step, nothing global:" \
         "" \
         "    curl -fsSL $_FW_INSTALL_URL | bash -s -- $PWD" \
         "" \
         "  Add --provider claude|cursor|generic to pick the agent integration." \
-        "  (There is no global install to fall back on by design — T-2800/D-377." \
+        "  (There is no global install to fall back on by design — T-2800/D-377," \
+        "  and since T-2854 none is consulted even if one is left on this host." \
         "  That is why this is one command and not 'install, then fw init'.)"
-    # Announced, never silent: running the global CLI is the one case where the
-    # code executing does not belong to the project it is about to act on.
-    # (Skipped when we already announced the unfinished-init case above — "no
-    # project found" would contradict the line that just named the project.)
-    [ -n "$_incomplete_at" ] || printf 'fw: no project found above %s — using global install at %s\n' \
-        "$PWD" "$_global" >&2
-    _target="$_global/bin/fw"
 fi
 
 # --- 3. Refuse to exec ourselves ---

@@ -1488,85 +1488,18 @@ CRONREGEOF
         fi
     fi
 
-    # T-660: Global install sync (fallback for users who still use global install)
-    local global_dir="$HOME/.agentic-framework"
-    if [ -d "$global_dir/agents/context" ]; then
-        local global_updated=0
-        # Sync bin/fw (T-660: main CLI entry point — stale global fw causes deadlock)
-        local src_fw="$FRAMEWORK_ROOT/bin/fw"
-        local dst_fw="$global_dir/bin/fw"
-        if [ -f "$src_fw" ]; then
-            if [ ! -f "$dst_fw" ] || ! diff -q "$src_fw" "$dst_fw" > /dev/null 2>&1; then
-                global_updated=$((global_updated + 1))
-                if [ "$dry_run" != true ]; then
-                    mkdir -p "$global_dir/bin"
-                    cp "$src_fw" "$dst_fw"
-                    chmod +x "$dst_fw"
-                fi
-            fi
-        fi
-        # Sync lib/*.sh (T-660: subcommand implementations invoked by bin/fw)
-        if [ -d "$FRAMEWORK_ROOT/lib" ]; then
-            for src_lib_file in "$FRAMEWORK_ROOT/lib/"*.sh; do
-                [ -f "$src_lib_file" ] || continue
-                local lib_name
-                lib_name=$(basename "$src_lib_file")
-                local dst_lib_file="$global_dir/lib/$lib_name"
-                if [ ! -f "$dst_lib_file" ] || ! diff -q "$src_lib_file" "$dst_lib_file" > /dev/null 2>&1; then
-                    global_updated=$((global_updated + 1))
-                    if [ "$dry_run" != true ]; then
-                        mkdir -p "$global_dir/lib"
-                        cp "$src_lib_file" "$dst_lib_file"
-                        [ -x "$src_lib_file" ] && chmod +x "$dst_lib_file"
-                    fi
-                fi
-            done
-        fi
-        # Sync agents/context/*.sh
-        for src_script in "$FRAMEWORK_ROOT/agents/context/"*.sh; do
-            [ -f "$src_script" ] || continue
-            local sname
-            sname=$(basename "$src_script")
-            local dst_script="$global_dir/agents/context/$sname"
-            if [ ! -f "$dst_script" ] || ! diff -q "$src_script" "$dst_script" > /dev/null 2>&1; then
-                global_updated=$((global_updated + 1))
-                if [ "$dry_run" != true ]; then
-                    cp "$src_script" "$dst_script"
-                    chmod +x "$dst_script"
-                fi
-            fi
-        done
-        # Sync agents/context/lib/
-        if [ -d "$FRAMEWORK_ROOT/agents/context/lib" ]; then
-            for src_lib in "$FRAMEWORK_ROOT/agents/context/lib/"*; do
-                [ -f "$src_lib" ] || continue
-                local lname
-                lname=$(basename "$src_lib")
-                local dst_lib="$global_dir/agents/context/lib/$lname"
-                if [ ! -f "$dst_lib" ] || ! diff -q "$src_lib" "$dst_lib" > /dev/null 2>&1; then
-                    global_updated=$((global_updated + 1))
-                    if [ "$dry_run" != true ]; then
-                        mkdir -p "$global_dir/agents/context/lib"
-                        cp "$src_lib" "$dst_lib"
-                        [ -x "$src_lib" ] && chmod +x "$dst_lib"
-                    fi
-                fi
-            done
-        fi
-
-        if [ "$global_updated" -gt 0 ]; then
-            changes=$((changes + 1))
-            if [ "$dry_run" = true ]; then
-                echo -e "  ${CYAN}WOULD UPDATE${NC}  $global_updated global script(s)"
-            else
-                echo -e "  ${GREEN}UPDATED${NC}  $global_updated global script(s) synced to $global_dir"
-            fi
-        else
-            echo -e "  ${GREEN}OK${NC}  Global install scripts current"
-        fi
-    else
-        echo -e "  ${CYAN}SKIP${NC}  No global install at $global_dir"
-    fi
+    # T-660 global-install sync REMOVED (T-2854, completing D-377).
+    #
+    # This block copied bin/fw, lib/*.sh and agents/context/*.sh into
+    # $HOME/.agentic-framework on every upgrade, whenever that directory
+    # existed. Since T-2800/T-2809 nothing creates it, so the only directories
+    # it could still feed were pre-T-2800 residue — which is how one reached
+    # 341MB on the origin host and stayed current enough to keep being used.
+    #
+    # Keeping a stale copy fed is worse than leaving it stale: a maintained
+    # residue is indistinguishable from a supported install, and bin/fw-router
+    # no longer consults it at all. Detection stays in `fw doctor`, which
+    # reports the directory and the rm -rf to run.
 
     # ── 5. .claude/settings.json (hooks config) ──
     echo -e "${YELLOW}[5/10] Claude Code hooks (.claude/settings.json)${NC}"
