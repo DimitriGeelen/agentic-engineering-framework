@@ -313,8 +313,80 @@ just not the thing the word implies. Nothing in the rendering distinguishes
 This makes the F-9 chain six steps, not five, and the last one actively adds
 false confidence rather than merely failing to add real confidence.
 
-<!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
-     pending operator dialogue on IW-1..IW-4. -->
+## F-11 — The readiness predicate exists and is wired one transition too late
+
+**Operator reframe (2026-08-07), and it relocates the defect.** An inception is
+an interactive conversation. Through research *and* dialogue we gather enough
+clarity, insight and background to decide whether to proceed and in what
+direction. **At that point** — and not before — the inception may be put forward
+for approval. What is wrong is that it is put forward before those requirements
+are met.
+
+This is a better statement of the problem than F-8's. I was arguing about the
+*field* (should it be called `prior:` or `recommendation:`); the operator is
+arguing about the *transition* (when is this thing eligible to be shown to a
+human at all). The field question is downstream of, and mostly dissolved by, the
+transition question.
+
+**Test: is there a readiness check at the put-forward transition?**
+
+`fw task review` → `emit_review` (`lib/review.sh`) is the put-forward verb. It
+creates `.context/working/.reviewed-<id>`, which is the token `decide` requires.
+Before creating it, it validates exactly two things:
+
+1. `audit_inception_recommendation` — a `**Recommendation:** <word>` line exists
+   (F-7: one grep; Rationale and Evidence unread).
+2. T-2139 review-handoff homework detection.
+
+It does **not** check open questions, assumptions, exploration-plan execution,
+whether the artifact contains findings, or whether any conversation occurred.
+
+**And the check that would do it already exists.** `check_disposition_gate`
+(`agents/task-create/update-task.sh:768`) requires every `IW-N` to carry a
+disposition and a rationale. Its trigger (`:1583`):
+
+```bash
+if [ "$NEW_STATUS" = "work-completed" ]; then
+    check_disposition_gate
+fi
+```
+
+**It fires on `work-completed` — after the operator has already approved.** It
+guards the filing cabinet, not the decision. The one substantive readiness
+predicate in the system sits downstream of the transition it should protect.
+
+```
+file ──> explore + converse ──> PUT FORWARD ──> operator decides ──> completed
+                                     │                                   │
+                          checks: rec line exists              checks: IW disposed
+                                  (F-7: one grep)                  ← the readiness
+                                                                     check, here
+```
+
+**Second hole: `deferred` counts as disposed.** T-2857 was approved and archived
+with **all four** open questions at `disposition: deferred`, IW-4 at
+`confidence: 0`, whose own rationale reads verbatim:
+
+> *"Unmeasured. **This is the go/no-go evidence** — a gate with a high
+> false-positive rate on historical commits is a gate agents will learn to
+> bypass."*
+
+The task named its own go/no-go evidence, recorded it as unmeasured, and was
+approved anyway — and the disposition gate would have passed it even had it
+fired, because it checks that a *disposition string is present*, not that the
+question is *answered*. Form, not substance. (When the spike finally ran, IW-4's
+answer inverted the recommendation.)
+
+**Third hole: the conversation is unrepresented.** The operator's model has two
+inputs — research *and* dialogue. C-001 §7 asks for a `## Dialogue Log` in the
+artifact, and nothing anywhere checks for one. Half of the stated readiness
+condition has no representation in any gate, any schema, or any node on the map.
+
+**Consequence for the map (S-1).** The Framework-Authority lane needs a state the
+workflow currently lacks: *exploration complete / ready for approval*, distinct
+from *filed* and from *approved*, with the put-forward transition guarded by the
+readiness predicate rather than by a string-presence check. Instances 1–5 all
+attach to that missing state or to the transition into it.
 
 ---
 
@@ -327,6 +399,20 @@ that it needs documenting turned out to be false (F-1); the map exists and is
 accurate. What it lacks is the Framework lane (F-2). Proposal put to the operator:
 amend `aef-inception-flow` rather than draft a new map, adding Framework ·
 Authority and re-homing the six gates in F-3 into it.
+
+**2026-08-07 — operator, reframing IW-1:** *"inception is an interactive
+conversation with operator / user … the workflow principle is through research
+and conversation we gather enough clarity, insight and background information to
+decide to proceed with an inception or not and if so what the direction will be,
+at that point the inception can be put forward for 'approval'. What is wrong in
+our current workflow is that inception is being put forward before all
+requirements have been met."*
+
+Accepted, and it moves the defect. My IW-1 was a question about a *field*; this
+is a question about a *transition*. Tested it against the code and it holds
+mechanically — the put-forward verb checks a string, the readiness check exists
+but fires one transition later, `deferred` counts as disposed, and the
+conversation half is unrepresented entirely. F-11.
 
 **2026-08-07 — agent, correcting itself on IW-2:** I had answered IW-2 at
 confidence 3 with "almost certainly no, CLAUDE.md says NEVER check a `### Human`
