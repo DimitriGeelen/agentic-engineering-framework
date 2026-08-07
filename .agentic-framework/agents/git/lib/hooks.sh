@@ -1,6 +1,31 @@
 #!/bin/bash
 # Git Agent - Hook installation subcommand
 
+# T-2852: the version of the commit-msg hook TEMPLATE in this file — i.e. the
+# value written as `# VERSION=` into the heredoc below, and therefore the value
+# that will be read back out of an installed hook on the next run.
+#
+# This is deliberately NOT `$VERSION` (agents/git/git.sh:19), which is the git
+# agent's own version. Those were compared against each other for an unknown
+# span: the template said 1.11, the agent said 1.6, so the equality at the
+# "already installed" check could never hold, the fast path was unreachable, and
+# every install-hooks call rewrote all four hooks while announcing a move from
+# the installed marker to the agent's number — phrasing that reads as a
+# downgrade and produced a confident, wrong bug report from a live onboarding
+# run (/opt/001-test-install, 2026-08-07). The old wording is deliberately not
+# reproduced here: a regression test greps this file for it, and quoting the
+# string one claims to have removed is its own recurring mistake (T-2847).
+#
+# git.sh already carried a comment instructing whoever edits a template to keep
+# the two in sync. It was correct and it was ignored across five marker bumps,
+# which is why the guard is now a test (tests/unit/hook_version_marker_parity.bats)
+# rather than a sixth sentence of prose.
+#
+# PL-078 still applies: when you change the CONTENT of any hook template below,
+# bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
+# together, so consumers' next install-hooks redeploys all four.
+COMMIT_MSG_HOOK_VERSION="1.11"
+
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
 # print an error. `cat > "$hook" << 'EOF'` fails silently at the redirect
@@ -50,12 +75,17 @@ do_install_hooks() {
     if [ -f "$commit_msg_hook" ] && [ "$force" = false ]; then
         local existing_version
         existing_version=$(grep "^# VERSION=" "$commit_msg_hook" 2>/dev/null | cut -d= -f2)
-        if [ "$existing_version" = "$VERSION" ]; then
-            echo -e "${GREEN}Hooks already installed (version $VERSION)${NC}"
+        if [ "$existing_version" = "$COMMIT_MSG_HOOK_VERSION" ]; then
+            echo -e "${GREEN}Hooks already installed (version $COMMIT_MSG_HOOK_VERSION)${NC}"
             echo "Use --force to reinstall"
             exit 0
         else
-            echo -e "${YELLOW}Updating hooks from version $existing_version to $VERSION${NC}"
+            # State the difference, not a direction. Nothing here compares
+            # ordering, so "updating X to Y" was claiming knowledge the code
+            # does not have — and when the installed marker happened to sort
+            # above the template's, it read as a downgrade and was reported as
+            # a version-comparison bug (T-2852).
+            echo -e "${YELLOW}Hook version differs (installed: ${existing_version:-none}, template: $COMMIT_MSG_HOOK_VERSION) — reinstalling${NC}"
         fi
     fi
 
