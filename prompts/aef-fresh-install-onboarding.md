@@ -40,8 +40,9 @@ First check whether the framework is already present on this host:
 `fw --version` answers this itself — it prints `Framework:` (the root it resolved),
 `Mode:` (framework-repo / vendored / global) and `Project:`. That is the discovery.
 
-**[dogfood — T-2847]** Do NOT glob the filesystem for other installs (this step used to say
-`ls -d ~/.agentic-framework /opt/*/FRAMEWORK.md`). If you are running this onboarding from
+**[dogfood — T-2847]** Do NOT glob the filesystem for other installs — this step used to
+`ls` a wildcard over the host's project directories, and that line has been removed rather
+than quoted here, so there is nothing left to copy. If you are running this onboarding from
 inside an existing AEF project — the normal case, when an operator asks a live session to
 onboard a new directory — the T-559 project-boundary hook **refuses** that command, and the
 refusal is correct: one project's session must not read another project's tree. A prompt
