@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-inception-readiness"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- designer-corpus draft (arc-014, T-2863): PROPOSED rework of aef-inception-flow.
+       NOT as-operated — nodes marked PROPOSED do not exist yet; every other node
+       documents current behaviour with its source of truth. Three changes over v1:
+       (1) Framework · Authority lane — v1 has two lanes where the Authority Model has
+       three, so every gate was drawn as a parenthetical on an Agent node and all five
+       T-2863 failure instances had nowhere to attach; (2) a readiness evaluation with
+       its own state — the agent judges readiness and PROPOSES approval, the framework
+       refuses to transmit a proposal that contradicts the agent's own record; (3) the
+       not-ready return edges, which name what is owed (research / testing / dialogue)
+       rather than merely blocking. Sources of truth for the as-is nodes: lib/review.sh
+       emit_review (put-forward), lib/inception.sh do_inception_decide + 
+       tick_inception_decide_acs, agents/task-create/update-task.sh check_disposition_gate,
+       lib/task-audit.sh audit_inception_recommendation, C-001, T-2204. Pair-draft v1:
+       agent-seeded skeleton, operator corrects in the designer UI. -->
+
+  <bpmn:collaboration id="Collaboration_draft-inception-readiness">
+    <bpmn:participant id="Pool_draft_inception_readiness" name="AEF inception flow (readiness draft)" processRef="Process_draft-inception-readiness"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-inception-readiness" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-inception-readiness" version="1" schemaVersion="2" title="AEF inception flow v2 — readiness-gated (question → explore ↔ readiness → put forward → decide)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_di">
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fw" authority="authority" height="320"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fw_2_filing_gate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_6_readiness</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_8_putforward</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_10_record</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_question</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_file</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_artifact</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_explore</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_evaluate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_11_gw_outcome</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_12_children</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_13_archive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_14_go</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_15_closed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_16_handoff_tl</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="140"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_7_dialogue</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_9_decide</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_0_question" name="question identified">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_question"/>
+        <aef:position x="120.0" y="380.0"/>
+        <aef:meta triggeredBy="operator ask, 3+ exchange exploratory conversation (C-002), pickup proposal, or agent discovery"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>ir_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_1_file" name="file inception — fw work-on --type inception">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_file"/>
+        <aef:position x="260.0" y="380.0"/>
+        <aef:meta note="one inception = one question (Task Sizing); G-067 readiness gate requires &gt;=1 IW-N Open Question before source reads"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f1</bpmn:incoming>
+      <bpmn:outgoing>ir_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_2_filing_gate" name="T-2204 filing gate — refuses filing without GO/NO-GO/DEFER (recorded as PRIOR, not finding)">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_filing_gate"/>
+        <aef:position x="260.0" y="40.0"/>
+        <aef:meta note='four producer legs + emit_review consumer + hourly cron backstop. The verdict written here is a PRIOR — no exploration has happened yet. T-2863 instance 5: v1 rendered this as a note on an Agent node, which reads as "the agent supplies a recommendation" rather than "the framework demands a conclusion before evidence exists". PROPOSED: render as prior, falsifiable, distinct from the review-time recommendation'/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f2</bpmn:incoming>
+      <bpmn:outgoing>ir_f3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_3_artifact" name="create research artifact FIRST (C-001) — docs/reports/T-XXX, dialogue log, incremental commits">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_artifact"/>
+        <aef:position x="440.0" y="380.0"/>
+        <aef:meta note="the thinking trail IS the artifact — conversations are ephemeral, files are permanent (T-194 origin). T-2861: this first Write is what a background-session isolation guard refuses; entering a worktree is the WRONG remedy here because governance state is tracked and a worktree forks it (T-2821)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f3</bpmn:incoming>
+      <bpmn:outgoing>ir_f4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:subProcess id="agt_4_explore" name="explore — research · testing · dialogue">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_explore"/>
+        <aef:position x="620.0" y="380.0"/>
+        <aef:meta workflowType="inception" tier="1" note="the three modes are co-equal inputs, not a sequence. Dialogue is load-bearing: the operator's model is that clarity is reached through research AND conversation, and the not-ready edges route back into whichever mode is owed"/>
+        <aef:constituents xmlns:aef="http://anchorpoint.framework/aef/extensions">
+          <aef:constituent id="ir_c_research" name="research — read the corpus, the code, the prior art; write findings to the artifact" ref="docs/reports/T-XXX-*.md" />
+          <aef:constituent id="ir_c_testing" name="testing — run the spike that answers a blocking IW-N empirically" />
+          <aef:constituent id="ir_c_dialogue" name="dialogue — put the question to the operator; log the exchange (C-001 §7 Dialogue Log)" />
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f4</bpmn:incoming>
+      <bpmn:incoming>ir_f7</bpmn:incoming>
+      <bpmn:incoming>ir_f10</bpmn:incoming>
+      <bpmn:outgoing>ir_f5</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:serviceTask id="agt_5_evaluate" name="PROPOSED — evaluate readiness: is there enough clarity to recommend a direction?">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_evaluate"/>
+        <aef:position x="800.0" y="380.0"/>
+        <aef:meta note="agent judgment, and the deliverable — not mechanically derivable and should not be. INITIATIVE: the agent proposes approval. T-2863 F-12"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f5</bpmn:incoming>
+      <bpmn:outgoing>ir_f6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_6_readiness" name='PROPOSED — readiness floor: does the record support "ready"?'>
+      <bpmn:extensionElements>
+        <aef:uid value="ir_gw_readiness"/>
+        <aef:position x="820.0" y="140.0"/>
+        <aef:meta note="self-consistency check, NOT a domain judgment — the framework never assesses whether the research is good, only whether the proposal contradicts what the agent itself wrote: a blocking:true IW-N left unanswered, an Evidence block still holding the injected placeholder, a missing Dialogue Log. Content-blind and deterministic. Today the equivalent check (check_disposition_gate) fires on work-completed — one transition too late, downstream of the approval it should guard (T-2863 F-11)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f6</bpmn:incoming>
+      <bpmn:outgoing>ir_f7</bpmn:outgoing>
+      <bpmn:outgoing>ir_f8</bpmn:outgoing>
+      <bpmn:outgoing>ir_f9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="hum_7_dialogue" name="operator answers the blocking direction question">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_dialogue"/>
+        <aef:position x="640.0" y="620.0"/>
+        <aef:meta note="the conversation half of the readiness condition. Today it has NO representation in any gate, schema or map node — C-001 §7 asks for a Dialogue Log and nothing checks for one (T-2863 F-11 hole 3)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f8</bpmn:incoming>
+      <bpmn:outgoing>ir_f10</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="fw_8_putforward" name="put forward for approval — fw task review (emit_review writes .reviewed-T-XXX)">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_putforward"/>
+        <aef:position x="1000.0" y="240.0"/>
+        <aef:meta note='lib/review.sh emit_review. Today this validates exactly two things: a **Recommendation:** line exists (one grep — Rationale and Evidence unread) and the T-2139 homework check. PROPOSED: the readiness floor gates this transition, so "ready for approval" stops meaning "a line of text is present"'/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f9</bpmn:incoming>
+      <bpmn:outgoing>ir_f11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_9_decide" name="operator decides — GO / NO-GO / DEFER via Watchtower /inception/T-XXX">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_decide"/>
+        <aef:position x="1180.0" y="620.0"/>
+        <aef:meta note="sovereignty boundary — fw inception decide is agent-blocked under CLAUDECODE=1 (T-1259/T-1260); DEFER is for evidence gaps, never as a confidence hedge (T-2144)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f11</bpmn:incoming>
+      <bpmn:outgoing>ir_f12</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="fw_10_record" name="record decision; tick the approval AC only on a human-authenticated channel">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_record"/>
+        <aef:position x="1340.0" y="40.0"/>
+        <aef:meta note='lib/inception.sh tick_inception_decide_acs. Ticking the [REVIEW] approval AC is correct and load-bearing (T-1324 — without it the task strands in partial-complete, G-008). The defect is the inference: it reads "decide ran" and writes "a human approved", while decide admits --i-am-human, --from-watchtower and --skip-sovereignty, and do_inception_sweep ticks the same box in batch with no decide at all. PROPOSED: tick on --from-watchtower only; leave unticked on bypass, which is the honest state (T-2863 F-6)'/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f12</bpmn:incoming>
+      <bpmn:outgoing>ir_f13</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="agt_11_gw_outcome" name="decision?">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_gw_outcome"/>
+        <aef:position x="1360.0" y="380.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f13</bpmn:incoming>
+      <bpmn:outgoing>ir_f14</bpmn:outgoing>
+      <bpmn:outgoing>ir_f15</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="agt_12_children" name="file build children (GO-scope traceability: inception_decisions / unlocks_inception_decision, T-1984)">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_children"/>
+        <aef:position x="1520.0" y="380.0"/>
+        <aef:meta note="never continue building under the inception ID — separate build tasks per GO'd decision; commit-msg hook blocks after 2 exploration commits without a decision"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f14</bpmn:incoming>
+      <bpmn:outgoing>ir_f16</bpmn:outgoing>
+      <bpmn:outgoing>ir_f18</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_13_archive" name="archive: completed/ + episodic; on DEFER set revisit_at + revisit_evidence_needed (T-1451)">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_archive"/>
+        <aef:position x="1520.0" y="480.0"/>
+        <aef:meta note="G-053 daily revisit scan re-surfaces DEFERs when their evidence condition is met"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f15</bpmn:incoming>
+      <bpmn:outgoing>ir_f17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="agt_14_go" name="build slices live">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_done_go"/>
+        <aef:position x="1700.0" y="380.0"/>
+        <aef:meta terminalKind="success" state="go"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f16</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="agt_15_closed" name="question closed (revisit condition may re-open)">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_done_closed"/>
+        <aef:position x="1700.0" y="480.0"/>
+        <aef:meta terminalKind="success" state="closed"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f17</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:intermediateThrowEvent id="agt_16_handoff_tl" name="Handoff → task lifecycle">
+      <bpmn:extensionElements>
+        <aef:uid value="ir_handoff_tl"/>
+        <aef:position x="1860.0" y="380.0"/>
+        <aef:link workflowRef="1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7" name="aef-task-lifecycle" linkId=""/>
+        <aef:meta note="each GO'd build child enters the standard task lifecycle — continues in aef-task-lifecycle (T-2586, T-2571 seam)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ir_f18</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:sequenceFlow id="ir_f1" sourceRef="agt_0_question" targetRef="agt_1_file">
+      <bpmn:extensionElements><aef:uid value="ir_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f2" name="prior required at filing" sourceRef="agt_1_file" targetRef="fw_2_filing_gate">
+      <bpmn:extensionElements><aef:uid value="ir_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f3" sourceRef="fw_2_filing_gate" targetRef="agt_3_artifact">
+      <bpmn:extensionElements><aef:uid value="ir_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f4" sourceRef="agt_3_artifact" targetRef="agt_4_explore">
+      <bpmn:extensionElements><aef:uid value="ir_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f5" sourceRef="agt_4_explore" targetRef="agt_5_evaluate">
+      <bpmn:extensionElements><aef:uid value="ir_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f6" name="agent proposes approval" sourceRef="agt_5_evaluate" targetRef="fw_6_readiness">
+      <bpmn:extensionElements><aef:uid value="ir_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f7" name="not ready — research / testing owed" sourceRef="fw_6_readiness" targetRef="agt_4_explore">
+      <bpmn:extensionElements><aef:uid value="ir_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f8" name="not ready — dialogue owed (blocking IW is a direction call)" sourceRef="fw_6_readiness" targetRef="hum_7_dialogue">
+      <bpmn:extensionElements><aef:uid value="ir_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f9" name="ready — no blocking IW unanswered, evidence present, dialogue logged" sourceRef="fw_6_readiness" targetRef="fw_8_putforward">
+      <bpmn:extensionElements><aef:uid value="ir_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f10" name="answer folds back into the artifact" sourceRef="hum_7_dialogue" targetRef="agt_4_explore">
+      <bpmn:extensionElements><aef:uid value="ir_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f11" sourceRef="fw_8_putforward" targetRef="hum_9_decide">
+      <bpmn:extensionElements><aef:uid value="ir_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f12" sourceRef="hum_9_decide" targetRef="fw_10_record">
+      <bpmn:extensionElements><aef:uid value="ir_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f13" sourceRef="fw_10_record" targetRef="agt_11_gw_outcome">
+      <bpmn:extensionElements><aef:uid value="ir_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f14" name="GO" sourceRef="agt_11_gw_outcome" targetRef="agt_12_children">
+      <bpmn:extensionElements><aef:uid value="ir_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f15" name="NO-GO / DEFER" sourceRef="agt_11_gw_outcome" targetRef="agt_13_archive">
+      <bpmn:extensionElements><aef:uid value="ir_e15"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f16" sourceRef="agt_12_children" targetRef="agt_14_go">
+      <bpmn:extensionElements><aef:uid value="ir_e16"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f17" sourceRef="agt_13_archive" targetRef="agt_15_closed">
+      <bpmn:extensionElements><aef:uid value="ir_e17"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ir_f18" name="build children enter task lifecycle" sourceRef="agt_12_children" targetRef="agt_16_handoff_tl">
+      <bpmn:extensionElements><aef:uid value="ir_e18"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

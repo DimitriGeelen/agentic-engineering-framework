@@ -515,8 +515,59 @@ constructs at once. No 832 contact required. If something genuinely un-drawable
 surfaces during S-1 seeding, that is the moment to escalate — with a concrete
 missing construct rather than a speculative one.
 
+## S-1 — skeleton seeded: `draft-inception-readiness` v1
+
+Seeded per the arc-014 pair-draft ritual (agent seeds, operator corrects in the
+UI, agent re-reads and normalises). Live at
+`{watchtower}/designer?id=draft-inception-readiness`, uuid
+`de31abe1-51d3-469c-9971-205abe5ecc17`, **17 nodes / 18 flows / 3 lanes**.
+
+Authored as a spec YAML → `fw corpus generate` → saved through `/api/save`, not
+hand-written XML. Verification actually run:
+
+| Check | Result |
+|---|---|
+| `fw corpus lint` on the draft | **CLEAN** first write |
+| store lint baseline unchanged | 4 findings / 3 maps, before and after (dispatch-loop, session-lifecycle, t2584-scratch) |
+| round-trip `derive → generate → diff` | **IDENTICAL (canonical semantic form)** |
+| served, not just on disk | `/api/list` returns 13 maps incl. this uuid; `/designer` gallery lists it; `fw corpus explain` renders 3 lanes |
+
+**What changed against v1 (10 nodes / 9 flows / 2 lanes):**
+
+1. **Framework · Authority lane** — four gates that were parentheticals on Agent
+   nodes are now nodes with their own preconditions: the T-2204 filing gate, the
+   readiness floor, `emit_review` put-forward, and the decision-record/AC-tick.
+2. **Readiness evaluation split across two lanes** — `agt_5_evaluate` (agent
+   judgment, INITIATIVE, "is there enough clarity to recommend a direction?")
+   feeding `fw_6_readiness` (framework self-consistency floor). F-12's split
+   drawn explicitly rather than implied.
+3. **Named not-ready return edges** — the cycle F-13 describes:
+   - `not ready — research / testing owed` → back into explore
+   - `not ready — dialogue owed (blocking IW is a direction call)` → to the
+     operator-dialogue node → answer folds back into the artifact
+   - `ready — no blocking IW unanswered, evidence present, dialogue logged` →
+     put forward
+4. **The dialogue is a node** — `hum_7_dialogue`. Previously the conversation had
+   no representation anywhere in the system (F-11 hole 3).
+5. **Explore subProcess constituents renamed** to the three co-equal modes
+   (research · testing · dialogue) rather than a spikes→recommend→decide
+   sequence, matching the operator's model that clarity comes from research *and*
+   conversation.
+
+**Marked as PROPOSED, deliberately.** The corpus documents systems as actually
+operated; a draft proposing a change must not be mistaken for as-is. Two node
+names carry a literal `PROPOSED —` prefix (`agt_5_evaluate`, `fw_6_readiness`),
+the doc comment states *"NOT as-operated"* in its second line, and every other
+node's meta note names its current source of truth plus the finding against it.
+
+**Not done, and not to be skipped (F-5 ordering).** The map is step 1 of five.
+Promotion to `detail-authority` still requires `inception-transitions.yaml`
+(step 2) and `lib/inception.sh` / `update-task.sh` reading it (step 3). Flipping
+the registry primitive before those exist buys a green rail over a drawing
+nothing executes.
+
 <!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
-     pending operator confirmation of the F-12 / F-13 shape. -->
+     pending operator review of the seeded skeleton. -->
 
 ---
 
