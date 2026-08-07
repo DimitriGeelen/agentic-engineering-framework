@@ -1,17 +1,10 @@
 ---
-id: T-2860
-name: "fw focus is not a verb and unknown commands offer no did-you-mean"
+id: T-2861
+name: "fw init does not set bgIsolation none, so Claude Code worktree isolation blocks the C-001 inception artifact"
 description: >
-  'fw focus' exits with 'Unknown command: focus / Run fw help for usage' (bin/fw:8411).
-  The real verb is 'fw context focus'. CLAUDE.md, the handover template and the session-start
-  protocol all say 'Set focus: fw context focus T-XXX', so 'fw focus' is the obvious
-  shortening and a new user or agent reaches for it immediately. The unknown-command
-  handler prints no suggestion, so the reader has no path from the wrong guess to
-  the right verb short of reading all of fw help. Reported live by the operator from
-  a fresh install alongside the work-on failure. Fix: route 'fw focus' to 'fw context
-  focus', and/or emit a nearest-verb suggestion on unknown commands.
+  In a background Claude Code session, Write is refused with 'This background session hasn't isolated its changes yet. Call EnterWorktree first...' until the session enters a worktree. AEF's C-001 rule requires creating docs/reports/T-XXX-*.md BEFORE research, so the very first act of an inception hits this guard. Hit live by the operator in /opt/001-test-install choosing the inception path. Accepting the guard's advice is actively wrong for an AEF consumer: T-2821/T-2822 established that AEF governance state (.tasks/, .context/, docs/reports/) is TRACKED, so a worktree FORKS it — that class produced 43 stranded commits. So the correct setting for an AEF consumer is worktree.bgIsolation=none in .claude/settings.json, and fw init does not write it. Scope: fw init and fw upgrade should emit the setting for consumer projects; verify it does not regress the framework repo's own settings.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-07T17:11:11Z
-last_update: 2026-08-07T17:12:26Z
-date_finished:
+created: 2026-08-07T17:13:22Z
+last_update: 2026-08-07T17:13:22Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -41,27 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-08-07T17:12:26Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2860: fw focus is not a verb and unknown commands offer no did-you-mean
+# T-2861: fw init does not set bgIsolation none, so Claude Code worktree isolation blocks the C-001 inception artifact
 
 ## Context
 
@@ -70,18 +45,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw focus T-XXX` sets focus, with behaviour identical to `fw context focus T-XXX` (same output, same exit code, same focus.yaml result)
-- [ ] `fw focus` with no argument does not silently succeed — it reports current focus or prints usage, never a false-success
-- [ ] The alias routes through the existing `context` dispatch rather than duplicating focus logic, so the two verbs cannot drift
-- [ ] `fw help` lists `focus` so the verb is discoverable without already knowing it
-- [ ] A bats test pins the alias, including a negative control proving the assertion can fail
-- [ ] The six core CLI suites stay green (T-2857 F-3/F-7: this is the targeted set; `fw test unit` takes >45min and cannot be a gate)
-
-<!-- Scope note: the "did-you-mean on unknown commands" leg of this task is
-     deliberately NOT in this slice. It needs a verb inventory and an edit-distance
-     pass over it, which is a different change with a different blast radius.
-     Filed intent stays on the task; the alias is the leg that closes the reported
-     hard-stop. -->
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -244,10 +210,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-07T17:11:11Z — task-created [task-create-agent]
+### 2026-08-07T17:13:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2860-fw-focus-is-not-a-verb-and-unknown-comma.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2861-fw-init-does-not-set-bgisolation-none-so.md
 - **Context:** Initial task creation
-
-### 2026-08-07T17:12:26Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
