@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2846: Live e2e run of the fresh-install onboarding prompt on a greenfield project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-07T05:19:38Z
+# ============================================================================
+
+task_id: T-2846
+task_name: "Live e2e run of the fresh-install onboarding prompt on a greenfield project"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T05:05:13Z
+completed: 2026-08-07T05:19:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T07:19:16+02:00
+last_commit: 2026-08-07T07:19:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  live e2e onboarding-prompt run on greenfield — all 6 steps, doctor exit 0 with zero project-scope warnings; arc-017 headline mechanic demo captured; 3 findings filed T-2847/T-2848/T-2849
+
+# Key outcomes
+outcomes:
+  - 'Every STEP (1–6) of `prompts/aef-fresh-install-onboarding.md` executed in order'
+  - 'Each step recorded with an explicit verdict (CLEAN / FRICTION / BLOCKED) in the'
+  - 'Watchtower identity verified per STEP 5''s own warning: the serve log names the'
+  - 'Every friction item found is either filed as its own task or recorded in this'
+  - 'The standing question is answered in `## Recommendation` with a direct yes/no'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2846-live-e2e-run-of-the-fresh-install-onboar.md'
+  - '.tasks/active/T-2847-onboarding-prompt-step-2-command-is-refu.md'
+  - '.tasks/active/T-2848-onboarding-prompt-step-3-dogfood-notes-d.md'
+  - '.tasks/active/T-2849-greenfield-consumer-first-commit-carries.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T07:19:16'
+    action: 'T-2846: live e2e onboarding-prompt run on greenfield — all 6 steps, doctor exit 0 with zero project-scope warnings; arc-017 headline mechanic demo captured; 3 findings filed T-2847/T-2848/T-2849'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 1
+  files_changed: 4
+  lines_added: 1008
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2846-live-e2e-run-of-the-fresh-install-onboar.md
+generated_by: context-agent-hybrid

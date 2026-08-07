@@ -30562,3 +30562,57 @@ scan_id: R-8d9f6f74
 task_id: T-2845
 payload:
   task_file: .tasks/active/T-2845-post-upgrade-doctor-advisory-health-chec.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T05:19:29Z'
+scan_id: R-61f9603b
+task_id: T-2846
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T05:19:29Z'
+scan_id: R-61f9603b
+task_id: T-2846
+payload:
+  task_file: .tasks/active/T-2846-live-e2e-run-of-the-fresh-install-onboar.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T05:33:33Z'
+scan_id: R-91872fc1
+task_id: T-2848
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T05:33:33Z'
+scan_id: R-91872fc1
+task_id: T-2848
+payload:
+  task_file: .tasks/active/T-2848-onboarding-prompt-step-3-dogfood-notes-d.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T05:37:37Z'
+scan_id: R-5a49fbf3
+task_id: T-2847
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T05:37:37Z'
+scan_id: R-5a49fbf3
+task_id: T-2847
+payload:
+  task_file: .tasks/active/T-2847-onboarding-prompt-step-2-command-is-refu.md

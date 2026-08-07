@@ -4169,3 +4169,10 @@ X'` returning empty group."
   date: 2026-08-06
   context: Added via context agent
   application: TBD
+- id: L-549
+  learning: "Test-environment contamination that disguises itself as a finding is worse than contamination that crashes: a stray fw init made /tmp a git repo, so every fixture under it inherited that worktree, fw init skipped git init, and the greenfield suite reported 'Untracked task files' - indistinguishable from a genuine day-zero defect. Integration suites building fixtures in shared temp space must assert preconditions (no enclosing git repo) and refuse loudly, because the failure mode is a plausible wrong answer, not an error."
+  source: P-001
+  task: T-2850
+  date: 2026-08-07
+  context: Added via context agent
+  application: TBD

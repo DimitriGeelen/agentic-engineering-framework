@@ -1,12 +1,12 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-06T03:23:02.369869+00:00
-corpus_total: 2490
-bug_class_total: 484
+generated: 2026-08-07T03:23:02.636893+00:00
+corpus_total: 2512
+bug_class_total: 487
 bug_class_pct: 19
-h1_flagged: 357
+h1_flagged: 358
 h1_pct_of_bug_class: 73
-h2_repeat_patterns: 134
+h2_repeat_patterns: 136
 h3_flagged: 265
 h3_pct_of_bug_class: 54
 recent_30d_flagged: 16
@@ -14,8 +14,6 @@ report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-100202-task-id-allocator-inflation--split-view-"
     name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emi"
-  - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
-    name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
   - tid: "T-2580-testsweb-full-dir-run-has-8-order-depend"
     name: "tests/web full-dir run has 8 order-dependent failures (all inception decide/verd"
   - tid: "T-2581-extractrecommendation-verdict-regex-lost"
@@ -32,24 +30,26 @@ recent_sample:
     name: "Corpus squash burst RCA — operator delete-all+resave regressed task-lifecycle"
   - tid: "T-2676-fix-harvestsh-indent-assumption-greps-de"
     name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
+  - tid: "T-2677-fix-dead-audit-graduation-counter-learni"
+    name: "fix dead audit graduation counter (learnings >=20 branch never fires)"
 h2_top:
   - learning: "P-011"
-    task_count: 1564
+    task_count: 1628
   - learning: "L-387"
-    task_count: 1383
+    task_count: 1447
   - learning: "L-291"
-    task_count: 822
+    task_count: 844
   - learning: "L-398"
-    task_count: 594
+    task_count: 615
   - learning: "P-010"
-    task_count: 305
+    task_count: 310
+  - learning: "L-399"
+    task_count: 59
   - learning: "L-006"
     task_count: 54
-  - learning: "L-399"
-    task_count: 53
   - learning: "L-001"
     task_count: 40
   - learning: "L-364"
-    task_count: 38
+    task_count: 39
   - learning: "L-332"
     task_count: 36
