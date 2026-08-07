@@ -6,12 +6,12 @@ description: >
   greenfield audit WARNs on fw init's own root commit — T-000 references a task that
   cannot exist
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, lib/traceability.sh, tests/unit/audit_root_commit_traceability.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T06:09:42Z
-last_update: '2026-08-07T06:15:11Z'
-date_finished:
+last_update: 2026-08-07T06:16:52Z
+date_finished: 2026-08-07T06:16:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -326,3 +326,15 @@ control (test 3) is what caught it on the first run.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2851-greenfield-audit-warns-on-fw-inits-own-r.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-89a17cba
+- **Timestamp:** 2026-08-07T06:18:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-07T06:16:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

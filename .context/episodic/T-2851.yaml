@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2851: greenfield audit WARNs on fw init's own root commit — T-000 references a task that cannot exist
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-07T06:18:35Z
+# ============================================================================
+
+task_id: T-2851
+task_name: "greenfield audit WARNs on fw init's own root commit — T-000 references a task that cannot exist"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T06:09:42Z
+completed: 2026-08-07T06:16:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T08:16:41+02:00
+last_commit: 2026-08-07T08:16:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  exempt root commits from audit traceability — fw init's T-000 bootstrap made every fresh project fail its own audit on day zero
+
+# Key outcomes
+outcomes:
+  - 'The traceability check exempts commits with **no parent** (root commits), not'
+  - 'A root commit referencing a non-existent task produces **no** WARN.'
+  - 'Negative control: a **non-root** commit referencing a non-existent task still'
+  - 'Regression test `tests/unit/audit_root_commit_traceability.bats` covers both'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/lib-traceability.yaml'
+  - 'lib/traceability.sh'
+  - '.tasks/active/T-2851-greenfield-audit-warns-on-fw-inits-own-r.md'
+  - 'tests/unit/audit_root_commit_traceability.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T08:16:41'
+    action: 'T-2851: exempt root commits from audit traceability — fw init''s T-000 bootstrap made every fresh project fail its own audit on day zero'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 5
+  lines_added: 536
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2851-greenfield-audit-warns-on-fw-inits-own-r.md
+generated_by: context-agent-hybrid
