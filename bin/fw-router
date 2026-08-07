@@ -97,8 +97,15 @@ while [ -n "$_d" ] && [ "$_d" != "/" ]; do
         # Keep both: the marker still catches a vendor interrupted after
         # FRAMEWORK.md lands (nothing follows it now, but that is an ordering fact
         # in another file, and this predicate should not depend on it holding).
-        if [ -f "$_d/.fw-init-incomplete" ] || [ ! -f "$_d/.agentic-framework/FRAMEWORK.md" ]; then
-            _incomplete_at="$_d"; break
+        # T-2856: record WHICH signal fired, not just that one did. Both routes
+        # printed the missing-FRAMEWORK.md diagnosis, so a marker-triggered
+        # refusal told the operator "no FRAMEWORK.md" while FRAMEWORK.md sat
+        # right there — the refusal was correct and its stated reason was false.
+        # Marker first: it outranks the copy merely looking complete.
+        if [ -f "$_d/.fw-init-incomplete" ]; then
+            _incomplete_at="$_d"; _incomplete_why="marker"; break
+        elif [ ! -f "$_d/.agentic-framework/FRAMEWORK.md" ]; then
+            _incomplete_at="$_d"; _incomplete_why="sentinel"; break
         fi
         _target="$_d/.agentic-framework/bin/fw"; _found_at="$_d"; break
     fi
@@ -122,13 +129,27 @@ done
 # inert. `fw doctor` still reports it, so the host learns it should be removed.
 if [ -z "$_target" ]; then
     if [ -n "$_incomplete_at" ]; then
+        # Two different signals reach this refusal and they mean different things
+        # to whoever reads it (T-2856).
+        if [ "$_incomplete_why" = "marker" ]; then
+            _diag=(
+                "  A .fw-init-incomplete marker is present: a previous 'fw init' recorded"
+                "  itself as unfinished and never got to clear it. FRAMEWORK.md may well be"
+                "  there, so the copy can LOOK complete — the marker is why this is refused,"
+                "  and it deliberately outranks that appearance (T-2801)."
+            )
+        else
+            _diag=(
+                "  .agentic-framework/ has a bin/fw but no FRAMEWORK.md, so it is a partial"
+                "  copy — usually an 'fw init' that did not finish. Running it would fail as"
+                "  'Cannot find framework installation', which reads like a missing install"
+                "  rather than an interrupted one."
+            )
+        fi
         _fw_die 127 \
             "fw: the framework copy in $_incomplete_at is incomplete." \
             "" \
-            "  .agentic-framework/ has a bin/fw but no FRAMEWORK.md, so it is a partial" \
-            "  copy — usually an 'fw init' that did not finish. Running it would fail as" \
-            "  'Cannot find framework installation', which reads like a missing install" \
-            "  rather than an interrupted one." \
+            "${_diag[@]}" \
             "" \
             "  There is no global install to repair it with — and since T-2800 there" \
             "  is no such thing to install. Point the installer at the project instead;" \

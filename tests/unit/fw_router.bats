@@ -101,26 +101,58 @@ EOF
     [[ "$output" == *"ROUTED_FROM=$proj"* ]]
 }
 
-@test "bootstrap: falls back to the global install when no project is found" {
-    local glob="$TEST_TEMP_DIR/global" bare="$TEST_TEMP_DIR/bare"
-    _stub_cli "$glob/bin/fw"
-    mkdir -p "$bare"
-    cd "$bare"
-    FW_GLOBAL_ROOT="$glob" run bash "$ROUTER" init
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"CLI=$glob/bin/fw"* ]]
+# T-2856: the two tests below asserted that `fw init` in a bare directory fell
+# back to the GLOBAL install. T-2854 removed that fallback to complete D-377 —
+# nothing consults $HOME/.agentic-framework anymore — and made the bootstrap
+# branch unconditional, so a bare directory now fetches the installer instead.
+# The property each test protects is unchanged (a bare dir must not be a dead
+# end; whatever happens must be announced and must stay off stdout); only the
+# mechanism it observes changed. Both stub the installer via FW_INSTALL_URL so
+# the real fetch path runs with no network.
+_stub_installer() {
+    local path="$1"
+    printf '#!/bin/sh\necho "INSTALLER_RAN target=$*"\n' > "$path"
+    chmod +x "$path"
 }
 
-@test "bootstrap fallback is announced on stderr, never silent" {
+@test "bootstrap: a bare directory bootstraps, and never reaches a global install" {
+    local glob="$TEST_TEMP_DIR/global" bare="$TEST_TEMP_DIR/bare"
+    _stub_cli "$glob/bin/fw"
+    mkdir -p "$bare"
+    _stub_installer "$TEST_TEMP_DIR/install.sh"
+    cd "$bare"
+    FW_GLOBAL_ROOT="$glob" FW_INSTALL_URL="file://$TEST_TEMP_DIR/install.sh" \
+        run bash "$ROUTER" init
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"INSTALLER_RAN"* ]]
+    # The stub global is present and executable — if the fallback still existed
+    # this would fire, so its absence is the assertion, not an accident of setup.
+    [[ "$output" != *"CLI=$glob/bin/fw"* ]]
+}
+
+@test "bootstrap is announced on stderr, never silent, never on stdout" {
+    local glob="$TEST_TEMP_DIR/global" bare="$TEST_TEMP_DIR/bare"
+    _stub_cli "$glob/bin/fw"
+    mkdir -p "$bare"
+    _stub_installer "$TEST_TEMP_DIR/install.sh"
+    cd "$bare"
+    FW_GLOBAL_ROOT="$glob" FW_INSTALL_URL="file://$TEST_TEMP_DIR/install.sh" \
+        bash "$ROUTER" init >"$TEST_TEMP_DIR/out" 2>"$TEST_TEMP_DIR/err"
+    grep -q "bootstrapping into" "$TEST_TEMP_DIR/err"
+    # …and stays OFF stdout: `fw <cmd> --json` from a non-project directory must
+    # remain machine-parseable (the T-2769 / T-2771 stdout-purity contract).
+    ! grep -q "bootstrapping into" "$TEST_TEMP_DIR/out"
+    ! grep -q "using global install" "$TEST_TEMP_DIR/out"
+}
+
+@test "FW_NO_BOOTSTRAP=1 restores the refusal, and it names no global" {
     local glob="$TEST_TEMP_DIR/global" bare="$TEST_TEMP_DIR/bare"
     _stub_cli "$glob/bin/fw"
     mkdir -p "$bare"
     cd "$bare"
-    FW_GLOBAL_ROOT="$glob" bash "$ROUTER" init >"$TEST_TEMP_DIR/out" 2>"$TEST_TEMP_DIR/err"
-    grep -q "using global install" "$TEST_TEMP_DIR/err"
-    # …and stays OFF stdout: `fw <cmd> --json` from a non-project directory must
-    # remain machine-parseable (the T-2769 / T-2771 stdout-purity contract).
-    ! grep -q "using global install" "$TEST_TEMP_DIR/out"
+    FW_GLOBAL_ROOT="$glob" FW_NO_BOOTSTRAP=1 run -127 bash "$ROUTER" init
+    [[ "$output" == *"no framework found"* ]]
+    [[ "$output" != *"CLI=$glob/bin/fw"* ]]
 }
 
 @test "no project and no global install fails loudly and actionably" {
@@ -154,11 +186,17 @@ EOF
     # Parity with lib/paths.sh and (since T-2793) lib/hook_paths.py: "/" is never
     # a project. Non-vacuous on any host carrying a stray /.agentic-framework;
     # on a clean host it pins the contract without being able to fail.
+    # T-2856: previously observed via "falls through to the global install".
+    # With the fallback gone (T-2854), reaching the refusal IS the observation:
+    # the router walked up from /tmp, declined to treat "/" as a project, and
+    # refused rather than routing anywhere.
     local glob="$TEST_TEMP_DIR/global"
     _stub_cli "$glob/bin/fw"
     cd /tmp
-    FW_GLOBAL_ROOT="$glob" run bash "$ROUTER" status
-    [[ "$output" == *"CLI=$glob/bin/fw"* ]]
+    FW_GLOBAL_ROOT="$glob" run -127 bash "$ROUTER" status
+    [[ "$output" == *"no framework found"* ]]
+    [[ "$output" == *"walking up from: /tmp"* ]]
+    [[ "$output" != *"CLI=$glob/bin/fw"* ]]
 }
 
 @test "passes arguments through unchanged, including quoted whitespace" {

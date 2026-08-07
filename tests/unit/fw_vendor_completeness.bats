@@ -53,20 +53,29 @@ _route() {
 }
 
 @test "a vendor with no FRAMEWORK.md does not capture the router" {
+    # T-2856: this test used to assert the router fell back to the GLOBAL install
+    # (STUB_GLOBAL in output, exit 0). T-2854 removed that fallback to complete
+    # D-377 — nothing consults $HOME/.agentic-framework anymore — so the expected
+    # outcome changed from "hands over to global" to "refuses with a recovery
+    # path". The property T-2805 wrote this test to protect is unchanged and still
+    # asserted: a partial vendor must not capture the router.
     run _route ignored-arg
-    [ "$status" -eq 0 ]
-    # Must NOT have exec'd the partial vendor — that is the bug.
+    [ "$status" -eq 127 ]
     ! echo "$output" | grep -q 'STUB_VENDOR'
-    echo "$output" | grep -q 'STUB_GLOBAL'
+    # And it must not reach a global either — there is no longer any to reach.
+    ! echo "$output" | grep -q 'STUB_GLOBAL'
 }
 
 @test "the refusal names the directory and says what to run" {
     run _route ignored-arg
     echo "$output" | grep -q "$PROJ"
-    echo "$output" | grep -q 'incomplete framework copy'
+    echo "$output" | grep -q 'is incomplete'
     # The old failure sent the user back to the command that had just failed, so
-    # the replacement has to be actionable from where they are standing.
-    echo "$output" | grep -q 'fw init'
+    # the replacement has to be actionable from where they are standing. Post
+    # T-2854 that action is the installer pointed at this project (`fw init`
+    # cannot repair a copy it would have to route through), plus a discard path.
+    echo "$output" | grep -q 'install.sh'
+    echo "$output" | grep -q 'rm -rf'
 }
 
 @test "non-vacuity — a COMPLETE vendor is still routed to" {
@@ -85,9 +94,31 @@ _route() {
     touch "$PROJ/.agentic-framework/FRAMEWORK.md"
     touch "$PROJ/.fw-init-incomplete"
     run _route ignored-arg
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 127 ]
     ! echo "$output" | grep -q 'STUB_VENDOR'
-    echo "$output" | grep -q 'STUB_GLOBAL'
+}
+
+@test "a marker-triggered refusal says it was the marker, not a missing FRAMEWORK.md" {
+    # T-2856. Both signals reached one refusal that only ever described the
+    # sentinel, so this case told the operator ".agentic-framework/ has a bin/fw
+    # but no FRAMEWORK.md" while FRAMEWORK.md was sitting right there. The refusal
+    # was right and its stated reason was false — the kind of message that sends
+    # someone looking for the wrong thing.
+    touch "$PROJ/.agentic-framework/FRAMEWORK.md"
+    touch "$PROJ/.fw-init-incomplete"
+    run _route ignored-arg
+    [ "$status" -eq 127 ]
+    echo "$output" | grep -q '.fw-init-incomplete marker is present'
+    ! echo "$output" | grep -q 'no FRAMEWORK.md'
+}
+
+@test "NEGATIVE CONTROL: the sentinel case still gets the sentinel diagnosis" {
+    # Guards the test above from being satisfied by making every refusal say
+    # "marker". No marker here — only a missing FRAMEWORK.md.
+    run _route ignored-arg
+    [ "$status" -eq 127 ]
+    echo "$output" | grep -q 'no FRAMEWORK.md'
+    ! echo "$output" | grep -q 'marker is present'
 }
 
 @test "no global and an incomplete vendor exits 127 with a recovery path" {
