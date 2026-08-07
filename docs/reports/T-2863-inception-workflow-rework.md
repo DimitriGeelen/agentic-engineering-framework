@@ -388,6 +388,105 @@ from *filed* and from *approved*, with the put-forward transition guarded by the
 readiness predicate rather than by a string-presence check. Instances 1–5 all
 attach to that missing state or to the transition into it.
 
+## F-12 — Readiness = agent judgment on top of a self-consistency floor
+
+**Operator (2026-08-07):** *"we want agent to evaluate readiness and propose
+approval once it deems enough readiness, correct"*
+
+Yes, and it maps cleanly onto the Authority Model:
+
+| Tier | Role in readiness |
+|------|-------------------|
+| Agent · INITIATIVE | evaluates readiness, **proposes** approval |
+| Framework · AUTHORITY | refuses to **transmit** a proposal that contradicts the agent's own record |
+| Human · SOVEREIGNTY | decides |
+
+The agent's judgment is the deliverable — *"I have enough clarity to recommend a
+direction"* is not mechanically derivable and should not be. But judgment alone is
+exactly what failed: on T-2857 the agent proposed approval while its own task file
+recorded IW-4 at `confidence: 0` with the rationale *"this is the go/no-go
+evidence."* Self-assessment with no floor is instance 3.
+
+**The floor does not require the framework to judge readiness.** It only has to
+check the proposal against the agent's *own recorded state* — a self-consistency
+check, not a domain judgment:
+
+- an `IW-N` declared blocking and left unanswered contradicts "ready"
+- an Evidence block still holding the injected placeholder contradicts "I explored"
+- a missing `## Dialogue Log` contradicts "we converged in conversation"
+
+Each is a contradiction between two things the agent itself wrote. Cheap,
+deterministic, content-blind — and it answers IW-6's determinism question in the
+affirmative for this transition without requiring any semantic understanding.
+
+**One schema addition makes it mechanical.** Today `disposition: deferred` is
+indistinguishable from `answered` to every gate (F-11 hole 2), so *"we deferred
+the one question that decides this"* passes. Some deferrals are legitimate — a
+question the build will answer does not block the direction call. The distinction
+the operator's principle needs is whether the question blocks the go/no-go, and
+that is a per-question field:
+
+```
+- **IW-4: How many past commits would this gate have caught?**
+  confidence: 0
+  blocking: true          # ← does this block the direction decision?
+  disposition: deferred
+  rationale: Unmeasured. This is the go/no-go evidence.
+```
+
+Readiness floor = **no `blocking: true` question left unanswered.** T-2857 states
+"this is the go/no-go evidence" in prose today; the field turns that sentence into
+a predicate. The agent still decides which questions are blocking — judgment stays
+with initiative — but having declared it, the agent cannot propose past it.
+
+**Where it wires:** `emit_review` (`lib/review.sh`), the put-forward verb, which
+today checks only that a `**Recommendation:**` line exists. Putting the readiness
+check here rather than at `work-completed` (F-11) lands it on the transition it is
+meant to guard. No new verb needed.
+
+## F-13 — Not-ready is an instruction to continue, and the deficit names the action
+
+**Operator (2026-08-07):** *"and if it deems not to be ready it should initiate
+more research, more testing or more dialogue or more of all of these"*
+
+This makes the readiness evaluation a **loop**, not a terminal gate, and it makes
+the failing check a **router** rather than a refusal. Not-ready is not a stop; it
+is an instruction to continue, and *which* deficit fired determines *which* mode
+of work resumes:
+
+| Deficit detected | Remediation the agent initiates |
+|------------------|--------------------------------|
+| blocking `IW-N` unanswered, question is empirical | **testing** — run the spike |
+| blocking `IW-N` unanswered, question is a direction/preference call | **dialogue** — ask the operator |
+| Evidence block empty or placeholder | **research** — the exploration did not happen |
+| no `## Dialogue Log` | **dialogue** — the conversation half is missing |
+| assumption stated, never validated | **testing** or **research** per assumption shape |
+| several of the above | all of them, in parallel where independent |
+
+Two consequences.
+
+**For the map (S-1).** Today `aef-inception-flow` is linear: a collapsed
+exploration subProcess, then the `decision?` gateway. The operator's model needs a
+**cycle** — exploration → readiness evaluation → *(not ready)* → back into
+exploration **in a named mode**. The return edge is not a generic "keep going";
+it carries which of research / testing / dialogue is owed. That is a second thing
+the current map cannot express, alongside the missing Framework lane (F-2) and
+the missing *ready-for-approval* state (F-11).
+
+**For the framework's role.** The check does not decide whether the work is good;
+it reports which of the agent's own commitments are outstanding, and the agent
+acts on that report. The framework stays content-blind (F-12) while still being
+useful — it is holding the agent to statements the agent made, and telling it what
+it still owes.
+
+It also removes the incentive that produced instance 3. Under a terminal gate,
+"not ready" is a blocked task and the cheap escape is `--skip-*`. Under a loop,
+"not ready" is a work item with a named next action, and bypassing it costs more
+than doing it.
+
+<!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
+     pending operator confirmation of the F-12 / F-13 shape. -->
+
 ---
 
 ## Dialogue Log
@@ -413,6 +512,14 @@ is a question about a *transition*. Tested it against the code and it holds
 mechanically — the put-forward verb checks a string, the readiness check exists
 but fires one transition later, `deferred` counts as disposed, and the
 conversation half is unrepresented entirely. F-11.
+
+**2026-08-07 — operator, on who evaluates readiness:** *"we want agent to
+evaluate readiness and propose approval once it deems enough readiness"* — and,
+in the same exchange, *"if it deems not to be ready it should initiate more
+research, more testing or more dialogue or more of all of these."* Confirmed with
+one qualifier: judgment is the agent's (INITIATIVE), but it needs a
+self-consistency floor beneath it, because unfloored self-assessment is precisely
+instance 3. F-12 / F-13.
 
 **2026-08-07 — agent, correcting itself on IW-2:** I had answered IW-2 at
 confidence 3 with "almost certainly no, CLAUDE.md says NEVER check a `### Human`
