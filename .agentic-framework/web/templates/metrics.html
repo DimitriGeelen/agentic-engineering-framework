@@ -145,25 +145,17 @@
     </article>
 
     <article>
-        <h4 class="wt-section-title">
-            Needs Attention
-            {% if stale_tasks_total > stale_tasks_initial %}
-            <span style="font-size:0.75rem; color:var(--pico-muted-color); font-weight:400;">
-                (showing {{ stale_tasks_initial }} of {{ stale_tasks_total }})
-            </span>
-            {% endif %}
-        </h4>
+        <h4 class="wt-section-title">Needs Attention</h4>
         {% if stale_tasks %}
         <ul class="stale-list">
-            {% with items = stale_tasks %}{% include "_stale_tasks_items.html" %}{% endwith %}
-            {% if stale_tasks_total > stale_tasks_initial %}
-            <li id="stale-more">
-                <a href="#" hx-get="/api/metrics/stale-tasks-more"
-                   hx-target="#stale-more" hx-swap="outerHTML">
-                    Show {{ stale_tasks_total - stale_tasks_initial }} more &rarr;
+            {% for t in stale_tasks %}
+            <li>
+                <a href="/tasks/{{ t.id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    <strong>{{ t.id }}</strong>
                 </a>
+                {{ t.name }} — <small style="color: var(--pico-del-color);">{{ t.reason }}</small>
             </li>
-            {% endif %}
+            {% endfor %}
         </ul>
         {% else %}
         <p class="text-muted italic">All tasks healthy.</p>

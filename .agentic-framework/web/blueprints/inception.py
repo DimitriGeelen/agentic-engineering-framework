@@ -310,13 +310,13 @@ def inception_list():
     )
 
 
-def _load_task(task_id):
-    """Find the task file for task_id in active/ or completed/, parse it.
+@bp.route("/inception/<task_id>")
+def inception_detail(task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
+        abort(404)
 
-    Returns (task_data, task_body) or (None, "") if not found. Shared between
-    inception_detail and inception_section_expand (T-2785) so both look up
-    the task the same way.
-    """
+    task_data = None
+    task_body = ""
     for location in ["active", "completed"]:
         task_dir = PROJECT_ROOT / ".tasks" / location
         if not task_dir.exists():
@@ -325,63 +325,9 @@ def _load_task(task_id):
             task_data, task_body = parse_frontmatter(f.read_text())
             if task_data:
                 task_data["_location"] = location
-                return task_data, task_body
+            else:
+                task_data = None
             break
-    return None, ""
-
-
-# T-2785: raw-markdown char cap for a generic "extra section" card. /inception/T-2715's
-# `## Open Questions` was 51,547 chars / 147 lines rendered in full — the dominant
-# contributor to the page's 11104px scrollHeight (8000px cap, T-2048). Cut on a
-# newline boundary so truncation doesn't slice mid-markdown-construct; the omitted
-# remainder is fetched on demand via section-expand, not shipped upfront.
-EXTRA_SECTION_TRUNCATE_CHARS = 2000
-
-
-def _build_extra_sections(all_raw_sections, known_sections):
-    """Extra (non-KNOWN_SECTIONS) sections, truncated past EXTRA_SECTION_TRUNCATE_CHARS.
-
-    `idx` is the enumerate position over all_raw_sections — stable across requests
-    for the same task body, used by inception_section_expand to re-locate the section.
-    """
-    extra_sections = []
-    for idx, (heading, content) in enumerate(all_raw_sections.items()):
-        if heading in known_sections:
-            continue
-        if heading.startswith("Reviewer Verdict"):
-            continue
-        if heading.startswith("Recommendation Verdict"):
-            continue
-        if not content:
-            continue
-        full_chars = len(content)
-        if full_chars > EXTRA_SECTION_TRUNCATE_CHARS:
-            cut = content.rfind("\n", 0, EXTRA_SECTION_TRUNCATE_CHARS)
-            if cut < 200:
-                cut = EXTRA_SECTION_TRUNCATE_CHARS
-            extra_sections.append({
-                "heading": heading,
-                "content": _md(content[:cut]),
-                "truncated": True,
-                "full_chars": full_chars,
-                "idx": idx,
-            })
-        else:
-            extra_sections.append({
-                "heading": heading,
-                "content": _md(content),
-                "truncated": False,
-                "idx": idx,
-            })
-    return extra_sections
-
-
-@bp.route("/inception/<task_id>")
-def inception_detail(task_id):
-    if not re_mod.match(r"^T-\d{3,}$", task_id):
-        abort(404)
-
-    task_data, task_body = _load_task(task_id)
 
     if not task_data or task_data.get("workflow_type") != "inception":
         abort(404)
@@ -425,10 +371,18 @@ def inception_detail(task_id):
 
     # Extra sections not in the known set — rendered generically (G-036 fix)
     # T-1585: also skip "Reviewer Verdict (vX.Y)" — surfaced structurally below.
-    # T-100188: claims-validator verdict (T-100187) — surfaced structurally beside
-    # the recommendation, not as a generic card (see _build_extra_sections).
-    # T-2785: long sections truncated (see _build_extra_sections / EXTRA_SECTION_TRUNCATE_CHARS).
-    extra_sections = _build_extra_sections(all_raw_sections, KNOWN_SECTIONS)
+    extra_sections = []
+    for heading, content in all_raw_sections.items():
+        if heading in KNOWN_SECTIONS:
+            continue
+        if heading.startswith("Reviewer Verdict"):
+            continue
+        # T-100188: claims-validator verdict (T-100187) — surfaced structurally
+        # beside the recommendation, not as a generic card.
+        if heading.startswith("Recommendation Verdict"):
+            continue
+        if content:
+            extra_sections.append({"heading": heading, "content": _md(content)})
 
     # T-679: Pre-populate rationale from ## Recommendation section
     # T-1390 (F4 fix): extract only the Rationale body from structured
@@ -509,32 +463,6 @@ def inception_detail(task_id):
         reviewer=reviewer,
         claims_verdict=claims_verdict,
     )
-
-
-@bp.route("/inception/<task_id>/section-expand/<int:idx>")
-def inception_section_expand(task_id, idx):
-    """T-2785: fetch the full content of a truncated extra-section card.
-
-    Re-derives extra_sections the same way inception_detail does and returns
-    the untruncated card for the matching idx, replacing the truncated card
-    in place (hx-swap outerHTML on #extra-section-<idx>).
-    """
-    if not re_mod.match(r"^T-\d{3,}$", task_id):
-        abort(404)
-
-    task_data, task_body = _load_task(task_id)
-    if not task_data or task_data.get("workflow_type") != "inception":
-        abort(404)
-
-    all_raw_sections = _extract_all_sections(task_body)
-    for i, (heading, content) in enumerate(all_raw_sections.items()):
-        if i == idx and content:
-            return (
-                f'<div id="extra-section-{idx}">'
-                f'<div class="section-content">{_md(content)}</div>'
-                f'</div>'
-            )
-    abort(404)
 
 
 @bp.route("/inception/<task_id>/add-assumption", methods=["POST"])
