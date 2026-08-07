@@ -30616,3 +30616,39 @@ scan_id: R-5a49fbf3
 task_id: T-2847
 payload:
   task_file: .tasks/active/T-2847-onboarding-prompt-step-2-command-is-refu.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T06:18:25Z'
+scan_id: R-89a17cba
+task_id: T-2851
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T06:18:25Z'
+scan_id: R-89a17cba
+task_id: T-2851
+payload:
+  task_file: .tasks/active/T-2851-greenfield-audit-warns-on-fw-inits-own-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T06:24:27Z'
+scan_id: R-17f65058
+task_id: T-2852
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T06:24:27Z'
+scan_id: R-17f65058
+task_id: T-2852
+payload:
+  task_file: .tasks/active/T-2852-install-hooks-compares-the-git-agents-ve.md

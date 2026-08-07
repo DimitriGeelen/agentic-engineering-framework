@@ -4176,3 +4176,10 @@ X'` returning empty group."
   date: 2026-08-07
   context: Added via context agent
   application: TBD
+- id: L-550
+  learning: "A comparison whose two operands are not the same QUANTITY fails silently in the safe direction, so it survives indefinitely. install-hooks compared the commit-msg hook template's marker (1.11) against the git agent's own version (1.6) — an equality that could never hold. Nothing broke: the false branch reinstalls, which is harmless, so the only symptom was one confusing line of output everyone read past. Meanwhile the 'already installed' branch was unreachable code and PL-078's staleness cure was inert in BOTH directions (bumping the marker and not bumping it had identical effect). git.sh even carried a comment ordering the reader to keep the two equal, citing a prior incident (T-1079); it was correct and ignored across five bumps. Detection rule: when a documented invariant is 'keep these two values in sync', assert the fast path is REACHABLE, not just that the code is present — an unreachable branch is indistinguishable from a working one at every surface except execution. Prose cannot hold a duplicated value; only a parity test can."
+  source: P-001
+  task: T-2852
+  date: 2026-08-07
+  context: Added via context agent
+  application: TBD
