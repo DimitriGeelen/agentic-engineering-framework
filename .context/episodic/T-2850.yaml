@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2850: widen fw_onboarding.bats to cover the greenfield surfaces that reached the operator
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-07T10:08:26Z
+# ============================================================================
+
+task_id: T-2850
+task_name: "widen fw_onboarding.bats to cover the greenfield surfaces that reached the operator"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T05:19:56Z
+completed: 2026-08-07T10:06:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-07T07:31:09+02:00
+last_commit: 2026-08-07T12:05:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  greenfield onboarding integration suite — 14 assembly-level tests (default-deny WARN allowlist, anti-vacuity anchor, arc-017 invariant vs shipped seed); de-vacuify the 2 pre-existing tests; guard against stray-repo contamination (T-2746/T-2835). register greenfield onboarding suite in component fabric. capture L-contamination-disguised-as-finding learning + session context. CLAUDE_PROJECT_DIR fix + wrong-object anchor test; negative control performed
+
+# Key outcomes
+outcomes:
+  - 'A greenfield integration suite exists that runs a real `fw init` and a real'
+  - 'The suite''s central assertion is **default-deny**: a doctor WARN passes only by'
+  - 'The suite carries an explicit anti-vacuity guard — an empty or truncated doctor'
+  - 'Each of the four defects that reached the operator (T-2839/T-2843/T-2844/T-2845'
+  - 'arc-017''s invariant is asserted against the **shipped seed set**, not a synthetic'
+  - 'The two pre-existing vacuous tests in `tests/integration/fw_onboarding.bats` assert'
+  - 'Negative control performed: the suite is shown to go red when the behaviour it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'CLAUDE_PROJECT_DIR fix + wrong-object anchor test; negative control performed'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-07.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-07.yaml'
+  - '.context/episodic/T-2846.yaml'
+  - '.context/episodic/T-2847.yaml'
+  - '.context/episodic/T-2848.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/tests-integration-fw_onboarding_greenfield.yaml'
+  - '.tasks/active/T-2850-widen-fwonboardingbats-to-cover-the-gree.md'
+  - '.tasks/completed/T-2846-live-e2e-run-of-the-fresh-install-onboar.md'
+  - 'tests/integration/fw_onboarding.bats'
+  - 'tests/integration/fw_onboarding_greenfield.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T07:31:09'
+    action: 'T-2850: greenfield onboarding integration suite — 14 assembly-level tests (default-deny WARN allowlist, anti-vacuity anchor, arc-017 invariant vs shipped seed); de-vacuify the 2 pre-existing tests; guard against stray-repo contamination (T-2746/T-2835)'
+  - time: '2026-08-07T07:31:20'
+    action: 'T-2850: register greenfield onboarding suite in component fabric'
+  - time: '2026-08-07T07:41:29'
+    action: 'T-2850: capture L-contamination-disguised-as-finding learning + session context'
+  - time: '2026-08-07T12:05:49'
+    action: 'T-2850: CLAUDE_PROJECT_DIR fix + wrong-object anchor test; negative control performed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 286 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 286
+  commits: 4
+  files_changed: 29
+  lines_added: 1970
+  lines_removed: 406
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2850-widen-fwonboardingbats-to-cover-the-gree.md
+generated_by: context-agent-hybrid
