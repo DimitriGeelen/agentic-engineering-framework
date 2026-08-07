@@ -101,7 +101,7 @@ T-2857 spike S-2; full analysis in `docs/reports/T-2857-cli-suite-gate-inception
 - [ ] Test 1 observes the property directly — refusal + exit status — with no reference to a global install, and the `ROUTED-TO-GLOBAL` assertion is gone
 - [ ] The non-vacuity pairing with test 2 still holds: test 2 proves the refusal is caused by the marker, not by the stub being unroutable for an unrelated reason
 - [ ] `tests/unit/fw_init_atomic.bats` is green (5/5, or 4/5 with test 4 skipped by its own kill-window guard)
-- [ ] The stale `ROUTED-TO-GLOBAL` stub in `setup()` is removed if nothing references it, so the fixture cannot re-suggest a fallback that no longer exists
+- [ ] The `ROUTED-TO-GLOBAL` stub in `setup()` is KEPT and its comment says why: tests 1 and 2 assert its absence, and a present, executable stub is what makes those negatives non-vacuous. (Revised from "remove it" once test 2 was read — removing it would make both negatives vacuously true, the exact failure the stub guards against.)
 - [ ] A comment records why the assertion changed (T-2854 removed the mechanism), matching the convention T-2856 used in the sibling suites
 
 ### Human

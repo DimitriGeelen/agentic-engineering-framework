@@ -39,7 +39,11 @@ echo "ROUTED-TO-VENDOR"
 STUB
     chmod +x "$TEST_TEMP_DIR/proj/.agentic-framework/bin/fw"
 
-    # A fake global install for the bootstrap fallback.
+    # A stub global install. T-2854 removed the global-install fallback entirely
+    # (D-377), so nothing should ever route here — which is exactly why the stub
+    # stays. Tests 1 and 2 assert its ABSENCE from the output; a present,
+    # executable stub is what makes those negatives non-vacuous. Delete it and
+    # both assertions pass for free.
     mkdir -p "$TEST_TEMP_DIR/global/bin"
     cat > "$TEST_TEMP_DIR/global/bin/fw" <<'STUB'
 #!/bin/bash
@@ -53,18 +57,40 @@ teardown() {
     return 0
 }
 
+# T-2858: this test used to assert `grep -q 'ROUTED-TO-GLOBAL'` and exit 0 — it
+# observed "the marker stopped the vendor from capturing the router" THROUGH the
+# global-install fallback. T-2854 (cc5c829c1) removed that fallback to complete
+# D-377, so the mechanism the assertion watched through no longer exists and the
+# test went red on that commit.
+#
+# The property is unchanged and still worth asserting: a vendor carrying
+# .fw-init-incomplete must not be routed into, and the refusal must name the
+# state. What changed is that the refusal is now the terminal outcome (127)
+# rather than a step on the way to somewhere else, so the test observes it
+# directly. Attribution: green against the pre-cc5c829c1 router, red against the
+# current one.
+#
+# Same defect class as the six tests T-2856 repaired in fw_router.bats and
+# fw_vendor_completeness.bats. This was the seventh; it survived because T-2856
+# searched the suites it already had open rather than the runner.
 @test "router refuses to route into a vendor marked incomplete" {
     touch "$TEST_TEMP_DIR/proj/.fw-init-incomplete"
     cd "$TEST_TEMP_DIR/proj"
-    run env FW_GLOBAL_ROOT="$TEST_TEMP_DIR/global" "$(ROUTER)"
-    [ "$status" -eq 0 ]
+    # 127 is the router's "no usable framework" code. `run -127` asserts it and
+    # keeps bats from reading it as a missing-binary accident (BW01).
+    run -127 env FW_GLOBAL_ROOT="$TEST_TEMP_DIR/global" "$(ROUTER)"
     # The partial CLI must NOT have run.
     ! echo "$output" | grep -q 'ROUTED-TO-VENDOR'
-    echo "$output" | grep -q 'ROUTED-TO-GLOBAL'
-    # And the state must be named, not silently worked around. (T-2805 reworded
-    # this from "unfinished init" — the same state arises from debris with no
-    # init behind it at all, which the old phrasing misdescribed.)
-    echo "$output" | grep -q 'incomplete framework copy'
+    # …and nothing may reach a global either. The stub in setup() is present and
+    # executable, so this fires if a fallback is ever reintroduced.
+    ! echo "$output" | grep -q 'ROUTED-TO-GLOBAL'
+    # The state must be named, not silently worked around. (T-2805 reworded this
+    # from "unfinished init" — the same state arises from debris with no init
+    # behind it at all, which the old phrasing misdescribed.)
+    echo "$output" | grep -q 'is incomplete'
+    # And the stated CAUSE must be the marker, not a missing FRAMEWORK.md — the
+    # false-cause defect T-2856 fixed in bin/fw-router.
+    echo "$output" | grep -q '.fw-init-incomplete marker is present'
 }
 
 @test "without the marker the router still routes into the vendor" {
@@ -129,8 +155,10 @@ teardown() {
 
 @test "a clean init leaves no marker behind" {
     # Non-vacuity for the marker: if init never removed it, every project would
-    # permanently route to the global install and test 1 would pass for the
-    # wrong reason.
+    # permanently be refused by the router, and test 1 would pass for the wrong
+    # reason. (T-2858: this used to say "route to the global install" — that
+    # fallback was removed by T-2854; the consequence is now a refusal, not a
+    # redirect.)
     local proj="$TEST_TEMP_DIR/clean"
     mkdir -p "$proj"
     cd "$proj"
