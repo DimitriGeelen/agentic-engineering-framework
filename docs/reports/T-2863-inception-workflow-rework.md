@@ -106,6 +106,82 @@ Gates that currently have no node of their own:
   *representation* — the actor was never drawn.
 - **Survives:** the GO, and instance 5 as the root defect.
 
+## F-4 — The map does not codify the process, and its rail is green over one word-set
+
+Operator's meta question: *does the workflow codify our process, and can it be
+made deterministic for the logic to follow?*
+
+Authority across the corpus:
+
+| Map | Stage | Rail primitive | Precedence |
+|-----|-------|----------------|------------|
+| **`aef-task-lifecycle`** | **detail-authority** | **transition-table** | **map wins on detail conflict** |
+| `aef-inception-flow` | transitional-subordinate | vocabulary-set | descriptive only |
+| `aef-tier0-escalation` | transitional-subordinate | vocabulary-set | descriptive only |
+| `aef-dispatch-loop` | transitional-subordinate | vocabulary-set | descriptive only |
+| `aef-audit-cron` | transitional-subordinate | vocabulary-set | descriptive only |
+| `aef-session-lifecycle` | transitional-subordinate | *none* | descriptive only |
+
+One of six carries authority. So: **no, the workflow does not codify the process.**
+`aef-inception-flow` is explicitly "descriptive only — CLAUDE.md prose wins on
+conflict".
+
+The inception rail in full (`tools/conformance-registry.yaml`):
+
+```yaml
+aef-inception-flow:
+  primitive: vocabulary-set
+  source: lib/inception.sh
+  gateway: decision?
+  source_vocab: {anchor: 'case "$decision" in', regex: '([a-z|-]+)\)'}
+```
+
+It compares the branch labels on the `decision?` gateway to the `case` arms in
+the shell. Green means *the words GO / NO-GO / DEFER appear on both sides*. Not
+one transition, not one gate. All five failure instances are outside its reach by
+construction, and `.context/audits/2026-08-07.yaml` records it **PASS**.
+
+This is the L-539 class (T-2764): a rail can be correct, cheap, and blind —
+check the SET it runs over, not just the predicate.
+
+## F-5 — Determinism exists, is proven once, and the pattern is generative
+
+`aef-task-lifecycle` is not merely checked against a table. `status-transitions.yaml`
+is **read at runtime**: `lib/enums.sh:4,14` compiles it to an O(1) associative
+lookup, `agents/task-create/create-task.sh:205,416` sources its enums, and
+`web/blueprints/tasks.py:151-163` loads it.
+
+```
+status-transitions.yaml ──read at runtime──> lib/enums.sh, create-task.sh, web
+          └──compared by rail──────────────> aef-task-lifecycle (the drawing)
+```
+
+The table is the single source of truth; the code executes from it; the map is
+the designable view kept honest by the rail. That is real determinism.
+
+Two senses worth separating:
+- **Checked determinism** (exists): map is spec, code is implementation, rail
+  proves agreement. Drift becomes impossible.
+- **Executed determinism** (does not exist, and probably should not): nothing
+  interprets BPMN at runtime. The *table* is executed, never the diagram.
+
+**The forced precondition.** A transition-table rail can only check transitions
+that exist as nodes. Today the inception gates are notes on Agent nodes (F-2), so
+promoting this map now would make it outrank CLAUDE.md prose while remaining
+blind to all five failures — a green rail certifying a happy path. Strictly worse
+than descriptive-only.
+
+Ordering is therefore not a preference:
+
+1. Add **Framework · Authority** lane; every gate becomes a node with a refusal edge.
+2. Extract **`inception-transitions.yaml`** — sibling of `status-transitions.yaml`.
+3. Make `lib/inception.sh` + `update-task.sh` **read** it instead of hard-coding.
+4. Flip the registry `vocabulary-set` → `transition-table`.
+5. Green → `detail-authority`.
+
+Step 3 is where determinism comes from. Steps 1–2 are prerequisites. Step 4
+without them buys a false green.
+
 <!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
      pending operator dialogue on IW-1..IW-4. -->
 

@@ -122,9 +122,19 @@ single fresh-install session.
   rationale: The artifact-first rule is right (T-194: conversations are ephemeral). The collision is with background-session isolation. Fix may be config (T-2861 `bgIsolation=none`) rather than workflow, but the workflow should not assume an unguarded write.
 
 - **IW-5: Where does the designer map draw the human/agent authority boundary?**
-  confidence: 1
-  disposition: deferred
-  rationale: T-2857's decision arrived via `--skip-sovereignty` from a path that is agent-blocked under `$CLAUDECODE=1`. The map must make explicit which lane each transition belongs to, and which bypasses are legitimate. This is what the designer is for.
+  confidence: 3
+  disposition: answered
+  rationale: It does not draw it at all — `aef-inception-flow` has two lanes (Agent, Human) where the authority model has three, and all five failure instances are Framework-Authority actions. Artifact F-2.
+
+- **IW-6: Does the map codify the process, and can it be made deterministic for the code to follow?**
+  confidence: 3
+  disposition: answered
+  rationale: No and yes. 1 of 6 maps carries authority (`aef-task-lifecycle`, transition-table, detail-authority); inception is `vocabulary-set` — green means GO/NO-GO/DEFER appear on both sides, nothing more. Determinism is proven once and is generative: `status-transitions.yaml` is READ at runtime by `lib/enums.sh:4,14`, `create-task.sh:205,416`, `web/blueprints/tasks.py:151-163`, and the rail compares the map to it. Artifact F-4/F-5.
+
+- **IW-7: Can the inception map be promoted to detail-authority before the Framework lane exists?**
+  confidence: 3
+  disposition: answered
+  rationale: No — and this is a forced ordering, not a preference. A transition-table rail can only check transitions that exist as nodes; with the gates still encoded as notes on Agent nodes, promotion would make the map outrank CLAUDE.md prose while staying blind to all five failures. False green, strictly worse than descriptive-only. Artifact F-5.
 
 ## Exploration Plan
 
