@@ -484,6 +484,37 @@ It also removes the incentive that produced instance 3. Under a terminal gate,
 "not ready" is a work item with a named next action, and bypassing it costs more
 than doing it.
 
+## F-14 — No designer extension needed; all three constructs already ship
+
+**Operator (2026-08-07):** *"do we need to extend the workflow designer
+functionality? In which case we should contact the relevant agent for enhancing
+the module."*
+
+**No — and the agent's phrasing caused the question.** F-11/F-13 said "the map
+can't express X", meaning *our current `aef-inception-flow` content*. Read as a
+statement about the designer's capability, it implies a missing feature. It isn't
+one. Verified live against the corpus:
+
+| Construct needed | Already exists in | Evidence |
+|---|---|---|
+| **Framework · Authority lane** | `aef-tier0-escalation` | `- Framework · Authority (authority: authority)` — three-lane, matching the full Authority Model |
+| **State-carrier node** (`ready-for-approval`) | `aef-task-lifecycle` | non-terminal nodes carry `state: captured / started-work / issues / work-completed` |
+| **Refusal cycle back into work** | `aef-task-lifecycle` v4 (T-2618) | `[gateway] gates pass?` → `do the work; tick Agent ACs progressively — blocked — unchecked AC / non-zero Verification; fix and retry` |
+| **Back-edge / retry loop** | `aef-dispatch-loop` | `re-dispatch retry envelope` → `spawn isolated worker — retry envelope` |
+
+`aef-task-lifecycle`'s completion-gate refusal loop is **structurally the thing
+F-13 describes**: a gateway that refuses, labels *why*, and routes back into the
+work node. The readiness router is the same shape with more outbound edges — one
+per deficit class (research / testing / dialogue) instead of one generic
+`blocked`. Multiple labelled edges off a gateway are already used throughout the
+corpus.
+
+So the inception rework is **entirely a content job in our own corpus**, and the
+map that already carries `detail-authority` is a working precedent for all four
+constructs at once. No 832 contact required. If something genuinely un-drawable
+surfaces during S-1 seeding, that is the moment to escalate — with a concrete
+missing construct rather than a speculative one.
+
 <!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
      pending operator confirmation of the F-12 / F-13 shape. -->
 
