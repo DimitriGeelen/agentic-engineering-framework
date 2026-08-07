@@ -1,0 +1,27 @@
+id: bin/claude-fw-router
+name: claude-fw-router
+type: script
+subsystem: framework-core
+location: bin/claude-fw-router
+tags: [router, claude-fw, D-377, T-2854]
+
+purpose: >
+  The `claude-fw` entry point installed onto PATH. Walks up from cwd to find
+  the current project (framework repo or vendored consumer, same predicate as
+  bin/fw-router) and execs THAT project's own bin/claude-fw. Replaces a fixed
+  copy of the wrapper's logic that install.sh used to put on PATH — a fixed
+  copy runs the same bytes regardless of which project you're standing in,
+  which is the global-install problem wearing a different name (T-2854).
+  Falls back to plain `claude` when no project is found or the resolved
+  project has no claude-fw sibling.
+
+depends_on:
+  - target: bin/claude-fw
+    type: triggers
+
+depended_by:
+  - target: install.sh
+    type: calls
+
+last_verified: 2026-08-07
+created_by: agent

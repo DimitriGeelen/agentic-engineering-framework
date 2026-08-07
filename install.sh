@@ -271,6 +271,14 @@ scan_vendored_consumers() {
 # Trade-off accepted: a copy goes stale where a symlink self-updated. That is what
 # the T-2501 drift check in `fw doctor` is for, and this change is what makes it
 # load-bearing rather than cosmetic.
+#
+# T-2854/D-377: the function itself just copies whatever src it is handed — it
+# does not know or care whether that src is the plain wrapper or claude-fw-router.
+# `link_fw` below is what changed: it now hands this function claude-fw-router
+# (which resolves the current project's own bin/claude-fw at invocation time),
+# not a fixed copy of the wrapper's logic. A fixed copy that always runs the
+# same bytes regardless of which project you are standing in is the same
+# global-install problem `fw`'s own router (bin/fw-router) exists to avoid.
 install_claude_fw() {
     local src="$1" local_bin="$2"
     [[ -f "$src" ]] || return 0
@@ -290,6 +298,13 @@ link_fw() {
     [[ -x "$shim_src" ]] || shim_src="$INSTALL_DIR/bin/fw-shim"
     local local_bin="$HOME/.local/bin"
 
+    # T-2854/D-377: claude-fw on PATH must resolve per-project too, same as
+    # fw. Prefer claude-fw-router (walks up from cwd to the current project's
+    # own bin/claude-fw); fall back to the plain wrapper for a clone that
+    # predates it.
+    local claude_fw_src="$INSTALL_DIR/bin/claude-fw-router"
+    [[ -x "$claude_fw_src" ]] || claude_fw_src="$INSTALL_DIR/bin/claude-fw"
+
     if [[ ! -x "$shim_src" ]]; then
         # T-2793 — THIS BRANCH WAS THE BUG, not a benign legacy path.
         # bin/fw-shim was committed mode 100644, so `! -x` was ALWAYS true on a
@@ -307,7 +322,7 @@ link_fw() {
         fi
         mkdir -p "$local_bin"
         ln -sf "$fw_path" "$local_bin/fw"
-        install_claude_fw "$INSTALL_DIR/bin/claude-fw" "$local_bin"
+        install_claude_fw "$claude_fw_src" "$local_bin"
         info "Linked fw → ${local_bin}/fw (legacy — upgrade for project-local routing)"
     else
         # Install the shim: copies fw-shim as ~/.local/bin/fw
@@ -326,7 +341,7 @@ link_fw() {
         rm -f "$local_bin/fw"
         cp "$shim_src" "$local_bin/fw"
         chmod +x "$local_bin/fw"
-        install_claude_fw "$INSTALL_DIR/bin/claude-fw" "$local_bin"
+        install_claude_fw "$claude_fw_src" "$local_bin"
         info "Installed fw router → ${local_bin}/fw (project-detecting — each project runs its own framework)"
 
         # Migrate notice if old symlink existed

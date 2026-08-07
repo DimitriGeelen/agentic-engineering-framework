@@ -1,11 +1,14 @@
 #!/bin/bash
-# fw update - Update the framework (vendored or global)
+# fw update - Update the framework (vendored projects only)
 #
 # Vendored projects (.agentic-framework/): clones upstream into temp dir,
 # re-vendors from there. Uses upstream_repo from .framework.yaml.
 #
-# Global installs (~/.agentic-framework with .git): fetches and resets
-# to latest upstream (legacy path, pre-T-499).
+# T-2854/D-377: the git-based global-install path (_do_update_git) was
+# dropped. It was only reachable via a global install (~/.agentic-framework
+# as a git clone), and T-2800 eliminated the producer of those — install.sh
+# now clones to a tempdir and deletes it. There is no global install left to
+# update in place.
 
 do_update() {
     local check_only=false
@@ -35,11 +38,6 @@ do_update() {
                 echo "  2. Compares versions and shows changelog"
                 echo "  3. Re-vendors from upstream (overwrites .agentic-framework/)"
                 echo "  4. Saves rollback backup"
-                echo ""
-                echo "Global installs (git-based):"
-                echo "  1. Fetches latest from upstream"
-                echo "  2. Resets to latest (git reset --hard)"
-                echo "  3. Shows changelog"
                 return 0
                 ;;
             -*)
@@ -74,17 +72,19 @@ do_update() {
     #
     # The test is on `$vendored_dir/.git` SPECIFICALLY, not on
     # `$FRAMEWORK_ROOT/.git`. In the framework repo itself FRAMEWORK_ROOT is the
-    # checkout and does have .git, so keying on it would route this repo to
-    # _do_update_git — which runs `git reset --hard` over a live working tree.
-    # The question being asked is "is the framework COPY this project uses a
-    # clone?", and only the vendored path answers it.
+    # checkout and does have .git — keying on it would have misrouted this
+    # repo's own self-update. The question being asked is "is the framework
+    # COPY this project uses a clone?", and only the vendored path answers it.
+    # (T-2854: the git-based branch this guarded against — _do_update_git — is
+    # gone; a `.git`-carrying vendored_dir is now residue, handled below.)
     if [ -d "$vendored_dir" ] && [ -f "$vendored_dir/VERSION" ] && [ ! -d "$vendored_dir/.git" ]; then
         _do_update_vendored "$project_root" "$vendored_dir" "$check_only" "$target_branch"
-    elif [ -d "$FRAMEWORK_ROOT/.git" ]; then
-        _do_update_git "$check_only" "$target_branch"
     else
-        echo -e "${RED}ERROR: No vendored framework (.agentic-framework/) and no git-based install${NC}" >&2
-        echo "Run 'fw init' to set up a project, or install the framework globally."
+        # T-2854: reworded — the old text offered "install the framework
+        # globally" as a remedy. There is no such thing since T-2800/D-377.
+        echo -e "${RED}ERROR: No vendored framework at ${vendored_dir}${NC}" >&2
+        echo "Run 'fw init' to set up this project. There is no global install to fall"
+        echo "back on by design (T-2800/D-377)."
         return 1
     fi
 }
@@ -241,118 +241,6 @@ SENTINEL
     echo -e "${BOLD}Next steps:${NC}"
     echo "  - Review changes: git diff .agentic-framework/"
     echo "  - Commit: fw git commit -m 'T-012: fw update — framework v${new_version}'"
-    echo "  - Rollback: fw update --rollback"
-}
-
-# ── Git-based update (legacy, pre-T-499) ─────────────────────────────
-
-_do_update_git() {
-    local check_only="$1"
-    local target_branch="$2"
-
-    local old_version="$FW_VERSION"
-    local old_hash
-    old_hash=$(git -C "$FRAMEWORK_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
-
-    echo -e "${BOLD}fw update${NC} - Checking framework installation"
-    echo ""
-    echo "  Framework: $FRAMEWORK_ROOT"
-    echo "  Current:   v${old_version} (${old_hash})"
-    echo "  Branch:    $target_branch"
-    echo ""
-
-    # Fetch latest
-    echo -e "${YELLOW}Fetching latest...${NC}"
-    if ! git -C "$FRAMEWORK_ROOT" fetch origin "$target_branch" --quiet 2>/dev/null; then
-        echo -e "${RED}ERROR: Failed to fetch from origin. Check network and remote config.${NC}" >&2
-        return 1
-    fi
-
-    # Compare
-    local remote_hash
-    remote_hash=$(git -C "$FRAMEWORK_ROOT" rev-parse --short "origin/$target_branch" 2>/dev/null || echo "unknown")
-
-    if [ "$old_hash" = "$remote_hash" ]; then
-        echo -e "${GREEN}Already up to date${NC} (v${old_version}, ${old_hash})"
-        return 0
-    fi
-
-    # Count commits behind
-    local commits_behind
-    commits_behind=$(git -C "$FRAMEWORK_ROOT" rev-list --count HEAD.."origin/$target_branch" 2>/dev/null || echo "?")
-
-    echo "  Available: ${remote_hash} (${commits_behind} commit(s) ahead)"
-    echo ""
-
-    if [ "$check_only" = true ]; then
-        echo -e "${CYAN}Update available:${NC} ${old_hash} → ${remote_hash} (${commits_behind} commits)"
-        echo ""
-        echo "Changelog:"
-        git -C "$FRAMEWORK_ROOT" log --oneline HEAD.."origin/$target_branch" | head -20
-        local total
-        total=$(git -C "$FRAMEWORK_ROOT" rev-list --count HEAD.."origin/$target_branch" 2>/dev/null || echo 0)
-        if [ "$total" -gt 20 ]; then
-            echo "  ... and $((total - 20)) more"
-        fi
-        echo ""
-        echo "Run 'fw update' to apply."
-        return 0
-    fi
-
-    # Record rollback point
-    echo -e "${YELLOW}Recording rollback point...${NC}"
-    git -C "$FRAMEWORK_ROOT" config --local fw.previousVersion "$old_hash"
-    git -C "$FRAMEWORK_ROOT" config --local fw.previousVersionFull "$(git -C "$FRAMEWORK_ROOT" rev-parse HEAD)"
-
-    # Ensure fileMode is off (macOS compat)
-    git -C "$FRAMEWORK_ROOT" config core.fileMode false
-
-    # Apply update
-    echo -e "${YELLOW}Applying update...${NC}"
-    git -C "$FRAMEWORK_ROOT" checkout "$target_branch" --quiet 2>/dev/null || true
-    if ! git -C "$FRAMEWORK_ROOT" reset --hard "origin/$target_branch" --quiet; then
-        echo -e "${RED}ERROR: Failed to reset to origin/$target_branch${NC}" >&2
-        echo "Rollback: fw update --rollback"
-        return 1
-    fi
-
-    # Read new version
-    local new_version="unknown"
-    if [ -f "$FRAMEWORK_ROOT/VERSION" ]; then
-        new_version=$(cat "$FRAMEWORK_ROOT/VERSION")
-    fi
-    local new_hash
-    new_hash=$(git -C "$FRAMEWORK_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
-
-    echo ""
-    echo -e "${GREEN}Updated:${NC} v${old_version} (${old_hash}) → v${new_version} (${new_hash})"
-    echo ""
-
-    # Show changelog
-    echo "Changelog:"
-    git -C "$FRAMEWORK_ROOT" log --oneline "${old_hash}..HEAD" 2>/dev/null | head -15
-    local total_shown
-    total_shown=$(git -C "$FRAMEWORK_ROOT" rev-list --count "${old_hash}..HEAD" 2>/dev/null || echo 0)
-    if [ "$total_shown" -gt 15 ]; then
-        echo "  ... and $((total_shown - 15)) more"
-    fi
-    echo ""
-
-    # Post-update health check
-    echo -e "${YELLOW}Running health check...${NC}"
-    echo ""
-
-    if "$FRAMEWORK_ROOT/bin/fw" doctor 2>/dev/null; then
-        echo ""
-        echo -e "${GREEN}=== Update Complete ===${NC}"
-    else
-        echo ""
-        echo -e "${YELLOW}=== Update Complete (with warnings) ===${NC}"
-        echo "Review doctor output above. Rollback: fw update --rollback"
-    fi
-
-    echo ""
-    echo -e "${BOLD}Next steps:${NC}"
     echo "  - Rollback: fw update --rollback"
 }
 

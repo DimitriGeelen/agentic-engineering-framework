@@ -101,21 +101,21 @@ the global-install problem wearing a different name.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw-router` no longer execs a global install. With no project found it
+- [x] `bin/fw-router` no longer execs a global install. With no project found it
       refuses (exit 127) with the existing install-into-this-project instructions,
       and the `init` bootstrap path is unchanged.
-- [ ] Negative control: routing to a **vendored project** copy still works, and
+- [x] Negative control: routing to a **vendored project** copy still works, and
       walking up from a SUBDIRECTORY still finds the project root. A fix that
       simply always refused would pass the AC above.
-- [ ] `lib/upgrade.sh` no longer writes into `$HOME/.agentic-framework`, so an
+- [x] `lib/upgrade.sh` no longer writes into `$HOME/.agentic-framework`, so an
       un-remediated residue stops being fed.
-- [ ] `lib/update.sh` drops `_do_update_git` and its dispatch, with the
+- [x] `lib/update.sh` drops `_do_update_git` and its dispatch, with the
       no-framework error reworded to match reality.
-- [ ] `claude-fw` resolves the project the same way `fw` does (nearest
+- [x] `claude-fw` resolves the project the same way `fw` does (nearest
       `.agentic-framework` walking up from cwd), rather than running one fixed copy.
-- [ ] Detection stays: `fw doctor` still reports a residue global so hosts that
+- [x] Detection stays: `fw doctor` still reports a residue global so hosts that
       have not been cleaned are told, and told what to run.
-- [ ] `tests/unit/router_no_global_fallback.bats` pins refusal-without-project,
+- [x] `tests/unit/router_no_global_fallback.bats` pins refusal-without-project,
       vendored routing, and subdirectory walk-up, and is green.
 
 ### Human
@@ -215,6 +215,20 @@ the global-install problem wearing a different name.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bash -n bin/fw-router && bash -n bin/claude-fw-router && bash -n lib/upgrade.sh && bash -n lib/update.sh && bash -n install.sh
+out=$(bats tests/unit/router_no_global_fallback.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/claude_fw_router.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/fw_router.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/fw_vendor_completeness.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/update_mode_routing.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/lib_update.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/claude_fw_copy_not_symlink.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/bin_executable_bits.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+! grep -n "_global\b" bin/fw-router
+! grep -nE '^[^#]*\$HOME/\.agentic-framework' lib/upgrade.sh
+! grep -n "_do_update_git" lib/update.sh | grep -v '^[0-9]*: *#'
+out=$(bin/fw doctor --quick 2>&1); echo "$out" | grep -qi "global install"
 
 ## RCA
 

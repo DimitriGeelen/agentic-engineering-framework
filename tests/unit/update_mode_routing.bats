@@ -6,10 +6,15 @@
 # consumer's vendored copy: a directory of that name beside a project root, with
 # a VERSION file. The vendored branch was tested first, matched the global
 # install, and demanded `upstream_repo` — a key install.sh never writes, because
-# the clone's own `origin` is already the answer. The git branch was unreachable.
+# the clone's own `origin` is already the answer. The git-based update branch
+# (`_do_update_git`) was unreachable for it.
 #
-# The discriminator is `.git` inside the framework copy: a clone has one, a
-# file-copy vendor does not.
+# T-2854/D-377: `_do_update_git` and its dispatch are gone — global installs
+# have no producer since T-2800, so there is nothing left to update in place
+# via `git reset --hard`. A framework copy shaped like a git clone is now
+# residue, and `fw update` refuses it rather than routing anywhere. The
+# discriminator that used to pick a branch (`.git` inside the framework copy)
+# now picks refuse-vs-vendored.
 
 setup_file() {
     FW_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
@@ -37,20 +42,19 @@ _make_copy() {
     return 0
 }
 
-# Source the real do_update, then replace the two terminal handlers with probes
-# so routing is observable without network or mutation.
+# Source the real do_update, then replace the vendored terminal handler with a
+# probe so routing is observable without network or mutation.
 _route() {
     local project_root="$1" framework_root="$2"
     (
         # shellcheck source=/dev/null
         source "$FW_ROOT/lib/update.sh"
         _do_update_vendored() { echo "ROUTE=vendored"; }
-        _do_update_git()      { echo "ROUTE=git"; }
         PROJECT_ROOT="$project_root" FRAMEWORK_ROOT="$framework_root" do_update --check
     )
 }
 
-@test "the probe harness can observe both routes (anti-vacuity)" {
+@test "the probe harness can observe the vendored route (anti-vacuity)" {
     # If _route silently produced nothing, every assertion below would be
     # comparing "" against a substring and could pass for the wrong reason.
     _make_copy "$FX" vendored
@@ -60,12 +64,16 @@ _route() {
     [[ "$output" == ROUTE=* ]]
 }
 
-@test "GLOBAL INSTALL (framework copy is a git clone) routes to git" {
-    # The reported bug: this used to route to vendored and demand upstream_repo.
+@test "GLOBAL INSTALL residue (framework copy is a git clone) is refused, not routed" {
+    # T-2854: pre-fix, this routed to _do_update_git (git reset --hard) and
+    # demanded upstream_repo instead. There is no branch left to route to —
+    # a git-clone-shaped copy falls through to the no-vendored-framework
+    # refusal, same as no copy at all.
     _make_copy "$FX" clone
     run _route "$FX" "$FX/.agentic-framework"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"ROUTE=git"* ]]
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"No vendored framework"* ]]
+    [[ "$output" != *"ROUTE="* ]]
 }
 
 @test "NEGATIVE CONTROL: a vendored consumer still routes to vendored" {
@@ -78,9 +86,10 @@ _route() {
 }
 
 @test "REGRESSION GUARD: framework repo (own .git, vendored copy) stays vendored" {
-    # Near-miss during the fix: keying the discriminator on $FRAMEWORK_ROOT/.git
-    # instead of $vendored_dir/.git routes the framework repo itself to
-    # _do_update_git, which runs `git reset --hard` over a live working tree.
+    # Near-miss during the T-2853 fix: keying the discriminator on
+    # $FRAMEWORK_ROOT/.git instead of $vendored_dir/.git would route the
+    # framework repo itself to the refusal branch (pre-T-2854: to
+    # _do_update_git, which ran `git reset --hard` over a live working tree).
     # Here FRAMEWORK_ROOT is the checkout and DOES have .git, while its vendored
     # copy does not — the shape that distinguishes the two.
     _make_copy "$FX" vendored
