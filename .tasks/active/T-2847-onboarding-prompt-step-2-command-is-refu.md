@@ -2,9 +2,13 @@
 id: T-2847
 name: "onboarding prompt STEP 2 command is refused by the T-559 boundary hook"
 description: >
-  STEP 2 of prompts/aef-fresh-install-onboarding.md instructs 'ls -d ~/.agentic-framework /opt/*/FRAMEWORK.md'. When onboarding is run from inside an existing AEF session (the normal case when an operator asks an active session to onboard a new project), the T-559 project-boundary hook refuses the command. The prompt cannot execute its own step. Found in T-2846 live e2e run.
+  STEP 2 of prompts/aef-fresh-install-onboarding.md instructs 'ls -d ~/.agentic-framework
+  /opt/*/FRAMEWORK.md'. When onboarding is run from inside an existing AEF session
+  (the normal case when an operator asks an active session to onboard a new project),
+  the T-559 project-boundary hook refuses the command. The prompt cannot execute its
+  own step. Found in T-2846 live e2e run.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T05:16:37Z
-last_update: 2026-08-07T05:16:37Z
-date_finished: null
+last_update: 2026-08-07T05:33:56Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +38,64 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-07T05:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-07T05:30:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2847: onboarding prompt STEP 2 command is refused by the T-559 boundary hook
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found during the T-2846 greenfield run. STEP 2 instructed the agent to run
+`ls -d ~/.agentic-framework /opt/*/FRAMEWORK.md` to discover framework installs on the
+host. When onboarding runs from inside an existing AEF session — which is what happens
+whenever an operator asks a live session to onboard a new directory — the T-559
+project-boundary hook refuses that command. The prompt could not execute its own step in
+its most common context.
+
+The hook is right and the prompt was wrong. `fw --version` already reports the resolved
+framework root, the mode, and the project, which is what the glob was reaching for; it
+just did so by reading other projects' trees instead of asking the tool.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] STEP 2 no longer instructs the agent to run a command that the T-559 boundary hook
+      refuses — the `/opt/*/FRAMEWORK.md` filesystem glob is gone
+- [x] The step still answers the question the glob was there to answer (which framework is
+      resolving, and is there more than one), using fw's own reporting rather than reading
+      other projects' trees
+- [x] The prompt states *why* the glob was removed, so a future author does not helpfully
+      restore it: cross-project reads are refused by design, and the refusal is correct
+- [x] Verified by running the replacement command from inside this AEF session — the exact
+      context where the original was blocked
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +129,15 @@ date_finished: null
 -->
 
 ## Verification
+
+# The refused glob is gone from the prompt.
+out=$(cat prompts/aef-fresh-install-onboarding.md); ! echo "$out" | grep -qF '/opt/*/FRAMEWORK.md'
+# The replacement explains why, so the glob is not helpfully restored later.
+out=$(cat prompts/aef-fresh-install-onboarding.md); echo "$out" | grep -q "T-2847"
+# The step still answers the discovery question via the tool's own reporting.
+out=$(cat prompts/aef-fresh-install-onboarding.md); echo "$out" | grep -q "That is the discovery"
+# The replacement command itself runs from a foreign cwd without being refused.
+out=$(cd /tmp && fw --version 2>&1); echo "$out" | grep -q "Framework:"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -214,3 +271,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2847-onboarding-prompt-step-2-command-is-refu.md
 - **Context:** Initial task creation
+
+### 2026-08-07T05:33:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -35,7 +35,19 @@ python3 is missing, install via the platform package manager and say what you di
 
 First check whether the framework is already present on this host:
 
-  command -v fw && fw --version ; ls -d ~/.agentic-framework /opt/*/FRAMEWORK.md 2>/dev/null
+  command -v fw && fw --version
+
+`fw --version` answers this itself — it prints `Framework:` (the root it resolved),
+`Mode:` (framework-repo / vendored / global) and `Project:`. That is the discovery.
+
+**[dogfood — T-2847]** Do NOT glob the filesystem for other installs (this step used to say
+`ls -d ~/.agentic-framework /opt/*/FRAMEWORK.md`). If you are running this onboarding from
+inside an existing AEF project — the normal case, when an operator asks a live session to
+onboard a new directory — the T-559 project-boundary hook **refuses** that command, and the
+refusal is correct: one project's session must not read another project's tree. A prompt
+step that cannot execute in its own most common context is a defect in the prompt, not a
+reason to reach for a bypass. If you genuinely need a host-wide inventory, that is the
+operator's call to make outside this session.
 
 **Presence is not the question — freshness is, and the version NUMBER cannot answer it.**
 `fw v1.6.432` is `major.minor.<commits-since-the-newest-tag-that-clone-knows>` — a distance,
