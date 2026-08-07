@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2856: T-2854 removed the router global fallback but fw_vendor_completeness.bats still asserts it — 3 red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-07T12:59:58Z
+# ============================================================================
+
+task_id: T-2856
+task_name: "T-2854 removed the router global fallback but fw_vendor_completeness.bats still asserts it — 3 red"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T12:37:27Z
+completed: 2026-08-07T12:59:44Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T14:52:43+02:00
+last_commit: 2026-08-07T14:57:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  six tests asserted the global fallback T-2854 removed; router refusal could state a false cause. refresh vendored copies (fw-router cause-correct refusal; web/policy catch-up). refresh vendored copies (lib/update.sh catch-up)
+
+# Key outcomes
+outcomes:
+  - 'Attribution established: the failures are shown to be caused by T-2854''s removal of'
+  - '`tests/unit/fw_vendor_completeness.bats` asserts the **current** contract: an'
+  - 'The T-2805 intent each test was written to protect is preserved, not deleted — the'
+  - '`bats tests/unit/fw_vendor_completeness.bats` is green (8/8 — 6 original + 2 added'
+  - '`tests/unit/fw_router.bats` — same class, three further tests — asserts the current'
+  - 'The router''s refusal names the signal that actually fired, so marker-triggered and'
+  - 'Whatever let a committed change turn a suite red without anyone noticing is named in'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw-router'
+  - '.agentic-framework/lib/update.sh'
+  - '.agentic-framework/policy/value-drivers.yaml'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/cockpit.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/blueprints/metrics.py'
+  - '.agentic-framework/web/templates/cockpit.html'
+  - '.agentic-framework/web/templates/inception_detail.html'
+  - '.agentic-framework/web/templates/metrics.html'
+  - 'bin/fw-router'
+  - '.tasks/active/T-2856-t-2854-removed-the-router-global-fallbac.md'
+  - '.tasks/active/T-2857-convention--gate-a-task-touching-binfw-o.md'
+  - 'tests/unit/fw_router.bats'
+  - 'tests/unit/fw_vendor_completeness.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T14:52:43'
+    action: 'T-2856: six tests asserted the global fallback T-2854 removed; router refusal could state a false cause'
+  - time: '2026-08-07T14:53:45'
+    action: 'T-2856: refresh vendored copies (fw-router cause-correct refusal; web/policy catch-up)'
+  - time: '2026-08-07T14:57:03'
+    action: 'T-2856: refresh vendored copies (lib/update.sh catch-up)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 3
+  files_changed: 15
+  lines_added: 745
+  lines_removed: 368
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2856-t-2854-removed-the-router-global-fallbac.md
+generated_by: context-agent-hybrid

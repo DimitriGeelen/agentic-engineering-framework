@@ -1,0 +1,72 @@
+#!/bin/bash
+# claude-fw-router — the `claude-fw` entry point on PATH (T-2854, completing D-377).
+#
+# Mirrors bin/fw-router's reason for existing: before this file, `install.sh`
+# put a fixed COPY of bin/claude-fw onto PATH (T-2807). That copy is the
+# wrapper's actual logic — auto-restart, TermLink registration, the startup
+# banner — not project data, so unlike the copy's OWN runtime lookups (git
+# root, focus.yaml, the restart signal file, all resolved fresh per invocation)
+# its own BEHAVIOUR stayed pinned to whatever version happened to be on PATH
+# at install time. A `fw upgrade` in a project updates that project's vendored
+# `.agentic-framework/bin/claude-fw` (T-2502/_self_vendor_shim); it cannot
+# touch the on-PATH copy. That is the global-install problem wearing a
+# different name — a fixed copy nothing in the isolated-per-project model
+# points back at to refresh.
+#
+# This router carries no wrapper logic of its own. It resolves the current
+# project exactly as bin/fw-router does, then execs THAT project's own
+# bin/claude-fw (or .agentic-framework/bin/claude-fw for a vendored consumer).
+#
+# ── Resolution order (same walk as bin/fw-router) ─────────────────────────
+#   1. Walk up from $PWD. At each level:
+#        a. <dir>/FRAMEWORK.md + <dir>/bin/fw   → the framework repo itself
+#        b. <dir>/.agentic-framework/bin/fw     → a vendored consumer
+#      (completeness checked the same way: a vendor mid-init is skipped, not
+#      routed to)
+#   2. No project found, or the project has no claude-fw sibling → run plain
+#      `claude` directly. Unlike `fw`, claude-fw has no framework-only
+#      behaviour to refuse over: it is a wrapper around `claude`, and a bare
+#      directory with no project simply gets an unwrapped session (no
+#      auto-restart, no startup banner) instead of a hard refusal — there is
+#      nothing to install-and-retry here the way there is for `fw`.
+
+set -uo pipefail  # not -e: a missing claude-fw sibling is a fallback, not a fatal error
+
+# --- 1. Walk up from cwd, floored below "/" (identical predicate to bin/fw-router) ---
+_target=""
+_d="$PWD"
+while [ -n "$_d" ] && [ "$_d" != "/" ]; do
+    if [ -f "$_d/FRAMEWORK.md" ] && [ -x "$_d/bin/fw" ]; then
+        _target="$_d/bin/claude-fw"
+        break
+    fi
+    if [ -x "$_d/.agentic-framework/bin/fw" ]; then
+        # T-2805/T-2811 parity: an executable bin/fw with no FRAMEWORK.md (or a
+        # live .fw-init-incomplete marker) is a vendor mid-init, not a usable
+        # project. Same as bin/fw-router: don't walk further up past it either —
+        # a parent project is the wrong answer here too.
+        if [ -f "$_d/.fw-init-incomplete" ] || [ ! -f "$_d/.agentic-framework/FRAMEWORK.md" ]; then
+            break
+        fi
+        _target="$_d/.agentic-framework/bin/claude-fw"
+        break
+    fi
+    _d="$(dirname "$_d")"
+done
+
+# --- 2. Hand over, or fall back to plain claude ---
+if [ -n "$_target" ] && [ -x "$_target" ]; then
+    export FW_ROUTED_FROM="$(dirname "$(dirname "$_target")")"
+    exec "$_target" "$@"
+fi
+
+# No project, or the project has no claude-fw wrapper (e.g. a vendor that
+# predates T-2502). Fall through to the plain binary — announced on stderr so
+# "why didn't I get the startup banner / auto-restart" has an answer, same
+# spirit as bin/fw-router's stderr-only bootstrap announcement.
+if [ -n "$_target" ]; then
+    printf 'claude-fw: no wrapper found at %s — running plain claude (no auto-restart, no startup banner).\n' "$_target" >&2
+else
+    printf 'claude-fw: no framework project found walking up from %s — running plain claude.\n' "$PWD" >&2
+fi
+exec claude "$@"

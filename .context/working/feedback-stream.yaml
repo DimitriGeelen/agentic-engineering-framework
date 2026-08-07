@@ -30652,3 +30652,57 @@ scan_id: R-17f65058
 task_id: T-2852
 payload:
   task_file: .tasks/active/T-2852-install-hooks-compares-the-git-agents-ve.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T12:29:55Z'
+scan_id: R-76a7058a
+task_id: T-2849
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T12:29:55Z'
+scan_id: R-76a7058a
+task_id: T-2849
+payload:
+  task_file: .tasks/active/T-2849-greenfield-consumer-first-commit-carries.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T12:34:45Z'
+scan_id: R-8151e0a3
+task_id: T-2855
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T12:34:45Z'
+scan_id: R-8151e0a3
+task_id: T-2855
+payload:
+  task_file: .tasks/active/T-2855-commit-t-2849-vendor-exclude-anchoring-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T12:59:47Z'
+scan_id: R-6ade6da1
+task_id: T-2856
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T12:59:47Z'
+scan_id: R-6ade6da1
+task_id: T-2856
+payload:
+  task_file: .tasks/active/T-2856-t-2854-removed-the-router-global-fallbac.md
