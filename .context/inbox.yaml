@@ -1418,3 +1418,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-188
+  text: "bin/fw-router:31 header comment still documents 'No project found -> the global install, ANNOUNCED on stderr' while line 117 of the same file states T-2854/D-377 removed the global fallback entirely. Code matches 117; the header contradicts it. Found during T-2857 spike S-3."
+  captured: 2026-08-07T15:48:20Z
+  context_task: T-2857
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-189
+  text: "tests/unit/fw_router.bats:33-37 claims broken fixtures left tests 'red for a year of router changes'. The suite was created 2026-08-04 (84a71b9b5), three days before that comment was written, so the duration claim is false. The substantive point (fixtures asserted against a refusal) is unaffected. Found during T-2857 spike S-1 window sizing."
+  captured: 2026-08-07T15:48:20Z
+  context_task: T-2857
+  tags: []
+  status: pending
+  promoted_to: null
