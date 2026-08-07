@@ -57,7 +57,28 @@ do_update() {
     local project_root="${PROJECT_ROOT:-$PWD}"
     local vendored_dir="$project_root/.agentic-framework"
 
-    if [ -d "$vendored_dir" ] && [ -f "$vendored_dir/VERSION" ]; then
+    # T-2853: order matters here, and it used to be wrong.
+    #
+    # A global install lives at ~/.agentic-framework — the SAME layout as a
+    # consumer's vendored copy: a directory of that name beside a project root,
+    # containing a VERSION. So the vendored test below matched the global install
+    # too, and the git-based branch was unreachable for it. `fw update` then
+    # demanded `upstream_repo` from ~/.framework.yaml, a key install.sh never
+    # writes — because it obtains the framework by `git clone`, and the clone's
+    # own `origin` is already the answer. Operator hit this on a default host and
+    # ran it three times against an error that could not be acted on.
+    #
+    # The discriminator was available in both conditions all along: a git-based
+    # install carries `.git`; a vendored copy is a file copy and does not
+    # (verified — this repo's own .agentic-framework/ has VERSION and no .git).
+    #
+    # The test is on `$vendored_dir/.git` SPECIFICALLY, not on
+    # `$FRAMEWORK_ROOT/.git`. In the framework repo itself FRAMEWORK_ROOT is the
+    # checkout and does have .git, so keying on it would route this repo to
+    # _do_update_git — which runs `git reset --hard` over a live working tree.
+    # The question being asked is "is the framework COPY this project uses a
+    # clone?", and only the vendored path answers it.
+    if [ -d "$vendored_dir" ] && [ -f "$vendored_dir/VERSION" ] && [ ! -d "$vendored_dir/.git" ]; then
         _do_update_vendored "$project_root" "$vendored_dir" "$check_only" "$target_branch"
     elif [ -d "$FRAMEWORK_ROOT/.git" ]; then
         _do_update_git "$check_only" "$target_branch"
@@ -86,9 +107,14 @@ _do_update_vendored() {
     fi
 
     if [ -z "$upstream_url" ]; then
-        echo -e "${RED}ERROR: No upstream_repo in .framework.yaml${NC}" >&2
+        # T-2853: name the ABSOLUTE path. This message used to say only
+        # ".framework.yaml", and the file it means is the one beside the project
+        # root — not necessarily anywhere near the operator's cwd. Following it
+        # literally (creating .framework.yaml where you are standing) does
+        # nothing, which is why it got run three times unchanged.
+        echo -e "${RED}ERROR: No upstream_repo in ${project_root}/.framework.yaml${NC}" >&2
         echo ""
-        echo "Add to .framework.yaml:"
+        echo "Add to ${project_root}/.framework.yaml:"
         echo "  upstream_repo: https://github.com/USER/REPO.git"
         echo ""
         echo "Or if using a local repo:"
