@@ -1,0 +1,22 @@
+id: tests/unit/claude_fw_router.bats
+name: claude_fw_router
+type: script
+subsystem: framework-core
+location: tests/unit/claude_fw_router.bats
+tags: [router, claude-fw, D-377, T-2854]
+
+purpose: >
+  Pins bin/claude-fw-router's resolution: routes to a vendored consumer's own
+  claude-fw, walks up from a nested subdirectory, prefers the framework
+  repo's own bin/claude-fw over its self-vendored copy, falls back to plain
+  claude when no project/sibling is found (announced on stderr), and skips
+  an incomplete vendor mid-init.
+
+depends_on:
+  - target: bin/claude-fw-router
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-08-07
+created_by: agent

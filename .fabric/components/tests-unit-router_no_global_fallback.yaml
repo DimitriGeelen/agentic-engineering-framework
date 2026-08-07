@@ -1,0 +1,23 @@
+id: tests/unit/router_no_global_fallback.bats
+name: router_no_global_fallback
+type: script
+subsystem: framework-core
+location: tests/unit/router_no_global_fallback.bats
+tags: [router, D-377, T-2854]
+
+purpose: >
+  Pins bin/fw-router's three post-T-2854 properties together (a fix that
+  regressed any one would still pass a narrower test): refuses with no
+  project found and no global consulted, still routes a vendored consumer
+  project correctly, and still finds the project root walking up from a
+  nested subdirectory. Also covers a residue global on the host not being
+  routed to, and the framework repo itself still routing to its own bin/fw.
+
+depends_on:
+  - target: bin/fw-router
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-08-07
+created_by: agent
