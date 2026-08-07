@@ -886,6 +886,7 @@ show_help() {
     echo -e "  ${GREEN}self-audit${NC}           Standalone integrity check (Layers 1-4, no fw dependency)"
     echo -e "  ${GREEN}test-onboarding${NC}     End-to-end onboarding flow test (8 checkpoints)"
     echo -e "  ${GREEN}context${NC} <cmd>        Manage Context Fabric (init, status, focus, ...)"
+    echo -e "  ${GREEN}focus${NC} [T-XXX]        Set or show current focus (alias for context focus)"
     echo -e "  ${GREEN}git${NC} <cmd>            Task-traced git operations (commit, status, log, ...)"
     echo -e "  ${GREEN}push${NC}                Push to all remotes"
     echo -e "  ${GREEN}handover${NC}             Generate session handover document"
@@ -4118,6 +4119,12 @@ case "$cmd" in
         ;;
     context)
         exec "$AGENTS_DIR/context/context.sh" "$@"
+        ;;
+    focus)
+        # T-2860: alias for `fw context focus` — routes through the same dispatch
+        # so the two verbs cannot drift. `fw focus` (no arg) reports current focus
+        # via do_focus's own no-arg branch, never a false-success.
+        exec "$AGENTS_DIR/context/context.sh" focus "$@"
         ;;
     arc)
         # T-1661: Arc system — first-class workspace grouping tasks by theme.

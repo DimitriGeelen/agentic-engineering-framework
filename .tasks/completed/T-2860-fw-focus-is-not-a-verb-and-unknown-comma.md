@@ -11,10 +11,10 @@ description: >
   a fresh install alongside the work-on failure. Fix: route 'fw focus' to 'fw context
   focus', and/or emit a nearest-verb suggestion on unknown commands.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:11:11Z
-last_update: 2026-08-07T17:12:26Z
-date_finished:
+last_update: 2026-08-07T21:13:57Z
+date_finished: 2026-08-07T21:13:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,6 +59,16 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-07T20:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2860: fw focus is not a verb and unknown commands offer no did-you-mean
@@ -70,12 +80,12 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw focus T-XXX` sets focus, with behaviour identical to `fw context focus T-XXX` (same output, same exit code, same focus.yaml result)
-- [ ] `fw focus` with no argument does not silently succeed — it reports current focus or prints usage, never a false-success
-- [ ] The alias routes through the existing `context` dispatch rather than duplicating focus logic, so the two verbs cannot drift
-- [ ] `fw help` lists `focus` so the verb is discoverable without already knowing it
-- [ ] A bats test pins the alias, including a negative control proving the assertion can fail
-- [ ] The six core CLI suites stay green (T-2857 F-3/F-7: this is the targeted set; `fw test unit` takes >45min and cannot be a gate)
+- [x] `fw focus T-XXX` sets focus, with behaviour identical to `fw context focus T-XXX` (same output, same exit code, same focus.yaml result)
+- [x] `fw focus` with no argument does not silently succeed — it reports current focus or prints usage, never a false-success
+- [x] The alias routes through the existing `context` dispatch rather than duplicating focus logic, so the two verbs cannot drift
+- [x] `fw help` lists `focus` so the verb is discoverable without already knowing it
+- [x] A bats test pins the alias, including a negative control proving the assertion can fail
+- [x] The six core CLI suites stay green (T-2857 F-3/F-7: this is the targeted set; `fw test unit` takes >45min and cannot be a gate)
 
 <!-- Scope note: the "did-you-mean on unknown commands" leg of this task is
      deliberately NOT in this slice. It needs a verb inventory and an edit-distance
@@ -181,6 +191,10 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/fw_focus_alias.bats 2>&1); echo "$out" | grep -q '^ok 8 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/context_focus.bats tests/unit/check_active_task_switch_focus.bats tests/unit/work_on_switch_focus.bats tests/unit/focus_drift_gate.bats 2>&1); echo "$out" | grep -q '^1\.\.50$' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/claude_fw_router.bats tests/unit/fw_router.bats tests/unit/fw_vendor_completeness.bats tests/unit/fw_init_atomic.bats tests/unit/router_bootstraps_bare_init.bats tests/unit/router_no_global_fallback.bats tests/unit/router_refusal_names_one_step_install.bats tests/unit/bin_executable_bits.bats tests/unit/self_vendor_parity.bats 2>&1); ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -251,3 +265,20 @@ bvp_scores_proposed:
 
 ### 2026-08-07T17:12:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f7aa8ce6
+- **Timestamp:** 2026-08-07T21:16:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 68
+     - evidence: `out=$(bats tests/unit/claude_fw_router.bats tests/unit/fw_router.bats tests/unit/fw_vendor_completeness.bats tests/unit/fw_init_atomic.bats tests/unit/router_bootstraps_bare_init.bats tests/unit/route`
+
+### 2026-08-07T21:13:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
