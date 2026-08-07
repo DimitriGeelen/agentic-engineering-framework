@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2854: finish D-377: make the global install unreachable — delete router fallback, upgrade's global sync, and the now-dead git update path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-07T13:19:02Z
+# ============================================================================
+
+task_id: T-2854
+task_name: "finish D-377: make the global install unreachable — delete router fallback, upgrade's global sync, and the now-dead git update path"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T10:55:42Z
+completed: 2026-08-07T13:16:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T13:01:07+02:00
+last_commit: 2026-08-07T15:14:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  remove the global install from the router's decisions and from fw upgrade's write set. refresh vendored copies. finish D-377 — claude-fw resolves per-project, fw update drops the dead git-clone path. fabric-register the router test suites
+
+# Key outcomes
+outcomes:
+  - '`bin/fw-router` no longer execs a global install. With no project found it'
+  - 'Negative control: routing to a **vendored project** copy still works, and'
+  - '`lib/upgrade.sh` no longer writes into `$HOME/.agentic-framework`, so an'
+  - '`lib/update.sh` drops `_do_update_git` and its dispatch, with the'
+  - '`claude-fw` resolves the project the same way `fw` does (nearest'
+  - 'Detection stays: `fw doctor` still reports a residue global so hosts that'
+  - '`tests/unit/router_no_global_fallback.bats` pins refusal-without-project,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw-router'
+  - '.agentic-framework/bin/fw-router'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw-router'
+  - '.fabric/components/bin-claude-fw-router.yaml'
+  - '.fabric/components/tests-unit-claude_fw_router.yaml'
+  - '.fabric/components/tests-unit-router_no_global_fallback.yaml'
+  - 'install.sh'
+  - 'lib/update.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2854-finish-d-377-make-the-global-install-unr.md'
+  - 'tests/unit/claude_fw_router.bats'
+  - 'tests/unit/router_no_global_fallback.bats'
+  - 'tests/unit/update_mode_routing.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T13:01:07'
+    action: 'T-2854: remove the global install from the router''s decisions and from fw upgrade''s write set'
+  - time: '2026-08-07T13:01:09'
+    action: 'T-2854: refresh vendored copies'
+  - time: '2026-08-07T15:13:23'
+    action: 'T-2854: finish D-377 — claude-fw resolves per-project, fw update drops the dead git-clone path'
+  - time: '2026-08-07T15:14:21'
+    action: 'T-2854: fabric-register the router test suites'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 140 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 140
+  commits: 4
+  files_changed: 15
+  lines_added: 836
+  lines_removed: 356
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2854-finish-d-377-make-the-global-install-unr.md
+generated_by: context-agent-hybrid
