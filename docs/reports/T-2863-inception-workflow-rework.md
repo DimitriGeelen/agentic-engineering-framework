@@ -182,6 +182,104 @@ Ordering is therefore not a preference:
 Step 3 is where determinism comes from. Steps 1–2 are prerequisites. Step 4
 without them buys a false green.
 
+## F-6 — Ticking a Human AC is the function's stated purpose, not a leak (A2 falsified)
+
+A2 said *"`@auto-tick-on-decide` ticking a `### Human` AC is always wrong."*
+That is wrong. `lib/inception.sh:292` — the function's own header:
+
+> **T-1324: Tick the Human AC that authorizes the inception decision.** After
+> `fw inception decide` writes the Decision block, the templated `[REVIEW] Review
+> exploration findings and approve go/no-go decision` Human AC is structurally
+> satisfied by the same command — leaving it unchecked keeps the task in
+> partial-complete forever (G-008 contributor).
+
+The reasoning is sound *given its premise*: if the human ran `decide`, the human
+approved, so the approval AC is satisfied by construction.
+
+**The premise is what fails.** `decide` has entry paths that are not the human:
+`--i-am-human`, `--from-watchtower`, `--skip-sovereignty`. T-2857 arrived through
+`--skip-sovereignty` with the Watchtower log ending 2.5h earlier, and the tick
+fired anyway. The tick reads *"a command ran"* and writes *"a human approved."*
+
+So the fix is not "never tick a Human AC" — it is **tick only when the caller is
+provably the human**, i.e. condition the tick on the authority channel that let
+`decide` through. That is a Framework-lane decision (F-2), which is why it had no
+node to hang on.
+
+Two asymmetries worth recording. The Agent branch requires a `## Recommendation`
+section to exist before it ticks (`elif in_agent and has_recommendation`); the
+Human branch has no such condition. And a **third caller** exists —
+`do_inception_sweep` (`lib/inception.sh:866`, comment: `# Tick the Human AC`)
+ticks in **batch** across many tasks, with no `decide` and no human anywhere in
+the call.
+
+## F-7 — The recommendation gate enforces one third of the contract it prints
+
+On refusal, `do_inception_decide` prints (`lib/inception.sh:493-496`):
+
+```
+The task file must contain a ## Recommendation section with a non-commented:
+  **Recommendation:** GO / NO-GO / DEFER
+  **Rationale:** Why (cite evidence)
+  **Evidence:** Bullet list of findings
+```
+
+The predicate behind it, `audit_inception_recommendation`
+(`lib/task-audit.sh:117`), is a single grep:
+
+```
+^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*\*{0,2}[A-Za-z]
+```
+
+**Rationale and Evidence are never checked.** T-2857 is the proof — it passed
+this gate with its Evidence block still holding the template comment, verbatim,
+unedited.
+
+L-539 class again (T-2764): the message describes a three-part contract, the
+predicate covers one part, and the two are far enough apart in the file that
+nobody reads them together.
+
+## F-8 — The template already knows the recommendation is a prior
+
+Inside T-2857's untouched Evidence block, shipped by the template:
+
+> `<!-- Add evidence bullets as exploration progresses (file paths, commit
+> hashes, test results). The filing-time recommendation can be revised before fw
+> inception decide. -->`
+
+The prior/finding distinction that IW-1 proposes to introduce **is already
+written down, in the template, at the exact spot where it matters.** It is
+documented intent with zero enforcement: nothing checks that the revision
+happened, and the placeholder that says "revise me" is itself sufficient to pass
+the gate.
+
+This lowers the cost of IW-1 considerably. It may not need a `prior:` /
+`recommendation:` schema split at all — it may need the sentence the template
+already contains to become a predicate.
+
+## F-9 — Three machines can write or ratify a recommendation; none requires evidence
+
+Trace one inception end to end:
+
+| # | Step | Who | Evidence required |
+|---|------|-----|:---:|
+| 1 | T-2204 refuses filing without GO/NO-GO/DEFER | Framework | none — no exploration has happened yet |
+| 2 | Hourly cron `inception-retrofit-rec-hourly` **injects a DEFER stub** into any active inception with an empty block (`lib/inception.sh:909,955,998`) | Framework | none |
+| 3 | `decide` gate checks a `**Recommendation:** <word>` line exists (F-7) | Framework | none |
+| 4 | `@auto-tick-on-decide` ticks the `[REVIEW] … approve go/no-go decision` Human AC (F-6) | Framework | none |
+| 5 | Task archives, rendered as human-approved | Framework | — |
+
+**No step in that chain requires a single finding, and step 4 manufactures the
+human's signature from the fact that step 3 returned zero.** Instance 5 is not
+"the recommendation is requested too early". It is that the framework can
+complete the entire filing→approval loop with no human and no evidence, and the
+artifact it leaves behind is indistinguishable from one where both were present.
+
+That is also why this went unseen: every individual gate is defensible, each was
+added to fix a real incident (T-679, T-973, T-974, T-1324, T-1503, T-2204), and
+the composition was never drawn — because the lane that would have drawn it does
+not exist (F-2).
+
 <!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
      pending operator dialogue on IW-1..IW-4. -->
 
@@ -196,6 +294,14 @@ that it needs documenting turned out to be false (F-1); the map exists and is
 accurate. What it lacks is the Framework lane (F-2). Proposal put to the operator:
 amend `aef-inception-flow` rather than draft a new map, adding Framework ·
 Authority and re-homing the six gates in F-3 into it.
+
+**2026-08-07 — agent, correcting itself on IW-2:** I had answered IW-2 at
+confidence 3 with "almost certainly no, CLAUDE.md says NEVER check a `### Human`
+AC." Reading `lib/inception.sh:292` shows that ticking the approval AC is the
+function's *entire original purpose* (T-1324) and that removing it re-opens a
+real leak (G-008). A2 is falsified. The confidence was high and the answer was
+wrong in the same direction as the prior it was meant to check — worth noting,
+because IW-2 was the one question I had not planned to re-examine.
 
 **2026-08-07 — agent, on this task's own filing:** T-2863 was filed with a GO
 before the map was opened, because the T-2204 gate requires a recommendation at

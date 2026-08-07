@@ -90,8 +90,13 @@ single fresh-install session.
 
 - **A1** — Separating "prior at filing" from "recommendation at review" is
   sufficient; the gate does not need to be removed, only re-timed.
-- **A2** — `@auto-tick-on-decide` ticking a `### Human` AC is always wrong, and
-  no current workflow depends on it.
+- **A2** — ~~`@auto-tick-on-decide` ticking a `### Human` AC is always wrong, and
+  no current workflow depends on it.~~ **FALSIFIED (F-6).** Ticking the approval
+  AC is the function's stated purpose (T-1324) and it prevents a real
+  partial-complete leak (G-008). What is wrong is the *inference*: the tick reads
+  "a command ran" and writes "a human approved", while `decide` has three
+  non-human entry paths. Revised: the tick must be conditioned on the authority
+  channel, not removed.
 - **A3** — The decide preflight's agent-AC requirement is load-bearing for
   *content* ACs (problem statement, assumptions) and never for *process* ACs
   that name the decision itself.
@@ -102,24 +107,24 @@ single fresh-install session.
 ## Open Questions
 
 - **IW-1: Should the recommendation be required at filing time, at review time, or both with different names?**
-  confidence: 2
+  confidence: 3
   disposition: deferred
-  rationale: Leaning "both, named differently" — a `prior:` at filing (explicitly falsifiable, rendered as such) and a `recommendation:` at review. This preserves what T-679/T-2204 bought without letting a prior masquerade as a finding. Needs the operator's call.
+  rationale: Sharpened by F-8 — the prior/finding distinction is ALREADY in the template, as prose inside the Evidence placeholder ("the filing-time recommendation can be revised before fw inception decide"), with zero enforcement. So the cheap answer is not a schema split but a predicate: require Evidence to be non-placeholder at decide time (F-7 shows only the `**Recommendation:**` line is checked today). Recommend: keep filing-time required, rename it `prior:` in rendering, and gate decide on evidence. Operator's call.
 
 - **IW-2: May `@auto-tick-on-decide` ever tick a `### Human` AC?**
   confidence: 3
   disposition: deferred
-  rationale: Almost certainly no — CLAUDE.md says "NEVER check a ### Human AC", and T-2857 shows the marker doing exactly that. Confidence is high but the change is the operator's, since it alters what a decide does.
+  rationale: **Reframed by F-6 — my prior answer here was wrong.** Ticking the approval AC is the function's stated purpose (T-1324) and removing it re-opens the G-008 partial-complete leak. The defect is that the tick infers "a human approved" from "decide ran", while decide admits `--i-am-human` / `--from-watchtower` / `--skip-sovereignty`, and a third caller (`do_inception_sweep:866`) ticks in batch with no decide at all. Recommend: tick only on human-authenticated channels; on `--skip-sovereignty` leave it unticked. Operator's call because it changes what a decide does.
 
 - **IW-3: Should the decide preflight require agent ACs at all?**
-  confidence: 1
+  confidence: 2
   disposition: deferred
-  rationale: T-2862 shows it deadlocks on process ACs. Options: exempt self-referential ACs, require only content ACs, or drop the requirement and let the recommendation carry the burden. Undecided.
+  rationale: T-2862 shows it deadlocks on process ACs — the AC names the decision the gate is blocking. The gate itself is load-bearing (T-1503: without it, decide poisoned the body then failed P-010, and retries appended duplicate Updates). So: keep the gate, kill the self-referential AC class. Recommend exempting ACs whose text names the decide command, and fixing the seed (T-2862) so the class stops being generated. Operator's call on whether to exempt or to forbid at author time.
 
 - **IW-4: What is the correct C-001 artifact timing under a write guard?**
-  confidence: 1
+  confidence: 2
   disposition: deferred
-  rationale: The artifact-first rule is right (T-194: conversations are ephemeral). The collision is with background-session isolation. Fix may be config (T-2861 `bgIsolation=none`) rather than workflow, but the workflow should not assume an unguarded write.
+  rationale: The artifact-first rule is right (T-194: conversations are ephemeral). The collision is with background-session isolation, and the guard's own advice (enter a worktree) is wrong for AEF because governance state is tracked and a worktree forks it (T-2821/T-2822). Recommend: fix in config, not workflow — `fw init` emits `worktree.bgIsolation=none` (T-2861) — but the workflow must stop assuming an unguarded write, so C-001 should state the artifact is written to the main checkout. Operator's call.
 
 - **IW-5: Where does the designer map draw the human/agent authority boundary?**
   confidence: 3
