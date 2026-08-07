@@ -566,6 +566,52 @@ Promotion to `detail-authority` still requires `inception-transitions.yaml`
 the registry primitive before those exist buys a green rail over a drawing
 nothing executes.
 
+### S-1 round 2 — operator laid out v2; agent re-read and normalised
+
+Operator saved v2 through the designer UI. Re-read from the store and diffed on
+`uid` (the cross-version stable identity — node **ids** are file-scoped and the
+editor regenerates them on every save, which is harmless):
+
+| Dimension | v1 → v2 |
+|---|---|
+| nodes / flows / lanes | 17 / 18 / 3 — unchanged |
+| node uids | all 17 preserved, none added, none removed |
+| names, lanes, types | **no changes** |
+| flows (uid, endpoints, labels) | **no changes** |
+| `aef:meta` notes | 13/13 preserved; subProcess constituents intact |
+| positions | **all 16 placed nodes moved** — the operator's layout |
+| lint | **CLEAN** |
+| **doc comment** | **LOST** |
+
+So v2 is the seeded topology plus the operator's layout, minus the map header.
+The framework-lane nodes were tidied onto a common row (y≈168) and the agent
+chain dropped to y≈466–480 — a real layout pass, not an incidental save.
+
+**The doc loss is instance 3 of a known, already-registered defect.**
+`tools/corpus_spec.py:178` names it: *"designer save path destroying doc comments
+(T-2682, G-071 class)."* Prior instances: `draft-knowledge-leveling` v5→v6 and
+`draft-trigger-handling` v1→v2. The pattern is exact each time — the last
+agent-authored version carries the doc, the first UI save drops it, every save
+after inherits the absence. Nothing else is harmed, which is precisely what makes
+it easy to miss.
+
+**Not repaired now, per the T-2682 precedent:** restoring a doc on a map under
+active operator editing is futile until the save path is fixed — the next UI save
+drops it again. It will be restored at promotion, which is when it matters and
+when editing has stopped. In the meantime the "this is a proposal, not as-is"
+signal survives in three other places the editor does preserve: the `PROPOSED —`
+prefixes on `ir_evaluate` and `ir_gw_readiness`, the pool name *"AEF inception
+flow (readiness draft)"*, and the title. v1.bpmn with the full doc is committed,
+so nothing is unrecoverable.
+
+**Escalation is warranted here, unlike F-14.** This is a genuine designer-side
+defect on the shared seam, now at three independent instances across two maps and
+two months, and 832 had not replied to the rail-332 report as of 2026-07-29. The
+schema fix proposed then still stands: carry `doc` as an `aef:` attribute on
+`workflowMeta` rather than a leading XML comment, so it survives any DOM
+round-trip. Operator's call whether to re-raise on the rail with the new
+instance count.
+
 <!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
      pending operator review of the seeded skeleton. -->
 

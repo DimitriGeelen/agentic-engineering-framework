@@ -6,9 +6,14 @@
       "v": 1,
       "note": "T-2863 pair-draft v1: Framework lane + readiness floor + named not-ready return edges",
       "ts": 1786141691
+    },
+    {
+      "v": 2,
+      "note": "",
+      "ts": 1786143143
     }
   ],
   "uuid": "de31abe1-51d3-469c-9971-205abe5ecc17",
-  "latest": 1,
-  "updated": 1786141691
+  "latest": 2,
+  "updated": 1786143143
 }
