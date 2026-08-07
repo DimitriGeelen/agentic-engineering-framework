@@ -280,6 +280,39 @@ added to fix a real incident (T-679, T-973, T-974, T-1324, T-1503, T-2204), and
 the composition was never drawn — because the lane that would have drawn it does
 not exist (F-2).
 
+## F-10 — And a sixth machine stamps the empty recommendation **CONFIRMED**
+
+T-2857's archived body carries this, written 1 second after the decide:
+
+```
+## Recommendation Verdict (v1.0)
+- **Overall:** CONFIRMED
+- **Claims:** 2
+| `T-2856` | task | ✓ pass |
+| `T-2854` | task | ✓ pass |
+```
+
+Watchtower renders it directly beneath the Agent Recommendation
+(`web/templates/inception_detail.html:416-419`).
+
+What the validator actually checks (`lib/reviewer/recommendation_claims.py:1-30`)
+is **referent existence**: a `T-XXX` claim passes if a file by that name exists
+in `.tasks/`. `CONFIRMED` is defined as *"≥1 claim, all verifiable claims pass."*
+
+T-2857's rationale mentioned T-2856 and T-2854 in passing prose. Both task files
+exist. Two claims, two passes, **CONFIRMED** — on a recommendation whose Evidence
+block was the untouched template comment and whose central assertion the spike
+refuted forty minutes later.
+
+The module is internally honest: its docstring says *"Advisory only."* The
+failure is in the **word that reaches the operator**. `CONFIRMED` under a
+recommendation is read as *this has been checked* — and something was checked,
+just not the thing the word implies. Nothing in the rendering distinguishes
+"the identifiers resolve" from "the reasoning holds".
+
+This makes the F-9 chain six steps, not five, and the last one actively adds
+false confidence rather than merely failing to add real confidence.
+
 <!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
      pending operator dialogue on IW-1..IW-4. -->
 
