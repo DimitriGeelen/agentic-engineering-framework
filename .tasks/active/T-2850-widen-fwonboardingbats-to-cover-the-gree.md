@@ -23,7 +23,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T05:19:56Z
-last_update: 2026-08-07T05:40:45Z
+last_update: 2026-08-07T06:25:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,7 +89,7 @@ bvp_scores_proposed:
       fixture: no gated onboarding task is agent-unresolvable unless it is `owner: human`
 - [x] The two pre-existing vacuous tests in `tests/integration/fw_onboarding.bats` assert
       exit status instead of only matching a substring of their own command name
-- [ ] Negative control performed: the suite is shown to go red when the behaviour it
+- [x] Negative control performed: the suite is shown to go red when the behaviour it
       guards is reverted, and the result recorded in this task
 
 ### Human
@@ -190,6 +190,8 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/integration/fw_onboarding_greenfield.bats 2>&1); echo "$out" | grep -q '^ok 15' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -257,3 +259,28 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2850-widen-fwonboardingbats-to-cover-the-gree.md
 - **Context:** Initial task creation
+
+### 2026-08-07 — CLAUDE_PROJECT_DIR fix + wrong-object test, then negative control
+- **CLAUDE_PROJECT_DIR fix:** `setup_file`'s `fw doctor` invocation was missing
+  `CLAUDE_PROJECT_DIR`. Without it, an unset `FRAMEWORK_ROOT`/`PROJECT_ROOT` plus
+  a markerless foreign cwd (`/tmp`) hit `fw`'s non-interactive auto-init branch,
+  which silently `fw init`s the cwd itself — every assertion in the file would
+  then measure `/tmp`'s phantom project instead of the fixture. Fixed by passing
+  `CLAUDE_PROJECT_DIR="$GDIR/proj"`, and added a new anchor test ("doctor's own
+  summary line names the fixture, not the foreign CWD") that fails if this ever
+  regresses.
+- **Negative control (this AC), performed live, not synthetically:** found
+  `bin/fw`'s cron-registry doctor check (T-2844's fix) already reverted in the
+  working tree — the `elif [ ... ] && [ "$(cron_registry_job_count ...)" = "0" ]`
+  SKIP branch replaced with `elif false; then :`. Ran the full 15-test suite
+  against that reverted `bin/fw`: **2 of 15 went red** — `greenfield: doctor
+  emits no PROJECT-SCOPE warning` (test 9, "Unexplained project-scope WARN(s):
+  WARN Cron registry present but not generated") and `greenfield: an empty cron
+  registry is not reported as drift` (test 12) — with all 13 other tests
+  unaffected. `git checkout -- bin/fw` restored the T-2844 fix; re-ran the full
+  suite: **15/15 green**. This demonstrates the suite's WARN allowlist (test 9)
+  and the T-2844-specific assertion (test 12) both fail closed when the guarded
+  behaviour is reverted, and recover when it is restored — the shape the AC
+  requires.
+- **Full run wall-clock:** ~2m20s (`fw init` + `fw doctor` in `setup_file`,
+  matches the file's own "deliberately expensive" comment).

@@ -79,7 +79,19 @@ setup_file() {
     # the shape that exposed the T-2709 hook-resolution false positive: hooks
     # that resolve when invoked from the project root and fail from anywhere
     # else. `cd` first so a project-root-relative bug cannot hide.
-    ( cd /tmp && env -u FRAMEWORK_ROOT -u PROJECT_ROOT HOME="$GDIR/home" \
+    #
+    # CLAUDE_PROJECT_DIR is mandatory here, not optional realism (T-2850 live
+    # finding, filed as its own bug — see .tasks for the follow-up id). Without
+    # it, an unset FRAMEWORK_ROOT/PROJECT_ROOT and a foreign, markerless cwd hit
+    # `fw`'s non-interactive auto-init branch (bin/fw ~line 645): it silently
+    # `fw init`s **the CWD itself** (/tmp), vendoring a full framework copy
+    # there. Every assertion below would then read /tmp's phantom project
+    # instead of the fixture — the wrong-object defect class this whole file
+    # exists to catch, reproduced inside its own harness. CLAUDE_PROJECT_DIR is
+    # also the more faithful shape: it is what Claude Code actually sets on
+    # every hook invocation (the real-world T-2709 scenario), so this is not a
+    # synthetic workaround, it is the omitted half of the real invocation.
+    ( cd /tmp && env -u FRAMEWORK_ROOT -u PROJECT_ROOT CLAUDE_PROJECT_DIR="$GDIR/proj" HOME="$GDIR/home" \
         "$GDIR/proj/.agentic-framework/bin/fw" doctor > "$GDIR/doctor.log" 2>&1
       echo "$?" > "$GDIR/doctor.rc" )
 }
@@ -115,6 +127,19 @@ _plain() { sed 's/\x1b\[[0-9;]*m//g' "$1"; }
 @test "greenfield: fw doctor exits 0 from a foreign CWD" {
     # The operator's 2026-08-06 run exited 2 here.
     [ "$(cat "$GDIR/doctor.rc")" = "0" ]
+}
+
+@test "greenfield: doctor's own summary line names the fixture, not the foreign CWD" {
+    # Anchor for the wrong-object class (T-2850 live finding): doctor prints
+    # "Project <PROJECT_ROOT>: N warning(s), M failure(s)" as its last line.
+    # Every WARN/FAIL assertion in this file is only meaningful if that project
+    # is the fixture. Without CLAUDE_PROJECT_DIR (see setup_file), PROJECT_ROOT
+    # silently resolved to /tmp itself via fw's non-interactive auto-init path —
+    # every assertion below would then pass or fail about the wrong object with
+    # no test able to tell the difference. This test is that difference.
+    run _plain "$GDIR/doctor.log"
+    [[ "$output" == *"Project $GDIR/proj:"* ]]
+    [[ "$output" != *"Project /tmp:"* ]]
 }
 
 @test "greenfield: doctor output is substantive (guards the checks below from passing vacuously)" {
