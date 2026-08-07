@@ -19,6 +19,7 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 source "$FRAMEWORK_ROOT/lib/watchtower.sh"
+source "$FRAMEWORK_ROOT/lib/traceability.sh"
 AUDITS_DIR="$CONTEXT_DIR/audits"
 
 # --- Schedule Subcommand (dispatch before heavy init) ---
@@ -2234,10 +2235,19 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
                     continue
                 fi
                 unset _revert_log
+                commit_sha=$(echo "$commit_line" | cut -d' ' -f1)
+                # T-2851: a root commit predates every task by construction, so it
+                # cannot reference one. `fw init`'s bootstrap commit (lib/init.sh:742)
+                # is exactly this case and made every fresh project fail its own
+                # traceability audit on day zero. Keyed on parentlessness, not on the
+                # `T-000` sentinel — see lib/traceability.sh for why that distinction
+                # is what stops this being a general P-002 escape hatch.
+                if trace_is_root_commit "$PROJECT_ROOT" "$commit_sha"; then
+                    continue
+                fi
                 if [ "$orphan_refs" -eq 0 ]; then
                     echo ""
                 fi
-                commit_sha=$(echo "$commit_line" | cut -d' ' -f1)
                 warn "Commit $commit_sha references non-existent task $task_ref" \
                      "Task file for $task_ref not found in .tasks/" \
                      "Create task or fix commit reference"
