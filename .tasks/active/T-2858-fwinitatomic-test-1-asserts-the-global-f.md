@@ -98,11 +98,11 @@ T-2857 spike S-2; full analysis in `docs/reports/T-2857-cli-suite-gate-inception
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Test 1 observes the property directly — refusal + exit status — with no reference to a global install, and the `ROUTED-TO-GLOBAL` assertion is gone
-- [ ] The non-vacuity pairing with test 2 still holds: test 2 proves the refusal is caused by the marker, not by the stub being unroutable for an unrelated reason
-- [ ] `tests/unit/fw_init_atomic.bats` is green (5/5, or 4/5 with test 4 skipped by its own kill-window guard)
-- [ ] The `ROUTED-TO-GLOBAL` stub in `setup()` is KEPT and its comment says why: tests 1 and 2 assert its absence, and a present, executable stub is what makes those negatives non-vacuous. (Revised from "remove it" once test 2 was read — removing it would make both negatives vacuously true, the exact failure the stub guards against.)
-- [ ] A comment records why the assertion changed (T-2854 removed the mechanism), matching the convention T-2856 used in the sibling suites
+- [x] Test 1 observes the property directly — refusal + exit status — with no reference to a global install, and the `ROUTED-TO-GLOBAL` assertion is gone
+- [x] The non-vacuity pairing with test 2 still holds: test 2 proves the refusal is caused by the marker, not by the stub being unroutable for an unrelated reason
+- [x] `tests/unit/fw_init_atomic.bats` is green (5/5, or 4/5 with test 4 skipped by its own kill-window guard)
+- [x] The `ROUTED-TO-GLOBAL` stub in `setup()` is KEPT and its comment says why: tests 1 and 2 assert its absence, and a present, executable stub is what makes those negatives non-vacuous. (Revised from "remove it" once test 2 was read — removing it would make both negatives vacuously true, the exact failure the stub guards against.)
+- [x] A comment records why the assertion changed (T-2854 removed the mechanism), matching the convention T-2856 used in the sibling suites
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -142,8 +142,11 @@ T-2857 spike S-2; full analysis in `docs/reports/T-2857-cli-suite-gate-inception
 # rather than asserting a fixed pass count.
 ! bats tests/unit/fw_init_atomic.bats 2>&1 | grep -q '^not ok'
 
-# The assertion on the removed mechanism must actually be gone, not just passing.
-! grep -q 'ROUTED-TO-GLOBAL' tests/unit/fw_init_atomic.bats
+# The buggy POSITIVE assertion on the removed mechanism must be gone. The stub
+# itself and the negative `! echo "$output" | grep -q 'ROUTED-TO-GLOBAL'` checks
+# stay by design (AC #4 — they're what keeps the negatives non-vacuous), so a
+# bare-string check would false-fail. Assert no unnegated occurrence remains.
+! grep -n "grep -q 'ROUTED-TO-GLOBAL'" tests/unit/fw_init_atomic.bats | grep -v '! echo' | grep -v '^[0-9]*:#'
 
 # Non-vacuity: the suite must still contain the marker-refusal test it is named for.
 grep -q 'router refuses to route into a vendor marked incomplete' tests/unit/fw_init_atomic.bats
@@ -260,14 +263,20 @@ grep -q 'router refuses to route into a vendor marked incomplete' tests/unit/fw_
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-07 — stale Verification line vs. revised AC #4
+- **Chose:** Rewrote the `## Verification` line that checked for the total
+  absence of the string `ROUTED-TO-GLOBAL` in the suite file. Replaced it with
+  a check that no *unnegated* `grep -q 'ROUTED-TO-GLOBAL'` assertion remains
+  (excluding the setup() stub echo and comments).
+- **Why:** AC #4 was revised mid-task ("Revised from 'remove it' once test 2
+  was read") to KEEP the `ROUTED-TO-GLOBAL` stub and its negative assertions
+  in tests 1 and 2 — removing them would make both negatives vacuously true.
+  The Verification line was written before that revision and still asserted
+  total absence of the string, which would have blocked completion of a
+  correct, already-committed fix (commit a1d2ed6bc). The code was correct;
+  the gate was stale.
+- **Rejected:** Leaving the old Verification line as-is and using `--force` to
+  bypass — would have masked a real gate/AC mismatch instead of fixing it.
 
 ## Decision
 
