@@ -9,7 +9,7 @@ description: >
   for the per-project vendored copy, which D-377 made the default shape. Found in
   T-2846.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T05:17:56Z
-last_update: '2026-08-07T05:30:11Z'
+last_update: 2026-08-07T12:15:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,14 +73,67 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`do_vendor` (`bin/fw:269-554`) declares eight exclude patterns. **Five of them have never
+excluded anything.** The copy loop runs one `rsync` per include directory, so the transfer
+root is `$src/lib/` — but the patterns are written relative to the repo root
+(`lib/ts/node_modules`). An rsync pattern containing a `/` is anchored to the transfer
+root, so `lib/ts/…` cannot match a path that rsync sees as `ts/…`.
+
+The three patterns that *do* work (`__pycache__`, `*.pyc`, `.DS_Store`) contain no slash,
+so rsync matches them as bare basenames at any depth. That is what makes the list look
+functional: the visible effect of exclusion is real, and only the slash-bearing half is
+inert.
+
+Measured on the T-2846 evidence project (retained greenfield consumer):
+- 2731 tracked files, of which **2704 are `.agentic-framework/`**
+- **370** vendored files are files AEF's own `.gitignore` refuses to track
+- **305** of those are `lib/ts/node_modules` — all under the exact path the exclude names
+- project root has **no `.gitignore` at all**
+
+Scope fence — this task fixes only the inert-predicate bug. Two adjacent questions are
+deliberately **not** decided here and are filed separately: whether `docs/reports` (11M)
+and `docs/screenshots` (4.8M) should ship to consumers at all, and whether `fw doctor`
+should size-check the per-project vendored copy (today it checks only `$HOME`).
+
+Third instance this week of the same class as T-2851 and T-2852: a comparison whose two
+operands are not the same quantity, failing silently in the direction that reads as
+success.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every `do_vendor` exclude pattern is expressed so it matches under the transfer root
+      the copy loop actually uses (per-include, not repo-root), verified by a probe that
+      shows the pre-fix pattern failing and the post-fix pattern succeeding on the same
+      fixture
+- [x] The `cp -r` fallback (taken when `rsync` is absent) honours the same exclude set —
+      today it honours only the three slashless ones via post-hoc `find` deletes
+- [x] A fresh vendor into a clean target copies **zero** files that AEF's own `.gitignore`
+      excludes (predicate: `git check-ignore` against the source repo, not a hard-coded
+      `node_modules` string)
+- [ ] Regression suite `tests/unit/vendor_exclude_anchoring.bats` covers: each declared
+      exclude actually excludes; a **negative control** proving the assertion can fail;
+      both the rsync and the `cp -r` branch; and an anti-vacuity anchor
+- [x] Re-vendoring over a target that already contains the wrongly-shipped files removes
+      them (self-healing for consumers created before this fix)
+
+**Measured (same source, `--source` pinned so the only variable is the code):**
+
+| | files | node_modules | png | lib/ts/src | size | gitignored-by-source |
+|---|---|---|---|---|---|---|
+| before (`HEAD:bin/fw`) | 2706 | 301 | 88 | 3 | 92M | **366** |
+| after (rsync branch) | 2334 | 0 | 23 | 0 | 28M | **0** |
+| after (`cp -r` branch) | 2334 | 0 | 23 | 0 | 28M | — |
+
+Re-vendor over the polluted target: 301 → 0 node_modules, 92M → 28M (AC5).
+`lib/ts/dist` (3 files, tracked build output) survives; the vendored `bin/fw` runs
+(`fw v1.6.325`) and the vendored `loop-detect.sh` hook returns rc=0 identically with and
+without `lib/ts/src` present — its only use of the source is a `[ -f ]`-guarded
+stale-recompile, so consumers exec the shipped `dist/loop-detect.js` either way. The six
+tracked files now absent from the vendored tree are exactly `lib/ts/{src/*,tsconfig.json,
+package.json,package-lock.json}` — the set the exclude list has named since it was
+written and never once dropped.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -182,6 +235,40 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** a brand-new consumer project's first commit tracks 2704 framework files,
+including 305 `lib/ts/node_modules` files that AEF itself gitignores. 142MB for an empty
+project.
+
+**Root cause:** `do_vendor` copies each include directory with its own `rsync` call
+(`bin/fw:413-436`), so the transfer root is `$src/<include>/`. The exclude patterns
+(`bin/fw:362-371`) are written relative to the **repo root**. rsync anchors any pattern
+containing a `/` to the transfer root, so `--exclude="lib/ts/node_modules"` is matched
+against `ts/node_modules` and never fires. Five of the eight patterns are slash-bearing
+and therefore inert; the three that work are slashless and match as bare basenames.
+
+Probe (rsync 3.2.7), same fixture, three transfer roots:
+- transfer root `src/lib/` + pattern `lib/ts/node_modules` → **file ships**
+- transfer root `src/` + same pattern → excluded
+- transfer root `src/lib/` + pattern `ts/node_modules` → excluded
+
+**Why structurally allowed:** three compounding reasons.
+1. *The failure direction is silent and safe.* A dead exclude ships extra files. Nothing
+   errors, no gate fires, the copy succeeds. The only signal is a size nobody measures.
+2. *The working half masks the broken half.* `__pycache__` really is absent from the
+   vendored tree, so anyone spot-checking "do the excludes work?" gets a yes.
+3. *Nothing downstream re-derives the boundary.* `fw init` writes no project-root
+   `.gitignore` (`lib/init.sh:735` notes this explicitly) and then runs `git add -A`
+   (`lib/init.sh:733`), so upstream's authoritative "this is not source" declaration is
+   discarded at the vendor boundary and never reconstructed. `fw doctor`'s size check
+   measures `$HOME/.agentic-framework` only (`bin/fw:2393`) — the shape D-377 made
+   obsolete — so the per-project copy is unmeasured by construction.
+
+**Prevention:** the regression test asserts the property, not the instance — *no vendored
+file may be one the source repo gitignores* — so a future include that drags in a new
+ignored tree fails the same test. Additionally each declared exclude is asserted to
+actually exclude, with a negative control, across both the rsync and `cp -r` branches; a
+pattern that silently stops matching is then a red test rather than a larger tarball.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -247,3 +334,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2849-greenfield-consumer-first-commit-carries.md
 - **Context:** Initial task creation
+
+### 2026-08-07T12:15:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
