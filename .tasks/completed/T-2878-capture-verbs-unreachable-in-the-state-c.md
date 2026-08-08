@@ -6,12 +6,12 @@ description: >
   Capture verbs unreachable in the state completion creates — note, context add-*,
   handover
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh, tests/unit/capture_verbs_nulltask.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T18:00:40Z
-last_update: '2026-08-08T18:15:12Z'
-date_finished:
+last_update: 2026-08-08T18:38:38Z
+date_finished: 2026-08-08T18:38:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,15 @@ r=$(mktemp -d); mkdir -p "$r/.tasks/active" "$r/.tasks/completed" "$r/.context/w
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2878-capture-verbs-unreachable-in-the-state-c.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3f509395
+- **Timestamp:** 2026-08-08T18:38:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-08T18:38:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

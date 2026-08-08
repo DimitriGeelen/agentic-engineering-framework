@@ -309,9 +309,26 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
     if [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+task[[:space:]]+update[[:space:]]+(T-[0-9]+) ]]; then
         TARGET_TASK="${BASH_REMATCH[3]}"
     # Pattern 2: fw context add-* --task T-NNNN
-    elif [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+context[[:space:]]+add- ]] && \
-         [[ "$BASH_CMD" =~ --task[[:space:]=]+(T-[0-9]+) ]]; then
-        TARGET_TASK="${BASH_REMATCH[1]}"
+    # T-2879: anchored, for the same reason T-2833 anchored pattern 3 below. The prior
+    # form was two independent regexes ANDed — "fw context add-" present anywhere AND
+    # "--task T-N" present anywhere — so the extracted id need not belong to the
+    # add-* invocation at all. `fw context add-learning "x"; fw task list --task T-9`
+    # extracted T-9 as the add-*'s target. Requiring the flag to follow the verb with
+    # no chain separator (| ; &) between them ties the id to its own command.
+    #
+    # 832 rail 474 §4 reported this class against their vendored copy and I answered
+    # that it did not reproduce here. That answer was wrong, and wrong in an avoidable
+    # way: I measured only `fw context add-*` shapes WITHOUT a --task flag, which
+    # cannot trip pattern 2 at all. Corrected on the rail.
+    #
+    # RESIDUAL, unfixed and not fixable with bash regex — identical to the one T-2833
+    # documented for pattern 3: a command whose QUOTED PAYLOAD contains a literal
+    # `fw context add-learning ... --task T-N` still matches, because the regex cannot
+    # see quote nesting. That is how this was hit live (a probe script listing example
+    # invocations as test strings). Low severity — the T-1890 bypass mechanisms cover
+    # it — but it means rail posts and doc writes quoting real commands can still trip.
+    elif [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+context[[:space:]]+add-[a-z-]+[^|\;\&]*--task[[:space:]=]+(T-[0-9]+) ]]; then
+        TARGET_TASK="${BASH_REMATCH[3]}"
     # Pattern 3: git commit ... -m/--message "T-NNNN: ..." (the canonical
     # T-XXX: prefix marker). T-2833: anchored to the actual -m/--message flag
     # value, not "leftmost T-N: anywhere in the string". The prior form was

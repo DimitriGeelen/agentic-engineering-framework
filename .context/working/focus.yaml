@@ -1,7 +1,7 @@
 # Working Memory - Current Focus
 # Session: S-2026-0806-0011
 
-current_task: T-2878
+current_task: T-2879
 priorities: []
 blockers: []
 pending_decisions: []
@@ -18,17 +18,17 @@ reminders:
   \ not mine to do unasked. Proposed the rail as the live channel instead. This is\
   \ the last thing blocking their G-024 consumer half."
 - "T-2878 FIX IS COMPOSED BUT NOT APPLIED \u2014 budget-gate refused the source Edit\
-  \ at 98%. The exact diff is in the task file under STATUS. Apply it, run bin/fw vendor\
-  \ self, then add tests/unit/capture_verbs_nulltask.bats. Do not re-derive it. Rail\
-  \ 472/473/474 have been READ; 474 is 832's T-390, same fix, adopted."
-- "FILE THIS: .context/working/.budget-status UNDER-REPORTED by ~178K \u2014 read ok/116729,\
-  \ then budget-gate refused at 294439 (98%), same session, no compaction between. Twice\
-  \ more earlier: 213917->64395 and 263915->116729. FAIL-OPEN direction: it permits work\
-  \ that should be refused, and /resume names it canonical so it is trusted by rule.\
-  \ Suspicion, UNVERIFIED: it reads a session transcript that rotates, measuring the\
-  \ current file rather than cumulative context. Verify against budget-gate.sh /\
-  \ checkpoint.sh before filing. Could not file live \u2014 needs the capture verbs T-2878\
-  \ unblocks."
+  \ at 98%. The exact diff is in the task file under STATUS. Apply it, run bin/fw\
+  \ vendor self, then add tests/unit/capture_verbs_nulltask.bats. Do not re-derive\
+  \ it. Rail 472/473/474 have been READ; 474 is 832's T-390, same fix, adopted."
+- "FILE THIS: .context/working/.budget-status UNDER-REPORTED by ~178K \u2014 read\
+  \ ok/116729, then budget-gate refused at 294439 (98%), same session, no compaction\
+  \ between. Twice more earlier: 213917->64395 and 263915->116729. FAIL-OPEN direction:\
+  \ it permits work that should be refused, and /resume names it canonical so it is\
+  \ trusted by rule. Suspicion, UNVERIFIED: it reads a session transcript that rotates,\
+  \ measuring the current file rather than cumulative context. Verify against budget-gate.sh\
+  \ / checkpoint.sh before filing. Could not file live \u2014 needs the capture verbs\
+  \ T-2878 unblocks."
 - "OPEN OUR SIDE: T-2876 IW-2 is the one to falsify before building \u2014 do grep/cat\
   \ actually substitute for interactive python during recovery states, or does removing\
   \ python3 from the safe-list relocate the deadlock? Unmeasured, confidence 1, deliberately\

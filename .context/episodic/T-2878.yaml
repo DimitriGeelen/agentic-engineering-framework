@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2878: Capture verbs unreachable in the state completion creates — note, context add-*, handover
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T18:38:55Z
+# ============================================================================
+
+task_id: T-2878
+task_name: "Capture verbs unreachable in the state completion creates — note, context add-*, handover"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T18:00:40Z
+completed: 2026-08-08T18:38:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-08T20:03:32+02:00
+last_commit: 2026-08-08T20:37:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture verbs unreachable post-completion — diagnosed, fix composed, NOT applied. capture verbs reachable with no active task — six verbs allowed, two controls held, G-078 registered for the shape. OBS-201 — python source executed as shell wrote a screen capture into the working tree
+
+# Key outcomes
+outcomes:
+  - '`fw note`, `fw context add-learning|add-pattern|add-decision|generate-episodic`, and'
+  - 'Safety argument holds: each writes only under `.context/` or `.tasks/`, both already'
+  - 'WIDENING CONTROL — `fw config set` and other non-capture `fw` verbs stay BLOCKED. A fix'
+  - 'bats coverage with an anti-vacuity leg mutating live source (not a `git show HEAD~N:`'
+  - 'Gap registered for the SHAPE, with a closure condition stating that adding these three'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'capture verbs unreachable post-completion — diagnosed, fix composed, NOT applied'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/inbox.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/working/focus.yaml'
+  - '.fabric/components/tests-unit-capture_verbs_nulltask.yaml'
+  - '.tasks/active/T-2878-capture-verbs-unreachable-in-the-state-c.md'
+  - 'tests/unit/capture_verbs_nulltask.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T20:03:32'
+    action: 'T-2878: capture verbs unreachable post-completion — diagnosed, fix composed, NOT applied'
+  - time: '2026-08-08T20:32:21'
+    action: 'T-2878: capture verbs reachable with no active task — six verbs allowed, two controls held, G-078 registered for the shape'
+  - time: '2026-08-08T20:37:04'
+    action: 'T-2878: OBS-201 — python source executed as shell wrote a screen capture into the working tree'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 37
+  commits: 3
+  files_changed: 10
+  lines_added: 669
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2878-capture-verbs-unreachable-in-the-state-c.md
+generated_by: context-agent-hybrid

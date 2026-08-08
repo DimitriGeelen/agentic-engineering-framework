@@ -43,7 +43,24 @@ _fw_chain_split() {
             "'"|'"') q="$ch"; seg+="$ch" ;;
             '\')     seg+="$ch"; i=$((i+1)); [ "$i" -lt "$n" ] && seg+="${cmd:i:1}" ;;
             '&'|'|')
+                # T-2879: an `&` that is part of a file-descriptor duplication is NOT a
+                # chain separator. `bin/fw note "x" 2>&1` was splitting into
+                # `bin/fw note "x" 2>` and `1`; the bare `1` matches nothing in the
+                # allowlist, so the compound failed. That neutralised the ENTIRE safe-list
+                # for the commonest redirect idiom there is — `fw doctor 2>&1`,
+                # `git status 2>&1`, `ls -la 2>&1` all gated — precisely in the no-task and
+                # drift states where the safe-list is the only thing preventing a deadlock.
+                #
+                # Narrow on purpose: require the `&` to sit between a redirect operator and
+                # an fd target (digit or `-`), which is the only form that duplicates rather
+                # than writes. `cmd >& file` is a genuine write to `file` and MUST keep
+                # splitting (and gating) — the next-char test is what preserves that, so do
+                # not relax it to "preceded by > or <" alone.
                 nxt="${cmd:i+1:1}"
+                if [ "$ch" = '&' ] && [[ "${seg: -1}" == [\<\>] ]] && [[ "$nxt" == [0-9-] ]]; then
+                    seg+="$ch"
+                    continue
+                fi
                 [ "$nxt" = "$ch" ] && i=$((i+1))
                 printf '%s\n' "$seg"; seg="" ;;
             ';'|$'\n') printf '%s\n' "$seg"; seg="" ;;
