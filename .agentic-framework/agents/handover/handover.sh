@@ -621,6 +621,29 @@ if [ -s "$REVISITS_FILE" ]; then
     done < "$REVISITS_FILE"
     echo ""
 fi
+
+# T-2865: surface DEFER decisions carrying no revisit date. Its own heading, not
+# extra lines above — "Ripe Today" asserts a date has arrived, and these have no
+# date at all. Same absent-or-empty silence contract.
+UNDATED_FILE="$PROJECT_ROOT/.context/working/.revisits-undated.txt"
+if [ -s "$UNDATED_FILE" ]; then
+    _undated_n=$(grep -c . "$UNDATED_FILE" 2>/dev/null || echo 0)
+    echo "## Deferred With No Revisit Date"
+    echo ""
+    echo "$_undated_n task(s) recorded a DEFER decision but carry no \`revisit_at\`, so"
+    echo "nothing will ever surface them as ripe."
+    echo ""
+    echo "There is **no CLI verb** that sets this field — verified, not assumed"
+    echo "(T-2865). To schedule a revisit, add \`revisit_at: YYYY-MM-DD\` to the task's"
+    echo "frontmatter by hand; the template carries it commented out. Or close the"
+    echo "task if the deferral is permanent."
+    echo ""
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        echo "- $line"
+    done < "$UNDATED_FILE"
+    echo ""
+fi
 )
 ## Work in Progress
 
