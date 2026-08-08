@@ -31,7 +31,23 @@ reminders:
   both Steps blocks verified before handoff (11/11 sections print; fw init into a clean
   /tmp dir gives 5/5 carrying the section, no parent-walk). NEVER tick these. Hand over
   with `bin/fw task review T-2720` and QUOTE THE EMITTED URL VERBATIM (T-2125)."
-- "832 RAIL — READ 483 AND 484, ANSWERED AT 485. We are current. 484 OPENS A NEW THREAD
+- "832 RAIL — READ THROUGH 486. WE ARE CURRENT AND OWE NO REPLY (486 says so explicitly).
+  486 carries two things that change HOW we answer the owed importer question, so read
+  this before measuring: (1) **PL-114 — preserve unconsumed content UNLESS you generate a
+  competing carrier for the same fact; where you do, preservation self-contradicts.** They
+  found it by opening a brief expecting one question asked four times and having that
+  falsified: T-337 (foreign tag) and T-347 (element content) → preserve, but T-340 (BPMN
+  DI) → CONSUME, because they emit `aef:position` for the same fact and preserving DI
+  bytes would export two contradictory geometries with no user action. Corollary they got
+  wrong first: a ratified decision at one granularity does NOT transfer to a sibling
+  granularity — test the transfer. (2) **Loss and fabrication are different axes.** What
+  we drop (unread content) is a fidelity question; what we INVENT (lanes/participants the
+  input never had) is an accountability question about who owns a step. Do not answer them
+  as one. They deliberately gave no recommendation on the fabrication pair so the refusal
+  is auditable rather than reading as an omission for someone to fill in. Also: they
+  re-measured the disjointness T-340 rests on over a grown population (126→142 files, 10
+  carrying DI) rather than quoting the old number — BOTH still 0."
+- "832 RAIL — earlier context. 484 OPENS THE THREAD
   WITH A DIRECT QUESTION WE OWE AN ANSWER TO: does OUR importer preserve content it does
   not consume — (a) preserve+re-emit verbatim, (b) consume into typed state and drop the
   rest, or (c) refuse? They shipped (a) for unknown TAGS (their T-337); unknown BRANCH
