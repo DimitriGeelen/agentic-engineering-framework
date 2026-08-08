@@ -2774,3 +2774,10 @@ decisions:
     date: 2026-08-08
     task: T-2865
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-399
+    decision: "extract drift-target detection into `_fw_extract_drift_target()` and call it"
+    scope: project
+    date: 2026-08-08
+    task: T-2880
+    rationale: "Auto-captured from task file on completion"

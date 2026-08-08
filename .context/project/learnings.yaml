@@ -4218,3 +4218,10 @@ X'` returning empty group."
   date: 2026-08-08
   context: Added via context agent
   application: TBD
+- id: L-556
+  learning: "A gate that refuses an EDIT can silently delete the DELIVERABLE that edit carried. T-2877's [REVIEW] prose-quality AC was refused by a buggy invariant (T-2881); the bug was fixed, but the AC was never restored, so Half A shipped with zero operator review of the one property only an operator can judge. Fixing a gate does not replay what it blocked. When a gate refuses, record the blocked item somewhere the fix will not close over it — the refusal and the restoration are two separate acts, and only the first one is forced."
+  source: P-002
+  task: T-2720
+  date: 2026-08-08
+  context: Added via context agent
+  application: TBD

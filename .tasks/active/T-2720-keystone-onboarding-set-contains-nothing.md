@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:35:02Z
-last_update: '2026-08-08T17:45:06Z'
+last_update: 2026-08-08T20:43:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -129,11 +129,20 @@ and ungated; routes to corpus maps rather than embedding content." No artefact e
 - [x] Arc-017 status reflects reality: `draft` is wrong once Half B is proven shipped
       → `fw arc start arc-017`, draft → in-progress
 
-**This keystone stays OPEN.** Half A is unbuilt, so the arc's headline mechanic does not yet
-fire end-to-end. Per §Arc Completion Discipline, "substrate is in place" is not closure — the
-mechanic is *operator finishes prologue AND starts their own first real task with the
-curriculum readable alongside*, and no curriculum exists. Closing this on Half B alone would
-be the exact substrate-vs-deliverable conflation G-062 exists to catch.
+**This keystone stays OPEN — and the reason changed on 2026-08-08.**
+
+*Original reason (kept, not rewritten):* Half A is unbuilt, so the arc's headline mechanic
+does not yet fire end-to-end. Per §Arc Completion Discipline, "substrate is in place" is not
+closure — the mechanic is *operator finishes prologue AND starts their own first real task
+with the curriculum readable alongside*, and no curriculum exists. Closing this on Half B
+alone would be the exact substrate-vs-deliverable conflation G-062 exists to catch.
+
+*Current reason:* Half A shipped (T-2877, closed 2026-08-08 — 6/6 Agent ACs, 6/6
+verification). **Both halves now exist, and the keystone still stays open**, because the
+mechanic is a thing an operator *does*, and no operator has done it. This is precisely the
+moment G-062 is written for: the temptation to read "both halves built" as closure is
+strongest when the substrate is genuinely complete. It is not closure. The two `[REVIEW]`
+criteria below are the closure condition, and neither the agent nor any scan can tick them.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -165,6 +174,54 @@ be the exact substrate-vs-deliverable conflation G-062 exists to catch.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+- [ ] [REVIEW] The curriculum reads well to someone who has never seen the framework
+
+  This is the review that T-2877 should have carried and did not. It was drafted as a Human
+  AC on that task, refused by arc-017's own Half B invariant (the T-2881 tag-matching bug),
+  and never restored after the bug was fixed — so Half A shipped with no operator review of
+  the one thing about it that only an operator can judge. Homed here rather than re-opening
+  a closed task.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && for f in lib/seeds/tasks/greenfield/T-00*.md lib/seeds/tasks/existing-project/T-00*.md; do echo "=== $f ==="; sed -n '/^## For the Operator/,/^## Acceptance/p' "$f" | head -n -1; done | less`
+  2. Read all eleven sections in order — greenfield first, then existing-project. They are
+     written to be read in sequence, as the agent works through the seeded tasks.
+  3. Judge them as a newcomer would: does each one tell you what the agent is doing right
+     now, why it matters to you, and what you can usefully do while it works?
+
+  **Expected:** the sections read as a colleague explaining what is happening, not as
+  documentation of the framework. No section restates what a corpus map already says (they
+  should route — `fw corpus explain <id>` — rather than duplicate). Nothing in them asks you
+  to tick, approve, or decide anything: the curriculum is meant to be readable *past*, not a
+  gate you have to clear.
+
+  **If not:** note the file and the paragraph that reads wrong, and what it should have said
+  instead. Prose fixes are cheap and unblocking — file them as one build task against
+  `arc:onboarding-curriculum` rather than one task per section.
+
+- [ ] [REVIEW] The headline mechanic actually fires: prologue finished with the curriculum alongside
+
+  This is the arc's closure condition, and until 2026-08-08 it existed only as prose in the
+  Agent block above — no unticked box, nothing a `/approvals` view could surface. Written out
+  as a criterion so that "arc-017 is not closed" is visible structurally rather than only to
+  someone who reads the paragraph.
+
+  **Steps:**
+  1. `cd /tmp && rm -rf aef-onboarding-trial && mkdir aef-onboarding-trial && cd aef-onboarding-trial && git init -q && /opt/999-Agentic-Engineering-Framework/bin/fw init`
+  2. Work through the seeded tasks in `.tasks/active/` in order, as a new operator would —
+     reading each `## For the Operator` section as you reach that step, not in advance.
+  3. Then start one real task of your own choosing in that project (`.agentic-framework/bin/fw
+     work-on "<something you actually want>" --type build`) and notice whether the curriculum
+     left you able to do that without asking anyone.
+
+  **Expected:** you reach your own first real task without needing to ask the agent or read
+  `CLAUDE.md` to understand what just happened. That — not "both halves are built" — is the
+  mechanic firing.
+
+  **If not:** the gap between "the curriculum explained it" and "I could act on it" is the
+  finding. Record which step you stalled at; that step is where Half A is thin, and it is
+  worth more than any amount of additional prose elsewhere.
 
 ## Verification
 
