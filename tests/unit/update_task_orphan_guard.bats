@@ -79,3 +79,90 @@ EOF
     [ "$status" -eq 2 ]
     [[ "$output" == *"unknown mode"* ]]
 }
+
+# --- T-2864: the disk-vs-index population gap -------------------------------
+#
+# The archive move prefers `git mv` and falls back to a plain `mv`. That
+# fallback removes the source from DISK but leaves it tracked in the INDEX.
+# The T-1863 post-move guard tests `[ -e "$source" ]` — disk — so it passes,
+# while dup-task-scan.sh reads `git ls-files --cached` — index — and refuses
+# the commit. Two populations; the guard watched the one where the violation
+# cannot appear.
+#
+# `_t2864_reconcile_index` is extracted from the shipped update-task.sh rather
+# than reimplemented here, so the test fails if that function is edited away.
+
+_load_reconcile_fn() {
+    local src="$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
+    [ -f "$src" ] || return 1
+    local fn
+    fn=$(awk '/^_t2864_reconcile_index\(\) \{/{f=1} f{print} f&&/^\}/{exit}' "$src")
+    [ -n "$fn" ] || return 1
+    eval "$fn"
+}
+
+# Reproduce the fallback state: source gone from disk, still in the index,
+# destination present and staged.
+_mk_fallback_orphan() {
+    local id="$1" base="$2"
+    _mk_task ".tasks/active/$base" started-work "$id"
+    git -C "$PROJECT_ROOT" add .tasks/active/"$base"
+    git -C "$PROJECT_ROOT" commit -qm "seed $id"
+    mv "$PROJECT_ROOT/.tasks/active/$base" "$PROJECT_ROOT/.tasks/completed/$base"
+    git -C "$PROJECT_ROOT" add .tasks/completed/"$base"
+}
+
+@test "T-2864: negative control — the mv fallback really does create a staged duplicate" {
+    _mk_fallback_orphan T-9006 "T-9006-fallback.md"
+    # Disk is clean: the T-1863 guard's predicate would pass here.
+    [ ! -e "$PROJECT_ROOT/.tasks/active/T-9006-fallback.md" ]
+    # Index is not: this is the state that refuses the commit.
+    run "$SCANNER" scan-staged
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"T-9006"* ]]
+}
+
+@test "T-2864: reconcile stages both sides so the dup scan passes" {
+    _mk_fallback_orphan T-9007 "T-9007-fallback.md"
+    run "$SCANNER" scan-staged
+    [ "$status" -eq 1 ]   # precondition: dirty before
+
+    _load_reconcile_fn
+    _t2864_reconcile_index \
+        "$PROJECT_ROOT/.tasks/active/T-9007-fallback.md" \
+        "$PROJECT_ROOT/.tasks/completed/T-9007-fallback.md"
+
+    run "$SCANNER" scan-staged
+    [ "$status" -eq 0 ]
+    # The deletion is staged, not merely absent from disk.
+    run git -C "$PROJECT_ROOT" diff --cached --name-status
+    [[ "$output" == *"T-9007-fallback.md"* ]]
+}
+
+@test "T-2864: reconcile is a no-op when git mv already staged the rename" {
+    _mk_task ".tasks/active/T-9008-clean.md" started-work T-9008
+    git -C "$PROJECT_ROOT" add .tasks/active/T-9008-clean.md
+    git -C "$PROJECT_ROOT" commit -qm "seed T-9008"
+    git -C "$PROJECT_ROOT" mv .tasks/active/T-9008-clean.md .tasks/completed/T-9008-clean.md
+
+    run "$SCANNER" scan-staged
+    [ "$status" -eq 0 ]   # already clean
+
+    _load_reconcile_fn
+    run _t2864_reconcile_index \
+        "$PROJECT_ROOT/.tasks/active/T-9008-clean.md" \
+        "$PROJECT_ROOT/.tasks/completed/T-9008-clean.md"
+    [ "$status" -eq 0 ]
+
+    run "$SCANNER" scan-staged
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2864: reconcile survives a non-git PROJECT_ROOT without erroring" {
+    local nogit
+    nogit="$(mktemp -d)"
+    _load_reconcile_fn
+    PROJECT_ROOT="$nogit" run _t2864_reconcile_index "$nogit/a.md" "$nogit/b.md"
+    [ "$status" -eq 0 ]
+    rm -rf "$nogit"
+}

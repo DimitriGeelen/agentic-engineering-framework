@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T07:23:40Z
-last_update: 2026-08-08T07:23:40Z
-date_finished: null
+last_update: '2026-08-08T07:30:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-08T07:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-08T07:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2864: G-052 duplicate task IDs block the T-2863 GO decision commit
@@ -61,16 +89,62 @@ recorded here as an observation and does not belong to this task's fix.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Duplicate task IDs identified, with the origin of each duplicate stated (which
-      file is authoritative and which is the stray)
-- [ ] Duplicates resolved so `fw audit` reports "No duplicate task IDs across
-      active/ and completed/"
-- [ ] The T-2863 GO decision is committed and pushed — the Decision block reaches
-      history rather than sitting uncommitted on disk
-- [ ] RCA states why a decision recorded through Watchtower could leave the
+<!-- AC1 originally read "duplicate task IDs identified... which file is authoritative
+     and which is the stray". It assumed duplicates existed. They do not — neither in
+     the worktree nor in the index. Rewritten to the question the evidence can answer,
+     with the assumption change logged under ## Evolution rather than quietly dropped. -->
+- [x] Duplicate state investigated: **no duplicate exists** in worktree or index —
+      both `dup-task-scan.sh` modes return rc=0, and `git diff --cached` shows a
+      clean `R100` rename. This is explained, not unexplained: the duplicate lived
+      in the committer's **scratch** index (T-2708), never in the real one
+- [x] **Defect A — root cause of the reported symptom** identified and reproduced:
+      `_commit_decision` harvests `git status --porcelain` and keeps only the
+      destination of a rename arrow, while the scratch index is seeded from HEAD
+      where the source still exists → the committer manufactures the G-052
+      violation the gate then refuses. Rename form measured, not assumed
+- [x] Defect A fixed (both sides of the arrow harvested) and the docstring's
+      contradicting claim about `mv` vs `git mv` corrected
+- [x] Defect A pinned by tests that assert the **committed tree**; verified
+      non-vacuous by reverting the fix (2 of 5 fail with
+      `duplicate task ids in committed tree: {'T-9100'}`, pass again when restored)
+- [x] **Defect B** identified independently of the incident: the T-1863
+      post-move guard tests **disk** (`[ -e "$src" ]`) while G-052 fires on the
+      **index** (`git ls-files --cached`), and the `|| mv` fallback produces exactly
+      that split
+- [x] Fix applied at **both** archive call sites — `_t2864_reconcile_index` stages
+      the deletion alongside the addition when the source is still tracked
+- [x] Regression test with a negative control proving the fallback state really is
+      a G-052 violation before the fix is applied (`update_task_orphan_guard.bats`,
+      9/9 green)
+- [x] The T-2863 GO decision is committed and pushed — the Decision block reaches
+      history rather than sitting uncommitted on disk (`92cb41d81`)
+- [x] RCA states why a decision recorded through Watchtower could leave the
       repository in a decided-but-uncommitted state, and what surfaces the next one
 
 ### Human
+
+- [ ] [REVIEW] A decision recorded through Watchtower commits cleanly — no
+      "Decision recorded but not committed" warning
+
+  **Steps:**
+  1. Open the next inception awaiting a decision: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue`
+  2. Open its Watchtower link and record GO / NO-GO / DEFER as you normally would
+  3. Read the confirmation banner, then run: `cd /opt/999-Agentic-Engineering-Framework && git log --oneline -3 && git status --short .tasks/`
+
+  **Expected:** The banner reports the decision with **no** "⚠ Decision recorded
+  but not committed" line. `git log` shows a commit `T-XXXX: inception decision
+  <GO|NO-GO|DEFER> (via Watchtower)`, and `git status .tasks/` shows the task file
+  neither modified nor untracked — the decision is in history, not just on disk.
+
+  **If not:** Copy the warning text verbatim. If it names G-052 again, run
+  `bash agents/git/lib/dup-task-scan.sh scan-staged` and
+  `git status --porcelain --untracked-files=all | grep T-XXXX` and attach both —
+  the porcelain form is the diagnostic that matters.
+
+  *Why human:* the failure only occurs on the operator-through-UI path (an agent
+  cannot record an inception decision — T-1259), and the symptom is a banner line,
+  not a non-zero exit. No agent-side check reaches this surface.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -102,6 +176,18 @@ recorded here as an observation and does not belong to this task's fix.
 -->
 
 ## Verification
+
+bash -n agents/task-create/update-task.sh
+python3 -c "import ast; ast.parse(open('web/blueprints/inception.py').read())"
+out=$(bats tests/unit/update_task_orphan_guard.bats 2>&1); echo "$out" | grep -q "^ok 9 " && ! echo "$out" | grep -q "^not ok"
+python3 -m pytest tests/unit/test_inception_commit_rename_paths.py -q > /tmp/.t2864-py.out 2>&1 && grep -q "5 passed" /tmp/.t2864-py.out
+grep -q 'path.split(" -> ", 1) if " -> " in path else \[path\]' web/blueprints/inception.py
+bash agents/git/lib/dup-task-scan.sh scan-staged
+bash agents/git/lib/dup-task-scan.sh scan-worktree
+grep -q "_t2864_reconcile_index" agents/task-create/update-task.sh
+test "$(grep -c '_t2864_reconcile_index "' agents/task-create/update-task.sh)" -eq 2
+test -f .tasks/completed/T-2863-rework-the-inception-workflow-five-failu.md
+out=$(git log --oneline -30 2>&1); echo "$out" | grep -q "T-2864: land the T-2863 GO decision commit"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -170,6 +256,108 @@ recorded here as an observation and does not belong to this task's fix.
 
 ## RCA
 
+**Symptom:** The operator recorded GO on T-2863 through Watchtower. The decision
+was written to the task file; the commit was refused by the G-052 duplicate-task-ID
+pre-commit gate. Result: a decision that existed on disk and not in history — the
+repository's authoritative record said the inception was still undecided.
+
+**Why the repository looked innocent.** No duplicate task ID exists in the working
+tree or the real index — `dup-task-scan.sh` returns rc=0 in both modes and
+`git diff --cached` shows a clean `R100` rename. That is not evidence of no bug:
+**the duplicate never lived in the real index.** The committer builds a *scratch*
+index (T-2708, `GIT_INDEX_FILE` + `git read-tree HEAD`) and the duplicate existed
+only there, for the lifetime of one subprocess. Looking at the real index was
+looking at the wrong object — the same error this task is about.
+
+**Root cause — defect A (the reported symptom), in `web/blueprints/inception.py`:**
+
+`_commit_decision` seeds a scratch index from `HEAD`, then stages only the paths it
+harvested from `git status --porcelain`. The harvest collapsed the rename form:
+
+```python
+if " -> " in path:   # "defensive: handle rename form if ever produced"
+    path = path.split(" -> ", 1)[1]      # keeps the destination, DROPS the source
+```
+
+`update-task.sh` archives with `git mv` when the file is tracked (T-1523), so the
+rename form is not a defensive edge — **it is the normal case**. Measured directly:
+
+```
+$ git status --porcelain --untracked-files=all
+RM .tasks/active/T-9999-x.md -> .tasks/completed/T-9999-x.md
+```
+
+`HEAD` still contains the *active* path. Staging only the destination therefore
+leaves the task id under **both** `.tasks/active/` and `.tasks/completed/` in the
+very index being committed — a G-052 violation manufactured by the committer, which
+the pre-commit gate then correctly refused. The comment two lines below already
+stated the requirement (*"an explicit pathspec here stages the active→completed
+deletion too"*); the code did not meet it, and the docstring asserted the opposite
+of what `update-task.sh` does (*"a filesystem `mv` (not `git mv`)"*), so the reader
+had no reason to check.
+
+**Why structurally allowed (A):** a producer/consumer split of the L-399 class.
+`update-task.sh` changed to `git mv` in T-1523; the Watchtower committer was written
+against the older plain-`mv` shape and encoded that assumption in prose. Neither
+side tested the join, and the failure only manifests when a *human* decides through
+the UI — a path no agent test exercises, and one where the human sees a warning line
+rather than a red command.
+
+**Root cause — defect B (found while investigating A), in `update-task.sh`:** the
+guard and the gate range over different populations.
+
+- `agents/task-create/update-task.sh` archives with `git mv … || mv` — a documented
+  fallback (T-1523).
+- Its post-move guard (T-1863) is `[ -e "$_t1863_orig" ]` — **disk**.
+- The gate it exists to protect against, `agents/git/lib/dup-task-scan.sh`, reads
+  `git ls-files --cached` — **index**.
+
+The `|| mv` fallback removes the source from disk while leaving it tracked in the
+index. That state passes the guard (the file really is gone) and fails the gate (the
+id really is under both paths). The guard was watching the one population where the
+violation it names cannot appear — so it can only ever return green here.
+
+**Why structurally allowed (B):** T-1863 was written from an incident whose orphan
+was visible on disk, and the check was fitted to that instance rather than to the
+predicate the downstream gate actually evaluates. Nothing compared the two.
+
+**The shared class.** A, B and my own first investigation are three instances of one
+error: *a true statement about the wrong population.* A checks the destination and
+not the source; B checks disk while the gate checks the index; I checked the real
+index while the duplicate lived in a scratch one. Same class as T-2732/L-534 and the
+832 fixture finding earlier this session. The tell is always that the check comes
+back green while the system stays broken.
+
+**Prevention:**
+1. **(A)** The porcelain harvest now takes **both** sides of a rename arrow, and the
+   docstring's false claim about `mv` vs `git mv` is corrected in place — it was the
+   reason the code read as correct.
+2. **(A)** `tests/unit/test_inception_commit_rename_paths.py` — 5 tests asserting the
+   **committed tree**, not the return value. This matters: the temp repo has no hooks,
+   so `committed is True` passes with the bug present. Verified by reverting the fix:
+   **2 of 5 fail** with `duplicate task ids in committed tree: {'T-9100'}`, and pass
+   again when restored. `test_rename_form_is_actually_produced` pins the precondition,
+   so if the ` -> ` form ever stops appearing the suite goes red rather than silently
+   testing nothing.
+3. **(B)** `_t2864_reconcile_index` stages the deletion alongside the addition whenever
+   the source is still tracked after the move, at **both** archive call sites.
+4. **(B)** `tests/unit/update_task_orphan_guard.bats` pins it with a **negative control**
+   proving the fallback state really is a G-052 violation first. The function is
+   extracted from the shipped script by `awk`, not reimplemented, so deleting it turns
+   the test red.
+
+**Sizing note (deliberate deviation).** "One bug = one task" argues for splitting A
+and B. They are kept together because they are one deliverable — *the task-archival
+commit boundary can no longer manufacture a G-052 false block* — reached through one
+shared test surface. B was found only by investigating A. Splitting is the operator's
+call; the two are separable by file and by test.
+
+**Not prevented, and deliberately out of scope:** a decision recorded through
+Watchtower can still fail to commit for any *other* reason, and the operator learns
+this only from a warning line in the UI. The decided-but-uncommitted window is a
+real hole in the sovereignty record — the human's decision is the one thing that
+must never be lost — and it deserves its own task rather than a note here.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -185,6 +373,37 @@ recorded here as an observation and does not belong to this task's fix.
 -->
 
 ## Evolution
+
+### 2026-08-08 — the incident was not the defect
+
+- **What changed:** The task was filed to resolve duplicate task IDs. There are
+  none — the state self-reconciled before it could be examined, and three
+  hypotheses could not be separated on the available evidence. What the
+  investigation *did* find is a guard whose predicate ranges over a different
+  population than the gate it protects: disk vs index.
+- **Plan impact:** AC1 assumed duplicates existed and named "which file is the
+  stray". It was rewritten to the question the evidence can answer, rather than
+  answered with a guess. The fix moved from "clean up duplicates" to "make the
+  fallback path unable to produce the split state".
+- **Triggered:** `_t2864_reconcile_index` at both archive call sites; four new bats
+  cases including a negative control.
+
+### 2026-08-08 — the real cause was in the committer, not the mover
+
+- **What changed:** "Not reproducible" was wrong, and wrong for an instructive
+  reason: I looked for the duplicate in the real index, but `_commit_decision`
+  builds a **scratch** index (T-2708) and the duplicate only ever existed there. It
+  harvests `git status --porcelain` and keeps only the destination of a rename
+  arrow, while seeding from HEAD where the source still lives. Since `update-task.sh`
+  archives with `git mv` (T-1523), the rename form is the normal case — so the
+  committer manufactures the very G-052 violation the gate refuses.
+- **Plan impact:** The RCA's "not reproducible" conclusion was retracted and
+  replaced with a measured mechanism. The fix moved from update-task.sh (defect B,
+  real but incidental) to `web/blueprints/inception.py` (defect A, the reported bug).
+- **Triggered:** Both-sides rename harvest + docstring correction; five pytest cases
+  asserting the committed tree, verified non-vacuous by reverting the fix. One
+  deliberate out-of-scope carve-out logged in the RCA: the decided-but-uncommitted
+  window is a sovereignty-record hole that needs its own task.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
