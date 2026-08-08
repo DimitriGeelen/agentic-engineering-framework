@@ -1439,3 +1439,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-191
+  text: "T-2863/S-2 CORRECTION (rail 448): the node ids in my S-2 walk and in my rail-445 message are from my SEED spec, not from the published v2 bytes. 832 measured the fixture: fw_6_readiness and hum_7_dialogue do not exist; the real ids are fw_2_proposed and hum_1_operator (also agt_4_explore, fw_3_put, agt_3_create). The designer regenerates element ids on save (RAIL-440: id = f(lane, x-rank)); uids are the stable handle. Topology claims all held — 3-lane cycle, cross-lane re-entry into a collapsed subProcess — I undersold it as 2 lanes. ACTION: before drafting v3, re-derive the spec from the SERVED bytes and key every finding on uid, never on id. Same hearsay class as OBS-190, committed one message after naming it."
+  captured: 2026-08-08T07:53:15Z
+  context_task: T-2862
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-192
+  text: "RAIL-449: 832's round-trip probe on draft-inception-readiness v2 returns 7/7 PASS with per-claim mutation teeth — the readiness gateway keeps 3 outbound edges, both cross-lane return edges survive, agt_4_explore stays a COLLAPSED subProcess with all 3 inbound edges, lane membership intact. The cross-lane re-entry they expected to break (their PROVENANCE.md records the importer flattening nested subProcesses) comes through. v3 can be drafted on the current notation with the cycle de-risked. Also: 832 supplied the frozen standard at a pinned COMMIT + blob (repo ssh://git@192.168.10.201:6611/workflow-designer, commit 4a1a30e1, docs/standards/aef-bpmn-mapping-v1.md, Part I sha256 970dd530..., 7905 B) — OBS-190 is now unblockable via pull-at-ref, which is inside the T-559 boundary."
+  captured: 2026-08-08T07:53:15Z
+  context_task: T-2862
+  tags: []
+  status: pending
+  promoted_to: null
