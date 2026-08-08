@@ -4,7 +4,7 @@ name: "Onboarding: the gated set holds only what the agent can clear"
 description: "T-2715 GO item 4 (IW-13/IW-14/IW-15). Agent prologue kept; human curriculum interleaved\
   \ and ungated; routes to corpus maps rather than embedding content; new invariant\
   \ enforced on the gated set."
-status: draft
+status: in-progress
 anchor_task: T-2720
 headline_mechanic: "A new operator finishes the agent prologue and immediately starts working their own\
   \ first real task, with the human curriculum sitting alongside and readable but\

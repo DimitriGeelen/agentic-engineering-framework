@@ -6307,3 +6307,9 @@ The self-vendor gate (T-2240) blocked'
 
 The gate blocked an action and offered, first, fw context focus <TARGET> — which
 T-2'
+- timestamp: '2026-08-08T17:37:46Z'
+  task: 'T-2720'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2877'
+  command: 'bin/fw task update T-2877 --add-tag "arc:onboarding-curriculum" --switch-focus 2>&1 | tail -2; echo "=== arc start:"; bin/fw arc start arc-017 2>&1 | tail -5'

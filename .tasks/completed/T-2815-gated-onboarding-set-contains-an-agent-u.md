@@ -88,6 +88,23 @@ and an `### Agent`+`### Human` split where the Human AC can never be ticked by a
 No agent-reachable path exists to flip T-002 to `work-completed` — the gate is a
 structural deadlock for any agent-only session.
 
+> **CORRECTION (T-2720, 2026-08-08) — the "not yet implemented" below is STALE.**
+> The work shipped in this task's own close commit `0e2eba1fd`, which created
+> `agents/context/check-onboarding-gate.py` and wired it at `.claude/settings.json:91`.
+> The heading was written during design and never updated when the work landed.
+>
+> Verified live under T-2720, all three states of the L-364 chain (present → wired →
+> executes): `owner: human` + inception + onboarding → rc=0 allowed (sanctioned escape);
+> `owner: agent` + onboarding + unticked `### Human` AC → rc=2 refused. Scan-side
+> exemption live at `check-active-task.sh:506`. Coverage 16/16 green, 0 skips across
+> `check_onboarding_gate.bats`, `onboarding_gate_owner_human_exempt.bats`,
+> `t2815_onboarding_e2e_reachable.bats`.
+>
+> Left in place rather than rewritten, so the design record and the correction both
+> survive. The error direction was safe — a stale "not implemented" reads as work
+> remaining, so it cost duplicated investigation rather than a false green — but it
+> made arc-017 look less complete than it is.
+
 **Fix design (not yet implemented — see Updates):**
 1. **Gate scan exclusion** — in `check-active-task.sh`'s onboarding loop, skip tasks
    whose frontmatter has `owner: human` when building `INCOMPLETE_ONBOARDING`. This

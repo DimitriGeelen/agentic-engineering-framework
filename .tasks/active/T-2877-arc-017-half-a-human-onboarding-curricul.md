@@ -1,16 +1,12 @@
 ---
-id: T-2720
-name: "Keystone: onboarding set contains nothing the agent cannot resolve"
+id: T-2877
+name: "arc-017 Half A: human onboarding curriculum, interleaved and ungated, routing to corpus maps"
 description: >
-  Arc keystone for T-2715 GO item 4. Redesign per IW-13/IW-14/IW-15: keep the agent
-  prologue, interleave the human curriculum but leave it UNGATED, route to corpus
-  maps rather than embedding content, and enforce the new invariant that nothing owner:
-  agenthuman or agent-unresolvable may sit in the T-532-gated onboarding set. Carries
-  the arc's closure Recommendation.
+  Build the human-facing onboarding curriculum for arc-017. Half B (the refusal invariant) shipped under T-2815 and was verified live under T-2720; this is the remaining half of the arc headline mechanic. Curriculum must sit ALONGSIDE the agent prologue, be readable but never gate agent work, and ROUTE to corpus maps (fw corpus explain / Watchtower /designer) rather than embedding content that will drift from them.
 
-status: started-work
-workflow_type: design
-owner:
+status: captured
+workflow_type: build
+owner: agent
 horizon: now
 tags: [arc:onboarding-curriculum]
 components: []
@@ -25,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-02T00:35:02Z
-last_update: 2026-08-08T17:35:25Z
-date_finished:
+created: 2026-08-08T17:36:48Z
+last_update: 2026-08-08T17:37:47Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,93 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-02T00:45:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 3
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-02T00:45:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2720: Keystone: onboarding set contains nothing the agent cannot resolve
+# T-2877: arc-017 Half A: human onboarding curriculum, interleaved and ungated, routing to corpus maps
 
 ## Context
 
-Keystone for **arc-017** (`onboarding-curriculum`). From T-2715 GO item 4 (IW-13/14/15).
-
-The arc's headline mechanic has two halves, and they are at very different stages. That was
-invisible until now because this keystone sat as an unscoped template — an arc anchor with
-placeholder ACs cannot be worked, cannot be closed, and reports nothing about the arc's real
-position. Scoped 2026-08-08 against live verification.
-
-**Half B — the refusal invariant — IS BUILT AND PROVEN (T-2815).** Verified live this session,
-not taken from the task body:
-
-- `agents/context/check-onboarding-gate.py` exists, is wired at `.claude/settings.json:91`
-  via `fw hook check-onboarding-gate`, and **executes** — checked all three states of the
-  L-364 chain (present → wired → runs), because two mechanisms this session were present and
-  inert.
-- Both branches drive correctly against the real hook in a sandbox:
-  - `owner: human` + `workflow_type: inception` + `tags:[onboarding]` → **rc=0**, allowed.
-    This is the sanctioned escape valve, not a violation.
-  - `owner: agent` + `tags:[onboarding]` + unticked `### Human` AC → **rc=2**, refused, naming
-    the reason and the `FW_ALLOW_ONBOARDING_UNRESOLVABLE=1` bypass.
-- Scan-side exemption is live at `check-active-task.sh:506` (`owner: human` → `continue`).
-- Coverage: `check_onboarding_gate.bats`, `onboarding_gate_owner_human_exempt.bats`,
-  `t2815_onboarding_e2e_reachable.bats` — **16/16 green, 0 skips**.
-
-Worth recording as a finding in its own right: **T-2815's body says "Fix design (not yet
-implemented — see Updates)" while the fix is in fact shipped, wired and covered.** The task
-text and the tree disagree, in the safe direction, which is why nobody noticed — a stale
-"not implemented" note reads as work remaining, so the cost was duplicated investigation
-rather than a false green. Still worth correcting: it is what made this arc look less complete
-than it is.
-
-**Half A — the curriculum — is NOT built.** "Agent prologue kept; human curriculum interleaved
-and ungated; routes to corpus maps rather than embedding content." No artefact exists yet.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Half B verified live end-to-end, not from task text: hook exists, is wired, executes,
-      and refuses the agent-unresolvable case while allowing the `owner: human` escape valve
-- [x] Both branches of the invariant covered by green bats with zero skips
-- [x] T-2815's stale "not yet implemented" note corrected so the tree and the task agree
-      (correction block added above the original, which is preserved rather than rewritten;
-      shipping commit identified as `0e2eba1fd` by `git log --diff-filter=A`, not inferred)
-- [x] Half A scoped into its own build task(s) with real ACs — this keystone does not itself
-      carry the curriculum build (arc keystones anchor; slices build) → **T-2877**, tagged
-      `arc:onboarding-curriculum`
-- [x] Arc-017 status reflects reality: `draft` is wrong once Half B is proven shipped
-      → `fw arc start arc-017`, draft → in-progress
-
-**This keystone stays OPEN.** Half A is unbuilt, so the arc's headline mechanic does not yet
-fire end-to-end. Per §Arc Completion Discipline, "substrate is in place" is not closure — the
-mechanic is *operator finishes prologue AND starts their own first real task with the
-curriculum readable alongside*, and no curriculum exists. Closing this on Half B alone would
-be the exact substrate-vs-deliverable conflation G-062 exists to catch.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,8 +103,42 @@ be the exact substrate-vs-deliverable conflation G-062 exists to catch.
 # Single pipe only — no intermediate tail/awk/sed stages between capture and grep
 # (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
 # the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+# stdin on. grep scans the whole captured string anyway, so the tail-3 was
+# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+#
+# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
+# for the captures they were written about, and both invert above the pipe
+# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
+# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
+# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
+# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
+# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
+# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
+# For anything that might be large, redirect to a file:
+#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
+#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
+# This is the better default even when size is not a concern: `&&` keeps the
+# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
+# the T-2738 problem one layer down. A 404 from curl fails the line instead of
+# silently producing an empty capture for grep to not-match.
+#
+# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
+# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
+# 141 under P-011, from the same directory, the same second. To rehearse for real:
+#     bash -c 'set -eo pipefail; <your verification line>'
+#
+# BUT NOT for a test runner (T-2738): the capture above discards the command's
+# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
+# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
+# that exit code WAS the verdict, and the pass marker you grep instead survives
+# a partial failure: a suite printing "3 failed, 9 passed" satisfies
+# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
+# same output. Either keep the exit code:
+#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
+# or add the guard the exit code used to supply:
+#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -253,13 +210,10 @@ be the exact substrate-vs-deliverable conflation G-062 exists to catch.
 
 ## Updates
 
-### 2026-08-02T00:35:02Z — task-created [task-create-agent]
+### 2026-08-08T17:36:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2720-keystone-onboarding-set-contains-nothing.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2877-arc-017-half-a-human-onboarding-curricul.md
 - **Context:** Initial task creation
 
-### 2026-08-02T00:36:51Z — status-update [task-update-agent]
+### 2026-08-08T17:37:47Z — status-update [task-update-agent]
 - **Change:** tags: +arc:onboarding-curriculum
-
-### 2026-08-08T17:35:25Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
