@@ -4211,3 +4211,10 @@ X'` returning empty group."
   date: 2026-08-08
   context: Added via context agent
   application: TBD
+- id: L-555
+  learning: "A check that stops being consulted looks exactly like a check that found nothing. Three instances in one session: a safe-list early-return that exits before the focus-drift gate, so one of three drift patterns became unreachable and silent; a probe run against inputs that could not produce a positive, reported as 'does not reproduce'; and 832's idempotence leg comparing -1 to -1 after its measurement died. Before reporting a negative result, establish that the probe could have produced a positive one — otherwise the absence of a finding is evidence about the instrument, not the system."
+  source: unknown
+  task: unknown
+  date: 2026-08-08
+  context: Added via context agent
+  application: TBD

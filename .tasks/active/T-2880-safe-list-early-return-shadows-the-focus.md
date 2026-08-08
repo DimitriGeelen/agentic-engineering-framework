@@ -1,10 +1,14 @@
 ---
 id: T-2880
-name: "Safe-list early-return shadows the focus-drift gate — pattern 2 unreachable since T-2878"
+name: "Safe-list early-return shadows the focus-drift gate — pattern 2 unreachable
+  since T-2878"
 description: >
-  is_bash_safe_command exits 0 before the focus-drift gate runs, so safe-listing a verb also exempts it from drift attribution. T-2878 safe-listed fw context add-*, which is exactly drift pattern 2 — measured: patterns 1 and 3 still reach the gate, pattern 2 does not.
+  is_bash_safe_command exits 0 before the focus-drift gate runs, so safe-listing a
+  verb also exempts it from drift attribution. T-2878 safe-listed fw context add-*,
+  which is exactly drift pattern 2 — measured: patterns 1 and 3 still reach the gate,
+  pattern 2 does not.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T18:47:34Z
-last_update: 2026-08-08T18:47:34Z
-date_finished: null
+last_update: 2026-08-08T18:52:41Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +38,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-08T18:52:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2880: Safe-list early-return shadows the focus-drift gate — pattern 2 unreachable since T-2878
@@ -87,13 +109,6 @@ rail rather than leaving it for them to hit.
 - [ ] Teeth by durable mutation of live source (not `git show HEAD~N:` — T-2874), asserting
       the shadowing returns when the reorder is reverted
 - [ ] T-2879's pattern-2 anchor verified end-to-end once this lands (it is inert until then)
-
-## Acceptance Criteria
-
-### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,3 +275,6 @@ rail rather than leaving it for them to hit.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2880-safe-list-early-return-shadows-the-focus.md
 - **Context:** Initial task creation
+
+### 2026-08-08T18:52:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

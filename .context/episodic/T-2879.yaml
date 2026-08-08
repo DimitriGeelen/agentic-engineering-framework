@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2879: Capture-verb exemption covers bare verbs only — real invocation shapes still deadlock
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T18:51:37Z
+# ============================================================================
+
+task_id: T-2879
+task_name: "Capture-verb exemption covers bare verbs only — real invocation shapes still deadlock"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T18:39:39Z
+completed: 2026-08-08T18:51:18Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-08T20:46:37+02:00
+last_commit: 2026-08-08T20:51:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  2>&1 defeated the entire safe-list — fd-dup is not a chain separator. close out — ACs ticked, verification written, T-2880 filed for the shadowing
+
+# Key outcomes
+outcomes:
+  - 'Measured: which compound shapes containing an exempt capture verb are GATED, recorded'
+  - '`_fw_chain_split` does not split on an `&` that is part of an fd duplication'
+  - 'Drift pattern 2 (`fw context add-*` + `--task`) is anchored to the flag value the same'
+  - 'Rail correction posted to 832: their 474 §4 reproduces on pattern 2, my "does not'
+  - 'Regression coverage for the compound shape, with teeth by durable mutation of live'
+  - 'T-2876 IW-2 updated with this as evidence: relocation is now OBSERVED, not projected,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/audits/2026-08-08.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-2878.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.bpmn-promote-audit.jsonl'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2876-interpreter-mediated-writes-bypass-the-b.md'
+  - '.tasks/active/T-2879-capture-verb-exemption-covers-bare-verbs.md'
+  - '.tasks/active/T-2880-safe-list-early-return-shadows-the-focus.md'
+  - '.tasks/completed/T-2878-capture-verbs-unreachable-in-the-state-c.md'
+  - 'tests/unit/fd_dup_not_chain_split.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T20:46:37'
+    action: 'T-2879: 2>&1 defeated the entire safe-list — fd-dup is not a chain separator'
+  - time: '2026-08-08T20:51:14'
+    action: 'T-2879: close out — ACs ticked, verification written, T-2880 filed for the shadowing'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 30
+  lines_added: 1286
+  lines_removed: 247
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2879-capture-verb-exemption-covers-bare-verbs.md
+generated_by: context-agent-hybrid

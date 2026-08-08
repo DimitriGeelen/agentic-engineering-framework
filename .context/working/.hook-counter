@@ -1,11 +1,18 @@
-check-heredoc-cmd-sub=3
+check-heredoc-cmd-sub=4
 
-check-human-ac-tick=26
+check-human-ac-tick=27
 check-heredoc-cmd-sub=22
-audit-task-tools=1
-commit-cadence=1
-checkpoint=1
-check-tier0=1
-budget-gate=1
-check-project-boundary=1
-check-active-task=1
+audit-task-tools=9
+commit-cadence=2
+checkpoint=9
+check-tier0=11
+budget-gate=12
+check-project-boundary=12
+check-active-task=9
+loop-detect=8
+error-watchdog=7
+check-inception-schema=1
+check-arc-id=1
+check-onboarding-gate=1
+check-inception-decisions=1
+check-settings-edit=1

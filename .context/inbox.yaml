@@ -1517,3 +1517,18 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-202
+  text: "has_bash_write_pattern treats an ASCII arrow in QUOTED PROSE as a shell redirect, so it blocks the capture verbs whenever an observation contains one. Measured: 'bin/fw note \"213917 [arrow] 64395\"' matches the write regex; the same sentence written 'from A to B' is clean. Regex is [^2>&][>][^>&] which the arrow satisfies exactly. Fail-CLOSED, and it targets precisely the technical prose observations are made of — hit live three times this session while trying to file notes ABOUT gates. Same family as the drift gate's quote-nesting residual: a textual predicate cannot see that it is reading a payload rather than a command. Not filed as a task yet (budget); candidate fix is to strip single/double-quoted spans before applying the write regex, which is the same preprocessing the drift patterns would want."
+  captured: 2026-08-08T18:53:14Z
+  context_task: T-2880
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-203
+  text: "VERIFIED (was suspicion, wrong mechanism): .budget-status is a per-PROJECT file shared by every concurrent Claude process, written with NO session identity and read with NO identity check. budget-gate.sh:357 writes {level,tokens,timestamp,source}; the reader at ~line 140 takes level+tokens and validates only age under 90s. Any concurrent session in the same project overwrites the gauge with ITS OWN context size — and the project transcript dir shows cron 'claude -p' jobs landing roughly every 30 minutes as separate non-agent transcripts. Cron workers are short-lived and small, so they write LOW values; the persistent session then reads 'ok' while actually near critical. That is the observed 178K under-report: cache read 116729 while budget-gate refused the same session at 294439, no compaction between. Twice more earlier with the same signature. Direction is FAIL-OPEN (permits work that should be refused) and the /resume skill names this file canonical, so it is trusted by rule. CORRECTION to my earlier note: I suspected transcript rotation. That was wrong. Transcript resolution is fine when transcript_path is passed on stdin; cross-session cache sharing is the bug. Fix shape: stamp session_id on write, ignore the cache on read when it does not match, fall through to the slow path."
+  captured: 2026-08-08T18:53:23Z
+  context_task: T-2880
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
