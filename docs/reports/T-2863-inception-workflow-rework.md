@@ -751,9 +751,125 @@ it de-risks the one structural novelty in the draft.
 <!-- S-2 (walk the five instances across the revised map) and S-3 (conformance
      rail) are UNBLOCKED — 832 confirmed the notation is not moving. -->
 
+## S-2 — the five instances walked across v2, and only one lands
+
+The test S-2 exists to run: for each of the five instances, is there a node or
+edge on `draft-inception-readiness` v2 where the failure *attaches* — and does the
+attachment **prevent** the failure or merely **depict** it?
+
+Result: **1 of 5 fully attached.** The map that was drawn to fix the
+representational defect reproduces it for instance 4, and has no node at all for
+instances 1 and 2.
+
+| # | Instance | Attachment on v2 | Verdict |
+|---|----------|------------------|---------|
+| 1 | T-2862 decide-preflight deadlock | **none** — the preflight has no node | ❌ unattached |
+| 2 | T-2442 schema deadlock (sibling) | **none** — same gate | ❌ unattached |
+| 3 | T-2857 bypass + auto-tick | `fw_10_record` note only; the two bypass edges are undrawn | ⚠️ half |
+| 4 | T-2861 artifact-first vs write guard | a **note on `agt_3_artifact`**, an Agent node | ❌ mis-attached |
+| 5 | Root — T-2204 prior-before-evidence | `fw_2_filing_gate`, own Framework node, plus `fw_6_readiness` | ✅ attached |
+
+### Instances 1 + 2 — the deadlock gate is not on the map
+
+`lib/inception.sh:521-534`. The preflight is *inside* `do_inception_decide`, and
+it runs in a specific order:
+
+```bash
+if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then
+    tick_inception_decide_acs "$task_file"          # tick first …
+    …
+    if [ "$_agent_total" -gt 0 ] && [ "$_agent_unchecked" -gt 0 ]; then
+        echo "ERROR: Cannot record decision — $_agent_unchecked/$_agent_total agent AC unchecked"
+```
+
+Tick first, then count. That ordering is why T-2862 deadlocks and why it is not a
+generic P-010 complaint: the greenfield seed's AC carries no
+`@auto-tick-on-decide`, so the tick does not cover it, so the count finds it, so
+decide refuses — over an AC whose content *is* the decide it is refusing.
+
+On v2 this gate is nowhere. `fw_10_record` is drawn as the thing decide does, and
+the refusal that happens *before* it has no node, so it has no failure edge
+either. Instances 1 and 2 have nothing to point at.
+
+### Instance 4 — v2 reproduces the exact defect F-2 diagnosed
+
+F-2's finding was that gates rendered as parentheticals on Agent nodes read as
+*things the agent does* rather than as gates with preconditions and refusal
+edges. On v2, the background write guard — a Framework refusal — is a
+`meta.note` on `agt_3_artifact`, an **Agent** node.
+
+Same shape, same lane error, one map later. The guard refuses a Write; that is an
+Authority action and it belongs in the Authority lane with a refusal edge. This
+is the sharpest result of the walk, because it says the draft's *lane discipline*
+is not yet a habit — the lane was added, and then the next gate was written as a
+note anyway.
+
+### Instance 3 — the tick is drawn, the bypasses are not
+
+The agent-block is real and narrow (`lib/inception.sh:429`):
+
+```bash
+if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
+```
+
+Exactly **two** bypass edges: `--i-am-human` and `--from-watchtower`. v2 draws
+neither, so the map shows only `hum_9_decide → fw_10_record` — the path where a
+human really did decide. Every T-2857-class arrival reaches `fw_10_record`
+*without* passing through `hum_9_decide`, and the map cannot express that.
+
+**Correction to my own earlier note.** I wrote that T-2857's decision "arrived
+through one of these [bypasses], including `--skip-sovereignty`". `--skip-sovereignty`
+is **not** a decide bypass — it is what decide *itself* passes downstream to
+`update-task.sh` (lines 684, 705, 716). So it is a Framework→Framework edge:
+decide relaxing a gate on the tool it calls. That is a third undrawn edge, and a
+more interesting one than the two I was counting, because no operator ever types it.
+
+## F-17 — DEFER skips the preflight, so the cheapest exit is the one the prose forbids
+
+Falling out of the same read, and not previously recorded.
+
+Line 521 guards the preflight with `if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]`.
+**DEFER is not in that set.** A DEFER decision therefore skips the agent-AC check
+entirely — the comment at line 663 confirms it deliberately ("for the defer path
+(which skips preflight)").
+
+Two consequences:
+
+1. **T-2862's deadlock is escapable by deciding DEFER.** The un-completable
+   greenfield inception completes if you hedge. The workaround is invisible
+   because it looks like an ordinary decision.
+2. **There is a mechanical gradient toward DEFER.** GO and NO-GO must clear an AC
+   gate; DEFER need not. CLAUDE.md forbids exactly this by prose — *"DEFER is for
+   evidence gaps, NOT for confidence gaps"* (T-2144/T-2145) — and T-2145 shipped a
+   reviewer detector for it. So we have a prose rule and a static-scan backstop
+   pointing one way, and a friction gradient in the CLI pointing the other.
+
+This is the same class as the root defect: a rule stated in prose while the
+mechanism rewards its violation. It is worth its own build slice, and it is
+cheap — the preflight's guard either includes `defer` or the asymmetry gets a
+stated reason.
+
+### What v3 owes
+
+1. A Framework node for the **decide preflight**, with its refusal edge — the
+   attachment point for instances 1, 2 and F-17.
+2. Re-home the **write guard** out of `agt_3_artifact`'s note into a Framework
+   node with a refusal edge (instance 4).
+3. The three undrawn edges into `fw_10_record`: `--i-am-human`,
+   `--from-watchtower`, and decide's internal `--skip-sovereignty` handoff
+   (instance 3).
+4. A decision from the operator on whether v2 is a map of **as-operated** or
+   **proposed** behaviour. The walk exposes the ambiguity: bypass edges belong on
+   an as-operated map and are noise on a proposed one, and v2 currently mixes
+   both (PROPOSED nodes alongside as-is notes). This is a prerequisite for S-3 —
+   a conformance rail cannot audit map-vs-code parity until we say which one the
+   map claims to be.
+
 ## Next actions (carried, in order)
 
-1. **S-2** — walk the five failure instances across the v2 map. Unblocked.
+1. ~~**S-2** — walk the five failure instances across the v2 map.~~ **Done** —
+   1/5 attached; v3 owes the four items above. Blocked on the operator's
+   as-operated-vs-proposed ruling before v3 is drawn.
 2. **Reply on the rail** — answer their 1-5 (Q4 answered above), take up the
    fidelity-probe offer for the cycle, and answer whether they should pin
    `aef-task-lifecycle` v3 as a seam fixture. They asked for a faster cadence than
