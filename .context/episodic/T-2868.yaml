@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2868: fw note writes the observation then exits 1 when no focus is set
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T12:32:42Z
+# ============================================================================
+
+task_id: T-2868
+task_name: "fw note writes the observation then exits 1 when no focus is set"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T12:29:07Z
+completed: 2026-08-08T12:32:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-08T14:32:21+02:00
+last_commit: 2026-08-08T14:32:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw note exits 0 after a successful write — trailing conditional set the status
+
+# Key outcomes
+outcomes:
+  - '`fw note "text"` exits 0 when no `focus.yaml` exists, with the note written.'
+  - 'The `context:` line is still printed when a focus task IS set — the fix must'
+  - '`tests/unit/note_exit_status.bats` pins both directions: no-focus → rc 0 and'
+  - 'ANTI-VACUITY: the test is shown red against the pre-fix `observe.sh`, with a'
+  - 'The T-2867 suite still passes, and its `_fresh_root` no longer needs to seed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/observe/observe.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/observe/observe.sh'
+  - '.fabric/components/tests-unit-note_exit_status.yaml'
+  - '.tasks/active/T-2868-fw-note-writes-the-observation-then-exit.md'
+  - 'tests/unit/note_capture_guard.bats'
+  - 'tests/unit/note_exit_status.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T14:32:21'
+    action: 'T-2868: fw note exits 0 after a successful write — trailing conditional set the status'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 9
+  lines_added: 1042
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2868-fw-note-writes-the-observation-then-exit.md
+generated_by: context-agent-hybrid
