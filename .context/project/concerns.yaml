@@ -2668,6 +2668,20 @@ concerns:
     Failure direction is the dangerous one: false NEGATIVE. Every gate skipped, nothing
     written to the bypass log, so after the fact it is indistinguishable from compliance.
 
+    BOUND (832 rail 470, verified here): the bypass requires EVERY pipeline segment to be
+    safe-listed, not merely python3 and not python3 leading. So the population is smaller
+    than "any command containing python3 -c". This does NOT rescue the gate — the widest
+    shapes are already open: bare form ALLOWED, `cat f | python3 -c "<write>"` ALLOWED,
+    `cd /tmp && python3 -c "<write>"` ALLOWED. A non-safe-listed segment (e.g. termlink)
+    is what blocks the rest, incidentally rather than by design.
+
+    EXTENSION FOUND HERE (not in 832 rail 470): `curl -s http://host | python3 -c "<write>"`
+    is ALLOWED, because curl is itself safe-listed. That is remote content reaching the
+    filesystem with no active task, no focus check and no bypass-log entry — the sharpest
+    shape in the set, and it follows from two independently reasonable allowlist entries
+    composing. The remedy must therefore not be "safe-list fewer helper commands": the bare
+    form is the widest case and is open without any helper at all.
+
     '
   spec_reference: CLAUDE.md §Enforcement Tiers (Tier 0 scope boundary, same family); OBS-184/185
   severity: high
