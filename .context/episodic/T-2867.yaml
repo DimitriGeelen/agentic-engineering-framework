@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2867: fw note silently discards the observation when a sub-verb is typed: 26 lost notes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T12:26:05Z
+# ============================================================================
+
+task_id: T-2867
+task_name: "fw note silently discards the observation when a sub-verb is typed: 26 lost notes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T12:19:03Z
+completed: 2026-08-08T12:25:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-08T14:25:38+02:00
+last_commit: 2026-08-08T14:25:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw note refuses unused positional args instead of discarding them — 26 notes were lost. register fabric card for note_capture_guard.bats
+
+# Key outcomes
+outcomes:
+  - '`fw note add "text"` (and any `fw note <bare-word> "text"` shape) **fails**'
+  - 'The guard fires on the general defect, not a blocklist of four words: any'
+  - 'Legitimate usage is unaffected — `fw note "text"`, and `fw note "text"'
+  - 'Known sub-verbs still dispatch: `list`, `count`, `triage`, `promote`,'
+  - 'The 26 existing junk entries are marked so they cannot be mistaken for real'
+  - '`tests/unit/note_capture_guard.bats` pins all of the above, including a'
+  - 'ANTI-VACUITY: the guard test is shown red against the pre-fix `observe.sh`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/observe/observe.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/observe/observe.sh'
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-note_capture_guard.yaml'
+  - '.tasks/active/T-2867-fw-note-silently-discards-the-observatio.md'
+  - 'tests/unit/note_capture_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T14:25:38'
+    action: 'T-2867: fw note refuses unused positional args instead of discarding them — 26 notes were lost'
+  - time: '2026-08-08T14:25:52'
+    action: 'T-2867: register fabric card for note_capture_guard.bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 7
+  lines_added: 582
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2867-fw-note-silently-discards-the-observatio.md
+generated_by: context-agent-hybrid
