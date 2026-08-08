@@ -1,0 +1,20 @@
+id: tests/unit/drift_gate_not_shadowed_by_safelist.bats
+name: drift_gate_not_shadowed_by_safelist
+type: script
+subsystem: unknown
+location: tests/unit/drift_gate_not_shadowed_by_safelist.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-08
+created_by: unknown

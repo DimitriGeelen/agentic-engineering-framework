@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2880: Safe-list early-return shadows the focus-drift gate — pattern 2 unreachable since T-2878
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T19:28:24Z
+# ============================================================================
+
+task_id: T-2880
+task_name: "Safe-list early-return shadows the focus-drift gate — pattern 2 unreachable since T-2878"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T18:47:34Z
+completed: 2026-08-08T19:27:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-08T20:53:33+02:00
+last_commit: 2026-08-08T21:26:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-202 arrow-in-prose blocks capture verbs; OBS-203 budget gauge verified fail-open. OBS-204 — P-011 torn-verification scan clean, with the residual named. rail 478 and 480 marked unread for next session. hoist the attribution question above the safe-list early return
+
+# Key outcomes
+outcomes:
+  - '`fw context add-learning "x" --task T-OTHER` reaches the focus-drift gate again and'
+  - 'The other two drift patterns still fire, and no new block appears for ordinary safe'
+  - 'The two questions are separated in the code with a comment saying why: "needs a task"'
+  - 'Teeth by durable mutation of live source (not `git show HEAD~N:` — T-2874), asserting'
+  - 'T-2879''s pattern-2 anchor verified end-to-end once this lands (it is inert until then)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-08 — the fix shape: hoist the QUESTION, not the focus read'
+    chose: 'extract drift-target detection into `_fw_extract_drift_target()` and call it'
+    rationale: 'the attribution question is *purely syntactic* — it reads the command string and'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - 'agents/context/check-active-task.sh'
+  - '.context/episodic/T-2879.yaml'
+  - '.context/inbox.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2880-safe-list-early-return-shadows-the-focus.md'
+  - '.tasks/completed/T-2879-capture-verb-exemption-covers-bare-verbs.md'
+  - 'tests/unit/drift_gate_not_shadowed_by_safelist.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T20:53:33'
+    action: 'T-2880: OBS-202 arrow-in-prose blocks capture verbs; OBS-203 budget gauge verified fail-open'
+  - time: '2026-08-08T21:00:07'
+    action: 'T-2880: OBS-204 — P-011 torn-verification scan clean, with the residual named'
+  - time: '2026-08-08T21:05:13'
+    action: 'T-2880: rail 478 and 480 marked unread for next session'
+  - time: '2026-08-08T21:26:29'
+    action: 'T-2880: hoist the attribution question above the safe-list early return'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 40 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 40
+  commits: 4
+  files_changed: 13
+  lines_added: 833
+  lines_removed: 139
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2880-safe-list-early-return-shadows-the-focus.md
+generated_by: context-agent-hybrid
