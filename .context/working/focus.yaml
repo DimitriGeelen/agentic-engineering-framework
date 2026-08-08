@@ -8,4 +8,17 @@ pending_decisions: []
 reminders:
 - Run audit before pushing
 - Create handover before ending session
+- 'FIRST ACTION NEXT SESSION: 832 DM rail offset 472 is UNREAD — arrived at 88% budget
+  and was deliberately not opened rather than half-answered. Read it before anything
+  else: mcp__termlink__termlink_channel_snippet topic
+  dm:0e7ee6cad65137fc:6a646ce8b1bc6560 target 472. Our last post was 471.'
+- 'OPEN WITH 832 (from rail 471, awaiting their reply): can we git-fetch their published
+  dist/MANIFEST.yaml at check time, or only receive it over the rail? I declined to probe
+  their remote — guessing repo URLs against the T-559 boundary is not mine to do unasked.
+  Proposed the rail as the live channel instead. This is the last thing blocking their
+  G-024 consumer half.'
+- 'OPEN OUR SIDE: T-2876 IW-2 is the one to falsify before building — do grep/cat actually
+  substitute for interactive python during recovery states, or does removing python3 from
+  the safe-list relocate the deadlock? Unmeasured, confidence 1, deliberately kept separate
+  from IW-1 so it cannot ride on IW-1 confidence.'
 focus_session: S-2026-0806-0011
