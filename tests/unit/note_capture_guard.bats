@@ -29,12 +29,16 @@ load ../test_helper
 
 OBSERVE="$FRAMEWORK_ROOT/agents/observe/observe.sh"
 
-# A throwaway project root. focus.yaml is seeded deliberately: without it,
-# do_capture's trailing `[ -n "$task" ] && echo …` short-circuits and the script
-# exits 1 despite having written the note perfectly — a separate, pre-existing
-# defect (T-2868), reproduced against the pre-fix script too, so not caused by
-# T-2867's guard. Seeding focus here keeps this suite measuring ITS OWN property
-# instead of failing for someone else's reason. T-2868 pins that one directly.
+# A throwaway project root with a focus task set.
+#
+# The focus.yaml seed was originally a WORKAROUND: without it, do_capture's trailing
+# `[ -n "$task" ] && echo …` short-circuited and the script exited 1 despite writing
+# the note perfectly. That bug is fixed (T-2868) and pinned by
+# tests/unit/note_exit_status.bats, so the seed is no longer load-bearing here.
+#
+# It is kept because the anti-vacuity test runs the PRE-FIX script, which still has
+# the T-2868 defect — leaving that arm unfocused would make it exit 1 for a reason
+# unrelated to the property this suite is about.
 _fresh_root() {
     local root="$BATS_TEST_TMPDIR/proj$1"
     mkdir -p "$root/.context/working"

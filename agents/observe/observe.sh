@@ -145,7 +145,14 @@ EOF
     else
         echo -e "${GREEN}$id${NC} captured: \"$text\""
     fi
-    [ -n "$task" ] && echo -e "  context: $task"
+    # T-2868: `[ -n "$task" ] && echo …` as the FINAL statement made the empty-task
+    # case return 1 — so a note written perfectly reported failure. A fresh project
+    # has no focus.yaml, so the first `fw note` in every new project hit it, and any
+    # caller that retried on non-zero duplicated the observation. Use an if-block so
+    # the exit status is the function's, not the test's.
+    if [ -n "$task" ]; then
+        echo -e "  context: $task"
+    fi
 }
 
 do_list() {
