@@ -1,24 +1,36 @@
 # Working Memory - Current Focus
 # Session: S-2026-0806-0011
 
-current_task: T-2720
+current_task: T-2878
 priorities: []
 blockers: []
 pending_decisions: []
 reminders:
 - Run audit before pushing
 - Create handover before ending session
-- 'FIRST ACTION NEXT SESSION: 832 DM rail offset 472 is UNREAD — arrived at 88% budget
-  and was deliberately not opened rather than half-answered. Read it before anything
-  else: mcp__termlink__termlink_channel_snippet topic
-  dm:0e7ee6cad65137fc:6a646ce8b1bc6560 target 472. Our last post was 471.'
-- 'OPEN WITH 832 (from rail 471, awaiting their reply): can we git-fetch their published
-  dist/MANIFEST.yaml at check time, or only receive it over the rail? I declined to probe
-  their remote — guessing repo URLs against the T-559 boundary is not mine to do unasked.
-  Proposed the rail as the live channel instead. This is the last thing blocking their
-  G-024 consumer half.'
-- 'OPEN OUR SIDE: T-2876 IW-2 is the one to falsify before building — do grep/cat actually
-  substitute for interactive python during recovery states, or does removing python3 from
-  the safe-list relocate the deadlock? Unmeasured, confidence 1, deliberately kept separate
-  from IW-1 so it cannot ride on IW-1 confidence.'
+- "FIRST ACTION NEXT SESSION: 832 DM rail offset 472 is UNREAD \u2014 arrived at 88%\
+  \ budget and was deliberately not opened rather than half-answered. Read it before\
+  \ anything else: mcp__termlink__termlink_channel_snippet topic dm:0e7ee6cad65137fc:6a646ce8b1bc6560\
+  \ target 472. Our last post was 471."
+- "OPEN WITH 832 (from rail 471, awaiting their reply): can we git-fetch their published\
+  \ dist/MANIFEST.yaml at check time, or only receive it over the rail? I declined\
+  \ to probe their remote \u2014 guessing repo URLs against the T-559 boundary is\
+  \ not mine to do unasked. Proposed the rail as the live channel instead. This is\
+  \ the last thing blocking their G-024 consumer half."
+- "T-2878 FIX IS COMPOSED BUT NOT APPLIED \u2014 budget-gate refused the source Edit\
+  \ at 98%. The exact diff is in the task file under STATUS. Apply it, run bin/fw vendor\
+  \ self, then add tests/unit/capture_verbs_nulltask.bats. Do not re-derive it. Rail\
+  \ 472/473/474 have been READ; 474 is 832's T-390, same fix, adopted."
+- "FILE THIS: .context/working/.budget-status UNDER-REPORTED by ~178K \u2014 read ok/116729,\
+  \ then budget-gate refused at 294439 (98%), same session, no compaction between. Twice\
+  \ more earlier: 213917->64395 and 263915->116729. FAIL-OPEN direction: it permits work\
+  \ that should be refused, and /resume names it canonical so it is trusted by rule.\
+  \ Suspicion, UNVERIFIED: it reads a session transcript that rotates, measuring the\
+  \ current file rather than cumulative context. Verify against budget-gate.sh /\
+  \ checkpoint.sh before filing. Could not file live \u2014 needs the capture verbs T-2878\
+  \ unblocks."
+- "OPEN OUR SIDE: T-2876 IW-2 is the one to falsify before building \u2014 do grep/cat\
+  \ actually substitute for interactive python during recovery states, or does removing\
+  \ python3 from the safe-list relocate the deadlock? Unmeasured, confidence 1, deliberately\
+  \ kept separate from IW-1 so it cannot ride on IW-1 confidence."
 focus_session: S-2026-0806-0011
