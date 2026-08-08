@@ -83,8 +83,16 @@ cost_estimate_proposed:
 - **IW-1: Is the safe-list's `python3 -c` entry removable, or does something depend on it
   that survives the P-011 argument?**
   confidence: 2
-  disposition:
-  rationale: §4 of the artifact argues the cited cost (yaml.safe_load in Verification blocks)
+  disposition: answered
+  rationale: ANSWERED NO — nothing depends on it that survives the P-011 argument. The only
+    concrete dependency either project named was the yaml.safe_load idiom in Verification
+    blocks, and 832 measured it away on their tree (rail 470 §3) — check-active-task is wired
+    at PreToolUse only, matcher Write|Edit|Bash, and update-task.sh references it ZERO times,
+    so Verification-block python never touches this hook. Caveat kept honest: that is a second
+    TREE, not a second implementation (they vendor our hook — L-546), and it is still not
+    observed end-to-end with python3 actually absent from the safe-list. Hence confidence 2,
+    not 3. Original text below.
+  original_rationale: §4 of the artifact argues the cited cost (yaml.safe_load in Verification blocks)
     is against a population this hook never gates, because PreToolUse fires on the agent's
     tool calls and not on subprocesses `update-task.sh` spawns. Structural and high-confidence,
     but not yet measured end-to-end. Not 3 until a Verification block is observed running with
@@ -93,16 +101,33 @@ cost_estimate_proposed:
 - **IW-2: Does `grep`/`cat` actually substitute for interactive python one-liners in the
   no-task / drift / completed-focus states, or does removal create a new recovery deadlock?**
   confidence: 1
-  disposition:
-  rationale: Explicitly the JUDGEMENT half of §4, separated from the structural half so it
+  disposition: deferred
+  rationale: DEFERRED to the build slice, and it is the GATING question for that slice — an
+    evidence gap, not a confidence hedge. Asked 832 to falsify it (rail 471); they answered
+    honestly that they cannot, and explicitly declined to press their one datapoint into
+    service (their base64-decode observation argues removal costs LESS in that specific case
+    only, and they refused to inflate it — rail 473 §6). So it remains unmeasured on both
+    sides. MUST be measured before the removal lands, because it decides whether the fix is
+    cheap or relocates the deadlock. Original text below.
+  original_rationale: Explicitly the JUDGEMENT half of §4, separated from the structural half so it
     cannot ride on the latter's confidence. The framework has a documented history of remedies
     that relocate a deadlock rather than remove it (T-2821 moved the empty-worktree deadlock;
     T-2875 nearly substituted a second dead remedy). Unmeasured.
 
 - **IW-3: Is the scope `python3` alone, or every interpreter on the safe-list?**
   confidence: 1
-  disposition:
-  rationale: `bash -n`, and any node/perl/ruby entries, sit on the same boundary — a safe-listed
+  disposition: deferred
+  rationale: DEFERRED to the build slice as a scope decision, per the artifact §5 — the GO is
+    on the DIRECTION (write-free by construction, not enumeration), and scope belongs to the
+    slice that builds it. Sharpened since filing by 832 rail 473 §4: the safe-list groups
+    curl|wget|date|uname|ps|... as read-only info commands, and curl genuinely satisfies "does
+    not modify local state" — the CATEGORY is what fails, because a command can be perfectly
+    read-only and still be the INPUT to something that writes. The list classifies by what
+    commands DO; composition is about what they CARRY. So the scope question is not "which
+    interpreters" but "which entries can carry", which is a wider set than the interpreter
+    list. "Bound rather than close" remains legitimate (precedent
+    tests/unit/tier0_scope_boundary.bats) and must not be assumed away. Original text below.
+  original_rationale: `bash -n`, and any node/perl/ruby entries, sit on the same boundary — a safe-listed
     interpreter is a general computer. Fixing python3 alone may just move the traffic.
     `tests/unit/tier0_scope_boundary.bats` pins the analogous Tier 0 limit as a deliberate
     scope boundary, so precedent exists for BOUNDING rather than closing — that is a legitimate
