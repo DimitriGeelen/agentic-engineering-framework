@@ -1,10 +1,35 @@
 ---
 id: T-2874
-name: "fw context focus accepts completed task ids the gate then refuses — writer/reader scope asymmetry"
+name: "fw context focus accepts completed task ids the gate then refuses — writer/reader
+  scope asymmetry"
 description: >
-  VERIFIED IN OUR TREE (832 rail 461, G-008 upstream candidate). agents/context/lib/focus.sh:35 validates with find_task_file "$task_id" — UNSCOPED, so it resolves active/ then falls back to completed/. The gate that reads the value back requires find_task_file "$CURRENT_TASK" active (agents/context/check-active-task.sh:401). The writer's accepted set is a strict superset of the reader's usable set, so every id in the difference writes a state that is writable but unusable: fw context focus <completed-id> exits 0, then every gated Write/Edit/Bash dies on 'Task X is not active'. This session hit the resulting deadlock repeatedly after each task close. Fix is one argument — find_task_file "$task_id" active — plus a refusal naming the reason and the recovery command. 832 committed their version at 8842cedb; take as patch or re-derive. GENERALISATION (PL-020 widened): find_task_file's scope parameter is OPTIONAL with a permissive default, so omitting it is invisible at the call site — find_task_file "$id" reads as complete and correct in isolation. Our own T-2054 comment already says this state should be impossible (--status work-completed nulls current_task AND moves the file) but nothing enforced it on the one path that could still write it: a rule stated in a comment on one side of a seam is not enforced on the other. ANTI-VACUITY REQUIRED, and 832 named the trap: an entry leg asserting only a non-zero exit PASSES for the wrong reason, because 'task does not exist anywhere' exits non-zero exactly like 'exists but is completed'. Assert message content, not rc alone. Also: P-011 runs probes from inside update-task.sh which has already EXPORTED PROJECT_ROOT/TASKS_DIR/CONTEXT_DIR for the live repo — those beat cd, so sandbox fixtures are invisible. And grep -q on a pattern containing \$ needs -F or the \$ is a BRE metacharacter and the match fails against correct code. NOTE 832 RETRACTED a second claim from their T-380: that the gate blocks the recovery commands it prints. Measured false — all four printed remedies are allowed while wedged. Do not carry that severity forward.
+  VERIFIED IN OUR TREE (832 rail 461, G-008 upstream candidate). agents/context/lib/focus.sh:35
+  validates with find_task_file "$task_id" — UNSCOPED, so it resolves active/ then
+  falls back to completed/. The gate that reads the value back requires find_task_file
+  "$CURRENT_TASK" active (agents/context/check-active-task.sh:401). The writer's accepted
+  set is a strict superset of the reader's usable set, so every id in the difference
+  writes a state that is writable but unusable: fw context focus <completed-id> exits
+  0, then every gated Write/Edit/Bash dies on 'Task X is not active'. This session
+  hit the resulting deadlock repeatedly after each task close. Fix is one argument
+  — find_task_file "$task_id" active — plus a refusal naming the reason and the recovery
+  command. 832 committed their version at 8842cedb; take as patch or re-derive. GENERALISATION
+  (PL-020 widened): find_task_file's scope parameter is OPTIONAL with a permissive
+  default, so omitting it is invisible at the call site — find_task_file "$id" reads
+  as complete and correct in isolation. Our own T-2054 comment already says this state
+  should be impossible (--status work-completed nulls current_task AND moves the file)
+  but nothing enforced it on the one path that could still write it: a rule stated
+  in a comment on one side of a seam is not enforced on the other. ANTI-VACUITY REQUIRED,
+  and 832 named the trap: an entry leg asserting only a non-zero exit PASSES for the
+  wrong reason, because 'task does not exist anywhere' exits non-zero exactly like
+  'exists but is completed'. Assert message content, not rc alone. Also: P-011 runs
+  probes from inside update-task.sh which has already EXPORTED PROJECT_ROOT/TASKS_DIR/CONTEXT_DIR
+  for the live repo — those beat cd, so sandbox fixtures are invisible. And grep -q
+  on a pattern containing \$ needs -F or the \$ is a BRE metacharacter and the match
+  fails against correct code. NOTE 832 RETRACTED a second claim from their T-380:
+  that the gate blocks the recovery commands it prints. Measured false — all four
+  printed remedies are allowed while wedged. Do not carry that severity forward.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T15:28:21Z
-last_update: 2026-08-08T15:28:21Z
-date_finished: null
+last_update: 2026-08-08T16:04:56Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-08T15:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-08T15:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2874: fw context focus accepts completed task ids the gate then refuses — writer/reader scope asymmetry
@@ -46,8 +99,23 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `do_focus` validates with `find_task_file "$task_id" active` — the scope closes the
+      writer/reader asymmetry at its source.
+- [ ] The refusal **distinguishes the two causes**. "Completed, not active" and "no such id"
+      exit identically today; they need different recoveries, and "not found" sends the
+      operator hunting for a typo in an id that exists.
+- [ ] The refusal names the recovery command (`fw work-on <id>`), per §Copy-Pasteable Commands.
+- [ ] ANTI-VACUITY, and the specific trap 832 named: the test asserts **message content**, not
+      rc alone. An entry leg asserting only a non-zero exit **passes for the wrong reason**,
+      because "does not exist anywhere" exits non-zero exactly like "exists but is completed" —
+      a bare rc compare would certify this fix from a tree where the fixture never existed.
+- [ ] The test's fixture is genuinely visible to the code under test: `update-task.sh` exports
+      `PROJECT_ROOT`/`TASKS_DIR`/`CONTEXT_DIR` for the live repo and those beat `cd`, so a
+      sandbox that only changes directory is invisible and the probe answers about the wrong
+      tree (832's own probe hit exactly this).
+- [ ] `grep` patterns containing `$` use `-F` or escape it — unescaped, `$` is a BRE
+      metacharacter and the match fails against **correct** code, producing a red that sends
+      the next reader to debug working software.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,3 +282,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2874-fw-context-focus-accepts-completed-task-.md
 - **Context:** Initial task creation
+
+### 2026-08-08T16:04:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

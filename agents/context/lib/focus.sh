@@ -31,10 +31,40 @@ do_focus() {
     else
         local task_id="$1"
 
-        # Validate task exists
-        local task_file=$(find_task_file "$task_id")
+        # Validate task exists AND is active (T-2874).
+        #
+        # The `active` scope is load-bearing, not defensive. find_task_file's scope
+        # parameter is OPTIONAL with a permissive default: unscoped it resolves active/
+        # and then falls back to completed/. The gate that reads this value back requires
+        # `find_task_file "$CURRENT_TASK" active` (check-active-task.sh:401). Omit the
+        # scope here and the writer's accepted set becomes a strict SUPERSET of the
+        # reader's usable set — every id in the difference writes a state that is
+        # writable but unusable: `fw context focus <completed-id>` exits 0, and then
+        # every gated Write/Edit/Bash dies on "Task X is not active".
+        #
+        # T-2054's comment already asserts this state is impossible (--status
+        # work-completed nulls current_task AND moves the file), but nothing enforced it
+        # on the one path that could still write it. A rule stated in a comment on one
+        # side of a seam is not enforced on the other. Origin: 832 rail 461 (their
+        # 8842cedb); both call sites verified in our tree before adopting.
+        local task_file=$(find_task_file "$task_id" active)
         if [ -z "$task_file" ]; then
-            echo -e "${RED}Task not found: $task_id${NC}"
+            # Distinguish the two causes. They exit identically but need different
+            # recoveries, and "not found" sends the operator hunting for a typo in an
+            # id that exists.
+            if [ -n "$(find_task_file "$task_id")" ]; then
+                echo -e "${RED}Cannot focus ${task_id}: it is completed, not active.${NC}" >&2
+                echo "" >&2
+                echo "  Focus must name a task the gates can still work under. Setting it to" >&2
+                echo "  a completed id would succeed here and then block every Write/Edit/Bash" >&2
+                echo "  after it, because the gate resolves focus against active/ only." >&2
+                echo "" >&2
+                echo "  To resume this task:    bin/fw work-on ${task_id}" >&2
+                echo "  To start something new: bin/fw work-on \"<name>\" --type build" >&2
+            else
+                echo -e "${RED}Task not found: $task_id${NC}" >&2
+                echo "  No task with that id in .tasks/active/ or .tasks/completed/." >&2
+            fi
             exit 1
         fi
 
