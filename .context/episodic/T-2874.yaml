@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2874: fw context focus accepts completed task ids the gate then refuses — writer/reader scope asymmetry
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T16:08:21Z
+# ============================================================================
+
+task_id: T-2874
+task_name: "fw context focus accepts completed task ids the gate then refuses — writer/reader scope asymmetry"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T15:28:21Z
+completed: 2026-08-08T16:08:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-08T17:29:10+02:00
+last_commit: 2026-08-08T18:06:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file 832's focus.sh scope-asymmetry finding (verified in our tree). focus writer scoped to active/ — closes the writer/reader asymmetry. 7/7 suite incl. teeth — pre-fix focus.sh accepts the completed id
+
+# Key outcomes
+outcomes:
+  - '`do_focus` validates with `find_task_file "$task_id" active` — the scope closes the'
+  - 'The refusal **distinguishes the two causes**. "Completed, not active" and "no such id"'
+  - 'The refusal names the recovery command (`fw work-on <id>`), per §Copy-Pasteable Commands.'
+  - 'ANTI-VACUITY, and the specific trap 832 named: the test asserts **message content**, not'
+  - 'The test''s fixture is genuinely visible to the code under test: `update-task.sh` exports'
+  - '`grep` patterns containing `$` use `-F` or escape it — unescaped, `$` is a BRE'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: '7/7 suite incl. teeth — pre-fix focus.sh accepts the completed id'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/lib/focus.sh'
+  - '.context/audits/2026-08-08.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.tasks/active/T-2874-fw-context-focus-accepts-completed-task-.md'
+  - 'tests/unit/focus_active_scope.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T17:29:10'
+    action: 'T-2874: file 832''s focus.sh scope-asymmetry finding (verified in our tree)'
+  - time: '2026-08-08T18:06:00'
+    action: 'T-2874: focus writer scoped to active/ — closes the writer/reader asymmetry'
+  - time: '2026-08-08T18:06:52'
+    action: 'T-2874: 7/7 suite incl. teeth — pre-fix focus.sh accepts the completed id'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 39 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 39
+  commits: 3
+  files_changed: 12
+  lines_added: 515
+  lines_removed: 56
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2874-fw-context-focus-accepts-completed-task-.md
+generated_by: context-agent-hybrid

@@ -96,27 +96,25 @@ _focus() {
     grep -q "T-9001" "$root/.context/working/focus.yaml"
 }
 
-@test "T-2874: ANTI-VACUITY — the pre-fix focus.sh accepts the completed id" {
-    # Proves the suite can fail. Without it, green says only that the current code
-    # happens to pass — not that the defect it targets was ever reachable.
-    local pre="$BATS_TEST_TMPDIR/focus-pre.sh"
-    if ! git -C "$FRAMEWORK_ROOT" show "HEAD~1:agents/context/lib/focus.sh" > "$pre" 2>/dev/null; then
-        skip "cannot extract pre-fix focus.sh"
-    fi
-    if grep -qF 'find_task_file "$task_id" active' "$pre"; then
-        skip "HEAD~1 already carries the fix; teeth check belongs on its parent"
-    fi
-    # NB grep -F above: unescaped, the `$` is a BRE metacharacter and the match fails
-    # against CORRECT code — a red that sends the next reader to debug working software.
-    bash -n "$pre"          # a mutant that cannot parse is not evidence (OBS-193)
+@test "T-2874: ANTI-VACUITY — removing the scope argument re-opens the defect" {
+    # DURABLE MUTATION, deliberately not `git show HEAD~1:`. A git-ref teeth check goes
+    # permanently inert the moment another commit lands: this suite was committed one
+    # commit after the fix, so HEAD~1 already carried `active` and the leg SKIPPED —
+    # reporting `ok` while asserting nothing. Caught only because the task's Verification
+    # greps for `# skip` on this leg. Mutating the LIVE source has no such expiry.
+    local mutant="$BATS_TEST_TMPDIR/focus-mutant.sh"
+    # grep -F / sed with the `$` escaped: unescaped it is a BRE metacharacter and would
+    # fail against CORRECT code — a red that sends the next reader to debug working software.
+    sed 's|find_task_file "\$task_id" active|find_task_file "$task_id"|' \
+        "$FOCUS_SH" > "$mutant"
+    ! diff -q "$FOCUS_SH" "$mutant" >/dev/null   # the mutation actually applied
+    bash -n "$mutant"                            # a mutant that cannot parse is not evidence (OBS-193)
 
     local root; root=$(_sandbox z)
-    cp "$pre" "$FRAMEWORK_ROOT/agents/context/lib/.focus-pre-t2874.sh" 2>/dev/null || skip "cannot stage pre-fix copy"
-    # Drive the old do_focus directly: source it with the sandbox env and call it.
     run env PROJECT_ROOT="$root" TASKS_DIR="$root/.tasks" CONTEXT_DIR="$root/.context" \
-        bash -c "source '$FRAMEWORK_ROOT/lib/paths.sh' 2>/dev/null; source '$pre'; do_focus T-9002"
-    rm -f "$FRAMEWORK_ROOT/agents/context/lib/.focus-pre-t2874.sh"
+        bash -c "source '$FRAMEWORK_ROOT/lib/paths.sh' 2>/dev/null; source '$mutant'; do_focus T-9002"
 
-    # THE DEFECT: the completed id is accepted (exit 0) — the writable-but-unusable state.
+    # THE DEFECT: the completed id is accepted — the writable-but-unusable state.
     [ "$status" -eq 0 ]
+    [[ "$output" != *"completed, not active"* ]]
 }

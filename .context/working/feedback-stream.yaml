@@ -30912,3 +30912,21 @@ scan_id: R-0bb419d3
 task_id: T-2873
 payload:
   task_file: .tasks/active/T-2873-flag-c-remedy-was-scoped-from-one-versio.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T16:08:11Z'
+scan_id: R-fa34f4bc
+task_id: T-2874
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T16:08:11Z'
+scan_id: R-fa34f4bc
+task_id: T-2874
+payload:
+  task_file: .tasks/active/T-2874-fw-context-focus-accepts-completed-task-.md

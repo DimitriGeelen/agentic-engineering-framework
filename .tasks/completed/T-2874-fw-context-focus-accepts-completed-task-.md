@@ -29,12 +29,12 @@ description: >
   that the gate blocks the recovery commands it prints. Measured false — all four
   printed remedies are allowed while wedged. Do not carry that severity forward.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/focus.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T15:28:21Z
-last_update: 2026-08-08T16:04:56Z
-date_finished:
+last_update: 2026-08-08T16:08:04Z
+date_finished: 2026-08-08T16:08:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,21 +99,21 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `do_focus` validates with `find_task_file "$task_id" active` — the scope closes the
+- [x] `do_focus` validates with `find_task_file "$task_id" active` — the scope closes the
       writer/reader asymmetry at its source.
-- [ ] The refusal **distinguishes the two causes**. "Completed, not active" and "no such id"
+- [x] The refusal **distinguishes the two causes**. "Completed, not active" and "no such id"
       exit identically today; they need different recoveries, and "not found" sends the
       operator hunting for a typo in an id that exists.
-- [ ] The refusal names the recovery command (`fw work-on <id>`), per §Copy-Pasteable Commands.
-- [ ] ANTI-VACUITY, and the specific trap 832 named: the test asserts **message content**, not
+- [x] The refusal names the recovery command (`fw work-on <id>`), per §Copy-Pasteable Commands.
+- [x] ANTI-VACUITY, and the specific trap 832 named: the test asserts **message content**, not
       rc alone. An entry leg asserting only a non-zero exit **passes for the wrong reason**,
       because "does not exist anywhere" exits non-zero exactly like "exists but is completed" —
       a bare rc compare would certify this fix from a tree where the fixture never existed.
-- [ ] The test's fixture is genuinely visible to the code under test: `update-task.sh` exports
+- [x] The test's fixture is genuinely visible to the code under test: `update-task.sh` exports
       `PROJECT_ROOT`/`TASKS_DIR`/`CONTEXT_DIR` for the live repo and those beat `cd`, so a
       sandbox that only changes directory is invisible and the probe answers about the wrong
       tree (832's own probe hit exactly this).
-- [ ] `grep` patterns containing `$` use `-F` or escape it — unescaped, `$` is a BRE
+- [x] `grep` patterns containing `$` use `-F` or escape it — unescaped, `$` is a BRE
       metacharacter and the match fails against **correct** code, producing a red that sends
       the next reader to debug working software.
 
@@ -215,6 +215,15 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/focus_active_scope.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# The teeth leg must have RUN, not skipped — a skipped anti-vacuity leg renders the
+# whole suite's green meaningless and reports as "ok" either way.
+out=$(bats tests/unit/focus_active_scope.bats 2>&1); echo "$out" | grep -q '^ok 7' && ! echo "$out" | grep -q '^ok 7.*# skip'
+# The scope argument is present at the writer. -F: unescaped $ is a BRE metacharacter.
+grep -qF 'find_task_file "$task_id" active' agents/context/lib/focus.sh
+# Writer and reader now agree on scope — the asymmetry itself is what regressed.
+grep -qF 'find_task_file "$CURRENT_TASK" active' agents/context/check-active-task.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -285,3 +294,15 @@ bvp_scores_proposed:
 
 ### 2026-08-08T16:04:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fa34f4bc
+- **Timestamp:** 2026-08-08T16:08:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-08T16:08:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
