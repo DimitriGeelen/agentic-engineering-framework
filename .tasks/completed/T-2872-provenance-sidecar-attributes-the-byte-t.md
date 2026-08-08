@@ -1,25 +1,13 @@
 ---
-id: T-2871
-name: "corpus depends 91% on non-frozen aef:meta keys — no guard fires if 832 renames
-  one"
+id: T-2872
+name: "provenance sidecar attributes the byte to 832's transport — it was my own use of the rendered view as a wire format"
 description: >
-  Measured under T-2870 via XML parse of 56 diagrams (501 <aef:meta> elements, 652
-  attributes): only 53 attributes (8%) use the frozen v1 governance meta-keys {horizon,
-  workflowType, tier, agentType}. 599 (91%) use keys mapping-v1 §2 explicitly says
-  MAY change without a standard bump: note=393, state=102, terminalKind=74, triggeredBy=18,
-  decisionOwner=6, softFail=2, guard=2, exitCode=1, gate=1. The exposure that matters
-  is state= (102 uses): the state-carrier design of aef-task-lifecycle (T-2624) rests
-  on it and the T-2621 conformance rail audits transition parity THROUGH those carriers.
-  If 832 renames or drops state=, our maps silently lose state semantics with no test
-  going red. Fix: pin the set of aef:meta keys our corpus depends on so a rename surfaces
-  red. Anti-vacuity: the pin must be shown to go red when a depended-on key is renamed
-  in a fixture. NOT a request to 832 to freeze more keys — their §2 note is deliberate
-  and correct; the gap is that we built on the unfrozen half without recording it.
+  provenance sidecar attributes the byte to 832's transport — it was my own use of the rendered view as a wire format
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -33,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-08T14:36:28Z
-last_update: 2026-08-08T14:51:42Z
-date_finished:
+created: 2026-08-08T14:47:37Z
+last_update: 2026-08-08T14:51:24Z
+date_finished: 2026-08-08T14:51:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -46,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-08-08T14:44:42Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-08-08T14:45:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2871: corpus depends 91% on non-frozen aef:meta keys — no guard fires if 832 renames one
+# T-2872: provenance sidecar attributes the byte to 832's transport — it was my own use of the rendered view as a wire format
 
 ## Context
 
@@ -86,29 +46,28 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A test enumerates the `aef:meta` keys our corpus actually **depends on** — not every
-      key that appears — and records for each whether it is a frozen v1 governance meta-key
-      (`{horizon, workflowType, tier, agentType}`) or one §2 says MAY change without a
-      standard bump.
-- [ ] The test goes **red when a depended-on key disappears from the corpus**, which is the
-      shape a 832-side rename takes on our side: the old key stops appearing, the new one is
-      unrecognised, and today nothing notices.
-- [ ] ANTI-VACUITY: the red is **demonstrated**, not asserted — rename a depended-on key in a
-      throwaway copy of a fixture, show the test fails, and guard that the mutant fixture
-      still parses as XML first (OBS-193: a mutant that dies at parse time is
-      indistinguishable from the property going red).
-- [ ] The measurement in this task's description reproduces from a checked-in script/test
-      rather than living only in the T-2870 artifact — 56 diagrams, 501 `<aef:meta>`
-      elements, 652 attributes, 53 frozen (8%) / 599 non-frozen (91%), `state=` at 102.
-      Counting by `grep -o '[a-zA-Z_]*='` is wrong: it matches `=` inside quoted `note="…"`
-      values and invents keys that do not exist. Parse the XML.
-- [ ] `state=` is called out explicitly as the load-bearing exposure, with the reason: the
-      `aef-task-lifecycle` state-carrier design (T-2624) rests on it, and the T-2621
-      conformance rail audits transition parity *through* those carriers — so a silent loss
-      of `state=` leaves the rail green while the map means nothing.
-- [ ] The task records what it does **not** do: it does not ask 832 to freeze more keys.
-      Their §2 note is deliberate and correct; our gap is having built on the unfrozen half
-      without recording that we had.
+- [x] The discriminating measurement 832 asked for (rail 457) is **run**, not reasoned about:
+      decode `payload_b64` at offset 454 and hash the raw bytes **before any file write**.
+      Result: 7905 B, sha256 `970dd530…`, ends `--\n\n` — 832's pin exactly. So the byte
+      enters at our extraction, not at our client's read of the hub.
+- [x] The stage is located **more precisely than either branch 832 offered**: not "our save",
+      not "our client hands a different representation" — our client offers *both* and we
+      read the wrong one. Proven by slicing the same envelope out of the rendered subscribe
+      view: 7906 B, `9e5c55f8…`, and `rendered == hub_bytes + b"\n"` asserted as a byte
+      equality rather than inferred from a length delta.
+- [x] The wrong diagnosis is **superseded in place, not overwritten**. The sidecar keeps the
+      original claim under `superseded_diagnosis:` with the reason it was wrong, because
+      "content intact" (right) and "832's transport did it" (wrong) fail differently and the
+      record should show which half held.
+- [x] The sidecar states the durable rule this establishes — seam bytes come from
+      `payload_b64` and are hashed before touching a file; rendered subscribe output is a
+      display format and is never a wire format.
+- [x] `bats tests/unit/standard_pin.bats` still green — this task corrects a *diagnosis*,
+      and must not touch the vendored bytes or the pin. (5/5, judged for `not ok`.)
+- [x] 832 is told on the rail, with the measurement, that their correction was right and
+      that the stage is one step further in than they could see from their side. Posted at
+      offset 458, including the concession that matters: a real proof about the *content*
+      carried an unexamined claim about the *stage* in behind it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -208,6 +167,24 @@ cost_estimate_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# The sidecar still parses and still records the pin.
+python3 -c "import yaml; yaml.safe_load(open('policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml'))"
+
+# The wrong diagnosis is SUPERSEDED IN PLACE, not deleted — the record must show which
+# half held (content: right) and which did not (stage: wrong).
+grep -q "superseded_diagnosis:" policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml
+grep -q "rule_this_establishes:" policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml
+
+# The corrected sidecar must NOT still assert the refuted claim as CURRENT fact. The phrase
+# legitimately survives inside the superseded block, so this reads the `diagnosis:` key's own
+# text rather than grepping the file — a whole-file grep would fail on the honest record.
+# NB one line: the P-011 gate executes one command per line, so a multi-line python3 -c is
+# split into fragments that each "run" and mostly pass. Caught by rehearsing, not by the gate.
+python3 -c "import yaml,sys; d=yaml.safe_load(open('policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml')); sys.exit(1 if 'rail transport appended' in d['transfer']['transcription_artefact']['diagnosis'] else 0)"
+
+# This task corrected a diagnosis; it must not have touched the bytes or the pin.
+out=$(bats tests/unit/standard_pin.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -271,10 +248,19 @@ cost_estimate_proposed:
 
 ## Updates
 
-### 2026-08-08T14:36:28Z — task-created [task-create-agent]
+### 2026-08-08T14:47:37Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2871-corpus-depends-91-on-non-frozen-aefmeta-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2872-provenance-sidecar-attributes-the-byte-t.md
 - **Context:** Initial task creation
 
-### 2026-08-08T14:44:42Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8856426b
+- **Timestamp:** 2026-08-08T14:51:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-08T14:51:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -45,17 +45,45 @@ transfer:
     inconvenient.
   transcription_artefact:
     observed: >
-      The raw extraction from the rail dump was 7906 bytes / 117 lines and hashed
-      to 9e5c55f8… — one byte and one line over the pin. Its final bytes were
-      "---\n\n\n"; 832 stated the artifact's final two bytes are newlines.
+      The raw extraction was 7906 bytes / 117 lines and hashed to 9e5c55f8… — one
+      byte and one line over the pin. Its final bytes were "---\n\n\n"; 832 stated
+      the artifact's final two bytes are newlines.
+    superseded_diagnosis: >
+      WRONG about the stage, corrected under T-2872. The original entry read "the
+      rail transport appended exactly one trailing newline" and attributed the byte
+      to 832's channel. That named ONE stage out of at least four (their send, hub
+      store, hub read, our decode-and-save) from a single observation. 832 pushed
+      back at rail offset 457: they re-read offset 454 off the hub from their side,
+      got 7905 B / 970dd530…, appended one newline and reproduced 9e5c55f8… —
+      placing the byte DOWNSTREAM of the hub, on our side. Kept rather than
+      overwritten, because the conclusion about the CONTENT was right and the
+      conclusion about the STAGE was wrong, and those two fail differently: a
+      transport you cannot fix is something to route around, a step you own is
+      something to fix once and stop paying for.
     diagnosis: >
-      The rail transport appended exactly one trailing newline. Truncating that
-      single byte reproduces the pin sha256 EXACTLY. A specific sha256 is not
-      reachable by chance through a one-byte edit, so this is conclusive evidence
-      of a transfer artefact with byte-perfect content — which is precisely the
-      distinction 832's "do not reconcile, report it" instruction exists to
-      establish. Reported back on the rail rather than silently trimmed.
-    resolution: content intact; no resend required unless 832 prefers one.
+      MEASURED under T-2872 — and it is a third possibility neither side had listed.
+      832 offered two branches: the byte enters at our save, or our client hands us
+      a different representation than the hub stores. Neither. Our client offers
+      BOTH representations and we read the wrong one.
+        - payload_b64 decoded, before any file write : 7905 B, sha256 970dd530…,
+          ends "---\n\n" — byte-identical to 832's published pin.
+        - the same envelope sliced out of the RENDERED subscribe view : 7906 B,
+          sha256 9e5c55f8…, ends "---\n\n\n", and `rendered == hub_bytes + b"\n"`
+          asserted as a byte equality rather than inferred from a length delta.
+      The rendered view is a DISPLAY format: it prefixes every record with a header
+      ("[454 ↳… @AEF] <sender> chat: ") and terminates each record with a newline.
+      We used the human-rendering path as a byte-transport path. 832's send, the
+      hub's storage, the hub's read and our client's read are all byte-faithful for
+      this artifact.
+    rule_this_establishes: >
+      Seam bytes are read from payload_b64 and hashed BEFORE they touch a file.
+      Never extract a pinned artifact from rendered subscribe output — a display
+      format is not a wire format, and this one is lossy-by-construction in the
+      append direction. 832's parallel finding is consistent: their
+      tools/_t377-rail-payload-fidelity.sh round-tripped five trailing-byte shapes
+      (two newlines, none, trailing spaces, CRLF, UTF-8 multibyte tail) through the
+      CLI stdin path, 5/5 verbatim — the channel is not what added the byte.
+    resolution: content intact; no resend required; the defect was ours and is located.
 
 parts:
   part_I:

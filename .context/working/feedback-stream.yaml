@@ -30858,3 +30858,39 @@ scan_id: R-e443053d
 task_id: T-2869
 payload:
   task_file: .tasks/active/T-2869-vendor-and-pin-aef-bpmn-mapping-v1-part-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T14:44:07Z'
+scan_id: R-b9c7a0e6
+task_id: T-2870
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T14:44:07Z'
+scan_id: R-b9c7a0e6
+task_id: T-2870
+payload:
+  task_file: .tasks/active/T-2870-ratify-from-the-text-lanemeta-authority-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T14:51:26Z'
+scan_id: R-8856426b
+task_id: T-2872
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T14:51:26Z'
+scan_id: R-8856426b
+task_id: T-2872
+payload:
+  task_file: .tasks/active/T-2872-provenance-sidecar-attributes-the-byte-t.md
