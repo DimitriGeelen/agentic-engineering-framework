@@ -4,12 +4,12 @@ name: "G-052 duplicate task IDs block the T-2863 GO decision commit"
 description: >
   G-052 duplicate task IDs block the T-2863 GO decision commit
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, tests/unit/test_inception_commit_rename_paths.py, tests/unit/update_task_orphan_guard.bats, web/blueprints/inception.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T07:23:40Z
-last_update: '2026-08-08T07:30:13Z'
-date_finished:
+last_update: 2026-08-08T07:42:46Z
+date_finished: 2026-08-08T07:42:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -254,6 +254,53 @@ out=$(git log --oneline -30 2>&1); echo "$out" | grep -q "T-2864: land the T-286
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+## Recommendation
+
+**Recommendation:** GO — accept both fixes; the remaining Human AC is a
+confirmation on the one surface no agent can reach.
+
+**Rationale:** The reported symptom has a measured mechanism, a fix, and a test
+that has been shown to fail without the fix. The Watchtower committer was
+manufacturing the exact G-052 violation the pre-commit gate then refused it for —
+it seeds a scratch index from HEAD and kept only the destination side of a rename
+arrow, while `update-task.sh` archives with `git mv`, making that arrow the normal
+case rather than the "defensive edge" the comment called it. A second, independent
+defect (the T-1863 post-move guard checking disk while the gate checks the index)
+was found while investigating and is fixed alongside, since it produces the same
+failure at the same boundary.
+
+The residual risk is narrow and named: the fix is exercised by tests against a
+temp repo, and the real path runs with hooks, on master, through a human click.
+That is what the Human AC checks, and it needs one real decision to pass — not a
+staged rehearsal.
+
+**Evidence:**
+
+- Mechanism measured, not inferred — `git status --porcelain` on a `git mv`'d task
+  file returns `RM .tasks/active/T-x.md -> .tasks/completed/T-x.md`; the old parse
+  kept only the right-hand side.
+- `tests/unit/test_inception_commit_rename_paths.py` — 5 tests asserting the
+  **committed tree** (not the return value, which is `True` even when broken
+  because a temp repo has no hooks). Reverting the fix: **2 of 5 fail** with
+  `AssertionError: duplicate task ids in committed tree: {'T-9100'}`; restoring it:
+  5 passed.
+- `tests/unit/update_task_orphan_guard.bats` — 9/9, including a negative control
+  proving the `|| mv` fallback state really is a G-052 violation before the fix
+  applies, and a `_load_reconcile_fn` that extracts the shipped function by `awk`
+  so deleting it turns the suite red.
+- P-011: **11/11 verification commands pass**, each rehearsed under
+  `bash -c 'set -eo pipefail; …'` (one line was rewritten after failing that
+  rehearsal with the L-387 SIGPIPE trap).
+- The T-2863 GO decision itself is now in history — `92cb41d81`.
+- Docstring corrected: it asserted the move was "a filesystem `mv` (not `git mv`)",
+  the opposite of what `update-task.sh` has done since T-1523. That false statement
+  is why the code read as correct.
+
+**Deliberate carve-out:** a Watchtower decision can still fail to commit for other
+reasons, and the operator learns this from a warning line rather than a failure.
+That decided-but-uncommitted window is a hole in the sovereignty record and is
+flagged for its own task rather than absorbed here.
+
 ## RCA
 
 **Symptom:** The operator recorded GO on T-2863 through Watchtower. The decision
@@ -454,3 +501,15 @@ must never be lost — and it deserves its own task rather than a note here.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2864-g-052-duplicate-task-ids-block-the-t-286.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ab122424
+- **Timestamp:** 2026-08-08T07:42:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-08T07:42:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

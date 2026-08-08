@@ -16,7 +16,7 @@ description: >
   AC (preferred — an inception's decision is its terminal state, not a criterion)
   or add the marker. Sibling of T-2442 inception schema deadlock.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:24:46Z
-last_update: '2026-08-07T20:30:12Z'
+last_update: 2026-08-08T07:43:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,12 +82,73 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+## Context
+
+`lib/seeds/tasks/greenfield/T-002-define-project-goals.md` ships an Agent AC that
+names the very command it blocks. `fw init` seeds it into every greenfield project,
+so the **first inception a new user ever runs cannot be completed** — the decide
+preflight (`lib/inception.sh:521-534`) ticks `@auto-tick-on-decide` ACs, then counts
+what remains unchecked; this AC carries no marker, so it survives the tick and
+refuses the decide it describes.
+
+Instance 1 of the five in T-2863 (GO recorded 2026-08-08). Hit live by the operator
+in a fresh install; the agent correctly refused the `--i-am-human` bypass, which is
+the sovereignty boundary working — the seed is what is wrong.
+
+T-2863's F-17 adds a wrinkle the original report did not have: **DEFER skips the
+preflight entirely** (`lib/inception.sh:521` guards it with `go || no-go`), so the
+deadlock is escapable by hedging. That makes the greenfield experience worse, not
+better — a new user's only exit from their first inception is the hedge the
+framework's own prose forbids (T-2144). Fixing the seed removes the incentive.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The self-referential AC in the greenfield seed no longer deadlocks decide —
+      **removed** as tautological, with the reason stated inline in the seed. Three
+      independent grounds: it deadlocked, it asserted only what `## Decision` already
+      records, and it instructed the agent to run a command agents are structurally
+      forbidden to run (`fw inception decide` is agent-blocked under `$CLAUDECODE=1`,
+      T-1259). Replaced by two checkable ACs — recommendation filled, handoff issued
+- [x] Every **other** Agent AC in the greenfield seed is satisfiable *before* decide
+      runs — no remaining Agent AC names a closing command aimed at its own task
+- [x] The same scan applied to **all 11** seed task files under `lib/seeds/tasks/`,
+      not just `greenfield/T-002`. Raw pattern matched 3 files; reading the context
+      **refuted 2** — `greenfield/T-004` and `existing-project/T-004` name
+      `fw task update T-XXX --status work-completed` for a *different* task the
+      learner creates one line above ("Create a new task"), so they are correct and
+      were left alone. One real instance, as reported
+- [x] A test pins the property against the seed corpus with **two** controls:
+      `anti-vacuity — the scanner detects the original defect` (reconstructs the
+      shipped pre-fix line and asserts it is flagged) and a false-positive control
+      asserting the T-004 lifecycle shape is *not* flagged.
+      `tests/unit/seed_self_gating_ac.bats`, 4/4
+- [ ] End-to-end: a greenfield project seeded from the fixed seeds carries its first
+      inception through the real decide preflight without `--force` or
+      `--skip-acceptance-criteria`, and without a DEFER hedge
+
+  <!-- BLOCKED, not skipped. Running this requires `fw inception decide` in a command
+       string, which the Tier 0 hook refuses under agent control — correctly, and the
+       standing "proceed as you see fit" directive does not override a structural gate
+       (CLAUDE.md §Autonomous Mode Boundaries). `--i-am-human` would be the sanctioned
+       test-context flag here and does NOT bypass the AC-count preflight that was the
+       actual deadlock, so the test would still be valid; it is the Tier 0 approval
+       that is missing, not a safe way to run it.
+
+       To unblock:
+         cd /opt/999-Agentic-Engineering-Framework && bin/fw tier0 approve
+
+       Until then this AC stays unticked. The narrower property — that no Agent AC
+       can gate its own closing command — IS verified, by the bats suite above. -->
+
+<!-- SCOPE NOTE (T-2863 F-17, not fixed here): `lib/inception.sh:521` guards the
+     agent-AC preflight with `go || no-go`, so DEFER skips it entirely. That makes
+     any future seed deadlock escapable by hedging — the exact hedge CLAUDE.md
+     forbids (T-2144) and T-2145 ships a detector for. Fixing the seed removes the
+     incentive for a new user; closing the asymmetry itself is a T-2863 build slice,
+     not this task. -->
+
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -121,6 +182,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(bats tests/unit/seed_self_gating_ac.bats 2>&1); echo "$out" | grep -q "^ok 4 " && ! echo "$out" | grep -q "^not ok"
+# scoped to the Agent AC block: the removal note below it quotes the old line on purpose
+acs=$(awk '/^### Agent/{a=1;next} /^### |^## /{a=0} a' lib/seeds/tasks/greenfield/T-002-define-project-goals.md | grep -E '^\s*-\s*\[[ x]\]'); ! echo "$acs" | grep -q "inception decide"
+grep -q "fw task review T-002" lib/seeds/tasks/greenfield/T-002-define-project-goals.md
+test "$(find lib/seeds/tasks -name '*.md' | wc -l)" -eq 11
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -254,3 +321,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2862-greenfield-seed-t-002-ships-a-self-refer.md
 - **Context:** Initial task creation
+
+### 2026-08-08T07:43:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

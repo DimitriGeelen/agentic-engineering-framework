@@ -22,6 +22,11 @@ date_finished: null
 
 This is an inception task. Define the problem __PROJECT_NAME__ solves, its goals, constraints, and initial architecture. Create a research artifact in `docs/reports/T-002-*.md` to capture findings.
 
+**How this task closes.** The agent explores, writes the artifact, fills in
+`## Recommendation` below, and hands off with `fw task review T-002`. The GO/NO-GO
+decision itself is yours — you record it in Watchtower, not the agent on the command
+line. That split is deliberate: initiative is delegated, authority is not.
+
 ## Acceptance Criteria
 
 ### Human
@@ -35,12 +40,34 @@ This is an inception task. Define the problem __PROJECT_NAME__ solves, its goals
 ### Agent
 - [ ] Research artifact exists: `docs/reports/T-002-*.md`
 - [ ] Problem statement documented
-- [ ] Go/no-go decision recorded: `fw inception decide T-002 go --rationale "..."`
+- [ ] `## Recommendation` below is filled in — a real GO/NO-GO/DEFER with rationale
+      and evidence, replacing the template comment
+- [ ] Handed to the human for the decision: `fw task review T-002`
+
+<!-- T-2862: an Agent AC reading "Go/no-go decision recorded: fw inception decide
+     T-002 go" used to sit here. It was removed, for three independent reasons:
+
+       1. It deadlocked. The decide preflight (lib/inception.sh) refuses while any
+          Agent AC is unchecked — and this AC WAS the decision, so it could never
+          be satisfied before the thing it gated. Every new project's first
+          inception was un-completable by construction.
+       2. It asserted nothing. "The decision was recorded" is exactly what the
+          `## Decision` block below IS; ticking it duplicated a fact the file
+          already carries.
+       3. It told the agent to run a command agents are structurally forbidden to
+          run. `fw inception decide` is agent-blocked under $CLAUDECODE=1 (T-1259)
+          because the decision is the human's. The agent's job ends at the handoff.
+
+     The replacement ACs are things the agent can actually do and a reader can
+     actually check. The decide command itself is still documented, in the two
+     places it belongs: the handoff AC above and the `## Decision` block below. -->
 
 ## Verification
 
 # Research artifact exists
 ls docs/reports/T-002-*.md
+# Recommendation is filled in, not the shipped template comment (T-2862)
+sed '/<!--/,/-->/d' .tasks/active/T-002-*.md | grep -qE '^\*\*Recommendation:\*\*[[:space:]]*(GO|NO-GO|DEFER)'
 
 ## Recommendation
 

@@ -1,0 +1,136 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2863: rework the inception workflow: five failure modes, and a gate that manufactures the decision it then records
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T07:21:06Z
+# ============================================================================
+
+task_id: T-2863
+task_name: "rework the inception workflow: five failure modes, and a gate that manufactures the decision it then records"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T17:25:59Z
+completed: 2026-08-08T07:20:54Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-07T19:37:07+02:00
+last_commit: 2026-08-08T09:10:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the inception map exists and is accurate — what it lacks is the Framework lane. the inception rail is green over one word-set; determinism is proven once and is generative. the filing-to-approval loop closes with no human and no evidence; A2 falsified. the claims validator stamps CONFIRMED on referent existence, not claim support. operator reframe — the readiness predicate exists and fires one transition too late. readiness is agent judgment on a self-consistency floor, and not-ready routes back into named work. no designer extension needed — lane, state-carrier and refusal-cycle all already ship in the corpus. seed draft-inception-readiness v1 — Framework lane, readiness floor, named not-ready return edges (17 nodes/18 flows/3 lanes, lint CLEAN, round-trip identical). draft-inception-readiness v2 — operator layout pass; topology/uids/notes intact, doc comment dropped (T-2682 instance 3). restore aef-task-lifecycle doc comment as v3 (T-2682/G-071 instance 4) — v2 layout preserved, semantic diff is exactly one key, conformance PASS. designer version verified at pinned 0.8.0; RAIL-440 uid-derivation corroborated (id = f(lane, x-rank), 32/32 nodes); rail ask posted at offset 443. RAIL-444 — no notation revision in flight (draft unblocked); doc-comment defect fixed upstream by T-311 nine days ago but never shipped. S-2 walked — only 1 of 5 instances attaches to v2; v3 owes preflight node, write-guard re-home, 3 bypass edges; F-17 DEFER skips the preflight (gradient contradicts the T-2144 prose rule). rail reply posted at 445 (fixture ref for the cycle probe, v3-seam-fixture sequenced behind T-311, Q5 reciprocated); F-18/OBS-190 — we hold no copy of the frozen standard we are the ratifying party for. recommendation revised from filing-time prior to evidence-backed GO — 13 evidence items, 7 candidate build slices, 4 open operator decisions; three Agent ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'rail reply posted at 445 (fixture ref for the cycle probe, v3-seam-fixture sequenced behind T-311, Q5 reciprocated); F-18/OBS-190 — we hold no copy of the frozen standard we are the ratifying party for'
+    source: git-mined
+  - description: 'RAIL-444 — no notation revision in flight (draft unblocked); doc-comment defect fixed upstream by T-311 nine days ago but never shipped'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-07.yaml'
+  - '.context/audits/2026-08-08.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-08.yaml'
+  - '.context/designer/projects/aef-task-lifecycle/meta.json'
+  - '.context/designer/projects/aef-task-lifecycle/v2.bpmn'
+  - '.context/designer/projects/aef-task-lifecycle/v3.bpmn'
+  - '.context/designer/projects/draft-inception-readiness/meta.json'
+  - '.context/designer/projects/draft-inception-readiness/v1.bpmn'
+  - '.context/designer/projects/draft-inception-readiness/v2.bpmn'
+  - '.context/episodic/T-2853.yaml'
+  - '.context/episodic/T-2860.yaml'
+  - '.context/handovers/S-2026-0807-1407.md'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - 'docs/reports/T-2863-inception-workflow-rework.md'
+  - '.tasks/active/T-2863-rework-the-inception-workflow-five-failu.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T19:37:07'
+    action: 'T-2863: the inception map exists and is accurate — what it lacks is the Framework lane'
+  - time: '2026-08-07T22:18:49'
+    action: 'T-2863: the inception rail is green over one word-set; determinism is proven once and is generative'
+  - time: '2026-08-07T22:37:06'
+    action: 'T-2863: the filing-to-approval loop closes with no human and no evidence; A2 falsified'
+  - time: '2026-08-07T22:56:08'
+    action: 'T-2863: the claims validator stamps CONFIRMED on referent existence, not claim support'
+  - time: '2026-08-07T23:08:57'
+    action: 'T-2863: operator reframe — the readiness predicate exists and fires one transition too late'
+  - time: '2026-08-07T23:39:50'
+    action: 'T-2863: readiness is agent judgment on a self-consistency floor, and not-ready routes back into named work'
+  - time: '2026-08-07T23:48:24'
+    action: 'T-2863: no designer extension needed — lane, state-carrier and refusal-cycle all already ship in the corpus'
+  - time: '2026-08-08T00:29:17'
+    action: 'T-2863: seed draft-inception-readiness v1 — Framework lane, readiness floor, named not-ready return edges (17 nodes/18 flows/3 lanes, lint CLEAN, round-trip identical)'
+  - time: '2026-08-08T01:08:05'
+    action: 'T-2863: draft-inception-readiness v2 — operator layout pass; topology/uids/notes intact, doc comment dropped (T-2682 instance 3)'
+  - time: '2026-08-08T08:23:54'
+    action: 'T-2863: restore aef-task-lifecycle doc comment as v3 (T-2682/G-071 instance 4) — v2 layout preserved, semantic diff is exactly one key, conformance PASS'
+  - time: '2026-08-08T08:37:17'
+    action: 'T-2863: designer version verified at pinned 0.8.0; RAIL-440 uid-derivation corroborated (id = f(lane, x-rank), 32/32 nodes); rail ask posted at offset 443'
+  - time: '2026-08-08T08:47:34'
+    action: 'T-2863: RAIL-444 — no notation revision in flight (draft unblocked); doc-comment defect fixed upstream by T-311 nine days ago but never shipped'
+  - time: '2026-08-08T09:02:53'
+    action: 'T-2863: S-2 walked — only 1 of 5 instances attaches to v2; v3 owes preflight node, write-guard re-home, 3 bypass edges; F-17 DEFER skips the preflight (gradient contradicts the T-2144 prose rule)'
+  - time: '2026-08-08T09:06:02'
+    action: 'T-2863: rail reply posted at 445 (fixture ref for the cycle probe, v3-seam-fixture sequenced behind T-311, Q5 reciprocated); F-18/OBS-190 — we hold no copy of the frozen standard we are the ratifying party for'
+  - time: '2026-08-08T09:10:05'
+    action: 'T-2863: recommendation revised from filing-time prior to evidence-backed GO — 13 evidence items, 7 candidate build slices, 4 open operator decisions; three Agent ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 19 commit(s), 834 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 834
+  commits: 19
+  files_changed: 46
+  lines_added: 11403
+  lines_removed: 5119
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2863-rework-the-inception-workflow-five-failu.md
+generated_by: context-agent-hybrid

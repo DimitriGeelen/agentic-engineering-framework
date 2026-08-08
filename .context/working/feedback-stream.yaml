@@ -30724,3 +30724,47 @@ scan_id: R-f7aa8ce6
 task_id: T-2860
 payload:
   task_file: .tasks/active/T-2860-fw-focus-is-not-a-verb-and-unknown-comma.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T07:20:55Z'
+scan_id: R-1e7d803f
+task_id: T-2863
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T07:20:55Z'
+scan_id: R-1e7d803f
+task_id: T-2863
+payload:
+  task_file: .tasks/active/T-2863-rework-the-inception-workflow-five-failu.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-08T07:20:55Z'
+scan_id: RC-3b94db48
+task_id: T-2863
+payload:
+  overall: CONTRADICTED
+  claim_count: 17
+---
+kind: scan_emitted
+timestamp: '2026-08-08T07:42:50Z'
+scan_id: R-ab122424
+task_id: T-2864
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T07:42:50Z'
+scan_id: R-ab122424
+task_id: T-2864
+payload:
+  task_file: .tasks/active/T-2864-g-052-duplicate-task-ids-block-the-t-286.md

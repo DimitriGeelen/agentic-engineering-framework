@@ -4183,3 +4183,10 @@ X'` returning empty group."
   date: 2026-08-07
   context: Added via context agent
   application: TBD
+- id: L-551
+  learning: "When a commit-boundary gate refuses but the repository looks clean, check whether the committer builds its OWN index before concluding not-reproducible. web/blueprints/inception.py _commit_decision seeds a scratch index (GIT_INDEX_FILE + git read-tree HEAD, T-2708) and stages only paths harvested from git status --porcelain — it kept the destination of a rename arrow and dropped the source, while HEAD still held the source, so it manufactured the G-052 duplicate it was then refused for. The real index was clean throughout; inspecting it was inspecting the wrong object. Same class as the guard beside it: T-1863 post-move check tests disk while dup-task-scan.sh tests the index. Rule: name the exact object a gate evaluates before believing a green result about it."
+  source: P-001
+  task: T-2864
+  date: 2026-08-08
+  context: Added via context agent
+  application: TBD
