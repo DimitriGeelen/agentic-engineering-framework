@@ -612,8 +612,72 @@ schema fix proposed then still stands: carry `doc` as an `aef:` attribute on
 round-trip. Operator's call whether to re-raise on the rail with the new
 instance count.
 
+## F-15 — Designer version checked, and the id churn I called "harmless" had a mechanism
+
+Operator asked to check with the workflow agent for the latest version, on the
+grounds that their notation/routing revision may bear on this draft. Rail message
+posted at **DM offset 443**. Three things established before posting.
+
+**We are current, not drifted.** Pin `policy/designer-pin.yaml` = 0.8.0; served
+bytes sha256 `cab3c751…0935` / 903600 B match the pin exactly. (I briefly
+mis-read this as drift because `ls | head` truncated the vendor listing at 0.7.0
+— corrected by reading `vendored_path:` and hashing the served response.) The
+`web/blueprints/designer.py:112` docstring still says "vendored 0.3.0 bundle";
+that is stale prose, not the resolution path.
+
+**832's RAIL-440 explains the id churn I dismissed an hour earlier.** They shipped
+T-364: `aef:uid` is now DERIVED from the BPMN element id rather than minted from
+`Math.random()` per parse. The load-bearing detail is that `computeDisplayId`
+ranks same-lane nodes by x and breaks ties on uid, and the resulting display id
+**is** the emitted BPMN element id. So the uid was not describing identity, it was
+deciding it.
+
+Tested against today's two saves before reading their account — a clean
+cross-check, not confirmation:
+
+| Map | Lane | Emitted ids in x-order | ascends with x |
+|---|---|---|---|
+| draft-inception-readiness v2 | agent | `agt_1_question` … `agt_11_handoff` | ✅ |
+| | framework | `fw_1_2204` … `fw_4_record` | ✅ |
+| | human | `hum_1_operator`, `hum_2_operator` | ✅ |
+| aef-task-lifecycle v2 | agent | `agt_1_work` … `agt_14_task` | ✅ |
+
+`id = f(lane, x-rank)` holds on **32/32 placed nodes across both maps**. The
+consumer-facing corollary is sharper than "harmless": **a horizontal drag rewrites
+`sourceRef` / `targetRef` / `flowNodeRef` across the whole lane.** Benign for
+anyone uid-keyed, silently fatal for anyone id-keyed.
+
+**So: is AEF id-keyed anywhere?** Measured, and the answer is no. Exactly one
+element id is stored anywhere in the tree —
+`.context/designer/registry.yaml` ghost `referenced_by[].node` — and it is not a
+lookup key: `web/designer_registry.py:125` strips a project's entries and rebuilds
+them from the current document on every rescan, so it self-heals on the next save.
+Every other apparent hit is prose in episodic YAML.
+
+**My own instance of their finding.** I reported the id churn as *"the editor
+regenerates ids on save, harmless"* — quoting a memory written when every map we
+had carried authored uids. True, and true for the wrong reason: correct over the
+one population where the defect cannot occur. That is precisely the class 832
+flagged in 440 about their own 24/24 byte-identity gate, arriving on our side the
+same day.
+
+**Asked on the rail, pending:** (1) is there a release after 0.8.0 — T-364 shipped
+with commits but no version announced, so I cannot tell whether the uid derivation
+is in a cut release or ahead of our pin; (2) does the notation/routing revision
+touch **lanes or cycles**, since this draft is a 3-lane map whose point is a cycle
+with three named return edges — better to draft into the new notation than promote
+into the old one; (3) does it touch `aef-bpmn-mapping-v1.md:42-45`, the clause
+classing `aef:routing` / `routingHint` / `loopDetour` / `anchors` as presentational
+and *"derived, never authoritative"* — our census shows `routingHint` 8 and
+`loopDetour` 8 live in our corpus, so if routing stops being presentational that
+clause is what moves, and it is load-bearing for how we generate.
+
+Also re-raised the doc-comment defect at four instances / three maps / two months,
+with the rail-332 proposal unchanged (carry `doc` as an `aef:` attribute on
+`workflowMeta`, so it survives any DOM round-trip).
+
 <!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
-     pending operator review of the seeded skeleton. -->
+     pending operator review of the seeded skeleton + 832's answer on notation. -->
 
 ---
 
