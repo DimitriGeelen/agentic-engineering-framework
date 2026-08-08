@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2877: arc-017 Half A: human onboarding curriculum, interleaved and ungated, routing to corpus maps
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T20:42:36Z
+# ============================================================================
+
+task_id: T-2877
+task_name: "arc-017 Half A: human onboarding curriculum, interleaved and ungated, routing to corpus maps"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T17:36:48Z
+completed: 2026-08-08T20:42:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-08T22:05:37+02:00
+last_commit: 2026-08-08T22:07:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-017 Half A — human onboarding curriculum, interleaved and ungated. focus notes — arc-017 Half A shipped, one Human AC open, rail 483 unread
+
+# Key outcomes
+outcomes:
+  - 'Every seeded onboarding task in **both** sets (`greenfield/` 5, `existing-project/` 6)'
+  - 'Zero checkbox markers (`- [ ]` / `- [x]`) inside any `## For the Operator` section,'
+  - 'Every corpus-map id named in the curriculum resolves to a real promoted map; no'
+  - '`check-onboarding-gate.py` returns rc=0 for all 11 seeded tasks after the change (the'
+  - 'The curriculum ships through `fw init` — verified by initialising a throwaway project'
+  - 'Teeth by durable mutation of live source (T-2874): stripping a `## For the Operator`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-001-orientation-and-framework-health.md'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-002-first-governed-commit.md'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-003-register-key-components.md'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-004-complete-task-lifecycle.md'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-005-generate-first-handover.md'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-006-add-project-learning.md'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-001-orientation-and-framework-health.md'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-003-first-governed-commit.md'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-004-complete-task-lifecycle.md'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-005-generate-first-handover.md'
+  - '.context/working/focus.yaml'
+  - '.fabric/components/tests-unit-onboarding_gate_arc_tag_fp.yaml'
+  - 'lib/seeds/tasks/existing-project/T-001-orientation-and-framework-health.md'
+  - 'lib/seeds/tasks/existing-project/T-002-first-governed-commit.md'
+  - 'lib/seeds/tasks/existing-project/T-003-register-key-components.md'
+  - 'lib/seeds/tasks/existing-project/T-004-complete-task-lifecycle.md'
+  - 'lib/seeds/tasks/existing-project/T-005-generate-first-handover.md'
+  - 'lib/seeds/tasks/existing-project/T-006-add-project-learning.md'
+  - 'lib/seeds/tasks/greenfield/T-001-orientation-and-framework-health.md'
+  - 'lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - 'lib/seeds/tasks/greenfield/T-003-first-governed-commit.md'
+  - 'lib/seeds/tasks/greenfield/T-004-complete-task-lifecycle.md'
+  - 'lib/seeds/tasks/greenfield/T-005-generate-first-handover.md'
+  - '.tasks/active/T-2877-arc-017-half-a-human-onboarding-curricul.md'
+  - 'tests/unit/onboarding_curriculum_ungated.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T22:05:37'
+    action: 'T-2877: arc-017 Half A — human onboarding curriculum, interleaved and ungated'
+  - time: '2026-08-08T22:07:52'
+    action: 'T-2877: focus notes — arc-017 Half A shipped, one Human AC open, rail 483 unread'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 185 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:onboarding-curriculum]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 185
+  commits: 2
+  files_changed: 26
+  lines_added: 766
+  lines_removed: 52
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2877-arc-017-half-a-human-onboarding-curricul.md
+generated_by: context-agent-hybrid

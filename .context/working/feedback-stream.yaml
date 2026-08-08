@@ -31056,3 +31056,57 @@ scan_id: R-9d2328d5
 task_id: T-2879
 payload:
   task_file: .tasks/active/T-2879-capture-verb-exemption-covers-bare-verbs.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T19:28:14Z'
+scan_id: R-9ebd7654
+task_id: T-2880
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T19:28:14Z'
+scan_id: R-9ebd7654
+task_id: T-2880
+payload:
+  task_file: .tasks/active/T-2880-safe-list-early-return-shadows-the-focus.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T20:03:35Z'
+scan_id: R-e43f627e
+task_id: T-2881
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T20:03:35Z'
+scan_id: R-e43f627e
+task_id: T-2881
+payload:
+  task_file: .tasks/active/T-2881-onboarding-gate-false-positives-on-arc-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T20:42:25Z'
+scan_id: R-3b82887d
+task_id: T-2877
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T20:42:25Z'
+scan_id: R-3b82887d
+task_id: T-2877
+payload:
+  task_file: .tasks/active/T-2877-arc-017-half-a-human-onboarding-curricul.md

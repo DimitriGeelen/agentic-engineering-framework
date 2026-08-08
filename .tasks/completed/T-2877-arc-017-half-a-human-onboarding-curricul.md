@@ -9,12 +9,12 @@ description: >
   be readable but never gate agent work, and ROUTE to corpus maps (fw corpus explain
   / Watchtower /designer) rather than embedding content that will drift from them.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:onboarding-curriculum]
-components: []
+components: [agents/context/check-active-task.sh, tests/unit/onboarding_gate_arc_tag_fp.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T17:36:48Z
-last_update: 2026-08-08T20:04:24Z
-date_finished:
+last_update: 2026-08-08T20:42:07Z
+date_finished: 2026-08-08T20:42:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -319,32 +319,6 @@ for f in lib/seeds/tasks/*/T-*.md; do diff -q "$f" ".agentic-framework/$f" >/dev
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## Recommendation
-
-**Recommendation:** GO — Half A is built; one Human AC (prose quality) remains.
-
-**Rationale:** all six Agent ACs are ticked and independently measured. The curriculum
-exists in both seed sets, ships through `fw init` in both inference modes (verified by
-initialising throwaway projects, not by reading `lib/seeds/`), adds zero acceptance
-criteria, and every routing target resolves. The only thing left is whether the prose
-reads well to a newcomer, which is exactly the judgement a static scan cannot make.
-
-**Evidence:**
-- `tests/unit/onboarding_curriculum_ungated.bats` — 10/10, incl. mutation teeth and a
-  positive control proving the onboarding gate is live rather than inert
-- `fw init` sandboxes: 5/5 greenfield, 6/6 existing-project carry the section
-- AC counts per seeded task identical before and after (4,3,4,4,3,3 / 4,5,3,4,3)
-- Routing ids all resolve; bogus control `aef-deliberately-not-a-map` returns rc=1
-- T-2881 shipped en route — arc-017's Half B invariant was refusing arc-017's own Half A
-  task; 12/12 assertions, both call sites fixed together
-
-**What this does NOT close:** the arc keystone T-2720. Half A shipping is not the same as
-the headline mechanic firing end-to-end — that needs an operator actually finishing the
-prologue with the curriculum alongside. Closing arc-017 on "both halves built" would be the
-substrate-vs-deliverable conflation §ACD exists to catch. T-2720 stays open.
-
-## Evolution
-
 ### 2026-08-08 — the invariant refused the task that was building its other half
 
 - **What changed:** arc-017's Half B (`check-onboarding-gate.py`, T-2815) refused the edit
@@ -377,6 +351,43 @@ substrate-vs-deliverable conflation §ACD exists to catch. T-2720 stays open.
 - **Triggered:** nothing filed — it was my test setup, not a framework defect. Recorded
   because the near-miss is the point: a plausible mechanism that fits the evidence is not a
   diagnosis, and the log was the only thing that distinguished them.
+
+### 2026-08-08 — the Evolution gate caught its own content sitting under a duplicate heading
+
+- **What changed:** the two entries above were originally appended as a SECOND `## Evolution`
+  heading after `## Recommendation`, rather than filled into the template section that was
+  already in the file. The T-1718 gate reads the first matching heading, found the
+  placeholder, and refused — with the real content thirty lines below it.
+- **Plan impact:** none. Worth recording only because of the direction it failed in: content
+  present but unreachable to the checker produced a LOUD refusal, not a silent pass. Had the
+  gate scanned the whole file it would have found content and let a genuinely-empty first
+  section through unnoticed. The narrow read is the safer one.
+- **Triggered:** nothing filed. The remedy is authoring discipline (fill the section that
+  exists; do not append a second one), which the gate already enforces at the point of edit.
+
+## Recommendation
+
+**Recommendation:** GO — Half A is built; one Human AC (prose quality) remains.
+
+**Rationale:** all six Agent ACs are ticked and independently measured. The curriculum
+exists in both seed sets, ships through `fw init` in both inference modes (verified by
+initialising throwaway projects, not by reading `lib/seeds/`), adds zero acceptance
+criteria, and every routing target resolves. The only thing left is whether the prose
+reads well to a newcomer, which is exactly the judgement a static scan cannot make.
+
+**Evidence:**
+- `tests/unit/onboarding_curriculum_ungated.bats` — 10/10, incl. mutation teeth and a
+  positive control proving the onboarding gate is live rather than inert
+- `fw init` sandboxes: 5/5 greenfield, 6/6 existing-project carry the section
+- AC counts per seeded task identical before and after (4,3,4,4,3,3 / 4,5,3,4,3)
+- Routing ids all resolve; bogus control `aef-deliberately-not-a-map` returns rc=1
+- T-2881 shipped en route — arc-017's Half B invariant was refusing arc-017's own Half A
+  task; 12/12 assertions, both call sites fixed together
+
+**What this does NOT close:** the arc keystone T-2720. Half A shipping is not the same as
+the headline mechanic firing end-to-end — that needs an operator actually finishing the
+prologue with the curriculum alongside. Closing arc-017 on "both halves built" would be the
+substrate-vs-deliverable conflation §ACD exists to catch. T-2720 stays open.
 
 ## Decisions
 
@@ -411,3 +422,15 @@ substrate-vs-deliverable conflation §ACD exists to catch. T-2720 stays open.
 
 ### 2026-08-08T19:29:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3b82887d
+- **Timestamp:** 2026-08-08T20:42:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-08T20:42:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
