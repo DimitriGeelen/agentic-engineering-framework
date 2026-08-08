@@ -1,7 +1,3 @@
-{"timestamp":"2026-06-07T10:35:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
-{"timestamp":"2026-06-07T10:40:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
-{"timestamp":"2026-06-07T10:45:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
-{"timestamp":"2026-06-07T10:50:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
 {"timestamp":"2026-06-07T10:55:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
 {"timestamp":"2026-06-07T11:00:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
 {"timestamp":"2026-06-07T11:05:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
@@ -10078,3 +10074,7 @@
 {"timestamp":"2026-08-08T16:55:01+02:00","host":"dimitrimintdev","pid":523280,"etime_sec":148244,"rss_kb":290672,"vsz_kb":2253092,"pcpu":7.2,"state":"up"}
 {"timestamp":"2026-08-08T17:00:01+02:00","host":"dimitrimintdev","pid":523280,"etime_sec":148544,"rss_kb":290696,"vsz_kb":2253092,"pcpu":7.2,"state":"up"}
 {"timestamp":"2026-08-08T17:05:01+02:00","host":"dimitrimintdev","pid":523280,"etime_sec":148844,"rss_kb":290680,"vsz_kb":2253092,"pcpu":7.2,"state":"up"}
+{"timestamp":"2026-08-08T17:10:01+02:00","host":"dimitrimintdev","pid":523280,"etime_sec":149144,"rss_kb":290680,"vsz_kb":2253092,"pcpu":7.2,"state":"up"}
+{"timestamp":"2026-08-08T17:15:01+02:00","host":"dimitrimintdev","pid":523280,"etime_sec":149444,"rss_kb":290680,"vsz_kb":2253092,"pcpu":7.2,"state":"up"}
+{"timestamp":"2026-08-08T17:20:01+02:00","host":"dimitrimintdev","pid":523280,"etime_sec":149744,"rss_kb":290680,"vsz_kb":2253092,"pcpu":7.2,"state":"up"}
+{"timestamp":"2026-08-08T17:25:01+02:00","host":"dimitrimintdev","pid":523280,"etime_sec":150044,"rss_kb":290680,"vsz_kb":2253092,"pcpu":7.2,"state":"up"}
