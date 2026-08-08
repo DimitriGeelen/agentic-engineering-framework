@@ -9,7 +9,7 @@ description: >
   be readable but never gate agent work, and ROUTE to corpus maps (fw corpus explain
   / Watchtower /designer) rather than embedding content that will drift from them.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T17:36:48Z
-last_update: '2026-08-08T17:45:11Z'
+last_update: 2026-08-08T19:29:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,14 +73,88 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-017 Half A. Half B (the refusal invariant, `check-onboarding-gate.py`) shipped under
+T-2815 and was verified live under T-2720. This is the other half of the headline mechanic:
+
+> a new operator finishes the agent prologue and immediately starts working their own first
+> real task, **with the human curriculum sitting alongside and readable but never blocking
+> them**
+
+**What the "agent prologue" actually is:** the seeded onboarding set — `lib/seeds/tasks/`
+`greenfield/` (T-001…T-005) and `existing-project/` (T-001…T-006), each carrying
+`tags: [onboarding]`, `owner: agent`. `fw init` copies them into `.tasks/active/`. The T-532
+block in `check-active-task.sh:571` refuses all non-onboarding work until every one reaches
+`work-completed`. That set is agent-facing and stays exactly as it is — this task does not
+touch a single acceptance criterion in it.
+
+**The gap:** there is nothing for the *human* during that window. The operator watches an
+agent work through five tasks whose bodies are written agent-to-agent, and learns the
+framework by inference or not at all.
+
+### Design — three constraints, taken from the arc description
+
+1. **Interleaved, not adjacent.** A separate `docs/onboarding-for-humans.md` is a document
+   nobody opens at the moment it would help. The curriculum goes *inside each seeded task*
+   as a `## For the Operator` section, so it surfaces in Watchtower `/tasks/T-00N` at
+   precisely the step the agent is on.
+2. **Ungated, structurally — not by policy.** The section is prose with **zero checkbox
+   markers**. P-010 counts `- [ ]`; `check-onboarding-gate.py` reads only the `### Human`
+   subsection (`agents/context/check-onboarding-gate.py:62`, regex terminates at the next
+   `##`). A `##`-level prose section is invisible to both. It cannot gate because there is
+   nothing in it for a gate to read — not because a rule says it must not.
+3. **Routes, never embeds.** Each section points at a promoted corpus map by id
+   (`fw corpus explain <id>`, Watchtower `/designer`) instead of restating what the map
+   says. Six promoted maps exist: `aef-task-lifecycle`, `aef-session-lifecycle`,
+   `aef-inception-flow`, `aef-tier0-escalation`, `aef-audit-cron`, `aef-dispatch-loop`.
+   Embedded prose drifts from the map silently; a dangling pointer is catchable, and AC 3
+   catches it.
+
+**Why the routing constraint is the load-bearing one:** CLAUDE.md already routes the task
+lifecycle to `aef-task-lifecycle` rather than describing it twice. This applies the same
+rule to the curriculum, which is the only reason it can be maintained by anyone other than
+its author.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every seeded onboarding task in **both** sets (`greenfield/` 5, `existing-project/` 6)
+      carries a `## For the Operator` section: what the agent is doing at this step, why it
+      matters to the human, and what the human can do meanwhile — written for someone who
+      has never seen the framework
+- [x] Zero checkbox markers (`- [ ]` / `- [x]`) inside any `## For the Operator` section,
+      and each seeded task's total AC count is **unchanged** from before this task —
+      asserted mechanically, so "ungated" is measured rather than asserted
+- [x] Every corpus-map id named in the curriculum resolves to a real promoted map; no
+      section restates map content instead of routing to it
+- [x] `check-onboarding-gate.py` returns rc=0 for all 11 seeded tasks after the change (the
+      curriculum must not make a seeded task refusable), and the T-532 block's behaviour is
+      unchanged
+- [x] The curriculum ships through `fw init` — verified by initialising a throwaway project
+      in a sandbox and finding the sections in its `.tasks/active/`, not by reading
+      `lib/seeds/`
+- [x] Teeth by durable mutation of live source (T-2874): stripping a `## For the Operator`
+      section, and pointing one at a non-existent map id, are each caught by the suite
+
+## Measured Behaviour
+
+`fw init` into a throwaway git repo, both inference modes:
+
+| mode | seeded | carry `## For the Operator` | gate rc |
+|---|---|---|---|
+| greenfield (empty repo) | 5 | **5** | 0 for all |
+| existing-project (has `src/`, README) | 6 | **6** | 0 for all |
+
+AC counts per seeded task, before vs after: **identical in all 11** (4,3,4,4,3,3 /
+4,5,3,4,3). The curriculum adds 145-217 words per task and zero acceptance criteria.
+
+Routing targets in use — `aef-task-lifecycle`, `aef-session-lifecycle`,
+`aef-inception-flow`, `aef-audit-cron`, plus Watchtower `/designer` and `/fabric`. All
+resolve (`fw corpus explain <id>` rc=0); the bogus control `aef-deliberately-not-a-map`
+returns rc=1, so the check distinguishes rather than merely accepting everything.
+
+The onboarding gate's rc=0 across all 11 is backed by a **positive control**: an
+agent-unresolvable onboarding fixture returns rc=2 from the same invocation. Without it,
+eleven allows would be indistinguishable from an inert gate.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,3 +324,6 @@ bvp_scores_proposed:
 
 ### 2026-08-08T17:37:47Z — status-update [task-update-agent]
 - **Change:** tags: +arc:onboarding-curriculum
+
+### 2026-08-08T19:29:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

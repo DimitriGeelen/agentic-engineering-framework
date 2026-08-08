@@ -82,9 +82,43 @@ def _field(fm: str, pattern: re.Pattern) -> str:
     return m.group(1).strip().strip('"').strip("'")
 
 
+def _parse_tags(raw: str) -> set:
+    """Split a frontmatter tags value into its elements.
+
+    Accepts the inline-list form (`[a, b]`, the template default) and the bare
+    comma-separated form (`a, b`). Block-sequence form (`tags:` then `- a` on
+    following lines) yields an empty value from _TAGS_RE and so returns empty —
+    unchanged from the prior behaviour, which also could not see it.
+    """
+    return {
+        t.strip().strip('"').strip("'")
+        for t in raw.strip().lstrip("[").rstrip("]").split(",")
+        if t.strip()
+    }
+
+
 def has_onboarding_tag(fm: str) -> bool:
-    tags = _field(fm, _TAGS_RE)
-    return bool(re.search(r"\bonboarding\b", tags))
+    """True only when `onboarding` is a WHOLE tag, not a substring of one.
+
+    T-2881: the previous form was `re.search(r"\\bonboarding\\b", tags)`, which
+    matched inside `arc:onboarding-curriculum` — `:` and `-` are both non-word
+    characters, so \\b sits happily on either side of the substring. Every task
+    tagged into the onboarding-curriculum ARC was therefore read as a member of
+    the gated onboarding SET: two different things that happen to share a word.
+
+    It surfaced when arc-017's own Half A build task (T-2877, the human
+    curriculum) was refused by arc-017's own Half B invariant for carrying an
+    unticked `### Human` AC — correct behaviour applied to a task that was never
+    in the gated set. The block was also unfixable in place: the documented
+    override is an env-var prefix, and the refusal fires on the Write/Edit tool,
+    which gives an agent no env surface to set it on.
+
+    Tag membership is a list operation, so do it as one. A word-boundary regex
+    over the raw `[a, b, c]` text cannot distinguish an element from a substring
+    of an element, and no amount of tightening the boundaries fixes that — the
+    structure has to be parsed, not pattern-matched.
+    """
+    return "onboarding" in _parse_tags(_field(fm, _TAGS_RE))
 
 
 def is_agent_unresolvable(workflow_type: str, body: str) -> str | None:

@@ -588,7 +588,21 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
     INCOMPLETE_ONBOARDING=""
     for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
         [ -f "$tf" ] || continue
-        if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+        # T-2881: element-wise, not substring. The prior form was
+        # `grep -q '^tags:.*onboarding'`, which matched inside
+        # `arc:onboarding-curriculum` — so every task tagged into the
+        # onboarding-curriculum ARC counted as a member of the gated onboarding
+        # SET, and its mere existence in active/ blocked all other work. Sibling
+        # of the same conflation in check-onboarding-gate.py:has_onboarding_tag;
+        # both call sites are fixed together per L-399 producer/consumer parity,
+        # because a task refused by one and admitted by the other is worse than
+        # either behaviour alone.
+        #
+        # Latent rather than observed HERE only because `.onboarding-complete`
+        # short-circuits the whole block on this repo. In a project without that
+        # marker it fires, and the block message names onboarding tasks the
+        # operator does not have.
+        if head -20 "$tf" | grep -qE '^tags:[[:space:]]*\[?([^]]*,)?[[:space:]]*onboarding[[:space:]]*(,|\]|$)' 2>/dev/null; then
             tf_owner=$({ grep "^owner:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
             [ "$tf_owner" = "human" ] && continue
             tf_status=$({ grep "^status:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
