@@ -56,7 +56,84 @@ except:
 fw_reanchor_from_hook_stdin "$INPUT"
 FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 
+# --- Drift-target extraction (T-1730; hoisted out of the gate by T-2880) ---
+# Answers ONE purely syntactic question: does this command name a task?
+# It reads only $1 — no focus, no filesystem — which is why it can run in the
+# Bash fast path far above the point where focus.yaml is parsed (line ~186).
+#
+# T-2880: that hoist is the whole fix. The fast path used to answer "does this
+# need an active task?" with `exit 0`, and that single early return silently
+# answered a SECOND, independent question — "is this attributed to the right
+# task?" — with "don't care". The two are not the same question:
+#
+#     needs a task?          about the SESSION state  (is any work in progress)
+#     attributed correctly?  about the COMMAND        (does it name another task)
+#
+# A command can be safe on the first and wrong on the second. `fw context
+# add-learning "x" --task T-OTHER` needs no active task (T-2878 — it is what
+# the framework prescribes right after completion, which is the exact moment
+# focus is null) and is still misattributed if focus points elsewhere.
+# Collapsing both into one `exit 0` made drift pattern 2 unreachable the moment
+# T-2878 safe-listed the capture verbs — a gate that stopped being consulted
+# while every test stayed green (L-555).
+#
+# Kept as ONE definition on purpose: the gate below consumes this result rather
+# than re-deriving it, so the two call sites cannot drift apart.
+_fw_extract_drift_target() {
+    local c="$1"
+    # Pattern 1: fw task update T-NNNN (mutation)
+    if [[ "$c" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+task[[:space:]]+update[[:space:]]+(T-[0-9]+) ]]; then
+        printf '%s' "${BASH_REMATCH[3]}"; return 0
+    fi
+    # Pattern 2: fw context add-* --task T-NNNN
+    # T-2879: anchored, for the same reason T-2833 anchored pattern 3 below. The prior
+    # form was two independent regexes ANDed — "fw context add-" present anywhere AND
+    # "--task T-N" present anywhere — so the extracted id need not belong to the
+    # add-* invocation at all. `fw context add-learning "x"; fw task list --task T-9`
+    # extracted T-9 as the add-*'s target. Requiring the flag to follow the verb with
+    # no chain separator (| ; &) between them ties the id to its own command.
+    #
+    # 832 rail 474 §4 reported this class against their vendored copy and I answered
+    # that it did not reproduce here. That answer was wrong, and wrong in an avoidable
+    # way: I measured only `fw context add-*` shapes WITHOUT a --task flag, which
+    # cannot trip pattern 2 at all. Corrected on the rail.
+    #
+    # RESIDUAL, unfixed and not fixable with bash regex — identical to the one T-2833
+    # documented for pattern 3: a command whose QUOTED PAYLOAD contains a literal
+    # `fw context add-learning ... --task T-N` still matches, because the regex cannot
+    # see quote nesting. That is how this was hit live (a probe script listing example
+    # invocations as test strings). The T-1890 bypass mechanisms cover it, but it means
+    # rail posts and doc writes quoting real commands can still trip. Severity revised
+    # UP from "low" per 832 rail 478 §4: for agents whose medium is prose-containing-
+    # commands this is not an edge case — it blocked them on a rail post and mis-parsed
+    # a task name in two consecutive sessions.
+    if [[ "$c" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+context[[:space:]]+add-[a-z-]+[^|\;\&]*--task[[:space:]=]+(T-[0-9]+) ]]; then
+        printf '%s' "${BASH_REMATCH[3]}"; return 0
+    fi
+    # Pattern 3: git commit ... -m/--message "T-NNNN: ..." (the canonical
+    # T-XXX: prefix marker). T-2833: anchored to the actual -m/--message flag
+    # value, not "leftmost T-N: anywhere in the string". The prior form was
+    # two independent regexes ANDed together — "git commit" present anywhere
+    # AND a T-N: pattern present anywhere — so the extracted id need not
+    # belong to the commit's own message at all. That produced a fail-open
+    # false negative (prose naming the focused task ahead of a commit that
+    # actually targets a different one read as "no drift") and a false
+    # positive (a grep pattern or earlier command's text supplying a T-N: the
+    # real commit doesn't target). Anchoring to the flag matches the P-002
+    # commit-msg convention the id is meant to describe in the first place.
+    # Known residual limit, not fixed here: a doc-write whose payload
+    # literally contains a working `git commit -m "T-N: ..."` example still
+    # matches, since bash regex cannot see quote-nesting. See T-2833.
+    if [[ "$c" =~ (^|[[:space:]])git[[:space:]]+commit ]] && \
+       [[ "$c" =~ (^|[[:space:]])(-[a-zA-Z]*m[a-zA-Z]*|--message)(=|[[:space:]]+)[\'\"]?(T-[0-9]+): ]]; then
+        printf '%s' "${BASH_REMATCH[4]}"; return 0
+    fi
+    return 0
+}
+
 # --- Bash tool: safe-command fast path (T-650) ---
+DRIFT_TARGET=""
+SAFE_ALLOWED=0
 if [ "$TOOL_NAME" = "Bash" ]; then
     BASH_CMD=$(echo "$INPUT" | python3 -c "
 import sys, json
@@ -88,13 +165,36 @@ except:
     # Source safe-command allowlist
     source "$SCRIPT_DIR/lib/safe-commands.sh" 2>/dev/null || true
 
+    # T-2880: ask the attribution question BEFORE honouring the safety answer.
+    # Purely syntactic, no focus read — see _fw_extract_drift_target above.
+    DRIFT_TARGET=$(_fw_extract_drift_target "$BASH_CMD")
+
     # Check write patterns FIRST — even "safe" commands with redirects are writes
     if type has_bash_write_pattern &>/dev/null && has_bash_write_pattern "$BASH_CMD"; then
         # Command has write patterns — fall through to active-task check
         :
     elif type is_bash_safe_command &>/dev/null && is_bash_safe_command "$BASH_CMD"; then
-        # Safe command with no write patterns — allow without task
-        exit 0
+        # Safe command with no write patterns.
+        #
+        # T-2880: only take the early return when the command names NO task.
+        # When it does, safety is established but attribution is not, so we
+        # record the safety verdict and fall through to the drift gate, which
+        # needs focus.yaml and therefore cannot run this high in the file.
+        #
+        # WHICH WAY THE OMISSION FAILS is the reason SAFE_ALLOWED is consumed at
+        # exactly ONE checkpoint (the null-focus branch, ~line 300) and not at
+        # the stale-focus / G-013 / status checks. A flag honoured at one site
+        # fails toward BLOCKING if that site is ever missed — the deadlock comes
+        # back loudly, with a remedy in the block message. A flag that three
+        # sites must each remember fails toward PERMITTING: one site forgets and
+        # the gate silently stops enforcing, which is the exact failure this
+        # task exists to repair. Do not widen the flag's reach without inverting
+        # that argument first. (832 rail 478 §1 reached the same fork from the
+        # other side and named the deciding property; this is the answer.)
+        if [ -z "$DRIFT_TARGET" ]; then
+            exit 0
+        fi
+        SAFE_ALLOWED=1
     elif [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception)([[:space:]]|$) ]]; then
         # Task-bootstrap commands always allowed (T-2052) — they ESTABLISH the
         # active task, so gating them on one is a deadlock; the "No active task"
@@ -228,6 +328,16 @@ if [ -z "$CURRENT_TASK" ] && [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ]; th
         echo "NOTE: no active task — allowing 'git commit' to checkpoint completed work (T-2054). commit-msg hook still enforces T-XXX." >&2
         exit 0
     fi
+    # T-2880: the SINGLE consumption point for the fast path's safety verdict.
+    # Reached only by a command that is safe-listed AND names a task — safety was
+    # established above, attribution could not be (focus is null, so there is
+    # nothing to be attributed to). This is what keeps T-2878 intact: after
+    # `--status work-completed` nulls focus, `fw context add-learning --task T-X`
+    # is exactly what the framework prescribes, and it must not deadlock.
+    if [ "$SAFE_ALLOWED" = "1" ]; then
+        echo "NOTE: no active task — allowing safe-listed '$(printf '%s' "$BASH_CMD" | head -c 60)' (T-2878). Drift not checked: focus is null." >&2
+        exit 0
+    fi
 fi
 
 if [ -z "$CURRENT_TASK" ]; then
@@ -303,51 +413,11 @@ _under_agent_control() {
 # Does NOT gate fw work-on / fw context focus / fw inception decide / fw task review|show
 # (those are intentional state transitions or read-only).
 if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; then
-    TARGET_TASK=""
-    # Bash built-in regex (no subprocess fork — keeps hook fast).
-    # Pattern 1: fw task update T-NNNN (mutation)
-    if [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+task[[:space:]]+update[[:space:]]+(T-[0-9]+) ]]; then
-        TARGET_TASK="${BASH_REMATCH[3]}"
-    # Pattern 2: fw context add-* --task T-NNNN
-    # T-2879: anchored, for the same reason T-2833 anchored pattern 3 below. The prior
-    # form was two independent regexes ANDed — "fw context add-" present anywhere AND
-    # "--task T-N" present anywhere — so the extracted id need not belong to the
-    # add-* invocation at all. `fw context add-learning "x"; fw task list --task T-9`
-    # extracted T-9 as the add-*'s target. Requiring the flag to follow the verb with
-    # no chain separator (| ; &) between them ties the id to its own command.
-    #
-    # 832 rail 474 §4 reported this class against their vendored copy and I answered
-    # that it did not reproduce here. That answer was wrong, and wrong in an avoidable
-    # way: I measured only `fw context add-*` shapes WITHOUT a --task flag, which
-    # cannot trip pattern 2 at all. Corrected on the rail.
-    #
-    # RESIDUAL, unfixed and not fixable with bash regex — identical to the one T-2833
-    # documented for pattern 3: a command whose QUOTED PAYLOAD contains a literal
-    # `fw context add-learning ... --task T-N` still matches, because the regex cannot
-    # see quote nesting. That is how this was hit live (a probe script listing example
-    # invocations as test strings). Low severity — the T-1890 bypass mechanisms cover
-    # it — but it means rail posts and doc writes quoting real commands can still trip.
-    elif [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+context[[:space:]]+add-[a-z-]+[^|\;\&]*--task[[:space:]=]+(T-[0-9]+) ]]; then
-        TARGET_TASK="${BASH_REMATCH[3]}"
-    # Pattern 3: git commit ... -m/--message "T-NNNN: ..." (the canonical
-    # T-XXX: prefix marker). T-2833: anchored to the actual -m/--message flag
-    # value, not "leftmost T-N: anywhere in the string". The prior form was
-    # two independent regexes ANDed together — "git commit" present anywhere
-    # AND a T-N: pattern present anywhere — so the extracted id need not
-    # belong to the commit's own message at all. That produced a fail-open
-    # false negative (prose naming the focused task ahead of a commit that
-    # actually targets a different one read as "no drift") and a false
-    # positive (a grep pattern or earlier command's text supplying a T-N: the
-    # real commit doesn't target). Anchoring to the flag matches the P-002
-    # commit-msg convention the id is meant to describe in the first place.
-    # Known residual limit, not fixed here: a doc-write whose payload
-    # literally contains a working `git commit -m "T-N: ..."` example still
-    # matches, since bash regex cannot see quote-nesting — low severity, the
-    # T-1890 bypass mechanisms cover it. See T-2833 Measured Behaviour.
-    elif [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit ]] && \
-         [[ "$BASH_CMD" =~ (^|[[:space:]])(-[a-zA-Z]*m[a-zA-Z]*|--message)(=|[[:space:]]+)[\'\"]?(T-[0-9]+): ]]; then
-        TARGET_TASK="${BASH_REMATCH[4]}"
-    fi
+    # T-2880: consume the hoisted result rather than re-deriving it. The three
+    # patterns and their residual-limit notes now live in one place
+    # (_fw_extract_drift_target, top of file) so the fast-path test and the gate
+    # cannot disagree about what counts as naming a task.
+    TARGET_TASK="$DRIFT_TARGET"
 
     # If a target was identified and differs from focused task: drift
     if [ -n "$TARGET_TASK" ] && [ "$TARGET_TASK" != "$CURRENT_TASK" ]; then
