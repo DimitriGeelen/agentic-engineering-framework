@@ -4197,3 +4197,10 @@ X'` returning empty group."
   date: 2026-08-08
   context: Added via context agent
   application: TBD
+- id: L-553
+  learning: "A positive control only proves instrument sensitivity if it cannot share the test arm's fatal defect. When baseline and mutant arms run in different environments (cwd, FRAMEWORK_ROOT, PATH), a defect that kills both arms identically makes the control report success while measuring nothing. Prefer ABSOLUTE guards (mutant output is non-empty / parses / matches a known-good anchor on its own terms) over RELATIVE ones (differs from baseline) — a relative guard is satisfied by two corpses."
+  source: P-001
+  task: T-2870
+  date: 2026-08-08
+  context: Added via context agent
+  application: TBD

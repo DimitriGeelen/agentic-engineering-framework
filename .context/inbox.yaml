@@ -1481,3 +1481,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-197
+  text: "T-2870: a positive control that shares the fatal environment defect with the test arm cannot detect it. Measuring laneMeta @height vs @authority, both arms ran from a cwd where fw could not resolve the compiler; both produced EMPTY output; the diff vs a 107-line baseline rendered as 1,107d0 and read as a large delta. The control reported 'instrument sensitive' and certified an instrument measuring nothing. Root cause is not suppressed stderr but that BASELINE AND ARMS RAN IN DIFFERENT WORKING DIRECTORIES — a before/after harness whose halves run in different environments is not comparing what it claims. Third instance of this shape (cf T-2849/T-2856 FRAMEWORK_ROOT differing between arms). Fix: absolute guards (assert mutant output non-empty on its own terms) before relative ones; a relative guard compares two things that can both be corpses."
+  captured: 2026-08-08T14:35:36Z
+  context_task: T-2870
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-198
+  text: "T-2870: third member of the L-387 pipefail family, not covered by the two hints in the task template. diff exits 1 to mean FILES DIFFER — which is often the exact outcome a verification line is asserting — so 'diff a b | grep -q PAT' fails under set -eo pipefail precisely when it succeeds. Not SIGPIPE (hint 1) and not a test-runner exit code (hint 2): it is an INFORMATIONAL non-zero producer, where non-zero is a result value rather than an error. Same shape applies to grep itself (1 = no match), cmp, and git diff --exit-code. Fix is the same capture-first idiom but for a different reason: delta=$(diff a b || true); echo \"$delta\" | grep -q PAT. Caught by rehearsing under 'bash -c set -eo pipefail' before hitting the gate, per T-2743 — by hand it returned 0."
+  captured: 2026-08-08T14:39:59Z
+  context_task: T-2870
+  tags: []
+  status: pending
+  promoted_to: null
