@@ -1,63 +1,69 @@
 # Working Memory - Current Focus
 # Session: S-2026-0806-0011
 
-current_task: T-2880
+current_task: T-2877
 priorities: []
 blockers: []
 pending_decisions: []
 reminders:
 - Run audit before pushing
 - Create handover before ending session
-- "PUSH IS BLOCKED ON INFRA, NOT ON US. OneDev (192.168.10.52) is unreachable — 100%
-  packet loss, no route to host, general internet fine. 5 commits unpushed on
-  t2539-staging. FIRST ACTION: retry `git push origin t2539-staging t2539-staging:master`
-  and verify `git rev-list --count origin/master..HEAD` is 0. If still down, tell the
-  operator — this is a host that needs bringing back, not something to work around."
-- "T-2880 IS THE ACTIVE TASK AND IT IS A REORDER OF THE CENTRAL GOVERNANCE HOOK. Do it
-  at the START of a session, not late. is_bash_safe_command exits 0 at
-  check-active-task.sh:96; the drift gate is at ~305, so safe-listing a verb also exempts
-  it from drift attribution. T-2878 safe-listed fw context add-*, which IS drift pattern
-  2 — measured unreachable since. CURRENT_TASK is not read until line 186, AFTER the early
-  return, so the comparison cannot simply be hoisted: either move the focus read up, or
-  make the safe branch set a flag that the no-active-task and stale-task checks honour at
-  three checkpoints. T-2879's pattern-2 anchor is correct but INERT until this lands."
-- "TWO FILED, NOT FIXED (both measured, both in inbox): OBS-202 — has_bash_write_pattern
-  reads an ASCII arrow in quoted prose as a redirect, so filing an observation containing
-  one is blocked; candidate fix is stripping quoted spans before applying the write regex,
-  which the drift patterns want too. OBS-203 — .budget-status is a per-project file shared
-  by every concurrent Claude process, written with no session id and read with no identity
-  check, so cron `claude -p` jobs overwrite the gauge with their own small context size.
-  FAIL-OPEN, and /resume names the file canonical. Fix: stamp session_id, ignore on
-  mismatch. My earlier transcript-rotation suspicion was the WRONG mechanism."
-- "OBS-201 — a 7MB ImageMagick screen capture named 'yaml,sys' is in the repo root. Python
-  source was executed as SHELL, so `import` resolved to ImageMagick's screen-capture
-  binary. It was staged by git add -A and stopped only by the secret scanner matching its
-  hex as an Azure PAT — a false positive for the wrong reason was the sole defence.
-  Undiagnosed. The file is still there and will trip `git add -A` again; do not delete it
-  without asking, it is evidence."
-- "832 RAIL — OFFSETS 478 AND 480 ARE UNREAD. Both arrived after our 479, at 87-89%
-  budget; deliberately not opened rather than half-answered. Read BOTH first:
+- "PUSH STILL BLOCKED ON INFRA. OneDev (192.168.10.52) unreachable across two sessions —
+  13 commits unpushed on t2539-staging. FIRST ACTION: retry
+  `git push origin t2539-staging t2539-staging:master`, verify
+  `git rev-list --count origin/master..HEAD` is 0. NEW DATA POINT worth telling the
+  operator: 832 reports THEIR OneDev (192.168.10.201) is also down in the same window,
+  same segment, general internet fine both sides. Two independent hosts is one infra
+  event, not two coincidences — this is a host that needs bringing back."
+- "T-2877 IS DONE EXCEPT ONE HUMAN AC and it is the arc-017 Half A deliverable. All 6
+  Agent ACs ticked, Recommendation GO written, Evolution written. The remaining AC is
+  [REVIEW] prose quality — operator reads the 11 `## For the Operator` sections. Hand it
+  over with `bin/fw task review T-2877` and QUOTE THE URL IT EMITS VERBATIM (T-2125: do
+  not synthesise /review/ vs /inception/ from memory). NOT YET RUN: `fw task update
+  T-2877 --status work-completed` — blocked at budget critical, so the verification lines
+  have not been through the real P-011 gate yet. Rehearse them first:
+  `bash -c 'set -eo pipefail; <line>'` per T-2743."
+- "T-2720 (arc-017 keystone) STAYS OPEN and this is deliberate. Both halves are now built,
+  but §ACD says substrate-in-place is not closure — the headline mechanic is an operator
+  finishing the prologue WITH the curriculum alongside, and nobody has done that yet.
+  Closing arc-017 on 'both halves shipped' is the exact G-062 conflation. The arc close
+  is the operator's call via Watchtower /arcs/onboarding-curriculum/close, never ours."
+- "SHIPPED THIS SESSION, all committed: T-2880 (drift gate no longer shadowed by the
+  safe-list — attribution question hoisted above the early return, SAFE_ALLOWED consumed
+  at ONE site so a missed checkpoint fails toward blocking); T-2881 (onboarding gate read
+  `arc:onboarding-curriculum` as gated-set membership — \\b matches inside it; fixed at
+  BOTH call sites per L-399); T-2877 (the curriculum). Suites: 11 + 12 + 10 assertions,
+  all with mutation teeth AND positive controls on the teeth themselves."
+- "832 RAIL — WE ARE CURRENT. Read 477/478/481, answered at 482. They replied at 483,
+  UNREAD (arrived at ~90% budget). Read it first:
   mcp__termlink__termlink_channel_snippet topic dm:0e7ee6cad65137fc:6a646ce8b1bc6560
-  target 478 (then 480). Our posts are 475, 476, 479. Their 477 diagnosed OBS-201 as our P-011
-  verification gate (update-task.sh:1121 sed-range + per-line eval, no completeness check;
-  a torn multi-line entry runs its body as shell AND scores PASS). 479 accepted that,
-  reported our tree clean (2867 files, 0 torn openers, positive control run), and flagged
-  the residual their T-391 fix must state: `import yaml, sys` passes bash -n because it IS
-  valid shell, so the guard catches the OPENER not the payload. Still open with them from
-  471: can we git-fetch their published MANIFEST at check time? Do not probe their remote
+  target 483. Our posts are 475, 476, 479, 482. They asked at 478 which fix shape I
+  leaned to for the shadowing (their T-392 = our T-2880); 482 answered: neither A nor B,
+  the extraction question is SYNTACTIC so nothing needs reordering, and B's flag is fine
+  if its REACH is one site. They said they would not race us and would read ours cold."
+- "DESIGNER 0.9.0 IS CUT AND ANNOUNCED but NOT FETCHABLE — their origin is down too.
+  sha256 9ccd2c584e073bcd3702eb7efac5b0e5ec734b9ecabb572a3cff012083ff801a, 934239 bytes,
+  8 src commits since the 0.8.0 pin, 0.8.0 verified byte-identical so our pin is
+  undisturbed. WE STAY PINNED AT 0.8.0 until it can actually be fetched — announced is
+  not available. Open from rail 471 in both directions: can we git-fetch their published
+  MANIFEST at check time instead of trusting a rail envelope? Do not probe their remote
   (T-559)."
-- "CONFINEMENT-AS-PERMISSION IS DEAD as the closure for G-078/their G-026, and they killed
-  it correctly: `fw handover` writes .git/ and pushes to every remote, so the predicate
-  refuses one of the three verbs it was derived from — the one whose block was open
-  longest. Do not re-propose it. Whatever closes G-078 must admit 'writes .git and
-  performs network egress' as legitimate for a class of commands."
-- "T-2876 IW-2 still the one to falsify before any safe-list removal lands. It now carries
-  T-2879 as evidence RAISING THE PRIOR (a safe-list remedy relocated a deadlock onto its
-  own author within a minute, with green tests) but that is explicitly NOT an answer to
-  IW-2's actual question. Disposition stays deferred. T-2876 itself is still owner:human
-  and awaiting the operator's `bin/fw task update T-2876 --status work-completed`."
-- "STANDING DIRECTIVE not yet resumed: onboarding arcs. T-2877 (arc-017 Half A curriculum)
-  is filed, tagged, not started. T-2720 keystone deliberately OPEN because Half A is
-  unbuilt. This session went entirely into the gate-defect chain that started when T-2878's
-  own fix blocked its first real use — worth it, but the arc work has not moved."
+- "STILL FILED, NOT FIXED: OBS-201 (the 7MB `yaml,sys` ImageMagick capture in the repo
+  root — DO NOT DELETE, it is evidence, and it will trip `git add -A` again; 832's P-011
+  torn-verification diagnosis is the leading candidate but we did NOT adopt it, our tree
+  has 0 torn lines); OBS-202 (arrow-in-prose blocks capture verbs); OBS-203 (budget gauge
+  is per-project and fail-open — cron `claude -p` jobs overwrite it); OBS-204 (P-011
+  residual: `import yaml, sys` passes `bash -n` because it IS valid shell)."
+- "G-078 IS NOT CLOSED by T-2880 or T-2881, though both are instances of it. The class is
+  'the task gate blocks the actions its own advice depends on', and nothing yet stops the
+  NEXT safe-list addition from shadowing a future gate placed below the fast path.
+  Confinement-as-permission is dead as the closure (832 killed it correctly: `fw handover`
+  writes .git and pushes to every remote, so the predicate refuses one of the three verbs
+  it was derived from). Do not re-propose it."
+- "METHOD NOTE THAT PAID OFF THREE TIMES TODAY — before reporting a negative, prove the
+  probe could have produced a positive. It caught: a scan-side positive control that
+  passed only because the hook had written its own fast-path marker between probes; a
+  bats mutant that died at import so 'defect reproduced' would have been vacuous (832
+  warned us about this exact trap at rail 477 and we walked into it anyway); and a
+  plausible-but-wrong `fw init` diagnosis that the init log falsified."
 focus_session: S-2026-0806-0011
