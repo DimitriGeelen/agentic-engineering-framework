@@ -1495,3 +1495,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-199
+  text: "T-2870 session: the two budget sources disagreed by ~3x at the same moment — .context/working/.budget-status reported {level: ok, tokens: 81676} while ./agents/context/checkpoint.sh status reported 235504 (~78% of window), read back-to-back. Plausibly the budget-gate re-based its count after the mid-session /compact while checkpoint measures full context, but I did NOT verify that and am not asserting it. It matters because CLAUDE.md's Work Proposal Rule keys on these numbers (75-85% = small bounded tasks only, >85% = wrap-up only) and the /resume skill names .budget-status as canonical — so an agent following the documented canonical source would have read 'ok' and started a multi-file build task at 78%. Worth an investigation task: which source is right post-compaction, and if budget-status is the one that re-bases, the skill's 'canonical' claim needs qualifying."
+  captured: 2026-08-08T14:55:09Z
+  context_task: T-2871
+  tags: []
+  status: pending
+  promoted_to: null

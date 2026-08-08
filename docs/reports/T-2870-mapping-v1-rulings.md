@@ -213,16 +213,75 @@ The last is decisive. §2 is the section that *defines what frozen means* for th
 the closed set of governance meta-keys — and a v1.1 change has **struck a row out of it**. A
 frozen table with a struck-through row is not frozen. It is v1.1.
 
-The honest reading is that this document **is mapping-v1.1**, mislabelled. Two remedies:
+The honest reading is that this document **is mapping-v1.1**, mislabelled.
 
-- **(a) Split** — keep v1 frozen as-was, publish v1.1 deltas separately. Cost: the v1 text
-  then describes no implementation that exists, since 832's and ours both implement
-  IW-9/O-3.
-- **(b) Retitle** to "Part I — Frozen (v1.1)" plus a changelog section recording the v1→v1.1
-  deltas. Cost near zero.
+#### CORRECTION (T-2873, after 832 rail 459): we named one instance of nine
 
-**We recommend (b).** Note in fairness that §7 is *transparent* about its own status — 832
-did not hide it; only the document-level heading over-claims.
+832 verified the finding against their own bytes rather than accepting it, and returned a
+sweep of the **whole** extent. Our ruling was right and our **population was wrong** — we
+cited the §2 struck row and scoped a remedy from it. There are nine version tokens, four
+correct and **three stale `v1` labels our remedy would have left standing**:
+
+| our offset | token | verdict |
+|---:|---|---|
+| 19 | `v1` | `# Part I — Frozen (v1)` — **stale**, the one we cited |
+| 1429 | `v1` | "the **frozen v1** governance meta-keys" — **stale**, introduces the edited table |
+| 2271 | `v1.1` | the struck `owner` row — correct |
+| 2660 | `v1` | "not part of the **frozen v1** governance-scalar contract" — **stale** |
+| 4386 | `v1.1` | "owner is the lane (IW-9, v1.1)" — correct |
+| 5084 | `v1` | "out of scope for v1" — ambiguous; a scope claim, not a label |
+| 6315 | `v1` | "An implementation is **v1-conformant** iff" — **stale, and the worst** |
+| 6931 | `v1.1` | "§7 Inception marker (G-3) — ratified v1.1" — correct |
+| 7216 | `v1.1` | "(O-3, v1.1)" — correct |
+
+Verified independently rather than taken on trust: 832 counted **bytes over the whole file**,
+we counted **characters over the extent**, and the offsets drift progressively 5→73 exactly
+as UTF-8 multibyte accumulation predicts. Two methods that could have disagreed, on the same
+nine tokens in the same order.
+
+**`v1-conformant` (6315) is not a label — it is a defined term.** §6 defines it by a list
+that now includes the v1.1-edited §2 table and the v1.1-ratified §7 marker. The bar the term
+names moved; the term did not. An implementation certified `v1-conformant` against the
+original text and one certified against this document are **not held to the same
+requirements** — and both our T-2621 conformance rail and 832's
+`test_mapping_standard_conformance.py` key on that term. A retitle of the heading alone
+leaves this standing, which means our original remedy fixed the cosmetic instance and missed
+the load-bearing one.
+
+**832's own defect, which we could not have seen.** The only correct statement of this
+document's version — `Version: 1.1` at byte 105, with a changelog at 296 — is **outside the
+extent they sent us**. Confirmed on our copy: `Version:` does not appear at all, and the
+heading says v1. So the citable unit contains three internal claims that it is v1, four
+annotations that it is v1.1, and **no correct statement of its own version**. From our side
+that reads as internal inconsistency; it is actually incompleteness. In a two-party
+ratification process the unit of citation is precisely the thing that must be
+self-describing.
+
+**Stated plainly so this thread is never read as "832 edited frozen content":** they did not.
+The document declares Version 1.1 and records the change in a changelog. Their change control
+worked. **Labelling failed, governance did not.**
+
+#### Revised remedy
+
+Not a split — still heavier than the problem. The cheap option, **widened**:
+
+1. Retitle the heading (19).
+2. Correct the two stale table-scope labels (1429, 2660).
+3. **Decide** on `v1-conformant` (6315) — do not substitute. Renaming it `v1.1-conformant`
+   changes what every existing conformance claim means; leaving it makes the term
+   version-free *by intent*. Both are defensible; choosing silently is not, and a
+   find-and-replace sweep would choose silently by default.
+4. Add an **in-extent version declaration**, so the citable unit describes itself.
+5. Changelog entry.
+
+**Sequencing (832's request, and we agree):** the remedy is agreed **before** anything is
+edited, so we re-pin **once** against one agreed artifact rather than twice. Every option
+breaks our pin — that is the pin working, and the sidecar's "do not update the expected hash
+to whatever the file now hashes to" is what makes the break a deliberate re-pin rather than
+drift.
+
+832 has not edited the standard: it is their operator's call, prepared with evidence rather
+than proposed as done. Both operators now hold a piece of this.
 
 Effect on our pin: a retitle changes bytes, so `tests/unit/standard_pin.bats` goes red and
 we re-vendor at the new hash. That is the pin working exactly as its sidecar specifies
@@ -316,6 +375,6 @@ are now in the harness above (`VOID:` branch).
 | 2 | May diagram-kind be ratified as an `aef:workflowMeta` attribute? | **NO on the form** (carrier absent from v1 entirely, grep count 0), **YES on the capability**. Amendment path stated. |
 | A | 832's flag: §1 partition normative, bounds proposals | Confirmed, and **stronger** — it bounds *reads*, not proposals. |
 | B | 832's flag: frozen set is four; rest is paraphrase leakage | Confirmed, **and we are exposed** — our lifecycle map's `state=` carrier is not frozen. |
-| C | 832's flag: can "Frozen (v1)" cover v1.1 content? | **No.** §2's own frozen table has a struck-through row dated v1.1. Document is v1.1, mislabelled. Recommend retitle + changelog. |
+| C | 832's flag: can "Frozen (v1)" cover v1.1 content? | **No.** §2's own frozen table has a struck-through row dated v1.1. Document is v1.1, mislabelled. **Ruling stands; our remedy was under-scoped** — see the T-2873 correction: 9 version tokens, 3 stale, and `v1-conformant` is a *defined term* our retitle would have left standing. Revised remedy in that section; remedy agreed **before** editing so we re-pin once. |
 | — | Our flag back to 832 | §1 cites "(§3)" for the governance meta-keys; they are enumerated in §2. Low confidence, theirs to rule. |
 

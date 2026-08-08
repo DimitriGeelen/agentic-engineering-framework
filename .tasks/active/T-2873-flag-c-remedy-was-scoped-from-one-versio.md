@@ -1,12 +1,12 @@
 ---
-id: T-2870
-name: "ratify from the text: laneMeta authority class + workflowMeta kind= carrier gap in frozen mapping-v1"
+id: T-2873
+name: "flag C remedy was scoped from one version token of nine — v1-conformant is a defined term, not a label"
 description: >
-  ratify from the text: laneMeta authority class + workflowMeta kind= carrier gap in frozen mapping-v1
+  flag C remedy was scoped from one version token of nine — v1-conformant is a defined term, not a label
 
-status: work-completed
-workflow_type: specification
-owner: human
+status: started-work
+workflow_type: build
+owner: agent
 horizon: now
 tags: []
 components: []
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-08T14:30:52Z
-last_update: 2026-08-08T14:44:05Z
-date_finished: 2026-08-08T14:44:05Z
+created: 2026-08-08T15:03:50Z
+last_update: 2026-08-08T15:03:50Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,7 +36,7 @@ date_finished: 2026-08-08T14:44:05Z
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2870: ratify from the text: laneMeta authority class + workflowMeta kind= carrier gap in frozen mapping-v1
+# T-2873: flag C remedy was scoped from one version token of nine — v1-conformant is a defined term, not a label
 
 ## Context
 
@@ -46,25 +46,26 @@ date_finished: 2026-08-08T14:44:05Z
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Both rulings answered **from the vendored text**, each derivation naming the clause it
-      rests on. No ruling derived from rail correspondence — that was the OBS-190 failure
-      mode this task exists to spend the fix on.
-- [x] Ruling 2's carrier-gap claim is a count, not an impression: `aef:workflowMeta` occurs
-      **0** times in the frozen standard.
-- [x] Ruling 1's element-granularity hazard **measured** against our own compiler, with a
-      positive control proving the instrument sensitive (`@authority` edit → exactly one
-      line changes, `owner: human`→`owner: agent`).
-- [x] The measurement **refuted** the first draft's prediction (our compiler is conformant:
-      `@height`-only edit is byte-identical), and the artifact says so plainly rather than
-      keeping the prediction.
-- [x] The first measurement run was a false positive (both arms void — cwd broke compiler
-      resolution, control shared the defect). Cause diagnosed, guard added, filed OBS-197 +
-      a learning, and recorded in the artifact instead of being quietly re-run.
-- [x] All three of 832's cold-reading flags **ruled on from the text**, including flag C
-      which they invited us to challenge — answered `No` with the §2 struck-through-row
-      evidence, not agreed with out of deference.
-- [x] Our corpus's exposure to non-frozen keys measured by XML parse (56 diagrams, 652
-      attributes, 91% non-frozen) and filed as its own task **T-2871**, not folded in here.
+- [x] 832's nine-token enumeration (rail 459) is **verified against our own copy**, not
+      accepted: same nine tokens, same order. Their byte offsets over the whole file and our
+      character offsets over the extent drift progressively 5→73, exactly as UTF-8 multibyte
+      accumulation predicts — a cross-check that could have failed differently (L-546).
+- [x] Confirmed the extent states **no version of its own**: `Version:` absent, heading says
+      `Frozen (v1)`. A party holding only Part I cannot determine what version it holds.
+- [x] T-2870's Flag C section corrected: the remedy was scoped from the **one** token we
+      cited and left three stale `v1` labels standing (`frozen v1 governance meta-keys`,
+      `frozen v1 governance-scalar contract`, `v1-conformant`).
+- [x] `v1-conformant` recorded as the sharp case: a **defined term, not a label**. §6 defines
+      it by a list that now includes the v1.1-edited §2 table and the v1.1 §7 marker, so the
+      bar the term names moved while the term did not — and our T-2621 conformance rail keys
+      on it.
+- [x] T-2870's Recommendation updated **before** the operator acts on it, since it currently
+      asks for endorsement of an under-scoped remedy.
+- [x] 832's sequencing request recorded: agree the remedy **before** any edit, so we re-pin
+      once against one agreed artifact rather than twice.
+- [x] Recorded that the governance process was **not** violated — the document declares
+      `Version: 1.1` at byte 105 with a changelog, both outside the extent we were sent.
+      Labelling failed, change control did not.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -96,29 +97,6 @@ date_finished: 2026-08-08T14:44:05Z
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-- [ ] [REVIEW] These are AEF's **ratification positions**, not just the agent's analysis
-
-  Ratifying a standard is a sovereignty-level act — AEF is a ratifying party, and ruling
-  `NO` on 832's proposed form for diagram-kind, and `No` on their "Frozen (v1)" heading,
-  commits AEF to positions in a two-party standards process. The evidence is the agent's;
-  the position is yours.
-
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && cat docs/reports/T-2870-mapping-v1-rulings.md`
-     (or read it rendered at the Watchtower link `fw task review T-2870` emits)
-  2. Read the "Rulings summary" table at the end — six rows, each with its basis.
-  3. The two that carry weight beyond analysis:
-     - **Ruling 2** — we tell 832 `NO` on adding `kind=` to `aef:workflowMeta`, while
-       saying `YES` to the capability and naming the amendment path.
-     - **Flag C** — we tell 832 their document titled "Frozen (v1)" is actually v1.1 and
-       should be retitled. They invited the challenge; this takes them up on it.
-  4. Confirm the tone is right for a peer standards party, not a subordinate one.
-
-  **Expected:** you endorse both as AEF's position, or amend them before they go on the rail.
-
-  **If not:** say which ruling to soften/reverse and why; the artifact is the single source
-  and the rail post is generated from it, so amending it upstream is sufficient.
 
 ## Verification
 
@@ -187,88 +165,6 @@ date_finished: 2026-08-08T14:44:05Z
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# The artifact exists and carries the rulings summary.
-test -f docs/reports/T-2870-mapping-v1-rulings.md
-grep -q "## Rulings summary" docs/reports/T-2870-mapping-v1-rulings.md
-
-# The vendored standard is still on its pin — every ruling here is derived from
-# those exact bytes, so a drifted standard invalidates the whole artifact.
-out=$(bats tests/unit/standard_pin.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-
-# Ruling 2's load-bearing count: aef:workflowMeta is absent from the frozen standard.
-test "$(grep -c 'workflowMeta' policy/standards/aef-bpmn-mapping-v1-partI.md)" = "0"
-
-# Ruling 1's measurement, re-run end-to-end: @height-only edit is a task-graph no-op
-# while @authority flips exactly owner:. Both arms guarded non-empty first, because a
-# void arm is what made the first run report the opposite of the truth (OBS-197).
-# NB `diff | grep -q` is unsafe here for a reason NOT in the hints above: diff exits 1
-# to mean "files differ" — the very outcome we are asserting — so pipefail fails the
-# line on success. Capture first (`|| true`), then grep. Third member of the L-387
-# family: SIGPIPE, test-runner exit codes, and now informational-nonzero producers.
-bash -c 'set -eo pipefail; d=$(mktemp -d); s=tests/fixtures/aef-bpmn/session-handover.bpmn; bin/fw bpmn compile "$s" 2>/dev/null > "$d/base"; sed "s/height=\"150\"/height=\"999\"/" "$s" > "$d/h.bpmn"; sed "s/authority=\"sovereignty\"/authority=\"initiative\"/" "$s" > "$d/a.bpmn"; bin/fw bpmn compile "$d/h.bpmn" 2>/dev/null > "$d/h"; bin/fw bpmn compile "$d/a.bpmn" 2>/dev/null > "$d/a"; test -s "$d/base" && test -s "$d/h" && test -s "$d/a"; diff -q "$d/base" "$d/h" >/dev/null; ! diff -q "$d/base" "$d/a" >/dev/null; delta=$(diff "$d/base" "$d/a" || true); echo "$delta" | grep -q "owner: agent"; rm -rf "$d"'
-
-## Recommendation
-
-**Recommendation:** GO — endorse both rulings as AEF's ratification position and let them go
-to 832 on the rail.
-
-> **AMENDED after filing (T-2873, 832 rail 459) — read this before deciding.** The Flag C
-> *ruling* is unchanged and 832 verified it against their own bytes. The *remedy* we
-> recommended was under-scoped: we cited one version token and there are nine, three of them
-> stale `v1` labels a retitle would leave standing. The one that matters is `v1-conformant`,
-> which is a **defined term, not a label** — §6 defines it by a list that now includes v1.1
-> content, so the bar moved while the word did not, and our own T-2621 conformance rail keys
-> on it. Revised five-step remedy is in the artifact under "CORRECTION (T-2873)". Also
-> recorded there: 832's change control did **not** fail (the document declares Version 1.1
-> with a changelog — both outside the extent they sent us), and their sequencing request,
-> which we accept: **agree the remedy before anything is edited, so we re-pin once.**
-> What you are endorsing is therefore the rulings plus the *revised* remedy.
-
-**Rationale:** Every ruling here is derived from the vendored bytes, and the two that carry
-weight are the two I would most expect an operator to want to check — so here is why I think
-they hold rather than why they are safe.
-
-*Ruling 2 (NO on the form)* rests on a count anyone can repeat: `aef:workflowMeta` occurs
-zero times in the frozen standard. That is not an interpretive claim. 832 proposed hanging a
-new attribute on a carrier their own frozen document never admits, and the escape hatch that
-would have licensed it (§2's editor-internal note) is textually scoped to a different
-element. Saying yes would ratify a key onto a carrier with no class, no value set, and no
-conformance clause — and `kind=` is the one datum that decides whether the forward compile
-runs at all. We lose nothing by saying no to the form: we told them yes to the capability and
-named the two-step path that gets it there properly.
-
-*Flag C (their document is v1.1, not v1)* is the one they explicitly invited us to challenge,
-which is exactly why it should not be answered with deference. The decisive evidence is
-internal: §2 is the section that defines what "frozen" means for this standard, and it
-contains a struck-through row annotated *"in v1.1"*. A frozen table with a v1.1 edit in it
-has already answered the question. The remedy we recommend is the cheap one (retitle plus a
-changelog), not the expensive one (split the document), and we say plainly that it breaks our
-own pin and that this is the pin working rather than failing.
-
-The one thing I would flag against myself: the empirical leg **refuted** my own prediction.
-I predicted element-granular diffing would cause spurious task-graph churn; measurement shows
-our compiler is conformant and unaffected. The amendment we ask 832 for therefore fixes no
-live bug of ours — it removes an ambiguity that a third-party implementation would resolve
-wrongly. That is a weaker case than the artifact's first draft made, and it is stated that
-way in the text rather than quietly dropped.
-
-**Evidence:**
-- `docs/reports/T-2870-mapping-v1-rulings.md` — full derivations, all six rulings, quoted clauses.
-- `grep -c workflowMeta policy/standards/aef-bpmn-mapping-v1-partI.md` → **0** (Ruling 2's basis).
-- Measurement, both arms non-empty-guarded: `@height` 150→999 ⇒ byte-identical 107-line
-  output; `@authority` sovereignty→initiative ⇒ exactly one line, `owner: human`→`owner: agent`.
-  Control proves the instrument sensitive.
-- Corpus exposure by XML parse: 56 diagrams, 501 `<aef:meta>` elements, 652 attributes,
-  **91% on non-frozen keys**; `state=` 102 uses. Filed as T-2871.
-- `bats tests/unit/standard_pin.bats` green — the bytes every ruling cites are still on 832's pin.
-- Self-correction recorded, not buried: OBS-197 (control shared the arms' fatal defect and
-  certified an instrument measuring nothing), OBS-198 (`diff | grep -q` fails under pipefail
-  precisely when it succeeds), plus a learning on absolute-vs-relative guards.
-
-**What GO authorises:** posting these as AEF's positions on the 832 rail. Nothing in the
-standard or our corpus changes as a result — Ruling 2 asks 832 to amend their document, and
-T-2871 (already filed) is where our own exposure gets fixed.
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -332,23 +228,7 @@ T-2871 (already filed) is where our own exposure gets fixed.
 
 ## Updates
 
-### 2026-08-08T14:30:52Z — task-created [task-create-agent]
+### 2026-08-08T15:03:50Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2870-ratify-from-the-text-lanemeta-authority-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2873-flag-c-remedy-was-scoped-from-one-versio.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-b9c7a0e6
-- **Timestamp:** 2026-08-08T14:44:07Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** yes
-- **Findings:** none
-
-- **Layer-1 escalations:** 1
-  1. **destructive-action** (high) — Destructive operation in verification or AC
-     - matched: `rm -rf`
-
-### 2026-08-08T14:44:05Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
