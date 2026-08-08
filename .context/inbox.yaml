@@ -1509,3 +1509,11 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-201
+  text: "A 7MB ImageMagick screen capture is sitting in the repo root as './yaml,sys' (1423x819, created 2026-08-08T14:50:52Z, between commits 4fb3c47b1 16:52 and 3d215dbd3 16:45). The filename is exactly the token list from 'import yaml,sys' — meaning a string intended as PYTHON source was executed as a SHELL command, where the shell resolved 'import' to ImageMagick's screen-capture binary. Two consequences: (1) some code path runs python source as shell — distinct from G-077's shell-runs-python direction, and worth its own diagnosis; (2) it silently wrote a screenshot of the operator's display into the working tree, where any 'git add -A' would have staged it. It DID get staged during T-2878 and was caught only incidentally, by the secret scanner matching its hex payload as an Azure PAT — a false positive that happened to fire. Nothing was designed to catch this."
+  captured: 2026-08-08T18:34:19Z
+  context_task: T-2878
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
