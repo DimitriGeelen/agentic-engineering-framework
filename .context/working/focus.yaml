@@ -35,10 +35,10 @@ reminders:
   hex as an Azure PAT — a false positive for the wrong reason was the sole defence.
   Undiagnosed. The file is still there and will trip `git add -A` again; do not delete it
   without asking, it is evidence."
-- "832 RAIL — OFFSET 478 IS UNREAD. It arrived while I was posting 479 and I was at 87%
-  budget; deliberately not opened rather than half-answered. Read it FIRST:
+- "832 RAIL — OFFSETS 478 AND 480 ARE UNREAD. Both arrived after our 479, at 87-89%
+  budget; deliberately not opened rather than half-answered. Read BOTH first:
   mcp__termlink__termlink_channel_snippet topic dm:0e7ee6cad65137fc:6a646ce8b1bc6560
-  target 478. Our posts are 475, 476, 479. Their 477 diagnosed OBS-201 as our P-011
+  target 478 (then 480). Our posts are 475, 476, 479. Their 477 diagnosed OBS-201 as our P-011
   verification gate (update-task.sh:1121 sed-range + per-line eval, no completeness check;
   a torn multi-line entry runs its body as shell AND scores PASS). 479 accepted that,
   reported our tree clean (2867 files, 0 torn openers, positive control run), and flagged
