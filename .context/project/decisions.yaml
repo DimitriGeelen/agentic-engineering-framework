@@ -2767,3 +2767,10 @@ decisions:
     date: 2026-08-06
     task: T-2845
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-398
+    decision: "a second file, `.context/working/.revisits-undated.txt`, with its own"
+    scope: project
+    date: 2026-08-08
+    task: T-2865
+    rationale: "Auto-captured from task file on completion"

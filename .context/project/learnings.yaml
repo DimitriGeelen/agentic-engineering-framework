@@ -4190,3 +4190,10 @@ X'` returning empty group."
   date: 2026-08-08
   context: Added via context agent
   application: TBD
+- id: L-552
+  learning: "Mutation tests need a validity check on the mutant. A mutation that breaks syntax makes the mutant die at parse time, which is indistinguishable from 'the property under test went red' — the test certifies teeth it does not have. Neutralise the target line (replace with ':') rather than delete it, and assert 'bash -n' on the mutant before believing any red. Same family as the vacuous negative control: a control must fail for the RIGHT reason, not merely fail."
+  source: P-011
+  task: T-2865
+  date: 2026-08-08
+  context: Added via context agent
+  application: TBD

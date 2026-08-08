@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2865: DEFER decisions are structurally undateable: 14/14 invisible to the revisit scanner
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T12:02:16Z
+# ============================================================================
+
+task_id: T-2865
+task_name: "DEFER decisions are structurally undateable: 14/14 invisible to the revisit scanner"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T11:49:00Z
+completed: 2026-08-08T12:01:56Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-08T13:58:28+02:00
+last_commit: 2026-08-08T13:58:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  surface DEFER decisions with no revisit date — 14/14 were invisible. register fabric card for revisit_undated_signal.bats
+
+# Key outcomes
+outcomes:
+  - '`revisit-due-scan.sh` emits a second, separate signal'
+  - 'The undated signal is a **separate file**, not extra lines in'
+  - '`handover.sh` surfaces the undated signal under its own heading'
+  - 'Bats suite `tests/unit/revisit_undated_signal.bats` drives the **real**'
+  - 'ANTI-VACUITY: the suite is shown to go red on the finding leg when pointed at'
+  - 'Measured incidence recorded in `## RCA` with the predicate used, so the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-08 — separate signal file, not extra lines in `.revisits-due.txt`'
+    chose: 'a second file, `.context/working/.revisits-undated.txt`, with its own'
+    rationale: '`.revisits-due.txt` means "ripe today", and its consumer prints it under'
+    alternatives_rejected: ['appending undated entries to the ripe file with a sentinel date, or']
+  - decision: '2026-08-08 — OPEN OPERATOR DECISION: should `decide defer` demand a date?'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/revisit-due-scan.sh'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/revisit-due-scan.sh'
+  - 'agents/handover/handover.sh'
+  - '.fabric/components/tests-unit-revisit_undated_signal.yaml'
+  - '.tasks/active/T-2865-defer-decisions-are-structurally-undatea.md'
+  - 'tests/unit/revisit_undated_signal.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T13:58:28'
+    action: 'T-2865: surface DEFER decisions with no revisit date — 14/14 were invisible'
+  - time: '2026-08-08T13:58:48'
+    action: 'T-2865: register fabric card for revisit_undated_signal.bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 2
+  files_changed: 8
+  lines_added: 843
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2865-defer-decisions-are-structurally-undatea.md
+generated_by: context-agent-hybrid

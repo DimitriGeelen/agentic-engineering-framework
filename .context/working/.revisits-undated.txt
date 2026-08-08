@@ -1,0 +1,14 @@
+T-1265: Export docs section as PDF/DOCX/other formats
+T-1271: Cross-agent peer learning — 15-min TermLink reflect cron (propagated from 050-email-archive)
+T-1309: Ship watchtower.service systemd template + make fw watchtower start systemd-aware
+T-1611: Swap local Watchtower Werkzeug dev server for gunicorn — saturation under browser
+T-1685: fw audit refactor — first real consumer of the orchestrator, route slow analytical
+T-2137: Multi-option AC pattern — choice spawns child inception (T-1776 surfaces the
+T-2321: Pickup: AEF→TermLink first-contact: T-2303 arc-011 parallel-execution scoping
+T-2323: AEF-IC-1: Yield-point granularity (substrate ADR §6.1) — where in the agent's
+T-550: Composition-based adapter pattern — evaluate for agent provider and TermLink
+T-558: Build task risk signal detection — PreToolUse gate requiring inception for
+T-682: TermLink product feedback — --working-dir flag for spawn + MCP as default
+T-704: DAG federation for cross-machine knowledge graphs
+T-705: KCP integration — knowledge.yaml generation from fabric/context + MCP bridge
+T-844: SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)
