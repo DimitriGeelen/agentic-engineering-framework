@@ -2652,3 +2652,45 @@ concerns:
     neither origin nor github; `fw worktree remove rca-worktree-push-strand`
     reports the branch itself absent from both remotes — both REFUSED, matching
     `git log <remote>/<branch>..<branch>` run by hand.
+- id: G-077
+  type: gap
+  title: Safe-listed interpreter defeats the Bash task gate — writes reach disk with no task and no audit trail
+  description: '`is_bash_safe_command` safe-lists `python3 -c` behind a TEXTUAL deny-list
+    of write indicators. Seven ordinary write idioms match none of it and carry no shell
+    redirect, so both predicates pass and check-active-task.sh exits 0 BEFORE the
+    no-active-task check, the task-is-active check, G-020 and the T-1730 focus-drift gate.
+    Measured against the real hook with current_task: null — pathlib write_text/write_bytes,
+    os.replace, subprocess.run, Path.unlink, print(file=open(p,"a")), and
+    subprocess.call(cmd, shell=True). Exposure here: 107 subprocess sites, 72 write_text,
+    36 os.replace. os.replace is our OWN documented atomic-write idiom (T-100191/L-493),
+    so this is the shape house style teaches, not an exotic bypass.
+
+    Failure direction is the dangerous one: false NEGATIVE. Every gate skipped, nothing
+    written to the bypass log, so after the fact it is indistinguishable from compliance.
+
+    '
+  spec_reference: CLAUDE.md §Enforcement Tiers (Tier 0 scope boundary, same family); OBS-184/185
+  severity: high
+  decision_trigger: 'An agent is found to have written source files during a no-task,
+    drift, or completed-focus state with no corresponding entry in .gate-bypass-log.yaml.'
+  trigger_check:
+    type: manual
+    hint: 'source agents/context/lib/safe-commands.sh; then check that
+      is_bash_safe_command "python3 -c \"import os; os.replace(a,b)\"" returns non-zero.
+      Returns 0 (=allowed) while this gap is open.'
+  status: watching
+  created: 2026-08-08
+  related_task: T-2876
+  what_remains: 'PREVENTION NOT SHIPPED. Closure condition, stated explicitly because
+    the obvious move does not satisfy it: ADDING THE SEVEN MEASURED IDIOMS DOES NOT CLOSE
+    THIS. 832 (their G-025) established that `subprocess.call(cmd, shell=True)` carries no
+    textual signature at all — the command is in a variable — and re-admits every pattern
+    the deny-list denies, including the five os.* names it explicitly lists. So one
+    permitted entry grants what the list exists to withhold; enumeration is not a slow fix,
+    it is void. Nor does the probe existing close it: a census that reports a known-open
+    gap every run is a description, not a prevention. Closes only when a safe-listed
+    interpreter cannot reach the filesystem BY CONSTRUCTION. Direction GO-decided under
+    T-2876; scope (python3 alone vs every interpreter) is IW-3, open. Cross-registered
+    with 832 G-025. Artifact: docs/reports/T-2876-interpreter-write-gate-bypass.md.
+
+    '

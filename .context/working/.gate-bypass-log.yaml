@@ -6298,3 +6298,12 @@ rail 461. focus.sh:35 writes '
   command: 'FW_SWITCH_FOCUS=1 git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -m "T-2874: refresh vendored copies — focus.sh active-scope fix + VERSION 1.6.399
 
 The self-vendor gate (T-2240) blocked'
+- timestamp: '2026-08-08T17:07:42Z'
+  task: 'T-2871'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2875'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2875: focus-drift message stops recommending a remedy the framework refuses
+
+The gate blocked an action and offered, first, fw context focus <TARGET> — which
+T-2'
