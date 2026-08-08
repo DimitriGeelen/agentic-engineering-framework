@@ -31,6 +31,36 @@ source "$FRAMEWORK_ROOT/lib/render_surface.sh" 2>/dev/null || true
 # === Extracted gate functions (T-415) ===
 # Each function accesses outer-scope variables: TASK_FILE, TASK_ID, SKIP_*, colors
 
+# T-2864: stage an active/ -> completed/ move so BOTH sides land in the index.
+#
+# Why this exists. The archive move prefers `git mv` (T-1523) but falls back to
+# a plain `mv` when git refuses. That fallback removes the source from DISK while
+# leaving it tracked in the INDEX — a state where the T-1863 post-move guard
+# (`[ -e "$source" ]`) passes, because the file really is gone from disk, while
+# `dup-task-scan.sh` still refuses the commit, because it reads
+# `git ls-files --cached` and sees the same task id under active/ AND completed/.
+#
+# Disk and index are two different populations, and the guard was watching the
+# one where the violation cannot appear. Origin: T-2863's GO decision was recorded
+# through Watchtower and then refused at the commit boundary, leaving the decision
+# on disk and out of history.
+#
+# Idempotent and silent on the happy path (`git mv` already staged both sides).
+# Best-effort: a staging failure is not fatal here — the T-1863 disk check and
+# the pre-commit dup scan both still run behind it.
+_t2864_reconcile_index() {
+    local src="$1" dest="$2"
+    [ -n "$src" ] && [ -n "$dest" ] && [ "$src" != "$dest" ] || return 0
+    command -v git >/dev/null 2>&1 || return 0
+    git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1 || return 0
+    # Only act when the source is STILL tracked in the index after the move —
+    # i.e. the `|| mv` fallback ran and left a stale index entry behind.
+    if git -C "$PROJECT_ROOT" ls-files --error-unmatch -- "$src" >/dev/null 2>&1; then
+        git -C "$PROJECT_ROOT" add -A -- "$src" "$dest" >/dev/null 2>&1 || true
+    fi
+    return 0
+}
+
 # Gate bypass audit log (T-1142)
 log_gate_bypass() {
     local flag="$1" caller="${2:-manual}"
@@ -1373,6 +1403,15 @@ if [ -n "$NEW_STATUS" ]; then
                     mv "$TASK_FILE" "$DEST"
                 fi
                 TASK_FILE="$DEST"
+                # T-2864: reconcile the INDEX, not just the disk. The `|| mv`
+                # fallback above leaves the source tracked in the index while
+                # removing it from disk — so the `[ -e ]` check below passes
+                # and dup-task-scan.sh (which reads `git ls-files --cached`)
+                # still sees the id under active/ AND completed/. Disk and index
+                # are two different populations; the guard was watching the one
+                # where the violation cannot appear. Stage the rename so both
+                # sides land together, exactly as `git mv` would have.
+                _t2864_reconcile_index "$_t1863_orig" "$DEST"
                 # T-1863: post-move sanity — if source still exists, the move
                 # is incomplete and we'd land in a G-052 orphan state. Refuse
                 # so the agent fixes it before --status work-completed commits.
@@ -1902,6 +1941,8 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 mv "$TASK_FILE" "$DEST"
             fi
             TASK_FILE="$DEST"
+            # T-2864: reconcile the index (see the sibling call site above).
+            _t2864_reconcile_index "$_t1863_orig" "$DEST"
             # T-1863: post-move orphan check — same rationale as the T-193
             # re-run path above. Refuse rather than land in G-052 silently.
             if [ -e "$_t1863_orig" ] && [ "$_t1863_orig" != "$DEST" ]; then

@@ -726,8 +726,12 @@ def _commit_decision(task_id: str, decision: str):
     Graceful: returns `(committed: bool, message: str)`; a commit failure (e.g. a
     commit-msg hook rejecting a DEFER without a research artifact) is non-fatal.
 
-    The active→completed move is a filesystem `mv` (not `git mv`), so git sees a
-    delete + an untracked add (two porcelain lines, no rename arrow).
+    T-2864: the active→completed move is `git mv` whenever the task file is
+    tracked (update-task.sh, T-1523), so the normal porcelain form is a single
+    RENAME line (`RM old -> new`), NOT the delete + untracked-add pair this
+    docstring previously asserted. Both sides of that arrow must reach `wanted`
+    — see the loop below. The plain-`mv` two-line form only occurs when the file
+    was untracked, and is still handled.
     """
     import subprocess
     import os  # T-2509: needed for the FW_ALLOW_MASTER_COMMIT env below
@@ -745,11 +749,22 @@ def _commit_decision(task_id: str, decision: str):
             if not line.strip():
                 continue
             path = line[3:]  # strip the 2-char XY status + the separating space
-            if " -> " in path:  # defensive: handle rename form if ever produced
-                path = path.split(" -> ", 1)[1]
-            path = path.strip().strip('"')
-            if _is_decision_file(task_id, path):
-                wanted.append(path)
+            # T-2864: a staged rename reports `R  old -> new`, and BOTH sides are
+            # load-bearing. The scratch index below is seeded from HEAD, where
+            # `old` still exists — so naming only `new` leaves the task id under
+            # BOTH .tasks/active/ and .tasks/completed/ in the index we are about
+            # to commit, and the G-052 dup-task-ID pre-commit gate refuses it.
+            # The decision is then recorded on disk and absent from history.
+            #
+            # This is the NORMAL case, not a defensive edge: update-task.sh
+            # archives with `git mv` when the file is tracked (T-1523), which
+            # stages the rename in the real index. Measured, not assumed:
+            #   RM .tasks/active/T-x.md -> .tasks/completed/T-x.md
+            # (Origin: T-2863's GO decision, refused at the commit boundary.)
+            for cand in (path.split(" -> ", 1) if " -> " in path else [path]):
+                cand = cand.strip().strip('"')
+                if _is_decision_file(task_id, cand):
+                    wanted.append(cand)
 
         if not wanted:
             # Nothing of ours to commit (already committed, or no files found).
