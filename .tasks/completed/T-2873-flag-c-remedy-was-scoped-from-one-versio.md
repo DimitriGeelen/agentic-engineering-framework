@@ -4,10 +4,10 @@ name: "flag C remedy was scoped from one version token of nine — v1-conformant
 description: >
   flag C remedy was scoped from one version token of nine — v1-conformant is a defined term, not a label
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T15:03:50Z
-last_update: 2026-08-08T15:03:50Z
-date_finished: null
+last_update: 2026-08-08T15:09:07Z
+date_finished: 2026-08-08T15:09:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -165,6 +165,19 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# The correction is in the artifact and names the load-bearing token.
+grep -q "CORRECTION (T-2873" docs/reports/T-2870-mapping-v1-rulings.md
+grep -q "it is a defined term" docs/reports/T-2870-mapping-v1-rulings.md
+
+# The operator's Recommendation carries the amendment — the whole point was to correct it
+# BEFORE it is acted on, so an un-amended Recommendation is the failure this task prevents.
+grep -q "AMENDED after filing (T-2873" .tasks/active/T-2870-ratify-from-the-text-lanemeta-authority-.md
+
+# All nine version tokens are still present in the vendored extent — this task corrected a
+# reading of the standard and must not have touched the standard itself.
+test "$(grep -o 'v1\.1\|v1' policy/standards/aef-bpmn-mapping-v1-partI.md | wc -l)" = "9"
+out=$(bats tests/unit/standard_pin.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -232,3 +245,15 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2873-flag-c-remedy-was-scoped-from-one-versio.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0bb419d3
+- **Timestamp:** 2026-08-08T15:09:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-08T15:09:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

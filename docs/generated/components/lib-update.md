@@ -6,11 +6,14 @@
 
 ## What It Does
 
-fw update - Update the framework (vendored or global)
+fw update - Update the framework (vendored projects only)
 Vendored projects (.agentic-framework/): clones upstream into temp dir,
 re-vendors from there. Uses upstream_repo from .framework.yaml.
-Global installs (~/.agentic-framework with .git): fetches and resets
-to latest upstream (legacy path, pre-T-499).
+T-2854/D-377: the git-based global-install path (_do_update_git) was
+dropped. It was only reachable via a global install (~/.agentic-framework
+as a git clone), and T-2800 eliminated the producer of those — install.sh
+now clones to a tempdir and deletes it. There is no global install left to
+update in place.
 
 ## Dependencies (1)
 

@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2873: flag C remedy was scoped from one version token of nine — v1-conformant is a defined term, not a label
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T15:09:19Z
+# ============================================================================
+
+task_id: T-2873
+task_name: "flag C remedy was scoped from one version token of nine — v1-conformant is a defined term, not a label"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T15:03:50Z
+completed: 2026-08-08T15:09:07Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-08T17:05:58+02:00
+last_commit: 2026-08-08T17:05:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  flag C ruling stands, our remedy did not — 1 of 9 version tokens
+
+# Key outcomes
+outcomes:
+  - '832''s nine-token enumeration (rail 459) is **verified against our own copy**, not'
+  - 'Confirmed the extent states **no version of its own**: `Version:` absent, heading says'
+  - 'T-2870''s Flag C section corrected: the remedy was scoped from the **one** token we'
+  - '`v1-conformant` recorded as the sharp case: a **defined term, not a label**. §6 defines'
+  - 'T-2870''s Recommendation updated **before** the operator acts on it, since it currently'
+  - '832''s sequencing request recorded: agree the remedy **before** any edit, so we re-pin'
+  - 'Recorded that the governance process was **not** violated — the document declares'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-08.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - 'docs/reports/T-2870-mapping-v1-rulings.md'
+  - '.tasks/active/T-2870-ratify-from-the-text-lanemeta-authority-.md'
+  - '.tasks/active/T-2873-flag-c-remedy-was-scoped-from-one-versio.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T17:05:58'
+    action: 'T-2873: flag C ruling stands, our remedy did not — 1 of 9 version tokens'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 15
+  lines_added: 402
+  lines_removed: 72
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2873-flag-c-remedy-was-scoped-from-one-versio.md
+generated_by: context-agent-hybrid

@@ -6272,3 +6272,12 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-2870: partial-complete — rulings drafted
   target: 'T-2872'
   command: 'FW_SWITCH_FOCUS=1 git add policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml .tasks/completed/T-2872*.md .tasks/active/T-2871*.md .context/ 2>/dev/null
 FW_SWITCH_FOCUS=1 git commit -q -m "T-28'
+- timestamp: '2026-08-08T15:09:33Z'
+  task: 'T-2871'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2873'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/ docs/ 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2873: close — 5/5 verification, reviewer PASS
+
+Verification caught its own drift: the first gre'

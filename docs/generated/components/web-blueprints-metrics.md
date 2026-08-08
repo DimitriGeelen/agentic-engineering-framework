@@ -6,11 +6,6 @@
 
 ## What It Does
 
-T-2785: initial render cap for the "Needs Attention" stale-task list.
-_stale_tasks() tracks 1:1 with active-task count (260 of 317 today) and
-was rendering every row unconditionally. Capped in the DOM, not via CSS —
-see WORK_QUEUE_INITIAL in web/blueprints/cockpit.py for the sibling fix.
-
 ## Dependencies (4)
 
 | Component | Relationship | Description |

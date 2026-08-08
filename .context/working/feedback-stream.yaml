@@ -30894,3 +30894,21 @@ scan_id: R-8856426b
 task_id: T-2872
 payload:
   task_file: .tasks/active/T-2872-provenance-sidecar-attributes-the-byte-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T15:09:09Z'
+scan_id: R-0bb419d3
+task_id: T-2873
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T15:09:09Z'
+scan_id: R-0bb419d3
+task_id: T-2873
+payload:
+  task_file: .tasks/active/T-2873-flag-c-remedy-was-scoped-from-one-versio.md
