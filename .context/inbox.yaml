@@ -1474,3 +1474,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-196
+  text: "OBS-190 RESOLVED (T-2869): aef-bpmn-mapping-v1 Part I is now vendored at policy/standards/aef-bpmn-mapping-v1-partI.md, sha256-verified against 832's pin 970dd530... (published rail 446, re-derived from their tree before sending at 454). Provenance sidecar records source commit 4a1a30e1, transfer method, and the one-byte trailing-newline transfer artefact and its diagnosis. Pinned by tests/unit/standard_pin.bats. The two blocked rulings (section 1 laneMeta authority= enumeration hole; doc-as-workflowMeta-attr) are now answerable from the text rather than from correspondence about the text."
+  captured: 2026-08-08T12:40:05Z
+  context_task: T-2869
+  tags: []
+  status: pending
+  promoted_to: null

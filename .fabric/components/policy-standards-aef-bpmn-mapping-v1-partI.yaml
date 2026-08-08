@@ -1,0 +1,20 @@
+id: policy/standards/aef-bpmn-mapping-v1-partI.md
+name: aef-bpmn-mapping-v1-partI
+type: script
+subsystem: unknown
+location: policy/standards/aef-bpmn-mapping-v1-partI.md
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-08
+created_by: unknown
