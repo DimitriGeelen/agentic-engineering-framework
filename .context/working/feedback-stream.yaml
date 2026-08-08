@@ -30768,3 +30768,39 @@ scan_id: R-ab122424
 task_id: T-2864
 payload:
   task_file: .tasks/active/T-2864-g-052-duplicate-task-ids-block-the-t-286.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T12:02:04Z'
+scan_id: R-a40bda88
+task_id: T-2865
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T12:02:04Z'
+scan_id: R-a40bda88
+task_id: T-2865
+payload:
+  task_file: .tasks/active/T-2865-defer-decisions-are-structurally-undatea.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T12:09:20Z'
+scan_id: R-30f8895e
+task_id: T-2866
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T12:09:20Z'
+scan_id: R-30f8895e
+task_id: T-2866
+payload:
+  task_file: .tasks/active/T-2866-untrack-revisits-undatedtxt-a-tracked-si.md

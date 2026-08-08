@@ -1453,3 +1453,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-193
+  text: "T-2865: a mutation test whose mutation breaks SYNTAX is indistinguishable from a passing one. First attempt deleted the reporting line with grep -v; it was the sole statement inside its if-block, so the mutant died on 'syntax error near unexpected token fi' — and 'the finding leg went red' was exactly the assertion. bats reported the failure only because _run_scanner returned rc=2 and set -e caught it; had the assertion been a bare string compare it would have PASSED for the wrong reason, certifying teeth that did not exist. Fix: neutralise the line with ':' rather than delete it, and assert 'bash -n $mutant' before believing any red. Generalises: every mutation test needs a validity check on the mutant, the same way a negative control needs to fail for the RIGHT reason (cf. OBS-138 vacuous-negative-control class)."
+  captured: 2026-08-08T12:01:47Z
+  context_task: T-2865
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-194
+  text: "show"
+  captured: 2026-08-08T12:14:01Z
+  context_task: T-2862
+  tags: []
+  status: pending
+  promoted_to: null
