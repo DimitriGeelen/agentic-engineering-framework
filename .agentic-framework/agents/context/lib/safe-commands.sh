@@ -180,7 +180,14 @@ _fw_single_command_is_safe() {
                     local ctx_sub
                     ctx_sub=$(echo "$cmd" | awk '{print $3}')
                     case "$ctx_sub" in
-                        status|focus|init)
+                        # T-2878: the four capture verbs are allowed with no
+                        # active task for the same reason `task create` is
+                        # (T-2052) — they are what the framework PRESCRIBES
+                        # after completing work, and completion is the exact
+                        # transition that nulls focus. Verb-scoped, not a
+                        # blanket `context)` allowance: a mutating context
+                        # sub-verb must still fall through to the task check.
+                        status|focus|init|add-learning|add-pattern|add-decision|generate-episodic)
                             return 0
                             ;;
                     esac
@@ -196,6 +203,17 @@ _fw_single_command_is_safe() {
                             return 0
                             ;;
                     esac
+                    ;;
+                note)
+                    # T-2878: observation capture. Same class as the context
+                    # add-* verbs above — the gate must not block the record
+                    # of why it fired.
+                    return 0
+                    ;;
+                handover)
+                    # T-2878: session handover is the Session End Protocol's
+                    # mandatory step; it runs precisely when no task is active.
+                    return 0
                     ;;
                 work-on|inception)
                     # work-on and inception commands are task bootstrap — always allowed

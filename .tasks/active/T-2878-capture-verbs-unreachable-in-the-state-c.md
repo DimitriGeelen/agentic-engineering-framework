@@ -1,8 +1,10 @@
 ---
 id: T-2878
-name: "Capture verbs unreachable in the state completion creates — note, context add-*, handover"
+name: "Capture verbs unreachable in the state completion creates — note, context add-*,
+  handover"
 description: >
-  Capture verbs unreachable in the state completion creates — note, context add-*, handover
+  Capture verbs unreachable in the state completion creates — note, context add-*,
+  handover
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T18:00:40Z
-last_update: 2026-08-08T18:00:40Z
-date_finished: null
+last_update: '2026-08-08T18:15:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-08T18:15:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-08T18:15:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=1
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2878: Capture verbs unreachable in the state completion creates — note, context add-*, handover
@@ -86,26 +116,35 @@ This task ships the third instance, NOT the remedy for the shape. Registered sep
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw note`, `fw context add-learning|add-pattern|add-decision|generate-episodic`, and
+- [x] `fw note`, `fw context add-learning|add-pattern|add-decision|generate-episodic`, and
       `fw handover` are allowed with `current_task: null`
-- [ ] Safety argument holds: each writes only under `.context/` or `.tasks/`, both already
+- [x] Safety argument holds: each writes only under `.context/` or `.tasks/`, both already
       exempt paths for Write/Edit, and none can author source
-- [ ] WIDENING CONTROL — `fw config set` and other non-capture `fw` verbs stay BLOCKED. A fix
+- [x] WIDENING CONTROL — `fw config set` and other non-capture `fw` verbs stay BLOCKED. A fix
       that degraded into a blanket `fw` allowance emits identical ALLOWED rows for the capture
       verbs and cannot be distinguished by reading the case statement
-- [ ] bats coverage with an anti-vacuity leg mutating live source (not a `git show HEAD~N:`
+- [x] bats coverage with an anti-vacuity leg mutating live source (not a `git show HEAD~N:`
       ref, which goes inert on the next commit — T-2874)
-- [ ] Gap registered for the SHAPE, with a closure condition stating that adding these three
+- [x] Gap registered for the SHAPE, with a closure condition stating that adding these three
       verbs does not satisfy it
 
-## STATUS: diagnosed and verified, FIX NOT APPLIED — budget-gate fired mid-edit
+## STATUS: FIX APPLIED — S-2026-0808-2019+1
 
-The defect is confirmed by measurement (table above). The fix below was composed and the Edit
-was **refused by budget-gate at 98%**, correctly. Not retried, not bypassed. Apply verbatim
-next session; everything needed is here.
+Applied verbatim as composed below, vendored (`bin/fw vendor self`, confirmed present in
+`.agentic-framework/agents/context/lib/safe-commands.sh`), and pinned by
+`tests/unit/capture_verbs_nulltask.bats` — 7/7 pass, no skips.
 
-**Exact change** — `agents/context/lib/safe-commands.sh`, in `_fw_single_command_is_safe`'s
-`fw_sub` case (the `context)` arm is at ~line 179):
+Measured end-to-end against the real hook in the actual post-completion state (focus nulled,
+`active/` empty): `fw note`, `fw handover` and all four `fw context add-*`/`generate-episodic`
+verbs exit 0; `fw config set FW_PORT 3001` and `rm -rf` still exit 2. The two controls are the
+only thing separating this from a blanket allowance, so they carry the weight of the fix.
+
+Gap **G-078** registered for the SHAPE, with the closure condition stated explicitly: adding
+these six verbs does NOT close it — that is the same fix applied for the third time (T-2052,
+T-2054, this), and it is what left the shape intact after the first two.
+
+**The change as applied** — `agents/context/lib/safe-commands.sh`, in
+`_fw_single_command_is_safe`'s `fw_sub` case (the `context)` arm is at ~line 179):
 
 ```
                         status|focus|init)
@@ -275,6 +314,21 @@ measures the current file rather than cumulative context.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# 1. The suite, exit-code-preserved and guarded (T-2738: "3 failed, 9 passed" satisfies a
+#    bare pass-grep). Carries the ALLOWED legs, both controls, and the anti-vacuity leg.
+out=$(bats tests/unit/capture_verbs_nulltask.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+# 2. Vendored parity — this file is vendored, and a fix that lives only in agents/ is not
+#    the file consumers execute (T-2240 self-vendor drift class).
+grep -q "add-learning|add-pattern|add-decision|generate-episodic" .agentic-framework/agents/context/lib/safe-commands.sh
+# 3. The SHAPE is registered, not just the instance. AC 5.
+bin/fw gaps > /tmp/.t2878g 2>&1 && grep -q "G-078" /tmp/.t2878g
+# 4/5. LIVE end-to-end through the real hook in the actual post-completion state (focus
+#    nulled, active/ empty) — one allow, one control. `|| rc=$?` is required: the hook exits
+#    2 by design, which aborts the line under the gate's `set -e` before the assertion runs
+#    (T-2743 — rehearsed with `bash -c 'set -eo pipefail; <line>'`, not by hand).
+r=$(mktemp -d); mkdir -p "$r/.tasks/active" "$r/.tasks/completed" "$r/.context/working"; printf "current_task:\n" > "$r/.context/working/focus.yaml"; rc=0; printf "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"bin/fw note add x\"}}" | CLAUDECODE=1 PROJECT_ROOT="$r" CONTEXT_DIR="$r/.context" TASKS_DIR="$r/.tasks" bash agents/context/check-active-task.sh > /tmp/.t2878a 2>&1 || rc=$?; test "$rc" -eq 0
+r=$(mktemp -d); mkdir -p "$r/.tasks/active" "$r/.tasks/completed" "$r/.context/working"; printf "current_task:\n" > "$r/.context/working/focus.yaml"; rc=0; printf "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"bin/fw config set FW_PORT 3001\"}}" | CLAUDECODE=1 PROJECT_ROOT="$r" CONTEXT_DIR="$r/.context" TASKS_DIR="$r/.tasks" bash agents/context/check-active-task.sh > /tmp/.t2878b 2>&1 || rc=$?; test "$rc" -eq 2
 
 ## RCA
 

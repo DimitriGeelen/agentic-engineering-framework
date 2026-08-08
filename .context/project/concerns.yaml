@@ -2708,3 +2708,51 @@ concerns:
     with 832 G-025. Artifact: docs/reports/T-2876-interpreter-write-gate-bypass.md.
 
     '
+- id: G-078
+  type: gap
+  title: The task gate blocks the actions its own advice depends on — third instance, still discovered one verb at a time
+  description: 'Completing a task nulls focus. The framework then PRESCRIBES capture:
+    record the learning, note the observation, generate the handover (CLAUDE.md §Session
+    End Protocol, §Bug-Fix Learning Checkpoint). Every one of those was refused by the
+    Bash gate in exactly that state, because the safe-list enumerates permitted verbs and
+    nobody had added them. There is no honest way to satisfy the gate either: creating a
+    task in order to record why the previous one closed is fabrication.
+
+    This is the THIRD instance of one shape, not three bugs. T-2052 — the gate blocked
+    `fw task create`, which is what its own block message tells the agent to run. T-2054 —
+    the gate blocked `git commit`, which P-009 mandates. T-2878 (this) — the gate blocked
+    the capture verbs. Each was found in the field, fixed by appending one more verb to the
+    case statement, and closed. The shape survived all three fixes untouched.
+
+    Failure direction: the omission cannot report itself. A blocked capture verb leaves no
+    record of having been wanted — refusing `fw note` destroys the very artifact that would
+    have made the refusal visible. So the register of instances is not a sample of the
+    problem; it is a sample of the moments an agent happened to have enough budget left to
+    complain in prose instead.
+
+    '
+  spec_reference: CLAUDE.md §Session End Protocol; §Bug-Fix Learning Checkpoint; §Enforcement Tiers
+  severity: medium
+  decision_trigger: 'A fourth verb that the framework prescribes is found to be refused by
+    a framework gate in the state that framework prescribes it for.'
+  trigger_check:
+    type: manual
+    hint: 'Enumerate the commands CLAUDE.md instructs the agent to run AFTER --status
+      work-completed, then check each against is_bash_safe_command with current_task null.
+      Any that return non-zero are the next instance.'
+  status: watching
+  created: 2026-08-08
+  related_task: T-2878
+  what_remains: 'PREVENTION NOT SHIPPED. Closure condition, stated explicitly because the
+    obvious move does not satisfy it: ADDING THE SIX CAPTURE VERBS DOES NOT CLOSE THIS —
+    that is the same fix applied for the third time, and it is what left the shape intact
+    after T-2052 and T-2054. The gap is that a prescribed-action set and a permitted-command
+    set are maintained in two places by two different mechanisms (prose in CLAUDE.md,
+    a case statement in safe-commands.sh) with no check that the second covers the first.
+    Closes when that parity is checked rather than remembered — e.g. the prescribed set is
+    declared once and the safe-list is derived from it or audited against it. Polarity note:
+    this is the ALLOW-list twin of G-077, which is the DENY-list side of the same defect —
+    neither list can name every case, both grow only by field discovery, and both are silent
+    when wrong. Sibling on 832 as their T-390.
+
+    '
