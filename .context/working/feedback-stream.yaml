@@ -30706,3 +30706,21 @@ scan_id: R-6ade6da1
 task_id: T-2856
 payload:
   task_file: .tasks/active/T-2856-t-2854-removed-the-router-global-fallbac.md
+---
+kind: scan_emitted
+timestamp: '2026-08-07T21:16:11Z'
+scan_id: R-f7aa8ce6
+task_id: T-2860
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-07T21:16:11Z'
+scan_id: R-f7aa8ce6
+task_id: T-2860
+payload:
+  task_file: .tasks/active/T-2860-fw-focus-is-not-a-verb-and-unknown-comma.md

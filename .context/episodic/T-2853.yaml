@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2853: fw update misroutes a git-based global install into the vendored path and demands upstream_repo install.sh never writes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-07T11:22:37Z
+# ============================================================================
+
+task_id: T-2853
+task_name: "fw update misroutes a git-based global install into the vendored path and demands upstream_repo install.sh never writes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T08:23:42Z
+completed: 2026-08-07T11:22:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-07T10:27:48+02:00
+last_commit: 2026-08-07T10:27:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw update misrouted a git-based global install into the vendored path. refresh vendored copies
+
+# Key outcomes
+outcomes:
+  - '`fw update` routes a **git-based** install (`.agentic-framework/.git` present)'
+  - '`fw update` still routes a genuine **vendored consumer** (`.agentic-framework/`'
+  - 'The `No upstream_repo` error names the **absolute path** of the file to edit,'
+  - '`tests/unit/update_mode_routing.bats` pins both routing directions against'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/update.sh'
+  - '.agentic-framework/VERSION'
+  - '.fabric/components/tests-unit-update_mode_routing.yaml'
+  - 'lib/update.sh'
+  - '.tasks/active/T-2853-fw-update-misroutes-a-git-based-global-i.md'
+  - 'tests/unit/update_mode_routing.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-07T10:27:48'
+    action: 'T-2853: fw update misrouted a git-based global install into the vendored path'
+  - time: '2026-08-07T10:27:53'
+    action: 'T-2853: refresh vendored copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 178 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 178
+  commits: 2
+  files_changed: 6
+  lines_added: 523
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2853-fw-update-misroutes-a-git-based-global-i.md
+generated_by: context-agent-hybrid

@@ -865,15 +865,51 @@ stated reason.
    a conformance rail cannot audit map-vs-code parity until we say which one the
    map claims to be.
 
+## F-18 — We are the ratifying party for a standard we do not hold (OBS-190)
+
+Found while composing the rail reply, going to produce the §6.3 scope reading
+832 has been owed since offset 442:
+
+```
+grep -rln "aef: extension layer\|aef-bpmn-mapping\|routingHint" --include=*.md --include=*.yaml .
+-> docs/reports/T-2863-inception-workflow-rework.md
+```
+
+One hit, and it is this file quoting 832's rail messages. **We hold no copy of
+`aef-bpmn-mapping-v1.md`.** Every clause cited on this rail — §1's two-class
+partition, §6.3's subject, `42-45`'s "derived, never authoritative" — was quoted
+out of their messages and then reasoned about confidently.
+
+This matters beyond tidiness because 832 has now twice handed the ratification
+fence back to us, correctly: the 332 `doc`-as-`workflowMeta`-attribute proposal
+and the §1 enumeration hole are both **our** version bump to make. Neither is
+answerable without the bytes. A ratifying party that does not hold the document
+is not a fence, it is a rubber stamp.
+
+It is also the same defect class this task has been chasing all session — a
+conclusion produced over a population that cannot contain the counter-evidence.
+A "reading" of §6.3 done from their paraphrase ranges only over the sentences
+they chose to quote.
+
+**Blocked on this:** the §6.3 reading, the §1 ruling, and the 332 ratification.
+**Fix:** vendor + pin Part I under `policy/` the way `policy/designer-pin.yaml`
+pins the dist build. Requested at rail offset 445.
+
 ## Next actions (carried, in order)
 
 1. ~~**S-2** — walk the five failure instances across the v2 map.~~ **Done** —
    1/5 attached; v3 owes the four items above. Blocked on the operator's
    as-operated-vs-proposed ruling before v3 is drawn.
-2. **Reply on the rail** — answer their 1-5 (Q4 answered above), take up the
-   fidelity-probe offer for the cycle, and answer whether they should pin
-   `aef-task-lifecycle` v3 as a seam fixture. They asked for a faster cadence than
-   usual because Q2/Q3 may need correcting.
+2. ~~**Reply on the rail**~~ **Done** — posted at offset 445, replying to 444.
+   Their 1-5 answered; fidelity-probe offer taken up with a verified fixture ref
+   (`/api/version?id=draft-inception-readiness&v=2`, sha256 `fe3a520d…a846`,
+   served bytes confirmed byte-identical to disk); `aef-task-lifecycle` v3
+   answered **yes-but-not-yet** — pinning it now pins a hand-repair the toolchain
+   cannot regenerate, so the order is *release with T-311 → re-pin → re-save →
+   pin that byte state*. Q5 reciprocated with my own `--skip-sovereignty`
+   retraction and F-17.
+2b. **Blocking on 832: the frozen Part I bytes** (F-18 / OBS-190). Until they
+   arrive we cannot give the §6.3 reading, rule on the §1 hole, or ratify 332.
 3. **Re-pin when 832 cuts a release with T-311** — then stop hand-repairing docs.
 4. **Operator decisions still open:** IW-1..IW-4 shapes (F-12/F-13 confirmed the
    principle; the `blocking:` field is the concrete proposal), the two seed

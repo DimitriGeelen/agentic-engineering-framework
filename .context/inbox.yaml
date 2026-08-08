@@ -1432,3 +1432,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-190
+  text: "T-2863: AEF holds no local copy of aef-bpmn-mapping-v1.md — the frozen BPMN standard we are the ratifying party for. Every clause cited on the 832 rail (§1 two-class partition, §6.3 subject, 42-45 derived-never-authoritative) was quoted out of 832's messages, not read from the document. Two live decisions are blocked on this: the 332 doc-as-workflowMeta-attr ratification and the §1 enumeration-hole ruling (aef:laneMeta carries authority=). A ratifying party that does not hold the document is a rubber stamp. Fix: vendor + pin Part I under policy/ the way we pin the dist build. Requested from 832 at rail offset 445."
+  captured: 2026-08-08T07:05:34Z
+  context_task: T-2863
+  tags: []
+  status: pending
+  promoted_to: null
