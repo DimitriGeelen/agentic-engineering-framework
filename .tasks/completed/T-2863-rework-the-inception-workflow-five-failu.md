@@ -11,16 +11,16 @@ description: >
   seed tasks that instantiate all of it. Scope OUT: BVP scoring, arc lifecycle, and
   the T-2857 CLI-suite gate (its own task chain).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-08-07T17:25:59Z
-last_update: 2026-08-07T17:34:49Z
-date_finished:
+last_update: 2026-08-08T07:20:54Z
+date_finished: 2026-08-08T07:20:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -217,7 +217,7 @@ agent-vs-human decide authority, and the seed tasks that instantiate all of it.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -374,7 +374,11 @@ built under this ID):
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Five concrete instances inside two weeks, four of them hit live this session. (1) T-2862: the greenfield seed ships a self-referential AC that deadlocks fw inception decide in every new project. (2) T-2442: prior sibling, inception schema deadlock. (3) T-2857: the decision was recorded mid-exploration with --skip-sovereignty, auto-ticking the ### Human [REVIEW] AC, and the recorded rationale was the filing-time prior verbatim with an empty Evidence block — which the spike then refuted 40 minutes later. (4) T-2861: C-001 demands the research artifact as the FIRST act of an inception, which is exactly when Claude Code's background-session guard refuses Write. (5) The T-2204 recommendation-completeness gate REQUIRES a GO/NO-GO/DEFER at filing time, before any exploration exists, and @auto-tick-on-decide then promotes that untested prior into the recorded decision. The last one is the root: the framework asks for the conclusion before the evidence, then treats the answer as the finding. GO on the rework; the design is the open question, which is what this inception is for. Filed with a GO at creation time because the gate requires one — this task is its own worked example.
+
+**Date**: 2026-08-08T07:20:54Z
 
 ## Updates
 
@@ -383,3 +387,55 @@ built under this ID):
 
 ### 2026-08-07T17:34:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-08T07:20:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Five concrete instances inside two weeks, four of them hit live this session. (1) T-2862: the greenfield seed ships a self-referential AC that deadlocks fw inception decide in every new project. (2) T-2442: prior sibling, inception schema deadlock. (3) T-2857: the decision was recorded mid-exploration with --skip-sovereignty, auto-ticking the ### Human [REVIEW] AC, and the recorded rationale was the filing-time prior verbatim with an empty Evidence block — which the spike then refuted 40 minutes later. (4) T-2861: C-001 demands the research artifact as the FIRST act of an inception, which is exactly when Claude Code's background-session guard refuses Write. (5) The T-2204 recommendation-completeness gate REQUIRES a GO/NO-GO/DEFER at filing time, before any exploration exists, and @auto-tick-on-decide then promotes that untested prior into the recorded decision. The last one is the root: the framework asks for the conclusion before the evidence, then treats the answer as the finding. GO on the rework; the design is the open question, which is what this inception is for. Filed with a GO at creation time because the gate requires one — this task is its own worked example.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1e7d803f
+- **Timestamp:** 2026-08-08T07:20:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-7
+     - evidence: `IW-7 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-3b94db48
+- **Timestamp:** 2026-08-08T07:20:55Z
+- **Overall:** CONTRADICTED
+- **Claims:** 17
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/review.sh` | file | ✓ pass |
+| `lib/inception.sh:292` | file_line | ✓ pass |
+| `lib/task-audit.sh:117` | file_line | ✓ pass |
+| `lib/inception.sh:493-496` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `agents/task-create/update-task.sh:768` | file_line | ✓ pass |
+| `lib/inception.sh:178-210` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `lib/reviewer/recommendation_claims.py` | file | ✓ pass |
+| `lib/inception.sh:429` | file_line | ✓ pass |
+| `lib/inception.sh:521` | file_line | ✓ pass |
+| `T-1324` | task | ✓ pass |
+| `T-2862` | task | ✓ pass |
+| `T-2442` | task | ✓ pass |
+| `T-2857` | task | ✓ pass |
+| `T-2861` | task | ✓ pass |
+| `T-2204` | task | ✓ pass |
+| `T-2144` | task | ✓ pass |
+| `T-2145` | task | ✓ pass |
+
+### 2026-08-08T07:20:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

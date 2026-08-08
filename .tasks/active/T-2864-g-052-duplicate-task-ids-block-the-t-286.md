@@ -1,18 +1,10 @@
 ---
-id: T-2859
-name: "fw work-on usage text advertises a --type-less form that always fails off-tty"
+id: T-2864
+name: "G-052 duplicate task IDs block the T-2863 GO decision commit"
 description: >
-  bin/fw:6407 prints 'fw work-on "Fix login bug" --description "Details here"' as
-  a usage example with no --type. agents/task-create/create-task.sh:136 hard-fails
-  on missing --type whenever stdin is not a tty, which is every agent session, cron
-  job and dispatch worker. So the usage text shown at the moment a new user is stuck
-  hands them a command that cannot work. Reported live by the operator from a fresh
-  install: 'work-on: task creation failed — no task created, focus unchanged from
-  new installation', i.e. the first framework command a new project runs is a hard
-  stop. Fix is either a default --type or truthful usage text; choosing between them
-  is the task's decision.
+  G-052 duplicate task IDs block the T-2863 GO decision commit
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-07T17:10:29Z
-last_update: '2026-08-07T20:30:12Z'
-date_finished:
+created: 2026-08-08T07:23:40Z
+last_update: 2026-08-08T07:23:40Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -42,48 +34,41 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-07T20:30:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-07T20:30:12Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2859: fw work-on usage text advertises a --type-less form that always fails off-tty
+# T-2864: G-052 duplicate task IDs block the T-2863 GO decision commit
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The operator recorded GO on T-2863 via Watchtower. The decision was written to the
+task file but the commit was **refused** by the G-052 duplicate-task-ID gate, so the
+GO exists on disk and not in history. Reported verbatim:
+
+```
+T-2863: Decision recorded — GO
+⚠ Decision recorded but not committed: WARN: master-guard bypassed via FW_ALLOW_MASTER_COMMIT=1
+ERROR: Commit blocked — duplicate task IDs in staged tree
+Duplicate task IDs detected (G-052)
+```
+
+Two distinct things are visible here and only the first blocks: (a) duplicate task
+IDs refuse the commit; (b) the Watchtower decide path bypassed the T-2394 master
+guard via `FW_ALLOW_MASTER_COMMIT=1` — a Tier-2 bypass fired by a *human* action
+through the UI, which is the T-100201 conflict surfacing on a new path. (b) is
+recorded here as an observation and does not belong to this task's fix.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Duplicate task IDs identified, with the origin of each duplicate stated (which
+      file is authoritative and which is the stray)
+- [ ] Duplicates resolved so `fw audit` reports "No duplicate task IDs across
+      active/ and completed/"
+- [ ] The T-2863 GO decision is committed and pushed — the Decision block reaches
+      history rather than sitting uncommitted on disk
+- [ ] RCA states why a decision recorded through Watchtower could leave the
+      repository in a decided-but-uncommitted state, and what surfaces the next one
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -246,7 +231,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-07T17:10:29Z — task-created [task-create-agent]
+### 2026-08-08T07:23:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2859-fw-work-on-usage-text-advertises-a---typ.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2864-g-052-duplicate-task-ids-block-the-t-286.md
 - **Context:** Initial task creation

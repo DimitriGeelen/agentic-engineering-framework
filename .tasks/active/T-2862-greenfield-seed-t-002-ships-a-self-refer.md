@@ -1,8 +1,20 @@
 ---
 id: T-2862
-name: "greenfield seed T-002 ships a self-referential AC that deadlocks fw inception decide in every new project"
+name: "greenfield seed T-002 ships a self-referential AC that deadlocks fw inception
+  decide in every new project"
 description: >
-  lib/seeds/tasks/greenfield/T-002-define-project-goals.md:38 carries the Agent AC 'Go/no-go decision recorded: fw inception decide T-002 go --rationale ...' with no <!-- @auto-tick-on-decide --> marker. The decide preflight refuses while any agent AC is unchecked, but that AC IS the decision — it cannot be satisfied before the thing it gates. fw init seeds T-002 into every greenfield project, so the first inception a new user ever runs is un-completable by construction. Hit live by the operator in /opt/001-test-install: agent correctly refused the --i-am-human bypass and routed to fw task review; Watchtower then refused the GO with '1/3 agent AC unchecked'. The framework's own .tasks/templates/inception.md does NOT carry this AC and marks all three of its Agent ACs @auto-tick-on-decide. Fix: delete the tautological AC (preferred — an inception's decision is its terminal state, not a criterion) or add the marker. Sibling of T-2442 inception schema deadlock.
+  lib/seeds/tasks/greenfield/T-002-define-project-goals.md:38 carries the Agent AC
+  'Go/no-go decision recorded: fw inception decide T-002 go --rationale ...' with
+  no <!-- @auto-tick-on-decide --> marker. The decide preflight refuses while any
+  agent AC is unchecked, but that AC IS the decision — it cannot be satisfied before
+  the thing it gates. fw init seeds T-002 into every greenfield project, so the first
+  inception a new user ever runs is un-completable by construction. Hit live by the
+  operator in /opt/001-test-install: agent correctly refused the --i-am-human bypass
+  and routed to fw task review; Watchtower then refused the GO with '1/3 agent AC
+  unchecked'. The framework's own .tasks/templates/inception.md does NOT carry this
+  AC and marks all three of its Agent ACs @auto-tick-on-decide. Fix: delete the tautological
+  AC (preferred — an inception's decision is its terminal state, not a criterion)
+  or add the marker. Sibling of T-2442 inception schema deadlock.
 
 status: captured
 workflow_type: build
@@ -22,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:24:46Z
-last_update: 2026-08-07T17:24:46Z
-date_finished: null
+last_update: '2026-08-07T20:30:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +46,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-07T20:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-07T20:30:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2862: greenfield seed T-002 ships a self-referential AC that deadlocks fw inception decide in every new project
