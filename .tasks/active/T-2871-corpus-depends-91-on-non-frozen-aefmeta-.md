@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T14:36:28Z
-last_update: 2026-08-08T15:09:25Z
+last_update: 2026-08-08T17:07:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,35 +80,76 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Delivered as `tools/aef_meta_census.py` (reusable census + `DEPENDED_ON_KEYS` registry)
+plus `tests/unit/test_aef_meta_census.py` (6 tests). See `## Evidence` below.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A test enumerates the `aef:meta` keys our corpus actually **depends on** — not every
+- [x] A test enumerates the `aef:meta` keys our corpus actually **depends on** — not every
       key that appears — and records for each whether it is a frozen v1 governance meta-key
       (`{horizon, workflowType, tier, agentType}`) or one §2 says MAY change without a
       standard bump.
-- [ ] The test goes **red when a depended-on key disappears from the corpus**, which is the
+- [x] The test goes **red when a depended-on key disappears from the corpus**, which is the
       shape a 832-side rename takes on our side: the old key stops appearing, the new one is
       unrecognised, and today nothing notices.
-- [ ] ANTI-VACUITY: the red is **demonstrated**, not asserted — rename a depended-on key in a
+- [x] ANTI-VACUITY: the red is **demonstrated**, not asserted — rename a depended-on key in a
       throwaway copy of a fixture, show the test fails, and guard that the mutant fixture
       still parses as XML first (OBS-193: a mutant that dies at parse time is
       indistinguishable from the property going red).
-- [ ] The measurement in this task's description reproduces from a checked-in script/test
+- [x] The measurement in this task's description reproduces from a checked-in script/test
       rather than living only in the T-2870 artifact — 56 diagrams, 501 `<aef:meta>`
       elements, 652 attributes, 53 frozen (8%) / 599 non-frozen (91%), `state=` at 102.
       Counting by `grep -o '[a-zA-Z_]*='` is wrong: it matches `=` inside quoted `note="…"`
       values and invents keys that do not exist. Parse the XML.
-- [ ] `state=` is called out explicitly as the load-bearing exposure, with the reason: the
+- [x] `state=` is called out explicitly as the load-bearing exposure, with the reason: the
       `aef-task-lifecycle` state-carrier design (T-2624) rests on it, and the T-2621
       conformance rail audits transition parity *through* those carriers — so a silent loss
       of `state=` leaves the rail green while the map means nothing.
-- [ ] The task records what it does **not** do: it does not ask 832 to freeze more keys.
+- [x] The task records what it does **not** do: it does not ask 832 to freeze more keys.
       Their §2 note is deliberate and correct; our gap is having built on the unfrozen half
       without recording that we had.
+
+## Evidence
+
+**Depended-on set (code-level, evidence-based — grepped every `.get("meta")` /
+`_meta_attr` call site under `tools/`, not asserted from memory):**
+
+| key | frozen | consumers | live corpus count |
+|---|---|---|---:|
+| `state` | no | `corpus_conformance.py:asserted_transitions`, `:carrier_count`; `corpus_overlay.py:carriers` | 102 |
+| `workflowType` | yes | `bpmn_to_tasks.py:_is_inception_subprocess` | 10 |
+
+`note` (393 occurrences) is read only for display in `corpus_explain.py` — not a
+dependency. `corpus_lint.py:cross_map_typed_events` also reads `seamPending`, but the
+corpus currently carries **zero** — a dormant code path, not a corpus dependency, so it
+is documented in `tools/aef_meta_census.py`'s module docstring but excluded from
+`DEPENDED_ON_KEYS` (nothing observable breaks today if that rename happened, which is a
+different exposure than the two above).
+
+**Namespace discovery (new, not in the T-2870 report):** the corpus mixes at least
+three distinct `aef:` namespace URIs across its history
+(`http://anchorpoint.framework/aef/extensions`, `http://agentic.dev/schema/aef`,
+`urn:aef:workflow-designer`). An exact-URI `findall` undercounts — first pass got
+498 elements / 649 attributes / `workflowType`=7 instead of 501/652/10. Fixed by
+matching on local name (same convention as `bpmn_to_tasks.py`'s `_local`), which
+reproduces T-2870's numbers exactly.
+
+**Anti-vacuity, demonstrated against real fixtures + real consumers (not reimplementations):**
+- `state`: mutate `.context/designer/projects/aef-task-lifecycle`'s live BPMN
+  (`state="` → `staleState="`), assert still well-formed XML, feed to
+  `corpus_conformance.carrier_count` — drops from >0 to exactly 0 (the T-2621 rail
+  would report SKIP, not FAIL — silently, not loudly).
+- `workflowType`: mutate `tests/fixtures/bpmn/inception-gonogo-sample.bpmn` (T-2534's own
+  positive fixture) the same way, feed to `bpmn_to_tasks._is_inception_subprocess` —
+  flips True → False (the subProcess would compile as an ordinary composite, no error).
+
+**Not in scope (verbatim per task description):** this is not a request to 832 to
+freeze more keys. Their §2 "MAY change without a standard bump" note is deliberate and
+correct design. The gap this task closes is that our corpus depends on 2 of those
+unfrozen keys without ever having recorded that fact anywhere machine-checkable — now
+it does, in `tools/aef_meta_census.py:DEPENDED_ON_KEYS`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -142,6 +183,8 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_aef_meta_census.py -q > /tmp/.t2871_out 2>&1 && grep -q "6 passed" /tmp/.t2871_out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
