@@ -4204,3 +4204,10 @@ X'` returning empty group."
   date: 2026-08-08
   context: Added via context agent
   application: TBD
+- id: L-554
+  learning: "A safe-list of individually-harmless commands has a composition hazard that no single-entry review can catch: python3 -c and curl are each defensible on the allowlist, but 'curl -s http://host | python3 -c <write>' composes them into remote-content-to-disk with no active task, no focus check and nothing in the bypass log. Review allowlists as a PRODUCT of entries, not a list of them. Corollary for remedies: 'safe-list fewer helpers' cannot fix it, because the bare form needs no helper and is already open."
+  source: P-001
+  task: T-2876
+  date: 2026-08-08
+  context: Added via context agent
+  application: TBD

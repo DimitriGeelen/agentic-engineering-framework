@@ -1,11 +1,10 @@
 ---
-id: T-2879
-name: "Capture-verb exemption covers bare verbs only — real invocation shapes still
-  deadlock"
+id: T-2880
+name: "Safe-list early-return shadows the focus-drift gate — pattern 2 unreachable since T-2878"
 description: >
-  Capture-verb exemption covers bare verbs only — real invocation shapes still deadlock
+  is_bash_safe_command exits 0 before the focus-drift gate runs, so safe-listing a verb also exempts it from drift attribution. T-2878 safe-listed fw context add-*, which is exactly drift pattern 2 — measured: patterns 1 and 3 still reach the gate, pattern 2 does not.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-08T18:39:39Z
-last_update: '2026-08-08T18:45:12Z'
-date_finished:
+created: 2026-08-08T18:47:34Z
+last_update: 2026-08-08T18:47:34Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,139 +34,66 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-08T18:45:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-08T18:45:12Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 3
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 1
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
-      (no-signal); F1=0 (no-signal); F2=1 
-      (body/components:component-fabric-incidental)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2879: Capture-verb exemption covers bare verbs only — real invocation shapes still deadlock
+# T-2880: Safe-list early-return shadows the focus-drift gate — pattern 2 unreachable since T-2878
 
 ## Context
 
-T-2878 exempted the capture verbs from the Bash task gate and pinned it with a bats suite.
-Both the fix and the suite used the **bare** verb form. The first real use of it — one minute
-after closing T-2878, in the null-focus state T-2878 exists to serve — was BLOCKED.
+`check-active-task.sh:96` exits 0 as soon as `is_bash_safe_command` returns true. The
+focus-drift gate lives at line ~305. **So safe-listing a verb also exempts it from drift
+attribution** — two questions ("does this need a task?" and "is this attributed to the right
+task?") answered by one early return, and only the first one is actually being asked.
 
-The invocation was the shape an agent actually types:
+T-2878 safe-listed `fw context add-*`. That is exactly **drift pattern 2**. Measured:
 
-    cd /opt/999-Agentic-Engineering-Framework
-    bin/fw context add-learning "…" --task T-2878 2>&1 | tail -3
-    echo "…"; grep '^current_task' .context/working/focus.yaml
-
-**CORRECTED DIAGNOSIS — my first reading of this was wrong and the measurement says something
-wider.** I assumed the `cd` prefix, the `| tail -3` or the trailing `echo`/`grep` was what
-failed the compound, on the strength of 832 rail 470's pipeline bound. Measured:
-
-| shape | verdict |
+| command | reaches drift gate? |
 |---|---|
-| `bin/fw note "x"` | ALLOWED |
-| `bin/fw note "x" \| tail -3` | ALLOWED |
-| `cd /opt && bin/fw note "x"` | ALLOWED |
-| `bin/fw note "x"; echo done` | ALLOWED |
-| `bin/fw note "x" 2>&1` | **GATED** |
-| `bin/fw note "x" 2>&1 \| tail -3` | **GATED** |
+| `bin/fw task update T-9002 --status issues` (pattern 1) | yes |
+| `bin/fw context add-learning "x" --task T-9002` (pattern 2) | **NO — safe-listed, exits first** |
+| `git commit -m "T-9002: x"` (pattern 3) | yes |
 
-The pipeline bound was not the cause. **`2>&1` alone is**, and it is not specific to the
-capture verbs at all:
+One of the gate's three patterns has been unreachable since T-2878 shipped, this session.
+**I introduced this.** Before T-2878 the `context)` arm allowed only `status|focus|init`, so
+`add-*` fell through to the drift check as designed.
 
-| `bin/fw doctor 2>&1` | GATED | `bin/fw doctor` | ALLOWED |
-| `git status 2>&1` | GATED | `git status` | ALLOWED |
-| `ls -la 2>&1` | GATED | `ls -la` | ALLOWED |
-| `grep -n foo bar 2>&1` | GATED | `bin/fw doctor &` | ALLOWED |
+Discovered while verifying T-2879's pattern-2 anchor: the anchored regex extracts the right
+target in isolation, but the end-to-end probe showed no drift for any input — because the
+command never reaches the gate. **T-2879's anchor is correct and currently inert. It cannot
+fire until this is fixed**, so closing T-2879 on the isolation test alone would be shipping a
+fix that provably cannot run — the exact vacuity the anti-vacuity legs exist to prevent.
 
-**Root cause:** `_fw_chain_split` (safe-commands.sh:45) treats `&` as a chain separator
-unconditionally. `bin/fw note "x" 2>&1` splits into `bin/fw note "x" 2>` and `1`. Segment 2
-is the bare string `1`, which matches nothing in the allowlist, so the compound fails — the
-splitter manufactures an unsafe segment out of a file-descriptor duplication. Verified:
+**Why this is filed rather than fixed in T-2879:** the fix requires reordering the central
+governance hook. `CURRENT_TASK` is not read until line 186, *after* the early return, so the
+drift comparison cannot simply be hoisted — either the focus read moves up, or the safe
+branch stops exiting and instead sets a flag that the later no-active-task and stale-task
+checks honour. The second is likely right but changes what safe commands are exempt from at
+three separate checkpoints, which is not a change to rush. One bug, one task (§Task Sizing).
 
-    $ _fw_chain_split 'bin/fw note "x" 2>&1'
-    bin/fw note "x" 2>
-    1
-
-So the entire safe-list is neutralised by the most common redirect idiom in the codebase.
-The blast radius is concentrated exactly where the safe-list is load-bearing: it is only
-consulted when there is no active task or the focus has drifted — i.e. the recovery states
-where it is the one thing standing between the agent and a deadlock.
-
-Direction is fail-CLOSED (blocks work, permits nothing). By 832 rail 473 §3's argument that
-is not automatically the safe direction: a gate that refuses ordinary work trains the agent
-to reach for a workaround, and the workarounds available here — drop the `2>&1`, prefix
-`FW_SWITCH_FOCUS=1`, put it in a script — are respectively lossy, a logged bypass used for
-a false positive, and outside Tier 0's reach entirely (T-2742).
-
-**This is T-2876 IW-2 observed rather than argued.** IW-2 asks whether removing/limiting
-safe-list entries relocates a deadlock instead of removing it; it was unmeasured on both
-sides and 832 explicitly declined to press their one datapoint into service. Here the
-relocation happened to a fix I wrote myself, one minute after shipping it, and the bats
-suite stayed green throughout — because the suite tests the shape the fix was designed for.
-
-Second finding, same session: **832 rail 474 §4 is only half-fixed here, and my rail answer
-was wrong to say it does not reproduce.** T-2833 anchored drift pattern 3 (`git commit`) to
-the `-m`/`--message` flag value. Pattern 2 (`fw context add-*` + `--task T-NNNN`) is still
-two independent regexes ANDed, so any command carrying both tokens anywhere — including
-inside quoted test payloads or prose — extracts a target that need not be the command's own.
-Hit live while diagnosing this task. My earlier measurement missed it because I tested
-`fw context add-learning` shapes WITHOUT a `--task` flag, which cannot trip pattern 2.
+**832 has this too.** They vendor our hook and applied the same capture-verb exemption
+(their T-390, rail 474 §2), so the same pattern is shadowed on their side. Told them on the
+rail rather than leaving it for them to hit.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Measured: which compound shapes containing an exempt capture verb are GATED, recorded
-      as a table (bare / `2>&1` / `| tail` / `cd &&` / trailing `; echo`), so the boundary is
-      a fact rather than the one example that happened to be typed
-- [x] `_fw_chain_split` does not split on an `&` that is part of an fd duplication
-      (`2>&1`, `>&2`, `2>&-`), and STILL splits on `&&`, on background `&`, and on `>& file`
-      (which is a genuine write and must stay gated)
-- [x] Drift pattern 2 (`fw context add-*` + `--task`) is anchored to the flag value the same
-      way T-2833 anchored pattern 3, OR the residual is documented in-file with its reason if
-      bash regex cannot express the anchor
-      — **anchored + residual documented, but VERIFIED IN ISOLATION ONLY.** The end-to-end
-      probe showed no drift for any input, including the case that must still drift. Cause is
-      not the regex (direct test extracts `T-9002` correctly) but **T-2880**: the safe-list
-      early-return at `check-active-task.sh:96` exits before the drift gate, so pattern-2
-      commands never reach it. The anchor is correct and **inert until T-2880 lands**. Ticked
-      on the isolation evidence with the limitation stated, not on an end-to-end pass that
-      did not happen.
-- [x] Rail correction posted to 832: their 474 §4 reproduces on pattern 2, my "does not
-      reproduce" was measured only against shapes that cannot trip it
-      — posted at rail offset 476, together with the T-2880 shadowing (which they inherit,
-      having shipped the same exemption into the file they vendor from us)
-- [x] Regression coverage for the compound shape, with teeth by durable mutation of live
-      source (not `git show HEAD~N:` — T-2874)
-      — `tests/unit/fd_dup_not_chain_split.bats`, 8/8, no skips. Controls: `>& file` stays
-      gated (genuine write), `&& rm -rf` stays gated (chain still splits), `fw config set`
-      stays gated. Teeth force the guard false and assert the defect returns.
-- [x] T-2876 IW-2 updated with this as evidence: relocation is now OBSERVED, not projected,
-      and the observation is on our own remedy
-      — recorded as evidence RAISING THE PRIOR, explicitly not as an answer to IW-2's actual
-      question (whether grep/cat substitute for interactive python in recovery states).
-      Disposition stays `deferred`.
+- [ ] `fw context add-learning "x" --task T-OTHER` reaches the focus-drift gate again and
+      blocks, while STILL being allowed with no active task (the T-2878 property must not
+      regress — both facts asserted in the same suite)
+- [ ] The other two drift patterns still fire, and no new block appears for ordinary safe
+      commands (`fw doctor`, `git status`, `ls -la`) in the null-task state
+- [ ] The two questions are separated in the code with a comment saying why: "needs a task"
+      and "attributed to the right task" are independent, and one early return answered both
+- [ ] Teeth by durable mutation of live source (not `git show HEAD~N:` — T-2874), asserting
+      the shadowing returns when the reorder is reverted
+- [ ] T-2879's pattern-2 anchor verified end-to-end once this lands (it is inert until then)
+
+## Acceptance Criteria
+
+### Agent
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -201,24 +127,6 @@ Hit live while diagnosing this task. My earlier measurement missed it because I 
 -->
 
 ## Verification
-
-# 1. The fd-dup suite: fix legs + the two controls that define the fix's narrowness
-#    (`>& file` is a write and stays gated; `&&` still splits so an unsafe tail gates).
-out=$(bats tests/unit/fd_dup_not_chain_split.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
-# 2. No regression in the suites this change could plausibly break — the chain splitter's
-#    own suite and T-2878's, which exercises the same file from the other direction.
-out=$(bats tests/unit/safe_commands_chain.bats tests/unit/capture_verbs_nulltask.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
-# 3. Vendored parity — a fix only in agents/ is not the file consumers execute (T-2240).
-grep -q "T-2879" .agentic-framework/agents/context/lib/safe-commands.sh
-# 4. LIVE end-to-end: the shape that started this, through the real hook, null-focus.
-#    `|| rc=$?` required — the hook exits 2 by design and would abort the line under the
-#    gate's `set -e` before the assertion (T-2743; rehearsed with bash -c 'set -eo pipefail').
-r=$(mktemp -d); mkdir -p "$r/.tasks/active" "$r/.tasks/completed" "$r/.context/working"; printf "current_task:\n" > "$r/.context/working/focus.yaml"; rc=0; printf "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"bin/fw doctor 2>&1 | tail -3\"}}" | CLAUDECODE=1 PROJECT_ROOT="$r" CONTEXT_DIR="$r/.context" TASKS_DIR="$r/.tasks" bash agents/context/check-active-task.sh > /tmp/.t2879v 2>&1 || rc=$?; test "$rc" -eq 0
-#
-# NOT VERIFIED HERE, deliberately: the pattern-2 drift anchor. It is inert until T-2880
-# lands (safe-list early-return shadows the drift gate), so any line asserting it would
-# pass without exercising anything — the vacuity these blocks exist to prevent. The
-# end-to-end assertion for it belongs in T-2880.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -348,7 +256,7 @@ r=$(mktemp -d); mkdir -p "$r/.tasks/active" "$r/.tasks/completed" "$r/.context/w
 
 ## Updates
 
-### 2026-08-08T18:39:39Z — task-created [task-create-agent]
+### 2026-08-08T18:47:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2879-capture-verb-exemption-covers-bare-verbs.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2880-safe-list-early-return-shadows-the-focus.md
 - **Context:** Initial task creation

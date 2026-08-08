@@ -108,7 +108,20 @@ cost_estimate_proposed:
     service (their base64-decode observation argues removal costs LESS in that specific case
     only, and they refused to inflate it — rail 473 §6). So it remains unmeasured on both
     sides. MUST be measured before the removal lands, because it decides whether the fix is
-    cheap or relocates the deadlock. Original text below.
+    cheap or relocates the deadlock.
+    EVIDENCE ADDED 2026-08-08 (T-2879) — relocation is now OBSERVED, not projected, though
+    still not the general answer. T-2878 exempted the capture verbs from the Bash gate and
+    pinned it with bats. The first real use of that fix, one minute after closing the task
+    and in the null-focus state it exists to serve, was BLOCKED — not by the verbs but by
+    `2>&1`, which `_fw_chain_split` treated as a chain separator, splitting `fw note "x" 2>&1`
+    into `fw note "x" 2>` and `1` and failing the compound. The bats suite stayed green
+    throughout because it tested the bare verb form the fix was designed for. So a safe-list
+    remedy DID relocate a deadlock rather than remove it, immediately, for the author, with
+    green tests. That does not answer IW-2's actual question (whether grep/cat substitute for
+    interactive python in recovery states) and must not be read as answering it — it raises
+    the prior that safe-list surgery relocates rather than removes, and it demonstrates the
+    specific failure mode to design the IW-2 measurement against: test the shape you will
+    type, not the shape the fix was written for. Disposition stays DEFERRED. Original below.
   original_rationale: Explicitly the JUDGEMENT half of §4, separated from the structural half so it
     cannot ride on the latter's confidence. The framework has a documented history of remedies
     that relocate a deadlock rather than remove it (T-2821 moved the empty-worktree deadlock;
