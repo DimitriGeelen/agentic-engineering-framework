@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2866: Untrack .revisits-undated.txt: a tracked signal file cannot honour the absent==empty contract
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T12:09:31Z
+# ============================================================================
+
+task_id: T-2866
+task_name: "Untrack .revisits-undated.txt: a tracked signal file cannot honour the absent==empty contract"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T12:05:34Z
+completed: 2026-08-08T12:09:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-08T14:09:04+02:00
+last_commit: 2026-08-08T14:09:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  untrack .revisits-undated.txt — a tracked signal cannot honour absent==empty. register fabric card for revisit_signal_untracked.bats
+
+# Key outcomes
+outcomes:
+  - '`.context/working/.revisits-undated.txt` is untracked (`git ls-files` returns'
+  - '`.gitignore` covers **both** signal files — the undated one *and*'
+  - '`tests/unit/revisit_signal_untracked.bats` fails if either signal file is'
+  - 'ANTI-VACUITY: the test is shown to go red while the file is still tracked —'
+  - 'The T-2865 suite still passes 8/8 after the change (the scanner''s write and'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/.revisits-undated.txt'
+  - '.fabric/components/tests-unit-revisit_signal_untracked.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-2866-untrack-revisits-undatedtxt-a-tracked-si.md'
+  - 'tests/unit/revisit_signal_untracked.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T14:09:04'
+    action: 'T-2866: untrack .revisits-undated.txt — a tracked signal cannot honour absent==empty'
+  - time: '2026-08-08T14:09:16'
+    action: 'T-2866: register fabric card for revisit_signal_untracked.bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 5
+  lines_added: 395
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2866-untrack-revisits-undatedtxt-a-tracked-si.md
+generated_by: context-agent-hybrid
