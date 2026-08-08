@@ -30930,3 +30930,93 @@ scan_id: R-fa34f4bc
 task_id: T-2874
 payload:
   task_file: .tasks/active/T-2874-fw-context-focus-accepts-completed-task-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T17:03:06Z'
+scan_id: R-f09061c6
+task_id: T-2875
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T17:03:06Z'
+scan_id: R-f09061c6
+task_id: T-2875
+payload:
+  task_file: .tasks/active/T-2875-focus-drift-block-message-must-not-recom.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T17:04:16Z'
+scan_id: R-e1896953
+task_id: T-2875
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T17:04:16Z'
+scan_id: R-e1896953
+task_id: T-2875
+payload:
+  task_file: .tasks/active/T-2875-focus-drift-block-message-must-not-recom.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T17:05:20Z'
+scan_id: R-f739b8b2
+task_id: T-2875
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T17:05:20Z'
+scan_id: R-f739b8b2
+task_id: T-2875
+payload:
+  task_file: .tasks/active/T-2875-focus-drift-block-message-must-not-recom.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T17:06:20Z'
+scan_id: R-a22c4358
+task_id: T-2875
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T17:06:20Z'
+scan_id: R-a22c4358
+task_id: T-2875
+payload:
+  task_file: .tasks/active/T-2875-focus-drift-block-message-must-not-recom.md
+---
+kind: scan_emitted
+timestamp: '2026-08-08T17:06:38Z'
+scan_id: R-07f3a83e
+task_id: T-2875
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-08T17:06:38Z'
+scan_id: R-07f3a83e
+task_id: T-2875
+payload:
+  task_file: .tasks/active/T-2875-focus-drift-block-message-must-not-recom.md

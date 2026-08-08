@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2875: Focus-drift block message must not recommend a remedy the framework refuses
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-08T17:06:49Z
+# ============================================================================
+
+task_id: T-2875
+task_name: "Focus-drift block message must not recommend a remedy the framework refuses"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-08T16:57:38Z
+completed: 2026-08-08T17:06:21Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Focus-drift block message must not recommend a remedy the framework refuses
+
+# Key outcomes
+outcomes:
+  - 'When the drift target resolves to a **completed** task, the block message does NOT'
+  - 'When the drift target is completed, the message names a remedy that works, and states'
+  - 'Every command the message names in the completed-target branch is verified to actually'
+  - 'When the drift target is **active**, the message is unchanged (option 1 still offered)'
+  - 'bats coverage for both branches, including an anti-vacuity leg that re-opens the defect'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2875-focus-drift-block-message-must-not-recom.md
+generated_by: context-agent-hybrid

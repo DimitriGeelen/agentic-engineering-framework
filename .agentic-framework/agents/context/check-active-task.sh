@@ -374,9 +374,40 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
             echo "  Framework rule: actions on a task should run with focus on" >&2
             echo "  that task. To proceed, either:" >&2
             echo "" >&2
-            echo "    1. Switch focus first:" >&2
-            echo "       $(_fw_cmd) context focus $TARGET_TASK" >&2
-            echo "" >&2
+            # T-2875: only offer "switch focus" when focus CAN actually point there.
+            #
+            # T-2874 made `fw context focus` refuse a completed task id, so for a
+            # completed target this remedy is a command the framework itself refuses —
+            # the agent follows the instruction, gets a second refusal, and has to find
+            # options 2/3 unaided. The completed target is the COMMON case here: the
+            # usual trigger is a follow-up commit attributed to a task that just closed.
+            #
+            # Not a T-2874 regression. Before T-2874 this remedy appeared to work (exit
+            # 0) and then deadlocked every later gated call on "Task X is not active";
+            # T-2874 changed it from silently broken to loudly broken. Both wrong, only
+            # the second visible.
+            #
+            # NO REOPEN COMMAND IS OFFERED, deliberately. `fw task update <id> --status
+            # started-work` does not move a file from completed/ back to active/ — no
+            # such move exists in update-task.sh — so focus would refuse it again. That
+            # would be a second dead remedy replacing the first, which is the whole
+            # defect. Only mechanisms verified to work are named (L-399 / T-1890).
+            #
+            # The completed branch prints "2." and "3." with no "1." — deliberate, do not
+            # renumber. The digits identify MECHANISMS, not positions: option 3 is
+            # FW_SWITCH_FOCUS=1 in both branches, in the bypass log, and in every prior
+            # session transcript. Renumbering to 1./2. here would make "option 2" mean
+            # --switch-focus in one branch and FW_SWITCH_FOCUS=1 in the other.
+            if [ -n "$(find_task_file "$TARGET_TASK" active)" ]; then
+                echo "    1. Switch focus first:" >&2
+                echo "       $(_fw_cmd) context focus $TARGET_TASK" >&2
+                echo "" >&2
+            else
+                echo "    ($TARGET_TASK is not active, so focus cannot point at it —" >&2
+                echo "     'context focus' would refuse it. Use 2 or 3 below; the" >&2
+                echo "     action stays attributed to $TARGET_TASK either way.)" >&2
+                echo "" >&2
+            fi
             echo "    2. Append --switch-focus to a fw command (logged Tier 2)." >&2
             echo "       Works for: fw task update, fw context add-*." >&2
             echo "" >&2

@@ -6290,3 +6290,11 @@ Verification caught its own drift: the first gre'
 FW_SWITCH_FOCUS=1 git commit -q -m "T-2874: file 832s focus.sh scope-asymmetry finding (verified in our tree)
 
 rail 461. focus.sh:35 writes '
+- timestamp: '2026-08-08T16:51:12Z'
+  task: 'T-2871'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2874'
+  command: 'FW_SWITCH_FOCUS=1 git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -m "T-2874: refresh vendored copies — focus.sh active-scope fix + VERSION 1.6.399
+
+The self-vendor gate (T-2240) blocked'
