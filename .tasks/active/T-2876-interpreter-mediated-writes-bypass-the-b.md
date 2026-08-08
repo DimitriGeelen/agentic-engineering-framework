@@ -128,15 +128,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -193,7 +193,11 @@ Measured, not argued: 7 write idioms reach the filesystem with no active task, s
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Measured, not argued: 7 write idioms reach the filesystem with no active task, skipping the task check, G-020 and focus-drift, leaving nothing in the bypass log. Direction is settled by 832's row-7 argument — subprocess.call(cmd, shell=True) carries no textual signature at all and re-admits the five os.* names the deny-list explicitly denies, so enumeration is not a slow fix, it is void. GO rather than DEFER because the evidence is complete on both sides and the remedy's assumed cost is illusory: Verification-block python runs inside P-011 via update-task.sh, where PreToolUse hooks do not fire, so removal does not touch that population. Open question is scope of removal, not whether.
+
+**Date**: 2026-08-08T18:11:10Z
 
 ## Updates
 
@@ -202,3 +206,8 @@ Measured, not argued: 7 write idioms reach the filesystem with no active task, s
 
 ### 2026-08-08T17:14:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-08T18:11:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Measured, not argued: 7 write idioms reach the filesystem with no active task, skipping the task check, G-020 and focus-drift, leaving nothing in the bypass log. Direction is settled by 832's row-7 argument — subprocess.call(cmd, shell=True) carries no textual signature at all and re-admits the five os.* names the deny-list explicitly denies, so enumeration is not a slow fix, it is void. GO rather than DEFER because the evidence is complete on both sides and the remedy's assumed cost is illusory: Verification-block python runs inside P-011 via update-task.sh, where PreToolUse hooks do not fire, so removal does not touch that population. Open question is scope of removal, not whether.
