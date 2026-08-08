@@ -59,14 +59,41 @@ do_capture() {
     shift || true
 
     local task="" tags="" urgent=false
+    # T-2867: collect unused positional args instead of discarding them.
+    # The old loop ended `*) shift` — every positional after the text vanished
+    # silently. Combined with the dispatch catch-all (`*) do_capture "$@"` below),
+    # `fw note add "a real observation"` captured the word `add` and threw the
+    # observation away, exit 0, printing the wrong text back as confirmation.
+    # Measured cost: 26 of 191 observations were bare sub-verbs (add x16,
+    # resolve x6, show x3, status x1) — 26 notes someone meant to record and lost.
+    local -a strays=()
     while [ $# -gt 0 ]; do
         case "$1" in
             --task|-t)   task="$2"; shift 2 ;;
             --tag)       tags="$2"; shift 2 ;;
             --urgent|-u) urgent=true; shift ;;
-            *) shift ;;
+            *) strays+=("$1"); shift ;;
         esac
     done
+
+    # Refuse rather than discard. The guard is on the general defect — ANY unused
+    # positional — not on a blocklist of sub-verb names, because the next lost
+    # note will use a word nobody thought to list.
+    if [ ${#strays[@]} -gt 0 ]; then
+        echo -e "${RED}ERROR: fw note received ${#strays[@]} argument(s) it cannot use.${NC}" >&2
+        echo "" >&2
+        echo "  Captured as the note text : \"$text\"" >&2
+        echo "  Would have been DISCARDED : $(printf '"%s" ' "${strays[@]}")" >&2
+        echo "" >&2
+        echo "fw note takes the whole observation as ONE quoted argument. There is no" >&2
+        echo "'add' sub-verb — the text goes directly after 'note':" >&2
+        echo "" >&2
+        echo "  fw note \"$(printf '%s ' "${strays[@]}" | sed 's/[[:space:]]*$//')\"" >&2
+        echo "" >&2
+        echo "Options go after the text: --task T-XXX, --tag <tag>, --urgent." >&2
+        echo "Sub-verbs that DO exist: list, count, triage, promote, dismiss." >&2
+        exit 1
+    fi
 
     # Auto-detect task context if not provided
     if [ -z "$task" ]; then

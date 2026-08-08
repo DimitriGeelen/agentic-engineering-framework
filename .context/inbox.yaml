@@ -84,7 +84,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-012
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-14 22:03:09+00:00
   context_task: T-1257
   tags: []
@@ -129,14 +129,14 @@ observations:
   status: promoted
   promoted_to: task
 - id: OBS-017
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-25 11:51:18+00:00
   context_task: T-1452
   tags: []
   status: dismissed
   promoted_to: null
 - id: OBS-018
-  text: resolve
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "resolve" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-25 12:17:21+00:00
   context_task: T-1454
   tags: []
@@ -152,14 +152,14 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-020
-  text: resolve
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "resolve" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-25 19:40:52+00:00
   context_task: null
   tags: []
   status: dismissed
   promoted_to: null
 - id: OBS-021
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-25 20:24:19+00:00
   context_task: null
   tags: []
@@ -186,7 +186,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-024
-  text: show
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "show" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-26 09:00:08+00:00
   context_task: null
   tags: []
@@ -202,7 +202,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-026
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-26 11:33:45+00:00
   context_task: null
   tags: []
@@ -218,14 +218,14 @@ observations:
   status: promoted
   promoted_to: task
 - id: OBS-028
-  text: resolve
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "resolve" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-26 14:27:31+00:00
   context_task: T-1511
   tags: []
   status: dismissed
   promoted_to: null
 - id: OBS-029
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-04-26 21:51:15+00:00
   context_task: null
   tags: []
@@ -306,7 +306,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-037
-  text: resolve
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "resolve" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-05-29 13:50:46+00:00
   context_task: T-1062
   tags: []
@@ -344,7 +344,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-042
-  text: show
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "show" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-05-30 19:37:50+00:00
   context_task: T-1687
   tags: []
@@ -374,7 +374,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-045
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-05-31 19:57:00+00:00
   context_task: T-2074
   tags:
@@ -393,7 +393,7 @@ observations:
   status: promoted
   promoted_to: task
 - id: OBS-047
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-01 09:05:43+00:00
   context_task: T-1820
   tags:
@@ -411,7 +411,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-049
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-05 20:35:34+00:00
   context_task: T-2219
   tags:
@@ -419,7 +419,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-050
-  text: add
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-05 20:41:45+00:00
   context_task: T-2219
   tags:
@@ -427,14 +427,14 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-051
-  text: status
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "status" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-07 12:02:45+00:00
   context_task: T-1687
   tags: []
   status: dismissed
   promoted_to: null
 - id: OBS-052
-  text: resolve
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "resolve" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-07 12:05:26+00:00
   context_task: T-1687
   tags: []
@@ -649,21 +649,21 @@ observations:
   status: promoted
   promoted_to: task
 - id: OBS-077
-  text: "add"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-15T17:59:35Z
   context_task: T-1700
   tags: []
   status: dismissed
   promoted_to: null
 - id: OBS-078
-  text: "add"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-15T18:06:48Z
   context_task: T-1700
   tags: []
   status: dismissed
   promoted_to: null
 - id: OBS-079
-  text: "add"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-20T06:56:56Z
   context_task: T-2440
   tags: []
@@ -684,7 +684,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-082
-  text: "add"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-21T11:54:52Z
   context_task: null
   tags: []
@@ -698,7 +698,7 @@ observations:
   status: dismissed
   promoted_to: null
 - id: OBS-084
-  text: "resolve"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "resolve" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-22T02:36:53Z
   context_task: null
   tags: []
@@ -712,14 +712,14 @@ observations:
   status: promoted
   promoted_to: task
 - id: OBS-086
-  text: "add"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-22T09:30:41Z
   context_task: T-2459
   tags: []
   status: dismissed
   promoted_to: null
 - id: OBS-087
-  text: "add"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-06-22T09:30:41Z
   context_task: T-2459
   tags: []
@@ -810,7 +810,7 @@ observations:
   status: pending
   promoted_to: null
 - id: OBS-100
-  text: "add"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "add" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-07-29T17:56:09Z
   context_task: T-2682
   tags: []
@@ -1461,9 +1461,16 @@ observations:
   status: pending
   promoted_to: null
 - id: OBS-194
-  text: "show"
+  text: '[T-2867 LOST NOTE] the captured text was the bare sub-verb "show" — the real observation was silently discarded by fw note before the T-2867 guard. Unrecoverable: it was never written anywhere.'
   captured: 2026-08-08T12:14:01Z
   context_task: T-2862
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-195
+  text: "T-2867: fw note now refuses unused positional args instead of discarding them — 26 observations were lost to the old catch-all before this guard"
+  captured: 2026-08-08T12:20:52Z
+  context_task: T-2867
   tags: []
   status: pending
   promoted_to: null
