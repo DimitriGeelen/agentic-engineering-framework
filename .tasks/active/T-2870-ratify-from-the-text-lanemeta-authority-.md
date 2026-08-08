@@ -4,9 +4,9 @@ name: "ratify from the text: laneMeta authority class + workflowMeta kind= carri
 description: >
   ratify from the text: laneMeta authority class + workflowMeta kind= carrier gap in frozen mapping-v1
 
-status: started-work
+status: work-completed
 workflow_type: specification
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T14:30:52Z
-last_update: 2026-08-08T14:30:52Z
-date_finished: null
+last_update: 2026-08-08T14:44:05Z
+date_finished: 2026-08-08T14:44:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -207,6 +207,56 @@ test "$(grep -c 'workflowMeta' policy/standards/aef-bpmn-mapping-v1-partI.md)" =
 # family: SIGPIPE, test-runner exit codes, and now informational-nonzero producers.
 bash -c 'set -eo pipefail; d=$(mktemp -d); s=tests/fixtures/aef-bpmn/session-handover.bpmn; bin/fw bpmn compile "$s" 2>/dev/null > "$d/base"; sed "s/height=\"150\"/height=\"999\"/" "$s" > "$d/h.bpmn"; sed "s/authority=\"sovereignty\"/authority=\"initiative\"/" "$s" > "$d/a.bpmn"; bin/fw bpmn compile "$d/h.bpmn" 2>/dev/null > "$d/h"; bin/fw bpmn compile "$d/a.bpmn" 2>/dev/null > "$d/a"; test -s "$d/base" && test -s "$d/h" && test -s "$d/a"; diff -q "$d/base" "$d/h" >/dev/null; ! diff -q "$d/base" "$d/a" >/dev/null; delta=$(diff "$d/base" "$d/a" || true); echo "$delta" | grep -q "owner: agent"; rm -rf "$d"'
 
+## Recommendation
+
+**Recommendation:** GO — endorse both rulings as AEF's ratification position and let them go
+to 832 on the rail.
+
+**Rationale:** Every ruling here is derived from the vendored bytes, and the two that carry
+weight are the two I would most expect an operator to want to check — so here is why I think
+they hold rather than why they are safe.
+
+*Ruling 2 (NO on the form)* rests on a count anyone can repeat: `aef:workflowMeta` occurs
+zero times in the frozen standard. That is not an interpretive claim. 832 proposed hanging a
+new attribute on a carrier their own frozen document never admits, and the escape hatch that
+would have licensed it (§2's editor-internal note) is textually scoped to a different
+element. Saying yes would ratify a key onto a carrier with no class, no value set, and no
+conformance clause — and `kind=` is the one datum that decides whether the forward compile
+runs at all. We lose nothing by saying no to the form: we told them yes to the capability and
+named the two-step path that gets it there properly.
+
+*Flag C (their document is v1.1, not v1)* is the one they explicitly invited us to challenge,
+which is exactly why it should not be answered with deference. The decisive evidence is
+internal: §2 is the section that defines what "frozen" means for this standard, and it
+contains a struck-through row annotated *"in v1.1"*. A frozen table with a v1.1 edit in it
+has already answered the question. The remedy we recommend is the cheap one (retitle plus a
+changelog), not the expensive one (split the document), and we say plainly that it breaks our
+own pin and that this is the pin working rather than failing.
+
+The one thing I would flag against myself: the empirical leg **refuted** my own prediction.
+I predicted element-granular diffing would cause spurious task-graph churn; measurement shows
+our compiler is conformant and unaffected. The amendment we ask 832 for therefore fixes no
+live bug of ours — it removes an ambiguity that a third-party implementation would resolve
+wrongly. That is a weaker case than the artifact's first draft made, and it is stated that
+way in the text rather than quietly dropped.
+
+**Evidence:**
+- `docs/reports/T-2870-mapping-v1-rulings.md` — full derivations, all six rulings, quoted clauses.
+- `grep -c workflowMeta policy/standards/aef-bpmn-mapping-v1-partI.md` → **0** (Ruling 2's basis).
+- Measurement, both arms non-empty-guarded: `@height` 150→999 ⇒ byte-identical 107-line
+  output; `@authority` sovereignty→initiative ⇒ exactly one line, `owner: human`→`owner: agent`.
+  Control proves the instrument sensitive.
+- Corpus exposure by XML parse: 56 diagrams, 501 `<aef:meta>` elements, 652 attributes,
+  **91% on non-frozen keys**; `state=` 102 uses. Filed as T-2871.
+- `bats tests/unit/standard_pin.bats` green — the bytes every ruling cites are still on 832's pin.
+- Self-correction recorded, not buried: OBS-197 (control shared the arms' fatal defect and
+  certified an instrument measuring nothing), OBS-198 (`diff | grep -q` fails under pipefail
+  precisely when it succeeds), plus a learning on absolute-vs-relative guards.
+
+**What GO authorises:** posting these as AEF's positions on the 832 rail. Nothing in the
+standard or our corpus changes as a result — Ruling 2 asks 832 to amend their document, and
+T-2871 (already filed) is where our own exposure gets fixed.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -274,3 +324,19 @@ bash -c 'set -eo pipefail; d=$(mktemp -d); s=tests/fixtures/aef-bpmn/session-han
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2870-ratify-from-the-text-lanemeta-authority-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b9c7a0e6
+- **Timestamp:** 2026-08-08T14:44:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-08-08T14:44:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

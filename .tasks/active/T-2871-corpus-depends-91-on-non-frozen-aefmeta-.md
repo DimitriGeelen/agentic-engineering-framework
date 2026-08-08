@@ -1,10 +1,22 @@
 ---
 id: T-2871
-name: "corpus depends 91% on non-frozen aef:meta keys — no guard fires if 832 renames one"
+name: "corpus depends 91% on non-frozen aef:meta keys — no guard fires if 832 renames
+  one"
 description: >
-  Measured under T-2870 via XML parse of 56 diagrams (501 <aef:meta> elements, 652 attributes): only 53 attributes (8%) use the frozen v1 governance meta-keys {horizon, workflowType, tier, agentType}. 599 (91%) use keys mapping-v1 §2 explicitly says MAY change without a standard bump: note=393, state=102, terminalKind=74, triggeredBy=18, decisionOwner=6, softFail=2, guard=2, exitCode=1, gate=1. The exposure that matters is state= (102 uses): the state-carrier design of aef-task-lifecycle (T-2624) rests on it and the T-2621 conformance rail audits transition parity THROUGH those carriers. If 832 renames or drops state=, our maps silently lose state semantics with no test going red. Fix: pin the set of aef:meta keys our corpus depends on so a rename surfaces red. Anti-vacuity: the pin must be shown to go red when a depended-on key is renamed in a fixture. NOT a request to 832 to freeze more keys — their §2 note is deliberate and correct; the gap is that we built on the unfrozen half without recording it.
+  Measured under T-2870 via XML parse of 56 diagrams (501 <aef:meta> elements, 652
+  attributes): only 53 attributes (8%) use the frozen v1 governance meta-keys {horizon,
+  workflowType, tier, agentType}. 599 (91%) use keys mapping-v1 §2 explicitly says
+  MAY change without a standard bump: note=393, state=102, terminalKind=74, triggeredBy=18,
+  decisionOwner=6, softFail=2, guard=2, exitCode=1, gate=1. The exposure that matters
+  is state= (102 uses): the state-carrier design of aef-task-lifecycle (T-2624) rests
+  on it and the T-2621 conformance rail audits transition parity THROUGH those carriers.
+  If 832 renames or drops state=, our maps silently lose state semantics with no test
+  going red. Fix: pin the set of aef:meta keys our corpus depends on so a rename surfaces
+  red. Anti-vacuity: the pin must be shown to go red when a depended-on key is renamed
+  in a fixture. NOT a request to 832 to freeze more keys — their §2 note is deliberate
+  and correct; the gap is that we built on the unfrozen half without recording it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T14:36:28Z
-last_update: 2026-08-08T14:36:28Z
-date_finished: null
+last_update: '2026-08-08T14:45:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +46,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-08T14:44:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-08T14:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2871: corpus depends 91% on non-frozen aef:meta keys — no guard fires if 832 renames one
@@ -46,8 +86,29 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A test enumerates the `aef:meta` keys our corpus actually **depends on** — not every
+      key that appears — and records for each whether it is a frozen v1 governance meta-key
+      (`{horizon, workflowType, tier, agentType}`) or one §2 says MAY change without a
+      standard bump.
+- [ ] The test goes **red when a depended-on key disappears from the corpus**, which is the
+      shape a 832-side rename takes on our side: the old key stops appearing, the new one is
+      unrecognised, and today nothing notices.
+- [ ] ANTI-VACUITY: the red is **demonstrated**, not asserted — rename a depended-on key in a
+      throwaway copy of a fixture, show the test fails, and guard that the mutant fixture
+      still parses as XML first (OBS-193: a mutant that dies at parse time is
+      indistinguishable from the property going red).
+- [ ] The measurement in this task's description reproduces from a checked-in script/test
+      rather than living only in the T-2870 artifact — 56 diagrams, 501 `<aef:meta>`
+      elements, 652 attributes, 53 frozen (8%) / 599 non-frozen (91%), `state=` at 102.
+      Counting by `grep -o '[a-zA-Z_]*='` is wrong: it matches `=` inside quoted `note="…"`
+      values and invents keys that do not exist. Parse the XML.
+- [ ] `state=` is called out explicitly as the load-bearing exposure, with the reason: the
+      `aef-task-lifecycle` state-carrier design (T-2624) rests on it, and the T-2621
+      conformance rail audits transition parity *through* those carriers — so a silent loss
+      of `state=` leaves the rail green while the map means nothing.
+- [ ] The task records what it does **not** do: it does not ask 832 to freeze more keys.
+      Their §2 note is deliberate and correct; our gap is having built on the unfrozen half
+      without recording that we had.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,3 +275,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2871-corpus-depends-91-on-non-frozen-aefmeta-.md
 - **Context:** Initial task creation
+
+### 2026-08-08T14:44:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
