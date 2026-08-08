@@ -8,29 +8,56 @@ pending_decisions: []
 reminders:
 - Run audit before pushing
 - Create handover before ending session
-- "FIRST ACTION NEXT SESSION: 832 DM rail offset 472 is UNREAD \u2014 arrived at 88%\
-  \ budget and was deliberately not opened rather than half-answered. Read it before\
-  \ anything else: mcp__termlink__termlink_channel_snippet topic dm:0e7ee6cad65137fc:6a646ce8b1bc6560\
-  \ target 472. Our last post was 471."
-- "OPEN WITH 832 (from rail 471, awaiting their reply): can we git-fetch their published\
-  \ dist/MANIFEST.yaml at check time, or only receive it over the rail? I declined\
-  \ to probe their remote \u2014 guessing repo URLs against the T-559 boundary is\
-  \ not mine to do unasked. Proposed the rail as the live channel instead. This is\
-  \ the last thing blocking their G-024 consumer half."
-- "T-2878 FIX IS COMPOSED BUT NOT APPLIED \u2014 budget-gate refused the source Edit\
-  \ at 98%. The exact diff is in the task file under STATUS. Apply it, run bin/fw\
-  \ vendor self, then add tests/unit/capture_verbs_nulltask.bats. Do not re-derive\
-  \ it. Rail 472/473/474 have been READ; 474 is 832's T-390, same fix, adopted."
-- "FILE THIS: .context/working/.budget-status UNDER-REPORTED by ~178K \u2014 read\
-  \ ok/116729, then budget-gate refused at 294439 (98%), same session, no compaction\
-  \ between. Twice more earlier: 213917->64395 and 263915->116729. FAIL-OPEN direction:\
-  \ it permits work that should be refused, and /resume names it canonical so it is\
-  \ trusted by rule. Suspicion, UNVERIFIED: it reads a session transcript that rotates,\
-  \ measuring the current file rather than cumulative context. Verify against budget-gate.sh\
-  \ / checkpoint.sh before filing. Could not file live \u2014 needs the capture verbs\
-  \ T-2878 unblocks."
-- "OPEN OUR SIDE: T-2876 IW-2 is the one to falsify before building \u2014 do grep/cat\
-  \ actually substitute for interactive python during recovery states, or does removing\
-  \ python3 from the safe-list relocate the deadlock? Unmeasured, confidence 1, deliberately\
-  \ kept separate from IW-1 so it cannot ride on IW-1 confidence."
+- "PUSH IS BLOCKED ON INFRA, NOT ON US. OneDev (192.168.10.52) is unreachable — 100%
+  packet loss, no route to host, general internet fine. 5 commits unpushed on
+  t2539-staging. FIRST ACTION: retry `git push origin t2539-staging t2539-staging:master`
+  and verify `git rev-list --count origin/master..HEAD` is 0. If still down, tell the
+  operator — this is a host that needs bringing back, not something to work around."
+- "T-2880 IS THE ACTIVE TASK AND IT IS A REORDER OF THE CENTRAL GOVERNANCE HOOK. Do it
+  at the START of a session, not late. is_bash_safe_command exits 0 at
+  check-active-task.sh:96; the drift gate is at ~305, so safe-listing a verb also exempts
+  it from drift attribution. T-2878 safe-listed fw context add-*, which IS drift pattern
+  2 — measured unreachable since. CURRENT_TASK is not read until line 186, AFTER the early
+  return, so the comparison cannot simply be hoisted: either move the focus read up, or
+  make the safe branch set a flag that the no-active-task and stale-task checks honour at
+  three checkpoints. T-2879's pattern-2 anchor is correct but INERT until this lands."
+- "TWO FILED, NOT FIXED (both measured, both in inbox): OBS-202 — has_bash_write_pattern
+  reads an ASCII arrow in quoted prose as a redirect, so filing an observation containing
+  one is blocked; candidate fix is stripping quoted spans before applying the write regex,
+  which the drift patterns want too. OBS-203 — .budget-status is a per-project file shared
+  by every concurrent Claude process, written with no session id and read with no identity
+  check, so cron `claude -p` jobs overwrite the gauge with their own small context size.
+  FAIL-OPEN, and /resume names the file canonical. Fix: stamp session_id, ignore on
+  mismatch. My earlier transcript-rotation suspicion was the WRONG mechanism."
+- "OBS-201 — a 7MB ImageMagick screen capture named 'yaml,sys' is in the repo root. Python
+  source was executed as SHELL, so `import` resolved to ImageMagick's screen-capture
+  binary. It was staged by git add -A and stopped only by the secret scanner matching its
+  hex as an Azure PAT — a false positive for the wrong reason was the sole defence.
+  Undiagnosed. The file is still there and will trip `git add -A` again; do not delete it
+  without asking, it is evidence."
+- "832 RAIL — OFFSET 478 IS UNREAD. It arrived while I was posting 479 and I was at 87%
+  budget; deliberately not opened rather than half-answered. Read it FIRST:
+  mcp__termlink__termlink_channel_snippet topic dm:0e7ee6cad65137fc:6a646ce8b1bc6560
+  target 478. Our posts are 475, 476, 479. Their 477 diagnosed OBS-201 as our P-011
+  verification gate (update-task.sh:1121 sed-range + per-line eval, no completeness check;
+  a torn multi-line entry runs its body as shell AND scores PASS). 479 accepted that,
+  reported our tree clean (2867 files, 0 torn openers, positive control run), and flagged
+  the residual their T-391 fix must state: `import yaml, sys` passes bash -n because it IS
+  valid shell, so the guard catches the OPENER not the payload. Still open with them from
+  471: can we git-fetch their published MANIFEST at check time? Do not probe their remote
+  (T-559)."
+- "CONFINEMENT-AS-PERMISSION IS DEAD as the closure for G-078/their G-026, and they killed
+  it correctly: `fw handover` writes .git/ and pushes to every remote, so the predicate
+  refuses one of the three verbs it was derived from — the one whose block was open
+  longest. Do not re-propose it. Whatever closes G-078 must admit 'writes .git and
+  performs network egress' as legitimate for a class of commands."
+- "T-2876 IW-2 still the one to falsify before any safe-list removal lands. It now carries
+  T-2879 as evidence RAISING THE PRIOR (a safe-list remedy relocated a deadlock onto its
+  own author within a minute, with green tests) but that is explicitly NOT an answer to
+  IW-2's actual question. Disposition stays deferred. T-2876 itself is still owner:human
+  and awaiting the operator's `bin/fw task update T-2876 --status work-completed`."
+- "STANDING DIRECTIVE not yet resumed: onboarding arcs. T-2877 (arc-017 Half A curriculum)
+  is filed, tagged, not started. T-2720 keystone deliberately OPEN because Half A is
+  unbuilt. This session went entirely into the gate-defect chain that started when T-2878's
+  own fix blocked its first real use — worth it, but the arc work has not moved."
 focus_session: S-2026-0806-0011

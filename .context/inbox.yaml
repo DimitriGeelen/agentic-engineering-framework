@@ -1532,3 +1532,10 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-204
+  text: "P-011 torn-verification scan (832 rail 477 mechanism) run against our tree with the gate's OWN extraction (sed range, tail +2, strip HTML comments, drop blank/#/backtick): 2867 task files, 0 offending lines. We are not currently exposed. Positive control run per L-555 before trusting that zero: an unterminated opener IS detected as a fragment, a heredoc opener IS detected via stderr, and the benign quote-in-quote case stays clean. RESIDUAL WORTH NAMING: the dangerous body line itself, bare 'import yaml, sys', is CLEAN under bash -n because it is a syntactically valid shell command. So the guard catches the OPENER, not the payload. That is sufficient for the tearing mechanism (tearing always leaves an unterminated opener) but it means a standalone valid-shell line in a Verification block is undetectable by syntax alone — which is 832's own argument for why a keyword list fails, turned back on the bash -n remedy. Our scan inherits the same blind spot: 0 means no torn openers, NOT no dangerous lines. Also unexplained: our screen capture is dated 14:50:52Z and no torn line exists in the tree now, so either it was edited away or the artifact came from a path other than P-011."
+  captured: 2026-08-08T18:59:09Z
+  context_task: T-2880
+  tags: [gap]
+  status: pending
+  promoted_to: null
