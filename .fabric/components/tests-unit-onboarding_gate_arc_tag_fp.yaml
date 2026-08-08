@@ -1,0 +1,20 @@
+id: tests/unit/onboarding_gate_arc_tag_fp.bats
+name: onboarding_gate_arc_tag_fp
+type: script
+subsystem: unknown
+location: tests/unit/onboarding_gate_arc_tag_fp.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-08
+created_by: unknown

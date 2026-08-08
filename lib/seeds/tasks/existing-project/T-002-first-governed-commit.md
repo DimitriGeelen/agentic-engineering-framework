@@ -25,6 +25,24 @@ Make any small change and commit it through the framework. The commit-msg hook w
 
 **Note:** Do not add `.context/` or `.tasks/` to `.gitignore` — these are managed by the framework and may need to be committed (e.g., handovers). Safe changes: fix a typo in README, add a code comment, or add build artifacts to `.gitignore`.
 
+## For the Operator
+
+**What is happening:** the agent makes a deliberately small, safe change to
+__PROJECT_NAME__ and commits it through the framework's git hooks. Small on purpose — the
+point is to exercise the path, not to change anything you care about.
+
+**Why it matters to you:** note the message format, `T-002: description`. That prefix is
+enforced; a hook refuses commits without it. From here on, `git log` answers *why does this
+line exist* by pointing at a task file that still holds the reasoning, the acceptance
+criteria, and the decisions. On an existing codebase you will have two eras in your
+history — before and after this commit. Only the second one is self-explaining.
+
+**What you can do meanwhile:** nothing required. If the agent proposes a change you would
+rather it not touch, say so — "small and safe" is its judgement, and yours overrides.
+
+**Go deeper:** `fw corpus explain aef-task-lifecycle` — the states a task moves through, and
+which gates guard each transition.
+
 ## Acceptance Criteria
 
 ### Agent

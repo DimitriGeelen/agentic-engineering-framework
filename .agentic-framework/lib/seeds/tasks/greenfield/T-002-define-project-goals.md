@@ -27,6 +27,26 @@ This is an inception task. Define the problem __PROJECT_NAME__ solves, its goals
 decision itself is yours — you record it in Watchtower, not the agent on the command
 line. That split is deliberate: initiative is delegated, authority is not.
 
+## For the Operator
+
+*This is the one step in the prologue that ends with a decision only you can make.*
+
+**What is happening:** the agent is writing down what __PROJECT_NAME__ is for, before
+anything gets built. This is an **inception** — the framework's word for exploring a
+question and reaching a go/no-go, as opposed to a *build* task which produces code.
+
+**Why it matters to you:** inceptions end with a human decision, always. The agent will
+research, write it up, and hand it to you with a recommendation — GO, NO-GO, or DEFER,
+with its reasoning. You confirm or overrule. The agent is structurally prevented from
+deciding this itself; the framework refuses the command when an agent runs it.
+
+**What you will be asked to do:** the agent will run `fw task review T-002` and give you a
+link. Open it, read the recommendation, decide. Take your time — the prologue waits, and
+nothing degrades while it does.
+
+**Go deeper:** `fw corpus explain aef-inception-flow` — how a question becomes a decision
+becomes build tasks.
+
 ## Acceptance Criteria
 
 ### Human

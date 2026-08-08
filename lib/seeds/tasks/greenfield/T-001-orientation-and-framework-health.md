@@ -22,6 +22,26 @@ date_finished: null
 
 First task for __PROJECT_NAME__. Read CLAUDE.md to understand the framework, verify installation, and prepare for project definition.
 
+## For the Operator
+
+*Read this if you want to; nothing here is yours to do, and nothing here blocks the agent.*
+
+**What is happening:** the agent is reading CLAUDE.md and running two health checks.
+`fw doctor` asks *is this install wired correctly*. `fw audit` asks *is this project's
+governance in good standing*. On a brand-new project audit reports warnings — that is
+expected, it is measuring a history that does not exist yet.
+
+**Why it matters to you:** the one rule everything else hangs off is **nothing gets done
+without a task**. That is not a convention the agent has agreed to follow — it is a hook
+that refuses file edits when no task is active. If you ever see the agent stop and say it
+is blocked, this is usually why, and it is working as intended.
+
+**What you can do meanwhile:** open Watchtower (`fw serve`, then the URL it prints). It is
+the window into everything below — tasks, decisions, health, the maps named throughout
+this curriculum.
+
+**Go deeper:** `fw corpus explain aef-session-lifecycle` — what a session is, start to end.
+
 ## Acceptance Criteria
 
 ### Agent

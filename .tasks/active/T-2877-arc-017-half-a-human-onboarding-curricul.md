@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-08T17:36:48Z
-last_update: 2026-08-08T19:29:01Z
+last_update: 2026-08-08T20:04:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -157,6 +157,19 @@ agent-unresolvable onboarding fixture returns rc=2 from the same invocation. Wit
 eleven allows would be indistinguishable from an inert gate.
 
 ### Human
+- [ ] [REVIEW] The curriculum reads well to someone who has never seen the framework
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve` (if not already running), then open the URL it prints
+  2. Read the `## For the Operator` section on `/tasks/T-2877` first for the design intent, then read the eleven sections themselves at `lib/seeds/tasks/greenfield/T-001…T-005` and `lib/seeds/tasks/existing-project/T-001…T-006`
+  3. Read each set in order, as a first-time operator meets them — one per onboarding step
+  **Expected:** each section answers *what is happening*, *why it matters to me*, and *what I can do*, without assuming prior framework knowledge; the sequence builds rather than repeats; nowhere does it read as instructions the operator must follow
+  **If not:** name the section and which of the three questions it fails to answer — the prose is the deliverable, and rewriting it is cheap
+
+  *Why [REVIEW] and not [REVIEWER]:* the question is whether prose reads well to a newcomer.
+  The static scanner does not read for tone or clarity (L-409, T-1947), and the audience is
+  explicitly the operator rather than an agent (T-2143), so Agent-AC self-eval does not apply
+  either. Everything mechanically checkable about this curriculum is already an Agent AC above.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -254,6 +267,18 @@ eleven allows would be indistinguishable from an inert gate.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/onboarding_curriculum_ungated.bats 2>&1); echo "$out" | grep -q '^ok 10 ' && ! echo "$out" | grep -q '^not ok'
+# The refusal invariant (Half B) must still hold with the curriculum in place.
+out=$(bats tests/unit/onboarding_gate_arc_tag_fp.bats tests/unit/check_onboarding_gate.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
+# All 11 seeded tasks carry the section.
+[ "$(grep -l '^## For the Operator' lib/seeds/tasks/*/T-*.md | wc -l)" -eq 11 ]
+# Zero checkboxes inside any operator section — this is what makes it ungated.
+python3 -c "import re,glob,sys; bad=[f for f in glob.glob('lib/seeds/tasks/*/T-*.md') for m in [re.search(r'^## For the Operator\s*$\n(.*?)(?=^## )', open(f).read(), re.S|re.M)] if m and re.search(r'^\s*[-*]\s*\[[ xX]\]', m.group(1), re.M)]; sys.exit(1 if bad else 0)"
+# Every corpus-map id named in the curriculum resolves.
+for m in $(grep -ho 'fw corpus explain [a-z0-9-]*' lib/seeds/tasks/*/T-*.md | awk '{print $4}' | sort -u); do bin/fw corpus explain "$m" >/dev/null 2>&1 || exit 1; done
+# Vendored parity — .agentic-framework/ is what a consumer's fw executes (T-2240).
+for f in lib/seeds/tasks/*/T-*.md; do diff -q "$f" ".agentic-framework/$f" >/dev/null || exit 1; done
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -293,6 +318,65 @@ eleven allows would be indistinguishable from an inert gate.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO — Half A is built; one Human AC (prose quality) remains.
+
+**Rationale:** all six Agent ACs are ticked and independently measured. The curriculum
+exists in both seed sets, ships through `fw init` in both inference modes (verified by
+initialising throwaway projects, not by reading `lib/seeds/`), adds zero acceptance
+criteria, and every routing target resolves. The only thing left is whether the prose
+reads well to a newcomer, which is exactly the judgement a static scan cannot make.
+
+**Evidence:**
+- `tests/unit/onboarding_curriculum_ungated.bats` — 10/10, incl. mutation teeth and a
+  positive control proving the onboarding gate is live rather than inert
+- `fw init` sandboxes: 5/5 greenfield, 6/6 existing-project carry the section
+- AC counts per seeded task identical before and after (4,3,4,4,3,3 / 4,5,3,4,3)
+- Routing ids all resolve; bogus control `aef-deliberately-not-a-map` returns rc=1
+- T-2881 shipped en route — arc-017's Half B invariant was refusing arc-017's own Half A
+  task; 12/12 assertions, both call sites fixed together
+
+**What this does NOT close:** the arc keystone T-2720. Half A shipping is not the same as
+the headline mechanic firing end-to-end — that needs an operator actually finishing the
+prologue with the curriculum alongside. Closing arc-017 on "both halves built" would be the
+substrate-vs-deliverable conflation §ACD exists to catch. T-2720 stays open.
+
+## Evolution
+
+### 2026-08-08 — the invariant refused the task that was building its other half
+
+- **What changed:** arc-017's Half B (`check-onboarding-gate.py`, T-2815) refused the edit
+  adding a `### Human` AC to T-2877 — Half A's own build task. Root cause was a tag-matching
+  conflation: `\bonboarding\b` matches inside `arc:onboarding-curriculum`, because `:` and
+  `-` are both non-word characters. Arc membership was being read as membership of the
+  T-532 gated set. Not known at filing, and not findable by reading the arc — only by
+  working inside it.
+- **Plan impact:** none to the curriculum design; the three constraints held unchanged. But
+  it forced a detour, and the detour was not optional: the documented override is an env-var
+  prefix while the refusal fires on the Write/Edit tool, so there was no agent-reachable way
+  through that did not involve corrupting the task's own metadata (mislabel `owner: human`,
+  or strip the arc tag) to satisfy a check that was wrong.
+- **Triggered:** T-2881 (filed, fixed, closed — 12 assertions, both call sites per L-399).
+  Also surfaced that the scan-side twin in `check-active-task.sh` was latent here only
+  because `.onboarding-complete` short-circuits the block; in a fresh project it fires.
+
+### 2026-08-08 — "it exists in lib/seeds" is not "it ships"
+
+- **What changed:** AC 5 was deliberately written as *verified by initialising a throwaway
+  project, not by reading `lib/seeds/`*. That wording earned itself immediately — the first
+  sandbox produced 0/5 tasks carrying the curriculum, and reading the source would have
+  reported the work complete.
+- **Plan impact:** none, but two false diagnoses were reached and discarded before the real
+  one. First a stale vendored `.agentic-framework/` (re-vendored; still 0/5). Then a stale
+  *global* framework, which fit the evidence well enough to be worth filing — the init log
+  falsified it. The actual cause was the harness: the sandbox was nested inside the
+  scratchpad, which already contained an `.agentic-framework/` from an earlier session, so
+  `fw init` walked up, saw a consumer project, and vendored from that.
+- **Triggered:** nothing filed — it was my test setup, not a framework defect. Recorded
+  because the near-miss is the point: a plausible mechanism that fits the evidence is not a
+  diagnosis, and the log was the only thing that distinguished them.
 
 ## Decisions
 

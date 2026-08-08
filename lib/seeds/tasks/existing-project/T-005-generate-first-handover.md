@@ -22,6 +22,23 @@ date_finished: null
 
 The handover is the primary mechanism for session continuity. Generate one now to validate the process and establish a baseline for future sessions.
 
+## For the Operator
+
+**What is happening:** the agent writes a handover — where the work stands, what is in
+flight, what the next session should pick up first.
+
+**Why it matters to you:** an agent's memory ends when its context window does. The handover
+is what survives that. It is also what *you* read after a week away to reload
+__PROJECT_NAME__ without re-reading the code. If the handover is vague, every session after
+it starts vague — which is why the framework refuses to leave `[TODO]` placeholders in one.
+
+**What you can do meanwhile:** read it. If it does not tell you what you would need to know
+cold, say so — that is exactly the feedback the format wants, and it is easier to fix the
+first one than the fiftieth.
+
+**Go deeper:** `fw corpus explain aef-session-lifecycle` — where handover sits in the shape
+of a session.
+
 ## Acceptance Criteria
 
 ### Agent

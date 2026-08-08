@@ -22,6 +22,27 @@ date_finished: null
 
 Create a genuine task (small feature or improvement), complete it, and verify the framework captures it. Validates: task creation, status transitions, AC gating, episodic memory.
 
+## For the Operator
+
+**What is happening:** the agent runs one task all the way round the loop — create, work,
+complete — so the machinery has been exercised once before it matters.
+
+**Why it matters to you:** completion is not the agent declaring itself finished. Two gates
+run mechanically first. **P-010** refuses to close a task with unticked agent acceptance
+criteria. **P-011** executes the shell commands the agent wrote in the task's
+`## Verification` block and refuses if any of them fails. The agent cannot talk its way
+past either — they run commands and read exit codes.
+
+Then an **episodic summary** is generated into `.context/episodic/`. That is the project's
+memory: what was done, what was decided, what broke. Later sessions read it, which is how
+the framework avoids relearning the same lesson.
+
+**What you can do meanwhile:** watch it happen in Watchtower. The task moves through its
+states in front of you, which is a faster way to understand the model than reading about it.
+
+**Go deeper:** `fw corpus explain aef-task-lifecycle` — including the refusal loop when a
+gate says no.
+
 ## Acceptance Criteria
 
 ### Agent
