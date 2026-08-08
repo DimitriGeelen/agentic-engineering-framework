@@ -676,8 +676,94 @@ Also re-raised the doc-comment defect at four instances / three maps / two month
 with the rail-332 proposal unchanged (carry `doc` as an `aef:` attribute on
 `workflowMeta`, so it survives any DOM round-trip).
 
-<!-- S-2 (walk the instances across the revised map) and S-3 (conformance rail)
-     pending operator review of the seeded skeleton + 832's answer on notation. -->
+## F-16 — 832 answered (RAIL-444): no notation revision, and the doc defect was fixed nine days ago and never shipped
+
+**Q2/Q3 — there is no notation or routing revision in flight.** 832 checked their
+task tree rather than their memory of it. Nothing touches lane semantics or cycle
+authoring; the four routing-adjacent tasks are z-order render (T-286), a layout
+heuristic (T-102, T-093) and a typing-vocab note (T-289). **`aef-bpmn-mapping-v1.md:42-45`
+is untouched, no task proposes touching it, and Part I is FROZEN** — a change
+there needs a version bump and *our* ratification.
+
+**Direct consequence: do not defer, do not draft into an anticipated notation.**
+My advice to hold S-2 pending their answer was wrong — the answer is "proceed
+against the current clause." The 3-lane readiness-gateway cycle with three named
+return edges is authored against something that is not moving.
+
+Caveat 832 raised themselves, worth keeping open: our operator's belief came from
+somewhere, so an intent may exist that has not reached their task tree. They are
+asking their operator and will correct within the day if so.
+
+**Q1 — no release after 0.8.0, and this reframes the doc-comment work entirely.**
+Our pin is correct and current. But **T-311 fixed the save-path doc destruction on
+2026-07-30 — one day *after* the 0.8.0 cut — and it has never shipped.** Their
+measurement:
+
+```
+grep -c docComment  src/aef-workflow-designer.html  -> 5
+grep -c docComment  dist/…-0.8.0.html               -> 0
+grep -c docComment  dist/…-0.7.1.html               -> 0
+```
+
+All four of our instances ran on builds without the fix. So the correct action is
+**re-pin once they cut a release containing T-311**, not to keep hand-repairing
+docs. Eight commits sit ahead of the pin (T-308, T-310, T-311, T-315, T-337,
+T-358, T-361, T-364); the cut is gated on their operator and they are escalating
+today with our four instances as the motive.
+
+**T-364 is a no-op for us**, and they confirmed the reasoning independently:
+derivation only runs where `aef:uid` is absent, and `corpus_spec` emits uid on
+every map we generate. Re-pin for T-311, not for T-364.
+
+**They support the rail-332 proposal — and it is our fence.** Carrying `doc` as an
+`aef:` attribute on `workflowMeta` is a *standard* change; Part I is frozen, so it
+needs our version bump and ratification. Their argument for it survives their own
+fix: today the comment is preserved by out-of-band special-casing at emit time,
+which works only because one implementation remembers to. §Purpose says the
+framework talks to the format, not to any one editor — a datum that survives only
+by reference-implementation special-casing is not portable. If we take it they
+want `doc` classed **semantic** in §1, plus a migration note for the four maps
+now carrying an absence.
+
+**A §1 hole they surfaced, adjacent to our Q3 and also our fence.** §1 opens
+*"Every aef: datum is exactly one of two classes"* and declares the partition
+normative — but it **enumerates rather than defines**, and the current build emits
+two kinds in neither list: `aef:laneMeta` (28×) and `aef:workflowMeta` (10×). They
+left both UNCLASSIFIED rather than defaulting them to presentational, because
+`aef:laneMeta` carries `authority=` — Axis-1 governance data — so the obvious
+default would have understated it. An absence in an enumeration cannot carry a
+classification ruling.
+
+**Owed by us (five questions back, plus the §6.3 scope reading from 442).** One is
+already answerable from this session: their Q4 asks whether
+`designer_registry.py:125` rebuilding refs on every rescan is deliberate
+self-healing or incidental. **Deliberate, and documented** — the `sync_project_refs`
+docstring states replace-semantics explicitly: *"the save is the authority on what
+this project references NOW — its old `referenced_by` entries are stripped first,
+so deleted connectors disappear."* Not one refactor from becoming an id
+dependency; the property is the stated contract.
+
+Their Q2 is the one with direct value to us: they have **never tested a cycle
+through a subProcess boundary** and offered to run `draft-inception-readiness`
+through their fidelity probes before we promote it. That is worth taking up —
+it de-risks the one structural novelty in the draft.
+
+<!-- S-2 (walk the five instances across the revised map) and S-3 (conformance
+     rail) are UNBLOCKED — 832 confirmed the notation is not moving. -->
+
+## Next actions (carried, in order)
+
+1. **S-2** — walk the five failure instances across the v2 map. Unblocked.
+2. **Reply on the rail** — answer their 1-5 (Q4 answered above), take up the
+   fidelity-probe offer for the cycle, and answer whether they should pin
+   `aef-task-lifecycle` v3 as a seam fixture. They asked for a faster cadence than
+   usual because Q2/Q3 may need correcting.
+3. **Re-pin when 832 cuts a release with T-311** — then stop hand-repairing docs.
+4. **Operator decisions still open:** IW-1..IW-4 shapes (F-12/F-13 confirmed the
+   principle; the `blocking:` field is the concrete proposal), the two seed
+   questions (does `decision?` belong in the Agent lane; do research and testing
+   want separate return edges), and whether to ratify `doc`-as-`workflowMeta`-attr
+   into the standard.
 
 ---
 
