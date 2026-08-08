@@ -209,11 +209,11 @@ agent-vs-human decide authority, and the seed tasks that instantiate all of it.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -249,9 +249,117 @@ agent-vs-human decide authority, and the seed tasks that instantiate all of it.
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** GO — and the shape changed materially from the prior below.
+
+**What changed from the filing-time prior.** The prior (kept verbatim further down,
+because this task is its own worked example) said *"GO on the rework; the design is
+the open question."* That was a placeholder standing in for evidence the gate
+demanded before any existed. The design is no longer open, and the root moved
+twice under evidence:
+
+- **From field to transition.** I framed the root as a *field* problem — the
+  recommendation is requested too early. The operator reframed it as a
+  *transition* problem — the inception is put forward for approval before the
+  requirements for putting it forward are met. Tested mechanically and it holds:
+  the put-forward verb (`lib/review.sh` `emit_review`) validates one grep for a
+  `**Recommendation:**` line and nothing else, while the readiness predicate that
+  *would* catch an unfinished record (`check_disposition_gate`) is wired to
+  `work-completed` — one transition downstream of the approval it should guard.
+- **From timing to representation.** Timing is the mechanism; the reason it went
+  unseen is that all five instances are **Framework-Authority** actions and the
+  inception map had no Framework-Authority lane, so every gate was drawn as a
+  parenthetical on an Agent node. Same words, two readings, only one actionable.
+- **A2 falsified.** I asserted that `@auto-tick-on-decide` ticking a `### Human`
+  AC was a leak. Reading `lib/inception.sh:292` shows ticking is the function's
+  documented purpose (T-1324) and removing it reopens G-008. The defect is the
+  *inference* — it reads "decide ran" and writes "a human approved", while decide
+  admits `--i-am-human` and `--from-watchtower`, and `do_inception_sweep` ticks the
+  same box in batch with no decide at all.
 
 **Rationale:** Five concrete instances inside two weeks, four of them hit live this session. (1) T-2862: the greenfield seed ships a self-referential AC that deadlocks fw inception decide in every new project. (2) T-2442: prior sibling, inception schema deadlock. (3) T-2857: the decision was recorded mid-exploration with --skip-sovereignty, auto-ticking the ### Human [REVIEW] AC, and the recorded rationale was the filing-time prior verbatim with an empty Evidence block — which the spike then refuted 40 minutes later. (4) T-2861: C-001 demands the research artifact as the FIRST act of an inception, which is exactly when Claude Code's background-session guard refuses Write. (5) The T-2204 recommendation-completeness gate REQUIRES a GO/NO-GO/DEFER at filing time, before any exploration exists, and @auto-tick-on-decide then promotes that untested prior into the recorded decision. The last one is the root: the framework asks for the conclusion before the evidence, then treats the answer as the finding. GO on the rework; the design is the open question, which is what this inception is for. Filed with a GO at creation time because the gate requires one — this task is its own worked example.
+
+**Evidence:**
+
+- **The put-forward verb checks one third of its own printed contract.**
+  `lib/task-audit.sh:117` `audit_inception_recommendation` greps for a
+  `**Recommendation:**` line; `lib/inception.sh:493-496` prints a three-part
+  contract naming Rationale *and* Evidence. Rationale and Evidence are never read.
+  (F-7)
+- **The readiness predicate exists and fires one transition too late.**
+  `agents/task-create/update-task.sh:768` and `:1583` — `check_disposition_gate`
+  is called only when `NEW_STATUS = work-completed`, i.e. downstream of the
+  approval it should guard. `disposition: deferred` also satisfies it, so an
+  unanswered question passes a gate that asks only whether a disposition string is
+  present. (F-11)
+- **The template knows the recommendation is a prior and nothing enforces it.**
+  `lib/inception.sh:178-210` `_inject_recommendation_block` writes the Evidence
+  placeholder *"The filing-time recommendation can be revised before fw inception
+  decide."* — documented intent, zero enforcement. (F-8)
+- **Three machines can write or ratify a recommendation and none requires
+  evidence**, and a fourth (`lib/reviewer/recommendation_claims.py`) stamps an
+  empty one **CONFIRMED**, because it checks referent *existence* (`T-XXX` resolves
+  to a task file), not claim support. Its own docstring says "advisory only".
+  (F-9, F-10)
+- **`--skip-sovereignty` is not an operator bypass** — `fw inception decide` has
+  exactly two (`--i-am-human`, `--from-watchtower`, `lib/inception.sh:429`);
+  `--skip-sovereignty` is what decide passes *downstream* to `update-task.sh`
+  (lines 684, 705, 716). Correction to my own earlier claim. (S-2)
+- **DEFER skips the agent-AC preflight entirely.** `lib/inception.sh:521` guards it
+  with `if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]`. So T-2862's
+  deadlock is escapable by hedging, and there is a mechanical gradient toward the
+  exact hedge CLAUDE.md forbids in prose (T-2144) and T-2145 ships a detector for.
+  (F-17)
+- **Every one of the five instances is a Framework-Authority action** and the
+  inception map has no Framework-Authority lane — 5/5, tabulated against the
+  corpus, where `aef-tier0-escalation` and `draft-trigger-handling` both have one.
+  (F-2)
+- **The fix needs no designer extension** — the Framework lane, the readiness
+  gateway and the named return edges are all constructs the corpus already ships,
+  verified before proposing any tool change. (F-14)
+- **Draft seeded and iterated through a full pair-draft round**:
+  `.context/designer/projects/draft-inception-readiness/` v1 → operator layout →
+  agent re-read/normalise → v2 (17 nodes / 18 flows / 3 lanes). Served bytes
+  verified byte-identical to disk (sha256 `fe3a520d…a846`).
+- **The draft was then walked against its own purpose and mostly failed.** S-2:
+  only **1 of 5** instances attaches to v2 — the decide-preflight has no node at
+  all (instances 1, 2), the write guard is a note on an *Agent* node reproducing
+  the very defect F-2 diagnosed (instance 4), and the bypass edges are undrawn
+  (instance 3). This is evidence *for* GO, not against: the walk is what turned a
+  plausible map into a specified one.
+- **832 (peer designer agent) confirmed the notation is not moving** (rail 444) —
+  `aef-bpmn-mapping-v1.md:42-45` untouched, Part I frozen — so the draft is
+  authored against a stable clause. Their fidelity-probe offer for the
+  cycle-through-subProcess shape is taken up (rail 445).
+
+**Candidate build slices on GO** (one deliverable each, per Task Sizing — not to be
+built under this ID):
+
+1. **Readiness floor at the put-forward transition** — move/duplicate the
+   disposition predicate to `emit_review`, checking the agent's proposal against
+   the agent's own record: no `blocking: true` IW unanswered, Evidence placeholder
+   no longer intact, Dialogue Log present. Content-blind and deterministic.
+2. **`blocking:` field on Open Questions** — the mechanical half of slice 1.
+3. **Not-ready as router** — the deficit class names the mode owed (research /
+   testing / dialogue) so a block becomes a work item.
+4. **F-17 DEFER asymmetry** — include `defer` in the preflight guard, or state the
+   reason it is exempt.
+5. **Tick on authenticated channel only** — `--from-watchtower` ticks the approval
+   AC; bypasses leave it unticked, which is the honest state.
+6. **Map v3 + conformance rail (S-3)** — blocked on the operator's
+   as-operated-vs-proposed ruling (see Open Decisions).
+7. **Vendor + pin the frozen standard** (F-18 / OBS-190) — precondition for
+   ratifying anything on the 832 fence.
+
+**Open decisions for the operator** (none block GO; all shape the slices):
+
+- Does `decision?` belong in the Agent lane, or does the gateway move to Framework?
+- Do research and testing want separate not-ready return edges, or one?
+- Is `draft-inception-readiness` a map of **as-operated** or **proposed** behaviour?
+  v2 currently mixes both, and S-3's rail cannot audit map-vs-code parity until we
+  say which nodes claim parity.
+- Ratify `doc`-as-`workflowMeta`-attribute into the frozen standard? 832 supports
+  it and wants it classed semantic in §1 with a migration note for our four maps.
+  Our fence, our version bump — and currently blocked by F-18.
 
 ## Decisions
 
