@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-audit-cron"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
+
+  <bpmn:collaboration id="Collaboration_aef-audit-cron">
+    <bpmn:participant id="Pool_audit_cron" name="AEF audit cron" processRef="Process_aef-audit-cron"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_aef-audit-cron" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-audit-cron" version="1" schemaVersion="2" title="AEF audit cron (scheduled compliance sweep → findings → emit-tasks → operator triage)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_ac">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="240"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_daily</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_audit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_record</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_emit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_sweep</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_warn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_8_handoff_lifecycle</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="150"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_2_findings</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_daily" name="daily audit fires">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_cron_fire"/>
+        <aef:position x="120.0" y="120.0"/>
+        <aef:meta note="schedule source of truth is .context/cron-registry.yaml (registry → generated → deployed, three drift classes T-1942); this typed event rides a START event — detector coverage for the third carrier shape"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:endEvent id="agt_5_audit" name="audit green — no action">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_done_clean"/>
+        <aef:position x="690.0" y="60.0"/>
+        <aef:meta terminalKind="success" state="clean"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="hum_2_findings" name="findings triaged — emitted tasks live in backlog">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_done_triaged"/>
+        <aef:position x="1396.6" y="394.0"/>
+        <aef:meta terminalKind="success" state="triaged"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="agt_2_fw" name="fw audit — compliance sweep (exit 0 pass / 1 warnings / 2 failures)">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_sweep"/>
+        <aef:position x="225.5" y="120.0"/>
+        <aef:meta note="checks: task hygiene, cron drift, stale arcs, retire_when advisories, reviewer Pass-B, MCP manifest staleness"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_3_record" name="record findings — .context/audits/&lt;date&gt;.yaml + LATEST refs">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_record"/>
+        <aef:position x="368.0" y="120.0"/>
+        <aef:meta note="observable, auditable: every sweep leaves a dated artifact regardless of result (D2 Reliability)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_7_emit" name="emit findings as tasks — fw audit --emit-tasks (captured/later, never steals focus, T-100146)">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_emit"/>
+        <aef:position x="938.0" y="200.0"/>
+        <aef:meta note="dedup against open emitted tasks; focus.yaml untouched — the T-100146 focus-theft fix is the load-bearing invariant here"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_1_operator" name="operator triages findings — Watchtower /audits, /approvals, emitted-task queue">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_triage"/>
+        <aef:position x="1080.5" y="380.0"/>
+        <aef:meta note="sovereignty: promote/dismiss/re-prioritise emitted tasks; audit only proposes"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="agt_4_sweep" name="sweep result?">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_gw_result"/>
+        <aef:position x="541.5" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:intermediateCatchEvent id="agt_6_warn" name="warn/fail findings present">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_err_findings"/>
+        <aef:position x="832.5" y="200.0"/>
+        <aef:eventDef kind="error"/>
+        <aef:meta note="exit 1 = warnings, exit 2 = failures; both route to emission — severity shapes the emitted task horizon"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateThrowEvent id="agt_8_handoff_lifecycle" name="Handoff → task lifecycle">
+      <bpmn:extensionElements>
+        <aef:uid value="ac_handoff_lifecycle"/>
+        <aef:position x="1085.0" y="200.0"/>
+        <aef:link workflowRef="1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7" name="aef-task-lifecycle" linkId=""/>
+        <aef:meta note="emitted findings-tasks continue as governed work — captured/later backlog entries enter the standard task lifecycle (create → work → complete); operator triage runs in parallel on the human lane"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_daily" targetRef="agt_2_fw">
+      <bpmn:extensionElements><aef:uid value="ac_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_fw" targetRef="agt_3_record">
+      <bpmn:extensionElements><aef:uid value="ac_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_3_record" targetRef="agt_4_sweep">
+      <bpmn:extensionElements><aef:uid value="ac_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_4" name="pass — exit 0" sourceRef="agt_4_sweep" targetRef="agt_5_audit">
+      <bpmn:extensionElements><aef:uid value="ac_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_5" name="warn/fail — exit 1/2" sourceRef="agt_4_sweep" targetRef="agt_6_warn">
+      <bpmn:extensionElements><aef:uid value="ac_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_6_warn" targetRef="agt_7_emit">
+      <bpmn:extensionElements><aef:uid value="ac_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_7_emit" targetRef="hum_1_operator">
+      <bpmn:extensionElements><aef:uid value="ac_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_9" name="emitted tasks → lifecycle" sourceRef="agt_7_emit" targetRef="agt_8_handoff_lifecycle">
+      <bpmn:extensionElements><aef:uid value="ac_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_8" sourceRef="hum_1_operator" targetRef="hum_2_findings">
+      <bpmn:extensionElements><aef:uid value="ac_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

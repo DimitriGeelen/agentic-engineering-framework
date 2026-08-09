@@ -134,28 +134,83 @@ on `aef-audit-cron` and `aef-session-lifecycle`, *both already promoted*. So the
 text matcher is currently load-bearing for real corruption, not merely defensive.
 Removing it without an identity-based replacement re-opens that.
 
+## Fixtures authored — tests/fixtures/832-outbound/
+
+Two real BPMN documents, not synthetic ones. Full provenance and per-fixture
+purpose in `tests/fixtures/832-outbound/README.md`; summary here:
+
+- **`t406-clean-leading-boilerplate.bpmn`** — byte-identical to
+  `.context/designer/projects/aef-audit-cron/v1.bpmn` at commit `2d3013929`, i.e.
+  the file *before* T-2683 restored its authored doc comment. Real corruption that
+  reached the promoted corpus, not a fixture shaped for the probe. Verified via
+  `git hash-object` against `git show 2d3013929:.../aef-audit-cron/v1.bpmn` —
+  identical blob sha `03e49527364003820acb152cd449234efb5e2b96`.
+- **`t406-incidental-leading-boilerplate.bpmn`** — the real, current
+  `.context/designer/projects/aef-task-lifecycle/v1.bpmn` (272 lines) with one
+  edit: the same trailer bytes prepended to the front of its real leading doc
+  comment, inside the same comment block, on a new line. Everything after the
+  trailer is untouched real rationale (`designer-corpus D1 (arc-014, T-2555)…`).
+
+**Load-bearing measurement (AC4), current count (supersedes the "17" above —
+re-measured for this delivery and it has moved to 18 `.bpmn` corpus documents;
+832 separately corrected their own "17" quote to 21 at rail 499 using a different
+counting pass — the two numbers are not reconciled here, out of scope for this
+task):**
+
+```
+tools/corpus_spec.py:_is_boilerplate_comment   — READS it (prefix match, drops doc)
+tests/unit/test_corpus_spec_doc_guard.py       — ASSERTS on it directly, 4 tests:
+  test_trailing_comment_is_never_adopted_as_doc
+  test_leading_boilerplate_is_rejected_not_laundered
+  test_boilerplate_match_is_prefix_based_not_exact   (proves prefix-only match —
+    a comment with the trailer PLUS extra trailing text already suppresses today,
+    which is exactly the incidental fixture's shape)
+  test_authored_doc_merely_mentioning_di_is_kept
+18 .bpmn documents under .context/designer/projects/ — DATA carriers, inert on
+  their own; suppressed/preserved only via the code above
+tests/fixtures/aef-bpmn/dispatch-loop.bpmn,
+tests/fixtures/bpmn/resume-status-canonical.bpmn,
+tests/fixtures/832/s4-exemplar.bpmn                — trailer in TRAILING (safe)
+  position, inert
+tests/fixtures/832/pair-draft-3.bpmn               — no occurrence
+vendor/designer/*.html (5 versions)                — the string's ORIGIN (832's
+  emitter source, vendored) — citation, not a document we read via corpus_spec
+```
+
+**Finding (AC6):** both new fixtures come back `doc: None` from
+`tools/corpus_spec.py:parse_map` — `_is_boilerplate_comment` cannot distinguish
+"boilerplate alone" from "boilerplate followed by 180 characters of real
+rationale". Same suppression, different cost: the clean case loses nothing, the
+incidental case silently loses real content. Not smoothed over — this is the
+mirror of 832's T-406, filed separately as T-2895 (one bug, one task; not fixed
+here).
+
+**Handoff:** posted to `dm:0e7ee6cad65137fc:6a646ce8b1bc6560` as refs (commit sha
++ path), not bytes (OBS-108) — see rail post for the exact message and which
+fixture is which.
+
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Two fixtures authored, not one: (a) the clean case 832 asked for — a
+- [x] Two fixtures authored, not one: (a) the clean case 832 asked for — a
       document of ours whose leading rationale opens with their eight trailer
       words; (b) the incidental case — those words opening a rationale that then
       runs on into genuinely different content, which is the shape that actually
       occurred when their own boilerplate came back through a document we exported
-- [ ] Both are documents **we** would plausibly author, not documents shaped to
+- [x] Both are documents **we** would plausibly author, not documents shaped to
       pass or fail a probe. The whole value of 832 asking us to write them is that
       the input comes from the party who would really produce it
-- [ ] The exact trailer string is taken from a document, not from memory or from
+- [x] The exact trailer string is taken from a document, not from memory or from
       their prose — and where it was taken from is recorded
-- [ ] Whether their trailer is load-bearing on OUR side is answered by measurement:
+- [x] Whether their trailer is load-bearing on OUR side is answered by measurement:
       grep our corpus and fixtures for it, and for each hit say whether anything
       reads it (a test asserting on it, a lint rule, an importer branch) or whether
       it is inert text
-- [ ] The fixtures are handed over as refs on the rail, not as bytes (OBS-108),
+- [x] The fixtures are handed over as refs on the rail, not as bytes (OBS-108),
       and 832 is told which is which and what each is meant to distinguish
-- [ ] If the incidental case turns out to behave differently from the clean case
+- [x] If the incidental case turns out to behave differently from the clean case
       on our own round-trip, that is reported as a finding rather than smoothed over
 
 ### Human
@@ -190,6 +245,16 @@ Removing it without an identity-based replacement re-opens that.
 -->
 
 ## Verification
+
+python3 -c "import xml.etree.ElementTree as ET; [ET.parse(p) for p in ['tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn','tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn']]"
+python3 -c "
+import sys; sys.path.insert(0, 'tools')
+import corpus_spec as cs
+for p in ['tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn','tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn']:
+    spec = cs.parse_map(open(p).read())
+    assert spec.get('doc') is None, p
+"
+git hash-object tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn | grep -q 03e49527364003820acb152cd449234efb5e2b96
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -323,3 +388,8 @@ Removing it without an identity-based replacement re-opens that.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2893-adversarial-fixtures-for-832s-t-406-lead.md
 - **Context:** Initial task creation
+
+### authored the two fixtures
+- **Action:** Wrote `tests/fixtures/832-outbound/{t406-clean-leading-boilerplate.bpmn,t406-incidental-leading-boilerplate.bpmn,README.md}`. Clean case = byte-identical historical corruption pulled from `git show 2d3013929:.../aef-audit-cron/v1.bpmn` (pre-T-2683 restore). Incidental case = real `aef-task-lifecycle/v1.bpmn` (272 lines) with the same trailer bytes prepended to its real leading doc comment.
+- **Output:** both files well-formed; both come back `doc: None` from `corpus_spec.parse_map` — confirms the mirror bug (T-2895) destroys real content in the incidental case, not just boilerplate in the clean case.
+- **Context:** re-measured load-bearing grep for this delivery — 18 corpus `.bpmn` carriers today (not the 17 quoted at task filing, and not the 21 832 separately quoted at rail 499 via a different counting pass — not reconciled, out of scope). `tests/unit/test_corpus_spec_doc_guard.py` directly asserts on the trailer in 4 tests, including a prefix-only test that already covers the incidental shape generically. Checked 832's own inbound fixtures (`s4-exemplar.bpmn`, `pair-draft-3.bpmn`) — neither carries the trailer leading, so no live peer instance exists yet. Handoff posted to `dm:0e7ee6cad65137fc:6a646ce8b1bc6560` as refs, not bytes (OBS-108).
