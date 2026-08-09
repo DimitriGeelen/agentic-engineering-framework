@@ -908,6 +908,7 @@ show_help() {
     echo -e "  ${GREEN}verify-queue${NC}         Re-run stored Verification for that queue (--all, --task, --json)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
+    echo -e "  ${GREEN}rail${NC} <cmd>           Rail signing identity (identity, post) — refuses host-signed posts"
     echo -e "  ${GREEN}dispatch${NC} <cmd>       SSH-based cross-machine communication (send, hosts)"
     echo -e "  ${GREEN}pickup${NC} <cmd>        Cross-project pickup pipeline (process, status, list, send)"
     echo -e "  ${GREEN}consolidate${NC} <cmd>   Memory consolidation (scan, apply, report)"
