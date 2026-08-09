@@ -349,6 +349,31 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
     a('                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"')
     a(f'                  xmlns:aef="{AEF_NS}"')
     a(f'                  id="Definitions_{mid}"')
+    # T-2891: name the producer of these bytes.
+    #
+    # T-2884 measured that we stamped nothing, so a document through both our
+    # emitter and 832's carried NO producer identity. That reads as the safe
+    # answer — absence is a true statement about a document with no single
+    # producer, and it fails detectably rather than confidently. 832's 493
+    # changed the cost: their T-406 fix suppresses an imported doc comment
+    # unless the document positively names a DIFFERENT producer, so our
+    # anonymous documents still lose their authored rationale on import. The
+    # attribute is not only about attribution any more; it is load-bearing for
+    # whether our own prose survives the seam.
+    #
+    # `aef-corpus-spec`, not `aef-workflow-designer`: this module emits these
+    # bytes, the designer does not. Stamping the designer's name here would be
+    # exactly the false-authorship record the whole exchange is about, pointed
+    # at 832 instead of at us. It is also deliberately DIFFERENT from 832's
+    # producer string — their suppression check keys on difference, so a
+    # colliding value would silently reintroduce the bug their fix closed.
+    #
+    # No `exporterVersion`, and this is a choice rather than an inheritance:
+    # emitted maps are committed artifacts, and VERSION moves on nearly every
+    # handover, so a version attribute would rewrite every corpus document on
+    # every release for a field no reader consumes. 832 drops theirs on import
+    # in any case.
+    a('                  exporter="aef-corpus-spec"')
     a('                  targetNamespace="https://aef.anchorpoint.dev/workflows">')
     a("")
     if spec.get("doc"):

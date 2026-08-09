@@ -597,12 +597,21 @@ def test_definitions_attributes_survive_only_by_being_reconstructed(corpus_basel
     survives, which is why probing three different attributes matters: an answer
     true for `exporter` alone would be a coincidence, not a property of the seam.
 
-    The second assertion is the one with consequences. 832 now stamps
-    `exporter="aef-workflow-designer"` because their bridge could not otherwise tell
-    their own documents from ours — conformance to a shared standard erases every
-    structural marker. We emit no exporter at all, so a document leaving our
-    round-trip carries no producer identity: theirs is dropped, and ours never
-    existed to drop.
+    T-2891 changed the second half, and the obligation this test carried is what
+    caught it: the previous version asserted `"exporter" not in dst.attrib` with a
+    message saying that if we ever stamped one, 832 had to be told. Adding the
+    stamp turned it red on the first run. Recorded because the test did the job a
+    test is for — it held a measured fact and refused to let it go quietly false.
+
+    We now stamp `exporter="aef-corpus-spec"`. The reason is not attribution:
+    832's T-406 fix suppresses an imported doc comment unless the document
+    positively names a DIFFERENT producer, so an anonymous document — which is
+    what we used to emit — loses its authored rationale on their import.
+
+    The positional finding is unchanged and is what the first assertion still
+    pins. `<definitions>` is reconstructed, not preserved-and-filtered: the source
+    document's attribute set does not reach the output, and what appears there
+    appears because `emit_map` writes it. That is why the stamp works at all.
     """
     import xml.etree.ElementTree as ET
 
@@ -610,11 +619,50 @@ def test_definitions_attributes_survive_only_by_being_reconstructed(corpus_basel
     src = ET.fromstring(corpus_baseline)
     dst = ET.fromstring(out)
     assert set(src.attrib) == {"id", "targetNamespace"}
-    assert set(dst.attrib) == set(src.attrib)
-    assert "exporter" not in dst.attrib, (
-        "we now stamp an exporter — 832's authorship test and the census table both "
-        "need updating, and they must be told"
+    # reconstructed: the output's attribute set is the emitter's, not the source's
+    assert set(dst.attrib) == {"id", "targetNamespace", "exporter"}
+    assert dst.attrib["exporter"] == "aef-corpus-spec"
+    # 832's suppression check keys on the producer being DIFFERENT from theirs.
+    # A collision would silently reintroduce the defect their T-406 fix closed,
+    # and it would do so invisibly — the document would still name a producer.
+    assert dst.attrib["exporter"] != "aef-workflow-designer"
+
+
+def test_workflow_ref_survives_the_round_trip():
+    """T-2891 — 832 asked, at 492, whether our workflowRef uuids survive our own
+    round-trip, flagging them as the candidate for carrying ORIGIN as a fact
+    distinct from production. Neither side had measured it.
+
+    They do survive. Recorded here rather than in a rail post alone, because the
+    claim 832 would be leaning on is "they survive", not "they survived once on
+    2026-08-09", and an unpinned measurement of a mutable code path decays into
+    folklore — which is the exact failure this whole harness exists to prevent.
+
+    Fixture note, and it is the more uncomfortable half: NONE of the five
+    fixtures the corpus census already ran over carries a workflowRef. Zero, all
+    five. So every fidelity verdict measured so far was measured on documents
+    with no cross-map links in them at all, and "workflowRef is preserved" would
+    have read as a green census result while resting on nothing. This fixture is
+    a real document from our own corpus (aef-task-lifecycle v3), not a synthesised
+    one — 832's PROVENANCE.md names the alternative as "a population built by
+    imagining what real input looks like", and it is right.
+    """
+    import re
+
+    path = os.path.join(
+        _ROOT, "tests", "fixtures", "aef-bpmn", "task-lifecycle-with-workflowref.bpmn"
     )
+    with open(path) as fh:
+        src = fh.read()
+    refs_in = re.findall(r'workflowRef="([^"]+)"', src)
+
+    # Positive control on the INPUT: a document with no workflowRef would make
+    # "in == out" trivially true and the verdict would mean nothing.
+    assert refs_in, "fixture no longer carries a workflowRef — the probe is inert"
+
+    _, out = _roundtrip(src)
+    refs_out = re.findall(r'workflowRef="([^"]+)"', out)
+    assert refs_out == refs_in
 
 
 def test_corpus_measured_verdicts_have_not_moved(corpus_baseline):
