@@ -4267,3 +4267,17 @@ X'` returning empty group."
   date: 2026-08-09
   context: Added via context agent
   application: TBD
+- id: L-563
+  learning: "A rule stated only in a code comment is a curation discipline, not a constraint: T-2897 wrote 'a pair that one word can complete is not a pair' and then satisfied it by hand-curating two word lists — it survived one word addition and failed on the next, eight lines below itself (pass inside password). Enforce the rule in code or the next author re-breaks it."
+  source: P-001
+  task: T-2898
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD
+- id: L-564
+  learning: "A fixture-only test suite can only catch bugs someone already imagined. T-2898's first fix passed all 7 fixture legs and was still wrong; the generative leg — enumerating the config lists at run time and probing each entry alone — is what failed it and exposed the more general form (a noun hiding inside a SECOND qualifier occurrence). When the logic is driven by a list, the test must enumerate the list, not sample it."
+  source: P-001
+  task: T-2898
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD

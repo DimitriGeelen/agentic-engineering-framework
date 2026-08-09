@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2898: Secret-scanner ANNOUNCED pair completes from a single overlapping span (password/pass)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T15:04:09Z
+# ============================================================================
+
+task_id: T-2898
+task_name: "Secret-scanner ANNOUNCED pair completes from a single overlapping span (password/pass)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T14:47:00Z
+completed: 2026-08-09T15:00:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-09T16:56:06+02:00
+last_commit: 2026-08-09T16:56:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ANNOUNCED pair must match at non-overlapping spans — password/pass completed it alone
+
+# Key outcomes
+outcomes:
+  - '`_secret_name_classify` requires the secrecy and noun halves to match at'
+  - 'The overlapping words stay in both lists. `password`/`passwd` are not'
+  - 'No regression in what T-2897 already detects: every test in'
+  - 'A **generative** test enumerates both word lists at run time and probes'
+  - 'The new tests are shown to be capable of failing: run them against the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/git/lib/secret-scan.sh'
+  - '.tasks/active/T-2898-secret-scanner-announced-pair-completes-.md'
+  - 'tests/unit/secret_scan_span_rule.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T16:56:06'
+    action: 'T-2898: ANNOUNCED pair must match at non-overlapping spans — password/pass completed it alone'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 5
+  lines_added: 617
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2898-secret-scanner-announced-pair-completes-.md
+generated_by: context-agent-hybrid
