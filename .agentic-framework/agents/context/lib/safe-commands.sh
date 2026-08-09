@@ -139,7 +139,23 @@ _fw_single_command_is_safe() {
             local git_sub
             git_sub=$(echo "$cmd" | awk '{print $2}')
             case "$git_sub" in
+                # T-2888 added the second line. The first had grown one verb per
+                # incident — T-2052, T-2054, T-2462 and T-2878 each patched this
+                # function after an agent hit the null-focus deadlock live — so
+                # the sweep was done against a DERIVED set instead of a
+                # remembered one: every git sub-verb appearing in this repo's own
+                # .sh/.py/.bats, intersected with `git --list-cmds=main` to drop
+                # prose, then run through the predicate. Six read-only verbs our
+                # own tooling uses came back GATED. Table in the task file.
+                #
+                # `symbolic-ref` is deliberately NOT here despite being in that
+                # residue: `git symbolic-ref HEAD refs/heads/x` writes. Same
+                # reason `config` stays out — a verb whose read and write forms
+                # differ only by an argument cannot be decided on the verb alone.
                 status|log|diff|show|branch|remote|describe|rev-parse|tag|stash|shortlog|blame|ls-files|ls-tree|cat-file|name-rev|reflog)
+                    return 0
+                    ;;
+                rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|show-ref|help)
                     return 0
                     ;;
                 # T-2054: `git add` is task-agnostic — it stages already-produced
@@ -298,8 +314,32 @@ _fw_single_command_is_safe() {
             ;;
 
         # Special: echo without redirect is safe (diagnostic output)
+        #
+        # T-2887: this branch used to carry its OWN copy of the redirect regex,
+        # `[^>]>[^>]|>>`. has_bash_write_pattern's copy below grew the `2` and `&`
+        # exemptions that distinguish a file write from a file-descriptor
+        # redirect; this copy never did. So the two disagreed on exactly the
+        # fd forms — `echo x 2>&1` and `echo x 2>/dev/null` read as file writes
+        # here and as no-write there. Measured, both directions:
+        #
+        #   echo hi 2>&1          echo-branch:MATCH   has_write:no
+        #   echo hi 2>/dev/null   echo-branch:MATCH   has_write:no
+        #   echo hi > f           echo-branch:MATCH   has_write:MATCH
+        #
+        # Delegate instead of re-deriving (L-399: N copies of a predicate can
+        # disagree and nothing makes them agree — the same shape as T-2883's
+        # six git-identity probes). Reported by 832 as their rail 489 defect;
+        # L-518 says sweep our equivalent, and ours had it.
+        #
+        # Delegating is strictly more conservative than the old copy on the
+        # non-fd shapes (it also catches rm / sed -i / tee / heredoc text), and
+        # that costs nothing in production: check-active-task.sh:173 already runs
+        # has_bash_write_pattern over the WHOLE command before consulting this
+        # function at all. The private copy could therefore never contribute a
+        # true positive the outer check had not already caught — only the two
+        # false positives above.
         echo|printf)
-            if ! echo "$cmd" | grep -qE '[^>]>[^>]|>>'; then
+            if ! has_bash_write_pattern "$cmd"; then
                 return 0
             fi
             ;;
