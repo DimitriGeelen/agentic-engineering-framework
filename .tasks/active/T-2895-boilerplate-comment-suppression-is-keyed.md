@@ -19,7 +19,7 @@ description: >
   save path writes client bytes verbatim, so a straight port of 832's fix does not
   cover our population. Evidence and full reasoning in T-2893.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -37,7 +37,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T11:07:44Z
-last_update: '2026-08-09T11:15:13Z'
+last_update: 2026-08-09T12:16:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,14 +83,52 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tools/corpus_spec.py:_is_boilerplate_comment` is `text.strip().startswith(_DI_TRAILER_PREFIX)`
+— a pure text match, the same mechanism 832 replaced in their T-406. Filed at rail 497 as
+the mirror image of their defect.
+
+**832's fix does not transfer, and the reason is worth more than the fix.** They gate on
+producer identity: a document naming a *different* producer cannot be carrying their own
+boilerplate, so preserve it. That inference works because the boilerplate is **their**
+text. Ours isn't. `BPMN DI (visual layout) omitted` originates in *their* designer, and
+T-2682 records how it got into our documents: the position-blind reader adopted the
+trailing comment, `generate()` re-emitted it in leading position — and that generated file
+carries `exporter="aef-corpus-spec"`, our own stamp, from T-2891. **A laundered document
+names us.** So porting their gate would preserve exactly the corruption T-2682 closed, on
+documents already promoted (`aef-audit-cron`, `aef-session-lifecycle`).
+
+Producer identity is informative for them and uninformative for us. The asymmetry is not a
+gap in our implementation; it is which side authored the string.
+
+**What does transfer is the loss they identified**, and we can close it on a different
+axis. `startswith` destroys a comment that *begins* with the trailer and then continues
+into real content. That is not hypothetical here — `tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn`
+(T-2893) is our real `aef-task-lifecycle/v1.bpmn` rationale with the trailer prepended, and
+it currently reads back `doc: None`. Requiring the comment to be *nothing but* the trailer
+keeps every byte of T-2682's protection (the 19 byte-exact carriers and the two authored
+variants are all trailer-only) while preserving anything with real content after it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Suppression requires the comment to be **only** the trailer, not merely to start with
+      it — so a rationale that opens with those words and continues into real content
+      survives the read
+- [x] The two known authored variants still suppress (`omitted in this authored fixture`,
+      and the form dropping `in this demo`) — the tail wording drifts, which is why the
+      prefix match existed in the first place; narrowing must not reopen that
+- [x] Measured against both T-2893 fixtures: `t406-clean-leading-boilerplate.bpmn` still
+      reads `doc: None`; `t406-incidental-leading-boilerplate.bpmn` now returns its real
+      rationale rather than `None`
+- [x] Every one of the 21 live `.bpmn` carriers reads back the same `doc` value before and
+      after the change — a corpus-wide before/after diff, not a spot check, because the
+      whole risk of this change is re-opening a hole on documents already promoted.
+      **Measured: 59 files compared, exactly 1 changed, and it is the incidental fixture.**
+- [x] `_is_boilerplate_comment` does **not** gate on `exporter`/producer identity, and a
+      comment in the source says why — a future reader who has seen 832's T-406 will
+      otherwise "fix" this to match theirs. Pinned by a test that reads the source.
+- [x] Existing `tests/unit/test_corpus_spec_doc_guard.py` stays green (9 → 14)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -190,6 +228,10 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_corpus_spec_doc_guard.py -q > /tmp/.t2895 2>&1 && grep -q "14 passed" /tmp/.t2895
+python3 -m pytest tests/unit/test_importer_fidelity.py -q > /tmp/.t2895b 2>&1 && grep -q passed /tmp/.t2895b
+python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec as c; assert c._is_boilerplate_comment('BPMN DI (visual layout) omitted in this demo; x'); assert not c._is_boilerplate_comment('BPMN DI (visual layout) omitted in this demo; x\nreal rationale')"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -241,6 +283,35 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-09 — recovered doc keeps the trailer line instead of editing it out
+
+- **Chose:** when a comment is trailer + real content, return the WHOLE comment as the doc,
+  junk first line included.
+- **Why:** the tidier option — strip the leading trailer line, keep the rest — mangles the
+  exact case this fix exists to protect. A genuine rationale whose own first line happens to
+  begin with those words would lose that line. This whole defect class is silent deletion;
+  the fix must not ship a smaller version of it. Preserve, never delete; a human can tidy a
+  visible junk line, and cannot recover a deleted one.
+- **Rejected:** strip-the-prefix (mangles authored first lines); leave `startswith` and
+  accept the loss (that is the defect); port 832's producer gate (see below).
+
+### 2026-08-09 — did NOT port 832's producer-identity fix, and this is the finding
+
+- **Chose:** narrow the text match on the "one line only" axis; explicitly do not gate on
+  `exporter`.
+- **Why:** their inference is sound *for them* — the boilerplate is their designer's text,
+  so a document naming a different producer cannot be carrying their trailer. On our side
+  the same string arrives by laundering (T-2682: reader adopts the trailing comment,
+  `generate()` re-emits it leading) and that generated file carries our own
+  `exporter="aef-corpus-spec"` stamp from T-2891. **A laundered document names us.** Gating
+  on identity would preserve precisely the corruption the function exists to suppress, on
+  maps already promoted. The asymmetry is which side authored the string — not a gap in our
+  implementation.
+- **Rejected:** straight port of T-406 (re-opens T-2682 on `aef-audit-cron` and
+  `aef-session-lifecycle`); belt-and-braces identity + text (same failure, since the
+  identity leg would win on exactly the laundered documents).
+
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -257,3 +328,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2895-boilerplate-comment-suppression-is-keyed.md
 - **Context:** Initial task creation
+
+### 2026-08-09T12:16:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

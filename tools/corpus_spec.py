@@ -161,8 +161,39 @@ def _is_boilerplate_comment(text: str) -> bool:
     generate re-emitted it in LEADING position, and the corruption became
     indistinguishable from an authored doc on the next read (observed on
     aef-audit-cron and aef-session-lifecycle, both already promoted). T-2682.
+
+    T-2895 narrows this from "starts with the trailer" to "is nothing but the
+    trailer". `startswith` alone destroys a real rationale that merely OPENS with
+    those words — measured, not hypothetical: our own aef-task-lifecycle rationale
+    with the trailer prepended reads back empty
+    (tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn).
+
+    Why the prefix match survives at all: the trailer's TAIL drifts. Three wordings
+    are live in the corpus ("…omitted in this demo;…", "…omitted in this authored
+    fixture;…", "…omitted;…"), so anchoring on the tail would reopen T-2682's hole
+    on the variants. The prefix stays; the "one line only" clause is what makes it
+    specific. Every known trailer is a single line; laundered doc slots are single
+    lines; authored rationale that continues past the trailer is not.
+
+    Deliberately NOT gated on producer identity, which is how 832 fixed the
+    equivalent defect in their T-406 — do not "correct" this to match theirs. Their
+    inference works because the boilerplate is THEIR text: a document naming a
+    different producer cannot be carrying their own trailer. This string originates
+    in their designer, and T-2682 records how it reached our documents — the reader
+    adopted it and generate() re-emitted it, stamping `exporter="aef-corpus-spec"`
+    on the way out (T-2891). A laundered document therefore names US. Gating on
+    identity here would preserve precisely the corruption this function exists to
+    suppress, on maps already promoted. The asymmetry is which side authored the
+    string, not a gap in this implementation.
+
+    Residual, stated rather than papered over: a rationale prepended on the SAME
+    line as the trailer still suppresses. That case is genuinely ambiguous from the
+    text alone and 832 cannot resolve it either.
     """
-    return text.strip().startswith(_DI_TRAILER_PREFIX)
+    stripped = text.strip()
+    if not stripped.startswith(_DI_TRAILER_PREFIX):
+        return False
+    return len([ln for ln in stripped.splitlines() if ln.strip()]) == 1
 
 
 def parse_map(xml_text: str) -> dict:
