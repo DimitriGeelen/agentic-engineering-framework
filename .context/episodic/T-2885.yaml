@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2885: Budget gauge takes the last usage entry regardless of model — foreign-model cache-priming poisons it (832 T-401)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T10:10:28Z
+# ============================================================================
+
+task_id: T-2885
+task_name: "Budget gauge takes the last usage entry regardless of model — foreign-model cache-priming poisons it (832 T-401)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T09:46:14Z
+completed: 2026-08-09T10:10:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-09T11:49:44+02:00
+last_commit: 2026-08-09T11:49:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the budget-gauge model-scoping bug with our own measurements, and record what is owed
+
+# Key outcomes
+outcomes:
+  - 'One shared implementation of "how many tokens is THIS conversation holding",'
+  - 'Both callers use it — the PreToolUse gate and the PostToolUse checkpoint — and'
+  - 'Entries are scoped to the dominant model since the last boundary, **not** to the'
+  - 'Under two in-scope entries returns 0, not a guess'
+  - 'TEETH: a fixture built from a real poisoning-shaped entry, with one test asserting'
+  - 'A genuinely oversized session still reads critical and still blocks — the fix must'
+  - 'The wrap-up allowlist is intact at critical (git commit, fw handover, reads)'
+  - '`lib/costs.sh` / `web/blueprints/costs.py` are left alone, with a docstring note'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file the budget-gauge model-scoping bug with our own measurements, and record what is owed'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-09 — Dominant-model scope vs. per-model separate readings'
+    chose: 'scope entries to the model with the most usage entries since the'
+    rationale: 'matches 832''s shipped fix and the exact failure mode reported —'
+    alternatives_rejected: ['(a) keying on the newest entry''s model — reproduces the bug']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/approvals/pending-0bf2e8e34e3b.yaml'
+  - '.context/audits/2026-08-09.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.tasks/active/T-2885-budget-gauge-takes-the-last-usage-entry-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T11:49:44'
+    action: 'T-2885: file the budget-gauge model-scoping bug with our own measurements, and record what is owed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 1
+  files_changed: 11
+  lines_added: 442
+  lines_removed: 116
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2885-budget-gauge-takes-the-last-usage-entry-.md
+generated_by: context-agent-hybrid

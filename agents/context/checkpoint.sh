@@ -90,47 +90,21 @@ find_transcript() {
     fi
 }
 
-# Read effective context size from the last REAL API response in the transcript.
-# Uses tail -c (O(1) seek) + python3 JSON parsing for accuracy.
-# grep alone can't distinguish usage data from command text containing "input_tokens".
-# Performance: ~30ms on a 30MB transcript (2MB tail window).
-#
-# Filters out <synthetic> model entries which Claude Code writes after compaction
-# with 0 tokens — taking the last such entry would hide that context was just destroyed.
+# Read effective context size for THIS conversation via the shared scan
+# (T-2885, lib/context_tokens.py) — also used by budget-gate.sh, so the two
+# gauges cannot drift apart again. Scopes usage entries to the dominant model
+# since the last compact_boundary (not the newest raw entry), which is what
+# resets this reading across a compaction — a reset checkpoint.sh's own
+# inline copy never received (only budget-gate.sh's did, per T-2322).
+# Uses tail -c (O(1) seek) so a 30MB transcript stays a ~2MB scan window.
 get_context_tokens() {
     local transcript="$1"
-    tail -c 10000000 "$transcript" 2>/dev/null | python3 -c "
-import sys, json, os
-# T-1088: Read session-start timestamp if present, filter pre-compact entries.
-# claude -c continues the same JSONL, so the 'last usage' scan can otherwise
-# pick up pre-compact entries. ISO-8601 Z sorts lexically — no parsing needed.
-session_start_ts = ''
-ts_file = '$CONTEXT_DIR/working/.session-start-ts'
-if os.path.exists(ts_file):
-    try:
-        with open(ts_file) as sf:
-            session_start_ts = sf.read().strip()
-    except: pass
-
-t = 0
-for line in sys.stdin:
-    try:
-        e = json.loads(line)
-        # Skip synthetic entries (written after compaction, report 0 tokens)
-        model = e.get('message', {}).get('model', '')
-        if model == '<synthetic>' or model.startswith('<'):
-            continue
-        # T-1088: skip pre-session-start entries (e.g., pre-compact).
-        if session_start_ts:
-            entry_ts = e.get('timestamp', '')
-            if entry_ts and entry_ts < session_start_ts:
-                continue
-        u = e.get('message', {}).get('usage')
-        if u and 'input_tokens' in u:
-            t = u['input_tokens'] + u.get('cache_read_input_tokens', 0) + u.get('cache_creation_input_tokens', 0)
-    except: pass
-print(t)
-" 2>/dev/null
+    local session_start_ts=""
+    local ts_file="$CONTEXT_DIR/working/.session-start-ts"
+    if [ -f "$ts_file" ]; then
+        session_start_ts=$(tr -d '[:space:]' < "$ts_file" 2>/dev/null) || session_start_ts=""
+    fi
+    tail -c 10000000 "$transcript" 2>/dev/null | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$session_start_ts" 2>/dev/null
 }
 
 warn_by_tokens() {

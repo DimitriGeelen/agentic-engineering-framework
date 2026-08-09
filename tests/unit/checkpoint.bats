@@ -25,14 +25,17 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
-# Helper: create a fake JSONL transcript with token data
+# Helper: create a fake JSONL transcript with token data.
+# T-2885: writes TWO usage entries (same model) — the dominant-model scope
+# requires >=2 in-scope entries before it will report a reading at all.
 _create_transcript() {
     local dir="$1"
     local tokens="$2"
     local filename="${3:-test-session.jsonl}"
     mkdir -p "$dir"
-    # Write a fake API response entry with usage data
+    # Write two fake API response entries with usage data (last one wins)
     cat > "$dir/$filename" <<EOF
+{"message":{"model":"claude-opus-4-6","usage":{"input_tokens":$tokens,"output_tokens":500,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
 {"message":{"model":"claude-opus-4-6","usage":{"input_tokens":$tokens,"output_tokens":500,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
 EOF
     echo "$dir/$filename"
@@ -97,15 +100,19 @@ EOF
 
 # --- T-1088: Session-start-ts filter (post-compact JSONL scan) ---
 
-# Helper: create a transcript with two entries, one pre- and one post-
-# session-start timestamp. Pre-entry has high tokens (simulates pre-compact
-# final usage), post-entry has low tokens (simulates post-compact).
+# Helper: create a transcript with three entries: one pre-session-start
+# timestamp (simulates pre-compact final usage) and TWO post-session-start
+# entries (simulates post-compact) — same model throughout. T-2885: the
+# dominant-model scope needs >=2 in-scope entries to report a reading, so a
+# single post-ts entry would otherwise return 0 regardless of the T-1088
+# filter working correctly.
 _create_timestamped_transcript() {
     local dir="$1"
     local filename="${2:-test-session.jsonl}"
     mkdir -p "$dir"
     cat > "$dir/$filename" <<'EOF'
 {"timestamp":"2026-04-11T09:00:00.000Z","message":{"model":"claude-opus-4-6","usage":{"input_tokens":296000,"output_tokens":500,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"timestamp":"2026-04-11T10:30:00.000Z","message":{"model":"claude-opus-4-6","usage":{"input_tokens":40000,"output_tokens":500,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
 {"timestamp":"2026-04-11T11:00:00.000Z","message":{"model":"claude-opus-4-6","usage":{"input_tokens":50000,"output_tokens":500,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
 EOF
     echo "$dir/$filename"

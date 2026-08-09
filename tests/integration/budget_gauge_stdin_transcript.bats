@@ -47,10 +47,13 @@ teardown() {
     return 0
 }
 
-# Write a single usage entry (last-entry wins in the gauge's token scan).
+# Write two usage entries, same model (last-entry-of-dominant-model wins in
+# the gauge's token scan). T-2885: the dominant-model scope needs >=2
+# in-scope entries before it will report a reading — one line alone reads 0.
 _usage_line() {
     local file="$1" toks="$2"
-    printf '%s\n' "{\"timestamp\":\"2026-06-13T19:00:00.000Z\",\"message\":{\"model\":\"claude-opus-4\",\"usage\":{\"input_tokens\":$toks,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":0}}}" > "$file"
+    local line="{\"timestamp\":\"2026-06-13T19:00:00.000Z\",\"message\":{\"model\":\"claude-opus-4\",\"usage\":{\"input_tokens\":$toks,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":0}}}"
+    printf '%s\n%s\n' "$line" "$line" > "$file"
 }
 
 _run_gate() {  # stdin JSON on $1

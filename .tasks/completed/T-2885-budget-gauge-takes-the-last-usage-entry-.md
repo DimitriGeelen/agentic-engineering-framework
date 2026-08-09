@@ -1,13 +1,17 @@
 ---
 id: T-2885
-name: "Budget gauge takes the last usage entry regardless of model — foreign-model cache-priming poisons it (832 T-401)"
+name: "Budget gauge takes the last usage entry regardless of model — foreign-model
+  cache-priming poisons it (832 T-401)"
 description: >
-  budget-gate.sh and checkpoint.sh both take the LAST usage entry in the transcript as this conversation's context size. Four models write usage entries into our transcript; a cache-priming call from a foreign model can therefore report its own 300k+ prompt as ours, arming a critical block and the auto-restart signal on a healthy session.
+  budget-gate.sh and checkpoint.sh both take the LAST usage entry in the transcript
+  as this conversation's context size. Four models write usage entries into our transcript;
+  a cache-priming call from a foreign model can therefore report its own 300k+ prompt
+  as ours, arming a critical block and the auto-restart signal on a healthy session.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T09:46:14Z
-last_update: 2026-08-09T09:46:14Z
-date_finished: null
+last_update: 2026-08-09T10:10:17Z
+date_finished: 2026-08-09T10:10:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-09T09:55:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-09T10:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2885: Budget gauge takes the last usage entry regardless of model — foreign-model cache-priming poisons it (832 T-401)
@@ -108,21 +140,21 @@ the gauge helper would be a regression — say so in the docstring.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] One shared implementation of "how many tokens is THIS conversation holding",
+- [x] One shared implementation of "how many tokens is THIS conversation holding",
       replacing the two hand-copied inline scans, so the two gauges cannot drift again
-- [ ] Both callers use it — the PreToolUse gate and the PostToolUse checkpoint — and
+- [x] Both callers use it — the PreToolUse gate and the PostToolUse checkpoint — and
       checkpoint.sh gains the compact_boundary reset it never received
-- [ ] Entries are scoped to the dominant model since the last boundary, **not** to the
+- [x] Entries are scoped to the dominant model since the last boundary, **not** to the
       newest entry's model (the newest-keyed rule reproduces the reported bug exactly)
-- [ ] Under two in-scope entries returns 0, not a guess
-- [ ] TEETH: a fixture built from a real poisoning-shaped entry, with one test asserting
+- [x] Under two in-scope entries returns 0, not a guess
+- [x] TEETH: a fixture built from a real poisoning-shaped entry, with one test asserting
       the **pre-fix** algorithm still returns the inflated number on it — so the fixture
       cannot quietly stop reproducing the bug (832's convention, and the leg that makes
       the others meaningful)
-- [ ] A genuinely oversized session still reads critical and still blocks — the fix must
+- [x] A genuinely oversized session still reads critical and still blocks — the fix must
       not be "stop blocking"; repaired, not removed
-- [ ] The wrap-up allowlist is intact at critical (git commit, fw handover, reads)
-- [ ] `lib/costs.sh` / `web/blueprints/costs.py` are left alone, with a docstring note
+- [x] The wrap-up allowlist is intact at critical (git commit, fw handover, reads)
+- [x] `lib/costs.sh` / `web/blueprints/costs.py` are left alone, with a docstring note
       saying why routing cost through this helper would be a regression
 
 ## Verification
@@ -159,6 +191,13 @@ the gauge helper would be a regression — say so in the docstring.
 -->
 
 ## Verification
+
+bash -n agents/context/budget-gate.sh
+bash -n agents/context/checkpoint.sh
+python3 -c "import ast; ast.parse(open('lib/context_tokens.py').read())"
+out=$(bats tests/unit/t2885_context_tokens_model_scope.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/integration/budget_gate.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/integration/budget_gauge_stdin_transcript.bats tests/integration/continuous_loop_critical_signal.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -241,6 +280,37 @@ the gauge helper would be a regression — say so in the docstring.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `budget-gate.sh` / `checkpoint.sh` can score a healthy session as
+critical (or vice versa) when a foreign model writes a usage entry into the
+same transcript JSONL after our own last turn — reported by 832 (their T-401)
+and confirmed live in this tree: 4 models write usage entries into one
+transcript, and a cache-priming call from a foreign model reported a 300k+
+prompt as ours.
+
+**Root cause:** both scripts computed "current context size" by taking the
+LAST usage entry in transcript order, unconditionally overwriting on every
+entry that carried a `usage` block. Position in the log tells you WHEN an
+entry was written, not WHOSE conversation it belongs to — that distinction
+had never needed asking until a second writer appeared in the same file.
+
+**Why structurally allowed:** the token scan was implemented twice
+independently (budget-gate.sh's PreToolUse copy and checkpoint.sh's
+PostToolUse copy), both hand-copied from the same origin with no shared
+source. The two copies had already drifted — only budget-gate.sh received
+the T-2322 compact_boundary reset; checkpoint.sh did not — and nothing
+detected the drift because both copies "worked" whenever the newest entry
+happened to be ours, which was true 100% of the time until Claude Code
+started writing multi-model transcripts (opus-5, fable-5, opus-4-8, sonnet-4-5
+observed in one live transcript).
+
+**Prevention:** `lib/context_tokens.py` is now the single implementation both
+callers invoke — a future compact_boundary-class fix lands once, not twice.
+`tests/unit/t2885_context_tokens_model_scope.bats` pins the fix with a TEETH
+fixture (`tests/fixtures/T-2885/poisoning-transcript.jsonl`) built from a real
+poisoning-shaped entry, including a frozen copy of the pre-fix algorithm that
+must keep reproducing the bug on that fixture — so the regression test cannot
+silently stop testing anything if the fixture or module drift apart later.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -276,6 +346,34 @@ the gauge helper would be a regression — say so in the docstring.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-09 — Dominant-model scope vs. per-model separate readings
+
+- **Chose:** scope entries to the model with the most usage entries since the
+  last `compact_boundary` (the dominant writer), take its last entry, and
+  return 0 below two in-scope entries.
+- **Why:** matches 832's shipped fix and the exact failure mode reported —
+  the poisoning entry in their incident WAS the newest, so a newest-model-keyed
+  rule reproduces the bug. Dominant-by-count is robust because normal
+  conversational turns from our own model vastly outnumber a single foreign
+  cache-priming call.
+- **Rejected:** (a) keying on the newest entry's model — reproduces the bug
+  by definition; (b) always taking the max token reading across all models —
+  would make a foreign 300k+ entry ARM critical even more reliably than
+  before; (c) a session/thread-id filter — Claude Code transcripts don't
+  carry a per-writer session id distinct from the shared transcript file.
+
+### 2026-08-09 — Not sharing with lib/costs.sh / web/blueprints/costs.py
+
+- **Chose:** leave both cost-reporting surfaces on their existing full-sum
+  scan; added a docstring note in each explaining why.
+- **Why:** cost and context-window occupancy are different questions over the
+  same three usage fields. A foreign call is real spend (belongs in cost) but
+  not real context (must be excluded from the gauge). Routing cost through
+  `lib/context_tokens.py` would silently under-report spend for exactly the
+  entries that make the cost dashboard worth running.
+- **Rejected:** a single shared "usage total" helper with a mode flag —
+  adds a branch two callers would need to get right rather than removing one.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -292,3 +390,28 @@ the gauge helper would be a regression — say so in the docstring.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2885-budget-gauge-takes-the-last-usage-entry-.md
 - **Context:** Initial task creation
+
+### 2026-08-09T09:55:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-38b36712
+- **Timestamp:** 2026-08-09T10:10:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — `lib/costs.sh` / `web/blueprints/costs.py` are left alone, with a docstring note
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/costs.sh in: `lib/costs.sh` / `web/blueprints/costs.py` are left alone, with a docstring note`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 29
+     - evidence: ``bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.`
+
+### 2026-08-09T10:10:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

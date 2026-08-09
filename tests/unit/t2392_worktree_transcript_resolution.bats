@@ -100,7 +100,12 @@ teardown() {
     printf '%s\n' '{"timestamp":"2020-01-01T00:00:00Z","message":{"model":"claude","usage":{"input_tokens":5}}}' > "$WT_DIR/stale.jsonl"
     touch -d '2020-01-01' "$WT_DIR/stale.jsonl"
     # Main-keyed dir: the live session transcript, real usage, NEWER mtime.
-    printf '%s\n' '{"timestamp":"2025-01-01T00:00:00Z","message":{"model":"claude","usage":{"input_tokens":150000}}}' > "$MAIN_DIR/live.jsonl"
+    # T-2885: two entries, same model — the dominant-model scope needs >=2
+    # in-scope entries before it will report a reading (one line reads 0).
+    printf '%s\n%s\n' \
+        '{"timestamp":"2025-01-01T00:00:00Z","message":{"model":"claude","usage":{"input_tokens":150000}}}' \
+        '{"timestamp":"2025-01-01T00:00:01Z","message":{"model":"claude","usage":{"input_tokens":150000}}}' \
+        > "$MAIN_DIR/live.jsonl"
     touch -d '2025-01-01' "$MAIN_DIR/live.jsonl"
 
     mkdir -p "$WT/.context/working"

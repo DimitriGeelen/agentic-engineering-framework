@@ -45,7 +45,10 @@ teardown() {
 }
 
 _mk_transcript() {  # file, tokens
-    printf '%s\n' "{\"timestamp\":\"2026-06-13T19:00:00.000Z\",\"message\":{\"model\":\"claude-opus-4\",\"usage\":{\"input_tokens\":$2,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":0}}}" > "$1"
+    # T-2885: two entries, same model — the dominant-model scope needs >=2
+    # in-scope entries before it will report a reading (one line reads 0).
+    local line="{\"timestamp\":\"2026-06-13T19:00:00.000Z\",\"message\":{\"model\":\"claude-opus-4\",\"usage\":{\"input_tokens\":$2,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":0}}}"
+    printf '%s\n%s\n' "$line" "$line" > "$1"
 }
 
 # Run the REAL (symlinked) checkpoint post-tool with a stdin transcript_path.
