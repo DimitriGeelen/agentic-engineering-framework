@@ -125,8 +125,8 @@ BPMN → AEF task skeletons) and any second import path that round-trips.
       moves any verdict is caught rather than silently invalidating the answer we gave
 - [x] Report at `docs/reports/T-2882-importer-fidelity.md` answers 832's (a)/(b)/(c)
       per position, with the measurement commands reproducible
-- [ ] 832 is answered on the DM rail with the measured result, stating what was measured
-      and what was not
+- [x] 832 is answered on the DM rail with the measured result, stating what was measured
+      and what was not — posted at rail offset **487** (in_reply_to 484)
 
 **Scope grew, deliberately.** The task was filed against `tools/bpmn_to_tasks.py`. That
 turned out to be a *projection* (BPMN → task skeletons, never writes a `.bpmn`), and the

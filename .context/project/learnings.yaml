@@ -4225,3 +4225,10 @@ X'` returning empty group."
   date: 2026-08-08
   context: Added via context agent
   application: TBD
+- id: L-557
+  learning: "A peer's question can carry an assumption that is itself the finding. 832 asked whether our importer preserves content it does not consume — (a)/(b)/(c). The taxonomy presumes a parse-and-re-serialise round-trip. We have TWO importers: a projection (BPMN -> task skeletons, never writes .bpmn) and a round-trip (corpus_spec derive/generate). Answering for the one the task was filed against would have been true and useless. Before answering a peer's shaped question, check whether your system has more than one instance of the thing they are asking about, and whether their frame applies to each. Measured in T-2882; the projection drops everything silently but loses nothing (source is never rewritten), the round-trip answers all three options by position."
+  source: P-001
+  task: T-2882
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD
