@@ -1,8 +1,10 @@
 ---
 id: T-2897
-name: "Secret scan is content-keyed so it cannot see self-generated secrets; nothing reads filenames"
+name: "Secret scan is content-keyed so it cannot see self-generated secrets; nothing
+  reads filenames"
 description: >
-  Secret scan is content-keyed so it cannot see self-generated secrets; nothing reads filenames
+  Secret scan is content-keyed so it cannot see self-generated secrets; nothing reads
+  filenames
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T11:45:21Z
-last_update: 2026-08-09T11:45:21Z
-date_finished: null
+last_update: '2026-08-09T12:00:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-09T12:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-09T12:00:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2897: Secret scan is content-keyed so it cannot see self-generated secrets; nothing reads filenames
@@ -71,23 +101,27 @@ shape, do not copy bytes.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A name-axis check reads `git ls-files` and flags tracked files whose **name** marks
+- [x] A name-axis check reads `git ls-files` and flags tracked files whose **name** marks
       them as credential material, independent of content
-- [ ] Two classes, and the weaker one is labelled as the heuristic it is:
+- [x] Two classes, and the weaker one is labelled as the heuristic it is:
       DEFINITIVE (exact name / extension — `.fw-secret-key`, `*.pem`, `id_rsa`) and
       ANNOUNCED (secrecy word × credential noun), so a maybe never reads as a certainty
-- [ ] `token` is **not** a standalone signal — 832 measured 17 matches on their tree, every
+- [x] `token` is **not** a standalone signal — 832 measured 17 matches on their tree, every
       one a false positive (token-budget reports, design tokens, a CSRF-token RCA). It
       survives only as the noun half of a pair that also carries a secrecy word
-- [ ] Teeth: a test asserts the check fires on `.context/working/.fw-secret-key` **at its
+- [x] Teeth: a test asserts the check fires on `.context/working/.fw-secret-key` **at its
       real path**, and discriminates tracked from untracked — an untracked key is not a leak
-- [ ] False-positive control: the check stays silent on `agents/git/lib/secret-scan.sh` and
+- [x] False-positive control: the check stays silent on `agents/git/lib/secret-scan.sh` and
       on any `secrets_store`-style source file, so it cannot be reverted for crying wolf
-- [ ] Runs clean over this repo with an empty allowlist — a check that needs exemptions on
+- [x] Runs clean over this repo with an empty allowlist — a check that needs exemptions on
       day one has the wrong threshold
-- [ ] Wired where a false green was printed: the same surface that emitted
+- [x] Wired where a false green was printed: the same surface that emitted
       `[PASS] Secret scan: tracked tree clean` reports the name axis too, so the PASS line
       means both axes passed rather than one
+- [x] **Added during build, beyond the filed scope:** also wired into `scan_staged`, so the
+      pre-commit hook *refuses* the commit that publishes a key rather than only reporting
+      it afterwards. Gated on newly-**added** paths (`--diff-filter=A`), not on every touch
+      of an already-accepted path — a gate that re-fires on each edit gets bypassed by habit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -187,6 +221,11 @@ shape, do not copy bytes.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/git/lib/secret-scan.sh
+out=$(bats tests/unit/secret_scan_name_axis.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/test_secret_scan.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+PROJECT_ROOT=$PWD bash agents/git/lib/secret-scan.sh scan-names
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -202,6 +241,40 @@ shape, do not copy bytes.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `[PASS] Secret scan: tracked tree clean` on every audit across a two-month
+window in which a signing key was tracked and pushed to a public mirror (832's tree, rail
+498). Not a missed alert — an asserted all-clear.
+
+**Root cause:** one axis. The scanner indexes file *content* against vendor-prefixed
+credentials. `secrets.token_hex(32)` is 64 bare hex characters and carries no vendor
+fingerprint by definition, so no addition to the pattern catalogue could ever have caught
+it. The scanner was not misconfigured or incomplete; it was complete along an axis the
+secret does not lie on.
+
+**Why structurally allowed:** the check's own scope statement made it look handled. Its
+header documents "vendor-prefixed credentials" as a deliberate choice, and that choice is
+defensible — but a scope note reads as *coverage* to everyone downstream, and the PASS line
+it emits does not say which axis passed. A green that asserts one axis is textually
+identical to a green that asserts all of them, which is why this ran to two months instead
+of two days: red lines get looked at, greens do not.
+
+**Prevention:** the name axis (`scan_names`), wired into `scan_tree` — the exact function
+whose verdict line was the false green — so that PASS now means both axes. Also wired into
+`scan_staged`, so the pre-commit hook refuses the commit rather than reporting the leak
+afterwards. `tests/unit/secret_scan_name_axis.bats` (15) pins it, with three properties
+that matter more than the count: it fires on the real filename at its real path; it
+discriminates tracked from untracked (an untracked key is the *correct* end state of
+T-2896, and flagging it would train people to ignore the check); and it stays silent on
+`secret-scan.sh` itself, which is what keeps a check from being reverted for crying wolf.
+
+**Found during build, worth recording:** the first cut listed `credential` as both the
+qualifier and the noun of the ANNOUNCED pair, so the single word "credentials" satisfied
+the pair alone and the scan fired on three fabric cards describing credential-handling
+*source*. A pair one word can complete is a single-word match wearing a pair's clothes —
+the same shape as the bare-`token` noise 832 measured at 17/17. Caught by running it over
+the live tree with an empty allowlist before writing any test, which is also the AC that
+forced the run.
 
 ## Evolution
 
