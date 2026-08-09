@@ -247,13 +247,7 @@ fixture is which.
 ## Verification
 
 python3 -c "import xml.etree.ElementTree as ET; [ET.parse(p) for p in ['tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn','tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn']]"
-python3 -c "
-import sys; sys.path.insert(0, 'tools')
-import corpus_spec as cs
-for p in ['tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn','tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn']:
-    spec = cs.parse_map(open(p).read())
-    assert spec.get('doc') is None, p
-"
+python3 -c "import sys; sys.path.insert(0, 'tools'); import corpus_spec as cs; docs=[cs.parse_map(open(p).read()).get('doc') for p in ['tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn','tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn']]; assert docs == [None, None], docs"
 git hash-object tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn | grep -q 03e49527364003820acb152cd449234efb5e2b96
 
 # Shell commands that MUST pass before work-completed. One per line.
