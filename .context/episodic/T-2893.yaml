@@ -1,0 +1,126 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2893: adversarial fixtures for 832's T-406 leading-comment probe
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T12:16:09Z
+# ============================================================================
+
+task_id: T-2893
+task_name: "adversarial fixtures for 832's T-406 leading-comment probe"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T10:57:33Z
+completed: 2026-08-09T12:15:57Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-09T13:03:53+02:00
+last_commit: 2026-08-09T14:15:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file T-2894 (set-level port ratchet, 832 rail 495) + lifecycle-move learning; rail 496 posted. the trailer IS load-bearing on our side, and we hold 832's T-406 defect. session state — three fixtures to author, T-2895 finding recorded, rail at 497. author the two adversarial fixtures for 832's T-406 probe (clean + incidental). post fixture handoff to the correct rail (redact + repost) + capture L-561. fix Verification block — one-line python (multi-line heredoc split across separate gate commands)
+
+# Key outcomes
+outcomes:
+  - 'Two fixtures authored, not one: (a) the clean case 832 asked for — a'
+  - 'Both are documents **we** would plausibly author, not documents shaped to'
+  - 'The exact trailer string is taken from a document, not from memory or from'
+  - 'Whether their trailer is load-bearing on OUR side is answered by measurement:'
+  - 'The fixtures are handed over as refs on the rail, not as bytes (OBS-108),'
+  - 'If the incidental case turns out to behave differently from the clean case'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix Verification block — one-line python (multi-line heredoc split across separate gate commands)'
+    source: git-mined
+  - description: 'post fixture handoff to the correct rail (redact + repost) + capture L-561'
+    source: git-mined
+  - description: 'author the two adversarial fixtures for 832''s T-406 probe (clean + incidental)'
+    source: git-mined
+  - description: 'session state — three fixtures to author, T-2895 finding recorded, rail at 497'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-09.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-2887.yaml'
+  - '.context/episodic/T-2888.yaml'
+  - '.context/episodic/T-2890.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.bpmn-promote-audit.jsonl'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2889-git-stash-classifies-safe-but-writes-the.md'
+  - '.tasks/active/T-2892-corpus-all-versions-census-pinned-at-32-.md'
+  - '.tasks/active/T-2893-adversarial-fixtures-for-832s-t-406-lead.md'
+  - '.tasks/active/T-2894-port-3000-carrier-population-has-no-set-.md'
+  - '.tasks/active/T-2895-boilerplate-comment-suppression-is-keyed.md'
+  - 'tests/fixtures/832-outbound/README.md'
+  - 'tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn'
+  - 'tests/fixtures/832-outbound/t406-incidental-leading-boilerplate.bpmn'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T13:03:53'
+    action: 'T-2893: file T-2894 (set-level port ratchet, 832 rail 495) + lifecycle-move learning; rail 496 posted'
+  - time: '2026-08-09T13:08:40'
+    action: 'T-2893: the trailer IS load-bearing on our side, and we hold 832''s T-406 defect'
+  - time: '2026-08-09T13:13:48'
+    action: 'T-2893: session state — three fixtures to author, T-2895 finding recorded, rail at 497'
+  - time: '2026-08-09T14:05:21'
+    action: 'T-2893: author the two adversarial fixtures for 832''s T-406 probe (clean + incidental)'
+  - time: '2026-08-09T14:15:20'
+    action: 'T-2893: post fixture handoff to the correct rail (redact + repost) + capture L-561'
+  - time: '2026-08-09T14:15:53'
+    action: 'T-2893: fix Verification block — one-line python (multi-line heredoc split across separate gate commands)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 78 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 78
+  commits: 6
+  files_changed: 32
+  lines_added: 1975
+  lines_removed: 512
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2893-adversarial-fixtures-for-832s-t-406-lead.md
+generated_by: context-agent-hybrid
