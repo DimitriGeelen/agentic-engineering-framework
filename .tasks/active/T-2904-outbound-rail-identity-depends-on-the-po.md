@@ -37,7 +37,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T16:03:36Z
-last_update: 2026-08-09T16:05:11Z
+last_update: '2026-08-09T16:15:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-09T16:15:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -115,12 +125,50 @@ Determining WHICH identity file the doorbell path loads requires reading
 host-wide config, which T-559 blocks and which gap-homing puts in termlink's
 register, not ours — `.context/inbox.yaml:764` already homes it there.
 
-### Remaining (AC-5)
+### CORRECTION — "structurally cannot" was wrong (AC-5)
 
-The CLI path structurally cannot sign as the project key from this host. The
-second branch — routing the framework's rail posting through something that can,
-or refusing to post mis-signed — is unbuilt. Left open deliberately rather than
-ticked; the fix for the signing itself is termlink's.
+The table above measured every flag on the `channel post` subcommand and
+concluded the CLI could not sign as a project key. That conclusion was false, and
+the probe was aimed at the wrong dimension: the signing key is selected by **env
+precedence**, not by post flags —
+
+    TERMLINK_IDENTITY_FILE > TERMLINK_AGENT_ID > TERMLINK_IDENTITY_DIR > shared host default
+
+(termlink PL-236 / their T-2324; documented only under `termlink agent identity
+--resolve --help`, which is why flag-probing never met it.)
+
+Measured 2026-08-09, on a throwaway topic rather than 832's rail:
+
+| probe | resulting `sender_id` |
+|---|---|
+| `TERMLINK_IDENTITY_FILE=<scratch>/probe.key` + `channel post` | `22b8cb92cc2606de` — the scratch key |
+
+Topic `aef-t2904-idprobe` offset 0 on hub `192.168.10.107:9100` is the evidence;
+left in place deliberately rather than cleaned up.
+
+Two further findings:
+
+- **`TERMLINK_IDENTITY_FILE` auto-creates the keypair** (chmod 600) when the path
+  does not exist. So the tempting probe — `TERMLINK_AGENT_ID=<guess>` to discover
+  the existing AEF agent key — would have **minted** keys under the shared host
+  identity dir rather than read it. Not done, for that reason.
+- The remaining unknown is only *where AEF's existing `0e7ee6ca` key file lives*,
+  which is host config behind T-559 and homes to termlink per
+  `.context/inbox.yaml:764`. That is a much smaller and more actionable statement
+  than "structurally cannot".
+
+`learnings.yaml` L-569 carried the false universal and has been marked in place
+(not merely superseded — the correction must be reachable *from* the claim);
+L-570 records the measurement and the methodological shape.
+
+### What this task ships (AC-5)
+
+The mechanism, not the fingerprint. `lib/rail-identity.sh` resolves a
+project-scoped signing identity and refuses when the resolved key is the shared
+host key; `fw rail post` is the guarded route. **Which** fingerprint the project
+adopts — re-use `0e7ee6ca` (continuity with 832) or mint a project-owned key
+(D-377 total isolation, but a new producer identity 832 has never seen) — is a
+cross-project blast-radius call and belongs to the operator, not to me.
 
 
 ## Acceptance Criteria
@@ -139,11 +187,52 @@ ticked; the fix for the signing itself is termlink's.
       outside and the answer changes what needs doing
 - [x] 832 is told, because they are gating on producer identity at this seam and
       a host-signed message reads to them as a valid non-AEF producer
-- [ ] Either the CLI path signs as the project key, or — if it structurally
+- [x] Either the CLI path signs as the project key, or — if it structurally
       cannot — the framework's rail-posting surface stops using the bare CLI
       path, so a mis-signed post is not reachable by the default route
+      → **first branch, and the premise "structurally cannot" was false.**
+      `lib/rail-identity.sh` + `fw rail post` sign with the project key when
+      `RAIL_IDENTITY_FILE` is set, and refuse (exit 2) when the post would carry
+      the host key. Proven live, not inferred: a guarded post landed on topic
+      `aef-t2904-idprobe` as sender `22b8cb92cc2606de` from a session whose host
+      identity is `d1993c2c3ec44c94`. Host-default detection is by comparison
+      against the bare fingerprint, not a hard-coded literal, so it holds on any
+      host. 7 bats legs; the two load-bearing ones mutation-checked red.
 
 ### Human
+
+- [ ] [REVIEW] Decide WHICH fingerprint this project signs rail posts with
+
+  This is the one part of T-2904 I deliberately did not decide. The mechanism is
+  built and proven; the choice is a cross-project coordination call, because 832
+  has known us as `0e7ee6cad65137fc` for hundreds of rail offsets and a new
+  producer identity is something they must be told about, not something they
+  should discover.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw rail identity`
+     (expect `state: host` until a choice is made)
+  2. Pick one:
+     - **Mint a project-owned key** — aligns with D-377 (nothing of the project
+       in `$HOME`), removes all dependence on host config, but is a NEW
+       fingerprint 832 has never seen:
+       `cd /opt/999-Agentic-Engineering-Framework && bin/fw config set RAIL_IDENTITY_FILE .context/rail-identity.key`
+     - **Re-use the existing `0e7ee6ca` key** — preserves continuity with 832,
+       but the key file lives under host config, which T-559 fences and which
+       `.context/inbox.yaml:764` already homes to termlink:
+       `cd /opt/999-Agentic-Engineering-Framework && bin/fw config set RAIL_IDENTITY_FILE /path/to/that/key`
+     - **Neither yet** — leave host-signed; `fw rail post` will keep refusing,
+       and hand-typed `termlink channel post` keeps working as today.
+  3. If you minted a new key, tell 832 the new fingerprint before the next rail
+     post, so their producer-identity gating (their T-406/T-414) does not read it
+     as an unknown third party.
+
+  **Expected:** `bin/fw rail identity` reports `state: project` with a
+  fingerprint that is not `d1993c2c3ec44c94`.
+
+  **If not:** the path may be relative to a different root — pass an absolute
+  path, and re-check with `bin/fw config get RAIL_IDENTITY_FILE`.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -311,3 +400,11 @@ ticked; the fix for the signing itself is termlink's.
 
 ### 2026-08-09T16:05:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+bats tests/unit/rail_identity_guard.bats
+# the guard refuses a host-signed post with the documented exit code, not just a message
+echo body | env -u FW_RAIL_IDENTITY_FILE bin/fw rail post --hub 127.0.0.1:9 sink-topic > /tmp/.t2904 2>&1; [ $? -eq 2 ] && grep -q "BLOCKED" /tmp/.t2904
+# a project-owned key resolves to a fingerprint that is NOT the host default
+K=$(mktemp -d)/k.key; H=$(env -u FW_RAIL_IDENTITY_FILE bin/fw rail identity | awk '/fingerprint:/{print $2}'); P=$(FW_RAIL_IDENTITY_FILE=$K bin/fw rail identity | awk '/fingerprint:/{print $2}'); [ -n "$H" ] && [ -n "$P" ] && [ "$H" != "$P" ]
+# the corrected learning is reachable FROM the wrong claim, not merely filed near it
+grep -q "PARTLY WRONG — CORRECTED SAME DAY BY L-570" .context/project/learnings.yaml
