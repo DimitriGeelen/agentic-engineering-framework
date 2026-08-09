@@ -177,6 +177,24 @@ scan_staged() {
         echo "$diff_stream" | _secret_scan_run_patterns "$patterns" "$allow_re" || rc=1
     fi
 
+    # T-2897 name axis, at the gate rather than only at the audit. scan_tree
+    # tells you a key was published; this refuses the commit that publishes it.
+    # Newly-added paths only: a rename or a content edit to a file whose name
+    # was already accepted is not the event we are gating, and re-flagging it on
+    # every touch is how a gate gets bypassed by habit.
+    local _added _path _base _lower _class
+    _added=$(git -C "$root" diff --cached --name-only --diff-filter=A 2>/dev/null)
+    while IFS= read -r _path; do
+        [ -z "$_path" ] && continue
+        _base="${_path##*/}"
+        _lower="$(printf '%s' "$_base" | tr '[:upper:]' '[:lower:]')"
+        _class="$(_secret_name_classify "$_lower")"
+        [ -z "$_class" ] && continue
+        _secret_scan_is_allowed "$_path:0:$_base" "$allow_re" && continue
+        printf '  [name:%s] %s\n' "$_class" "$_path"
+        rc=1
+    done <<< "$_added"
+
     # Optional escalation: gitleaks (best-effort, never blocks if missing)
     if command -v gitleaks >/dev/null 2>&1; then
         local gl_out
@@ -227,6 +245,117 @@ scan_tree() {
         done <<< "$_matches"
     done < "$patterns"
 
+    # T-2897: the name axis runs inside this same pass, deliberately. Callers
+    # print one verdict line for scan-tree ("[PASS] Secret scan: tracked tree
+    # clean"), and that line was printed on every audit across a two-month
+    # exposure. Wiring the second axis anywhere else would have left the false
+    # green exactly where it was — a PASS here now means both axes passed.
+    if ! scan_names; then
+        _hits=$((_hits + 1))
+    fi
+
+    [ "$_hits" -gt 0 ] && return 1
+    return 0
+}
+
+# ── Name axis (T-2897) ──────────────────────────────────────────────────────
+#
+# Everything above this line keys on file CONTENT against vendor-prefixed
+# credentials (AKIA…, ghp_…, sk-ant-…, -----BEGIN). That is the right shape for
+# third-party credentials and the wrong shape for ours: `secrets.token_hex(32)`
+# is 64 bare hex characters with no prefix, no vendor and no assignment to
+# anchor on. The one class of secret the framework is guaranteed to PRODUCE is
+# the class a content scanner is structurally guaranteed to MISS, because
+# "carries no third-party fingerprint" is what self-generated means. No number
+# of added patterns closes that; only a second axis does.
+#
+# The axis nothing was reading is filenames. `.fw-secret-key` announced exactly
+# what it was, in its name, for the two months it sat in 832's tree while every
+# audit printed "[PASS] Secret scan: tracked tree clean" (rail 498). L-521: a
+# detector's indexing strategy, not its pattern count, determines what it sees.
+#
+# Two classes, and the weaker one says so. DEFINITIVE is an exact name or an
+# extension that means credential material and nothing else. ANNOUNCED pairs a
+# secrecy word with a credential noun and is a heuristic — it is labelled that
+# way in the output so a maybe never reads as a certainty.
+#
+# `token` is deliberately NOT a standalone signal: 832 measured 17 matches on
+# their tree and every one was a false positive (token-budget reports, design
+# tokens, a CSRF-token RCA). It survives only as the noun half of a pair.
+#
+# Tracked files only. An untracked key on disk is the normal, correct state —
+# that is what the .gitignore rules from T-2896 produce. Only publication is
+# the leak.
+
+# The two halves must be DIFFERENT KINDS of word — a qualifier and a noun.
+# First cut had `credential` in both lists, so the single word "credentials"
+# satisfied the pair by itself and the scan fired on three fabric cards
+# describing credential-handling *source* (lib-url-credentials.yaml and
+# friends). A pair that one word can complete is not a pair; it is a
+# single-word match wearing a pair's clothes, and it re-introduces exactly the
+# 17/17 noise 832 measured on bare `token`. Qualifiers here, nouns below.
+_SECRET_NAME_SECRECY='secret|private|passwd|password|auth|signing'
+_SECRET_NAME_NOUN='key|token|cert|creds|credential|pass'
+
+# Source and prose that TALKS ABOUT credentials is not credential material.
+# Without this, the scanner fires on secret-scan.sh itself, on the tests that
+# pin it, and on the task file describing the incident — and a check that cries
+# wolf on its own source gets reverted, which is the real failure mode.
+_secret_name_is_prose_or_source() {
+    case "$1" in
+        *.md|*.rst|*.txt|*.sh|*.bash|*.py|*.bats|*.js|*.mjs|*.ts|*.tsx|*.jsx) return 0 ;;
+        *.html|*.css|*.rs|*.go|*.java|*.rb|*.php|*.c|*.h|*.cpp|*.sql|*.bpmn) return 0 ;;
+    esac
+    return 1
+}
+
+# Classify one basename. Echoes the class, or nothing.
+_secret_name_classify() {
+    local lower="$1"
+    case "$lower" in
+        .fw-secret-key|id_rsa|id_dsa|id_ecdsa|id_ed25519|.netrc|.pgpass|.htpasswd)
+            echo DEFINITIVE; return ;;
+        # Bare `credentials` as the whole stem is a credential store by
+        # convention. As a compound suffix it is usually prose ABOUT one
+        # (url-credentials, strips_upstream_credentials) — which is why it is
+        # listed here as exact names rather than left to the ANNOUNCED pair.
+        # Known limit, stated rather than papered over: `aws-credentials` and
+        # other qualifier-less compounds fall through both classes.
+        credentials|.credentials|credentials.json|credentials.yaml|credentials.yml|credentials.ini)
+            echo DEFINITIVE; return ;;
+        *.pem|*.p12|*.pfx|*.jks|*.keystore|*.ppk|*.key)
+            echo DEFINITIVE; return ;;
+    esac
+    _secret_name_is_prose_or_source "$lower" && return
+    if echo "$lower" | grep -qE "$_SECRET_NAME_SECRECY" \
+       && echo "$lower" | grep -qE "$_SECRET_NAME_NOUN"; then
+        echo ANNOUNCED
+    fi
+}
+
+# Public: scan tracked FILENAMES for credential material.
+# Returns 0 if none, 1 if any.
+scan_names() {
+    local root cfg allowlist allow_re
+    root="$(_secret_scan_project_root)"
+    cfg="$(_secret_scan_config_dir "$root")"
+    allowlist="$cfg/.secret-scan-allowlist"
+    allow_re="$(_secret_scan_build_allowlist "$allowlist")"
+
+    local _hits=0 _path _base _lower _class
+    while IFS= read -r _path; do
+        [ -z "$_path" ] && continue
+        _base="${_path##*/}"
+        _lower="$(printf '%s' "$_base" | tr '[:upper:]' '[:lower:]')"
+        _class="$(_secret_name_classify "$_lower")"
+        [ -z "$_class" ] && continue
+        if _secret_scan_is_allowed "$_path:0:$_base" "$allow_re"; then
+            continue
+        fi
+        printf '  [name:%s] %s\n' "$_class" "$_path"
+        _hits=$((_hits + 1))
+    done < <(git -C "$root" ls-files 2>/dev/null)
+
     [ "$_hits" -gt 0 ] && return 1
     return 0
 }
@@ -254,6 +383,7 @@ _secret_scan_main() {
     case "$cmd" in
         scan-staged|scan_staged) scan_staged "$@" ;;
         scan-tree|scan_tree)     scan_tree "$@" ;;
+        scan-names|scan_names)   scan_names "$@" ;;
         scan-file|scan_file)     scan_file "$@" ;;
         -h|--help|help)
             cat <<USAGE
@@ -261,7 +391,8 @@ secret-scan.sh — Pre-commit secret scanner (T-1844)
 
 Subcommands:
   scan-staged       Scan git staged diff (pre-commit hook mode)
-  scan-tree         Scan entire working tree (audit mode)
+  scan-tree         Scan entire working tree, both axes (audit mode)
+  scan-names        Scan tracked FILENAMES only (T-2897 name axis)
   scan-file <path>  Scan a specific file
 
 Configuration:
