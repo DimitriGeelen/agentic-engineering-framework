@@ -265,7 +265,11 @@ blocker its keystone recorded is gone.
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 # Teeth: both states through the real probe.
-out=$(bats tests/unit/git_identity_check.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# Bare invocation on purpose: bats' exit code IS the verdict for a test runner
+# (T-2738), and letting its output reach stdout means the gate's failure excerpt
+# shows WHICH test failed. The captured form hid that — it failed under the gate,
+# passed standalone, and printed nothing either way.
+bats tests/unit/git_identity_check.bats > /tmp/.t2883-bats.out 2>&1 || { grep -A6 '^not ok' /tmp/.t2883-bats.out; false; }
 # Silent when identity resolves — this repo has a working local identity.
 out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -qi "git identity"
 # The path arc-016 protects still walks.

@@ -1384,13 +1384,14 @@ do_doctor() {
         fi
     fi
 
-    # Check 5b: Git user identity (T-685)
-    local git_email git_name
-    git_email=$(git -C "$PROJECT_ROOT" config user.email 2>/dev/null || true)
-    git_name=$(git -C "$PROJECT_ROOT" config user.name 2>/dev/null || true)
-    if [ -z "$git_email" ] || [ -z "$git_name" ]; then
+    # Check 5b: Git user identity (T-685; probe corrected T-2883)
+    # Asks the question the way `git commit` answers it — see lib/git-identity.sh.
+    # The old `git config user.email` read missed env-supplied identity and warned
+    # "commits will fail" on runs whose commits succeeded.
+    source "$FRAMEWORK_ROOT/lib/git-identity.sh"
+    if ! fw_git_identity_ok "$PROJECT_ROOT"; then
         _doctor_warn_host "Git user identity not configured (commits will fail)"
-        echo -e "         Run: git config --global user.email 'you@example.com' && git config --global user.name 'Your Name'"
+        echo -e "         Run: $(fw_git_identity_remedy "$PROJECT_ROOT")"
     fi
 
     # Check 5c: Handover LATEST.md integrity (T-2374)

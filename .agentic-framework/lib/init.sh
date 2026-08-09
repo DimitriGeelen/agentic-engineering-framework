@@ -144,7 +144,12 @@ do_init() {
     fi
 
     # --- Git identity inheritance (T-880/F4: inherit from global if not set) ---
-    if ! git -C "$target_dir" config user.email >/dev/null 2>&1; then
+    # T-2883: the guard asks whether a commit here would resolve an identity, not
+    # whether config carries one. An env-supplied identity (CI, cron, dispatch
+    # workers) needs no inheritance and no warning — copying global config over it
+    # would also silently change who the commits are attributed to.
+    source "$(dirname "${BASH_SOURCE[0]}")/git-identity.sh"
+    if ! fw_git_identity_ok "$target_dir"; then
         local global_email
         global_email=$(git config --global user.email 2>/dev/null || true)
         if [ -n "$global_email" ]; then
@@ -155,7 +160,7 @@ do_init() {
             echo -e "  ${GREEN}✓${NC}  Git identity inherited from global config ($global_email)"
         else
             echo -e "  ${YELLOW}⚠${NC}   Git identity not configured (commits will fail)"
-            echo "       git config user.email 'you@example.com' && git config user.name 'Your Name'"
+            echo "       $(fw_git_identity_remedy "$target_dir")"
         fi
     fi
 
@@ -771,7 +776,7 @@ CYAML
     # have SET the identity in between (inherited from global), and a stale flag
     # would report a blocker that no longer exists.
     local _identity_missing=false
-    git -C "$target_dir" config user.email >/dev/null 2>&1 || _identity_missing=true
+    fw_git_identity_ok "$target_dir" || _identity_missing=true
 
     echo ""
     if [ "$_identity_missing" = true ]; then
@@ -784,7 +789,7 @@ CYAML
         echo -e "  ${YELLOW}${BOLD}Do this first:${NC} set a git identity, or every commit fails with"
         echo -e "  \"Author identity unknown\" — including onboarding task T-003."
         echo ""
-        echo -e "    cd $target_dir && git config user.email 'you@example.com' && git config user.name 'Your Name'"
+        echo -e "    $(fw_git_identity_remedy "$target_dir")"
         echo ""
         echo -e "  (Drop ${BOLD}--global${NC} in, or set it on this repo only as above.)"
         echo ""

@@ -176,6 +176,18 @@ _predicate() {  # echoes the predicate's exit code under the given runner
 @test "T-2883: doctor DOES warn where identity is unresolvable" {
     # Pairs with the leg above — without this, 'silent' is satisfiable by a check
     # that was accidentally deleted.
-    run _bare bash -c "cd '$REPO' && '$FRAMEWORK_ROOT/bin/fw' doctor --quick 2>&1"
+    #
+    # The project must be a REAL one. `fw` rejects a PROJECT_ROOT with no
+    # .framework.yaml as stale and falls back to the framework repo, which has a
+    # working identity — so pointing doctor at a bare `git init` directory reports
+    # on the wrong repo and prints nothing.
+    #
+    # The first version of this test did exactly that, and passed, because standalone
+    # the fallback happened to land somewhere without an identity. Under the P-011
+    # gate — which exports PROJECT_ROOT — the fallback landed on this repo instead and
+    # it went red. The gate caught a test that was green for an ambient reason rather
+    # than for the behaviour it names.
+    _bare "$FRAMEWORK_ROOT/bin/fw" init "$REPO" >/dev/null 2>&1
+    run _bare bash -c "cd '$REPO' && PROJECT_ROOT='$REPO' '$FRAMEWORK_ROOT/bin/fw' doctor --quick 2>&1"
     [[ "$output" == *"Git user identity not configured"* ]]
 }
