@@ -134,7 +134,6 @@ do_resolve() {
   task: $task_id
   date: $date
   context: "Resolved issue in $task_id"
-  application: "Apply when encountering similar $pattern_name issues"
 EOF
 
         echo -e "${GREEN}Learning recorded: $l_id${NC}"

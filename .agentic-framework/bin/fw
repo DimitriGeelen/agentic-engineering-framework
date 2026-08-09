@@ -7087,6 +7087,56 @@ PYTIMELINE
             echo "Expected at: .context/project/learnings.yaml"
             exit 0
         fi
+        # T-2901: --unfilled reads the application: field's real state. Absence is
+        # the honest signal now that nothing writes a placeholder at birth, but the
+        # 572 pre-T-2901 rows carry literal "TBD" and are NOT rewritten — they are
+        # a record of what was actually written. So this reads both shapes.
+        export FW_LEARNINGS_UNFILLED=0
+        for _a in "$@"; do [ "$_a" = "--unfilled" ] && FW_LEARNINGS_UNFILLED=1; done
+        if [ "$FW_LEARNINGS_UNFILLED" = "1" ]; then
+            python3 << 'PYUNFILLED'
+import os, re, yaml
+
+BOLD='\033[1m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+
+# Every shape a generator ever wrote at birth. A value matching one of these
+# tells a reader nothing the learning text does not already say, so it counts as
+# unfilled regardless of being non-empty. Sites removed in T-2901:
+#   agents/context/lib/learning.sh:100,112  "TBD"
+#   lib/harvest.sh:316                      "[Review and refine]"
+#   agents/healing/lib/resolve.sh:137       "Apply when encountering similar X issues"
+PLACEHOLDERS = [
+    re.compile(r'^TBD$', re.I),
+    re.compile(r'^\[Review and refine\]$', re.I),
+    re.compile(r'^Apply when encountering similar .* issues$', re.I),
+]
+
+path = os.path.join(os.environ.get('PROJECT_ROOT','.'), '.context','project','learnings.yaml')
+with open(path) as f:
+    data = yaml.safe_load(f) or {}
+learnings = data.get('learnings', [])
+
+unfilled = []
+for l in learnings:
+    v = (l.get('application') or '').strip()
+    if not v or any(rx.match(v) for rx in PLACEHOLDERS):
+        unfilled.append((l.get('id','?'), l.get('task','?'), v or '<absent>'))
+
+total = len(learnings)
+filled = total - len(unfilled)
+pct = (100.0*filled/total) if total else 0.0
+print(f'{BOLD}Learnings with no application recorded{NC}: {len(unfilled)}/{total} '
+      f'({filled} filled, {pct:.2f}%)')
+print()
+for lid, task, v in unfilled:
+    marker = f'{YELLOW}{v}{NC}' if v != '<absent>' else f'{v}'
+    print(f'  {lid:<10} {task:<10} {marker}')
+if not unfilled:
+    print(f'  {GREEN}none — every learning records how to apply it{NC}')
+print()
+PYUNFILLED
+            exit 0
+        fi
         python3 << 'PYLEARNINGS'
 import os, yaml
 

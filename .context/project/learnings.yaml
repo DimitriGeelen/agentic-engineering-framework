@@ -4281,3 +4281,29 @@ X'` returning empty group."
   date: 2026-08-09
   context: Added via context agent
   application: TBD
+- id: L-565
+  learning: "A generative test is only as general as the SHAPE it generates. Enumerating the data (word lists, config keys, registry entries) protects against the data changing; it does not protect against the defect needing a bigger shape than the generator emits. A rule over N inputs wants generation over N-tuples, not over members. Origin: 832 rail-507 §6 — their generative leg probed each word alone, was green through the entire life of their defect, and structurally could not have constructed the two-qualifier name that triggered it. Our T-2898 sibling leg had the identical ceiling: measured 20 of 36 ordered qualifier pairs classifying as false positives under the pre-fix predicate, invisible to every member-shaped probe in the suite."
+  source: P-011
+  task: T-2900
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD
+- id: L-566
+  learning: "A mutation/reciprocal test leg must hold ONLY what the change is not supposed to alter. Anything the change legitimately improves belongs in its own leg — otherwise reverting the fix turns the improved case red and the mutation check reports its own success as collateral damage. Origin: 832 rail-507 §5(b) — their masking fix closed a false positive AND a miss (a separator-free real secret their whole-part noun matching had walked past); the miss-closing case sat inside their reciprocal leg, so the mutation check read 'the fix broke more than the rule under test' when nothing was broken. Applied here as leg (h) of secret_scan_span_rule.bats, which skips containment pairs by construction because those ARE the delta."
+  source: P-011
+  task: T-2900
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD
+- id: L-567
+  learning: "A field written with a placeholder at birth destroys the signal it exists to carry: 'nobody filled this in' becomes textually identical to 'someone considered it and this is the answer'. Measured on learnings.yaml application: 572/604 (94.7%) literal 'TBD', 21 (3.48%) genuinely hand-written — 832 independently measured 2.3% on the same field shape in their tree. Four generation sites wrote it, not the two originally named, and the extra one was found only by enumerating rather than assuming the report was complete. Remedy per L-559: stop writing it at the site of GENERATION; absence is the honest signal. Do not rewrite existing rows — what was written is a record."
+  source: P-011
+  task: T-2901
+  date: 2026-08-09
+  context: Added via context agent
+- id: L-568
+  learning: "a test learning"
+  source: P-011
+  task: T-0001
+  date: 2026-08-09
+  context: Added via context agent

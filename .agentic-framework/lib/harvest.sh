@@ -313,7 +313,6 @@ harvest_learnings() {
     task: "harvested"
     date: $(date -u +%Y-%m-%d)
     context: "Cross-project harvest from $project_name"
-    application: "[Review and refine]"
 LYEOF
             fi
         fi

@@ -97,7 +97,12 @@ EOF
             print "  task: " task
             print "  date: " date
             print "  context: Added via context agent"
-            print "  application: TBD"
+            # T-2901: no `application:` placeholder at birth. A field born
+            # populated makes "nobody filled this in" textually identical to
+            # "someone considered it" — measured 572/604 (94.7%) literal "TBD",
+            # 3.48% genuinely hand-written. Omit it; absence is the honest
+            # signal and `fw learnings --unfilled` reads absence. 832 measured
+            # 2.3% on their side from the same shape (rail 491 §1).
             found=1
         }
         { print }
@@ -109,7 +114,12 @@ EOF
                 print "  task: " task
                 print "  date: " date
                 print "  context: Added via context agent"
-                print "  application: TBD"
+                # T-2901: no `application:` placeholder at birth. A field born
+                # populated makes "nobody filled this in" textually identical to
+                # "someone considered it" — measured 572/604 (94.7%) literal "TBD",
+                # 3.48% genuinely hand-written. Omit it; absence is the honest
+                # signal and `fw learnings --unfilled` reads absence. 832 measured
+                # 2.3% on their side from the same shape (rail 491 §1).
             }
         }
     ' "$learnings_file" > "$temp_file"
