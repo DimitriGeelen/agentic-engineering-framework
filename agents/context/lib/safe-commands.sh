@@ -139,7 +139,23 @@ _fw_single_command_is_safe() {
             local git_sub
             git_sub=$(echo "$cmd" | awk '{print $2}')
             case "$git_sub" in
+                # T-2888 added the second line. The first had grown one verb per
+                # incident — T-2052, T-2054, T-2462 and T-2878 each patched this
+                # function after an agent hit the null-focus deadlock live — so
+                # the sweep was done against a DERIVED set instead of a
+                # remembered one: every git sub-verb appearing in this repo's own
+                # .sh/.py/.bats, intersected with `git --list-cmds=main` to drop
+                # prose, then run through the predicate. Six read-only verbs our
+                # own tooling uses came back GATED. Table in the task file.
+                #
+                # `symbolic-ref` is deliberately NOT here despite being in that
+                # residue: `git symbolic-ref HEAD refs/heads/x` writes. Same
+                # reason `config` stays out — a verb whose read and write forms
+                # differ only by an argument cannot be decided on the verb alone.
                 status|log|diff|show|branch|remote|describe|rev-parse|tag|stash|shortlog|blame|ls-files|ls-tree|cat-file|name-rev|reflog)
+                    return 0
+                    ;;
+                rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|show-ref|help)
                     return 0
                     ;;
                 # T-2054: `git add` is task-agnostic — it stages already-produced
