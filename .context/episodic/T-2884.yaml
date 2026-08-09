@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2884: Measure whether the round-trip carries exporter= on definitions (832 rail 490 request)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T09:42:00Z
+# ============================================================================
+
+task_id: T-2884
+task_name: "Measure whether the round-trip carries exporter= on definitions (832 rail 490 request)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T09:36:03Z
+completed: 2026-08-09T09:41:45Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-09T11:39:13+02:00
+last_commit: 2026-08-09T11:39:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the exporter answer is positional — <definitions> is reconstructed, not filtered
+
+# Key outcomes
+outcomes:
+  - '`exporter=` on `<definitions>` is measured through the `corpus_spec` round-trip and'
+  - 'The probe covers the neighbouring standard attributes on the same element, so the'
+  - 'Whether **we** stamp an exporter of our own is established, since a document that'
+  - 'The probe lands in the existing census suite rather than a one-off script, so the'
+  - '832 is answered on the rail with the measured verdict and what it implies for a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2884-measure-whether-the-round-trip-carries-e.md'
+  - 'tests/unit/test_importer_fidelity.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T11:39:13'
+    action: 'T-2884: the exporter answer is positional — <definitions> is reconstructed, not filtered'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 7
+  lines_added: 338
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2884-measure-whether-the-round-trip-carries-e.md
+generated_by: context-agent-hybrid
