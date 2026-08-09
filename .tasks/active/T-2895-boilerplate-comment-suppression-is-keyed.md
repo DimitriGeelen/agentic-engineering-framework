@@ -1,18 +1,10 @@
 ---
-id: T-2893
-name: "adversarial fixtures for 832's T-406 leading-comment probe"
+id: T-2895
+name: "boilerplate-comment suppression is keyed on text, not producer identity — mirror of 832's T-406"
 description: >
-  832 asked at 492 that I author the adversarial input for their T-406 probe: a document
-  of ours whose leading rationale opens with their eight trailer words, so the input
-  comes from the party who would actually author it rather than from them imagining
-  it. Agreed at 494 with one adjustment -- two fixtures, not one: the clean case they
-  asked for, and one where the trailer words open a rationale that runs on into genuinely
-  different content, which is the shape that actually occurred. Also check whether
-  their false trailer, which they report is byte-identical to the DI comment in our
-  draft-inception fixture, is load-bearing anywhere on our side before treating it
-  as inert.
+  L-518 sweep of 832's T-406. tools/corpus_spec.py:_is_boilerplate_comment (T-2682) returns text.strip().startswith(_DI_TRAILER_PREFIX) -- a pure text match. 832 replaced exactly that mechanism with producer-identity gating, because when a peer's authored rationale is byte-identical to the boilerplate no string test can separate them; only provenance can. So our importer destroys any authored rationale that opens with the DI trailer prefix, whoever wrote it. Measured: the string is in 17 documents under .context/designer/projects/. CAUTION, and it is why this is not a one-line fix: T-2682's docstring records that the position-blind reader already laundered this exact trailer into the doc slot on aef-audit-cron and aef-session-lifecycle, both already promoted, so the text matcher is load-bearing against real observed corruption rather than merely defensive. Removing it without an identity-based replacement re-opens that. T-2891's new exporter stamp makes identity gating possible for documents we GENERATE, but the 17 legacy carriers name no producer at all and the designer save path writes client bytes verbatim, so a straight port of 832's fix does not cover our population. Evidence and full reasoning in T-2893.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-09T10:57:33Z
-last_update: '2026-08-09T11:00:13Z'
-date_finished:
+created: 2026-08-09T11:07:44Z
+last_update: 2026-08-09T11:07:44Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -42,121 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-09T11:00:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-09T11:00:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2893: adversarial fixtures for 832's T-406 leading-comment probe
+# T-2895: boilerplate-comment suppression is keyed on text, not producer identity — mirror of 832's T-406
 
 ## Context
-
-832 asked (rail 492) that we author the adversarial input for their T-406 probe,
-on the grounds that a fixture they imagine us writing is the same defect one level
-up. Agreed at 494 with one adjustment: two fixtures, not one.
-
-## Measured before authoring — and it changes what this task is
-
-The AC "is their trailer load-bearing on OUR side" is answered, and the answer is
-**yes, and worse than load-bearing.**
-
-The string is:
-
-```
-BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates
-```
-
-Present in **17** documents under `.context/designer/projects/`. 832 reports it
-is byte-identical to the false trailer they shipped for two months — so a
-sentence *they* wrote *about us* is now sitting in 17 of our corpus documents as
-our content.
-
-`tools/corpus_spec.py:_is_boilerplate_comment` (T-2682) suppresses it:
-
-```python
-return text.strip().startswith(_DI_TRAILER_PREFIX)   # → True
-```
-
-**That is a text match. It is the exact mechanism 832 just replaced.**
-
-Their T-406 fix stopped gating suppression on the comment's text and started
-gating it on producer identity, because — as they put it at 493 — there is no
-string test that separates a peer's authored rationale from their boilerplate
-when the two are byte-identical. Only provenance does.
-
-So we hold the mirror-image defect, and L-518 is the rule that says to look:
-
-- **Theirs, now fixed:** their parser destroyed a peer rationale opening with
-  their trailer words.
-- **Ours, live:** our parser destroys any rationale opening with
-  `_DI_TRAILER_PREFIX`, whoever authored it and whatever follows.
-
-The fixture 832 asked us to author is therefore *also* the fixture that
-demonstrates our own bug. The clean case and the incidental case were designed to
-probe their parser; run against ours they should probe `_is_boilerplate_comment`
-identically. That is not a coincidence — it is what a symmetric seam looks like.
-
-**Scope note:** fixing our side is not this task (one bug = one task). This task
-authors the fixtures and reports the finding. The fix — gate suppression on
-producer identity rather than on the prefix, which our new `exporter` stamp from
-T-2891 now makes possible for documents we generate — needs its own task, and it
-needs to reckon with the 17 legacy documents that carry the string and name no
-producer at all.
-
-**Prior-art caution for whoever takes the fix:** T-2682's docstring records that
-the position-blind reader already laundered this trailer into the doc slot once,
-on `aef-audit-cron` and `aef-session-lifecycle`, *both already promoted*. So the
-text matcher is currently load-bearing for real corruption, not merely defensive.
-Removing it without an identity-based replacement re-opens that.
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Two fixtures authored, not one: (a) the clean case 832 asked for — a
-      document of ours whose leading rationale opens with their eight trailer
-      words; (b) the incidental case — those words opening a rationale that then
-      runs on into genuinely different content, which is the shape that actually
-      occurred when their own boilerplate came back through a document we exported
-- [ ] Both are documents **we** would plausibly author, not documents shaped to
-      pass or fail a probe. The whole value of 832 asking us to write them is that
-      the input comes from the party who would really produce it
-- [ ] The exact trailer string is taken from a document, not from memory or from
-      their prose — and where it was taken from is recorded
-- [ ] Whether their trailer is load-bearing on OUR side is answered by measurement:
-      grep our corpus and fixtures for it, and for each hit say whether anything
-      reads it (a test asserting on it, a lint rule, an importer branch) or whether
-      it is inert text
-- [ ] The fixtures are handed over as refs on the rail, not as bytes (OBS-108),
-      and 832 is told which is which and what each is meant to distinguish
-- [ ] If the incidental case turns out to behave differently from the clean case
-      on our own round-trip, that is reported as a finding rather than smoothed over
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -319,7 +210,7 @@ Removing it without an identity-based replacement re-opens that.
 
 ## Updates
 
-### 2026-08-09T10:57:33Z — task-created [task-create-agent]
+### 2026-08-09T11:07:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2893-adversarial-fixtures-for-832s-t-406-lead.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2895-boilerplate-comment-suppression-is-keyed.md
 - **Context:** Initial task creation
