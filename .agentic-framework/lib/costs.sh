@@ -13,6 +13,15 @@
 #
 # Follows T-799 (GO) and T-800 (GO) inception decisions.
 # Research: docs/reports/T-799-T-800-token-cost-analysis.md
+#
+# NOT routed through lib/context_tokens.py (T-2885). That module answers "how
+# many tokens is THIS conversation holding right now" and deliberately drops
+# usage entries from any model that isn't the dominant one since the last
+# compact_boundary, so a foreign-model cache-priming call can't poison the
+# budget gauges. Cost is the opposite question — every usage entry, whoever
+# wrote it, was real spend and belongs in the total. Sharing the helper here
+# would silently under-report cost for exactly the entries that make this
+# script worth running.
 
 set -euo pipefail
 
