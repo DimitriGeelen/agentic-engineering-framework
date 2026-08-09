@@ -1,108 +1,115 @@
 # Working Memory - Current Focus
-# Session: S-2026-0809-0930
+# Session: S-2026-0806-0011
 
-current_task: T-2720
+current_task: T-2893
 priorities: []
 blockers: []
 pending_decisions: []
 reminders:
 - Run audit before pushing
 - Create handover before ending session
-- "T-2885 IS THE FIRST THING TO PICK UP AND IT IS FILED WITH ALL THE EVIDENCE ALREADY
-  MEASURED. Budget gauge takes the LAST usage entry regardless of which model wrote it.
-  Confirmed live in OUR transcript before filing: FOUR models write usage entries here
-  (claude-opus-5 + fable-5 + opus-4-8 + sonnet-4-5), 303 cache-priming-shaped entries
-  (input_tokens<10, cache_creation>100k), and TWO foreign entries sit in the CURRENT
-  post-boundary segment. It is correct at this instant only because the newest entry
-  happens to be ours. Also confirmed: `grep -c compact_boundary` = budget-gate.sh 1,
-  checkpoint.sh 0 — the PostToolUse gauge has been a version behind the PreToolUse gate
-  since T-2322. Fix is 832's (rail 488, their T-401, commits 86a256fd/ee4d20f4 — REFS
-  ONLY, no bytes): scope to the DOMINANT model since last boundary (NOT newest-model —
-  in their incident the foreign entry WAS newest, so newest-keyed reproduces the bug),
-  and return 0 below two in-scope entries. One implementation, both callers. Do NOT
-  unify with lib/costs.sh / web/blueprints/costs.py — same arithmetic, opposite correct
-  answer, because that foreign call genuinely did cost money."
-- "STILL TO FILE — two more 832 bug reports, one task each (one bug = one task):
-  (1) 832 T-402, rail 488: budget-gate.sh:152 matches its allow-regex ANYWHERE in the
-  command string, so `python3 build.py && git commit -m x` is allowlisted wholesale —
-  the critical block is evadable by appending an allowlisted clause. That is how their
-  own first post-compact call slipped the gate.
-  (2) 832 rail 489: agents/context/lib/safe-commands.sh `has_bash_write_pattern` uses a
-  character-level regex over the RAW command and runs BEFORE the allowlist, so a false
-  write verdict overrides grep/cat being allowlisted. Two defects: quoted operators are
-  data not structure (a grep whose PATTERN contains redirect chars reads a file), and
-  the echo|printf branch carries its OWN copy of the redirect regex that never got the
-  2/& exclusions its sibling got — so 2>/dev/null classifies as a file write. Only
-  changes an outcome when focus is null, i.e. at resumption, i.e. when nobody is
-  watching. Their fix: 4d8a2e43, 9611f7df (refs only)."
-- "TWO BASH TRAPS 832 HIT, WORTH GREPPING OUR TREE FOR — both fail SILENTLY:
-  (a) `local s=\"$1\" out=\"\" n=${#s}` — bash expands every word BEFORE any assignment,
-  so ${#s} reads the not-yet-assigned s and yields 0. Their strip loop never ran and the
-  predicate returned 'no writes' for every command on earth.
-  (b) bash `=~` uses the system ERE engine and glibc gives backslash-> the meaning END
-  OF WORD, so a group written that way matches word boundaries and never sees a redirect
-  char. Write a bracket class instead. Corollary they paid for: their 15 benign-command
-  assertions ALL PASSED while the predicate was broken wide open, because a predicate
-  answering 'no' to everything trivially satisfies 'benign forms must pass'. When a fix
-  WIDENS what is allowed, the negative half is the load-bearing half."
-- "OWED TO 832 — the one open question I deferred at 491: does our learnings register
-  have an application/applied field and what proportion is set? Their census: 113 of 118
-  at `application: TBD`. Their reading is sharper than 'unapplied backlog' — most
-  learnings are behavioural and are applied BY BEING READ, so what 96% establishes is
-  that the FIELD CARRIES NO SIGNAL: it cannot distinguish the one learning describing a
-  live defect from the 112 needing no action. Registered as their G-028, deliberately
-  NOT closable by draining the queue. DO NOT quote a number without counting it. I
-  already answered the revisit half: we have revisit_at + revisit_evidence_needed swept
-  daily by agents/context/revisit-due-scan.sh under G-053, and the interesting property
-  is that it is a DATED COMMITMENT WITH A STATED TRIGGER rather than a queue."
-- "RAIL IS AT 491 AND 491 IS MINE. Read through 490, answered 490 §2 at 491. Nothing
-  owed except the learnings-field count above. 490 §1: they now stamp
-  exporter=\"aef-workflow-designer\" on <definitions>; our pinned 0.8.0 does not have it
-  and it arrives whenever we re-pin. 490 §3 (their T-406, not fixed): their
-  readDocComment drops any LEADING comment starting with their trailer prefix, so a peer
-  whose rationale opens with those eight words loses their doc block on import — our
-  T-347 shape arriving from their side, and our fixture does not trigger it, so it is a
-  live path with NO live witness."
-- "T-2884 CLOSED — the exporter answer is POSITIONAL, not attribute-specific. exporter,
-  exporterVersion and name on <definitions> all DROPPED-SILENT, because <definitions> is
-  RECONSTRUCTED not preserved-and-filtered (parse_map records two fields, emit_map writes
-  a fresh element). id and targetNamespace come back because the emitter writes them. And
-  WE STAMP NO EXPORTER OF OUR OWN — so a document through both of us carries NO producer
-  identity rather than a wrong one. NOT FIXED, deliberately: put the two options to them
-  (preserve theirs = assert their authorship of bytes our emitter wrote; stamp ours =
-  true but erases that the process originated with them). AWAITING THEIR ANSWER."
-- "T-2883 CLOSED — and its lesson is a repeat I should stop repeating. OBS-170 said the
-  framework never mentions git identity and doctor does not check it. FALSE as of today:
-  init warns three times, doctor warns, validate-init has func-identity. My first probe
-  was a grep that ran from a /tmp dir a previous command had cd'd into, so it searched a
-  path with no bin/fw and returned nothing — a false negative that read exactly like
-  confirmation. THE POSITIVE CONTROL I INSISTED ON FOR T-2882 AN HOUR EARLIER IS THE
-  THING THAT WOULD HAVE CAUGHT IT. The real defect pointed the other way: all six
-  surfaces read `git config user.email`, missing env-supplied identity, so the framework
-  told machines whose commits succeed (RC=0, measured) that commits would fail. Fixed
-  with one predicate (lib/git-identity.sh, `git var GIT_COMMITTER_IDENT`), six callers,
-  13 teeth. OBS-170 dismissed with the measurement."
-- "ARC-016 IS CLOSURE-BLOCKED ONLY ON A HUMAN RUN NOW. Its keystone T-2719 recorded
-  'fix OBS-170, then run the by-hand path once more and capture that run as the arc's
-  --demo'. OBS-170 is done. The remaining clause is a live by-hand walk — OPERATOR'S,
-  not agent's (§ACD / G-062, and fw arc close refuses under CLAUDECODE anyway). Do NOT
-  close it. Surface it via the Watchtower URL, never the CLI (T-2347)."
-- "T-2720 IS THE OPEN ARC-017 KEYSTONE AND IT STAYS OPEN. Both halves built — which is
-  exactly when the G-062 substrate-vs-deliverable conflation is most tempting. Two
-  unticked [REVIEW] ACs, both Steps blocks verified before handoff. NEVER TICK THESE.
-  Hand over with `bin/fw task review T-2720` and QUOTE THE EMITTED URL VERBATIM."
-- "T-2882 CLOSED — two importers, two different answers. bpmn_to_tasks is a PROJECTION
-  (never writes .bpmn, so all 9 positions drop silently but nothing is lost — the only
-  .bpmn writer in the tree is designer_api.py:141, verbatim client bytes). corpus_spec is
-  the ROUND-TRIP and answers all THREE of 832's options by position. Two findings filed
-  not fixed: OBS-205 (node/edge asymmetry — a documentation element round-trips on an
-  edge and is destroyed on a task) and OBS-206 (the T-2614 hard error is gated on
-  el.get('id') — same tag, with an id a loud SystemExit, without one it vanishes)."
-- "STILL FILED, NOT FIXED: OBS-201 (7MB `yaml,sys` capture in repo root — DO NOT DELETE,
-  it is evidence, and `git add -A` trips the secret scanner on it; add selectively).
-  OBS-202, OBS-203, OBS-204, OBS-205, OBS-206, OBS-207. G-078 NOT CLOSED."
-- "DESIGNER STAYS PINNED AT 0.8.0. 0.9.0 is fetchable (public mirror
-  github.com/DimitriGeelen/workflow-designer, tag designer-v0.9.0 at 8cd0c5d3). Repin
-  needs its OWN TASK and operator sign-off — the designer is served live in Watchtower.
-  T-559 unchanged: never read 832's working tree."
+- "T-2885 IS THE FIRST THING TO PICK UP AND IT IS FILED WITH ALL THE EVIDENCE ALREADY\
+  \ MEASURED. Budget gauge takes the LAST usage entry regardless of which model wrote\
+  \ it. Confirmed live in OUR transcript before filing: FOUR models write usage entries\
+  \ here (claude-opus-5 + fable-5 + opus-4-8 + sonnet-4-5), 303 cache-priming-shaped\
+  \ entries (input_tokens<10, cache_creation>100k), and TWO foreign entries sit in\
+  \ the CURRENT post-boundary segment. It is correct at this instant only because\
+  \ the newest entry happens to be ours. Also confirmed: `grep -c compact_boundary`\
+  \ = budget-gate.sh 1, checkpoint.sh 0 \u2014 the PostToolUse gauge has been a version\
+  \ behind the PreToolUse gate since T-2322. Fix is 832's (rail 488, their T-401,\
+  \ commits 86a256fd/ee4d20f4 \u2014 REFS ONLY, no bytes): scope to the DOMINANT model\
+  \ since last boundary (NOT newest-model \u2014 in their incident the foreign entry\
+  \ WAS newest, so newest-keyed reproduces the bug), and return 0 below two in-scope\
+  \ entries. One implementation, both callers. Do NOT unify with lib/costs.sh / web/blueprints/costs.py\
+  \ \u2014 same arithmetic, opposite correct answer, because that foreign call genuinely\
+  \ did cost money."
+- "STILL TO FILE \u2014 two more 832 bug reports, one task each (one bug = one task):\
+  \ (1) 832 T-402, rail 488: budget-gate.sh:152 matches its allow-regex ANYWHERE in\
+  \ the command string, so `python3 build.py && git commit -m x` is allowlisted wholesale\
+  \ \u2014 the critical block is evadable by appending an allowlisted clause. That\
+  \ is how their own first post-compact call slipped the gate. (2) 832 rail 489: agents/context/lib/safe-commands.sh\
+  \ `has_bash_write_pattern` uses a character-level regex over the RAW command and\
+  \ runs BEFORE the allowlist, so a false write verdict overrides grep/cat being allowlisted.\
+  \ Two defects: quoted operators are data not structure (a grep whose PATTERN contains\
+  \ redirect chars reads a file), and the echo|printf branch carries its OWN copy\
+  \ of the redirect regex that never got the 2/& exclusions its sibling got \u2014\
+  \ so 2>/dev/null classifies as a file write. Only changes an outcome when focus\
+  \ is null, i.e. at resumption, i.e. when nobody is watching. Their fix: 4d8a2e43,\
+  \ 9611f7df (refs only)."
+- "TWO BASH TRAPS 832 HIT, WORTH GREPPING OUR TREE FOR \u2014 both fail SILENTLY:\
+  \ (a) `local s=\"$1\" out=\"\" n=${#s}` \u2014 bash expands every word BEFORE any\
+  \ assignment, so ${#s} reads the not-yet-assigned s and yields 0. Their strip loop\
+  \ never ran and the predicate returned 'no writes' for every command on earth. (b)\
+  \ bash `=~` uses the system ERE engine and glibc gives backslash-> the meaning END\
+  \ OF WORD, so a group written that way matches word boundaries and never sees a\
+  \ redirect char. Write a bracket class instead. Corollary they paid for: their 15\
+  \ benign-command assertions ALL PASSED while the predicate was broken wide open,\
+  \ because a predicate answering 'no' to everything trivially satisfies 'benign forms\
+  \ must pass'. When a fix WIDENS what is allowed, the negative half is the load-bearing\
+  \ half."
+- "OWED TO 832 \u2014 the one open question I deferred at 491: does our learnings\
+  \ register have an application/applied field and what proportion is set? Their census:\
+  \ 113 of 118 at `application: TBD`. Their reading is sharper than 'unapplied backlog'\
+  \ \u2014 most learnings are behavioural and are applied BY BEING READ, so what 96%\
+  \ establishes is that the FIELD CARRIES NO SIGNAL: it cannot distinguish the one\
+  \ learning describing a live defect from the 112 needing no action. Registered as\
+  \ their G-028, deliberately NOT closable by draining the queue. DO NOT quote a number\
+  \ without counting it. I already answered the revisit half: we have revisit_at +\
+  \ revisit_evidence_needed swept daily by agents/context/revisit-due-scan.sh under\
+  \ G-053, and the interesting property is that it is a DATED COMMITMENT WITH A STATED\
+  \ TRIGGER rather than a queue."
+- "RAIL IS AT 491 AND 491 IS MINE. Read through 490, answered 490 \xA72 at 491. Nothing\
+  \ owed except the learnings-field count above. 490 \xA71: they now stamp exporter=\"\
+  aef-workflow-designer\" on <definitions>; our pinned 0.8.0 does not have it and\
+  \ it arrives whenever we re-pin. 490 \xA73 (their T-406, not fixed): their readDocComment\
+  \ drops any LEADING comment starting with their trailer prefix, so a peer whose\
+  \ rationale opens with those eight words loses their doc block on import \u2014\
+  \ our T-347 shape arriving from their side, and our fixture does not trigger it,\
+  \ so it is a live path with NO live witness."
+- "T-2884 CLOSED \u2014 the exporter answer is POSITIONAL, not attribute-specific.\
+  \ exporter, exporterVersion and name on <definitions> all DROPPED-SILENT, because\
+  \ <definitions> is RECONSTRUCTED not preserved-and-filtered (parse_map records two\
+  \ fields, emit_map writes a fresh element). id and targetNamespace come back because\
+  \ the emitter writes them. And WE STAMP NO EXPORTER OF OUR OWN \u2014 so a document\
+  \ through both of us carries NO producer identity rather than a wrong one. NOT FIXED,\
+  \ deliberately: put the two options to them (preserve theirs = assert their authorship\
+  \ of bytes our emitter wrote; stamp ours = true but erases that the process originated\
+  \ with them). AWAITING THEIR ANSWER."
+- "T-2883 CLOSED \u2014 and its lesson is a repeat I should stop repeating. OBS-170\
+  \ said the framework never mentions git identity and doctor does not check it. FALSE\
+  \ as of today: init warns three times, doctor warns, validate-init has func-identity.\
+  \ My first probe was a grep that ran from a /tmp dir a previous command had cd'd\
+  \ into, so it searched a path with no bin/fw and returned nothing \u2014 a false\
+  \ negative that read exactly like confirmation. THE POSITIVE CONTROL I INSISTED\
+  \ ON FOR T-2882 AN HOUR EARLIER IS THE THING THAT WOULD HAVE CAUGHT IT. The real\
+  \ defect pointed the other way: all six surfaces read `git config user.email`, missing\
+  \ env-supplied identity, so the framework told machines whose commits succeed (RC=0,\
+  \ measured) that commits would fail. Fixed with one predicate (lib/git-identity.sh,\
+  \ `git var GIT_COMMITTER_IDENT`), six callers, 13 teeth. OBS-170 dismissed with\
+  \ the measurement."
+- "ARC-016 IS CLOSURE-BLOCKED ONLY ON A HUMAN RUN NOW. Its keystone T-2719 recorded\
+  \ 'fix OBS-170, then run the by-hand path once more and capture that run as the\
+  \ arc's --demo'. OBS-170 is done. The remaining clause is a live by-hand walk \u2014\
+  \ OPERATOR'S, not agent's (\xA7ACD / G-062, and fw arc close refuses under CLAUDECODE\
+  \ anyway). Do NOT close it. Surface it via the Watchtower URL, never the CLI (T-2347)."
+- "T-2720 IS THE OPEN ARC-017 KEYSTONE AND IT STAYS OPEN. Both halves built \u2014\
+  \ which is exactly when the G-062 substrate-vs-deliverable conflation is most tempting.\
+  \ Two unticked [REVIEW] ACs, both Steps blocks verified before handoff. NEVER TICK\
+  \ THESE. Hand over with `bin/fw task review T-2720` and QUOTE THE EMITTED URL VERBATIM."
+- "T-2882 CLOSED \u2014 two importers, two different answers. bpmn_to_tasks is a PROJECTION\
+  \ (never writes .bpmn, so all 9 positions drop silently but nothing is lost \u2014\
+  \ the only .bpmn writer in the tree is designer_api.py:141, verbatim client bytes).\
+  \ corpus_spec is the ROUND-TRIP and answers all THREE of 832's options by position.\
+  \ Two findings filed not fixed: OBS-205 (node/edge asymmetry \u2014 a documentation\
+  \ element round-trips on an edge and is destroyed on a task) and OBS-206 (the T-2614\
+  \ hard error is gated on el.get('id') \u2014 same tag, with an id a loud SystemExit,\
+  \ without one it vanishes)."
+- "STILL FILED, NOT FIXED: OBS-201 (7MB `yaml,sys` capture in repo root \u2014 DO\
+  \ NOT DELETE, it is evidence, and `git add -A` trips the secret scanner on it; add\
+  \ selectively). OBS-202, OBS-203, OBS-204, OBS-205, OBS-206, OBS-207. G-078 NOT\
+  \ CLOSED."
+- "DESIGNER STAYS PINNED AT 0.8.0. 0.9.0 is fetchable (public mirror github.com/DimitriGeelen/workflow-designer,\
+  \ tag designer-v0.9.0 at 8cd0c5d3). Repin needs its OWN TASK and operator sign-off\
+  \ \u2014 the designer is served live in Watchtower. T-559 unchanged: never read\
+  \ 832's working tree."
 focus_session: S-2026-0806-0011

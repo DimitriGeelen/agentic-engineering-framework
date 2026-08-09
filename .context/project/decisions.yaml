@@ -2781,3 +2781,24 @@ decisions:
     date: 2026-08-08
     task: T-2880
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-400
+    decision: "scope entries to the model with the most usage entries since the"
+    scope: project
+    date: 2026-08-09
+    task: T-2885
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-401
+    decision: "leave both cost-reporting surfaces on their existing full-sum"
+    scope: project
+    date: 2026-08-09
+    task: T-2885
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-402
+    decision: "`exporter=\"aef-corpus-spec\"` on emitted `<definitions>`. No"
+    scope: project
+    date: 2026-08-09
+    task: T-2891
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2887: safe-commands allowlist blocks read-only commands at focus-null resumption (832 rail 489 class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T10:35:43Z
+# ============================================================================
+
+task_id: T-2887
+task_name: "safe-commands allowlist blocks read-only commands at focus-null resumption (832 rail 489 class)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T10:29:20Z
+completed: 2026-08-09T10:35:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-09T12:34:36+02:00
+last_commit: 2026-08-09T12:34:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  echo/printf branch delegates to has_bash_write_pattern instead of re-deriving it
+
+# Key outcomes
+outcomes:
+  - 'Each candidate is decided by running the predicate directly, one command'
+  - 'The command from the live witness is reproduced as a blocked classification,'
+  - 'A positive control shows the probe can produce a "safe" verdict, so a'
+  - 'Every *disproved* candidate is written down as disproved, in this file,'
+  - 'Whichever candidate is confirmed is fixed at its root, and the fix is'
+  - 'Teeth: a bats case per confirmed defect, asserting the exact command shape'
+  - '`tests/unit/safe_commands_chain.bats` stays green (the T-2834 chain suite)'
+  - 'Any candidate that turns out real but out of scope is filed as its own task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-2887-safe-commands-allowlist-blocks-read-only.md'
+  - 'tests/unit/context_safe_commands.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T12:34:36'
+    action: 'T-2887: echo/printf branch delegates to has_bash_write_pattern instead of re-deriving it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 3
+  lines_added: 467
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2887-safe-commands-allowlist-blocks-read-only.md
+generated_by: context-agent-hybrid

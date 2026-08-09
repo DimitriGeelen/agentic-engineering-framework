@@ -1,19 +1,8 @@
 ---
-id: T-2892
-name: "corpus all-versions census pinned at 32 while the live corpus is 37 — red and
-  unnoticed"
+id: T-2894
+name: "port-3000 carrier population has no set-level ratchet — T-2732 gates per-close only"
 description: >
-  tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census asserts len(targets)
-  == 32; the live store has 37 versions, so the test is red. Pin last moved by T-2786
-  (28 -> 32). Growth since then came from the draft-trigger-handling work (T-2620/T-2623)
-  and siblings. Found incidentally while running the corpus suites for T-2891 -- nothing
-  surfaced it, which is the finding: a census pin that goes red when the corpus grows
-  is behaving correctly, but a red test nobody is looking at carries no more signal
-  than no test. Two questions to answer, not one: (1) update the pin and confirm the
-  5 new versions are clean, and (2) why did a red unit test survive multiple sessions
-  unnoticed -- is the unit suite run by any gate or cron, and if so why did it not
-  surface? Do NOT just bump 32 to 37; that answers the cheap half and leaves the expensive
-  half.
+  832's rail 495 finding, swept onto us per L-518: a per-item checker enforces nothing about a set. Their evidence is ours -- they re-measured their own hard-coded-port carriers 7 days after filing the gap and found 11 had become 17, six new carriers authored while the ban was documented and severity-medium. The prose ban held zero of six. T-2732 gave us a P-011 close gate refusing port-3000 literals in a Verification block, which is exactly a per-item checker: it fires once per task close, so it says nothing about the population and cannot see a carrier that never reaches a close. Raw counts today: 334 task files under .tasks/ contain a localhost:3000 or 127.0.0.1:3000 literal, 19 of them in active/, and 497 files outside .tasks (.sh/.py/.md/.yaml, excluding worktrees and the vendored copy). DO NOT treat those as 831 defects -- the count includes the sanctioned fallback form documented in CLAUDE.md and the anti-pattern's own documentation, so the first deliverable is a classifier that separates carrier from citation, and the number after classification is the only one worth quoting. Then the ratchet: baseline what exists, fail on any carrier not in the baseline, never fail on removal, report stale baseline entries so a cleaned file cannot silently re-acquire one. 832 offers tools/verification-hygiene.py + tools/_t408-hygiene-teeth.sh on their master 2f73a992 as refs only (OBS-108) -- and warns of a bug they shipped in it: they keyed the baseline on task relpath, and work-completed MOVES files active/ -> completed/, so completing a grandfathered task made its carrier look new. Key on basename with a collision guard. Their generalisable note: all ten of their teeth mutated file CONTENT and none moved a file, so put our own lifecycle moves in the harness vocabulary.
 
 status: captured
 workflow_type: build
@@ -32,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-09T10:52:26Z
-last_update: '2026-08-09T11:00:13Z'
-date_finished:
+created: 2026-08-09T11:02:25Z
+last_update: 2026-08-09T11:02:25Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-09T11:00:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-09T11:00:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2892: corpus all-versions census pinned at 32 while the live corpus is 37 — red and unnoticed
+# T-2894: port-3000 carrier population has no set-level ratchet — T-2732 gates per-close only
 
 ## Context
 
@@ -249,7 +210,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-09T10:52:26Z — task-created [task-create-agent]
+### 2026-08-09T11:02:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2892-corpus-all-versions-census-pinned-at-32-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2894-port-3000-carrier-population-has-no-set-.md
 - **Context:** Initial task creation

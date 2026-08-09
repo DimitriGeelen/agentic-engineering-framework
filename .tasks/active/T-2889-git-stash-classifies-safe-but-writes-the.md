@@ -1,8 +1,19 @@
 ---
 id: T-2889
-name: "git stash classifies SAFE but writes the working tree — over-permission in the safe-list"
+name: "git stash classifies SAFE but writes the working tree — over-permission in
+  the safe-list"
 description: >
-  Opposite direction to T-2888. Measured: is_bash_safe_command 'git stash' returns SAFE, and has_bash_write_pattern 'git stash' returns no-write, so bare 'git stash' passes the whole fast path with no active task — and bare git stash writes, it stashes the working tree. Same shape: 'git branch -d x' and 'git tag -d x' delete refs and both verbs are on the allowlist. All three pre-existing, none introduced by T-2888. This is the DANGEROUS failure direction per safe-commands.sh:82 — misjudging unsafe as safe skips every gate, where the converse merely gates. Note Tier 0 is a separate hook and still covers branch deletion, so scope the risk honestly before fixing. Likely fix shape: these verbs cannot be decided on the verb alone (same class as config and symbolic-ref), so they need argument inspection or removal from the verb-only allowlist.
+  Opposite direction to T-2888. Measured: is_bash_safe_command 'git stash' returns
+  SAFE, and has_bash_write_pattern 'git stash' returns no-write, so bare 'git stash'
+  passes the whole fast path with no active task — and bare git stash writes, it stashes
+  the working tree. Same shape: 'git branch -d x' and 'git tag -d x' delete refs and
+  both verbs are on the allowlist. All three pre-existing, none introduced by T-2888.
+  This is the DANGEROUS failure direction per safe-commands.sh:82 — misjudging unsafe
+  as safe skips every gate, where the converse merely gates. Note Tier 0 is a separate
+  hook and still covers branch deletion, so scope the risk honestly before fixing.
+  Likely fix shape: these verbs cannot be decided on the verb alone (same class as
+  config and symbolic-ref), so they need argument inspection or removal from the verb-only
+  allowlist.
 
 status: captured
 workflow_type: build
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T10:40:43Z
-last_update: 2026-08-09T10:40:43Z
-date_finished: null
+last_update: '2026-08-09T10:45:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-09T10:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-09T10:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2889: git stash classifies SAFE but writes the working tree — over-permission in the safe-list

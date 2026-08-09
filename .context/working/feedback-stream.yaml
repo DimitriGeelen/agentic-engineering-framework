@@ -31164,3 +31164,111 @@ scan_id: R-31dd2d6a
 task_id: T-2884
 payload:
   task_file: .tasks/active/T-2884-measure-whether-the-round-trip-carries-e.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T10:10:18Z'
+scan_id: R-38b36712
+task_id: T-2885
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T10:10:18Z'
+scan_id: R-38b36712
+task_id: T-2885
+payload:
+  task_file: .tasks/active/T-2885-budget-gauge-takes-the-last-usage-entry-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T10:19:23Z'
+scan_id: R-bfec46fc
+task_id: T-2886
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T10:19:23Z'
+scan_id: R-bfec46fc
+task_id: T-2886
+payload:
+  task_file: .tasks/active/T-2886-vendor-sync--push-t-2885-budget-gauge-fi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T10:35:33Z'
+scan_id: R-fa28ae7b
+task_id: T-2887
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T10:35:33Z'
+scan_id: R-fa28ae7b
+task_id: T-2887
+payload:
+  task_file: .tasks/active/T-2887-safe-commands-allowlist-blocks-read-only.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T10:41:46Z'
+scan_id: R-c615f0d9
+task_id: T-2888
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T10:41:46Z'
+scan_id: R-c615f0d9
+task_id: T-2888
+payload:
+  task_file: .tasks/active/T-2888-git-rev-list-missing-from-the-read-only-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T10:46:48Z'
+scan_id: R-658c429a
+task_id: T-2890
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T10:46:48Z'
+scan_id: R-658c429a
+task_id: T-2890
+payload:
+  task_file: .tasks/active/T-2890-vendor-sync-for-t-2887t-2888-safe-list-f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T10:57:01Z'
+scan_id: R-d65fa28a
+task_id: T-2891
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T10:57:01Z'
+scan_id: R-d65fa28a
+task_id: T-2891
+payload:
+  task_file: .tasks/active/T-2891-stamp-a-producer-identity-on-emitted-bpm.md
