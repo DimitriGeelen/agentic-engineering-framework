@@ -294,8 +294,69 @@ scan_tree() {
 # friends). A pair that one word can complete is not a pair; it is a
 # single-word match wearing a pair's clothes, and it re-introduces exactly the
 # 17/17 noise 832 measured on bare `token`. Qualifiers here, nouns below.
-_SECRET_NAME_SECRECY='secret|private|passwd|password|auth|signing'
-_SECRET_NAME_NOUN='key|token|cert|creds|credential|pass'
+#
+# T-2898: that paragraph was already written when `pass` (noun) went in
+# alongside `password` and `passwd` (qualifiers), and `pass` is a substring of
+# both — so the single word "password" completed the pair by itself, exactly the
+# defect the paragraph forbids, one word over. `passwd-rotation.yaml`,
+# `password-reset.yaml` and `password-policy.json` all classified ANNOUNCED.
+#
+# The repair is 832's (their rail 503, same class in their scanner): the two
+# halves must match at NON-OVERLAPPING SPANS of the name. That makes the rule
+# structural. Curating the lists apart would fix these three strings and leave
+# the rule that permitted them — the next author to add a plausible word to both
+# lists brings it straight back, with nothing in the code saying why they
+# shouldn't.
+#
+# So `password`/`passwd` and `pass` STAY IN BOTH LISTS DELIBERATELY. Both words
+# genuinely belong in their roles; the span rule is what makes the overlap
+# harmless. tests/unit/secret_scan_span_rule.bats fails if the overlap is ever
+# curated away, because an empty overlap would make the generative leg pass for
+# the wrong reason.
+#
+# Note what did NOT show the bug: `reset-password.md` and `password_reset_test.py`
+# come back clean — via the prose/source extension filter below, not via the pair
+# logic. The two cases that would have surfaced this were suppressed by something
+# else, and what was left unmasked is `.json`/`.yaml`: config data, the one file
+# class no extension filter can exclude because it is where real secrets live.
+#
+# Space-separated word lists, not regex alternations — the span check needs the
+# individual words, and a `|`-joined string cannot tell you which alternative matched.
+_SECRET_NAME_SECRECY_WORDS='secret private passwd password auth signing'
+_SECRET_NAME_NOUN_WORDS='key token cert creds credential pass'
+
+# True when a qualifier and a noun both occur, at spans that do not overlap.
+#
+# Masks EVERY occurrence of EVERY qualifier out of the name, then requires a
+# noun in what is left. Two properties this has and a first-occurrence split
+# does not:
+#
+#   - The noun cannot be hiding inside a *second* qualifier. Splitting on the
+#     first `auth` in `auth-password-policy.json` leaves `-password-policy.json`,
+#     where `pass` is found inside `password` — disjoint spans, both of them
+#     qualifiers, no noun anywhere in the name. Masking removes all of them.
+#   - Masking with a SPACE, rather than deleting, means no noun match can be
+#     assembled across the seam a removal would create: no noun contains a space.
+#
+# The first form of this function shipped with the split-on-first-occurrence bug
+# above, and the fixture legs of the test all passed. The generative leg
+# (probing every word in both lists, alone and doubled) is what failed and named
+# `passwd-passwd` — which is why that leg exists rather than a list of known-bad
+# filenames.
+_secret_name_pair_disjoint() {
+    local lower="$1" q n masked had_qualifier=1
+    masked="$lower"
+    for q in $_SECRET_NAME_SECRECY_WORDS; do
+        case "$masked" in
+            *"$q"*) had_qualifier=0; masked="${masked//"$q"/ }" ;;
+        esac
+    done
+    [ "$had_qualifier" -eq 0 ] || return 1
+    for n in $_SECRET_NAME_NOUN_WORDS; do
+        case "$masked" in *"$n"*) return 0 ;; esac
+    done
+    return 1
+}
 
 # Source and prose that TALKS ABOUT credentials is not credential material.
 # Without this, the scanner fires on secret-scan.sh itself, on the tests that
@@ -327,8 +388,7 @@ _secret_name_classify() {
             echo DEFINITIVE; return ;;
     esac
     _secret_name_is_prose_or_source "$lower" && return
-    if echo "$lower" | grep -qE "$_SECRET_NAME_SECRECY" \
-       && echo "$lower" | grep -qE "$_SECRET_NAME_NOUN"; then
+    if _secret_name_pair_disjoint "$lower"; then
         echo ANNOUNCED
     fi
 }
