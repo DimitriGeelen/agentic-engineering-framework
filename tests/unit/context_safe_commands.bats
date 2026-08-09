@@ -228,3 +228,57 @@ setup() {
     run has_bash_write_pattern "grep -r pattern src/"
     [ "$status" -eq 1 ]
 }
+
+# --- T-2887: the echo/printf branch must not re-derive the redirect test ------
+#
+# It used to carry its own copy of the regex. has_bash_write_pattern's copy grew
+# the `2`/`&` exemptions that separate a file write from an fd redirect; the copy
+# did not, so the two disagreed on exactly `2>&1` and `2>/dev/null`. Reported by
+# 832 (rail 489) against their tree; L-518 says sweep ours, and ours had it.
+
+@test "safe-commands: echo with 2>&1 is safe (T-2887)" {
+    run is_bash_safe_command "echo hi 2>&1"
+    [ "$status" -eq 0 ]
+}
+
+@test "safe-commands: echo with 2>/dev/null is safe (T-2887)" {
+    run is_bash_safe_command "echo hi 2>/dev/null"
+    [ "$status" -eq 0 ]
+}
+
+@test "safe-commands: printf with 2>&1 is safe (T-2887)" {
+    run is_bash_safe_command "printf x 2>&1"
+    [ "$status" -eq 0 ]
+}
+
+# Paired negatives. Without these, "stop blocking echo" is satisfiable by
+# deleting the check outright — and the failure direction of THAT mistake is the
+# dangerous one (:82 — misjudging unsafe as safe skips every gate there is).
+
+@test "safe-commands: echo with a real redirect still gates (T-2887)" {
+    run is_bash_safe_command "echo hi > f.txt"
+    [ "$status" -eq 1 ]
+}
+
+@test "safe-commands: echo with an append redirect still gates (T-2887)" {
+    run is_bash_safe_command "echo hi >> f.txt"
+    [ "$status" -eq 1 ]
+}
+
+# The anti-divergence tooth. The three above pin the SYMPTOM; this pins the
+# CAUSE. Re-introducing a second private copy of the redirect test passes every
+# case above as long as the new copy happens to be correct today — and that is
+# exactly how this defect arrived, since the copy WAS correct when it was made
+# and only became wrong when its sibling was fixed without it (L-399).
+@test "safe-commands: echo branch and write-pattern agree on every redirect shape (T-2887)" {
+    local c
+    for c in "echo hi" "echo hi 2>&1" "echo hi 2>/dev/null" "echo hi > f" \
+             "echo hi >> f" "echo hi 1>&2" "printf x 2>&1" "printf x > f"; do
+        if has_bash_write_pattern "$c"; then want=1; else want=0; fi
+        if is_bash_safe_command "$c"; then got=0; else got=1; fi
+        [ "$got" -eq "$want" ] || {
+            echo "disagreement on: $c (write-pattern says $want, safe-list says $got)"
+            false
+        }
+    done
+}
