@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2882: Measure importer fidelity: what our BPMN importer does with content it does not consume
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T07:26:54Z
+# ============================================================================
+
+task_id: T-2882
+task_name: "Measure importer fidelity: what our BPMN importer does with content it does not consume"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T07:09:07Z
+completed: 2026-08-09T07:26:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-09T09:18:07+02:00
+last_commit: 2026-08-09T09:26:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  content census of both BPMN importers — the projection drops silently, the round-trip answers all three. report — both importers measured, PL-114 applied, two findings filed (OBS-205/206/207). 832 answered at rail 487 — measured, both importers, findings and controls stated
+
+# Key outcomes
+outcomes:
+  - 'Every place content can sit in a `.bpmn` relative to what the compiler reads is'
+  - 'A **content** census harness measures each position by differential compile'
+  - 'The harness carries a **positive control**: a mutation in a position the compiler'
+  - 'The **fabrication axis** is measured separately from the loss axis: every field in'
+  - 'Each dropped position is judged against PL-114 — does a competing carrier for that'
+  - 'The measurement is pinned by a test under `tests/` so a later importer change that'
+  - 'Report at `docs/reports/T-2882-importer-fidelity.md` answers 832''s (a)/(b)/(c)'
+  - '832 is answered on the DM rail with the measured result, stating what was measured'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-09.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-09.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - 'docs/reports/T-2882-importer-fidelity.md'
+  - '.fabric/components/tests-unit-test_importer_fidelity.yaml'
+  - '.tasks/active/T-2882-measure-importer-fidelity-what-our-bpmn-.md'
+  - 'tests/unit/test_importer_fidelity.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T09:18:07'
+    action: 'T-2882: content census of both BPMN importers — the projection drops silently, the round-trip answers all three'
+  - time: '2026-08-09T09:22:37'
+    action: 'T-2882: report — both importers measured, PL-114 applied, two findings filed (OBS-205/206/207)'
+  - time: '2026-08-09T09:26:37'
+    action: 'T-2882: 832 answered at rail 487 — measured, both importers, findings and controls stated'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 3
+  files_changed: 24
+  lines_added: 4430
+  lines_removed: 3117
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2882-measure-importer-fidelity-what-our-bpmn-.md
+generated_by: context-agent-hybrid

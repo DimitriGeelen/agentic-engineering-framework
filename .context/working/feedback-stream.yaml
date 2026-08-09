@@ -31110,3 +31110,21 @@ scan_id: R-3b82887d
 task_id: T-2877
 payload:
   task_file: .tasks/active/T-2877-arc-017-half-a-human-onboarding-curricul.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T07:26:44Z'
+scan_id: R-fccf2bee
+task_id: T-2882
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T07:26:44Z'
+scan_id: R-fccf2bee
+task_id: T-2882
+payload:
+  task_file: .tasks/active/T-2882-measure-importer-fidelity-what-our-bpmn-.md
