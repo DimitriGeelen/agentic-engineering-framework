@@ -477,6 +477,25 @@ CORPUS_PROBES: list[Probe] = [
     _p("di-geometry", "BPMNDI layout — 832's T-340 position, where we emit aef:position",
        "S-DI-DIAGRAM",
        lambda x: x.replace("</bpmn:definitions>", _C_DI, 1)),
+    # T-2884 / 832 rail 490. exporter= is neither foreign-ns nor on a node, so the
+    # rows above did not cover it in either direction — and it is now the single
+    # field 832's authorship test depends on, which makes this answer load-bearing
+    # for a peer rather than merely informative.
+    _p("exporter-attr-on-definitions",
+       "exporter= — a STANDARD BPMN attribute on <definitions>",
+       "aef-workflow-designer",
+       lambda x: x.replace('<bpmn:definitions ',
+                           '<bpmn:definitions exporter="aef-workflow-designer" ', 1)),
+    _p("exporterVersion-attr-on-definitions",
+       "its sibling — so the verdict is about the POSITION, not one attribute name",
+       "0.9.0-probe",
+       lambda x: x.replace('<bpmn:definitions ',
+                           '<bpmn:definitions exporterVersion="0.9.0-probe" ', 1)),
+    _p("name-attr-on-definitions",
+       "an unrelated standard attribute in the same position, as a third point",
+       "S-DEFS-NAME",
+       lambda x: x.replace('<bpmn:definitions ',
+                           '<bpmn:definitions name="S-DEFS-NAME" ', 1)),
 ]
 
 CORPUS_POSITIVE_CONTROLS: list[Probe] = [
@@ -562,7 +581,40 @@ CORPUS_MEASURED_2026_08_09 = {
     "foreign-top-level-subtree": DROPPED_SILENT,
     "trailing-comment": DROPPED_SILENT,
     "di-geometry": DROPPED_SILENT,
+    # T-2884: not attribute-specific — the emitter reconstructs <definitions> from
+    # the spec's two recorded fields, so every other attribute in that position goes.
+    "exporter-attr-on-definitions": DROPPED_SILENT,
+    "exporterVersion-attr-on-definitions": DROPPED_SILENT,
+    "name-attr-on-definitions": DROPPED_SILENT,
 }
+
+
+def test_definitions_attributes_survive_only_by_being_reconstructed(corpus_baseline):
+    """T-2884 — the <definitions> verdict is positional, and we stamp no producer id.
+
+    `id` and `targetNamespace` come back because the emitter writes them from the
+    spec, not because anything preserved them. Nothing else in that position
+    survives, which is why probing three different attributes matters: an answer
+    true for `exporter` alone would be a coincidence, not a property of the seam.
+
+    The second assertion is the one with consequences. 832 now stamps
+    `exporter="aef-workflow-designer"` because their bridge could not otherwise tell
+    their own documents from ours — conformance to a shared standard erases every
+    structural marker. We emit no exporter at all, so a document leaving our
+    round-trip carries no producer identity: theirs is dropped, and ours never
+    existed to drop.
+    """
+    import xml.etree.ElementTree as ET
+
+    _, out = _roundtrip(corpus_baseline)
+    src = ET.fromstring(corpus_baseline)
+    dst = ET.fromstring(out)
+    assert set(src.attrib) == {"id", "targetNamespace"}
+    assert set(dst.attrib) == set(src.attrib)
+    assert "exporter" not in dst.attrib, (
+        "we now stamp an exporter — 832's authorship test and the census table both "
+        "need updating, and they must be told"
+    )
 
 
 def test_corpus_measured_verdicts_have_not_moved(corpus_baseline):
