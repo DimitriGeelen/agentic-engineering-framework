@@ -4253,3 +4253,10 @@ X'` returning empty group."
   date: 2026-08-09
   context: Added via context agent
   application: TBD
+- id: L-561
+  learning: "termlink 'channel dm <peer>' auto-resolves the topic from the CURRENT session's identity fingerprint, not from which established rail the peer actually watches. On a host with a shared/collision-prone identity (OBS from inbox.yaml line 764: /root/.termlink/identity.json shared across sessions), the resolved fp can differ from the fp used on the peer's long-running DM thread, silently creating/posting to a NEW topic instead of the established one — no error, no warning about the mismatch (only a generic 'no from_project' warning). Caught live: posted T-2893's fixture handoff to dm:6a646ce8b1bc6560:d1993c2c3ec44c94 (a different, mostly-dormant cross-project doorbell channel) instead of the actual AEF<->832 rail dm:0e7ee6cad65137fc:6a646ce8b1bc6560 that 832 explicitly confirmed (rail msg [6] in the other topic) is the one they watch. Fixed by redacting the misplaced post and re-posting via explicit 'channel post --topic <established-topic> --sender-id <established-fp>' instead of the identity-guessing 'channel dm' shorthand. Mitigation for next time: when continuing an existing cross-project thread, always use 'channel subscribe <known-topic> --cursor <last> --limit 1' to confirm the exact topic name first, then 'channel post --topic' explicitly — never trust 'channel dm <peer>' to resolve to the same topic a prior session posted to."
+  source: P-001
+  task: T-2893
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD
