@@ -147,6 +147,7 @@ fw_consumer_yamls() {
 FW_CONFIG_REGISTRY=(
     "CONTEXT_WINDOW|300000|Context window size for budget enforcement (tokens)"
     "PORT|3000|Watchtower web UI listen port"
+    "RAIL_IDENTITY_FILE||Project-owned termlink signing identity for outbound rail posts (T-2904). Empty = sign as host key, which is indistinguishable from co-resident agents. Created on first use."
     "DISPATCH_LIMIT|2|Agent tool dispatches before TermLink gate triggers"
     "BUDGET_RECHECK_INTERVAL|5|Re-read transcript every N tool calls"
     "BUDGET_STATUS_MAX_AGE|90|Max seconds before cached budget status is stale"

@@ -5533,6 +5533,10 @@ EOF
         source "$FW_LIB_DIR/bus.sh"
         do_bus "$@"
         ;;
+    rail)
+        source "$FW_LIB_DIR/rail-identity.sh"
+        do_rail "$@"
+        ;;
     dispatch)
         source "$FW_LIB_DIR/dispatch.sh"
         do_dispatch "$@"
