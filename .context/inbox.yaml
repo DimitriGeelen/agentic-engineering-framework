@@ -1539,3 +1539,24 @@ observations:
   tags: [gap]
   status: pending
   promoted_to: null
+- id: OBS-205
+  text: "corpus_spec round-trip: a node's non-extension children are destroyed silently while an edge's are preserved verbatim. T-2614 gave sequenceFlow raw_children passthrough and never gave nodes the same, so <bpmn:documentation> on a task is lost and the identical element on a flow survives. Measured + pinned in tests/unit/test_importer_fidelity.py::test_node_edge_asymmetry_is_real (T-2882)."
+  captured: 2026-08-09T07:22:07Z
+  context_task: T-2882
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-206
+  text: "corpus_spec T-2614 hard-error on unsupported process children is gated on el.get('id'): same tag, same content, WITH an id = loud SystemExit, WITHOUT an id = vanishes silently. BPMN textAnnotation/association are routinely authored without ids, so the guard's hole is exactly the shape of the elements most likely to fall in it. The guard's SUCCESS is what hid this (sibling of L-556). Pinned: test_the_hard_error_is_gated_on_having_an_id (T-2882)."
+  captured: 2026-08-09T07:22:15Z
+  context_task: T-2882
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-207
+  text: "bpmn_to_tasks projection drops whole node types outside TASK_TAGS with no warning at all — a businessRuleTask with a uid disappears and the author believes they authored a step. Not a data loss (the .bpmn is never rewritten; only designer_api.py:141 writes .bpmn, verbatim) but a silent projection loss. Measured across 9 positions, all dropped-silently (T-2882)."
+  captured: 2026-08-09T07:22:15Z
+  context_task: T-2882
+  tags: []
+  status: pending
+  promoted_to: null

@@ -1,12 +1,12 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-08T03:23:02.612832+00:00
-corpus_total: 2526
+generated: 2026-08-09T03:23:02.387723+00:00
+corpus_total: 2541
 bug_class_total: 488
 bug_class_pct: 19
 h1_flagged: 358
 h1_pct_of_bug_class: 73
-h2_repeat_patterns: 137
+h2_repeat_patterns: 138
 h3_flagged: 265
 h3_pct_of_bug_class: 54
 recent_30d_flagged: 16
@@ -34,22 +34,22 @@ recent_sample:
     name: "fix dead audit graduation counter (learnings >=20 branch never fires)"
 h2_top:
   - learning: "P-011"
-    task_count: 1674
+    task_count: 1716
   - learning: "L-387"
-    task_count: 1486
+    task_count: 1525
   - learning: "L-291"
-    task_count: 859
+    task_count: 873
   - learning: "L-398"
-    task_count: 628
+    task_count: 641
   - learning: "P-010"
-    task_count: 317
+    task_count: 322
   - learning: "L-399"
-    task_count: 59
+    task_count: 64
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
     task_count: 40
   - learning: "L-364"
-    task_count: 39
+    task_count: 40
   - learning: "L-332"
     task_count: 36

@@ -1,87 +1,92 @@
 # Working Memory - Current Focus
 # Session: S-2026-0806-0011
 
-current_task: T-2720
+current_task: T-2882
 priorities: []
 blockers: []
 pending_decisions: []
 reminders:
 - Run audit before pushing
 - Create handover before ending session
-- "PUSH IS FIXED — infra recovered on its own. 0 unpushed, both refs landed
-  (a973f3e73..5dfaed4a4). 832 confirms THEIR OneDev came back in the same window with
-  no operator action either. Both hosts down and back unaided = the segment did this,
-  worth the operator knowing rather than each side writing off their own host."
-- "T-2877 CLOSED — arc-017 Half A shipped. 6/6 ACs, 6/6 verification. The T-1718 gate
-  refused the first attempt because the file had TWO `## Evolution` headings (template
-  first, real content 30 lines below). Consolidated. Note the direction it failed in:
-  content present but unreachable to the checker failed LOUD. A whole-file scan would
-  have found content and let a genuinely-empty section through instead."
-- "L-556 IS THE LESSON OF THIS SESSION. T-2877's [REVIEW] prose-quality AC was refused
-  by arc-017's own Half B invariant (the T-2881 tag bug). I fixed the invariant and
-  NEVER RESTORED THE AC — so Half A shipped with zero operator review of the one
-  property only an operator can judge, and my own focus notes claimed the AC was there.
-  Fixing a gate does not replay what it blocked. The refusal is forced; the restoration
-  is not. Both reviews are now [REVIEW] ACs on T-2720."
-- "T-2720 IS THE OPEN KEYSTONE AND IT STAYS OPEN. Both arc-017 halves are built — which
-  is exactly when the G-062 substrate-vs-deliverable conflation is most tempting. The
-  mechanic is a thing an OPERATOR DOES (finishes the prologue with the curriculum
-  alongside) and nobody has. Until 2026-08-08 that closure condition was only PROSE in
-  the Agent block — no unticked box, so nothing could surface it. Now two [REVIEW] ACs,
-  both Steps blocks verified before handoff (11/11 sections print; fw init into a clean
-  /tmp dir gives 5/5 carrying the section, no parent-walk). NEVER tick these. Hand over
-  with `bin/fw task review T-2720` and QUOTE THE EMITTED URL VERBATIM (T-2125)."
-- "832 RAIL — READ THROUGH 486. WE ARE CURRENT AND OWE NO REPLY (486 says so explicitly).
-  486 carries two things that change HOW we answer the owed importer question, so read
-  this before measuring: (1) **PL-114 — preserve unconsumed content UNLESS you generate a
-  competing carrier for the same fact; where you do, preservation self-contradicts.** They
-  found it by opening a brief expecting one question asked four times and having that
-  falsified: T-337 (foreign tag) and T-347 (element content) → preserve, but T-340 (BPMN
-  DI) → CONSUME, because they emit `aef:position` for the same fact and preserving DI
-  bytes would export two contradictory geometries with no user action. Corollary they got
-  wrong first: a ratified decision at one granularity does NOT transfer to a sibling
-  granularity — test the transfer. (2) **Loss and fabrication are different axes.** What
-  we drop (unread content) is a fidelity question; what we INVENT (lanes/participants the
-  input never had) is an accountability question about who owns a step. Do not answer them
-  as one. They deliberately gave no recommendation on the fabrication pair so the refusal
-  is auditable rather than reading as an omission for someone to fill in. Also: they
-  re-measured the disjointness T-340 rests on over a grown population (126→142 files, 10
-  carrying DI) rather than quoting the old number — BOTH still 0."
-- "832 RAIL — earlier context. 484 OPENS THE THREAD
-  WITH A DIRECT QUESTION WE OWE AN ANSWER TO: does OUR importer preserve content it does
-  not consume — (a) preserve+re-emit verbatim, (b) consume into typed state and drop the
-  rest, or (c) refuse? They shipped (a) for unknown TAGS (their T-337); unknown BRANCH
-  (T-340) and unknown CONTENT-IN-A-KNOWN-TAG (T-347) are with their operator. I answered
-  NOT MEASURED and refused to infer it — inferring is the move they retracted twice on
-  their own severity rating. MEASURE IT NEXT SESSION and reply. Likely answer is
-  '(b) by omission, not by decision' but likely-right is not an answer."
-- "TAKE THIS FROM 484 REGARDLESS OF THE IMPORTER ANSWER: **the count is the wrong
-  measure.** An element that survives with its body stripped keeps its node, flow and
-  lane counts — so a STRUCTURAL census cannot see content loss, and ours is structural.
-  They measured one fixture at 1 finding under a structural census vs 451 under a
-  content census. Sharpest statement yet of the class we have circled all week (a check
-  whose instrument cannot represent the defect reads exactly like a check that found
-  nothing). Actionable on our corpus/import fidelity checks independently of their Q."
-- "DESIGNER 0.9.0 IS NOW GENUINELY FETCHABLE — 832 answered our 471 §7 with YES + a URL.
-  Public read-only mirror github.com/DimitriGeelen/workflow-designer, TAG
-  `designer-v0.9.0` at 8cd0c5d3, tags retroactive to v0.1.0, propagation seconds. They
-  measured it as a CONSUMER (anonymous clone) rather than asserting from config. NOT a
-  T-559 relaxation — the private origin stays off-limits; this is a published artifact
-  offered explicitly, so the 'unasked' clause that did the work in our 471 position no
-  longer applies. WE STAY PINNED AT 0.8.0: the reason is now 'we have not evaluated
-  0.9.0' rather than 'we cannot obtain it'. Repin needs its OWN TASK and goes in front
-  of the operator — the designer is served live in Watchtower. 'A branch tip is not a
-  release' — their line, worth keeping."
-- "STILL FILED, NOT FIXED: OBS-201 (7MB `yaml,sys` capture in repo root — DO NOT DELETE,
-  it is evidence); OBS-202; OBS-203; OBS-204. G-078 NOT CLOSED — the class is 'the task
-  gate blocks the actions its own advice depends on', and nothing stops the next
-  safe-list addition from shadowing a future gate below the fast path. Do not re-propose
-  confinement-as-permission; 832 killed it correctly."
-- "UNTRACKED DEBRIS IN THE TREE, checked and harmless: s4-editor-full.md (24KB Playwright
-  a11y snapshot of the designer) and web/templates/_{stale_tasks,work_queue}_items.html —
-  all three stamped Aug 7 22:21, same minute. Grep says the templates are referenced by
-  NOTHING committed, so they are orphans from an unfinished session, not breakage. Same
-  signature as OBS-201 (an agent session writing artifacts into the repo root). Left in
-  place deliberately — not mine to delete, and OBS-201 taught us captures can be
-  evidence."
+- "PUSH IS FIXED \u2014 infra recovered on its own. 0 unpushed, both refs landed (a973f3e73..5dfaed4a4).\
+  \ 832 confirms THEIR OneDev came back in the same window with no operator action\
+  \ either. Both hosts down and back unaided = the segment did this, worth the operator\
+  \ knowing rather than each side writing off their own host."
+- "T-2877 CLOSED \u2014 arc-017 Half A shipped. 6/6 ACs, 6/6 verification. The T-1718\
+  \ gate refused the first attempt because the file had TWO `## Evolution` headings\
+  \ (template first, real content 30 lines below). Consolidated. Note the direction\
+  \ it failed in: content present but unreachable to the checker failed LOUD. A whole-file\
+  \ scan would have found content and let a genuinely-empty section through instead."
+- "L-556 IS THE LESSON OF THIS SESSION. T-2877's [REVIEW] prose-quality AC was refused\
+  \ by arc-017's own Half B invariant (the T-2881 tag bug). I fixed the invariant\
+  \ and NEVER RESTORED THE AC \u2014 so Half A shipped with zero operator review of\
+  \ the one property only an operator can judge, and my own focus notes claimed the\
+  \ AC was there. Fixing a gate does not replay what it blocked. The refusal is forced;\
+  \ the restoration is not. Both reviews are now [REVIEW] ACs on T-2720."
+- "T-2720 IS THE OPEN KEYSTONE AND IT STAYS OPEN. Both arc-017 halves are built \u2014\
+  \ which is exactly when the G-062 substrate-vs-deliverable conflation is most tempting.\
+  \ The mechanic is a thing an OPERATOR DOES (finishes the prologue with the curriculum\
+  \ alongside) and nobody has. Until 2026-08-08 that closure condition was only PROSE\
+  \ in the Agent block \u2014 no unticked box, so nothing could surface it. Now two\
+  \ [REVIEW] ACs, both Steps blocks verified before handoff (11/11 sections print;\
+  \ fw init into a clean /tmp dir gives 5/5 carrying the section, no parent-walk).\
+  \ NEVER tick these. Hand over with `bin/fw task review T-2720` and QUOTE THE EMITTED\
+  \ URL VERBATIM (T-2125)."
+- "832 RAIL \u2014 READ THROUGH 486. WE ARE CURRENT AND OWE NO REPLY (486 says so\
+  \ explicitly). 486 carries two things that change HOW we answer the owed importer\
+  \ question, so read this before measuring: (1) **PL-114 \u2014 preserve unconsumed\
+  \ content UNLESS you generate a competing carrier for the same fact; where you do,\
+  \ preservation self-contradicts.** They found it by opening a brief expecting one\
+  \ question asked four times and having that falsified: T-337 (foreign tag) and T-347\
+  \ (element content) \u2192 preserve, but T-340 (BPMN DI) \u2192 CONSUME, because\
+  \ they emit `aef:position` for the same fact and preserving DI bytes would export\
+  \ two contradictory geometries with no user action. Corollary they got wrong first:\
+  \ a ratified decision at one granularity does NOT transfer to a sibling granularity\
+  \ \u2014 test the transfer. (2) **Loss and fabrication are different axes.** What\
+  \ we drop (unread content) is a fidelity question; what we INVENT (lanes/participants\
+  \ the input never had) is an accountability question about who owns a step. Do not\
+  \ answer them as one. They deliberately gave no recommendation on the fabrication\
+  \ pair so the refusal is auditable rather than reading as an omission for someone\
+  \ to fill in. Also: they re-measured the disjointness T-340 rests on over a grown\
+  \ population (126\u2192142 files, 10 carrying DI) rather than quoting the old number\
+  \ \u2014 BOTH still 0."
+- "832 RAIL \u2014 earlier context. 484 OPENS THE THREAD WITH A DIRECT QUESTION WE\
+  \ OWE AN ANSWER TO: does OUR importer preserve content it does not consume \u2014\
+  \ (a) preserve+re-emit verbatim, (b) consume into typed state and drop the rest,\
+  \ or (c) refuse? They shipped (a) for unknown TAGS (their T-337); unknown BRANCH\
+  \ (T-340) and unknown CONTENT-IN-A-KNOWN-TAG (T-347) are with their operator. I\
+  \ answered NOT MEASURED and refused to infer it \u2014 inferring is the move they\
+  \ retracted twice on their own severity rating. MEASURE IT NEXT SESSION and reply.\
+  \ Likely answer is '(b) by omission, not by decision' but likely-right is not an\
+  \ answer."
+- "TAKE THIS FROM 484 REGARDLESS OF THE IMPORTER ANSWER: **the count is the wrong\
+  \ measure.** An element that survives with its body stripped keeps its node, flow\
+  \ and lane counts \u2014 so a STRUCTURAL census cannot see content loss, and ours\
+  \ is structural. They measured one fixture at 1 finding under a structural census\
+  \ vs 451 under a content census. Sharpest statement yet of the class we have circled\
+  \ all week (a check whose instrument cannot represent the defect reads exactly like\
+  \ a check that found nothing). Actionable on our corpus/import fidelity checks independently\
+  \ of their Q."
+- "DESIGNER 0.9.0 IS NOW GENUINELY FETCHABLE \u2014 832 answered our 471 \xA77 with\
+  \ YES + a URL. Public read-only mirror github.com/DimitriGeelen/workflow-designer,\
+  \ TAG `designer-v0.9.0` at 8cd0c5d3, tags retroactive to v0.1.0, propagation seconds.\
+  \ They measured it as a CONSUMER (anonymous clone) rather than asserting from config.\
+  \ NOT a T-559 relaxation \u2014 the private origin stays off-limits; this is a published\
+  \ artifact offered explicitly, so the 'unasked' clause that did the work in our\
+  \ 471 position no longer applies. WE STAY PINNED AT 0.8.0: the reason is now 'we\
+  \ have not evaluated 0.9.0' rather than 'we cannot obtain it'. Repin needs its OWN\
+  \ TASK and goes in front of the operator \u2014 the designer is served live in Watchtower.\
+  \ 'A branch tip is not a release' \u2014 their line, worth keeping."
+- "STILL FILED, NOT FIXED: OBS-201 (7MB `yaml,sys` capture in repo root \u2014 DO\
+  \ NOT DELETE, it is evidence); OBS-202; OBS-203; OBS-204. G-078 NOT CLOSED \u2014\
+  \ the class is 'the task gate blocks the actions its own advice depends on', and\
+  \ nothing stops the next safe-list addition from shadowing a future gate below the\
+  \ fast path. Do not re-propose confinement-as-permission; 832 killed it correctly."
+- "UNTRACKED DEBRIS IN THE TREE, checked and harmless: s4-editor-full.md (24KB Playwright\
+  \ a11y snapshot of the designer) and web/templates/_{stale_tasks,work_queue}_items.html\
+  \ \u2014 all three stamped Aug 7 22:21, same minute. Grep says the templates are\
+  \ referenced by NOTHING committed, so they are orphans from an unfinished session,\
+  \ not breakage. Same signature as OBS-201 (an agent session writing artifacts into\
+  \ the repo root). Left in place deliberately \u2014 not mine to delete, and OBS-201\
+  \ taught us captures can be evidence."
 focus_session: S-2026-0806-0011

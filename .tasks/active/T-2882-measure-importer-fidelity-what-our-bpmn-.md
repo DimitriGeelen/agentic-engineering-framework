@@ -107,26 +107,33 @@ BPMN → AEF task skeletons) and any second import path that round-trips.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every place content can sit in a `.bpmn` relative to what the compiler reads is
+- [x] Every place content can sit in a `.bpmn` relative to what the compiler reads is
       enumerated as a named probe position — foreign element, foreign attribute, text in
       a consumed element, unread standard BPMN element, unknown child of a branch we DO
       read, unread node type, diagram geometry — with none left implicit
-- [ ] A **content** census harness measures each position by differential compile
+- [x] A **content** census harness measures each position by differential compile
       (baseline vs mutated input) and classifies it preserve / drop / refuse
-- [ ] The harness carries a **positive control**: a mutation in a position the compiler
+- [x] The harness carries a **positive control**: a mutation in a position the compiler
       demonstrably consumes must change the output, so "identical output" cannot be
       produced by a harness that never ran the compiler
-- [ ] The **fabrication axis** is measured separately from the loss axis: every field in
+- [x] The **fabrication axis** is measured separately from the loss axis: every field in
       the emitted skeleton that has no counterpart in the input is enumerated, with the
       rule that synthesised it
-- [ ] Each dropped position is judged against PL-114 — does a competing carrier for that
+- [x] Each dropped position is judged against PL-114 — does a competing carrier for that
       same fact exist in our output, or is the drop pure loss?
-- [ ] The measurement is pinned by a test under `tests/` so a later importer change that
+- [x] The measurement is pinned by a test under `tests/` so a later importer change that
       moves any verdict is caught rather than silently invalidating the answer we gave
-- [ ] Report at `docs/reports/T-2882-importer-fidelity.md` answers 832's (a)/(b)/(c)
+- [x] Report at `docs/reports/T-2882-importer-fidelity.md` answers 832's (a)/(b)/(c)
       per position, with the measurement commands reproducible
 - [ ] 832 is answered on the DM rail with the measured result, stating what was measured
       and what was not
+
+**Scope grew, deliberately.** The task was filed against `tools/bpmn_to_tasks.py`. That
+turned out to be a *projection* (BPMN → task skeletons, never writes a `.bpmn`), and the
+importer 832's question is actually about — the one that parses and re-serialises — is
+`tools/corpus_spec.py`. Both are measured. Answering with only the projection would have
+been true and useless; that is the failure mode the "measure, don't infer" refusal
+existed to prevent, one level up.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
