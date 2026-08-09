@@ -6407,3 +6407,16 @@ r=$(mktemp -d); mkdir -p "$r/.tasks/active" "$r/.tasks/completed" "$r/.conte'
   tier: 2
   mechanism: FW_ALLOW_HOST_SIGNED_RAIL
   detail: "fw rail post --hub 192.168.10.107:9100 dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --msg-type turn --metadata from_project=999-agentic-engineering-framework --json"
+- ts: "2026-08-09T22:01:45Z"
+  gate: rail-identity
+  tier: 2
+  mechanism: FW_ALLOW_HOST_SIGNED_RAIL
+  detail: "fw rail post --hub 192.168.10.107:9100 dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --msg-type turn --json"
+- timestamp: '2026-08-09T22:03:09Z'
+  task: 'T-2902'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2905'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/ .context/ 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2905: close (partial-complete) — canonical label live on rail '

@@ -4,12 +4,12 @@ name: "rail posts must carry one canonical project label, emitted not typed"
 description: >
   rail posts must carry one canonical project label, emitted not typed
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/config.sh, lib/rail-identity.sh, tests/unit/rail_identity_guard.bats, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T21:56:40Z
-last_update: '2026-08-09T22:00:14Z'
-date_finished:
+last_update: 2026-08-09T22:02:24Z
+date_finished: 2026-08-09T22:02:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -68,7 +68,22 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832's rail 511/512 measured our shared rails: one fingerprint carrying six
+`from_project` values — three of them this project spelled three ways
+(`999-Agentic-Engineering-Framework`, `999-agentic-engineering-framework`,
+`999-AEF`) — and **400 of 474 content envelopes with no label at all**.
+
+Their ask was "pick one spelling". Picking one is a promise, and the promise is
+what already failed three times, so the label is emitted from a single source at
+the posting surface and normalised. Absence was the larger half of the defect
+and would have been missed by a spelling-only fix — that came from their
+measurement, not from our diagnosis.
+
+Settled spelling: `999-agentic-engineering-framework`. Told at rail 513, whose
+own envelope carries it without the command naming it.
+
+Not authentication. `from_project` is unsigned free text in a metadata map; it
+groups cooperating co-residents and authenticates nobody (832's 511 §1).
 
 ## Acceptance Criteria
 
@@ -84,11 +99,30 @@ bvp_scores_proposed:
       that is tested — the emitter sets a floor, it does not seize the field
 - [x] Test goes RED against the pre-fix code path, not merely green against the
       fixed one
-- [ ] 832 is told which single spelling we settled on, since their capture
+- [x] 832 is told which single spelling we settled on, since their capture
       (`tests/fixtures/termlink-attribution/`, pinned 2026-08-09) is the baseline
       a new label will show up against
 
 ### Human
+
+- [ ] [REVIEW] The two new rail settings render cleanly on `/config`
+
+  Both descriptions are long (they carry the "why", deliberately — an empty
+  default reads as "unset and harmless" otherwise). Long strings are exactly what
+  wraps badly in a settings table, and curl cannot tell me whether it looks wrong.
+
+  **Steps:**
+  1. Open http://192.168.10.107:3001/config
+  2. Find `RAIL_IDENTITY_FILE` and `RAIL_PROJECT_LABEL`
+  3. Check the description column wraps rather than overflowing or truncating,
+     and that an empty default is visibly "not set" rather than blank-ambiguous
+
+  **Expected:** Both rows readable, description wrapped inside its cell, empty
+  value distinguishable from a value that happens to be whitespace.
+
+  **If not:** Note which row and whether it overflows or truncates — the fix is
+  in the table's cell styling, not in the registry text.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -118,6 +152,28 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## Recommendation
+
+**Recommendation:** GO — the mechanism is the deliverable and it is proven on the
+live rail; the open Human AC is a rendering check, not a decision.
+
+**Rationale:** 832 asked for one spelling. Shipping "we agreed on a spelling"
+would have been a promise, and the promise is precisely what failed three times
+already — three spellings of this project exist on one fingerprint because three
+sessions each typed it. The label is now emitted from a single source, so there
+is no call site left to spell it. Their 400-of-474-unlabelled measurement is what
+made absence a separate test leg; a spelling-only fix would have passed its own
+suite while the larger half shipped.
+
+**Evidence:**
+- Rail 513 to 832 carries `from_project: 999-agentic-engineering-framework` on
+  the envelope, and the posting command did not name it
+- `tests/unit/rail_identity_guard.bats` — 11 legs green; the attach leg
+  mutation-checked RED against the pre-fix path
+- Explicit caller `--metadata from_project=` still wins (own leg)
+- `tests/lint/` 0 red — config registry parity held across both mirrors
+
 
 ## Verification
 
@@ -259,3 +315,15 @@ bats tests/unit/rail_identity_guard.bats
 bash -c 'source lib/rail-identity.sh; termlink(){ printf "%s\n" "$*"; }; FW_RAIL_IDENTITY_FILE=/tmp/k.key do_rail post t 2>/dev/null' > /tmp/.t2905 2>&1 && grep -q -- "--metadata from_project=999-agentic-engineering-framework" /tmp/.t2905
 # one spelling only: normalisation collapses case and separators
 [ "$(bash -c 'source lib/rail-identity.sh; FW_RAIL_PROJECT_LABEL="999 AEF_Test" rail_project_label')" = "999-aef-test" ]
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c1c8277e
+- **Timestamp:** 2026-08-09T22:02:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-09T22:02:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

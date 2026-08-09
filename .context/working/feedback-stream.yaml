@@ -31434,3 +31434,21 @@ scan_id: R-95745ffa
 task_id: T-2904
 payload:
   task_file: .tasks/active/T-2904-outbound-rail-identity-depends-on-the-po.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T22:02:26Z'
+scan_id: R-c1c8277e
+task_id: T-2905
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T22:02:26Z'
+scan_id: R-c1c8277e
+task_id: T-2905
+payload:
+  task_file: .tasks/active/T-2905-rail-posts-must-carry-one-canonical-proj.md
