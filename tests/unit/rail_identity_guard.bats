@@ -90,6 +90,56 @@ teardown() {
     echo "$output" | grep -q "FW_ALLOW_HOST_SIGNED_RAIL"
 }
 
+# --- T-2905: the project label is emitted, not typed --------------------------
+#
+# 832 measured one fingerprint carrying six from_project values across 474
+# envelopes — three of them this project spelled three ways — and 400 envelopes
+# carrying no label at all. Absence is the larger half of that defect, so a leg
+# that only checks normalisation would pass while the real problem shipped.
+
+@test "rail-label: normalised to one spelling, whatever the source says" {
+    cd "$FRAMEWORK_ROOT"
+    run bash -c 'source lib/rail-identity.sh; FW_RAIL_PROJECT_LABEL="999 AEF_Test" rail_project_label'
+    [ "$status" -eq 0 ]
+    [ "$output" = "999-aef-test" ]
+}
+
+@test "rail-label: derived from the project dir when nothing is configured" {
+    cd "$FRAMEWORK_ROOT"
+    # NB: `env VAR=x fn` cannot work — env execs a binary and rail_project_label
+    # is a shell function (this leg first failed 127 for exactly that reason).
+    run bash -c 'source lib/rail-identity.sh; unset FW_RAIL_PROJECT_LABEL; PROJECT_ROOT=/tmp/999-Agentic-Engineering-Framework rail_project_label'
+    [ "$status" -eq 0 ]
+    # The point of the fix: the caller never types this, so it cannot vary.
+    [ "$output" = "999-agentic-engineering-framework" ]
+}
+
+@test "rail-label: the label is ATTACHED to the post, not merely computable" {
+    # The gap between "a function returns the right string" and "the envelope
+    # carries it" is where the 400 unlabelled envelopes live. Assert on the
+    # argv the post path would use, without needing a hub.
+    cd "$FRAMEWORK_ROOT"
+    run bash -c '
+        source lib/rail-identity.sh
+        termlink() { printf "%s\n" "$*"; }        # capture argv
+        export -f termlink 2>/dev/null || true
+        FW_RAIL_IDENTITY_FILE="'"$TEST_TEMP_DIR"'/k.key" do_rail post some-topic 2>/dev/null
+    '
+    echo "$output" | grep -q -- "--metadata from_project="
+}
+
+@test "rail-label: an explicit caller label WINS (floor, not seizure)" {
+    cd "$FRAMEWORK_ROOT"
+    run bash -c '
+        source lib/rail-identity.sh
+        termlink() { printf "%s\n" "$*"; }
+        FW_RAIL_IDENTITY_FILE="'"$TEST_TEMP_DIR"'/k.key" do_rail post some-topic --metadata from_project=caller-choice 2>/dev/null
+    '
+    # exactly one from_project, and it is the caller's
+    [ "$(echo "$output" | grep -o 'from_project=' | wc -l)" -eq 1 ]
+    echo "$output" | grep -q "from_project=caller-choice"
+}
+
 # --- (g) the regression that shipped in the first cut -------------------------
 
 @test "rail-identity: a MISSING fw_config warns rather than resolving silently to host" {

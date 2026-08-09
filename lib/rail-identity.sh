@@ -167,6 +167,39 @@ EOF
     return 2
 }
 
+# ── project label (T-2905) ───────────────────────────────────────────────────
+#
+# 832 measured 474 envelopes on our shared rails and found ONE fingerprint
+# carrying SIX from_project values, three of which are this project spelled three
+# ways (999-Agentic-Engineering-Framework, 999-agentic-engineering-framework,
+# 999-AEF). A label that is present but inconsistent does not group, so it buys
+# nothing over absence — and 400 of those 474 carried no label at all, which is
+# the larger half.
+#
+# Their ask was "pick one spelling". Asking every session to remember one is the
+# thing that already failed three times, so the label is EMITTED from a single
+# source and never typed at a call site. Case and separators are normalised
+# because 999-AEF vs 999-aef is the same split one layer down.
+#
+# Deliberately NOT authentication. 832's 511 puts it exactly: from_project is
+# unsigned free text in a metadata map — it distinguishes cooperating
+# co-residents and authenticates nobody. It is a grouping key, and a grouping key
+# is only worth having if it groups.
+
+rail_project_label() {
+    local label
+    if declare -F fw_config >/dev/null 2>&1; then
+        label="$(fw_config "RAIL_PROJECT_LABEL" "")"
+    else
+        label="${FW_RAIL_PROJECT_LABEL:-}"
+    fi
+    [ -n "$label" ] || label="$(basename "${PROJECT_ROOT:-$PWD}")"
+    printf '%s' "$label" \
+        | tr '[:upper:]' '[:lower:]' \
+        | tr ' _' '--' \
+        | tr -cd 'a-z0-9.-'
+}
+
 # ── command surface ──────────────────────────────────────────────────────────
 
 _rail_log_bypass() {
@@ -206,10 +239,20 @@ do_rail() {
             fi
             local idfile
             idfile="$(rail_identity_configured_path)"
+
+            # Attach the canonical label unless the caller set one explicitly.
+            # A caller passing from_project wins: this sets a floor, it does not
+            # seize the field.
+            local -a extra=()
+            case " $* " in
+                *" --metadata from_project="*) : ;;
+                *) extra=(--metadata "from_project=$(rail_project_label)") ;;
+            esac
+
             if [ -n "$idfile" ]; then
-                TERMLINK_IDENTITY_FILE="$idfile" termlink channel post "$@"
+                TERMLINK_IDENTITY_FILE="$idfile" termlink channel post "${extra[@]}" "$@"
             else
-                termlink channel post "$@"
+                termlink channel post "${extra[@]}" "$@"
             fi
             ;;
         -h|--help|help)
