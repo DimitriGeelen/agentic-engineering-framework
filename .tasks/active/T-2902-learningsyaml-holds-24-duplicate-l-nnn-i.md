@@ -13,7 +13,7 @@ description: >
   file or resets across the confirmed/candidates split), a dedup pass with the count
   reported, and a guard so reissue cannot recur.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T15:57:04Z
-last_update: '2026-08-09T16:00:13Z'
+last_update: 2026-08-09T21:51:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,8 +83,24 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every duplicated id is enumerated with its colliding entries (id, task,
+      first line of each) — the full set, not a sample, so the blast radius on
+      id-keyed consumers is known rather than estimated
+- [ ] The allocator is READ and the failure mode NAMED against L-506's three
+      composable modes (max+1 over a scanned corpus), measured against the
+      actual code path rather than inferred from the symptom. If it is a mode
+      L-506 does not cover, say so — that is the more valuable finding
+- [ ] Every consumer that keys on learning id is enumerated, and what each does
+      on a duplicate is stated (picks first / picks last / emits both). Check the
+      consumer before touching the producer — the same discipline that found the
+      two extra write sites in T-2901
+- [ ] The allocator can no longer mint a colliding id, proven by a test that
+      goes RED against the pre-fix allocator, not merely green against the fixed one
+- [ ] A decision is recorded on the EXISTING 24 — renumber (breaks any external
+      reference to an id) versus leave-and-guard (register stays ambiguous
+      forever) — with the reasoning, not just the choice. L-009 shows what
+      happens when someone patches the rows in front of them and leaves the
+      allocator: the same defect returns wearing a different id
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -251,3 +267,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2902-learningsyaml-holds-24-duplicate-l-nnn-i.md
 - **Context:** Initial task creation
+
+### 2026-08-09T21:51:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

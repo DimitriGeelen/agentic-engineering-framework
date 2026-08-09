@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2900: generative test must enumerate qualifier pairs not just members (832 rail-507 §6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T15:49:24Z
+# ============================================================================
+
+task_id: T-2900
+task_name: "generative test must enumerate qualifier pairs not just members (832 rail-507 §6)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T15:41:01Z
+completed: 2026-08-09T15:46:21Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-09T17:46:16+02:00
+last_commit: 2026-08-09T17:46:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  generative leg must emit PAIRS — 832 rail-507 §6, 20 of 36 qualifier pairs were invisible to member probes
+
+# Key outcomes
+outcomes:
+  - '`secret_scan_span_rule.bats` gains a leg enumerating ORDERED PAIRS of secrecy'
+  - 'The pair leg is shown to be non-vacuous: reverting the masking predicate to'
+  - 'Per 832 rail-507 §5(b), the mutation check is only asserted over legs the'
+  - '832 §5(a) separator-free probe (`mypasswordkey.bin` class) measured against'
+  - 'Full suite green: `secret_scan_span_rule.bats` + `secret_scan_name_axis.bats`,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/focus.yaml'
+  - '.fabric/components/tests-unit-secret_scan_span_rule.yaml'
+  - '.tasks/active/T-2900-generative-test-must-enumerate-qualifier.md'
+  - 'tests/unit/secret_scan_span_rule.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T17:46:16'
+    action: 'T-2900: generative leg must emit PAIRS — 832 rail-507 §6, 20 of 36 qualifier pairs were invisible to member probes'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 401
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2900-generative-test-must-enumerate-qualifier.md
+generated_by: context-agent-hybrid

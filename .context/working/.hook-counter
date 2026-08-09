@@ -1,20 +1,22 @@
-check-inception-schema=6
+error-watchdog=28
+ck=3
+=9
 
-check-settings-edit=18
+check-settings-edit=32
 
-check-arc-id=21
-check-tier0=110
-checkpoint=116
-check-fabric-new-file=5
-audit-task-tools=16
-budget-gate=19
-check-project-boundary=18
-check-active-task=18
-loop-detect=16
-error-watchdog=14
-check-active-completed-dup=1
-check-onboarding-gate=1
+check-arc-id=35
+check-tier0=198
+error-watchdog=40
+checkpoint=86
+budget-gate=87
+check-project-boundary=87
+audit-task-tools=4
+check-active-task=3
+loop-detect=3
 check-human-ac-tick=1
 check-heredoc-cmd-sub=1
+check-inception-schema=1
+check-active-completed-dup=1
+check-onboarding-gate=1
 check-inception-decisions=1
 commit-cadence=1

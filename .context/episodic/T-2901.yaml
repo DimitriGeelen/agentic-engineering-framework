@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2901: learnings application field is born populated so filled and unfilled are indistinguishable (832 rail-491)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T15:59:43Z
+# ============================================================================
+
+task_id: T-2901
+task_name: "learnings application field is born populated so filled and unfilled are indistinguishable (832 rail-491)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T15:50:06Z
+completed: 2026-08-09T15:59:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-09T17:58:53+02:00
+last_commit: 2026-08-09T17:59:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  stop writing application: at birth — 572/604 were the generator's own placeholder. register fabric card for learning_application_birth.bats
+
+# Key outcomes
+outcomes:
+  - 'The real fill rate is measured and recorded: total learnings, how many carry'
+  - 'Every site that writes `application:` at birth is enumerated (832 named'
+  - 'Decided and implemented: either the field stops being written at birth, or'
+  - 'Whatever is decided, an unfilled learning is distinguishable from a filled'
+  - 'Existing learnings are not silently rewritten: any backfill or blanking of'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/learning.sh'
+  - '.agentic-framework/agents/healing/lib/resolve.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/harvest.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/learning.sh'
+  - 'agents/healing/lib/resolve.sh'
+  - 'bin/fw'
+  - '.context/project/learnings.yaml'
+  - '.context/working/focus.yaml'
+  - '.fabric/components/tests-unit-learning_application_birth.yaml'
+  - 'lib/harvest.sh'
+  - '.tasks/active/T-2901-learnings-application-field-is-born-popu.md'
+  - '.tasks/active/T-2902-learningsyaml-holds-24-duplicate-l-nnn-i.md'
+  - '.tasks/completed/T-2900-generative-test-must-enumerate-qualifier.md'
+  - 'tests/unit/learning_application_birth.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T17:58:53'
+    action: 'T-2901: stop writing application: at birth — 572/604 were the generator''s own placeholder'
+  - time: '2026-08-09T17:59:21'
+    action: 'T-2901: register fabric card for learning_application_birth.bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 16
+  lines_added: 847
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2901-learnings-application-field-is-born-popu.md
+generated_by: context-agent-hybrid

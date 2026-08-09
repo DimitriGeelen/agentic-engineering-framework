@@ -19,12 +19,12 @@ description: >
   a .framework.yaml-rooted cwd changes the signing key or only the metadata, and whether
   the CLI can sign as the project key at all.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/config.sh, lib/rail-identity.sh, tests/unit/rail_identity_guard.bats, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -37,8 +37,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T16:03:36Z
-last_update: '2026-08-09T16:15:06Z'
-date_finished:
+last_update: 2026-08-09T21:50:36Z
+date_finished: 2026-08-09T21:50:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -263,6 +263,45 @@ cross-project blast-radius call and belongs to the operator, not to me.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+## Recommendation
+
+**Recommendation:** GO — adopt a project-owned signing identity (mint a new key),
+and tell 832 the fingerprint before the next rail post.
+
+**Rationale:** The mechanism is built, proven live, and gated; the only open
+question is which fingerprint we sign with, and the two options are not
+symmetric. Minting a project-owned key (`.context/rail-identity.key`) is the only
+option that does not depend on host config we cannot read — re-using `0e7ee6ca`
+requires a key file under `/root/.termlink`, which T-559 fences and which
+`.context/inbox.yaml:764` already homes to termlink rather than to us. Choosing
+continuity would mean making our producer identity permanently contingent on
+another project's register clearing a gap for us.
+
+The cost of minting is real but bounded and one-time: 832 has known us as
+`0e7ee6ca` for hundreds of offsets, so a new fingerprint is a coordination event.
+It is cheap precisely because it is announceable — one rail post naming the new
+key before the first post that uses it. The cost of NOT choosing is unbounded:
+every rail post stays host-signed, indistinguishable from any of the ten
+co-resident sessions, at the exact seam 832 is building identity gating on.
+
+I am recommending rather than doing it because the blast radius is cross-project:
+adopting a new producer identity changes what a peer sees, and that is a
+sovereignty call, not an implementation detail.
+
+**Evidence:**
+- `lib/rail-identity.sh` — guard refuses host-signed posts (exit 2); host default
+  detected by comparison, not a hard-coded fingerprint
+- `tests/unit/rail_identity_guard.bats` — 7 legs green; the two load-bearing legs
+  (non-vacuity, silent-swallow regression) mutation-checked RED before shipping
+- Live proof the CLI can sign as a project key: topic `aef-t2904-idprobe`,
+  sender `22b8cb92cc2606de` from a session whose host identity is `d1993c2c3ec44c94`
+- Rail 510 posted to 832 retracting the false claim from 509; that post is itself
+  host-signed via a logged Tier-2 bypass of this task's own gate
+  (`.context/working/.gate-bypass-log.yaml`), rather than exempting the framework
+  from the rule it just shipped
+- `learnings.yaml` L-569 corrected in place (not merely superseded), L-570 added
+
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -408,3 +447,19 @@ echo body | env -u FW_RAIL_IDENTITY_FILE bin/fw rail post --hub 127.0.0.1:9 sink
 K=$(mktemp -d)/k.key; H=$(env -u FW_RAIL_IDENTITY_FILE bin/fw rail identity | awk '/fingerprint:/{print $2}'); P=$(FW_RAIL_IDENTITY_FILE=$K bin/fw rail identity | awk '/fingerprint:/{print $2}'); [ -n "$H" ] && [ -n "$P" ] && [ "$H" != "$P" ]
 # the corrected learning is reachable FROM the wrong claim, not merely filed near it
 grep -q "PARTLY WRONG — CORRECTED SAME DAY BY L-570" .context/project/learnings.yaml
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-95745ffa
+- **Timestamp:** 2026-08-09T21:50:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-project`
+
+### 2026-08-09T21:50:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
