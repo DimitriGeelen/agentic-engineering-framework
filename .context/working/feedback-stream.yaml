@@ -31308,3 +31308,39 @@ scan_id: R-485cb0c6
 task_id: T-2897
 payload:
   task_file: .tasks/active/T-2897-secret-scan-is-content-keyed-so-it-canno.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T12:15:58Z'
+scan_id: R-502f2d10
+task_id: T-2893
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T12:15:58Z'
+scan_id: R-502f2d10
+task_id: T-2893
+payload:
+  task_file: .tasks/active/T-2893-adversarial-fixtures-for-832s-t-406-lead.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T12:25:01Z'
+scan_id: R-24bde097
+task_id: T-2895
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T12:25:01Z'
+scan_id: R-24bde097
+task_id: T-2895
+payload:
+  task_file: .tasks/active/T-2895-boilerplate-comment-suppression-is-keyed.md

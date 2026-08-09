@@ -1560,3 +1560,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-208
+  text: "Two AEF sessions ran concurrently on 2026-08-09 and both mutate .context/working/focus.yaml. Observed: this session set focus to T-2894; minutes later focus.yaml read T-2862, set by the other session, which had also closed T-2893 and posted rail 500 under the same channel identity. Nothing broke, but three hazards follow: (1) focus.yaml is single-valued shared state, so the focus-drift gate (T-1730) can fire on a session whose focus another session changed, and the sanctioned FW_SWITCH_FOCUS bypass then logs a Tier-2 entry that describes no real drift; (2) commits from either session attribute to whatever focus happens to hold; (3) a session-end write of focus.yaml would silently clobber the other session's state — this session declined to write it for that reason and put its carry-forward in the handover instead. No fix proposed here; filing so the pattern is visible before someone debugs a phantom drift block."
+  captured: 2026-08-09T12:27:42Z
+  context_task: T-2862
+  tags: []
+  status: pending
+  promoted_to: null

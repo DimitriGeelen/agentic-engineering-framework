@@ -26,7 +26,7 @@ description: >
   note: all ten of their teeth mutated file CONTENT and none moved a file, so put
   our own lifecycle moves in the harness vocabulary.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T11:02:25Z
-last_update: '2026-08-09T11:15:13Z'
+last_update: 2026-08-09T12:25:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -264,3 +264,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2894-port-3000-carrier-population-has-no-set-.md
 - **Context:** Initial task creation
+
+### 2026-08-09T12:25:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

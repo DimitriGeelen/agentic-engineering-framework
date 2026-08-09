@@ -2802,3 +2802,17 @@ decisions:
     date: 2026-08-09
     task: T-2891
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-403
+    decision: "when a comment is trailer + real content, return the WHOLE comment as the doc,"
+    scope: project
+    date: 2026-08-09
+    task: T-2895
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-404
+    decision: "narrow the text match on the \"one line only\" axis; explicitly do not gate on"
+    scope: project
+    date: 2026-08-09
+    task: T-2895
+    rationale: "Auto-captured from task file on completion"

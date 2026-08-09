@@ -4260,3 +4260,10 @@ X'` returning empty group."
   date: 2026-08-09
   context: Added via context agent
   application: TBD
+- id: L-562
+  learning: "An identity-based fix works only for the party whose identity the text belongs to; the peer needs a DIFFERENT axis for the same defect. 832's T-406 gates boilerplate suppression on producer identity — a document naming a different producer cannot carry their boilerplate — and that is sound because the string is THEIR emitter's text. We hold the mirror defect on the same string, but it reached our documents by laundering (T-2682: reader adopts the trailing comment, generate() re-emits it leading) and the re-emitted file carries OUR exporter stamp (T-2891). A laundered document names US, so porting their gate would preserve exactly the corruption it suppresses, on already-promoted maps. Fixed on a different axis instead (suppress only when the comment is nothing BUT the trailer). Generalises: before proposing provenance as the answer at a two-party seam, ask which party authored the string being matched — provenance is informative on one side and uninformative on the other, for the identical bug."
+  source: P-001
+  task: T-2895
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD

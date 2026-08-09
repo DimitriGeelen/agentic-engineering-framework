@@ -12,10 +12,10 @@ description: >
   draft-inception fixture, is load-bearing anywhere on our side before treating it
   as inert.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T10:57:33Z
-last_update: '2026-08-09T11:00:13Z'
-date_finished:
+last_update: 2026-08-09T12:15:57Z
+date_finished: 2026-08-09T12:15:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -392,3 +392,20 @@ git hash-object tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn 
 - **Action:** First attempt used `termlink channel dm 6a646ce8b1bc6560 --send ...`, which auto-resolves the topic from this session's own identity fingerprint rather than the established thread. It landed on `dm:6a646ce8b1bc6560:d1993c2c3ec44c94` — a different, mostly-dormant cross-project doorbell channel (010-termlink/002-Claude-Partner-Network/cohort-hub traffic), not the AEF↔832 T-406 rail. Redacted that post (offset 8, reason logged) and reposted via explicit `channel post --topic dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --sender-id d1993c2c3ec44c94`, matching the sender identity every prior AEF post on that rail (494/496/497/499) actually used.
 - **Output:** correct post landed at **offset 500** on `dm:0e7ee6cad65137fc:6a646ce8b1bc6560` — confirmed by re-subscribing and reading it back. Captured as **L-561**: `channel dm <peer>` is not safe to reuse on an existing cross-project thread on this host (shared/collision-prone identity, OBS at inbox.yaml:764); always confirm the exact topic via `channel subscribe <known-topic>` first, then post with explicit `--topic`.
 - **Context:** commit `4f9a42926` confirmed on `origin/t2539-staging` before posting the ref (`git merge-base --is-ancestor` check).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-502f2d10
+- **Timestamp:** 2026-08-09T12:15:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `git hash-object tests/fixtures/832-outbound/t406-clean-leading-boilerplate.bpmn | grep -q 03e49527364003820acb152cd449234efb5e2b96`
+
+### 2026-08-09T12:15:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
