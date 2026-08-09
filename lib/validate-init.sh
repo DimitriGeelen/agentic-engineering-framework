@@ -536,12 +536,17 @@ print(','.join(bad))
     # the exact failure mode this check exists to prevent.
     total=$((total + 1))
     passed=$((passed + 1))
-    if git -C "$target_dir" config user.email >/dev/null 2>&1; then
+    # T-2883: "resolves" now means what the word says — `git var GIT_COMMITTER_IDENT`,
+    # the same resolution `git commit` performs. The old `git config user.email` read
+    # called an env-supplied identity missing and told a machine that commits fine
+    # that its commits would fail.
+    source "$(dirname "${BASH_SOURCE[0]}")/git-identity.sh"
+    if fw_git_identity_ok "$target_dir"; then
         [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} func-identity Git identity resolves"
     else
         [ "$quiet" = false ] && {
             echo -e "  ${YELLOW}!${NC} func-identity Git identity not set — commits will fail (host, not project)"
-            echo -e "       git config user.email 'you@example.com' && git config user.name 'Your Name'"
+            echo -e "       $(fw_git_identity_remedy "$target_dir")"
         }
     fi
 

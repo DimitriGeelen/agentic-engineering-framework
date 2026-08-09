@@ -150,11 +150,11 @@ check_pyyaml() {
 }
 
 check_git_identity() {
-    local name email
-    name=$(git config user.name 2>/dev/null || true)
-    email=$(git config user.email 2>/dev/null || true)
-    if [ -n "$name" ] && [ -n "$email" ]; then
-        echo -e "  ${GREEN}OK${NC}  git identity: $name <$email>"
+    # T-2883: one shared predicate — see lib/git-identity.sh for why reading
+    # user.name/user.email is the wrong question.
+    source "$(dirname "${BASH_SOURCE[0]}")/git-identity.sh"
+    if fw_git_identity_ok .; then
+        echo -e "  ${GREEN}OK${NC}  git identity: $(fw_git_identity_show .)"
         return 0
     else
         echo -e "  ${YELLOW}WARN${NC}  git identity not configured"

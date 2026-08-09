@@ -1304,7 +1304,7 @@ observations:
   captured: 2026-08-05T20:55:05Z
   context_task: T-2719
   tags: []
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-171
   text: "fw init <dir> refuses a non-existent target with 'ERROR: Directory does not exist: ' and the path is EMPTY in the message — the variable is not interpolated, so the operator is told a directory does not exist without being told which. Two defects in one line: (a) fw init does not create the target directory, unlike install.sh which does, so 'fw init ./new-project' fails where the analogous install command succeeds; (b) the error names no path. Measured 2026-08-05 during T-2719 persona-test work."

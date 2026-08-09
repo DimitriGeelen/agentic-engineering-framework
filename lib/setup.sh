@@ -437,16 +437,16 @@ setup_step_verify() {
     echo ""
 
     # Check git identity (required for commits)
-    local git_name git_email
-    git_name=$(cd "$dir" && git config user.name 2>/dev/null || git config --global user.name 2>/dev/null || true)
-    git_email=$(cd "$dir" && git config user.email 2>/dev/null || git config --global user.email 2>/dev/null || true)
-    if [ -z "$git_name" ] || [ -z "$git_email" ]; then
+    # T-2883: shared predicate. Also collapses the two-line remedy into the single
+    # copy-pasteable form — two separate lines is the shape §Copy-Pasteable Commands
+    # exists to stop, because a partial paste leaves identity half-set.
+    source "$(dirname "${BASH_SOURCE[0]}")/git-identity.sh"
+    if ! fw_git_identity_ok "$dir"; then
         echo -e "  ${YELLOW}WARN${NC}  Git identity not configured (commits will fail)"
-        echo "        Run: git config --global user.name \"Your Name\""
-        echo "        Run: git config --global user.email \"you@example.com\""
+        echo "        Run: $(fw_git_identity_remedy "$dir")"
         echo ""
     else
-        echo -e "  ${GREEN}OK${NC}  Git identity: $git_name <$git_email>"
+        echo -e "  ${GREEN}OK${NC}  Git identity: $(fw_git_identity_show "$dir")"
     fi
 
     # Run fw doctor
