@@ -270,6 +270,14 @@ BYPASSEOF
 session.yaml
 focus.yaml
 tier0-approval
+
+# T-2896: Watchtower's signing key. web/app.py:_resolve_secret_key generates this
+# (secrets.token_hex(32), chmod 0600) on first start when FW_SECRET_KEY is unset;
+# it signs fw_session_<port> and the CSRF token guarding the T-2277 sovereignty
+# surface. chmod is a filesystem control and says nothing to git — a project that
+# commits .context/working/ wholesale publishes the key without this line.
+# Unanchored on purpose: also covers the copy under .agentic-framework/.
+.fw-secret-key
 WGIT
 
     echo -e "  ${GREEN}✓${NC}  Task system (.tasks/)"
