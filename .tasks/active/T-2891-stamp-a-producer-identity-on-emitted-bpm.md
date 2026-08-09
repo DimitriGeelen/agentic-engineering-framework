@@ -4,12 +4,12 @@ name: "stamp a producer identity on emitted BPMN definitions (832 rail 492/493)"
 description: >
   832 measured their side and shipped option 2: their emitter overwrites a foreign exporter with their own, and drops exporterVersion entirely -- same reconstruct-the-position mechanism T-2884 measured on ours. At 493 they added a consequence we did not have when the question was asked: their T-406 fix now gates doc-comment suppression on producer identity, so a peer document whose rationale opens with their trailer words survives import IF the document names its producer. We stamp nothing, so our documents are still destroyed on their import. Decide whether to stamp, and if so stamp the true producer of these bytes (tools/corpus_spec.py, not the designer). Also measure whether workflowRef uuids survive our round-trip, which 832 flagged as the unmeasured candidate for carrying origin as a separate fact from production.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_importer_fidelity.py, tools/corpus_spec.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T10:47:41Z
-last_update: 2026-08-09T10:47:41Z
-date_finished: null
+last_update: 2026-08-09T10:56:55Z
+date_finished: 2026-08-09T10:56:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -67,6 +67,68 @@ date_finished: null
       commitment is the operator's call and not mine
 - [x] The stamp's actual COVERAGE is established rather than assumed — which of
       our emitted documents carry it and which do not
+
+### Human
+- [ ] [REVIEW] The seam commitment is yours to make, not the agent's
+  **Steps:**
+  1. Read `## Decisions` in this file — it states what was stamped and why.
+  2. The trade: stamping makes a round-tripped document honestly ours AND stops
+     832 destroying our authored rationale on import (their 493). Not stamping
+     leaves our documents anonymous, which is true of a document that has been
+     through both emitters, but costs us the rationale.
+  3. 832's own operator has NOT yet ruled — their frozen mapping standard is
+     silent on `exporter`, and they flagged it to their operator as an open item
+     today. Their recommendation of option 2 is explicitly a recommendation:
+     *"stamp it if you agree with the reasoning, not because I said so."*
+  4. Note the coverage limit in `## Coverage` — this covers generated maps only,
+     not documents drawn and saved in the designer.
+  5. If you disagree: `git revert 19d88cc9b`, or say so and the agent will revert
+     and post the reversal to 832.
+
+  **Expected:** you are content that a document AEF emits carries
+  `exporter="aef-corpus-spec"` as a cross-project seam commitment, knowing 832's
+  side of the convention is not yet ratified.
+
+  **If not:** say which way and the agent reverts and tells 832 — they asked to
+  be told either way, and said they would record it as a permanent seam limit
+  rather than treat it as a gap.
+
+## Recommendation
+
+**Recommendation:** GO — keep the stamp.
+
+**Rationale:** the argument I made at rail 491 (absence beats false attribution)
+was about *preserving 832's* string and still holds; it never settled *stamping
+ours*, which is a true sentence rather than a false one. 832's own objection —
+that stamping erases that the process originated with them — they answered
+themselves: origin is a different fact from production and wants a different
+field, and `workflowRef` is now measured to be that field. What moved this from
+tidy to load-bearing is their 493: their T-406 fix destroys an imported doc
+comment unless the document names a *different* producer, so our unstamped
+documents lose their authored rationale on their import. The cost of not
+stamping is no longer zero.
+
+The reason this is a Human AC rather than an agent call is not the code — it is
+one attribute and one revert — but that it is a **cross-project seam
+commitment**, and 832's side of the same convention is explicitly *not* ratified:
+their frozen mapping standard is silent on `exporter`, and they flagged it to
+their operator today. They were deliberate that their recommendation is a
+recommendation — *"stamp it if you agree with the reasoning, not because I said
+so."* Committing our side while theirs is open is exactly the kind of decision
+that should carry a human signature.
+
+**Evidence:**
+- `tools/corpus_spec.py:emit_map` — one attribute line; revert is `git revert 19d88cc9b`
+- `tests/unit/test_importer_fidelity.py` — 16 passed; the T-2884 obligation went
+  red on the first run after the stamp and named 832 as owed a post, which is why
+  rail 494 went out with the code rather than after it
+- `workflowRef` PRESERVED through our round-trip, measured with an input control,
+  pinned as `test_workflow_ref_survives_the_round_trip`
+- Coverage is partial and stated: `designer_api.py:141` writes client bytes
+  verbatim per T-2530, so designer-authored documents carry no stamp. Told to 832
+  at rail 494 §2 rather than left for them to find
+- 832's measured position: their emitter already overwrites a foreign `exporter`
+  and drops `exporterVersion` (their T-407 probe, rail 492)
 
 ## Measurements
 
@@ -145,29 +207,6 @@ discover — they did the same for us at 493 rather than let "T-406 closed" read
 out=$(python3 -m pytest tests/unit/test_importer_fidelity.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
 python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec as cs; x=cs.emit_map(cs.parse_map(open('tests/fixtures/aef-bpmn/session-handover.bpmn').read())); assert 'exporter=\"aef-corpus-spec\"' in x; assert 'aef-workflow-designer' not in x"
 python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec as cs; x=cs.emit_map(cs.parse_map(open('tests/fixtures/aef-bpmn/task-lifecycle-with-workflowref.bpmn').read())); assert 'e32a518c-01de-4243-aafc-691cc99caf0d' in x"
-
-### Human
-- [ ] [REVIEW] The seam commitment is yours to make, not the agent's
-  **Steps:**
-  1. Read `## Decisions` in this file — it states what was stamped and why.
-  2. The trade: stamping makes a round-tripped document honestly ours AND stops
-     832 destroying our authored rationale on import (their 493). Not stamping
-     leaves our documents anonymous, which is true of a document that has been
-     through both emitters, but costs us the rationale.
-  3. 832's own operator has NOT yet ruled — their frozen mapping standard is
-     silent on `exporter`, and they flagged it to their operator as an open item
-     today. Their recommendation of option 2 is explicitly a recommendation:
-     *"stamp it if you agree with the reasoning, not because I said so."*
-  4. If you disagree: `git revert` the commit named in `## Updates`, or say so
-     and the agent will revert and post the reversal to 832.
-
-  **Expected:** you are content that a document AEF emits carries
-  `exporter="aef-corpus-spec"` as a cross-project seam commitment, knowing 832's
-  side of the convention is not yet ratified.
-
-  **If not:** say which way and the agent reverts and tells 832 — they asked to
-  be told either way, and said they would record it as a permanent seam limit
-  rather than treat it as a gap.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -334,3 +373,24 @@ python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec as cs; x=
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2891-stamp-a-producer-identity-on-emitted-bpm.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d65fa28a
+- **Timestamp:** 2026-08-09T10:57:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
+     - evidence: ``bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-project`
+
+### 2026-08-09T10:56:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
