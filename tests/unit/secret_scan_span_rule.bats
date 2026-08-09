@@ -155,6 +155,96 @@ teardown() {
     done
 }
 
+# --- (f) generation over PAIRS, not members (832 rail-507 §6, T-2900) ------
+
+@test "span-rule: no ORDERED PAIR of secrecy words completes a pair (generative)" {
+    # 832's T-412 generative leg enumerated their tuples and probed each word
+    # ALONE. It was green through the entire life of their defect and could not
+    # have been anything else: no single-word probe can construct a two-qualifier
+    # name. Their finding, which our leg (c) inherits verbatim:
+    #
+    #   A generative test is only as general as the SHAPE it generates. Deriving
+    #   cases from the data protects against the data changing. It does not
+    #   protect against the defect needing a bigger shape than the generator
+    #   emits. A rule over N inputs wants generation over N-tuples, not members.
+    #
+    # `password` and `passwd` are in both lists by design, so a name holding two
+    # members of that family satisfies the qualifier half at one span and the
+    # noun half at another — genuinely disjoint, pair complete, and no credential
+    # noun anywhere in the name. Disjointness is necessary and NOT sufficient.
+    # That is what masking buys and spans do not: a word spent as the qualifier
+    # cannot be re-spent as the noun at any span.
+    local a b out
+    for a in $_SECRET_NAME_SECRECY_WORDS; do
+        for b in $_SECRET_NAME_SECRECY_WORDS; do
+            out="$(_secret_name_classify "${a}-${b}-policy.json")"
+            [ -z "$out" ] || {
+                echo "qualifier pair '${a}'+'${b}' completed the pair (got '$out')"
+                return 1
+            }
+        done
+    done
+}
+
+# --- (g) the separator-free axis (832 rail-507 §5(a), T-2900) --------------
+
+@test "span-rule: adjacency with NO separator still classifies" {
+    # 832 found a MISS their span rule walked past: `mypasswordkey.bin` went
+    # unflagged because their noun half matches whole `-`-separated parts only,
+    # so `key` was not a part. Their masking substitutes a separator and thereby
+    # CREATES the boundary, closing a real secret they had been missing.
+    #
+    # We match the noun as a substring, so these were never missed here — and
+    # that same choice is what let `pass` hide inside `password` and caused
+    # T-2898. One implementation decision, opposite signs on two defects:
+    # whole-part matching saved 832 from our false positive and cost them this
+    # miss. Neither is free. Pinned so nobody "aligns with 832" by switching to
+    # whole-part matching without re-opening the miss.
+    run _secret_name_classify "mypasswordkey.bin"
+    [ "$output" = "ANNOUNCED" ]
+    run _secret_name_classify "mysecrettoken.dat"
+    [ "$output" = "ANNOUNCED" ]
+    run _secret_name_classify "privatekeystore.dat"
+    [ "$output" = "ANNOUNCED" ]
+}
+
+# --- (h) the reciprocal: what the fix must NOT have changed ----------------
+
+@test "span-rule: fix changes ONLY names whose noun lives inside a qualifier" {
+    # 832 rail-507 §5(b): their first mutation check reported the fix as a
+    # regression, because a case the fix legitimately IMPROVED sat inside the
+    # reciprocal leg. When the mutation reverted the fix, that case went red and
+    # the check read its own success as damage.
+    #
+    #   A reciprocal leg holds only what the change is not supposed to alter.
+    #   Anything the change improves belongs in its own leg.
+    #
+    # So this leg asserts the NON-delta only. The delta itself — names that used
+    # to classify and now must not — is leg (a), and the proof those names really
+    # did classify before is leg (e). Split three ways deliberately.
+    prefix_classify() {
+        echo "$1" | grep -qE "$(echo "$_SECRET_NAME_SECRECY_WORDS" | tr ' ' '|')" \
+        && echo "$1" | grep -qE "$(echo "$_SECRET_NAME_NOUN_WORDS" | tr ' ' '|')"
+    }
+    local q n name
+    for q in $_SECRET_NAME_SECRECY_WORDS; do
+        for n in $_SECRET_NAME_NOUN_WORDS; do
+            # skip the containment cases — those ARE the delta, tested elsewhere
+            case "$q" in *"$n"*) continue ;; esac
+            case "$n" in *"$q"*) continue ;; esac
+            name="${q}-${n}.dat"
+            prefix_classify "$name" || {
+                echo "pre-fix predicate did not fire on '$name' — leg is vacuous"
+                return 1
+            }
+            [ "$(_secret_name_classify "$name")" = "ANNOUNCED" ] || {
+                echo "fix silently dropped '$name' — collateral, not the delta"
+                return 1
+            }
+        done
+    done
+}
+
 # --- and the live tree, with no exemptions ---------------------------------
 
 @test "span-rule: this repo is still clean with an empty allowlist" {
