@@ -1,19 +1,25 @@
 ---
-id: T-2902
-name: "learnings.yaml holds 24 duplicate L-NNN ids — the allocator can reissue a live
-  id"
+id: T-2904
+name: "outbound rail identity depends on the posting path — termlink channel post
+  signs as the host key"
 description: >
-  Found while paying the 832 rail-491 application-field debt (T-2901). learnings.yaml
-  carries 24 duplicate ids: L-007 is BOTH a TBD row from T-053 and a hand-written
-  row from T-1257 — two unrelated learnings, one id. Every id-keyed consumer (fw recall
-  relevance, memory-recall.py, consolidate.py, the new fw learnings --unfilled) silently
-  picks one. L-009's own text is 'Removed duplicate L-013 entry and filled TBD application
-  field', so this was hand-patched once in T-075 and the allocator was never fixed.
-  Needs: the allocator's max-id derivation audited (it likely scans only part of the
-  file or resets across the confirmed/candidates split), a dedup pass with the count
-  reported, and a guard so reissue cannot recur.
+  Found by T-2903's verification, which asserted the sender of our own rail post.
+  Rail 508 posted via 'termlink channel post' landed with sender_id=d1993c2c3ec44c94
+  (the HOST key) rather than 0e7ee6cad65137fc (our project key). Offsets 3 and 5 on
+  the same rail, posted via the doorbell /reply path, signed as 0e7ee6cad65137fc correctly.
+  So our outbound producer identity varies by code path, and the CLI path is the wrong
+  one. This matters beyond cosmetics: 832 is building T-406/T-414 identity gating
+  on producer identity at this exact seam, and a peer cannot distinguish 'AEF posted
+  this' from 'some co-resident agent on the AEF host posted this' when we sign as
+  the host. Note the shape — rail offsets 1-2 record this same split being reported
+  and declared fixed; either it regressed or the fix only ever covered the doorbell
+  path. Also note termlink warned at post time: 'posting without from_project — co-resident
+  agents may be indistinguishable'. That warning is the symptom surfacing and it was
+  not acted on. Needs: determine whether --metadata from_project=<id> or running from
+  a .framework.yaml-rooted cwd changes the signing key or only the metadata, and whether
+  the CLI can sign as the project key at all.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,8 +36,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-09T15:57:04Z
-last_update: '2026-08-09T16:00:13Z'
+created: 2026-08-09T16:03:36Z
+last_update: 2026-08-09T16:05:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,18 +49,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-09T16:00:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-09T16:00:13Z'
+  - ts: '2026-08-09T16:05:12Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -73,18 +69,79 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-2902: learnings.yaml holds 24 duplicate L-NNN ids — the allocator can reissue a live id
+# T-2904: outbound rail identity depends on the posting path — termlink channel post signs as the host key
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found by T-2903's verification command, which asserted the sender of our own rail
+post and went red.
+
+### Measured (AC-1)
+
+| Path / flag | resulting `sender_id` |
+|---|---|
+| `termlink channel post`, bare | `d1993c2c3ec44c94` (host key) |
+| `+ --metadata from_project=…` | `d1993c2c3ec44c94` — metadata only, does not affect signing |
+| `+ --sender-id 0e7ee6cad65137fc` | **refused by hub**, see below |
+| doorbell `/reply` path (offsets 3, 5) | `0e7ee6cad65137fc` (project key) — correct |
+
+`termlink agent identity` reports the loaded identity as fingerprint
+`d1993c2c3ec44c94`. The override is refused outright:
+
+    JSON-RPC -32014: sender_id="0e7ee6cad65137fc" does not match identity
+    fingerprint d1993c2c… derived from sender_pubkey_hex (T-1427)
+
+### Never covered, not regressed (AC-3)
+
+Rail offset 1 — our own message, months old — says verbatim *"hub rejects the
+sender override (T-1427)"*. 832's identity fix at offsets 1-2 covered the
+**doorbell** path. The CLI path was never in the patch. From outside, "regressed"
+and "never covered" are indistinguishable, which is why AC-3 asked.
+
+### The mitigation was stale (AC-2 divergence point)
+
+`learnings.yaml:4257` records this exact failure caught live and prescribes
+`--sender-id <established-fp>`. That remedy was hardened away by T-1427
+afterwards, and nothing links the two — the entry still reads as authoritative,
+specific and current. Superseded by a new learning under this task.
+
+That learning is also one of the 572 rows T-2901 measured as carrying
+`application: TBD`. The field meant to say *what do I do differently* was blank on
+the entry that would have prevented this post.
+
+### Boundary
+
+Determining WHICH identity file the doorbell path loads requires reading
+host-wide config, which T-559 blocks and which gap-homing puts in termlink's
+register, not ours — `.context/inbox.yaml:764` already homes it there.
+
+### Remaining (AC-5)
+
+The CLI path structurally cannot sign as the project key from this host. The
+second branch — routing the framework's rail posting through something that can,
+or refusing to post mis-signed — is unbuilt. Left open deliberately rather than
+ticked; the fix for the signing itself is termlink's.
+
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Measured, not assumed: post via `termlink channel post` with and without
+      `--metadata from_project=…` and from a `.framework.yaml`-rooted cwd, and
+      record the resulting `sender_id` for each — establishing whether either
+      changes the SIGNING KEY or only annotates the envelope
+- [x] The doorbell `/reply` path (which signs correctly at offsets 3 and 5) is
+      compared against the CLI path, and the divergence point is named — one of
+      them supplies a project key the other does not
+- [x] Determined whether the fix declared at rail offsets 1-2 regressed or only
+      ever covered the doorbell path; those two are indistinguishable from the
+      outside and the answer changes what needs doing
+- [x] 832 is told, because they are gating on producer identity at this seam and
+      a host-signed message reads to them as a valid non-AEF producer
+- [ ] Either the CLI path signs as the project key, or — if it structurally
+      cannot — the framework's rail-posting surface stops using the bare CLI
+      path, so a mis-signed post is not reachable by the default route
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -247,7 +304,10 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-09T15:57:04Z — task-created [task-create-agent]
+### 2026-08-09T16:03:36Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2902-learningsyaml-holds-24-duplicate-l-nnn-i.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2904-outbound-rail-identity-depends-on-the-po.md
 - **Context:** Initial task creation
+
+### 2026-08-09T16:05:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -4307,3 +4307,9 @@ X'` returning empty group."
   task: T-0001
   date: 2026-08-09
   context: Added via context agent
+- id: L-569
+  learning: "SUPERSEDES the mitigation in the learning about 'channel dm' topic resolution (learnings.yaml:4257): its prescribed remedy — post with an explicit 'channel post --topic <topic> --sender-id <fp>' — NO LONGER WORKS. The hub was hardened afterwards and now refuses any sender_id that does not match the fingerprint derived from sender_pubkey_hex: 'JSON-RPC -32014 ... (T-1427)'. Verified live 2026-08-09 attempting to sign as 0e7ee6cad65137fc from a session whose identity file is the shared host key d1993c2c3ec44c94. Consequence: from a host with a collapsed /root/.termlink identity, the CLI path CANNOT sign as the project key at all, and every rail post via 'termlink channel post' is attributed to the host, indistinguishable from any co-resident agent. The doorbell /reply path signs correctly; the CLI path was never covered by the offsets 1-2 identity fix. The general shape is what to carry: a learning whose remedy is later hardened away is worse than no learning, because it still reads as authoritative, specific and current, and nothing links the remedy to the change that invalidated it."
+  source: P-011
+  task: T-2904
+  date: 2026-08-09
+  context: Added via context agent

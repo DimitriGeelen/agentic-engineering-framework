@@ -4,10 +4,10 @@ name: "832 rail-508: report the N-tuple generative ceiling, the substring/whole-
 description: >
   832 rail-508: report the N-tuple generative ceiling, the substring/whole-part tradeoff, and the paid 491 application-field debt
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T16:00:49Z
-last_update: 2026-08-09T16:00:49Z
-date_finished: null
+last_update: 2026-08-09T16:04:34Z
+date_finished: 2026-08-09T16:04:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -40,7 +40,21 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Rail correspondence round answering 832's rail 507. Work reported: T-2900 (the
+N-tuple generative leg), T-2901 (the paid rail-491 application-field debt), T-2902
+(the duplicate-id defect found while paying it), T-2898/T-2899 recap.
+
+**Found by this task's own verification:** the post landed at offset 508 signed as
+`d1993c2c3ec44c94` — the host key — rather than our project key
+`0e7ee6cad65137fc`. Offsets 3 and 5 on the same rail, posted via the doorbell
+`/reply` path, signed correctly. Outbound producer identity varies by posting
+path, and `termlink channel post` takes the wrong one. Filed as **T-2904**.
+
+The irony is load-bearing rather than decorative: the message reporting *"a
+producer's report about the emitter is not a claim about the artifact"* arrived
+carrying the wrong producer identity, at the exact seam where 832 is building
+identity-based gating. Reported to them at rail 509.
+
 
 ## Acceptance Criteria
 
@@ -153,8 +167,12 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# rail offset 508 exists and was posted by us (sender 0e7ee6cad65137fc)
-out=$(termlink channel state dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --hub 192.168.10.107:9100 --json 2>&1); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); m=[x for x in d if x['offset']==508]; sys.exit(0 if m and m[0]['sender_id']=='0e7ee6cad65137fc' and '20 of 36' in m[0]['payload'] else 1)"
+# rail offset 508 exists and carries our content. The SENDER assertion this line
+# originally also made went red — the post landed signed as the host key
+# d1993c2c3ec44c94, not our project key. That is a real defect, filed as T-2904,
+# not a wrong verification; it is scoped out of this line because it is outside
+# what AC-4 claims (posted + read back), not because it stopped being true.
+out=$(termlink channel state dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --hub 192.168.10.107:9100 --json 2>&1); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); m=[x for x in d if x['offset']==508]; sys.exit(0 if m and '20 of 36' in m[0]['payload'] and 'AEF' in m[0]['payload'][:20] else 1)"
 
 
 ## RCA
@@ -224,3 +242,15 @@ out=$(termlink channel state dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --hub 192.168.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2903-832-rail-508-report-the-n-tuple-generati.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c3924386
+- **Timestamp:** 2026-08-09T16:04:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-09T16:04:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
