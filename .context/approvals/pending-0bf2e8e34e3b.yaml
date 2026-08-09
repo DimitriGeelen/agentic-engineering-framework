@@ -1,0 +1,9 @@
+command_hash: 0bf2e8e34e3baf28d9c573a9d32dcda0750630f4ef8fc2e63d3cd0edabfe3232
+command_preview: 'cd /tmp/obs170p && echo x > probe.txt && git add probe.txt 2>/dev/null
+
+  env GIT_AUTHOR_NAME=A GIT_AUTHOR_EMAIL=a@b.c GIT_COMMITTER_NAME=A GIT_COMMITTER_EMAIL=a@b.c
+  git -C /tmp/obs170p commit -q -m "T-0'
+risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+status: pending
+timestamp: '2026-08-09T07:45:43Z'
+type: tier0

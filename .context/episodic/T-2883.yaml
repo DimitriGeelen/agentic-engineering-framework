@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2883: OBS-170: surface missing git identity before the curriculum's first commit dies RC=128
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T09:32:59Z
+# ============================================================================
+
+task_id: T-2883
+task_name: "OBS-170: surface missing git identity before the curriculum's first commit dies RC=128"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T07:41:50Z
+completed: 2026-08-09T09:24:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-09T10:16:38+02:00
+last_commit: 2026-08-09T11:21:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  one predicate for 'can this machine commit?', because six copies disagreed. test 13 was green for an ambient reason — the gate caught it
+
+# Key outcomes
+outcomes:
+  - 'One shared predicate resolves git identity the way `git commit` does'
+  - 'All six call sites use it — `lib/preflight.sh`, both `lib/init.sh` sites,'
+  - 'The false positive is gone: with identity supplied only through'
+  - 'The true positive survives: with no identity resolvable at all, every surface still'
+  - 'TEETH: a bats suite drives both states through git''s **real** refusal — isolated'
+  - 'Silent in this repo, which has a working local identity, so the change does not'
+  - 'The by-hand persona suite still passes — this change lands on the path that suite'
+  - 'OBS-170''s record is corrected to say what is actually left, so the next reader of'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/git-identity.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/preflight.sh'
+  - '.agentic-framework/lib/setup.sh'
+  - '.agentic-framework/lib/validate-init.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.context/inbox.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.fabric/components/lib-git-identity.yaml'
+  - '.fabric/components/tests-unit-git_identity_check.yaml'
+  - 'lib/git-identity.sh'
+  - 'lib/init.sh'
+  - 'lib/preflight.sh'
+  - 'lib/setup.sh'
+  - 'lib/validate-init.sh'
+  - '.tasks/active/T-2883-obs-170-surface-missing-git-identity-bef.md'
+  - 'tests/unit/git_identity_check.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T10:16:38'
+    action: 'T-2883: one predicate for ''can this machine commit?'', because six copies disagreed'
+  - time: '2026-08-09T11:21:53'
+    action: 'T-2883: test 13 was green for an ambient reason — the gate caught it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 102 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:readme-first-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 102
+  commits: 2
+  files_changed: 25
+  lines_added: 865
+  lines_removed: 99
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2883-obs-170-surface-missing-git-identity-bef.md
+generated_by: context-agent-hybrid
