@@ -4239,3 +4239,17 @@ X'` returning empty group."
   date: 2026-08-09
   context: Added via context agent
   application: TBD
+- id: L-559
+  learning: "A framework that generates projects must apply its own protections at the site of GENERATION, not the site of DISCOVERY. AEF's .gitignore has carried .context/working/.fw-secret-key since before the key existed, so AEF was never exposed — but neither gitignore the framework WRITES for consumers (lib/init.sh:266 for the consumer's .context/working/, bin/fw:534 for the vendored copy) carried it, so every project fw init created published its Watchtower signing key on first commit of .context/working/. The general form was already recorded as L-015 (T-1323: 'vendored copies need their own .gitignore') and the fix that shipped with it closed exactly the one instance in hand (__pycache__). The learning generalised; the remedy did not — and in the register those two look identical afterwards. When a learning names a CLASS, the closing task must enumerate the class's members, not fix the member that produced it."
+  source: P-001
+  task: T-2896
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD
+- id: L-560
+  learning: "A detector's scope note reads as coverage to everyone downstream. secret-scan.sh's header states 'vendor-prefixed credentials' as a deliberate choice — defensible, and the reason nobody asked what it could not see. But the verdict line it emits, '[PASS] Secret scan: tracked tree clean', does not name its axis, so a green asserting ONE axis is textually identical to a green asserting all of them. 832 ran two months on that green with a signing key pushed to a public mirror. Red lines get looked at; a green that asserts nothing is indistinguishable from one that asserts everything, and nothing ever prompts anyone to check. Two rules: (1) when a check documents a deliberate scope limit, something must ALSO watch the excluded axis or the limit is a blind spot with a rationale attached; (2) prefer verdict lines that name what passed. Sibling to the port-3000 false-green class in CLAUDE.md (371 violations across 277 tasks, same mechanism)."
+  source: P-001
+  task: T-2897
+  date: 2026-08-09
+  context: Added via context agent
+  application: TBD

@@ -31272,3 +31272,39 @@ scan_id: R-d65fa28a
 task_id: T-2891
 payload:
   task_file: .tasks/active/T-2891-stamp-a-producer-identity-on-emitted-bpm.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T11:51:18Z'
+scan_id: R-2122c531
+task_id: T-2896
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T11:51:18Z'
+scan_id: R-2122c531
+task_id: T-2896
+payload:
+  task_file: .tasks/active/T-2896-watchtower-secret-key-is-gitignored-in-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-09T12:11:30Z'
+scan_id: R-485cb0c6
+task_id: T-2897
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-09T12:11:30Z'
+scan_id: R-485cb0c6
+task_id: T-2897
+payload:
+  task_file: .tasks/active/T-2897-secret-scan-is-content-keyed-so-it-canno.md

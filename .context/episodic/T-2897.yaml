@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2897: Secret scan is content-keyed so it cannot see self-generated secrets; nothing reads filenames
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-09T12:11:41Z
+# ============================================================================
+
+task_id: T-2897
+task_name: "Secret scan is content-keyed so it cannot see self-generated secrets; nothing reads filenames"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T11:45:21Z
+completed: 2026-08-09T12:09:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-09T13:46:55+02:00
+last_commit: 2026-08-09T14:08:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the name-axis gap behind T-2896 (filed, not fixed). add a name axis to the secret scanner. refresh vendored self-copy for the name-axis scanner
+
+# Key outcomes
+outcomes:
+  - 'A name-axis check reads `git ls-files` and flags tracked files whose **name** marks'
+  - 'Two classes, and the weaker one is labelled as the heuristic it is:'
+  - '`token` is **not** a standalone signal — 832 measured 17 matches on their tree, every'
+  - 'Teeth: a test asserts the check fires on `.context/working/.fw-secret-key` **at its'
+  - 'False-positive control: the check stays silent on `agents/git/lib/secret-scan.sh` and'
+  - 'Runs clean over this repo with an empty allowlist — a check that needs exemptions on'
+  - 'Wired where a false green was printed: the same surface that emitted'
+  - '**Added during build, beyond the filed scope:** also wired into `scan_staged`, so the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file the name-axis gap behind T-2896 (filed, not fixed)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/git/lib/secret-scan.sh'
+  - '.tasks/active/T-2897-secret-scan-is-content-keyed-so-it-canno.md'
+  - 'tests/unit/secret_scan_name_axis.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-09T13:46:55'
+    action: 'T-2897: file the name-axis gap behind T-2896 (filed, not fixed)'
+  - time: '2026-08-09T14:08:23'
+    action: 'T-2897: add a name axis to the secret scanner'
+  - time: '2026-08-09T14:08:37'
+    action: 'T-2897: refresh vendored self-copy for the name-axis scanner'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 23
+  commits: 3
+  files_changed: 5
+  lines_added: 790
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2897-secret-scan-is-content-keyed-so-it-canno.md
+generated_by: context-agent-hybrid
