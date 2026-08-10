@@ -203,10 +203,14 @@ rail_project_label() {
 # ── command surface ──────────────────────────────────────────────────────────
 
 _rail_log_bypass() {
+    # T-2908: $2 lets a second gate (check-rail-mcp-label.sh's file-token
+    # bypass) reuse this logger instead of forking a near-duplicate — the
+    # gate name is now a parameter, defaulting to the original T-2904 caller's
+    # value so that call site needs no change.
     local logf="${PROJECT_ROOT:-$PWD}/.context/working/.gate-bypass-log.yaml"
     [ -f "$logf" ] || return 0
-    printf -- '- ts: "%s"\n  gate: rail-identity\n  tier: 2\n  mechanism: FW_ALLOW_HOST_SIGNED_RAIL\n  detail: "%s"\n' \
-        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${1:-host-signed rail post}" >> "$logf" 2>/dev/null || true
+    printf -- '- ts: "%s"\n  gate: %s\n  tier: 2\n  mechanism: %s\n  detail: "%s"\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${2:-rail-identity}" "${3:-FW_ALLOW_HOST_SIGNED_RAIL}" "${1:-host-signed rail post}" >> "$logf" 2>/dev/null || true
 }
 
 do_rail() {
@@ -255,16 +259,37 @@ do_rail() {
                 termlink channel post "${extra[@]}" "$@"
             fi
             ;;
+        allow-unlabeled-mcp)
+            # T-2908: one-shot bypass token for check-rail-mcp-label.sh — the
+            # MCP producer surface (mcp__termlink__termlink_channel_post) has
+            # no command-line surface a flag or env-var prefix could reach, so
+            # the L-399 bypass contract here is a file token instead of
+            # FW_ALLOW_HOST_SIGNED_RAIL's env var. Consumed (deleted) by the
+            # hook on first use; logged Tier-2 at consumption, not here.
+            local bf="${PROJECT_ROOT:-$PWD}/.context/working/.rail-mcp-label-bypass"
+            mkdir -p "$(dirname "$bf")" 2>/dev/null
+            date +%s > "$bf"
+            echo "rail: one-shot MCP label bypass armed for ${FW_RAIL_MCP_BYPASS_TTL:-300}s — the next unlabeled mcp__termlink__termlink_channel_post call is allowed through and logged Tier-2."
+            ;;
         -h|--help|help)
             cat <<'EOF'
 Usage: fw rail <command>
 
-  identity          Show which key outbound rail posts are signed with
-  post <topic> ...  Post to a topic, refusing if the post would be host-signed
-                    (payload on stdin; remaining args pass through to termlink)
+  identity              Show which key outbound rail posts are signed with
+  post <topic> ...      Post to a topic, refusing if the post would be
+                        host-signed (payload on stdin; remaining args pass
+                        through to termlink)
+  allow-unlabeled-mcp   Arm a one-shot bypass for the next unlabeled
+                        mcp__termlink__termlink_channel_post call (T-2908)
 
 Why: on a host with a shared termlink identity, every agent signs the same, so
 peers cannot attribute posts. See lib/rail-identity.sh for the measurement.
+
+T-2908: 'fw rail post' is not the only producer that reaches a rail topic.
+The MCP tool mcp__termlink__termlink_channel_post reaches the same topics and
+carries neither this file's identity guard nor its label auto-attach — see
+agents/context/check-rail-mcp-label.sh for the (label-only) gate on that
+surface, and its header comment for why identity is not re-gated there.
 EOF
             ;;
         *)
