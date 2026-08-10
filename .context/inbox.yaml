@@ -1567,3 +1567,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-209
+  text: "arc-017 constituent count disagrees three ways: .context/arcs/onboarding-curriculum.yaml constituent_tasks is EMPTY (0), fw arc list computes 3, and 'tags: [arc:onboarding-curriculum]' greps 4 task files. arc_id: field matches 0 — arc-017 membership is entirely via the legacy arc:<slug> tag form, never migrated to the T-1849 arc_id: field. The empty yaml cache is L-371 exactly (denormalised registry caches drift from the corpus they summarise). Impact: any arc-completion check reading constituent_tasks sees a zero-population arc, and CLAUDE.md says the stale-arc audit is 'silent on zero-population arcs' — so arc-017 is exempt from the staleness WARN for the wrong reason. Measured 2026-08-10 while assessing arc-017 for closure readiness."
+  captured: 2026-08-10T19:18:34Z
+  context_task: T-2908
+  tags: []
+  status: pending
+  promoted_to: null
