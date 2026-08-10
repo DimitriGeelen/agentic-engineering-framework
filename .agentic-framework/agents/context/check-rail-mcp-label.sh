@@ -86,7 +86,7 @@ BYPASS_FILE="${PROJECT_ROOT:-$PWD}/.context/working/.rail-mcp-label-bypass"
 BYPASS_TTL="${FW_RAIL_MCP_BYPASS_TTL:-300}"
 
 if [ -f "$BYPASS_FILE" ]; then
-    _bp_ts="$(cat "$BYPASS_FILE" 2>/dev/null | head -1)"
+    _bp_ts="$(head -1 "$BYPASS_FILE" 2>/dev/null)"
     rm -f "$BYPASS_FILE" 2>/dev/null || true  # one-shot: consumed either way
     _now="$(date +%s)"
     if [ -n "$_bp_ts" ] && [ "$_bp_ts" -eq "$_bp_ts" ] 2>/dev/null \
