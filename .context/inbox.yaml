@@ -1588,3 +1588,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-212
+  text: "CORRECTS OBS-211's inference (the observations were right, the conclusion was wrong). There is NO second operator session. The concurrent writer is this framework's own autonomous dispatch loop: resolver-loop.timer, a systemd unit, enabled+active, firing 'fw resolver loop --dispatch --max 1 --cooldown-min 30' every 30 minutes from WorkingDirectory=/opt/999-Agentic-Engineering-Framework. Installed deliberately per T-2494/T-2495, which moved the loop off host cron SPECIFICALLY so it would need no crontab and no cron-registry entry. Why the mis-diagnosis was easy and is itself the finding: .context/cron-registry.yaml truthfully reports the resolver loop 'paused', /etc/cron.d truthfully has it commented out, and fw doctor truthfully reports 'Cron registry in sync'. All three are correct. Together they read as 'nothing is dispatching' while a systemd timer dispatches every 30 minutes. And every provenance field on the dispatch record (dispatched_by, origin, session, worker) is null, so the record cannot name its own invoker. Full analysis in T-2914."
+  captured: 2026-08-10T20:46:02Z
+  context_task: T-2914
+  tags: []
+  status: pending
+  promoted_to: null
