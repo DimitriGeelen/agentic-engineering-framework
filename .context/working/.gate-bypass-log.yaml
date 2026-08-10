@@ -6420,3 +6420,24 @@ r=$(mktemp -d); mkdir -p "$r/.tasks/active" "$r/.tasks/completed" "$r/.conte'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 FW_SWITCH_FOCUS=1 git add .tasks/ .context/ 2>/dev/null
 FW_SWITCH_FOCUS=1 git commit -q -m "T-2905: close (partial-complete) — canonical label live on rail '
+- timestamp: '2026-08-10T07:29:31Z'
+  task: 'T-2902'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-002'
+  command: 'cd /tmp/t2862-e2e-greenfield && FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-002: research artifact" && echo committed'
+- timestamp: '2026-08-10T07:29:42Z'
+  task: 'T-2902'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-002'
+  command: 'cd /tmp/t2862-e2e-greenfield && FW_SWITCH_FOCUS=1 bash -c mkdir -p docs/reports && cat > docs/reports/T-002-project-goals.md <<EOF
+# T-002: Project goals for t2862-e2e-greenfield
+
+## Problem statemen'
+- timestamp: '2026-08-10T07:30:52Z'
+  task: 'T-2902'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-002'
+  command: 'cd /tmp/t2862-e2e-greenfield && FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-002: fill recommendation, tick ACs, add schema fields" && echo committed'

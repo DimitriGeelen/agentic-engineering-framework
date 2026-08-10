@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2902: learnings.yaml holds 24 duplicate L-NNN ids — the allocator can reissue a live id
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-10T18:49:25Z
+# ============================================================================
+
+task_id: T-2902
+task_name: "learnings.yaml holds 24 duplicate L-NNN ids — the allocator can reissue a live id"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-09T15:57:04Z
+completed: 2026-08-10T18:49:04Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-10T20:34:52+02:00
+last_commit: 2026-08-10T20:48:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  root cause is a serialisation flip, not a partial scan — 24 dups enumerated, fourth L-506 leg named. consumer audit — 9 id-keyed sites, promote picks first (measured), + T-2906/G-079. allocator reads the corpus with a parser, and refuses rather than seeding. leave-and-guard decided on evidence, promote.sh refuses ambiguous ids
+
+# Key outcomes
+outcomes:
+  - 'Every duplicated id is enumerated with its colliding entries (id, task,'
+  - 'The allocator is READ and the failure mode NAMED against L-506''s three'
+  - 'Every consumer that keys on learning id is enumerated, and what each does'
+  - 'The allocator can no longer mint a colliding id, proven by a test that'
+  - 'A decision is recorded on the EXISTING 24 — renumber (breaks any external'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: 'D1 — leave the 24 ids in place and make the ambiguity loud, rather than renumber'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/lib/learning.sh'
+  - '.context/project/concerns.yaml'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/lib-corpus-id.yaml'
+  - '.fabric/components/tests-unit-corpus_id_allocator.yaml'
+  - 'lib/corpus-id.sh'
+  - 'lib/promote.sh'
+  - '.tasks/active/T-2902-learningsyaml-holds-24-duplicate-l-nnn-i.md'
+  - '.tasks/active/T-2906-fw-context-status-reports-learnings-0-ag.md'
+  - '.tasks/active/T-2907-six-read-only-consumers-still-resolve-le.md'
+  - 'tests/unit/corpus_id_allocator.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-10T20:34:52'
+    action: 'T-2902: root cause is a serialisation flip, not a partial scan — 24 dups enumerated, fourth L-506 leg named'
+  - time: '2026-08-10T20:39:31'
+    action: 'T-2902: consumer audit — 9 id-keyed sites, promote picks first (measured), + T-2906/G-079'
+  - time: '2026-08-10T20:44:01'
+    action: 'T-2902: allocator reads the corpus with a parser, and refuses rather than seeding'
+  - time: '2026-08-10T20:48:58'
+    action: 'T-2902: leave-and-guard decided on evidence, promote.sh refuses ambiguous ids'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1612 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1612
+  commits: 4
+  files_changed: 11
+  lines_added: 1267
+  lines_removed: 46
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2902-learningsyaml-holds-24-duplicate-l-nnn-i.md
+generated_by: context-agent-hybrid

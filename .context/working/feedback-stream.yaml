@@ -31452,3 +31452,21 @@ scan_id: R-c1c8277e
 task_id: T-2905
 payload:
   task_file: .tasks/active/T-2905-rail-posts-must-carry-one-canonical-proj.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T18:49:13Z'
+scan_id: R-f3c233e9
+task_id: T-2902
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T18:49:13Z'
+scan_id: R-f3c233e9
+task_id: T-2902
+payload:
+  task_file: .tasks/active/T-2902-learningsyaml-holds-24-duplicate-l-nnn-i.md
