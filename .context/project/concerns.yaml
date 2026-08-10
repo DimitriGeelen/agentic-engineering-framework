@@ -2756,3 +2756,57 @@ concerns:
     when wrong. Sibling on 832 as their T-390.
 
     '
+
+- id: G-079
+  type: gap
+  title: grep-scans over the YAML memory corpus are re-derived per site, so one
+    serialisation change silently breaks an unknown number of them — fourth instance
+  description: >
+    .context/project/{learnings,patterns,decisions}.yaml are read by hand-written
+    grep patterns at many independent sites, each encoding an assumption about how
+    the YAML is serialised. On 2026-04-13 T-1232's mining run rewrote learnings.yaml
+    with yaml.dump(sort_keys=True), moving `id:` off the list-item line. Every scan
+    keyed on the old shape began matching zero rows. Because max-over-nothing and
+    count-over-nothing both return the seed value, each break is silent and looks
+    like a legitimately empty corpus.
+    Four sites are known to have broken this way, discovered one at a time over four
+    months, each fixed by widening a regex: (1) agents/context/lib/learning.sh — the
+    L- allocator re-minted L-001 over a live L-001, 24 duplicate ids, fixed T-1369
+    by adding the other format; (2,3) agents/healing/lib/resolve.sh — FP- and L-
+    allocators blind to column-0 entries, "every run re-minted the same id", fixed
+    T-2672 / 832 T-295, again by widening; (4) agents/context/lib/status.sh:55 —
+    `fw context status` has reported "Learnings: 0" against a 608-entry file for 119
+    days and is still broken (T-2906). Its sibling counters for FP-/SP-/WP-/D- still
+    work only because patterns.yaml and decisions.yaml happened not to be rewritten,
+    which is why three of four numbers looked right.
+    The count of four is a lower bound on discovered sites, not a measurement of
+    exposed ones. Nobody has enumerated how many grep-scans over these files exist.
+  spec_reference: CLAUDE.md §Context Integration; §Error Escalation Ladder (Level C vs D)
+  severity: medium
+  decision_trigger: A fifth site is found broken by the same serialisation
+    assumption, OR a second corpus file (patterns.yaml / decisions.yaml) is
+    rewritten by a bulk process and breaks its readers.
+  trigger_check:
+    type: manual
+    hint: >
+      grep -rn "id: [A-Z]\+-" --include=*.sh --include=*.py bin lib agents web
+      and check each pattern against the CURRENT serialisation of the file it
+      scans. Any pattern that returns 0 on a non-empty file is a live instance.
+      Cheap version — `fw context status` showing a 0 next to a non-empty file.
+  status: watching
+  created: 2026-08-10
+  related_task: T-2902
+  what_remains: >
+    PREVENTION NOT SHIPPED. Closure condition, stated because the obvious move does
+    not satisfy it: FIXING status.sh's REGEX DOES NOT CLOSE THIS — that is the same
+    fix applied for the fourth time, and it is precisely what left the shape intact
+    after T-1369 and T-2672. Widening a pattern makes it match today's two known
+    serialisations; it does not make the site notice when a third arrives.
+    Closes when reading the corpus stops being re-derived per site — one parser
+    (or one scan helper) that the allocators and counters share — or, weaker but
+    real, when a scan that returns zero rows against a non-empty file fails loudly
+    instead of returning the seed. The distinguishing test: after the fix, could a
+    NEW serialisation break a site silently? If yes, the gap is open.
+    Class sibling: L-570 (fw_config 2>/dev/null read identically to "not
+    configured"). Same defect at a different layer — a failed read and a true
+    negative are the same observable event.

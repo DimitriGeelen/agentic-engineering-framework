@@ -234,6 +234,33 @@ Both rows of every collision. Row = index in the parsed list.
 | L-027 | 26 | T-1086 | 2026-04-13 | commit-msg task-ref gate (hooks.sh:72-81) — replaced with clean … |
 | L-027 | 260 | T-1368 | 2026-04-20 | Auto-gen silent failures can evade T-1169's silent-failure detec… |
 
+### Consumer audit (AC-3)
+
+Nine sites read `learnings.yaml` keyed on the id. Behaviour on a duplicate:
+
+| # | site | keys on id how | on a duplicate |
+|---|------|----------------|----------------|
+| 1 | `agents/context/lib/learning.sh:66` | `grep … \| sort -n \| tail -1` (max) | **unaffected by dups** — max is correct. The bug is the *empty-scan seed*, not the max |
+| 2 | `agents/context/lib/status.sh:55` | `grep -c '^  - id: L-'` | **counts 0 today** (T-2906). Were it matching, it would double-count |
+| 3 | `lib/promote.sh:143` | `fw promote L-NNN` resolves by id | **picks FIRST — measured live.** `fw promote L-007` promoted the T-053 stub, not T-1257's substantive learning |
+| 3b | `lib/promote.sh` `count_applications(lid,…)` | counts applications by id | **conflates** — reported `Applications: 9` summing two unrelated learnings |
+| 3c | `lib/promote.sh` `promoted_ids` | membership test by id | **suppresses both** — promoting either row hides the other from `fw promote suggest` forever |
+| 4 | `agents/context/consolidate.py:271-277` | emits `{keep: <id>, remove: [<id>…]}` | **ambiguous instruction** — an applier told `remove: [L-007]` cannot know which row |
+| 5 | `agents/context/lib/memory-recall.py:44/64/84/171` | selects by text, prints id | **emits whichever row matched** — measured: two different queries each printed `L-007`, so the id in recall output does not identify the learning |
+| 6 | `lib/publish-learning-to-bus.sh:72-79` | posts `learning_id: $L_ID` to the 832 rail | **exports the ambiguity cross-project** — a peer receiving `L-007` cannot resolve it |
+| 7 | `agents/docgen/generate_{article,component}.py` | `lid = learning.get("id")` in output | **emits both** when both match the tag/desc filter |
+
+Sites 3/3b/3c were measured by running `fw promote L-007` against the live corpus.
+It **mutated state** — created practice `P-013` from the wrong row — and was reverted
+(`git checkout .context/project/practices.yaml`, verified `P-013` did not pre-exist).
+Recording the mutation rather than only the finding: the measurement was not read-only
+and a later reader should know the corpus was briefly wrong.
+
+**The consumer audit found more than it was scoped to.** Site 2 is not a duplicate-
+handling defect at all — it is a *second live instance of the producer's own failure
+class*, unfixed for 119 days. Filed as **T-2906**; the recurring shape is registered as
+**G-079**.
+
 ## Acceptance Criteria
 
 ### Agent
@@ -250,10 +277,12 @@ Both rows of every collision. Row = index in the parsed list.
       → It is NOT one of L-506's three. Named as a fourth leg: **silent
         empty-scan fallback**. Measured from `agents/context/lib/learning.sh:50`
         @ `908376daa` against the corpus at that commit, not inferred.
-- [ ] Every consumer that keys on learning id is enumerated, and what each does
+- [x] Every consumer that keys on learning id is enumerated, and what each does
       on a duplicate is stated (picks first / picks last / emits both). Check the
       consumer before touching the producer — the same discipline that found the
       two extra write sites in T-2901
+      → 9 sites in `## Consumer audit (AC-3)`. Two measured live, not inferred.
+        Found a second live defect (T-2906) and a structural gap (G-079).
 - [ ] The allocator can no longer mint a colliding id, proven by a test that
       goes RED against the pre-fix allocator, not merely green against the fixed one
 - [ ] A decision is recorded on the EXISTING 24 — renumber (breaks any external
