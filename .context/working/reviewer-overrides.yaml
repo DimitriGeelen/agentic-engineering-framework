@@ -1071,3 +1071,15 @@ overrides:
   expires_at: '2026-09-16T14:33:58Z'
   added_by: root
   added_at: '2026-06-18T14:33:58Z'
+- id: OV-f57bcb01
+  task_id: T-2912
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  reason: 'AC#4 quotes the ''.claude/settings.json'' path as an example of program
+    OUTPUT text (the ''OK ... (all hooks: ...)'' line), not as an implementation-file
+    reference. The actual fix lives in lib/init.sh, which is directly verified via
+    ''bash -n lib/init.sh'' and exercised by t2912_upgrade_hook_regen_convergence.bats
+    test 4. Heuristic false positive on quoted output vs. source-path reference.'
+  expires_at: '2026-11-08T23:37:49Z'
+  added_by: root
+  added_at: '2026-08-10T23:37:49Z'

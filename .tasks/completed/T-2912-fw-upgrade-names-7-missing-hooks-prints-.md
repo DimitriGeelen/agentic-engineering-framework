@@ -1,15 +1,17 @@
 ---
 id: T-2912
-name: "fw upgrade names 7 missing hooks, prints UPDATED Hooks regenerated, and adds none — non-convergent false success"
+name: "fw upgrade names 7 missing hooks, prints UPDATED Hooks regenerated, and adds
+  none — non-convergent false success"
 description: >
-  fw upgrade names 7 missing hooks, prints UPDATED Hooks regenerated, and adds none — non-convergent false success
+  fw upgrade names 7 missing hooks, prints UPDATED Hooks regenerated, and adds none
+  — non-convergent false success
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh, lib/upgrade.sh, tests/unit/t2912_upgrade_hook_regen_convergence.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T20:04:14Z
-last_update: 2026-08-10T20:04:14Z
-date_finished: null
+last_update: 2026-08-10T23:42:40Z
+date_finished: 2026-08-10T23:42:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-10T20:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-10T20:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2912: fw upgrade names 7 missing hooks, prints UPDATED Hooks regenerated, and adds none — non-convergent false success
@@ -99,25 +129,40 @@ mask this defect behind a green run.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The hook-regeneration step compares the hook set **after** its write against the
+- [x] The hook-regeneration step compares the hook set **after** its write against the
       set **before**, and reports what actually changed — never what it intended. If it
       adds nothing, it must not print `UPDATED`
-- [ ] A regeneration that leaves a detected-missing hook still missing is reported as a
+      (`lib/upgrade.sh` step 5: snapshot → regen → re-run `_t2912_hook_gap` on the result →
+      `cmp` the file content; `UPDATED` only fires when content changed AND the detector
+      no longer trips)
+- [x] A regeneration that leaves a detected-missing hook still missing is reported as a
       **failure**, not as success. The operator must be able to tell "there was nothing
       to do" from "I tried and it did not work" — those are currently the same output
-- [ ] No `.bak` is written when nothing changed. The backup currently corroborates a
+      (no mutation + gap remains → `FAILED`; mutation + gap remains → `PARTIAL`; both
+      increment `failed_steps` and honour `--strict`)
+- [x] No `.bak` is written when nothing changed. The backup currently corroborates a
       mutation that did not happen, which is worse than no backup
-- [ ] The adjacent `OK .claude/settings.json (all hooks: …)` line cannot claim "all hooks"
+      (`.bak` only written inside the `cmp -s` else-branch, i.e. only when the file
+      content actually differs)
+- [x] The adjacent `OK .claude/settings.json (all hooks: …)` line cannot claim "all hooks"
       while the same run reports hooks missing — the two checks are reconciled to one
       source of truth, or the reassuring line is removed
-- [ ] A test proves non-convergence is caught: run the upgrade twice against a consumer
+      (`lib/init.sh` — replaced the hardcoded 14-name string with a count computed from
+      the file actually on disk after the merge; it no longer claims completeness)
+- [x] A test proves non-convergence is caught: run the upgrade twice against a consumer
       seeded with a hook the regenerator cannot supply, and assert the second run does not
       report success. This must be demonstrated RED against current code first — the whole
       defect is that the current behaviour looks like success, so a test written after the
       fix would pass against the bug
-- [ ] Verified against a **real** `fw init`'d consumer under `env -i`, not a fixture. This
+      (`tests/unit/t2912_upgrade_hook_regen_convergence.bats`; rehearsed RED by hand against
+      pre-fix `lib/upgrade.sh`/`lib/init.sh` before committing — both runs printed `UPDATED`
+      for the identical seeded gap, forever, matching the origin report exactly)
+- [x] Verified against a **real** `fw init`'d consumer under `env -i`, not a fixture. This
       defect was invisible in-repo and only appeared on a real vendored consumer
       (§Consumer-Facing Command Hygiene, T-1633)
+      (bats suite drives a real `.agentic-framework/bin/fw upgrade` subprocess against a
+      vendored consumer via `env -i` — same pattern as
+      `tests/unit/upgrade_fresh_machine_simulation.bats`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,6 +196,12 @@ mask this defect behind a green run.
 -->
 
 ## Verification
+
+bash -n lib/upgrade.sh
+bash -n lib/init.sh
+bats tests/unit/t2912_upgrade_hook_regen_convergence.bats > /tmp/.t2912-verif-1.out 2>&1 && grep -q "^ok 5" /tmp/.t2912-verif-1.out && ! grep -q "^not ok" /tmp/.t2912-verif-1.out
+bats tests/unit/upgrade_relative_hook_path_detection.bats tests/unit/upgrade_duplicate_hook_detection.bats tests/unit/hook_producer_site_parity.bats tests/unit/t2093_upgrade_strict_exit_codes.bats tests/unit/lib_upgrade.bats tests/unit/hook_absolute_paths.bats tests/unit/settings_regenerate_preserves_hooks.bats > /tmp/.t2912-verif-2.out 2>&1 && grep -q "^ok " /tmp/.t2912-verif-2.out && ! grep -q "^not ok" /tmp/.t2912-verif-2.out
+bin/fw reviewer T-2912 > /tmp/.t2912-verif-3.out 2>&1 && grep -q "Overall:.*PASS" /tmp/.t2912-verif-3.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -219,6 +270,35 @@ mask this defect behind a green run.
 
 ## RCA
 
+**Symptom:** `fw upgrade` printed `UPDATED  Hooks regenerated (missing 7 hook(s): …)`
+on three consecutive real runs against a real consumer, naming the identical 7 hooks
+every time, with a `.bak` backup written on every run and hook count staying at 17
+throughout. The adjacent line claimed `OK … (all hooks: …)`.
+
+**Root cause:** `lib/upgrade.sh` step 5 computed a "reason" string from the
+BEFORE-write hook-gap detection, called `generate_claude_code_config`, then printed
+`UPDATED (reason)` unconditionally — the message described the trigger, not the
+result. No code path re-ran the detector after the write to check whether the gap it
+just described still existed. Separately, `lib/init.sh`'s internal status line inside
+that same function was a hardcoded 14-name string, unconditionally optimistic
+regardless of what the write actually produced.
+
+**Why structurally allowed:** the hook-gap detector (source of truth: the framework's
+own `.claude/settings.json`) and the regenerator's template (`generate_claude_code_config`'s
+fixed heredoc) are two independent producer sites (same class as T-2710/T-2911's
+producer-parity gap) — nothing checked that the regenerator's OWN output satisfied the
+detector that triggered it. A remedy step with no after-check is indistinguishable from
+one with nothing to do, except it keeps claiming success.
+
+**Prevention:** `lib/upgrade.sh` step 5 now snapshots before regeneration, regenerates,
+then re-runs the identical detector against the result and diffs the file content.
+UPDATED requires both a real file change AND a cleared detector; anything else is
+FAILED/PARTIAL and increments `failed_steps` (wired into the existing `--strict`
+machinery, T-2093). `.bak` is only written when content actually changed.
+`tests/unit/t2912_upgrade_hook_regen_convergence.bats` pins this end-to-end against a
+real vendored consumer, seeding a hook the template cannot supply and asserting two
+consecutive runs both refuse to claim success.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -284,3 +364,18 @@ mask this defect behind a green run.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2912-fw-upgrade-names-7-missing-hooks-prints-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-00b9d0f2
+- **Timestamp:** 2026-08-10T23:47:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - AC-verify-mismatch @ AC#4 (Agent)
+
+### 2026-08-10T23:42:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
