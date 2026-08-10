@@ -2810,3 +2810,66 @@ concerns:
     Class sibling: L-570 (fw_config 2>/dev/null read identically to "not
     configured"). Same defect at a different layer — a failed read and a true
     negative are the same observable event.
+- id: G-080
+  type: gap
+  title: the enforcement baseline cannot name what changed, and its own printed remedy
+    launders a deleted gate into a green doctor
+  description: >
+    Losing a framework enforcement hook — including check-tier0, the only gate on
+    destructive Bash — can end in a state where every surface that watches reports
+    green, with the framework's own printed instructions followed at each step.
+
+    Three defects compose. D1: `fw hook-enable` registers a hook and NOTHING
+    deregisters one, so removal is hand-edited JSON against the single file holding
+    check-tier0, check-active-task, budget-gate and 13 others. D2: detection is one
+    sha256 over the whole hooks blob (bin/fw:2248), so a benign addition and a
+    check-tier0 deletion are byte-identical events at the only surface that watches
+    — measured 2026-08-10, both print `FAIL Enforcement baseline CHANGED`. D3: that
+    FAIL's printed next step, `fw enforcement baseline` (bin/fw:7748), recomputes
+    unconditionally over whatever is on disk and never diffs against the prior
+    baseline, so following the instruction makes the loss permanent and the next
+    doctor run OK. A PostToolUse hook (check-settings-edit, T-1886) actively nudges
+    toward that remedy after every settings.json edit.
+
+    D3 is why this is a gap and not untidiness: the recovery path erases the witness
+    the detector produced. Afterwards the green reading is indistinguishable from a
+    correct one and no artefact records that a gate was dropped.
+
+    Origin: 832 rail 517 s5 reported D1 after their probe-hook cleanup removed
+    check-tier0 for two tool calls (restored byte-exact, human caught it). D2 and D3
+    are ours and were not in their report — found by checking whether their finding
+    was worse here. It is: their accident was caught in two tool calls; ours has a
+    documented, nudged path that would have made it silent.
+  status: watching
+  created: 2026-08-10
+  related_task: T-2909
+  what_remains: >
+    PREVENTION NOT SHIPPED. The fix direction is measured, not guessed: S1 diffed the
+    hook set at all 28 revisions of .claude/settings.json and found ZERO legitimate
+    removals in 5 months — all 3 apparent removals are renames (T-496) or matcher
+    moves (T-1364, T-1730). So a name-keyed manifest beside the hash has zero false
+    positives across the entire recorded history and one true positive, on the
+    accident.
+
+    Closure condition, stated because the obvious moves do not satisfy it:
+    ADDING `fw hook-disable` DOES NOT CLOSE THIS. That was the reported remedy
+    direction, and S1 shows the verb would have no framework-owned work to do ever;
+    shipped without D2/D3 it still lets a by-hand mistake be laundered green.
+    Nor does making the baseline check stricter — a stricter blob hash is still one
+    bit.
+
+    Closes when `fw enforcement baseline` CANNOT accept the disappearance of a
+    named framework-owned hook without an explicit, logged, per-hook acknowledgement.
+    The distinguishing test: delete check-tier0, run the sanctioned remedy exactly as
+    printed, then run doctor. If it reports OK, the gap is open.
+
+    Beware the key. A manifest keyed on (event, matcher, command) — the same tuple
+    hook-enable uses for idempotency, and the natural thing to reach for — would have
+    fired on 3 of the 4 largest legitimate refactors in this file's history, been
+    dismissed as noise, and been switched off before catching anything. That is not
+    hypothetical: it is exactly how the check-settings-edit nudge came to exist
+    (baseline noise -> advice to re-baseline -> D3). Key on hook NAME.
+
+    Class sibling: L-506 / L-570 / T-2902, but a NEW leg. Those are all read
+    failures — a scan that cannot see. This is a write failure: the system saw
+    correctly, reported correctly, and was then instructed to forget.
