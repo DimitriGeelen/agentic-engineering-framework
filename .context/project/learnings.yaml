@@ -4325,3 +4325,9 @@ X'` returning empty group."
   task: T-2902
   date: 2026-08-10
   context: Added via context agent
+- id: L-572
+  learning: "A gate governs a SURFACE, not a capability. T-2904/T-2905 put identity and label gates in 'fw rail post' and the class was reported closed; the MCP channel_post tool reached the same topic with neither gate in scope. Measured 2026-08-10: MCP signs the project key (0e7ee6ca), shell signs the substrate key (d1993c2c) — so the gated surface was the one that COULD NOT sign correctly, and two prior posts used a Tier-2 bypass that was never necessary. L-399 already says a bypass contract must be honoured by every command pattern a gate covers; it was cited in the same session that shipped the one-leg gate, because the rule is stated over COMMANDS and the miss was a whole surface nobody enumerated. Author-time test before claiming a class is closed: list every surface that can reach the effect, then post/act from each one and observe — do not reason about a surface you have not exercised. Found only because the peer project declared the same asymmetry on their side first; a clean-looking report from them would have left ours broken."
+  source: L-399
+  task: T-2908
+  date: 2026-08-10
+  context: Added via context agent
