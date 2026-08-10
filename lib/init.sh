@@ -1165,7 +1165,26 @@ SJSON
                 rm -f "$prev_settings"
             fi
         fi
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, loop-detect, fabric new-file, project-boundary, commit-cadence)"
+        # T-2912: this line used to be a hardcoded 14-name list that printed
+        # unconditionally — true on the day it was written, false the moment
+        # the template's hook set drifted from it (T-2911: 7 hooks the
+        # template didn't know about). It claimed "all hooks" in the same
+        # breath a caller (fw upgrade step 5) could report hooks still
+        # missing. Report what was actually written instead of a fixed
+        # claim — a caller that wants convergence detection compares against
+        # the framework's canonical set itself (lib/upgrade.sh step 5).
+        local _t2912_hook_count
+        _t2912_hook_count=$(python3 -c "
+import json
+try:
+    with open('$dir/.claude/settings.json') as f:
+        data = json.load(f)
+    n = sum(len(entry.get('hooks', [])) for entries in data.get('hooks', {}).values() for entry in entries)
+except Exception:
+    n = '?'
+print(n)
+" 2>/dev/null || echo "?")
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json written ($_t2912_hook_count hook command(s) configured)"
     else
         # T-677: Pre-existing settings.json — back up and overwrite with framework hooks
         # The framework's governance hooks are authoritative; project-specific hooks from

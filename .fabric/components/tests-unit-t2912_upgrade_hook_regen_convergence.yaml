@@ -1,0 +1,25 @@
+id: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+name: t2912_upgrade_hook_regen_convergence
+type: script
+subsystem: upgrade
+location: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+tags: [upgrade, hooks, convergence, e2e]
+
+purpose: "End-to-end (real fw init'd consumer, env -i) proof that fw upgrade's
+  hook-regeneration step reports its own verified effect instead of the
+  pre-write trigger — a regen that cannot supply a detected-missing hook must
+  report FAILED/PARTIAL, not UPDATED, on every run, and must not write a
+  fresh .bak for a no-op."
+
+depends_on:
+  - target: lib/upgrade.sh
+    type: calls
+  - target: lib/init.sh
+    type: calls
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-10
+created_by: unknown

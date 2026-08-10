@@ -1506,11 +1506,19 @@ CRONREGEOF
 
     local settings_file="$target_dir/.claude/settings.json"
     local fw_settings="$FRAMEWORK_ROOT/.claude/settings.json"
-    if [ -f "$settings_file" ]; then
-        # Compare hooks by TYPE enumeration (T-615: not count)
-        # Source of truth: framework's own .claude/settings.json
-        local hook_analysis
-        hook_analysis=$(FW_FILE="$fw_settings" CONSUMER_FILE="$settings_file" python3 -c "
+
+    # T-2912: hook-gap detection extracted into a function so it can be run
+    # BOTH before and after regeneration. The bug this closes: the block used
+    # to compute "reason" once (before), regenerate, then print "UPDATED
+    # (reason)" unconditionally — describing the trigger, not the result. If
+    # the regenerator's own template doesn't know the missing hook (T-2710's
+    # class), the after-state is identical to the before-state and the report
+    # is a false positive. Compare hooks by TYPE enumeration (T-615: not count).
+    # Source of truth: framework's own .claude/settings.json.
+    _t2912_hook_gap() {
+        local sfile="$1"
+        local analysis
+        analysis=$(FW_FILE="$fw_settings" CONSUMER_FILE="$sfile" python3 -c "
 import json, os
 
 def extract_hooks(path):
@@ -1569,12 +1577,6 @@ missing = fw_hooks - consumer_hooks
 missing_names = '; '.join(f'{e}:{n}' for e, n in sorted(missing)) if missing else ''
 print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_names}')
 " 2>/dev/null || echo "0|0|0|0|parse-error")
-        local fw_total consumer_total missing_count stale_hooks missing_names
-        fw_total=$(echo "$hook_analysis" | cut -d'|' -f1)
-        consumer_total=$(echo "$hook_analysis" | cut -d'|' -f2)
-        missing_count=$(echo "$hook_analysis" | cut -d'|' -f3)
-        stale_hooks=$(echo "$hook_analysis" | cut -d'|' -f4)
-        missing_names=$(echo "$hook_analysis" | cut -d'|' -f5)
 
         # T-2709 (T-2704 §5.1 — "this is the trap"): the two predicates above are
         # blind to a hook command carrying the GENERATING host's absolute checkout
@@ -1584,9 +1586,22 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
         # across every `fw upgrade`. Same shared predicate as bin/fw doctor Check 6;
         # one module, two call sites (L-399: a contract shipped on one side only is
         # how this class recurs).
-        local hook_nonportable
-        hook_nonportable=$(python3 "$FRAMEWORK_ROOT/lib/hook_portability.py" "$settings_file" 2>/dev/null | cut -d'|' -f2)
-        [ -z "$hook_nonportable" ] && hook_nonportable=0
+        local nonportable
+        nonportable=$(python3 "$FRAMEWORK_ROOT/lib/hook_portability.py" "$sfile" 2>/dev/null | cut -d'|' -f2)
+        [ -z "$nonportable" ] && nonportable=0
+        echo "${analysis}|${nonportable}"
+    }
+
+    if [ -f "$settings_file" ]; then
+        local hook_analysis
+        hook_analysis=$(_t2912_hook_gap "$settings_file")
+        local fw_total consumer_total missing_count stale_hooks missing_names hook_nonportable
+        fw_total=$(echo "$hook_analysis" | cut -d'|' -f1)
+        consumer_total=$(echo "$hook_analysis" | cut -d'|' -f2)
+        missing_count=$(echo "$hook_analysis" | cut -d'|' -f3)
+        stale_hooks=$(echo "$hook_analysis" | cut -d'|' -f4)
+        missing_names=$(echo "$hook_analysis" | cut -d'|' -f5)
+        hook_nonportable=$(echo "$hook_analysis" | cut -d'|' -f6)
 
         local needs_regen=false
         [ "$missing_count" -gt 0 ] && needs_regen=true
@@ -1594,7 +1609,6 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
         [ "${hook_nonportable:-0}" -gt 0 ] && needs_regen=true
 
         if [ "$needs_regen" = true ]; then
-            changes=$((changes + 1))
             local reason=""
             if [ "$missing_count" -gt 0 ]; then
                 reason="missing $missing_count hook(s): $missing_names"
@@ -1609,16 +1623,72 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
             fi
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  $reason"
+                changes=$((changes + 1))
             else
-                cp "$settings_file" "${settings_file}.bak"
+                # T-2912: verify the regeneration's OWN effect — never trust the
+                # pre-write "reason" string as a report of outcome. Snapshot the
+                # file, regenerate, then diff and re-run the SAME detector on the
+                # result. Only a run that both (a) mutated the file and (b) no
+                # longer trips the detector reports UPDATED; anything else is
+                # FAILED or PARTIAL, and no .bak survives a run that changed
+                # nothing (a backup is evidence of a mutation that didn't happen).
+                local _t2912_pre
+                _t2912_pre=$(mktemp)
+                cp "$settings_file" "$_t2912_pre"
+
                 # T-2093 F6 (T-2078 V1-B): subshell-scope the force=true override.
                 # The old save_force / restore-on-exit pattern leaked force=true into
                 # the rest of do_upgrade if generate_claude_code_config exited via
                 # set -e mid-function — a stuck-on force=true crosses governance
                 # (the flag is a sovereignty bypass). Subshell makes the override
                 # impossible to leak; the parent's `force` stays untouched.
-                ( force=true; generate_claude_code_config "$target_dir" )
-                echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($reason). Backup: settings.json.bak"
+                ( force=true; generate_claude_code_config "$target_dir" ) >/dev/null
+
+                local hook_analysis_after missing_count_after missing_names_after stale_after nonportable_after
+                hook_analysis_after=$(_t2912_hook_gap "$settings_file")
+                missing_count_after=$(echo "$hook_analysis_after" | cut -d'|' -f3)
+                missing_names_after=$(echo "$hook_analysis_after" | cut -d'|' -f5)
+                stale_after=$(echo "$hook_analysis_after" | cut -d'|' -f4)
+                nonportable_after=$(echo "$hook_analysis_after" | cut -d'|' -f6)
+                local gap_remains=false
+                [ "${missing_count_after:-0}" -gt 0 ] && gap_remains=true
+                [ "${stale_after:-0}" -gt 0 ] && gap_remains=true
+                [ "${nonportable_after:-0}" -gt 0 ] && gap_remains=true
+
+                if cmp -s "$_t2912_pre" "$settings_file"; then
+                    # No mutation actually occurred — the generator's own
+                    # template does not carry what the detector is asking for
+                    # (T-2710's class: template lags the framework's real
+                    # hook set). Do not write a .bak for a no-op, and do not
+                    # call it OK — the detector still trips.
+                    rm -f "$_t2912_pre"
+                    if [ "$gap_remains" = true ]; then
+                        echo -e "  ${RED}FAILED${NC}  Regeneration made no change; still $reason. lib/init.sh generate_claude_code_config's template does not know these hooks — fix the template, not the consumer."
+                        failed_steps=$((failed_steps + 1))
+                        if [ "$strict" = true ]; then
+                            echo -e "  ${RED}STRICT ABORT${NC}  step 5 (hooks) failed to converge"
+                            _strict_abort_step="5 (hooks)"
+                            return 1
+                        fi
+                    else
+                        echo -e "  ${GREEN}OK${NC}  Hooks already current (no-op)"
+                    fi
+                else
+                    cp "$_t2912_pre" "${settings_file}.bak"
+                    rm -f "$_t2912_pre"
+                    changes=$((changes + 1))
+                    if [ "$gap_remains" = true ]; then
+                        echo -e "  ${YELLOW}PARTIAL${NC}  Hooks regenerated but gap remains: missing $missing_count_after hook(s): $missing_names_after. Backup: settings.json.bak"
+                        failed_steps=$((failed_steps + 1))
+                        if [ "$strict" = true ]; then
+                            echo -e "  ${RED}STRICT ABORT${NC}  step 5 (hooks) partial convergence"
+                            _strict_abort_step="5 (hooks)"
+                            return 1
+                        fi
+                    else
+                        echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($reason). Backup: settings.json.bak"
+                    fi
+                fi
             fi
         else
             echo -e "  ${GREEN}OK${NC}  $consumer_total/$fw_total hooks present (all types matched)"
