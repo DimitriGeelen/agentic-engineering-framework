@@ -58,14 +58,26 @@ do_add_learning() {
     if [ -n "$PROJECT_ROOT" ] && [ -n "$FRAMEWORK_ROOT" ] && [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
         id_prefix="PL"
     fi
-    local next_id=1
-    if [ -f "$learnings_file" ]; then
-        # T-1369: match BOTH `- id: L-XXX` (new dash-prefix format) and `  id: L-XXX`
-        # (legacy indented format where `- application:` opens the list item).
-        # Missing the legacy format caused every new L-XXX to collide with old IDs.
-        local max_id=$(grep -E "^[- ]+id: ${id_prefix}-" "$learnings_file" | sed "s/.*${id_prefix}-0*//" | sort -n | tail -1)
-        [ -n "$max_id" ] && next_id=$((max_id + 1))
+    # T-2902: max-id comes from a YAML parse, not a grep. The previous two versions
+    # of this line were both pattern scans, and both minted a live id when the corpus
+    # changed shape underneath them — `^- id: L-` missed the sort_keys=True rewrite
+    # (24 duplicate ids), and T-1369's widened `^[- ]+id:` still misses any third
+    # serialisation. A scan that matches nothing is indistinguishable from an empty
+    # corpus, so the allocator returned 1 with full confidence. corpus_max_id has no
+    # pattern to widen on the authoritative path and REFUSES (exit 2) rather than
+    # seeding 1 when its degraded path cannot tell the two cases apart.
+    # Do not replace this with a grep. See lib/corpus-id.sh header.
+    if ! declare -F corpus_max_id >/dev/null 2>&1; then
+        source "${FRAMEWORK_ROOT:-${PROJECT_ROOT:-$PWD}}/lib/corpus-id.sh"
     fi
+    local next_id=1 max_id rc
+    max_id=$(corpus_max_id "$learnings_file" "$id_prefix"); rc=$?
+    if [ $rc -ne 0 ]; then
+        echo -e "${RED}Error: cannot determine the next ${id_prefix}- id — refusing to allocate.${NC}" >&2
+        echo "Allocating anyway would risk reissuing a live id (T-2902)." >&2
+        exit 1
+    fi
+    [ -n "$max_id" ] && next_id=$((max_id + 1))
     local id=$(printf "${id_prefix}-%03d" $next_id)
 
     # Ensure learnings file exists with correct format
