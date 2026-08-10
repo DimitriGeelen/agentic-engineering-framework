@@ -291,11 +291,13 @@ class*, unfixed for 119 days. Filed as **T-2906**; the recurring shape is regist
         patterns verbatim against the *same* fixtures and assert they find nothing,
         so the fixtures are proven to exercise the defect. End-to-end join verified:
         `fw context add-learning` minted `L-571` against a max of 570.
-- [ ] A decision is recorded on the EXISTING 24 — renumber (breaks any external
+- [x] A decision is recorded on the EXISTING 24 — renumber (breaks any external
       reference to an id) versus leave-and-guard (register stays ambiguous
       forever) — with the reasoning, not just the choice. L-009 shows what
       happens when someone patches the rows in front of them and leaves the
       allocator: the same defect returns wearing a different id
+      → **LEAVE-AND-GUARD**, reasoning in `## Decisions`. Guard shipped for the
+        one consumer that mutates state; the rest filed as T-2907.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -327,6 +329,58 @@ class*, unfixed for 119 days. Filed as **T-2906**; the recurring shape is regist
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## Decisions
+
+### D1 — leave the 24 ids in place and make the ambiguity loud, rather than renumber
+
+**Chosen: leave-and-guard.** Not because renumbering is hard, but because it makes
+things worse in a specific measurable way.
+
+**Measured before deciding.** The 24 colliding ids are referenced from 5 to 32 files
+each across `docs/` and `.tasks/` — roughly 300 file-level references — plus one
+`promoted_from:` in `practices.yaml`, plus `lib/publish-learning-to-bus.sh`, which
+exports `learning_id` to the 832 rail and so makes these ids a cross-project surface
+we do not control.
+
+**The argument that decided it.** Every one of those ~300 references is *already*
+ambiguous — it names an id that resolves to two unrelated learnings. Renumbering does
+not repair them. It converts half of them from **ambiguous** to **confidently wrong**:
+a reader who meets `L-007` today has a fair chance of noticing it does not match the
+surrounding text, whereas after a renumber `L-007` resolves cleanly to exactly one
+entry — the wrong one — with nothing to prompt a second look. Trading a visible defect
+for an invisible one is the same trade G-079 exists to stop.
+
+**What leave-and-guard costs, stated plainly:** the register stays ambiguous forever.
+That is a real, permanent cost and it is not being minimised here. It is accepted only
+because the alternative silently corrupts a larger surface.
+
+**What makes this a guard and not a shrug.** The AC's own warning is that L-009 shows
+what happens when someone patches the rows in front of them and leaves the mechanism.
+So the mechanism was fixed first (AC-4, `lib/corpus-id.sh`) — no new collision can be
+minted. This decision only governs the 24 that already exist, and it is paired with
+making every id-keyed *resolution* refuse rather than pick:
+
+- **Shipped here** — `lib/promote.sh`. It was the only consumer that MUTATES state
+  (it writes `practices.yaml`), and it was measured picking the wrong row live. It now
+  refuses on an ambiguous id, prints both candidates, and takes `--task` to
+  disambiguate. Verified: refuses `L-007`, resolves `L-007 --task T-1257` to the right
+  entry, unambiguous ids unaffected.
+- **Filed as T-2907** — the six read-only consumers (`memory-recall.py`,
+  `consolidate.py`, the two docgen emitters, `publish-learning-to-bus.sh`,
+  `status.sh`). They mislead but do not corrupt, so they are not blocking.
+
+**Not fixed here, and it is a real gap:** `count_applications(lid, …)` in `promote.sh`
+still counts by id, so an ambiguous id reports the two learnings' applications summed
+(`L-007` shows 9). The disambiguated promote path therefore still records an inflated
+count. Carried into T-2907 rather than left implicit.
+
+**Third option considered and rejected:** renumber only the first block (rows 0-26),
+which is mostly mined AC-completion lines ("All 373 Playwright tests pass") rather than
+learnings. Tempting because it looks like renumbering junk. Rejected because those rows
+carry the *older* ids and are therefore the ones the ~300 historical references are
+most likely to mean; renumbering them maximises the confidently-wrong outcome above.
+Pruning them is a separate question with its own decision, not a side effect of this one.
 
 ## Verification
 
@@ -395,21 +449,58 @@ class*, unfixed for 119 days. Filed as **T-2906**; the recurring shape is regist
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/corpus_id_allocator.bats
+out=$(bin/fw promote L-007 2>&1); echo "$out" | grep -q "is ambiguous"
+out=$(bash -c 'source lib/corpus-id.sh; corpus_max_id .context/project/learnings.yaml L'); [ "$out" -ge 571 ]
+out=$(bash -c 'source lib/corpus-id.sh; corpus_max_id /dev/null L'; echo "rc=$?"); echo "$out" | grep -q "rc=0"
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+python3 -c "import yaml; yaml.safe_load(open('.context/project/learnings.yaml'))"
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `learnings.yaml` holds 24 ids that each resolve to two unrelated
+learnings. `fw promote L-007` silently promoted a mined AC-completion stub instead of
+the substantive learning sharing that id, with an application count summed across both.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the allocator derived the next id from a regex scan of the corpus, and
+**a scan that matches zero rows is indistinguishable from an empty corpus**. On
+2026-04-13 T-1232's bulk mining run rewrote the file with `yaml.dump(sort_keys=True)`,
+moving `id:` off the list-item line. `grep "^- id: L-"` then matched 0 rows in a
+234-entry file, `max_id` came back empty, and `next_id` kept its seed of `1`. The
+allocator did not fail — it returned `1` with full confidence and minted a live id.
+Not "the regex was wrong": the regex was correct when written, and the corpus moved.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** three compounding reasons.
+1. `max`-over-nothing and `count`-over-nothing both return the seed, so the failure has
+   no distinct observable. Nothing to alert on.
+2. The corpus is read by hand-written patterns at ~9 independent sites, each carrying
+   its own copy of the serialisation assumption. One writer changing shape breaks an
+   unknown number of readers at once, and each is discovered separately.
+3. The two prior fixes (T-1369, T-2672 / 832 T-295) each **widened a regex**, which
+   makes a site match today's known shapes and does nothing when a new one arrives.
+   That is why the same defect surfaced four times over four months and why
+   `status.sh` has reported `Learnings: 0` against 608 entries for 119 days (T-2906)
+   without anyone noticing — its three sibling counters still worked.
+
+**Prevention (distinct from the fix):**
+- `lib/corpus-id.sh` — the authoritative path is a YAML parse with **no pattern to
+  widen**; flow-style and quoted ids come free. The degraded path **refuses** (exit 2)
+  rather than seeding when it cannot distinguish "no ids yet" from "unreadable shape",
+  and a corpus clobbered to a bare scalar is refused rather than read as empty.
+- `tests/unit/corpus_id_allocator.bats` (16 legs) — the load-bearing legs run the two
+  **historical** patterns verbatim against the **same** fixtures and assert they find
+  nothing, so the fixtures are proven to exercise the defect. Without those legs the
+  suite would only prove the new code works on shapes it already knows, which is
+  exactly how T-1369 shipped and then recurred.
+- `lib/promote.sh` refuses on an ambiguous id instead of taking the first match.
+- **G-079** registers the recurring shape, with a closure condition that explicitly
+  excludes "fix the next site's regex" — that is the same fix applied a fifth time.
+- **L-571** names the class: silent empty-scan fallback, a fourth leg beyond L-506's
+  three. Sibling to L-570 at a different layer.
+
+**What is NOT prevented:** the ~9 read sites still each carry their own scan. Only the
+allocator was migrated to the shared reader. Until the rest are, a new serialisation
+still breaks readers silently — which is why G-079 is `watching`, not closed.
 
 ## Evolution
 
@@ -433,17 +524,6 @@ class*, unfixed for 119 days. Filed as **T-2906**; the recurring shape is regist
      The completion gate (T-1718) blocks --status work-completed when this
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
-## Decisions
-
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
 -->
 
 ## Decision

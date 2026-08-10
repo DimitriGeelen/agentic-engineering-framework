@@ -222,12 +222,15 @@ elif subcmd.startswith('L-') or subcmd.startswith('PL-'):
     # Parse args
     name = None
     directive = None
+    want_task = None
     i = 0
     while i < len(args):
         if args[i] == '--name' and i + 1 < len(args):
             name = args[i+1]; i += 2
         elif args[i] == '--directive' and i + 1 < len(args):
             directive = args[i+1]; i += 2
+        elif args[i] == '--task' and i + 1 < len(args):
+            want_task = args[i+1]; i += 2
         elif args[i] in ('-h', '--help'):
             print(f'{BOLD}fw promote L-XXX{NC} — Promote a learning to a practice')
             print()
@@ -241,16 +244,40 @@ elif subcmd.startswith('L-') or subcmd.startswith('PL-'):
         else:
             i += 1
 
-    # Find the learning
-    learning = None
-    for l in learnings:
-        if l.get('id') == learning_id:
-            learning = l
-            break
+    # Find the learning.
+    # T-2902: 24 ids in this corpus resolve to TWO unrelated learnings. The previous
+    # version took the first match and broke — silently promoting a mined AC-completion
+    # stub instead of the substantive learning that shares its id, with an application
+    # count summed across both. Measured, not theorised: `fw promote L-007` shipped
+    # practice P-013 from the wrong row. Refuse and make the operator choose.
+    matches = [l for l in learnings if l.get('id') == learning_id]
+    if want_task:
+        matches = [l for l in matches if str(l.get('task', '')) == want_task]
 
-    if not learning:
-        print(f'{RED}Learning {learning_id} not found{NC}')
+    if not matches:
+        if want_task:
+            print(f'{RED}Learning {learning_id} with task {want_task} not found{NC}')
+        else:
+            print(f'{RED}Learning {learning_id} not found{NC}')
         sys.exit(1)
+
+    if len(matches) > 1:
+        print(f'{RED}{learning_id} is ambiguous — {len(matches)} entries share this id.{NC}')
+        print()
+        for l in matches:
+            text = ' '.join(str(l.get('learning', '')).split())
+            print(f"  --task {l.get('task', 'unknown')}   ({l.get('date', '?')})")
+            print(f"      {text[:100]}{'…' if len(text) > 100 else ''}")
+        print()
+        print('Disambiguate with --task, e.g.:')
+        print(f"  fw promote {learning_id} --task {matches[-1].get('task', 'T-XXX')} --name '...' --directive D1")
+        print()
+        print('Why this is not auto-resolved: picking either row silently is how the')
+        print('wrong learning got promoted before. The ids are not being renumbered —')
+        print('~300 references across docs/ and .tasks/ already point at them (T-2902).')
+        sys.exit(1)
+
+    learning = matches[0]
 
     if learning_id in promoted_ids:
         print(f'{YELLOW}Learning {learning_id} is already promoted to a practice{NC}')
