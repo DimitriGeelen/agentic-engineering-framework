@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T15:57:04Z
-last_update: 2026-08-09T22:02:50Z
+last_update: '2026-08-10T16:00:13Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -53,6 +53,15 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-10T16:00:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-09T16:00:13Z'
     estimator: bvp-estimator-v1-heuristic
@@ -71,25 +80,176 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-10T16:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2902: learnings.yaml holds 24 duplicate L-NNN ids — the allocator can reissue a live id
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`.context/project/learnings.yaml` holds 608 entries under one flat `learnings:` list,
+584 unique ids, **24 duplicated ids, 24 excess rows**. The duplicates are not scattered:
+they are a contiguous band `L-001..L-027` (minus L-003, L-010, L-021, which were never
+minted twice), each appearing exactly twice.
+
+### CORRECTION — the description's hypothesis was wrong
+
+This task was filed guessing the allocator "likely scans only part of the file or resets
+across the confirmed/candidates split". **There is no confirmed/candidates split** —
+`learnings.yaml` is a single flat list. The real mechanism is different and is recorded
+below. Keeping the wrong guess visible rather than deleting it: the reasoning that
+produced it is the part with transfer value.
+
+### The mechanism, from git rather than from the symptom
+
+| commit | when | entries | dups | what happened |
+|--------|------|---------|------|---------------|
+| `c3df4ac31^` | 2026-04-13 20:21− | 2 | 0 | pre-mining corpus, `L-001..L-002` |
+| `c3df4ac31` | 2026-04-13 20:21 | 234 | **0** | T-1232 bulk-mines 232 learnings, rewrites the file wholesale, renumbers `L-001..L-234`. Still clean. |
+| `908376daa` | 2026-04-13 20:32 | 235 | **1** | **first reissue** — `fw context add-learning` mints `L-001` while max on disk is `L-234` |
+| `22e2b5d0e` | 2026-04-13 21:16 | **3** | 0 | T-1239 commit destroys 232 entries |
+| `8abdea189` | 2026-04-13 22:20 | 239 | 5 | T-1242 "Restore 239 learnings lost in T-1239" — concatenates recovered 234 with the already-restarted live rows |
+| `95095b2f6` | 2026-04-20 22:37 | 264 | **27** | a week of `add-learning`, each one colliding |
+| next commit | 2026-04-20 | — | 27 | `4c86a9b28` T-1369 fixes the allocator; row 261 onward resumes correctly at `L-235` |
+
+**Root cause: a serialisation flip silently zeroed the scan.** The mining run wrote the
+file with Python `yaml.dump(sort_keys=True)`, so `application` sorts first and `id` moved
+off the list-item line onto a continuation line:
+
+```yaml
+# before mining                 # after mining
+- id: L-001                     - application: TBD
+  learning: "First learning"      context: Added via context agent
+  source: unknown                 date: 2026-04-13
+                                  id: L-001          # <-- moved
+```
+
+The allocator at the time (`agents/context/lib/learning.sh:50` @ `908376daa`) read:
+
+```bash
+local next_id=1
+if [ -f "$learnings_file" ]; then
+    local max_id=$(grep "^- id: ${id_prefix}-" "$learnings_file" | sed ... | sort -n | tail -1)
+    [ -n "$max_id" ] && next_id=$((max_id + 1))
+fi
+```
+
+`grep "^- id: L-"` matched **zero rows in a 234-entry file**. `max_id` came back empty,
+the `[ -n ... ]` guard declined to update, and `next_id` kept its initialised value of
+`1`. Eleven minutes after the mining commit, `L-001` was minted on top of a live `L-001`.
+
+**T-1369 (`4c86a9b28`) fixed the instance, not the class.** Current line 66 widens the
+pattern to `^[- ]+id:` so it matches both serialisations — correct, and the in-source
+comment says exactly why. But the structure that produced the bug is untouched: the
+allocator still cannot distinguish *"the corpus is empty, 1 is correct"* from *"my
+pattern matched nothing in a non-empty corpus, 1 is a collision"*. Any future writer
+that emits quoted (`id: "L-571"`) or flow-style (`- {id: L-571}`) rows re-arms it.
+
+### AC-2 — measured against L-506, and it is a fourth leg
+
+L-506 names three composable legs for max+1-over-a-scanned-corpus allocators:
+(1) no plausibility bound, (2) split filesystem views, (3) self-feeding emitters.
+**This incident is none of them.** The scan ran against the right file, in the right
+checkout, with no recursion. It is:
+
+> **(4) silent empty-scan fallback — the allocator treats "pattern matched nothing" as
+> "corpus is empty" and falls back to the seed value, so a scan failure and a legitimate
+> first-allocation are the same observable event.**
+
+Sibling to L-570 (this session): `fw_config ... 2>/dev/null` returning `""` read
+identically to "no project identity configured". Same shape, different subsystem — a
+missing read is indistinguishable from a true negative, so the wrong answer arrives
+looking plausible. L-026/T-1279 (TOCTOU on filesystem-as-counter) is a *fifth* mode also
+not in L-506's three. L-506's own text claims "L-/P-/D-/FP- ids share the max+1 shape and
+would inflate identically" — true, and the same is now measured for leg 4.
+
+### Full duplicate enumeration (AC-1) — all 24, not a sample
+
+Both rows of every collision. Row = index in the parsed list.
+
+| id | row | task | date | first line |
+|----|-----|------|------|------------|
+| L-001 | 0 | unknown | 2026-04-13 | First learning |
+| L-001 | 234 | T-1232 | 2026-04-13 | Batch-mining bugfix learnings from episodic outcomes is efficien… |
+| L-002 | 1 | T-1231 | 2026-04-13 | Inherited PROJECT_ROOT env var causes cross-project contaminatio… |
+| L-002 | 235 | T-1233 | 2026-04-13 | Watchtower routes that scan all task/episodic/handover files bec… |
+| L-004 | 3 | T-028 | 2026-04-13 | Classifier correctly identifies dependency, external, environmen… |
+| L-004 | 236 | T-1235 | 2026-04-13 | At scale (1200+ tasks, 1166 episodics, 580 handovers, 71 JSONL s… |
+| L-005 | 4 | T-030 | 2026-04-13 | Created FRAMEWORK.md — provider-neutral entry point |
+| L-005 | 237 | T-1236 | 2026-04-13 | Episodic YAML files containing regex patterns (backslash-d, back… |
+| L-006 | 5 | T-031 | 2026-04-13 | Audit episodic check no longer false-positives on content discus… |
+| L-006 | 238 | T-1250 | 2026-04-14 | In bash, grep -c prints count but exits 1 on zero matches. Using… |
+| L-007 | 6 | T-053 | 2026-04-13 | fw task list shows completed count when no active tasks |
+| L-007 | 239 | T-1257 | 2026-04-15 | Copy-paste fw commands must be context-aware: bin/fw in framewor… |
+| L-008 | 7 | T-069 | 2026-04-13 | Web server restarted, timeline enhancements now visible |
+| L-008 | 240 | T-1262 | 2026-04-15 | Environment inheritance between framework surfaces is load-beari… |
+| L-009 | 8 | T-075 | 2026-04-13 | Removed duplicate L-013 entry and filled TBD application field |
+| L-009 | 241 | T-1258 | 2026-04-15 | Bats tests that redirect PROJECT_ROOT to the real FRAMEWORK_ROOT… |
+| L-011 | 10 | T-078 | 2026-04-13 | All 4 checkpoint.sh bugs identified and fixed |
+| L-011 | 243 | T-012 | 2026-04-16 | When remote hub rotates BOTH secret and TLS cert: need TWO steps… |
+| L-012 | 11 | T-087 | 2026-04-13 | fw promote suggest — identifies promotion candidates |
+| L-012 | 246 | T-1290 | 2026-04-18 | Service discovery via port-probing with task-path heuristics is … |
+| L-013 | 12 | T-094 | 2026-04-13 | Heredoc bodies stripped before pattern matching |
+| L-013 | 247 | T-1306 | 2026-04-18 | Flask session cookies are signed with app.secret_key — regenerat… |
+| L-014 | 13 | T-101 | 2026-04-13 | Generated settings.json hooks correctly set PROJECT_ROOT=/path/t… |
+| L-014 | 248 | T-1320 | 2026-04-18 | Bash glob loops referenced from .fabric/watch-patterns.yaml MUST… |
+| L-015 | 14 | T-1014 | 2026-04-13 | Reduced test_all_nav_routes from 11 routes to 3 (prevents batch … |
+| L-015 | 249 | T-1323 | 2026-04-18 | Vendored framework copies need their own .gitignore. Excluding _… |
+| L-016 | 15 | T-1027 | 2026-04-13 | test_graduation.py uses domcontentloaded instead of networkidle |
+| L-016 | 250 | T-1324 | 2026-04-18 | Inception decide must tick its own authorizing Human AC. The dec… |
+| L-017 | 16 | T-1040 | 2026-04-13 | All `networkidle` references in tests/playwright/ replaced with … |
+| L-017 | 251 | T-1277 | 2026-04-18 | Hooks that block on network IO must be bounded. Auto-handover at… |
+| L-018 | 17 | T-1045 | 2026-04-13 | conftest.py redirects Flask stderr to file instead of PIPE (prev… |
+| L-018 | 252 | T-012 | 2026-04-19 | TermLink hub authentication is per-HUB (shared secret across all… |
+| L-019 | 18 | T-1069 | 2026-04-13 | 28 started-work + horizon:next/later tasks demoted to captured |
+| L-019 | 253 | T-012 | 2026-04-19 | FW_HANDOVER_PUSH_TIMEOUT default of 15s is too tight when pre-pu… |
+| L-020 | 19 | T-1073 | 2026-04-13 | All 373 Playwright tests pass (`fw test playwright`) |
+| L-020 | 254 | T-1342 | 2026-04-19 | Bats tests that shell out to 'fw task create' (even with PROJECT… |
+| L-022 | 21 | T-1076 | 2026-04-13 | SC2034 false positive suppressed with shellcheck disable directi… |
+| L-022 | 255 | T-1362 | 2026-04-20 | Under set -euo pipefail, 'grep PATTERN file | sed ...' aborts th… |
+| L-023 | 22 | T-1078 | 2026-04-13 | Pre-push hook template checks `.agentic-framework/agents/audit/a… |
+| L-023 | 256 | T-1360 | 2026-04-20 | Claude Code session persistent CWD can get stuck in a deleted or… |
+| L-024 | 23 | T-1079 | 2026-04-13 | `git.sh` VERSION matches commit-msg template VERSION |
+| L-024 | 257 | T-1363 | 2026-04-20 | Manual task-file moves to completed/ bypass update-task.sh and s… |
+| L-025 | 24 | T-1081 | 2026-04-13 | `bin/fw gaps` checks `concerns.yaml` first, falls back to `gaps.… |
+| L-025 | 258 | T-1364 | 2026-04-20 | Claude Code hooks run with CWD = wherever the session is. CWD dr… |
+| L-026 | 25 | T-1083 | 2026-04-13 | `post-compact-resume.sh` uses `$FRAMEWORK_ROOT/agents/fabric/fab… |
+| L-026 | 259 | T-1279 | 2026-04-20 | TOCTOU on filesystem-as-counter: when an allocator reads max-fro… |
+| L-027 | 26 | T-1086 | 2026-04-13 | commit-msg task-ref gate (hooks.sh:72-81) — replaced with clean … |
+| L-027 | 260 | T-1368 | 2026-04-20 | Auto-gen silent failures can evade T-1169's silent-failure detec… |
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every duplicated id is enumerated with its colliding entries (id, task,
+- [x] Every duplicated id is enumerated with its colliding entries (id, task,
       first line of each) — the full set, not a sample, so the blast radius on
       id-keyed consumers is known rather than estimated
-- [ ] The allocator is READ and the failure mode NAMED against L-506's three
+      → 24 ids / 48 rows, full table in `## Context`. Band is `L-001..L-027`
+        minus L-003/L-010/L-021, each exactly ×2.
+- [x] The allocator is READ and the failure mode NAMED against L-506's three
       composable modes (max+1 over a scanned corpus), measured against the
       actual code path rather than inferred from the symptom. If it is a mode
       L-506 does not cover, say so — that is the more valuable finding
+      → It is NOT one of L-506's three. Named as a fourth leg: **silent
+        empty-scan fallback**. Measured from `agents/context/lib/learning.sh:50`
+        @ `908376daa` against the corpus at that commit, not inferred.
 - [ ] Every consumer that keys on learning id is enumerated, and what each does
       on a duplicate is stated (picks first / picks last / emits both). Check the
       consumer before touching the producer — the same discipline that found the
