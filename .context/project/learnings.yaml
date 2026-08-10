@@ -4319,3 +4319,9 @@ X'` returning empty group."
   task: T-2904
   date: 2026-08-09
   context: Added via context agent
+- id: L-571
+  learning: "ID allocators that scan a corpus with a regex have a fourth failure leg beyond L-506's three: silent empty-scan fallback. When the scan matches zero rows, max-over-nothing returns the seed, so 'my pattern does not understand this file' and 'the corpus is empty' are the same observable event — the allocator returns 1 with full confidence and reissues a live id. Origin T-2902: a yaml.dump(sort_keys=True) rewrite moved 'id:' off the list-item line, learnings.yaml grew 24 duplicate ids in one week, and the same shape then broke three more sites over four months (T-1369 learning.sh, T-2672/832-T-295 resolve.sh x2, T-2906 status.sh reporting 'Learnings: 0' against 608 entries for 119 days). Each was fixed by widening the regex, which is why it kept recurring. Fix is a parser with no pattern to widen, plus a degraded path that REFUSES rather than seeding. Test discipline: the load-bearing leg runs the OLD pattern against the SAME fixture and asserts it finds nothing — without it the suite only proves the new code works on shapes it already knows."
+  source: P-001
+  task: T-2902
+  date: 2026-08-10
+  context: Added via context agent

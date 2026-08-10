@@ -283,8 +283,14 @@ class*, unfixed for 119 days. Filed as **T-2906**; the recurring shape is regist
       two extra write sites in T-2901
       → 9 sites in `## Consumer audit (AC-3)`. Two measured live, not inferred.
         Found a second live defect (T-2906) and a structural gap (G-079).
-- [ ] The allocator can no longer mint a colliding id, proven by a test that
+- [x] The allocator can no longer mint a colliding id, proven by a test that
       goes RED against the pre-fix allocator, not merely green against the fixed one
+      → `lib/corpus-id.sh` (parser, no pattern to widen; refuses rather than seeds)
+        wired into `agents/context/lib/learning.sh`.
+        `tests/unit/corpus_id_allocator.bats` — 16/16. Two legs run the *historical*
+        patterns verbatim against the *same* fixtures and assert they find nothing,
+        so the fixtures are proven to exercise the defect. End-to-end join verified:
+        `fw context add-learning` minted `L-571` against a max of 570.
 - [ ] A decision is recorded on the EXISTING 24 — renumber (breaks any external
       reference to an id) versus leave-and-guard (register stays ambiguous
       forever) — with the reasoning, not just the choice. L-009 shows what
