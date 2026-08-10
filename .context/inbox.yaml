@@ -1581,3 +1581,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-211
+  text: "CORRECTS OBS-210's hypothesis — and the correction matters more than the original. The focus clobber is NOT a cron race: a second interactive agent session is live in this same working tree, confirmed three ways within ten minutes. (1) agents/context/check-rail-mcp-label.sh changed at 22:14:35 by a process that is not this session — a useless-cat cleanup I did not write. (2) VERSION double-bumped 1.6.14 to 1.6.16, so another 'fw vendor self' ran between mine and my push. (3) Decisive: focus.yaml flipped to T-2913, a task I never created, and T-2913 is 'in-repo scripts post to termlink channel post directly — bypass fw rail identity+label gates' — the SAME producer-surface question as my T-2908. Two sessions were converging on one problem with no mutual visibility. Two agents sharing one checkout share focus.yaml, VERSION, the vendored tree and the task files, with no locking. Three consequences seen live: the focus-drift gate fires on the CORRECT action (T-1730 blocking work that was right); the T-2240 self-vendor push gate re-fires because the peer's edit lands between vendor and push, so pushes need N rounds; and duplicate task numbers get spent on the same finding. T-100196's trunk-based session flow assumes one session per checkout and does not say so. Worth a real task; not opened here because the peer session may already own it."
+  captured: 2026-08-10T20:23:33Z
+  context_task: T-2911
+  tags: []
+  status: pending
+  promoted_to: null
