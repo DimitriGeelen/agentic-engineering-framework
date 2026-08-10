@@ -1574,3 +1574,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-210
+  text: "Focus reverted mid-session without an fw command doing it: after 'fw work-on T-2911' set focus to T-2911, a later gate read focus as T-2908 (the session-start value), then I re-set it. Suspect a concurrent cron fw invocation (audit/metrics were writing .context/ at the time) rewrites focus.yaml from a stale read — a last-writer-wins clobber of interactive session state. Consequence is not cosmetic: the focus-drift gate (T-1730) then fires on the CORRECT action and invites a Tier-2 bypass to work around a gate that was right about a state that was wrong. Not chased further this session; noting the shape so a second sighting is recognisable rather than re-derived."
+  captured: 2026-08-10T20:12:02Z
+  context_task: T-2912
+  tags: []
+  status: pending
+  promoted_to: null

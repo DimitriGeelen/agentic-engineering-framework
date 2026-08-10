@@ -4331,3 +4331,9 @@ X'` returning empty group."
   task: T-2908
   date: 2026-08-10
   context: Added via context agent
+- id: L-573
+  learning: "A gate can be green, tested, and structurally unreachable at the same time: check WHERE it is registered against WHERE the thing it guards exists. check-onboarding-gate (T-2815, arc-017's whole mechanic) is registered in the framework repo, which has 0 onboarding tasks, and absent from every consumer, which has 6. Its 38 test legs are green because they all execute in-repo. 'The suite passes' and 'the gate is deployed where it matters' are independent facts that look identical from inside the repo. Generalises past hooks: any artefact whose install site and target site differ (hooks, cron entries, vendored templates, MCP manifests) can pass every test at the install site while being absent at the target. The cheap check is one line — compare the consumer's registration surface against the producer's, keyed on NAME not count."
+  source: P-001
+  task: T-2911
+  date: 2026-08-10
+  context: Added via context agent
