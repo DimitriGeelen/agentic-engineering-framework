@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2911: Every consumer is missing 7 enforcement hooks incl. arc-017's onboarding gate — init template never mirrored hook-enable
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-10T21:22:45Z
+# ============================================================================
+
+task_id: T-2911
+task_name: "Every consumer is missing 7 enforcement hooks incl. arc-017's onboarding gate — init template never mirrored hook-enable"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-10T20:02:33Z
+completed: 2026-08-10T21:19:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-10T22:13:24+02:00
+last_commit: 2026-08-10T22:18:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture L-573 (a gate can be green, tested, and unreachable) + OBS-210 (focus clobber). refresh vendored copies (T-2240 self-vendor gate). re-sync vendored copy (concurrent edit landed between vendor and push)
+
+# Key outcomes
+outcomes:
+  - 'A freshly `fw init`''d consumer registers the same hook **set** this repo does —'
+  - '`check-onboarding-gate` specifically is registered in a fresh consumer, asserted by'
+  - 'A test fails if the two producer sites ever diverge again — `fw hook-enable`''s'
+  - 'The test is proven non-vacuous: it goes RED when one hook is removed from'
+  - 'Any hook deliberately framework-only is named in an explicit allowlist with a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-rail-mcp-label.sh'
+  - '.agentic-framework/lib/rail-identity.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/inbox.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/focus.yaml'
+  - '.tasks/completed/T-2909-enforcement-baseline-cannot-name-what-ch.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-10T22:13:24'
+    action: 'T-2911: capture L-573 (a gate can be green, tested, and unreachable) + OBS-210 (focus clobber)'
+  - time: '2026-08-10T22:13:58'
+    action: 'T-2911: refresh vendored copies (T-2240 self-vendor gate)'
+  - time: '2026-08-10T22:18:52'
+    action: 'T-2911: re-sync vendored copy (concurrent edit landed between vendor and push)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 77 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 77
+  commits: 3
+  files_changed: 7
+  lines_added: 172
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2911-every-consumer-is-missing-7-enforcement-.md
+generated_by: context-agent-hybrid

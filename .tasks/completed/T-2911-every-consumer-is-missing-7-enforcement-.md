@@ -1,15 +1,17 @@
 ---
 id: T-2911
-name: "Every consumer is missing 7 enforcement hooks incl. arc-017's onboarding gate — init template never mirrored hook-enable"
+name: "Every consumer is missing 7 enforcement hooks incl. arc-017's onboarding gate
+  — init template never mirrored hook-enable"
 description: >
-  Every consumer is missing 7 enforcement hooks incl. arc-017's onboarding gate — init template never mirrored hook-enable
+  Every consumer is missing 7 enforcement hooks incl. arc-017's onboarding gate —
+  init template never mirrored hook-enable
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/demo/arc015_capture.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T20:02:33Z
-last_update: 2026-08-10T20:02:33Z
-date_finished: null
+last_update: 2026-08-10T21:19:51Z
+date_finished: 2026-08-10T21:19:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-10T20:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-10T20:15:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2911: Every consumer is missing 7 enforcement hooks incl. arc-017's onboarding gate — init template never mirrored hook-enable
@@ -102,21 +132,21 @@ diverge again. **Do not** fix the upgrade-reporting defect here.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A freshly `fw init`'d consumer registers the same hook **set** this repo does —
+- [x] A freshly `fw init`'d consumer registers the same hook **set** this repo does —
       verified by comparing the two `settings.json` files by hook name, not by count
       (a count matches for the wrong reasons the moment anything is renamed)
-- [ ] `check-onboarding-gate` specifically is registered in a fresh consumer, asserted by
+- [x] `check-onboarding-gate` specifically is registered in a fresh consumer, asserted by
       name — it is arc-017's whole mechanic and the reason this is urgent, so it must not
       ride on a set-comparison that a future refactor could weaken
-- [ ] A test fails if the two producer sites ever diverge again — `fw hook-enable`'s
+- [x] A test fails if the two producer sites ever diverge again — `fw hook-enable`'s
       target and `generate_claude_code_config` — keyed on hook **name**, per the T-2909 S1
       measurement that name is the only key with zero false positives over history. The
       prose comment at `bin/hook-enable.sh:120` already said "both sites must change
       together"; this AC is what makes that statement load-bearing rather than advisory
-- [ ] The test is proven non-vacuous: it goes RED when one hook is removed from
+- [x] The test is proven non-vacuous: it goes RED when one hook is removed from
       `generate_claude_code_config`, demonstrated in the task, not assumed. A parity test
       that passes because it compares a list to itself is the failure mode here
-- [ ] Any hook deliberately framework-only is named in an explicit allowlist with a
+- [x] Any hook deliberately framework-only is named in an explicit allowlist with a
       one-line reason each, so "missing from consumers" and "intentionally framework-only"
       stop being the same observable state — the L-506 leg this whole class keeps hitting
 
@@ -152,6 +182,9 @@ diverge again. **Do not** fix the upgrade-reporting defect here.
 -->
 
 ## Verification
+
+bats tests/unit/hook_producer_site_parity.bats > /tmp/.t2911-parity.out 2>&1; ec=$?; cat /tmp/.t2911-parity.out; [ $ec -eq 0 ] && grep -q '^ok 6' /tmp/.t2911-parity.out
+bats tests/unit/settings_regenerate_preserves_hooks.bats > /tmp/.t2911-regen.out 2>&1; ec=$?; cat /tmp/.t2911-regen.out; [ $ec -eq 0 ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -220,19 +253,35 @@ diverge again. **Do not** fix the upgrade-reporting defect here.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** every `fw init`'d consumer registers only 17 of the 25 governance hooks
+this repo enforces on itself — including arc-017's onboarding gate, which is 0-for-0
+reachable in the one repo where the test suite runs it and present nowhere the
+onboarding tasks it guards actually exist.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** two independent producer sites write `.claude/settings.json` and
+neither is derived from the other. `fw hook-enable` (`bin/hook-enable.sh`) is how this
+repo's own file was built up — one ad-hoc call per hook, over 7+ separate tasks.
+`generate_claude_code_config` (`lib/init.sh`) is a fixed heredoc template that every
+`fw init`/`fw upgrade` regenerate writes for a consumer. Nothing keeps the second in
+sync with the first; the file even carried a comment saying so (`bin/hook-enable.sh:120`)
+which is exactly the failure mode this class keeps hitting (L-399 producer/consumer
+parity, shipped on one side only).
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the comment was prose, not a gate — advisory text with no
+mechanism checking it. It was violated 7 times over the life of this repo (8 counting
+`check-rail-mcp-label`, added via `fw hook-enable` by a concurrent task, T-2908, one
+commit before this task's own measurement — reproducing the exact defect live, mid-RCA).
+No test compared the two producer sites' output before this task; the 38 tests for
+`check-onboarding-gate` itself all run inside this repo, so the suite was green while
+the gate was unreachable in deployment.
+
+**Prevention:** `tests/unit/hook_producer_site_parity.bats` — name-keyed comparison
+between this repo's live `.claude/settings.json` (the de facto record of every
+`fw hook-enable` call) and `generate_claude_code_config`'s emitted set, plus an e2e
+check against a real `fw init`'d consumer, plus an explicit framework-only allowlist so
+a future intentional exception doesn't read as another instance of this bug. A negative
+control (removing one hook from a temp copy of the template) proves the comparator
+actually catches divergence rather than passing by comparing a list to itself.
 
 ## Evolution
 
@@ -257,6 +306,35 @@ diverge again. **Do not** fix the upgrade-reporting defect here.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO — no Human ACs, mechanical fix + structural test, safe to close.
+
+**Rationale:** All 5 Agent ACs are met with evidence below. `.claude/settings.json`
+itself was not touched (only `lib/init.sh`), so no enforcement-baseline refresh is
+needed. The fix is purely additive to the consumer template — no existing hook was
+removed or reordered — and the full init/hook regression suite (30 tests across the
+new file plus 4 pre-existing sibling files) is green.
+
+**Evidence:**
+- `lib/init.sh:generate_claude_code_config` now emits all 25 hook names this repo's
+  own `.claude/settings.json` declares (was 17); the 8 added: `check-active-completed-dup`,
+  `check-arc-id`, `check-heredoc-cmd-sub`, `check-inception-decisions`,
+  `check-inception-schema`, `check-onboarding-gate`, `check-rail-mcp-label`,
+  `check-settings-edit` (the 7 named in this task, plus `check-rail-mcp-label` which
+  T-2908 added via `fw hook-enable` one commit before this task's own investigation —
+  live reproduction of the exact defect being fixed).
+- `tests/unit/hook_producer_site_parity.bats` (new, 6 tests, all green): name-keyed
+  comparison between the two producer sites, an e2e check against a real `fw init`'d
+  consumer, an explicit (currently empty, documented) framework-only allowlist, and a
+  NEGATIVE CONTROL proving the comparator genuinely goes RED when a hook is removed
+  from the template — rehearsed by stashing `lib/init.sh` and confirming the pre-fix
+  tree fails test 3 by name, listing all 8 divergent hooks.
+- `tests/unit/settings_regenerate_preserves_hooks.bats` (pre-existing, T-2710) still
+  green — the forced-regenerate merge-preservation invariant is unaffected.
+- No hook was found to be legitimately framework-only; the allowlist mechanism exists
+  for the next genuine case (documented in the test file with a worked example).
 
 ## Decisions
 
@@ -285,3 +363,15 @@ diverge again. **Do not** fix the upgrade-reporting defect here.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2911-every-consumer-is-missing-7-enforcement-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b3248c79
+- **Timestamp:** 2026-08-10T21:22:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-10T21:19:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

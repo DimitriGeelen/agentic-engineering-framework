@@ -993,6 +993,30 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook check-human-ac-tick"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-active-completed-dup"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-arc-id"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-heredoc-cmd-sub"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-inception-decisions"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-inception-schema"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-onboarding-gate"
           }
         ]
       },
@@ -1038,6 +1062,15 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook block-task-tools"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__termlink__termlink_channel_post",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-rail-mcp-label"
           }
         ]
       }
@@ -1094,6 +1127,10 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook commit-cadence"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-settings-edit"
           }
         ]
       },
