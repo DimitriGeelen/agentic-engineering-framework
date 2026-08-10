@@ -1,40 +1,24 @@
-timestamp: 2026-08-09T21:00:02Z
+timestamp: 2026-08-10T18:00:01Z
 findings:
-  - id: D4
+  - id: D1
     level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
-    level: WARN
-    check: "D5: Task lifecycle — 19 anomaly(s): T-1542(104d-active) T-1624(101d-active) T-1820(87d-active) T-2170(68d-active) T-2268(61d-active) T-2410(55d-active) T-801(128d-active) T-802(128d-active) T-803(128d-active) T-2389(56d-active) (+9 more)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D13
-    level: WARN
-    check: "D13: Inception limbo — 8 task(s): A=6/B=2 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2715(B) T-2876(B)"
-    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
-  - id: D3
+    check: "D1: Episodic quality — 0% [TODO] (18/2557)"
+  - id: D2
+    level: FAIL
+    check: "D2: Human review queue — 171 task(s) waiting >30d: T-100131(35d) T-100188(35d) T-1701(75d) T-1702(70d) T-1707(75d) T-1718(75d) T-1773(88d) T-1774(88d) T-1775(88d) T-1776(71d) T-1792(89d) T-1794(89d) T-1795(89d) T-1796(89d) T-1797(89d) T-1799(89d) T-1801(89d) T-1802(89d) T-1803(89d) T-1805(89d) T-1806(89d) T-1807(89d) T-1808(89d) T-1810(89d) T-1811(88d) T-1818(88d) T-1827(80d) T-1834(87d) T-1842(80d) T-1843(80d) T-1844(80d) T-1891(84d) T-1909(82d) T-1910(82d) T-1911(82d) T-1928(83d) T-1929(83d) T-1930(83d) T-1933(83d) T-1934(81d) T-1935(81d) T-1936(81d) T-1939(81d) T-1947(82d) T-1951(80d) T-1954(82d) T-1955(82d) T-1957(82d) T-1960(81d) T-1961(81d) T-1963(81d) T-1964(81d) T-1965(81d) T-1968(81d) T-1969(81d) T-1970(81d) T-1971(81d) T-1976(80d) T-1977(81d) T-1978(80d) T-1980(80d) T-1982(81d) T-1984(80d) T-1985(80d) T-1988(79d) T-1989(76d) T-1990(75d) T-1991(79d) T-1992(76d) T-1993(76d) T-1994(75d) T-1999(79d) T-2002(75d) T-2003(76d) T-2004(76d) T-2006(76d) T-2008(76d) T-2009(76d) T-2010(76d) T-2011(76d) T-2012(76d) T-2013(76d) T-2015(76d) T-2016(76d) T-2017(76d) T-2018(76d) T-2019(76d) T-2020(76d) T-2021(76d) T-2022(76d) T-2023(76d) T-2024(76d) T-2025(76d) T-2026(76d) T-2027(76d) T-2028(76d) T-2029(76d) T-2031(76d) T-2033(76d) T-2034(76d) T-2038(76d) T-2039(76d) T-2040(76d) T-2041(76d) T-2043(76d) T-2044(76d) T-2045(76d) T-2046(76d) T-2047(76d) T-2049(76d) T-2051(75d) T-2054(75d) T-2062(74d) T-2063(74d) T-2064(74d) T-2065(74d) T-2066(73d) T-2075(73d) T-2077(73d) T-2080(73d) T-2082(73d) T-2084(73d) T-2085(73d) T-2086(73d) T-2087(73d) T-2088(73d) T-2089(73d) T-2102(72d) T-2103(72d) T-2106(72d) T-2110(72d) T-2111(72d) T-2112(72d) T-2114(72d) T-2116(71d) T-2117(71d) T-2119(65d) T-2136(71d) T-2160(70d) T-2167(69d) T-2174(69d) T-2175(69d) T-2176(65d) T-2179(69d) T-2183(58d) T-2185(67d) T-2192(68d) T-2222(65d) T-2240(63d) T-2265(62d) T-2274(62d) T-2278(62d) T-2281(62d) T-2332(60d) T-2335(20d) T-2336(60d) T-2342(59d) T-2349(35d) T-2369(58d) T-2373(58d) T-2376(58d) T-2403(56d) T-2406(56d) T-2417(55d) T-2428(53d) T-2430(53d) T-2463(35d) T-2474(47d) T-2479(35d) T-2525(30d) T-2529(30d) T-2530(30d) T-2555(21d) T-2558(21d) T-2561(21d) T-2563(21d) T-2565(21d) T-2578(20d) T-2586(20d) T-2589(20d) T-2596(19d) T-2618(17d) T-2623(14d) T-2624(14d)"
+    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
+  - id: D8
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=53 avg=77 ratio=0.7x)"
-  - id: D7
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - id: D10
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 54_commits_24h)"
-  - id: D6
+    check: "D10: Decision-without-dialogue — none detected"
+  - id: D11
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=14.3 earlier=16.6)"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
-  - id: D14
-    level: PASS
-    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
-  - id: D15
-    level: PASS
-    check: "D15: Inception limbo state — none (PASS no_limbo)"
+    check: "D11: Gap register staleness — all gaps fresh"
 
 summary:
-  pass: 8
-  warn: 2
-  fail: 0
-  total: 10
+  pass: 4
+  warn: 0
+  fail: 1
+  total: 5

@@ -6441,3 +6441,11 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-2905: close (partial-complete) — canonic
   caller: 'check-active-task focus-drift'
   target: 'T-002'
   command: 'cd /tmp/t2862-e2e-greenfield && FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-002: fill recommendation, tick ACs, add schema fields" && echo committed'
+- timestamp: '2026-08-10T19:00:26Z'
+  task: 'T-2908'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-012'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add -A .context .tasks VERSION 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover — T-2902 closed, rail identity split measured" 2>'

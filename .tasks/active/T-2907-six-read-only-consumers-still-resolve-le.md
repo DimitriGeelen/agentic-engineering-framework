@@ -1,8 +1,23 @@
 ---
 id: T-2907
-name: "Six read-only consumers still resolve learning ids ambiguously, and promote's application count conflates"
+name: "Six read-only consumers still resolve learning ids ambiguously, and promote's
+  application count conflates"
 description: >
-  T-2902 decision D1 chose leave-and-guard for the 24 duplicate L- ids and shipped the guard only for lib/promote.sh — the one consumer that mutates state. Six read-only consumers still pick or emit ambiguously: agents/context/lib/memory-recall.py (prints whichever row matched the text, so the id in recall output does not identify the learning), agents/context/consolidate.py (emits {keep,remove} instructions keyed on id, which an applier cannot resolve), agents/docgen/generate_article.py and generate_component.py (emit both rows when both match), lib/publish-learning-to-bus.sh (exports learning_id to the 832 rail, so the ambiguity leaves the project), agents/context/lib/status.sh (counts — but its live defect is T-2906, a different bug). They mislead rather than corrupt, which is why they were not blocking. ALSO carried from T-2902 and explicitly not fixed there: count_applications(lid, ...) in lib/promote.sh counts applications by id, so an ambiguous id reports both learnings' counts summed (L-007 shows 9). The disambiguated promote path therefore still records an inflated application count into practices.yaml. Fix that with the same --task disambiguation the resolution path now takes.
+  T-2902 decision D1 chose leave-and-guard for the 24 duplicate L- ids and shipped
+  the guard only for lib/promote.sh — the one consumer that mutates state. Six read-only
+  consumers still pick or emit ambiguously: agents/context/lib/memory-recall.py (prints
+  whichever row matched the text, so the id in recall output does not identify the
+  learning), agents/context/consolidate.py (emits {keep,remove} instructions keyed
+  on id, which an applier cannot resolve), agents/docgen/generate_article.py and generate_component.py
+  (emit both rows when both match), lib/publish-learning-to-bus.sh (exports learning_id
+  to the 832 rail, so the ambiguity leaves the project), agents/context/lib/status.sh
+  (counts — but its live defect is T-2906, a different bug). They mislead rather than
+  corrupt, which is why they were not blocking. ALSO carried from T-2902 and explicitly
+  not fixed there: count_applications(lid, ...) in lib/promote.sh counts applications
+  by id, so an ambiguous id reports both learnings' counts summed (L-007 shows 9).
+  The disambiguated promote path therefore still records an inflated application count
+  into practices.yaml. Fix that with the same --task disambiguation the resolution
+  path now takes.
 
 status: captured
 workflow_type: build
@@ -22,8 +37,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T18:47:20Z
-last_update: 2026-08-10T18:47:20Z
-date_finished: null
+last_update: '2026-08-10T19:00:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +49,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-10T19:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-10T19:00:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2907: Six read-only consumers still resolve learning ids ambiguously, and promote's application count conflates
