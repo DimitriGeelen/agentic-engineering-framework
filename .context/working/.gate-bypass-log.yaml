@@ -6449,3 +6449,33 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-2905: close (partial-complete) — canonic
   command: 'cd /opt/999-Agentic-Engineering-Framework
 git add -A .context .tasks VERSION 2>/dev/null
 FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover — T-2902 closed, rail identity split measured" 2>'
+- ts: "2026-08-10T20:11:43Z"
+  gate: rail-mcp-label
+  tier: 2
+  mechanism: allow-unlabeled-mcp token
+  detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- ts: "2026-08-10T20:14:42Z"
+  gate: rail-mcp-label
+  tier: 2
+  mechanism: allow-unlabeled-mcp token
+  detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- ts: "2026-08-10T20:15:10Z"
+  gate: rail-mcp-label
+  tier: 2
+  mechanism: allow-unlabeled-mcp token
+  detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- ts: "2026-08-10T20:18:54Z"
+  gate: rail-mcp-label
+  tier: 2
+  mechanism: allow-unlabeled-mcp token
+  detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- ts: "2026-08-10T20:21:42Z"
+  gate: rail-mcp-label
+  tier: 2
+  mechanism: allow-unlabeled-mcp token
+  detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- ts: "2026-08-10T20:22:11Z"
+  gate: rail-mcp-label
+  tier: 2
+  mechanism: allow-unlabeled-mcp token
+  detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"

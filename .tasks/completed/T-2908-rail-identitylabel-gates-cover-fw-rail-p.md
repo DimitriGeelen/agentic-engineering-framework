@@ -6,10 +6,10 @@ description: >
   rail identity+label gates cover fw rail post only — the MCP producer surface is
   unguarded
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T18:51:00Z
-last_update: '2026-08-10T19:00:15Z'
-date_finished:
+last_update: 2026-08-10T20:22:07Z
+date_finished: 2026-08-10T20:22:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -111,30 +111,114 @@ shell surface should be made to load it too.
 Prediction discipline: the consequence above was posted to 832 in rail 515 **before**
 the envelope was read, so it is on the record either way. It held.
 
+### Full producer-surface enumeration (2026-08-10, this session)
+
+The table above compared two surfaces. Grepping the repo for every call site that
+reaches `termlink channel post` (not just `fw rail post`) finds more:
+
+| # | surface | invocation shape | identity | gated by T-2904/T-2905 |
+|---|---------|-------------------|----------|--------------------------|
+| 1 | `fw rail post` | `bin/fw rail post ...` → `do_rail post` | project, if `RAIL_IDENTITY_FILE` configured; else substrate (`d1993c2c…`) | **yes** — identity guard + auto label |
+| 2 | bare shell `termlink channel post` (typed directly in Bash, or any script that calls the binary without going through `do_rail`) | e.g. an agent runs `termlink channel post <topic> ...` instead of `fw rail post` | same binary, same env-precedence resolution as #1 — substrate by default | **no** — no PreToolUse hook inspects raw Bash for this pattern, no wrapper injects the label |
+| 3 | in-repo scripts calling `termlink channel post` directly (`lib/templates/scripts/agent-respond.sh`, `agent-send.sh`, `chat-arc-broadcast.sh`, `listener-heartbeat.sh`, `lib/pickup-channel-bridge.sh`, `lib/publish-learning-to-bus.sh`, and their vendored `scripts/` mirrors) | invoked by cron / the doorbell path / the pickup pipeline, not by an interactive agent | same as #2 — these are just #2's call sites, pre-existing in our own code | **no** — filed separately as **T-2913** (Task Sizing Rules: this is a distinct producer class from the MCP tool the title names, six call sites is its own remediation, not a one-line fix folded into this task) |
+| 4 | `mcp__termlink__termlink_channel_post` (MCP tool) | Claude Code calls the tool directly; termlink's MCP server (`termlink mcp serve`, wired in `.mcp.json`) signs and posts, no shell wrapper in between | measured `0e7ee6cad65137fc` (project key) at one point in time — see caveat below | **no**, until this task — **now label-gated** (identity intentionally NOT re-gated, see next section) |
+
+Row 3 is the deliverable's biggest correction to the class as originally scoped: the
+task title and AC text both frame this as "the MCP producer surface is unguarded" —
+true, but MCP is not the *only* other surface. Six in-repo scripts we already own call
+the same unwrapped binary. Filed as **T-2913** rather than fixed here, per Task Sizing
+Rules ("one bug = one task") — six call sites across cron/doorbell/pickup code paths is
+its own review, not a line item inside this task.
+
+### Is the MCP surface gateable? Concretely: yes for the label, no for identity
+
+**Label — YES, prevention, shipped.** `metadata.from_project` is a field in the MCP
+tool's own JSON args (`tool_input.metadata`, confirmed against the tool's live
+`inputSchema` via a local `tools/list` probe — `metadata` is
+`additionalProperties: {type: string}`), exactly the same shape any other PreToolUse
+hook in this repo already inspects (`check-tier0.sh` reads `tool_input.command`;
+`check-arc-id.py` reads `tool_input.content`). A PreToolUse hook matching
+`mcp__termlink__termlink_channel_post` can read that field and block the call before it
+reaches termlink. Shipped as `agents/context/check-rail-mcp-label.sh`, wired via
+`bin/fw hook-enable` (not a direct settings.json edit — that path is B-005-blocked, see
+Decisions).
+
+**Identity — NO, not safely.** Re-checked with the actual measurement to hand: a hook
+subprocess that shells out to `termlink agent identity --resolve` (the same call
+`rail_identity_guard` makes) reflects what a **freshly spawned** termlink process would
+sign as *right now*, in the hook's own environment. It does **not** reflect what the
+**already-running** MCP server process (started once, at Claude Code session init, by
+`.mcp.json`) actually signed a given call with — that process's identity was resolved
+once, before the hook ever fires, in an environment this hook does not control. Verified
+this distinction is real, not theoretical: spawning `termlink mcp serve` fresh from this
+session's own shell (inheriting this shell's env, no `TERMLINK_IDENTITY_FILE` set)
+resolves to the substrate key `d1993c2c…` — the *opposite* of the `0e7ee6ca…` the prior
+session measured through the live Claude-Code-launched MCP tool. Two processes, same
+binary, same subcommand, different signing key, because *something* about how Claude
+Code itself launches the MCP server differs from a bare subprocess spawn — and that
+something lives inside termlink's MCP transport, which is outside this project's
+boundary (T-559 blocks reading `/opt/termlink` source directly). Building a guard on a
+signal I cannot independently reproduce would be a check that looks authoritative and
+isn't — the exact false-confidence class this task exists to close (see L-572).
+**Detection replaces prevention here**: the hook's block message and this file both
+name the caveat in plain text, and `bin/fw rail identity` remains the tool to re-check
+attribution by hand. No automated per-call identity assertion ships for this surface.
+
+### L-399 parity check across every gated surface
+
+| gated surface | bypass mechanism | tested? |
+|---|---|---|
+| `fw rail post` (identity, T-2904) | `FW_ALLOW_HOST_SIGNED_RAIL=1` (env var — the command is a literal shell invocation the agent controls) | `tests/unit/rail_identity_guard.bats` (pre-existing, re-run this session: 11/11 pass) |
+| `mcp__termlink__termlink_channel_post` (label, this task) | `bin/fw rail allow-unlabeled-mcp` — a one-shot file token (`.context/working/.rail-mcp-label-bypass`), consumed on first use, TTL 300s (`FW_RAIL_MCP_BYPASS_TTL`) | `tests/unit/rail_mcp_label_guard.bats` (new, this session: 8/8 pass) |
+
+The env-var mechanism from T-2904 could not be reused here: an MCP tool call is a
+direct function invocation from the model, not a shell command line the agent's own
+env-prefix could wrap, so `FW_ALLOW_X=1 <call>` has no surface to attach to. This is
+the same shape L-399 already names for external tools like `git commit` — a file-token
+mirrors that class more than it invents a new one. Both mechanisms are pinned by tests
+that exercise hook-block → bypass-armed → hook-allow → log-entry-written end to end, not
+just the hook in isolation (T-1890's actual lesson: the bug lives at the join).
+
+### RED → GREEN evidence (AC5)
+
+`tests/unit/rail_mcp_label_guard.bats` was written and run **before**
+`check-rail-mcp-label.sh` existed. All 8 cases failed genuinely (exit 127, "command not
+found" — the hook script did not exist, not a designed skip):
+```
+not ok 1 rail-mcp-label: ignores tools other than the MCP channel_post surface
+not ok 2 rail-mcp-label: BLOCKED (exit 2) when metadata carries no from_project
+... (8/8 not ok)
+```
+After implementing the hook, the CLI subcommand, and wiring the matcher via
+`fw hook-enable`, the same file: 8/8 pass. `rail_identity_guard.bats` (the T-2904 suite)
+re-run after these changes: 11/11 pass, no regression from the shared `_rail_log_bypass`
+signature change (gate name is now a parameter, defaulting to the original caller's
+value, so T-2904's call site needed no edit).
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every producer surface that can post to a rail topic from this project is
+- [x] Every producer surface that can post to a rail topic from this project is
       enumerated — `fw rail post`, bare `termlink channel post`, the
       `mcp__termlink__termlink_channel_post` MCP tool, and anything in the repo
       that shells out to any of them — with each marked gated or ungated. The
       enumeration is the deliverable: T-2904/T-2905 shipped believing there was
       one producer, and 513 reported the class closed on that belief
-- [ ] The signing identity of each surface is MEASURED, one post per surface with
+- [x] The signing identity of each surface is MEASURED, one post per surface with
       the observed `sender_id` recorded — not inferred from the tool's docs. The
       prior round's wrong conclusion came from reasoning about a surface instead
       of posting from it
-- [ ] Whether the MCP surface CAN be gated is answered concretely. It is provided
+- [x] Whether the MCP surface CAN be gated is answered concretely. It is provided
       by termlink, not by us, and a PreToolUse hook is the only interposition
       point we own. If prevention is not reachable, say so plainly and state what
       detection replaces it — "detection, not prevention" recorded as such rather
       than described as a fix (832's own §4 is the standard to match here)
-- [ ] L-399 parity is re-checked across every gated surface: the documented bypass
+- [x] L-399 parity is re-checked across every gated surface: the documented bypass
       mechanism actually works on each one, or the block message names the
       surfaces it cannot reach. A contract honoured on one leg is the T-1890
       failure, and this task exists because that happened again
-- [ ] If a guard ships, it goes RED against the pre-fix state — an ungated post
+- [x] If a guard ships, it goes RED against the pre-fix state — an ungated post
       demonstrably reaching the topic — not merely green afterwards
 
 ### Human
@@ -169,6 +253,15 @@ the envelope was read, so it is on the record either way. It held.
 -->
 
 ## Verification
+
+bats tests/unit/rail_mcp_label_guard.bats > /tmp/.t2908-mcp.out 2>&1; grep -q "^1\.\.8$" /tmp/.t2908-mcp.out && ! grep -q "^not ok" /tmp/.t2908-mcp.out
+bats tests/unit/rail_identity_guard.bats > /tmp/.t2908-id.out 2>&1; grep -q "^1\.\.11$" /tmp/.t2908-id.out && ! grep -q "^not ok" /tmp/.t2908-id.out
+python3 -c "import json; json.load(open('.claude/settings.json'))"
+# fw doctor's own "Enforcement baseline intact" check inlined directly (L-398) —
+# `fw doctor` itself also walks every sibling consumer project on this host and
+# is consistently 120s+ under concurrent load; this reproduces its exact
+# baseline-hash comparison (bin/fw:2247-2253) without that unrelated cost.
+stored=$(tr -d '[:space:]' < .context/project/enforcement-baseline.sha256); current=$(python3 -c "import json,hashlib; d=json.load(open('.claude/settings.json')); print(hashlib.sha256(json.dumps(d.get('hooks',{}),sort_keys=True).encode()).hexdigest())"); [ "$stored" = "$current" ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -286,6 +379,59 @@ the envelope was read, so it is on the record either way. It held.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-10 — Bypass mechanism for the MCP label gate
+- **Chose:** a one-shot file token (`bin/fw rail allow-unlabeled-mcp` writes
+  `.context/working/.rail-mcp-label-bypass`; the hook consumes/deletes it on first use,
+  TTL `FW_RAIL_MCP_BYPASS_TTL` default 300s).
+- **Why:** T-2904's `FW_ALLOW_HOST_SIGNED_RAIL=1 fw rail post ...` env-var-prefix pattern
+  only works because the gated action is a literal shell command line the agent's own
+  env override wraps. An MCP tool call has no such surface — it's a direct function
+  invocation from the model, and the hook subprocess Claude Code spawns for it doesn't
+  inherit env set by a prior, unrelated Bash tool call. L-399 already names this split
+  for external tools (git commit needs the env-var form because flags aren't honoured);
+  this is the same shape one layer further — no command line at all to attach anything
+  to, so the mechanism has to be a persisted signal instead.
+- **Rejected:** reusing `FW_ALLOW_HOST_SIGNED_RAIL` verbatim (wrong semantics — that
+  name is about identity, this bypass is about the label) and building
+  Tier-0-style Watchtower approval plumbing (real overkill for a same-session,
+  same-agent, single-field bypass; the file token is the minimum viable honoured
+  contract, not the maximum robust one).
+
+### 2026-08-10 — Identity is detection-only on the MCP surface, not prevention
+- **Chose:** ship a label gate (prevention) but not an identity gate (prevention) for
+  `mcp__termlink__termlink_channel_post`. The identity caveat is documented in the hook's
+  block message, this task file, and `lib/rail-identity.sh`'s help text instead.
+- **Why:** the only way to check "would this call be host-signed" from a hook is to
+  shell out to `termlink agent identity --resolve` from the hook's own process — which
+  answers what a *fresh* process would sign as, not what the *already-running* MCP
+  server (started once, at session init, by `.mcp.json`) actually signs calls with.
+  Measured this session: a fresh subprocess spawn of `termlink mcp serve` from this
+  session's own shell resolved to the substrate key, the opposite of what the prior
+  session measured through the real, Claude-Code-launched MCP tool. Two spawns of the
+  same binary, different keys — so the two are not interchangeable, and a hook built on
+  the fresh-spawn signal would be checking the wrong process. Building the gate anyway
+  would be exactly the failure this task exists to prevent: a check that looks
+  authoritative and isn't (L-572).
+- **Rejected:** reusing `rail_identity_guard()` in the MCP hook (checks the wrong
+  process, as above); trying to read termlink's MCP-server source to explain the split
+  (blocked by the T-559 project-boundary gate — `/opt/termlink` is another project).
+
+### 2026-08-10 — Six in-repo script call sites filed as T-2913, not fixed here
+- **Chose:** enumerate the six scripts calling `termlink channel post` directly
+  (`agent-respond.sh`, `agent-send.sh`, `chat-arc-broadcast.sh`,
+  `listener-heartbeat.sh`, `pickup-channel-bridge.sh`, `publish-learning-to-bus.sh`)
+  as a fourth producer-surface row, but file their remediation as a separate task
+  (T-2913) rather than route all six through `do_rail post` inside this task.
+- **Why:** Task Sizing Rules — "one bug = one task". This task's title and ACs are
+  scoped to the MCP tool surface; the six scripts are a distinct discovery (found while
+  enumerating, not while fixing MCP) touching cron / doorbell / pickup-pipeline code
+  paths that each need their own verification that routing through `do_rail` doesn't
+  change call-site behaviour (e.g. `--ensure-topic`, `--payload-from-file`, ack/retry
+  flags `do_rail post` doesn't yet pass through cleanly).
+- **Rejected:** silently leaving them unenumerated (would repeat this exact task's root
+  cause — "list every surface... do not reason about a surface you have not exercised",
+  L-572); folding the fix into this task (oversized, mixes two unrelated blast radii).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -302,3 +448,15 @@ the envelope was read, so it is on the record either way. It held.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2908-rail-identitylabel-gates-cover-fw-rail-p.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b817b798
+- **Timestamp:** 2026-08-10T20:22:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-10T20:22:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

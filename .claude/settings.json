@@ -136,6 +136,15 @@
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook block-task-tools"
           }
         ]
+      },
+      {
+        "matcher": "mcp__termlink__termlink_channel_post",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-rail-mcp-label"
+          }
+        ]
       }
     ],
     "PostToolUse": [

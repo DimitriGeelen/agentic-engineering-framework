@@ -2816,3 +2816,24 @@ decisions:
     date: 2026-08-09
     task: T-2895
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-405
+    decision: "a one-shot file token (`bin/fw rail allow-unlabeled-mcp` writes"
+    scope: project
+    date: 2026-08-10
+    task: T-2908
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-406
+    decision: "ship a label gate (prevention) but not an identity gate (prevention) for"
+    scope: project
+    date: 2026-08-10
+    task: T-2908
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-407
+    decision: "enumerate the six scripts calling `termlink channel post` directly"
+    scope: project
+    date: 2026-08-10
+    task: T-2908
+    rationale: "Auto-captured from task file on completion"
