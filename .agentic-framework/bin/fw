@@ -955,6 +955,7 @@ show_help() {
     echo -e "  ${GREEN}worktree${NC} <cmd>       Isolated worktrees (status, create, gc, remove)"
     echo -e "  ${GREEN}integrate${NC} <cmd>      Land a worktree branch onto master (check, classify, run)"
     echo -e "  ${GREEN}sync${NC}                 Reconcile the session branch with origin/master (rebase + push)"
+    echo -e "  ${GREEN}go-live${NC}              Safe reconcile with origin/master (refuses a bare merge on a fork)"
     echo -e "  ${GREEN}mirror${NC} <cmd>         Mirror cascade auto-recovery (sync, status)"
     echo -e "  ${GREEN}release${NC} <cmd>        Tag + push + GitHub Release (status, major, minor, patch)"
     echo ""
