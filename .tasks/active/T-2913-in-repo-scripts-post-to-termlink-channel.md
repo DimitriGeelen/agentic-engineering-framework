@@ -1,8 +1,18 @@
 ---
 id: T-2913
-name: "in-repo scripts post to termlink channel post directly — bypass fw rail identity+label gates"
+name: "in-repo scripts post to termlink channel post directly — bypass fw rail identity+label
+  gates"
 description: >
-  T-2908 discovered 6 in-repo scripts (lib/templates/scripts/{agent-respond,agent-send,chat-arc-broadcast,listener-heartbeat}.sh, lib/pickup-channel-bridge.sh, lib/publish-learning-to-bus.sh — plus their vendored scripts/ mirrors) call "termlink channel post" directly instead of "fw rail post", so none of them get the T-2904 identity guard or the T-2905 from_project label attach. Same producer identity behaviour as bare shell (host-signed unless RAIL_IDENTITY_FILE is configured). Route them through do_rail post (lib/rail-identity.sh) or equivalently source the guard+label logic, then verify each call site still functions (agent-respond/agent-send are the doorbell path, chat-arc-broadcast/listener-heartbeat are cron-invoked, pickup-channel-bridge/publish-learning-to-bus are pickup-pipeline). One bug, one task per Task Sizing Rules — do not fold into T-2908.
+  T-2908 discovered 6 in-repo scripts (lib/templates/scripts/{agent-respond,agent-send,chat-arc-broadcast,listener-heartbeat}.sh,
+  lib/pickup-channel-bridge.sh, lib/publish-learning-to-bus.sh — plus their vendored
+  scripts/ mirrors) call "termlink channel post" directly instead of "fw rail post",
+  so none of them get the T-2904 identity guard or the T-2905 from_project label attach.
+  Same producer identity behaviour as bare shell (host-signed unless RAIL_IDENTITY_FILE
+  is configured). Route them through do_rail post (lib/rail-identity.sh) or equivalently
+  source the guard+label logic, then verify each call site still functions (agent-respond/agent-send
+  are the doorbell path, chat-arc-broadcast/listener-heartbeat are cron-invoked, pickup-channel-bridge/publish-learning-to-bus
+  are pickup-pipeline). One bug, one task per Task Sizing Rules — do not fold into
+  T-2908.
 
 status: captured
 workflow_type: build
@@ -22,8 +32,8 @@ related_tasks: [T-2908, T-2904, T-2905]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T20:16:11Z
-last_update: 2026-08-10T20:16:11Z
-date_finished: null
+last_update: '2026-08-10T20:30:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +44,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-10T20:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-10T20:30:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2913: in-repo scripts post to termlink channel post directly — bypass fw rail identity+label gates

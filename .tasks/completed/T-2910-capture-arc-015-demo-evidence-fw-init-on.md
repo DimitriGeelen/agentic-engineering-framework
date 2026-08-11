@@ -4,12 +4,12 @@ name: "Capture arc-015 demo evidence: fw init on five real ecosystems, wire-leve
 description: >
   Capture arc-015 demo evidence: fw init on five real ecosystems, wire-level
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/demo/arc015_capture.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T19:55:45Z
-last_update: '2026-08-10T20:00:15Z'
-date_finished:
+last_update: 2026-08-10T20:31:51Z
+date_finished: 2026-08-10T20:31:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -160,7 +160,7 @@ grep -q "existing project mode" docs/reports/arc-015-demo-evidence.md
 # all five ecosystems the headline_mechanic names are present
 for e in dotnet ruby php make gradle; do grep -q "\`$e\`" docs/reports/arc-015-demo-evidence.md || exit 1; done
 # the artefact names the commit it was captured at (reproducibility AC)
-grep -qE 'Framework commit \| \`[0-9a-f]{7,}\`' docs/reports/arc-015-demo-evidence.md
+grep -qE 'Framework commit \| `[0-9a-f]{7,}`' docs/reports/arc-015-demo-evidence.md
 # the guard suite is reported and green
 grep -q "exit: 0" docs/reports/arc-015-demo-evidence.md
 
@@ -296,3 +296,20 @@ grep -q "exit: 0" docs/reports/arc-015-demo-evidence.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2910-capture-arc-015-demo-evidence-fw-init-on.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c007fb2
+- **Timestamp:** 2026-08-10T20:31:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `tests/unit/init_project_shape_detection.bats` is run and its result reported in
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/init_project_shape_detection.bats in: `tests/unit/init_project_shape_detection.bats` is run and its result reported in`
+
+### 2026-08-10T20:31:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

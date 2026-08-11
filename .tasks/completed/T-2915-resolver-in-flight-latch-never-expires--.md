@@ -5,12 +5,12 @@ name: "resolver in-flight latch never expires — 9 tasks locked out of the loop
 description: >
   resolver in-flight latch never expires — 9 tasks locked out of the loop since 2026-07-05
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/resolver.py, tests/unit/t2915_resolver_inflight_expiry.bats, tests/unit/test_resolver.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T11:08:56Z
-last_update: '2026-08-11T11:15:13Z'
-date_finished:
+last_update: 2026-08-11T13:19:50Z
+date_finished: 2026-08-11T13:19:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -165,7 +165,9 @@ out=$(bats tests/unit/t2915_resolver_inflight_expiry.bats 2>&1); echo "$out" | g
 python3 -m pytest tests/unit/test_resolver.py -q > /tmp/.t2915-pytest 2>&1 && grep -q passed /tmp/.t2915-pytest
 bin/fw resolver latched --json > /tmp/.t2915-latched 2>&1 && python3 -c "import json;d=json.load(open('/tmp/.t2915-latched'));assert 'latched' in d and 'max_age_min' in d"
 bin/fw resolver loop --json --max 1 > /tmp/.t2915-loop 2>&1 && python3 -c "import json;d=json.load(open('/tmp/.t2915-loop'));assert 'in_flight_count' in d, 'AC3 field missing'"
-out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Autonomous Dispatch"
+# File-redirect, not capture-and-pipe: doctor's output is far past the 65536-byte
+# pipe buffer, so `echo "$out" | grep -q` exits 141 (SIGPIPE) under pipefail — L-387/T-2743.
+bin/fw doctor > /tmp/.t2915-doctor 2>&1; grep -q "Autonomous Dispatch" /tmp/.t2915-doctor
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -238,7 +240,13 @@ out=$(python3 -m pytest tests/unit/test_resolver.py -k inflight -q 2>&1); echo "
 out=$(python3 -m pytest tests/unit/test_resolver.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
 out=$(bats tests/unit/t2915_resolver_inflight_expiry.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
 out=$(bats tests/unit/t2914_resolver_stall_guard.bats 2>&1); echo "$out" | grep -q '^ok 10 ' && ! echo "$out" | grep -q '^not ok'
-python3 lib/resolver.py pick --json --stall-after 0 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); nine=['T-2171','T-1820','T-2389','T-2395','T-100196','T-1687','T-1719','T-2448','T-2385']; eligible=set(d.get('eligible') or []); excl=dict(d.get('excluded') or []); missing=[(t, excl.get(t, '???')) for t in nine if t not in eligible and excl.get(t) == 'in-flight dispatch']; assert not missing, missing"
+# AC2. Asserts the INVARIANT, not a snapshot: no task may be excluded as
+# "in-flight dispatch" on the strength of a dispatch that has already aged out.
+# The original line here asserted none of the nine was in-flight at all — true
+# only until the fix took effect, then permanently red: the loop resumed, picked
+# the un-latched backlog, and T-1820 went legitimately in-flight at 12:27:58Z.
+# A verification that passes only while the fix has no effect is worse than none.
+python3 lib/resolver.py pick --json --stall-after 0 2>/dev/null > /tmp/.t2915-pick && bin/fw resolver latched --json > /tmp/.t2915-stale 2>&1 && python3 -c "import json; pick=json.load(open('/tmp/.t2915-pick')); stale=set(json.load(open('/tmp/.t2915-stale'))['latched']); inflight={t for t,r in (pick.get('excluded') or {}).items() if r=='in-flight dispatch'}; overlap=sorted(inflight & stale); assert not overlap, f'excluded as in-flight despite having aged out: {overlap}'"
 python3 -c "import yaml; yaml.safe_load(open('.context/concerns.yaml'))"
 
 ## RCA
@@ -404,3 +412,15 @@ exact same shape, silently broken. Registered as OBS-185 (resolved, same commit)
 - **Output:** `lib/resolver.py`, `bin/fw` (Autonomous Dispatch doctor section),
   `tests/unit/test_resolver.py`, `tests/unit/t2915_resolver_inflight_expiry.bats`,
   `.context/concerns.yaml` (OBS-185)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b697c001
+- **Timestamp:** 2026-08-11T13:23:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-11T13:19:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

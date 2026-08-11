@@ -2837,3 +2837,17 @@ decisions:
     date: 2026-08-10
     task: T-2908
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-408
+    decision: "adopt the implementation written by dispatch worker `593a2bcc` and commit it,"
+    scope: project
+    date: 2026-08-11
+    task: T-2915
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-409
+    decision: "`FW_RESOLVER_INFLIGHT_MAX_AGE_MIN` defaults to 240 (4 hours), env-only"
+    scope: project
+    date: 2026-08-11
+    task: T-2915
+    rationale: "Auto-captured from task file on completion"

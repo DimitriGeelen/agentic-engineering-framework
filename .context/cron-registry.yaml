@@ -232,8 +232,8 @@ jobs:
   - id: resolver-loop-autonomous
     name: "Autonomous dispatch loop (PAUSED — operator enables)"
     schedule: "11,41 * * * *"
-    command: "flock -n /var/lock/agentic-cron-resolver-loop.lock -c 'fw resolver loop --dispatch --max 1 --cooldown-min 30'"
+    command: "FW_DISPATCH_ORIGIN=cron:resolver-loop-autonomous flock -n /var/lock/agentic-cron-resolver-loop.lock -c 'fw resolver loop --dispatch --max 1 --stall-after 5'"
     source_file: agentic-orchestrator.crontab
     origin_task: T-2491
     status: paused
-    description: "T-2491 — bounded autonomous dispatch. Each tick picks at most ONE eligible task (agent-owned, scoped, non-inception, not in-flight, not focused, not in cooldown) and fires it through resolve+spawn. Registered PAUSED by design: wiring is agent initiative, turning unattended dispatch live is the operator's explicit act (`fw cron resume resolver-loop-autonomous`). --cooldown-min 30 prevents re-dispatching a non-advancing task every tick; --max 1 caps per-tick fan-out so dispatches.jsonl in-flight exclusion naturally rate-limits."
+    description: "T-2491 — bounded autonomous dispatch. Each tick picks at most ONE eligible task (agent-owned, scoped, non-inception, not in-flight, not focused, not stalled) and fires it through resolve+spawn. Registered PAUSED by design: wiring is agent initiative, turning unattended dispatch live is the operator's explicit act (`fw cron resume resolver-loop-autonomous`). --max 1 caps per-tick fan-out so dispatches.jsonl in-flight exclusion naturally rate-limits. T-2914: --cooldown-min 30 (equal to this entry's own alternate-30-min cadence) was removed as a no-op guard and replaced with --stall-after 5, the actual non-convergence bound (excludes a task once 5 consecutive dispatches show no status change / AC tick / landed commit); FW_DISPATCH_ORIGIN tags every row this entry fires so provenance is never null (mirrors the systemd unit's Environment= line in deploy/resolver-loop.service, the currently-live path — this cron entry is the documented alternative for hosts without systemd)."

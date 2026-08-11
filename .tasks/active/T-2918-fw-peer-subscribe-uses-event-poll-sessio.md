@@ -1,8 +1,28 @@
 ---
 id: T-2918
-name: "fw peer subscribe uses event poll <session> which never observes hub-aggregator events"
+name: "fw peer subscribe uses event poll <session> which never observes hub-aggregator
+  events"
 description: >
-  T-1820's live joint smoke (2026-08-11 rerun) confirmed a framework-side defect distinct from the TermLink-side T-2363 fix: lib/peer.py::poll_once calls 'termlink event poll <session> --topic inbox.queued' but inbox.queued (and its dm-rail sibling dm.queued) are injected into the hub-level aggregator under a synthetic session_id='hub' (crates/termlink-hub router::aggregator()/EventAggregator, T-1645). Per-session 'event poll' structurally cannot see hub-aggregator-injected events -- confirmed by polling both the addressee session and an unrelated session immediately after a proven emit, both returned 0 events, while 'termlink event watch --hub --topic inbox.queued' observed the same emit instantly. This means fw peer subscribe has never been able to observe a live inbox.queued event since T-1818 shipped, independent of any TermLink-side emit bug. Separately (also confirmed live): the DM rail (T-2323) emits under topic 'dm.queued', not 'inbox.queued', so .context/peer-consult-prompts.yaml's dm:design-*/dm:escalate-*/dm:triage- channel-prefix routing can never be reached via inbox.queued even if the poll-primitive defect were fixed -- the subscriber would need to also poll dm.queued, or TermLink's dm rail would need to align its topic name. Scope: (a) change lib/peer.py to consume the hub aggregator (event watch --hub, or an equivalent cursor-capable primitive if one exists) instead of per-session poll; (b) decide whether to also subscribe dm.queued or treat inbox: and dm: as two distinct trigger rails; (c) rerun T-1820's live joint smoke against the fix to close the headline mechanic. See docs/reports/T-1820-joint-smoke-demo.md 2026-08-11 section for full reproduction trail.
+  T-1820's live joint smoke (2026-08-11 rerun) confirmed a framework-side defect distinct
+  from the TermLink-side T-2363 fix: lib/peer.py::poll_once calls 'termlink event
+  poll <session> --topic inbox.queued' but inbox.queued (and its dm-rail sibling dm.queued)
+  are injected into the hub-level aggregator under a synthetic session_id='hub' (crates/termlink-hub
+  router::aggregator()/EventAggregator, T-1645). Per-session 'event poll' structurally
+  cannot see hub-aggregator-injected events -- confirmed by polling both the addressee
+  session and an unrelated session immediately after a proven emit, both returned
+  0 events, while 'termlink event watch --hub --topic inbox.queued' observed the same
+  emit instantly. This means fw peer subscribe has never been able to observe a live
+  inbox.queued event since T-1818 shipped, independent of any TermLink-side emit bug.
+  Separately (also confirmed live): the DM rail (T-2323) emits under topic 'dm.queued',
+  not 'inbox.queued', so .context/peer-consult-prompts.yaml's dm:design-*/dm:escalate-*/dm:triage-
+  channel-prefix routing can never be reached via inbox.queued even if the poll-primitive
+  defect were fixed -- the subscriber would need to also poll dm.queued, or TermLink's
+  dm rail would need to align its topic name. Scope: (a) change lib/peer.py to consume
+  the hub aggregator (event watch --hub, or an equivalent cursor-capable primitive
+  if one exists) instead of per-session poll; (b) decide whether to also subscribe
+  dm.queued or treat inbox: and dm: as two distinct trigger rails; (c) rerun T-1820's
+  live joint smoke against the fix to close the headline mechanic. See docs/reports/T-1820-joint-smoke-demo.md
+  2026-08-11 section for full reproduction trail.
 
 status: captured
 workflow_type: build
@@ -22,8 +42,8 @@ related_tasks: [T-1820, T-1821, T-1818, T-1819, T-2409, T-2363]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T12:40:13Z
-last_update: 2026-08-11T12:40:13Z
-date_finished: null
+last_update: '2026-08-11T12:45:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-11T12:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-11T12:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2918: fw peer subscribe uses event poll <session> which never observes hub-aggregator events

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2915: resolver in-flight latch never expires — 9 tasks locked out of the loop since 2026-07-05
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T13:23:55Z
+# ============================================================================
+
+task_id: T-2915
+task_name: "resolver in-flight latch never expires — 9 tasks locked out of the loop since 2026-07-05"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T11:08:56Z
+completed: 2026-08-11T13:19:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-11T15:06:11+02:00
+last_commit: 2026-08-11T15:06:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bound the in-flight latch — 254 tasks were locked out, not nine
+
+# Key outcomes
+outcomes:
+  - '`_inflight_task_ids()` treats a dispatch older than a bounded age (config, default'
+  - 'The nine tasks above become re-eligible (or are excluded for a DIFFERENT, stated'
+  - '`fw resolver loop --json` distinguishes "no eligible tasks because everything is done"'
+  - 'Unit test pins the expiry: a synthetic dispatch row beyond the threshold is not'
+  - 'A stale-latch count is surfaced where an operator sees it without asking'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-11 — adopting an autonomous worker''s uncommitted implementation'
+    chose: 'adopt the implementation written by dispatch worker `593a2bcc` and commit it,'
+    rationale: 'it satisfies all five ACs on their merits — age bound with a documented default and'
+    alternatives_rejected: ['committing it silently as my own. The authorship is recorded here and in the']
+  - decision: '2026-08-11 — in-flight age bound default (240min)'
+    chose: '`FW_RESOLVER_INFLIGHT_MAX_AGE_MIN` defaults to 240 (4 hours), env-only'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/VERSION'
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - 'lib/resolver.py'
+  - '.tasks/active/T-2915-resolver-in-flight-latch-never-expires--.md'
+  - 'tests/unit/t2915_resolver_inflight_expiry.bats'
+  - 'tests/unit/test_resolver.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T15:06:11'
+    action: 'T-2915: bound the in-flight latch — 254 tasks were locked out, not nine'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 130 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 130
+  commits: 1
+  files_changed: 9
+  lines_added: 684
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2915-resolver-in-flight-latch-never-expires--.md
+generated_by: context-agent-hybrid

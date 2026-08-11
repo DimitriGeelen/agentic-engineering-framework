@@ -78,4 +78,4 @@ PATH=/usr/local/bin:/usr/bin:/bin
 19 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-inception-retrofit-rec.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" inception retrofit-recommendations --apply' 2>&1 | logger -t agentic-cron
 
 # Autonomous dispatch loop (PAUSED — operator enables)
-# PAUSED: 11,41 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-resolver-loop.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" resolver loop --dispatch --max 1 --cooldown-min 30' 2>&1 | logger -t agentic-cron
+# PAUSED: 11,41 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" FW_DISPATCH_ORIGIN=cron:resolver-loop-autonomous flock -n /var/lock/agentic-cron-resolver-loop.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" resolver loop --dispatch --max 1 --stall-after 5' 2>&1 | logger -t agentic-cron

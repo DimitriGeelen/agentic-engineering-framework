@@ -6479,3 +6479,9 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover — T-2902 closed, r
   tier: 2
   mechanism: allow-unlabeled-mcp token
   detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- timestamp: '2026-08-10T20:24:31Z'
+  task: 'T-2911'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2910'
+  command: 'bin/fw fabric register tests/demo/arc015_capture.sh 2>&1 | tail -2; git add tests/demo/ docs/reports/arc-015-demo-evidence.md .tasks/active/T-2910-*.md .fabric/ .context/inbox.yaml .context/working/fo'

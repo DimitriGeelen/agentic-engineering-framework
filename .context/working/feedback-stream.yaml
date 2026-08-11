@@ -31470,3 +31470,317 @@ scan_id: R-f3c233e9
 task_id: T-2902
 payload:
   task_file: .tasks/active/T-2902-learningsyaml-holds-24-duplicate-l-nnn-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T20:10:01Z'
+scan_id: R-fb46d343
+task_id: T-2909
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T20:10:01Z'
+scan_id: R-fb46d343
+task_id: T-2909
+payload:
+  task_file: .tasks/active/T-2909-enforcement-baseline-cannot-name-what-ch.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-10T20:10:01Z'
+scan_id: RC-3cf5e9c9
+task_id: T-2909
+payload:
+  overall: CONFIRMED
+  claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-08-10T20:21:26Z'
+scan_id: R-caea3d21
+task_id: T-2908
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T20:21:26Z'
+scan_id: R-caea3d21
+task_id: T-2908
+payload:
+  task_file: .tasks/active/T-2908-rail-identitylabel-gates-cover-fw-rail-p.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T20:21:49Z'
+scan_id: R-c720d777
+task_id: T-2908
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T20:21:49Z'
+scan_id: R-c720d777
+task_id: T-2908
+payload:
+  task_file: .tasks/active/T-2908-rail-identitylabel-gates-cover-fw-rail-p.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T20:22:15Z'
+scan_id: R-b817b798
+task_id: T-2908
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T20:22:15Z'
+scan_id: R-b817b798
+task_id: T-2908
+payload:
+  task_file: .tasks/active/T-2908-rail-identitylabel-gates-cover-fw-rail-p.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T20:31:53Z'
+scan_id: R-3c007fb2
+task_id: T-2910
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T20:31:53Z'
+scan_id: R-3c007fb2
+task_id: T-2910
+payload:
+  task_file: .tasks/active/T-2910-capture-arc-015-demo-evidence-fw-init-on.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T21:22:34Z'
+scan_id: R-b3248c79
+task_id: T-2911
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T21:22:34Z'
+scan_id: R-b3248c79
+task_id: T-2911
+payload:
+  task_file: .tasks/active/T-2911-every-consumer-is-missing-7-enforcement-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T22:54:05Z'
+scan_id: R-50370aae
+task_id: T-2912
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T22:54:05Z'
+scan_id: R-50370aae
+task_id: T-2912
+payload:
+  task_file: .tasks/active/T-2912-fw-upgrade-names-7-missing-hooks-prints-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T23:37:12Z'
+scan_id: R-bf061950
+task_id: T-2912
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T23:37:12Z'
+scan_id: R-bf061950
+task_id: T-2912
+payload:
+  task_file: .tasks/active/T-2912-fw-upgrade-names-7-missing-hooks-prints-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-10T23:37:52Z'
+scan_id: R-1f4c2681
+task_id: T-2912
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T23:37:52Z'
+scan_id: R-1f4c2681
+task_id: T-2912
+payload:
+  task_file: .tasks/active/T-2912-fw-upgrade-names-7-missing-hooks-prints-.md
+---
+kind: override_applied
+timestamp: '2026-08-10T23:37:52Z'
+scan_id: R-1f4c2681
+task_id: T-2912
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-08-10T23:39:34Z'
+scan_id: R-158b08bb
+task_id: T-2912
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T23:39:34Z'
+scan_id: R-158b08bb
+task_id: T-2912
+payload:
+  task_file: .tasks/active/T-2912-fw-upgrade-names-7-missing-hooks-prints-.md
+---
+kind: override_applied
+timestamp: '2026-08-10T23:39:34Z'
+scan_id: R-158b08bb
+task_id: T-2912
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-08-10T23:47:07Z'
+scan_id: R-12ac82a5
+task_id: T-2912
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T23:47:07Z'
+scan_id: R-12ac82a5
+task_id: T-2912
+payload:
+  task_file: .tasks/active/T-2912-fw-upgrade-names-7-missing-hooks-prints-.md
+---
+kind: override_applied
+timestamp: '2026-08-10T23:47:07Z'
+scan_id: R-12ac82a5
+task_id: T-2912
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-08-10T23:47:09Z'
+scan_id: R-00b9d0f2
+task_id: T-2912
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-10T23:47:09Z'
+scan_id: R-00b9d0f2
+task_id: T-2912
+payload:
+  task_file: .tasks/active/T-2912-fw-upgrade-names-7-missing-hooks-prints-.md
+---
+kind: override_applied
+timestamp: '2026-08-10T23:47:09Z'
+scan_id: R-00b9d0f2
+task_id: T-2912
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-08-11T00:03:18Z'
+scan_id: R-645a6361
+task_id: T-2914
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T00:03:18Z'
+scan_id: R-645a6361
+task_id: T-2914
+payload:
+  task_file: .tasks/active/T-2914-autonomous-resolver-loop-re-dispatches-n.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T12:43:25Z'
+scan_id: R-36811a68
+task_id: T-1820
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T12:43:25Z'
+scan_id: R-36811a68
+task_id: T-1820
+payload:
+  task_file: .tasks/active/T-1820-joint-smoke-test-slice--v2-peer-consult-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T13:23:42Z'
+scan_id: R-b697c001
+task_id: T-2915
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T13:23:42Z'
+scan_id: R-b697c001
+task_id: T-2915
+payload:
+  task_file: .tasks/active/T-2915-resolver-in-flight-latch-never-expires--.md

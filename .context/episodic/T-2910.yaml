@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2910: Capture arc-015 demo evidence: fw init on five real ecosystems, wire-level
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-10T20:32:05Z
+# ============================================================================
+
+task_id: T-2910
+task_name: "Capture arc-015 demo evidence: fw init on five real ecosystems, wire-level"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-10T19:55:45Z
+completed: 2026-08-10T20:31:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-10T22:24:31+02:00
+last_commit: 2026-08-10T22:24:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-015 demo evidence captured — headline mechanic fires on all five ecosystems
+
+# Key outcomes
+outcomes:
+  - 'A committed capture script seeds a fresh directory per ecosystem (never reusing'
+  - 'The captured artefact records, per ecosystem, all three clauses separately: the'
+  - 'The artefact shows **zero** `owner: human` tasks in any seeded set — the specific'
+  - 'The capture is reproducible: re-running the script regenerates the artefact, and'
+  - '`tests/unit/init_project_shape_detection.bats` is run and its result reported in'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - 'docs/reports/arc-015-demo-evidence.md'
+  - '.fabric/components/agents-context-check-rail-mcp-label.yaml'
+  - '.fabric/components/tests-demo-arc015_capture.yaml'
+  - '.tasks/active/T-2910-capture-arc-015-demo-evidence-fw-init-on.md'
+  - 'tests/demo/arc015_capture.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-10T22:24:31'
+    action: 'T-2910: arc-015 demo evidence captured — headline mechanic fires on all five ecosystems'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36
+  commits: 1
+  files_changed: 6
+  lines_added: 596
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2910-capture-arc-015-demo-evidence-fw-init-on.md
+generated_by: context-agent-hybrid
