@@ -200,17 +200,45 @@ print('%d %d' % (listed, c.count('status: pending')))
     }
 }
 
-@test "t2927: the enumerating guard BITES — it flags the pre-fix bytes from git" {
+@test "t2927: the enumerating guard BITES — it flags reconstructed defective bytes" {
     # A guard that has never gone red is indistinguishable from a guard that
-    # cannot go red. Runs the same predicate over the last committed version of
-    # handover.sh, where both defective sites are still present, and requires it
-    # to find exactly those two — no more (the audit.sh comment must stay
-    # unflagged) and no fewer.
-    cd "$FRAMEWORK_ROOT"
-    local scratch="$BATS_TEST_TMPDIR/prefix/agents/handover"
+    # cannot go red.
+    #
+    # The first version of this leg read the defective bytes from `git show
+    # HEAD:agents/handover/handover.sh`. That was green when written and went
+    # red within the hour — the moment the fix was committed, HEAD stopped
+    # being "the version before the fix". The leg named a ref and meant a
+    # referent, which is the same mention-vs-instance shape this whole task is
+    # about, this time in the test that guards it.
+    #
+    # So the defective bytes are reconstructed here instead: two blocks that
+    # read an inbox and split on the 2-space indent, plus a comment carrying the
+    # same pattern that must NOT be counted. Independent of repo history, and it
+    # states its own expected count.
+    local scratch="$BATS_TEST_TMPDIR/prefix"
     mkdir -p "$scratch"
-    git show HEAD:agents/handover/handover.sh > "$scratch/handover.sh" 2>/dev/null || \
-        skip "pre-fix bytes not retrievable from git — guard NOT proven to bite"
+    cat > "$scratch/handover.sh" <<'SH'
+#!/bin/bash
+# Reconstructed defective sites for the guard's anti-vacuity leg.
+URGENT_OBS=$(python3 -c "
+import re
+with open('$INBOX_FILE') as f:
+    content = f.read()
+blocks = re.split(r'\n  - ', content)
+print(sum(1 for b in blocks[1:] if 'status: pending' in b))
+")
+# A comment mentioning the defect: blocks = re.split(r'\n  - ', content)
+# ...over the observation inbox. Must NOT be counted as an instance.
+echo "## Observation Inbox"
+python3 << PYEOF
+import re
+with open("$INBOX_FILE") as f:
+    content = f.read()
+blocks = re.split(r'\n  - ', content)
+for b in blocks[1:]:
+    print(b)
+PYEOF
+SH
 
     local f="$scratch/handover.sh" found=0 hits ln num ctx
     hits=$(grep -nE "re\.split\(r'\\\\n  - '" "$f" | grep -vE '^[0-9]+:[[:space:]]*#' || true)
