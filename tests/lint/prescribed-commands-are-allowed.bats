@@ -13,27 +13,44 @@
 # arrive through the usual channel, so it needs a standing check rather than a
 # reliance on someone getting through to report it.
 #
-# The test reads budget-gate's ACTUAL regex rather than restating it. A copy would
-# drift from the thing it guards, and would then agree with itself while the gate
-# disagreed — the same false green this directory exists to catch.
+# The test exercises budget-gate's ACTUAL decision function rather than restating
+# it. A copy would drift from the thing it guards, and would then agree with
+# itself while the gate disagreed — the same false green this directory exists to
+# catch.
+#
+# T-2919 moved that decision out of an inline regex and into lib/cmd_classify.py
+# (the regex answered "does this string mention wrap-up?" when the question is
+# "is this command wrap-up?"; 5/9 of a composition probe were misclassified).
+# This test followed it, per its own instruction below: update, do not delete.
+# It is now stronger than it was — it calls the function the gate calls, instead
+# of re-compiling a pattern lifted out of the gate's source.
 
 GATE="$BATS_TEST_DIRNAME/../../agents/context/budget-gate.sh"
 BLOCKER="$BATS_TEST_DIRNAME/../../agents/context/check-active-task.sh"
+CLASSIFY="$BATS_TEST_DIRNAME/../../lib/cmd_classify.py"
 
 @test "every fw command prescribed in a block message is allowed by budget-gate" {
-    run python3 - "$GATE" "$BLOCKER" <<'PY'
-import re, sys
+    run python3 - "$CLASSIFY" "$BLOCKER" "$GATE" <<'PY'
+import importlib.util, re, sys
 
-gate_src = open(sys.argv[1]).read()
-blocker_src = open(sys.argv[2]).read()
-
-# The live allowlist, lifted verbatim from the gate.
-m = re.search(r"is_allowed_cmd = bool\(re\.search\(r'(.+?)', command\)\)", gate_src)
-if not m:
-    print("FAIL: could not locate the allowlist regex in budget-gate.sh")
+spec = importlib.util.spec_from_file_location("cmd_classify", sys.argv[1])
+if spec is None or spec.loader is None:
+    print("FAIL: could not load the classifier at " + sys.argv[1])
     print("If it was renamed or restructured, update this test — do not delete it.")
     sys.exit(1)
-allow = re.compile(m.group(1))
+cc = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(cc)
+
+blocker_src = open(sys.argv[2]).read()
+gate_src = open(sys.argv[3]).read()
+
+# The gate must actually be wired to the classifier we just loaded. Without
+# this, the check below could pass against a module the gate no longer calls.
+if "from cmd_classify import classify" not in gate_src:
+    print("FAIL: budget-gate.sh no longer imports cmd_classify.classify")
+    print("If the wiring moved, update this test — do not delete it.")
+    sys.exit(1)
+
 
 # Commands the blocker tells the agent to run — POSITIONAL, not lexical.
 #
@@ -68,7 +85,7 @@ if not prescribed:
     print("FAIL: extracted no prescribed commands — the extraction broke, not the gate.")
     sys.exit(1)
 
-denied = [c for c in sorted(prescribed) if not allow.search("fw " + c)]
+denied = [c for c in sorted(prescribed) if not cc.classify("fw " + c)[0]]
 if denied:
     print("Commands a block message tells the agent to run, which budget-gate")
     print("refuses at critical (deadlock — prescribed and denied at once):")
@@ -81,9 +98,33 @@ PY
     [ "$status" -eq 0 ]
 }
 
-@test "the allowlist regex is still locatable in budget-gate.sh" {
-    # Guards the extraction itself. If the regex is restructured and this test
-    # silently stops finding it, the check above would pass by not checking —
-    # which is the failure mode this whole directory exists for.
-    grep -q "is_allowed_cmd = bool(re.search(r'" "$GATE"
+@test "the classifier is still locatable and still wired into budget-gate.sh" {
+    # Guards the extraction itself. If the decision point is restructured and
+    # this test silently stops finding it, the check above would pass by not
+    # checking — which is the failure mode this whole directory exists for.
+    #
+    # Two halves, because either alone can go stale: the module must exist, AND
+    # the gate must still call it. A classifier nobody calls passes any test
+    # written about the classifier.
+    [ -f "$CLASSIFY" ]
+    grep -q "from cmd_classify import classify" "$GATE"
+}
+
+@test "the prescribed-command check fails loudly if the classifier goes missing" {
+    # Negative control on this file's own machinery (T-2916 class): a guard that
+    # cannot read its input must not report the same thing as one that read it
+    # and found nothing. Point the check at a non-existent classifier and it has
+    # to fail, not pass vacuously.
+    run python3 - "$BATS_TEST_DIRNAME/does-not-exist.py" "$BLOCKER" "$GATE" <<'PY'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cmd_classify", sys.argv[1])
+try:
+    cc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cc)
+except Exception:
+    print("FAIL: could not load the classifier")
+    sys.exit(1)
+sys.exit(0)
+PY
+    [ "$status" -ne 0 ]
 }
