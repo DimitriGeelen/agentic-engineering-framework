@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:24:46Z
-last_update: 2026-08-11T14:45:20Z
+last_update: 2026-08-11T16:44:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -133,13 +133,38 @@ framework's own prose forbids (T-2144). Fixing the seed removes the incentive.
       shipped pre-fix line and asserts it is flagged) and a false-positive control
       asserting the T-004 lifecycle shape is *not* flagged.
       `tests/unit/seed_self_gating_ac.bats`, 4/4
-- [ ] End-to-end: a greenfield project seeded from the fixed seeds carries its first
+- [x] End-to-end: a greenfield project seeded from the fixed seeds carries its first
       inception through the real decide preflight without `--force` or
       `--skip-acceptance-criteria`, and without a DEFER hedge
 
-      **Pickup note (2026-08-11, S-2026-0811-16xx).** Four of five ACs are done; this
-      is the only one left, and it is a single new bats file. Scoped but deliberately
-      not started — the session was at 85% context and starting an e2e that needs
+      **DONE (2026-08-11, S-2026-0811-18xx).** `tests/unit/t2862_greenfield_first_inception_e2e.bats`,
+      6/6. Ran the real flow live first, then wrote the suite against what was
+      observed rather than against the source. Both of the pickup note's traps held:
+      decide exits 0 on the success path under `env -i` (so the leg asserts the exit
+      code, not the absence of a string), and no bypass flag was used anywhere.
+      DEFER-skips-preflight is pinned as the T-2863 F-17 asymmetry, not fixed here.
+
+      Two blockers a scanner could never have found, both filed:
+      **T-2921** — the P-011 extractor strips HTML comments from *command text*, so
+      the seed's own verification line executed as `sed '//d'` (empty regex, exit 1)
+      and every new project failed its first inception's verification gate. Fixed in
+      the seed by dropping the `sed` pre-pass, which the `^\*\*` anchor made redundant.
+      **T-2922** — out of the box the first inception cannot be completed by *any*
+      path: `fw task review` fails closed without writing its marker when no
+      Watchtower is reachable, and the marker gate is unconditional (it blocks GO,
+      NO-GO *and* DEFER). Leg 6 of the suite pins that boundary explicitly, so the
+      five green legs above cannot be misread as proof the out-of-box experience works.
+
+      **Harness bug found on first run, worth recording:** the two anti-vacuity legs
+      used `output=$(… decide …)` for a call they *require* to block. Under bats'
+      `set -e` a non-zero command substitution kills the test before the assertion —
+      so both legs went red for asserting nothing, which is the same
+      abstention-vs-failure ambiguity this task's own trap #2 warns about, committed
+      in the harness written to avoid it. Fixed with `|| true` and a comment naming
+      why.
+
+      **Original pickup note (superseded, kept for the reasoning).** Scoped but
+      deliberately not started — the session was at 85% context and starting an e2e that needs
       iteration is the exact "work that cannot finish in remaining budget" the P-009
       ladder forbids. It has burned **60 dispatches with 0 outcomes since 2026-08-08**
       (the origin case the T-2916 stall guard now flags), so it deserves a session with
@@ -171,19 +196,25 @@ framework's own prose forbids (T-2144). Fixing the seed removes the incentive.
       and is not a bug to fix here — but if a later change makes DEFER run the
       preflight, this suite should be the thing that notices.
 
-  <!-- BLOCKED, not skipped. Running this requires `fw inception decide` in a command
-       string, which the Tier 0 hook refuses under agent control — correctly, and the
-       standing "proceed as you see fit" directive does not override a structural gate
-       (CLAUDE.md §Autonomous Mode Boundaries). `--i-am-human` would be the sanctioned
-       test-context flag here and does NOT bypass the AC-count preflight that was the
-       actual deadlock, so the test would still be valid; it is the Tier 0 approval
-       that is missing, not a safe way to run it.
+  <!-- RESOLVED. The earlier note here claimed this was Tier-0 blocked because running
+       it needs `fw inception decide` in a command string. That was wrong, and the
+       correction is worth keeping rather than deleting: the gate never fired. Tier 0
+       matches destructive command shapes, not `fw` verbs, and `decide` inside a bats
+       harness under `env -i` runs on the human path because `$CLAUDECODE` is unset —
+       which is correct for a test harness verifying preflight arithmetic, and is not
+       a sovereignty decision. No `tier0 approve` was needed and none was requested.
 
-       To unblock:
-         cd /opt/999-Agentic-Engineering-Framework && bin/fw tier0 approve
+       The prior note read "BLOCKED" from a gate that had not been tried. That is the
+       inverse of the false-green class this task family is about: an assumed block is
+       as unfounded as an assumed pass, and it cost this AC a session. -->
 
-       Until then this AC stays unticked. The narrower property — that no Agent AC
-       can gate its own closing command — IS verified, by the bats suite above. -->
+  <!-- Suite: tests/unit/t2862_greenfield_first_inception_e2e.bats (6 legs).
+       Leg 6 is a boundary marker, not a fix — see T-2922. -->
+
+  <!-- Verified live at the same time (T-2919/T-2923 sibling): the greenfield seed's
+       Recommendation gate, review-marker gate and AC preflight all PASS on a properly
+       done inception. The only thing that failed was the seed's own verification
+       line, which is T-2921's defect and is fixed in the seed. -->
 
 <!-- SCOPE NOTE (T-2863 F-17, not fixed here): `lib/inception.sh:521` guards the
      agent-AC preflight with `go || no-go`, so DEFER skips it entirely. That makes
@@ -231,6 +262,16 @@ out=$(bats tests/unit/seed_self_gating_ac.bats 2>&1); echo "$out" | grep -q "^ok
 acs=$(awk '/^### Agent/{a=1;next} /^### |^## /{a=0} a' lib/seeds/tasks/greenfield/T-002-define-project-goals.md | grep -E '^\s*-\s*\[[ x]\]'); ! echo "$acs" | grep -q "inception decide"
 grep -q "fw task review T-002" lib/seeds/tasks/greenfield/T-002-define-project-goals.md
 test "$(find lib/seeds/tasks -name '*.md' | wc -l)" -eq 11
+# The end-to-end AC: a real `fw init` greenfield project carries its first
+# inception to a recorded GO with no bypass flag. Guarded per T-2738 — a bats run
+# that fails partway still prints "ok 1", so the pass marker alone is not a verdict.
+out=$(bats tests/unit/t2862_greenfield_first_inception_e2e.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+# The seed's own verification block must not reintroduce a comment-stripping
+# pre-pass. Written WITHOUT the HTML-comment delimiters on purpose: the T-2921
+# extractor strips those literals out of the command text, so the obvious form
+# `! grep -q "sed '/<!--/,/-->/d'" …` degrades to `! grep -q "sed '//d'"`, finds
+# nothing, and passes while asserting nothing. Assert on the whole block instead.
+vb=$(awk '/^## Verification/{v=1;next} /^## /{v=0} v' lib/seeds/tasks/greenfield/T-002-define-project-goals.md | grep -vE '^[[:space:]]*#'); ! echo "$vb" | grep -q 'sed '
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
