@@ -379,14 +379,34 @@ PENDING_OBS=0
 URGENT_OBS=0
 if [ -f "$INBOX_FILE" ]; then
     PENDING_OBS=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || PENDING_OBS=0
+    # T-2927: parse the YAML, do not guess its indentation. The previous form
+    # split on `\n  - ` — the 2-space list indent used by patterns.yaml, NOT the
+    # column-0 form inbox.yaml actually uses. T-2514 named that exact mismatch
+    # and fixed it in audit.sh; this site and the listing block below were never
+    # swept (L-533: a sibling sweep with no enumerating guard cannot tell
+    # "converted the ones we found" from "converted all of them").
+    #
+    # Measured before repair: this returned 1 urgent against a true count of 3.
+    # Reported by 832 as latent in their tree, where it always returned 0 —
+    # actively miscounting in ours, which is worse: 0 reads as "none", 1 reads
+    # as a working counter.
     URGENT_OBS=$(VALIDATE_FILE="$INBOX_FILE" python3 -c "
-import re, os
-with open(os.environ['VALIDATE_FILE']) as f:
-    content = f.read()
-blocks = re.split(r'\n  - ', content)
-urgent = sum(1 for b in blocks[1:] if 'status: pending' in b and 'urgent: true' in b)
-print(urgent)
-" 2>/dev/null || echo 0)
+import os, sys
+try:
+    import yaml
+    with open(os.environ['VALIDATE_FILE']) as f:
+        d = yaml.safe_load(f) or {}
+    obs = d.get('observations') or []
+    print(sum(1 for o in obs
+              if isinstance(o, dict)
+              and o.get('status') == 'pending'
+              and o.get('urgent') is True))
+except Exception as e:
+    # Loud, not silent: a swallowed parse error here prints 0 and reads as
+    # 'no urgent observations', which is the failure this task exists to fix.
+    print('WARN: could not parse %s for urgent count: %s' % (os.environ['VALIDATE_FILE'], e), file=sys.stderr)
+    print(0)
+" || echo 0)
 fi
 
 if [ "$PENDING_OBS" -gt 0 ]; then
@@ -923,21 +943,53 @@ if [ "$PENDING_OBS" -gt 0 ]; then
             echo "**$PENDING_OBS pending observations** — review with \`fw note list\` or \`fw note triage\`."
         fi
         echo ""
-        # List pending observation summaries
-        python3 << PYEOF
-import re
-with open("$INBOX_FILE") as f:
-    content = f.read()
-blocks = re.split(r'\n  - ', content)
-for b in blocks[1:]:
-    if 'status: pending' not in b:
-        continue
-    obs_id = re.search(r'id: (OBS-\d+)', b)
-    text = re.search(r'text: "(.*?)"', b)
-    urgent = 'urgent: true' in b
-    if obs_id and text:
-        prefix = "[URGENT] " if urgent else ""
-        print(f"- {prefix}{obs_id.group(1)}: {text.group(1)}")
+        # List pending observation summaries.
+        #
+        # T-2927: parses the YAML rather than splitting on a guessed indent.
+        # The previous form split on `\n  - ` and listed 1 of 112 pending
+        # observations. One listed is worse than none: a zero could read as
+        # "nothing to show", whereas a single well-formed entry under a
+        # "112 pending" heading reads as a working section.
+        #
+        # The regex was only half of it. The other half — 832's, and the half
+        # that keeps this class visible if the parse ever breaks again — is the
+        # mismatch line below: a listing that emits fewer rows than the count it
+        # just printed must SAY so. Without it, the section is well-formed and
+        # complete-looking with its payload absent, and nothing anywhere reports
+        # "listed 1 of 112".
+        INBOX_FILE="$INBOX_FILE" PENDING_OBS="$PENDING_OBS" python3 << 'PYEOF'
+import os, sys
+
+path = os.environ['INBOX_FILE']
+claimed = int(os.environ.get('PENDING_OBS') or 0)
+
+listed = 0
+err = None
+try:
+    import yaml
+    with open(path) as f:
+        d = yaml.safe_load(f) or {}
+    for o in (d.get('observations') or []):
+        if not isinstance(o, dict) or o.get('status') != 'pending':
+            continue
+        obs_id = o.get('id')
+        text = o.get('text')
+        if not obs_id or not text:
+            continue
+        prefix = "[URGENT] " if o.get('urgent') is True else ""
+        print(f"- {prefix}{obs_id}: {str(text).strip()}")
+        listed += 1
+except Exception as e:
+    err = e
+
+if err is not None:
+    print(f"- _Could not read the observation inbox ({err.__class__.__name__}). "
+          f"{claimed} pending — run `fw note list`._")
+elif listed < claimed:
+    # Never silent. The count and the list disagreeing is itself the finding.
+    print("")
+    print(f"_Listed {listed} of {claimed} pending — {claimed - listed} could not be "
+          f"summarised (missing `id` or `text`). Run `fw note list` for the full set._")
 PYEOF
         echo ""
     } >> "$HANDOVER_FILE"

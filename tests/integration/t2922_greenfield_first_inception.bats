@@ -56,14 +56,29 @@ setup_file() {
 
     # One inception to review. Canonical path, so the T-2204 recommendation
     # gate is satisfied honestly rather than bypassed.
+    #
+    # PROJECT_ROOT is pinned to the fixture. On the first run of this suite it
+    # was not, and `fw inception start` allocated its id from THIS repo's
+    # sequence and filed a real T-2928 task here — a test polluting the governed
+    # task space it was written to protect. The suite passed anyway, which is
+    # the part worth remembering: the leak was invisible to every assertion.
     (
         cd "$T2922_PROJ" || exit 1
-        "$FRAMEWORK_ROOT/bin/fw" inception start "greenfield probe" \
+        PROJECT_ROOT="$T2922_PROJ" "$FRAMEWORK_ROOT/bin/fw" inception start "greenfield probe" \
             --recommendation GO --rationale "T-2922 fixture" >/dev/null 2>&1
     )
 
-    T2922_TASK=$(cd "$T2922_PROJ" && ls .tasks/active/ | grep -i 'greenfield-probe' | head -1 | grep -oE '^T-[0-9]+')
+    T2922_TASK=$(cd "$T2922_PROJ" && ls .tasks/active/ 2>/dev/null | grep -i 'greenfield-probe' | head -1 | grep -oE '^T-[0-9]+')
     export T2922_TASK
+
+    # Containment assertion: nothing this fixture creates may land outside it.
+    # Refuses loudly rather than letting the legs run — a suite that pollutes
+    # the repo it guards is worse than a suite that does not run.
+    if [ -n "$T2922_TASK" ] && [ -e "$FRAMEWORK_ROOT/.tasks/active/$T2922_TASK-greenfield-probe.md" ]; then
+        echo "fixture leaked $T2922_TASK into the framework repo — refusing to run" >&2
+        rm -rf "$T2922_PROJ"
+        return 1
+    fi
 }
 
 teardown_file() {

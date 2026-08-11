@@ -1,0 +1,20 @@
+id: tests/integration/t2922_greenfield_first_inception.bats
+name: t2922_greenfield_first_inception
+type: script
+subsystem: unknown
+location: tests/integration/t2922_greenfield_first_inception.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-11
+created_by: unknown
