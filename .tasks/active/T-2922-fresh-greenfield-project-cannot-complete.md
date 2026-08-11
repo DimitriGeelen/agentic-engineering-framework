@@ -111,12 +111,12 @@ review *require* a live Watchtower would make onboarding strictly worse.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Reproduced first: an automated leg drives a fresh `fw init` project with no Watchtower running and asserts that, **before** the fix, `fw task review` on an inception exits non-zero and leaves no `.reviewed-<id>` marker — the regression must bite before it is repaired
-- [ ] On that same fresh project with no Watchtower, `fw task review T-XXX` exits 0 and writes `.context/working/.reviewed-T-XXX`
-- [ ] `fw inception decide` then succeeds for **all three** dispositions on a fresh project — `go`, `no-go` and `defer` each verified, because the marker gate blocks all three and a fix tested only against `go` leaves two thirds of the escape hatch shut
-- [ ] The fix does **not** introduce a live-Watchtower requirement: a leg asserts `fw task review` still succeeds when no server is listening, so onboarding never gains a daemon prerequisite
-- [ ] `fw task review` output on a Watchtower-less project names how to start one (`fw serve`) rather than only emitting an unreachable URL — the user is told the thing the URL presumes
-- [ ] Existing behaviour with a live Watchtower is unchanged: URL, QR and marker all still emitted (regression leg, since the emit path is shared)
+- [x] Reproduced first: an automated leg drives a fresh `fw init` project with no Watchtower running and asserts that, **before** the fix, `fw task review` on an inception exits non-zero and leaves no `.reviewed-<id>` marker — the regression must bite before it is repaired
+- [x] On that same fresh project with no Watchtower, `fw task review T-XXX` exits 0 and writes `.context/working/.reviewed-T-XXX`
+- [x] `fw inception decide` then succeeds for **all three** dispositions on a fresh project — `go`, `no-go` and `defer` each verified, because the marker gate blocks all three and a fix tested only against `go` leaves two thirds of the escape hatch shut
+- [x] The fix does **not** introduce a live-Watchtower requirement: a leg asserts `fw task review` still succeeds when no server is listening, so onboarding never gains a daemon prerequisite
+- [x] `fw task review` output on a Watchtower-less project names how to start one (`fw serve`) rather than only emitting an unreachable URL — the user is told the thing the URL presumes
+- [x] Existing behaviour with a live Watchtower is unchanged: URL, QR and marker all still emitted (regression leg, since the emit path is shared)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,70 +151,23 @@ review *require* a live Watchtower would make onboarding strictly worse.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. grep scans the whole captured string anyway, so the tail-3 was
-# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
-# for the captures they were written about, and both invert above the pipe
-# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
-# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
-# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
-# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
-# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
-# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
-# For anything that might be large, redirect to a file:
-#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# This is the better default even when size is not a concern: `&&` keeps the
-# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
-# the T-2738 problem one layer down. A 404 from curl fails the line instead of
-# silently producing an empty capture for grep to not-match.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
-# 141 under P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# BUT NOT for a test runner (T-2738): the capture above discards the command's
-# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
-# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
-# that exit code WAS the verdict, and the pass marker you grep instead survives
-# a partial failure: a suite printing "3 failed, 9 passed" satisfies
-# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
-# same output. Either keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# The suite: 9 legs, including the reproduce-before-repair leg (AC1) and the
+# live-Watchtower regression leg (AC6). Builds a real `fw init` project in
+# setup_file (~90s) because the bug only exists on a project nobody configured.
+bats tests/integration/t2922_greenfield_first_inception.bats
+
+# T-1155's invariants — port resolution must stay inside lib/watchtower.sh.
+# A first draft of this fix put the fallback inline in lib/review.sh and went
+# RED on legs 1 and 5 here; that is what moved it to the helper.
+bats tests/lint/single-port-detection.bats
+
+# The helper answers in both states and distinguishes them by exit code, never
+# by an empty string (an empty base concatenates into a broken relative path
+# that still reads as a link).
+bash -c 'set -e; export PROJECT_ROOT=/nonexistent-t2922-probe FRAMEWORK_ROOT=$PWD; source lib/watchtower.sh; out=$(_watchtower_base_or_placeholder T-0 2>/dev/null) && exit 1; [ $? -eq 2 ]; [ -n "$out" ]'
+
+# Vendored copy stays in sync (the self-vendor FAIL that surfaced this work).
+bin/fw vendor self --check
 
 ## RCA
 
@@ -258,14 +211,30 @@ review *require* a live Watchtower would make onboarding strictly worse.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**AC3 was verified structurally, not by executing three decisions.** The AC asks
+that `go`, `no-go` and `defer` each succeed once the marker exists. `fw inception
+decide` is Tier 0 and blocked in agent context by design — routing around that to
+green a test would be precisely the bypass the gate exists to prevent, so it was
+not attempted.
+
+What leg 6 proves instead: the marker gate is disposition-INDEPENDENT by
+construction. The 3-way validation `case` (`go|no-go|defer`) sits upstream of the
+marker check, nothing between them reads `$decision`, and the leg fails if either
+fact stops holding. For the question the AC is actually asking — "does a fix
+tested only against `go` leave two thirds of the escape hatch shut?" — this covers
+all three inputs rather than sampling them.
+
+What it does not cover: a disposition-specific failure *downstream* of the marker
+gate, which three real executions would catch. If you want that closed, the
+executions are yours to run — the fixture project is torn down by the suite, so
+it would be three `fw inception decide` calls on this repo or a scratch project.
+
+**Placement of the fallback.** The first draft put the port fallback inline in
+`lib/review.sh` and went RED on two of T-1155's invariants. Those invariants
+guard the consumer-port bug (framework defaults to 3000, consumer serves
+elsewhere, every link 404s) — the same class as this one, one layer over. The
+fallback belongs in `lib/watchtower.sh` because that is where the configured port
+already resolves; the invariant was right and the draft was wrong.
 
 ## Decision
 

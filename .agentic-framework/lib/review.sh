@@ -103,8 +103,22 @@ emit_review() {
     _arc_parent_gate "$task_id" "$task_file" || true
 
     # Determine Watchtower URL via shared helper (T-1154: single chokepoint)
-    local base_url
-    base_url=$(_watchtower_url "$task_id")
+    #
+    # T-2922: emit_review must survive "no Watchtower running". _watchtower_url
+    # fails loud (exit 1, no stdout) by design, and under this script's `set -e`
+    # a bare `base_url=$(_watchtower_url ...)` assignment aborts emit_review
+    # before it reaches the marker write at the bottom of this function — the
+    # ONLY unblock for `fw inception decide`. On a fresh `fw init` project,
+    # where nothing has yet told the user to run `fw serve`, that made the first
+    # inception uncompletable by any path (T-2862 origin).
+    #
+    # _watchtower_base_or_placeholder answers in both cases and reports which
+    # via exit code (0 live / 2 placeholder). Port resolution stays inside
+    # lib/watchtower.sh — T-1155's invariant suite makes inline `fw_config
+    # "PORT" 3000` in this file structurally RED, and it is right to: the
+    # consumer-port bug it guards against is the same class as this one.
+    local base_url watchtower_reachable=true
+    base_url=$(_watchtower_base_or_placeholder "$task_id") || watchtower_reachable=false
     # Detect workflow type for URL routing (T-642) — also drives the label below
     local workflow_type=""
     workflow_type=$(grep -m1 'workflow_type:' "$task_file" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
@@ -261,6 +275,13 @@ emit_review() {
     echo -e "  ${BOLD}${review_label}: $task_id${NC}"
     echo -e "  ${CYAN}${human_checked}/${human_total} checked${NC}"
     echo -e ""
+    if ! $watchtower_reachable; then
+        # T-2922 AC5: name the prerequisite (fw serve) rather than only
+        # printing a URL that presumes a server the user hasn't started.
+        echo -e "  ${YELLOW}No Watchtower is running for this project yet.${NC}"
+        echo -e "  ${YELLOW}Start one with: fw serve${NC}  (then open the link below)"
+        echo -e ""
+    fi
     echo "  ${review_url}"
     echo -e ""
 
