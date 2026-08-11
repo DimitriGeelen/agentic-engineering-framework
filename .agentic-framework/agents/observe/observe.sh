@@ -277,7 +277,59 @@ do_dismiss() {
     done
 
     ensure_inbox
-    _sed_i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: dismissed/}" "$INBOX_FILE"
+
+    # T-2928: persist the reason. The previous form parsed --reason into a
+    # local, used it in exactly one place — the echo below — and wrote only
+    # `status: dismissed`. The reason went to a terminal nobody archives while
+    # the confirmation line quoted it back on the way out, which manufactures
+    # confidence at precisely the moment someone is being careful.
+    #
+    # The cost is not lost prose. A dismissed observation with no reason cannot
+    # answer the only question anyone asks of one — was this judged and closed,
+    # or was it swept? Those are the same row. An inbox that cannot tell them
+    # apart eventually gets batch-cleared by someone who reasonably concludes
+    # the entries were never triaged, which is the failure the triage ritual
+    # exists to prevent. Measured here at the time of the fix: 81 dismissed
+    # observations, 0 carrying a reason. Reported by 832 (rail 547 §F), who
+    # found it by verifying their own dispositions rather than trusting the
+    # success message.
+    #
+    # Written in python rather than sed: the reason is operator free text and
+    # can contain `:`, quotes and newlines, all of which a sed substitution
+    # mangles or truncates. json.dumps emits a double-quoted scalar that is
+    # valid YAML for every one of those. Only the target entry's lines are
+    # touched, so the rest of the file stays byte-identical.
+    if ! OBS_ID="$obs_id" OBS_REASON="$reason" INBOX="$INBOX_FILE" python3 -c '
+import json, os, sys, datetime
+
+obs_id, reason, path = os.environ["OBS_ID"], os.environ["OBS_REASON"], os.environ["INBOX"]
+lines = open(path).read().split("\n")
+
+start = next((i for i, l in enumerate(lines) if l.startswith("- id: %s" % obs_id)), None)
+if start is None:
+    print("observation %s not found in %s" % (obs_id, path), file=sys.stderr)
+    sys.exit(1)
+
+end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("- ")), len(lines))
+
+status_idx = next((i for i in range(start, end) if lines[i].strip() == "status: pending"), None)
+if status_idx is None:
+    cur = next((lines[i].strip() for i in range(start, end) if lines[i].strip().startswith("status:")), "unknown")
+    print("%s is not pending (%s) — not dismissing" % (obs_id, cur), file=sys.stderr)
+    sys.exit(2)
+
+lines[status_idx] = "  status: dismissed"
+ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+lines[status_idx + 1:status_idx + 1] = [
+    "  dismissed_reason: " + json.dumps(reason),
+    "  dismissed_at: " + ts,
+]
+open(path, "w").write("\n".join(lines))
+'; then
+        echo -e "${RED}$obs_id NOT dismissed — the inbox was not modified${NC}" >&2
+        return 1
+    fi
+
     echo -e "${GREEN}$obs_id dismissed:${NC} $reason"
 }
 
