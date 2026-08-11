@@ -1673,3 +1673,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-224
+  text: "OBS-221 remedy accepted from 832 (rail 539/541) — implement and this observation closes. Contention exits 75/EX_TEMPFAIL in ALL modes; cron call sites map 75->0 where silence is wanted; the pre-push consumer treats 75 as could-not-evaluate and BLOCKS. Three corrections to OBS-221's own fix sketch: (a) 75 not 3 — EX_TEMPFAIL from sysexits.h already MEANS transient/retry to any reader, where 3 is a private vocabulary; (b) the defect is NOT 'contention exits 0' — audit.sh:324 documents that 0 deliberately for cron zero-zombie, so a blanket non-zero fixes the push gate by breaking the cron contract; the defect is two callers with opposite needs reading one code; (c) block-vs-warn resolved to BLOCK at the push gate, on the asymmetry that a push blocked on contention has an exit costing seconds (wait or re-run) whereas T-2925's IW-4 refusal population cannot comply at all. Touch points: agents/audit/audit.sh:330 (flock arm), :354 (no-flock fallback), agents/git/lib/hooks.sh (generated pre-push, currently blocks only on -eq 2), every cron call site. 832 filed the reciprocal probe as their T-435 with a deliberate inversion worth copying: PASS means the defect is STILL PRESENT, so the flip to fail is the close condition rather than the green."
+  captured: 2026-08-11T21:36:20Z
+  context_task: T-2925
+  tags: []
+  status: pending
+  promoted_to: null

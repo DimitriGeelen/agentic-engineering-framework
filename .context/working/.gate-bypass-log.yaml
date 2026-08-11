@@ -6528,3 +6528,8 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover — T-2902 closed, r
   flag: '--skip-render-review'
   caller: 'check_render_surface_human_ac: False positive: git-grep --grep T-100196 render-surface scan matched commit 9dbd59d49 (T-2509), which touches web/blueprints/inception.py but only mentions ''T-100196'' in commit-body prose referencing the trunk-based session flow — not an actual T-100196 deliverable. This task''s real changes (lib/branch-hygiene.sh, bin/fw go-live route, tests/unit/t100196_go_live.bats) touch no render surface.'
   reason: ''
+- ts: "2026-08-11T21:36:09Z"
+  gate: rail-identity
+  tier: 2
+  mechanism: FW_ALLOW_HOST_SIGNED_RAIL
+  detail: "fw rail post dm:0e7ee6cad65137fc:6a646ce8b1bc6560"

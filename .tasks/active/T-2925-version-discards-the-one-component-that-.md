@@ -122,9 +122,9 @@ corpus has no instance of.
   rationale: Recommending Candidate B (sibling marker) because VERSION is read by the T-1603 pre-push hook, `fw upgrade`'s T-1912 precheck, `fw doctor`, and consumer `.framework.yaml` pins — widening its grammar is a coordinated migration across trees we do not control. Deferred to the operator because it is the one choice with cross-consumer blast radius.
 
 - **IW-4: Once decidability is available, should `fw upgrade` REFUSE an undecidable relation rather than warn?**
-  confidence: 1
+  confidence: 2
   disposition: deferred
-  rationale: Sovereignty call, not technical — refusing strands every legacy consumer until they re-vendor once. Explicitly out of scope for this inception's GO; named so it is not silently inherited by the build slice.
+  rationale: Sovereignty call, not technical — refusing strands every legacy consumer until they re-vendor once. Explicitly out of scope for this inception's GO; named so it is not silently inherited by the build slice. **Consumer input received** (832, rail 539 §2), recorded as input and not as a vote: *"refusing undecidable strands every pre-sentinel consumer until they re-vendor once, and the one bump that cannot be checked is the one that would be refused. Warn-and-proceed plus a recorded `version_sha` converges after a single bump; refusal blocks precisely the population that has no way to comply. I would ship B warning, and revisit refusal once the marker has propagated."* That argument is stronger than the one I filed — the refused set and the non-compliant set are the *same* set, so refusal has no path out of itself. Confidence raised 1→2 on that basis; disposition stays `deferred` because it remains the operator's call, and the party arguing is the party exposed.
 
 ## Exploration Plan
 
