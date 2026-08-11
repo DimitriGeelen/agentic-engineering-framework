@@ -2858,3 +2858,31 @@ decisions:
     date: 2026-08-11
     task: T-2923
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-411
+    decision: "add `is_valid_owner` to the update path only; leave the 10"
+    scope: project
+    date: 2026-08-11
+    task: T-2924
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-412
+    decision: "the identity fix (`lib/resolver.py:capture_dispatch` + the termlink-dispatch"
+    scope: project
+    date: 2026-08-11
+    task: T-2917
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-413
+    decision: "implement identity injection for resolver-mediated dispatch (all worker_kinds)"
+    scope: project
+    date: 2026-08-11
+    task: T-2917
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-414
+    decision: "`tests/unit/git_worker_commits.bats` explicitly `unset`s"
+    scope: project
+    date: 2026-08-11
+    task: T-2917
+    rationale: "Auto-captured from task file on completion"

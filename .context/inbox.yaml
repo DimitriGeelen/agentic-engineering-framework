@@ -1610,3 +1610,38 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-215
+  text: "tests/integration/check_project_boundary.bats leg 16 'Bash redirect to /etc: blocked' asserts echo > /etc/cron.d/my-cron is BLOCKED, but check-project-boundary.sh Pattern 3 deliberately allowlists /etc/cron.d/ (T-603/T-1191 cron install). Test contradicts documented intent and is red. Pre-existing (confirmed red with T-2920 stashed). Either the allowlist or the test is wrong — one of them has been lying for a while, and nobody noticed because it is a single red leg in a suite that is not in the default run."
+  captured: 2026-08-11T14:39:12Z
+  context_task: T-2920
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-216
+  text: "update-task.sh rewrites the owner field with an unranged sed 's/^owner:.*/owner: X/' — it hits EVERY line starting 'owner:' in the file, not just the frontmatter field. Exactly one task file (T-2577) has body prose starting at column 0 that way, so 'fw task update T-2577 --owner ...' silently corrupts an acceptance-criterion line. Same mention-vs-instance family as L-576, one layer down: the sed predicate asks 'does a line start with owner:' when the question is 'is this the frontmatter field'. Fix: range the sed to the frontmatter block (1,/^---$/ after the opening fence) as the type/horizon writers should also be checked for. Found while measuring T-2924; filed separately per one-bug-one-task. Reported to 832 at rail 536 as filed."
+  captured: 2026-08-11T17:04:56Z
+  context_task: T-2917
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-217
+  text: "budget-gate.sh writes .context/working/.restart-requested on the BLOCK path (T-2403 auto-restart signal), so testing the gate in the live tree arms a real relaunch. Nothing at the call site says so. Found by 832 while rebuilding their probe to drive the gate as Claude Code drives it — they sandbox PROJECT_ROOT to a scratch root so the signal lands somewhere disposable. Class: a guard with a side effect on its refusal path cannot be tested in place, and the side effect is invisible to anyone reading the block message. Fix options: document at the call site, or gate the signal write behind a FW_GATE_DRYRUN env, or write it only when PROJECT_ROOT is the real project. Reported to 832 at rail 536 as filed."
+  captured: 2026-08-11T17:05:15Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-218
+  text: "fw audit --section episodic returns 3 PASS with an unparseable episodic YAML sitting in the directory — the completeness check counts files it never parses. Reported by 832 (rail 533 section 3) alongside the episodic-generator escape bug that exposed it. The generator bug is the symptom; this is the defect: a verdict printed without its real denominator (sibling of T-2916, where a stall guard evaluated 11/1325 rows and printed the same sentence a guard clearing 300 would print). Fix: parse each episodic file counted and report 'evaluated N/M' on both the human and JSON paths, so abstention is legible and cannot be read as success. Reported to 832 at rail 536 as filed."
+  captured: 2026-08-11T17:05:15Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-219
+  text: "related_tasks is one untyped field with at least THREE readers assigning it three different meanings: lib/arc.sh:895 reads it as ARC MEMBERSHIP when seeding constituents, tools/bpmn_to_tasks.py writes COMPILED PRECEDENCE edges into it (_nearest_task_preds), and lib/task_pair_acd.py:96 _read_related_tasks is a third. 695 of 2906 tasks have it non-empty. A compiled precedence edge and a hand-authored 'see also' are indistinguishable to every consumer. 832 named the third reader and made the key point: this is NOT a future integration risk, it is live today — their BPMN compiler would be the second WRITER, which makes the existing ambiguity undiagnosable rather than causing it. Mention-vs-instance at the data-model layer: one field name, several producer meanings, no consumer able to tell them apart. Reported to 832 at rail 536 as filed."
+  captured: 2026-08-11T17:05:15Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
