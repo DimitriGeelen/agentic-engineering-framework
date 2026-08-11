@@ -1,0 +1,124 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2862: greenfield seed T-002 ships a self-referential AC that deadlocks fw inception decide in every new project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T16:52:29Z
+# ============================================================================
+
+task_id: T-2862
+task_name: "greenfield seed T-002 ships a self-referential AC that deadlocks fw inception decide in every new project"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T17:24:46Z
+completed: 2026-08-11T16:50:30Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-08-08T09:49:09+02:00
+last_commit: 2026-08-11T18:50:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  remove the self-gating seed AC that deadlocked every greenfield project's first inception; scanned all 11 seeds (2 of 3 raw matches refuted on reading); bats pin with anti-vacuity + false-positive controls. register fabric card + refresh vendored seed copy. OBS-191 id-hearsay correction (S-2 walk keyed on seed ids, not published bytes) + OBS-192 rail-449 round-trip 7/7 and the standard's pinned commit/blob. rail 451-452 posted — DEFER blind-spot measured (14/14) + Part I bytes requested. rail 456 — Part I transfer diagnosis reported to 832. scope the last AC and hand it off unstarted (85% context, P-009). greenfield first inception reaches GO; two more blockers found and filed. e2e suite lands — greenfield first inception reaches GO, 6/6
+
+# Key outcomes
+outcomes:
+  - 'The self-referential AC in the greenfield seed no longer deadlocks decide —'
+  - 'Every **other** Agent AC in the greenfield seed is satisfiable *before* decide'
+  - 'The same scan applied to **all 11** seed task files under `lib/seeds/tasks/`,'
+  - 'A test pins the property against the seed corpus with **two** controls:'
+  - 'End-to-end: a greenfield project seeded from the fixed seeds carries its first'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - '.agentic-framework/VERSION'
+  - '.context/approvals/pending-37ec9963d803.yaml'
+  - '.context/audits/2026-08-08.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-2863.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/t2862-e2e-draft.bats'
+  - '.fabric/components/tests-unit-seed_self_gating_ac.yaml'
+  - '.fabric/components/tests-unit-t2862_greenfield_first_inception_e2e.yaml'
+  - 'lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - '.tasks/active/T-2862-greenfield-seed-t-002-ships-a-self-refer.md'
+  - '.tasks/active/T-2864-g-052-duplicate-task-ids-block-the-t-286.md'
+  - '.tasks/active/T-2921-p-011-verification-extractor-strips-html.md'
+  - '.tasks/active/T-2922-fresh-greenfield-project-cannot-complete.md'
+  - 'tests/unit/seed_self_gating_ac.bats'
+  - 'tests/unit/t2862_greenfield_first_inception_e2e.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T09:49:09'
+    action: 'T-2862: remove the self-gating seed AC that deadlocked every greenfield project''s first inception; scanned all 11 seeds (2 of 3 raw matches refuted on reading); bats pin with anti-vacuity + false-positive controls'
+  - time: '2026-08-08T09:49:24'
+    action: 'T-2862: register fabric card + refresh vendored seed copy'
+  - time: '2026-08-08T09:53:22'
+    action: 'T-2862: OBS-191 id-hearsay correction (S-2 walk keyed on seed ids, not published bytes) + OBS-192 rail-449 round-trip 7/7 and the standard''s pinned commit/blob'
+  - time: '2026-08-08T14:15:23'
+    action: 'T-2862: rail 451-452 posted — DEFER blind-spot measured (14/14) + Part I bytes requested'
+  - time: '2026-08-08T14:44:16'
+    action: 'T-2862: rail 456 — Part I transfer diagnosis reported to 832'
+  - time: '2026-08-11T16:47:24'
+    action: 'T-2862: scope the last AC and hand it off unstarted (85% context, P-009)'
+  - time: '2026-08-11T17:44:17'
+    action: 'T-2862: greenfield first inception reaches GO; two more blockers found and filed'
+  - time: '2026-08-11T18:50:16'
+    action: 'T-2862: e2e suite lands — greenfield first inception reaches GO, 6/6'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 5725 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5725
+  commits: 9
+  files_changed: 38
+  lines_added: 2458
+  lines_removed: 343
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2862-greenfield-seed-t-002-ships-a-self-refer.md
+generated_by: context-agent-hybrid

@@ -16,12 +16,12 @@ description: >
   AC (preferred — an inception's decision is its terminal state, not a criterion)
   or add the marker. Sibling of T-2442 inception schema deadlock.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/cmd_classify.py, lib/resolver.py, tests/unit/seed_self_gating_ac.bats, tests/unit/t2862_greenfield_first_inception_e2e.bats, tests/unit/t2916_stall_guard_coverage.bats, tests/unit/t2923_cmd_classify_heredoc.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -34,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:24:46Z
-last_update: 2026-08-11T16:44:54Z
-date_finished:
+last_update: 2026-08-11T16:50:30Z
+date_finished: 2026-08-11T16:50:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -408,3 +408,24 @@ vb=$(awk '/^## Verification/{v=1;next} /^## /{v=0} v' lib/seeds/tasks/greenfield
 
 ### 2026-08-08T07:43:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1fc69649
+- **Timestamp:** 2026-08-11T16:52:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/seed_self_gating_ac.bats 2>&1); echo "$out" | grep -q "^ok 4 " && ! echo "$out" | grep -q "^not ok"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `acs=$(awk '/^### Agent/{a=1;next} /^### |^## /{a=0} a' lib/seeds/tasks/greenfield/T-002-define-project-goals.md | grep -E '^\s*-\s*\[[ x]\]'); ! echo "$acs" | grep -q "inception decide"`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 15
+     - evidence: `vb=$(awk '/^## Verification/{v=1;next} /^## /{v=0} v' lib/seeds/tasks/greenfield/T-002-define-project-goals.md | grep -vE '^[[:space:]]*#'); ! echo "$vb" | grep -q 'sed '`
+
+### 2026-08-11T16:50:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
