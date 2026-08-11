@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2916: T-2914 stall guard is inert — reports 'no tasks stalled' while T-2862 sits at 60 dispatches / 0 outcomes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T13:33:48Z
+# ============================================================================
+
+task_id: T-2916
+task_name: "T-2914 stall guard is inert — reports 'no tasks stalled' while T-2862 sits at 60 dispatches / 0 outcomes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T11:10:42Z
+completed: 2026-08-11T13:33:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-11T13:12:33+02:00
+last_commit: 2026-08-11T13:12:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the resolver loop's silence is two defects masking each other, not a fix working. vendor self-sync
+
+# Key outcomes
+outcomes:
+  - '`fw resolver stalled` reports **coverage**, not just verdict — how many tasks were'
+  - 'The guard evaluates history it *can* interpret rather than requiring a snapshot on'
+  - 'Re-running against the current corpus surfaces T-2862 (60 dispatches, 0 outcomes,'
+  - 'Test pins BOTH directions: a genuinely-advancing task with ≥5 dispatches is NOT'
+  - 'Test pins the coverage line specifically — it goes red if the guard silently skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the resolver loop''s silence is two defects masking each other, not a fix working'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-2915-resolver-in-flight-latch-never-expires--.md'
+  - '.tasks/active/T-2916-t-2914-stall-guard-is-inert--reports-no-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T13:12:33'
+    action: 'T-2916: the resolver loop''s silence is two defects masking each other, not a fix working'
+  - time: '2026-08-11T13:12:40'
+    action: 'T-2916: vendor self-sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 142 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 142
+  commits: 2
+  files_changed: 7
+  lines_added: 718
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2916-t-2914-stall-guard-is-inert--reports-no-.md
+generated_by: context-agent-hybrid

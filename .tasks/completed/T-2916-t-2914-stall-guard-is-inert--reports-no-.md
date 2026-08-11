@@ -6,10 +6,10 @@ description: >
   T-2914 stall guard is inert — reports 'no tasks stalled' while T-2862 sits at 60
   dispatches / 0 outcomes
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T11:10:42Z
-last_update: '2026-08-11T11:15:13Z'
-date_finished:
+last_update: 2026-08-11T13:33:25Z
+date_finished: 2026-08-11T13:33:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,18 +106,41 @@ independent fixes, and fixing either one alone leaves the loop unguarded.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw resolver stalled` reports **coverage**, not just verdict — how many tasks were
+- [x] `fw resolver stalled` reports **coverage**, not just verdict — how many tasks were
       evaluated and how many were skipped for want of a snapshot. "Nothing stalled" must
       never again be printable without saying what was looked at
-- [ ] The guard evaluates history it *can* interpret rather than requiring a snapshot on
+      → `_stall_coverage()` + a `coverage` block in `--json` and a printed line on the
+        human path. Live: `evaluated 11/313 task(s) (263 below threshold, 39 not active)`
+- [x] The guard evaluates history it *can* interpret rather than requiring a snapshot on
       every row: a task with N pre-snapshot dispatches and an unmoved `last_update` /
       unchanged AC-tick count is assessable, and is assessed
-- [ ] Re-running against the current corpus surfaces T-2862 (60 dispatches, 0 outcomes,
+      → snapshot-less rows are kept; degraded path uses subject-match commits +
+        `_task_touched_since()`. Results carry `evidence: snapshot|degraded`
+- [x] Re-running against the current corpus surfaces T-2862 (60 dispatches, 0 outcomes,
       3 days unmoved) as stalled — the guard's own origin case
-- [ ] Test pins BOTH directions: a genuinely-advancing task with ≥5 dispatches is NOT
+      → `T-2862 dispatches=60 outcomes=0 evidence=degraded since=2026-08-10T18:26:49Z`
+- [x] Test pins BOTH directions: a genuinely-advancing task with ≥5 dispatches is NOT
       reported stalled, so the fix cannot pass by reporting everything
-- [ ] Test pins the coverage line specifically — it goes red if the guard silently skips
+      → legs 2 and 8 are the negative controls (moved `last_update`; subject-claiming commit)
+- [x] Test pins the coverage line specifically — it goes red if the guard silently skips
       its whole input again
+      → legs 4, 5, 6 (`below_threshold` accounting, coverage present when nothing stalled,
+        coverage on the human path)
+
+**A third defect surfaced while fixing this one, and it was self-inflicted.**
+`_git_commit_count_since` grepped the *whole commit message*, so any commit mentioning a
+task counted as that task advancing. T-2862 was cleared from the stalled set by commits
+`387a1465b` and `e7cce384b` — the T-2914 and T-2916 commits, which cite T-2862 in their
+bodies **as the example of a stalled task**. Writing the RCA about the stall was enough to
+make the stall undetectable. Now matched on the subject line, where P-002 has a commit
+declare what it advances. Legs 7 and 8 pin both directions.
+
+**And a fourth, one layer down:** `_task_touched_since` initially read `last_update` off
+`_read_task_meta()`'s top level, where it does not exist — the flattened meta exposes only
+`{id,name,status,owner,horizon,workflow_type,ac_block,fm,path}`. The lookup silently
+returned `None`, failed open, and reported every task as advanced. Same shape as the
+headline defect: a predicate returning "all clear" because it could not read its input.
+Caught only because the origin case was checked by hand rather than trusting the verdict.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,6 +174,15 @@ independent fixes, and fixing either one alone leaves the loop unguarded.
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t2916_stall_guard_coverage.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2914_resolver_stall_guard.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2915_resolver_inflight_expiry.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m pytest tests/unit/test_resolver.py tests/unit/test_resolver_run.py -q > /tmp/.t2916-pytest 2>&1 && grep -q passed /tmp/.t2916-pytest
+# Coverage must be present in --json whether or not anything is stalled (the whole defect).
+bin/fw resolver stalled --json > /tmp/.t2916-stalled 2>&1 && python3 -c "import json;d=json.load(open('/tmp/.t2916-stalled'));c=d['coverage'];assert {'tasks_seen','evaluated','below_threshold','inactive'} <= set(c), c;assert c['tasks_seen'] > 0, 'coverage denominator is zero — guard sees nothing'"
+# The origin case must be reachable: a task with >= threshold dispatches and no advancement is findable.
+bin/fw resolver stalled --json > /tmp/.t2916-origin 2>&1 && python3 -c "import json;d=json.load(open('/tmp/.t2916-origin'));assert d['coverage']['evaluated'] > 0, 'guard evaluated zero tasks — inert again'"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -312,3 +344,15 @@ in both directions.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2916-t-2914-stall-guard-is-inert--reports-no-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c32a83c7
+- **Timestamp:** 2026-08-11T13:33:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-11T13:33:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

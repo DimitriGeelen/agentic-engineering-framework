@@ -539,22 +539,62 @@ def _task_current_snapshot(task_id: str) -> Optional[Dict[str, Any]]:
     return {"status": meta["status"], "ac_ticked": _ac_ticked_count(meta["ac_block"])}
 
 
+def _task_touched_since(task_id: str, since_iso: str) -> bool:
+    """True if the task's own `last_update` has moved past `since_iso`
+    (T-2916). Used only on the degraded path, where no dispatch-time snapshot
+    exists to diff against. Unparseable/missing timestamps return True —
+    fail-open, so an unreadable task is never reported stalled on evidence
+    the function could not actually read."""
+    if not TASKS_ACTIVE.is_dir():
+        return True
+    candidates = list(TASKS_ACTIVE.glob(f"{task_id}-*.md"))
+    if not candidates:
+        return True
+    # last_update lives in the raw frontmatter dict, not the flattened meta —
+    # `_read_task_meta` surfaces only {id,name,status,owner,horizon,
+    # workflow_type,ac_block,fm,path}. Reading it off the top level silently
+    # yields None, which fails open and reports every task as advanced.
+    fm = _read_task_meta(candidates[0]).get("fm")
+    raw = str((fm or {}).get("last_update") or "").strip().strip("'\"")
+    if not raw:
+        return True
+    try:
+        last = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        since = datetime.fromisoformat(str(since_iso).replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return True
+    if last.tzinfo is None:
+        last = last.replace(tzinfo=timezone.utc)
+    if since.tzinfo is None:
+        since = since.replace(tzinfo=timezone.utc)
+    return last > since
+
+
 def _git_commit_count_since(task_id: str, since_iso: str) -> int:
-    """Count commits on the current branch referencing `task_id` in their
-    message, landed after `since_iso`. P-002 requires every commit reference
-    a task id, so a real advancing commit is findable this way regardless of
-    whether the task's own frontmatter/AC state was also touched."""
+    """Count commits landed after `since_iso` whose SUBJECT LINE references
+    `task_id`. P-002 requires every commit reference a task id in the form
+    `T-XXXX: ...`, so the subject is where a commit declares what it advances.
+
+    T-2916: this deliberately does NOT match the body. Matching anywhere in
+    the message conflates "this commit advanced the task" with "this commit
+    mentioned the task" — and the second is exactly what an RCA does. Measured
+    on the origin case: T-2862 (60 dispatches, 0 outcomes, `last_update`
+    unmoved since 2026-08-08) was cleared from the stalled set by commits
+    387a1465b and e7cce384b — the T-2914 and T-2916 commits, which cite T-2862
+    in their bodies *as the example of a stalled task*. Writing the RCA about a
+    stall was enough to make the stall undetectable.
+    """
     try:
         result = subprocess.run(
-            ["git", "log", f"--since={since_iso}", "--oneline",
-             "--grep", rf"\b{re.escape(task_id)}\b", "-E"],
+            ["git", "log", f"--since={since_iso}", "--format=%s"],
             cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=5,
         )
+        if result.returncode != 0:
+            return 0
+        pat = re.compile(rf"\b{re.escape(task_id)}\b")
+        return sum(1 for line in result.stdout.splitlines() if pat.search(line))
     except (OSError, subprocess.SubprocessError):
         return 0
-    if result.returncode != 0:
-        return 0
-    return len([ln for ln in result.stdout.splitlines() if ln.strip()])
 
 
 def _outcome_count(task_id: str) -> int:
@@ -594,7 +634,7 @@ def _stalled_task_ids(stall_after: int) -> Dict[str, Dict[str, Any]]:
     """
     if stall_after <= 0 or not DISPATCHES_LOG.exists():
         return {}
-    per_task: Dict[str, List[Tuple[str, Dict[str, Any]]]] = defaultdict(list)
+    per_task: Dict[str, List[Tuple[str, Optional[Dict[str, Any]]]]] = defaultdict(list)
     with DISPATCHES_LOG.open() as f:
         for line in f:
             line = line.strip()
@@ -606,10 +646,18 @@ def _stalled_task_ids(stall_after: int) -> Dict[str, Dict[str, Any]]:
                 continue
             tid = row.get("task_id")
             ts = row.get("ts")
-            snap = row.get("task_snapshot")
-            if not tid or not ts or not isinstance(snap, dict):
+            if not tid or not ts:
                 continue
-            per_task[tid].append((str(ts), snap))
+            snap = row.get("task_snapshot")
+            # T-2916: rows WITHOUT a task_snapshot are kept, not dropped. The
+            # original predicate required one on every row — but task_snapshot
+            # was introduced by T-2914 itself, so on day one the evaluable
+            # history was empty and the guard abstained on 100% of its input
+            # while printing the same line as a guard that had cleared it.
+            # Measured at the time of this fix: 11/1325 rows carry a snapshot
+            # (0.8%). A predicate that can only read 0.8% of the record cannot
+            # guard the record.
+            per_task[tid].append((str(ts), snap if isinstance(snap, dict) else None))
 
     stalled: Dict[str, Dict[str, Any]] = {}
     for tid, rows in per_task.items():
@@ -621,17 +669,71 @@ def _stalled_task_ids(stall_after: int) -> Dict[str, Dict[str, Any]]:
         current = _task_current_snapshot(tid)
         if current is None:
             continue  # not active anymore — outside the loop's concern
-        status_changed = current["status"] != earliest_snap.get("status")
-        ac_grew = current["ac_ticked"] > int(earliest_snap.get("ac_ticked", -1))
+
         commits = _git_commit_count_since(tid, earliest_ts)
-        if status_changed or ac_grew or commits > 0:
-            continue  # advanced by at least one signal — not stalled
+        if earliest_snap is not None:
+            # Full evidence: compare against the snapshot captured AT dispatch,
+            # which a worker cannot retroactively edit.
+            evidence = "snapshot"
+            status_changed = current["status"] != earliest_snap.get("status")
+            ac_grew = current["ac_ticked"] > int(earliest_snap.get("ac_ticked", -1))
+            advanced = status_changed or ac_grew or commits > 0
+        else:
+            # Degraded evidence (T-2916): no "then" state to diff against, but
+            # advancement is still observable without one. A commit referencing
+            # the task after the window opened is advancement under P-002; so is
+            # a `last_update` that has moved past the window's start. Both are
+            # strictly weaker than the snapshot diff — they cannot see an AC
+            # ticked with no commit and no last_update bump — so this path can
+            # MISS a stall, never invent one. That asymmetry is deliberate: the
+            # cost of a missed stall is one extra dispatch, the cost of a false
+            # stall is a task silently locked out (the T-2915 failure).
+            evidence = "degraded"
+            advanced = commits > 0 or _task_touched_since(tid, earliest_ts)
+
+        if advanced:
+            continue
         stalled[tid] = {
             "dispatch_count": len(rows),
             "since": earliest_ts,
             "outcome_count": _outcome_count(tid),
+            "evidence": evidence,
         }
     return stalled
+
+
+def _stall_coverage(stall_after: int) -> Dict[str, int]:
+    """What `_stalled_task_ids` was actually able to look at (T-2916).
+
+    A verdict without coverage is unreadable: "no tasks stalled" is the same
+    sentence whether the guard cleared 300 tasks or examined none. This
+    returns the denominator so the verdict can never again be printed alone.
+    """
+    if not DISPATCHES_LOG.exists():
+        return {"tasks_seen": 0, "evaluated": 0, "below_threshold": 0, "inactive": 0}
+    per_task: Dict[str, int] = defaultdict(int)
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if row.get("task_id") and row.get("ts"):
+                per_task[row["task_id"]] += 1
+    below = sum(1 for n in per_task.values() if n < stall_after)
+    inactive = sum(
+        1 for tid, n in per_task.items()
+        if n >= stall_after and _task_current_snapshot(tid) is None
+    )
+    return {
+        "tasks_seen": len(per_task),
+        "evaluated": len(per_task) - below - inactive,
+        "below_threshold": below,
+        "inactive": inactive,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1730,18 +1832,32 @@ def cmd_stalled(args: argparse.Namespace) -> int:
     is silent unless something prints it."""
     stall_after = max(1, int(args.stall_after))
     stalled = _stalled_task_ids(stall_after)
+    cov = _stall_coverage(stall_after)
     if args.json:
-        print(json.dumps({"stall_after": stall_after, "stalled": stalled}, indent=2, default=str))
+        print(json.dumps(
+            {"stall_after": stall_after, "coverage": cov, "stalled": stalled},
+            indent=2, default=str,
+        ))
         return 0
+    # T-2916: coverage prints on BOTH paths, verdict-first or not. The whole
+    # defect was a verdict with no denominator — "no tasks stalled" read as
+    # success while the guard had abstained on every task it was given.
+    cov_line = (
+        f"  evaluated {cov['evaluated']}/{cov['tasks_seen']} task(s) "
+        f"({cov['below_threshold']} below threshold, {cov['inactive']} not active)"
+    )
     if not stalled:
         print(f"resolver stalled: no tasks stalled at threshold {stall_after}")
+        print(cov_line)
         return 0
     print(f"Stalled tasks (>= {stall_after} dispatches, no advancement):")
     for tid, info in sorted(stalled.items()):
         print(
             f"  {tid:8s} dispatches={info['dispatch_count']:<4d} "
-            f"outcomes={info['outcome_count']:<3d} since={info['since']}"
+            f"outcomes={info['outcome_count']:<3d} evidence={info.get('evidence','?'):<8s} "
+            f"since={info['since']}"
         )
+    print(cov_line)
     return 0
 
 
