@@ -4361,3 +4361,9 @@ X'` returning empty group."
   task: T-2923
   date: 2026-08-11
   context: Added via context agent
+- id: L-578
+  learning: "Two-valued checks lie on the branch nobody is looking at; the checks that actually caught things are the ones with a third answer: UNKNOWN / could-not-evaluate. Evidence from one week across two trees: (a) the pre-push audit gate returns 0 on lock contention, so 'did not run' is indistinguishable from 'passed' — the fix is a distinct 75/EX_TEMPFAIL meaning could-not-evaluate (OBS-221/224); (b) 832's abstention probe read a process exit code as a verdict and reported GUARDED over a file with no guard, because a red leg exits non-zero too; (c) my own T-2926 leg flagged bin/fw's COMMENT quoting the defective form — a mention-vs-instance detector firing on a mention; (d) sort -V over two VERSION strings compared distances measured from different tags and returned a confident wrong answer (T-2925, L-550). The common factor is NOT the substrate and NOT carelessness: grep always answers, sort always answers, an exit code is always readable as a verdict. None of these tools can say 'I was not asked the right question', so the entire burden falls on the caller every single time. Design rule: when building a check, give it an explicit refusal path and make the refusal LOUD and DISTINCT from both pass and fail. Every refusal path either tree built this week caught a real defect; every two-valued answer eventually returned a false green. Corollary for probes: write them so PASS means 'the defect is still present' where possible — then the flip is the close condition and a green can never be mistaken for progress (832's T-435 shape)."
+  source: P-001
+  task: T-2925
+  date: 2026-08-11
+  context: Added via context agent

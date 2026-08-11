@@ -1,12 +1,12 @@
-audit-task-tools=3
+audit-task-tools=7
 
 
-check-tier0=8
+check-tier0=11
 check-fabric-new-file=1
-checkpoint=5
-loop-detect=4
+checkpoint=10
+loop-detect=9
 audit-task-tools=1
-budget-gate=4
-check-project-boundary=4
-check-active-task=4
-error-watchdog=2
+budget-gate=7
+check-project-boundary=7
+check-active-task=7
+error-watchdog=5
