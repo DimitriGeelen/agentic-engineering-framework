@@ -144,6 +144,94 @@ fw_branch_divergence() {
     return 0
 }
 
+# ── T-100196 (Leg 2 of T-100195/T-100194): safe go-live routing ──
+# Consumes the same ahead/behind classification as fw_branch_divergence and
+# takes the SAFE action for the current checkout instead of leaving the
+# operator to run a bare `git merge origin/master` (the T-100194 explosion:
+# 100+ conflicts from a genuine bidirectional fork). This is the "lightweight
+# fw go-live guard" recorded as defense-in-depth in T-100196's Decisions
+# (mechanism (c) — session-on-master — is the primary fix; this guard covers
+# the case where a branch drifts anyway).
+#
+# Routing (threshold shared with FW_BRANCH_BEHIND_WARN, default 50):
+#   up to date (ahead=0 behind=0)         → report, no-op
+#   ahead-only (ahead>0 behind=0)         → report, no-op (nothing to absorb)
+#   diverged-fork (ahead>t AND behind>t)  → REFUSE. Never merges. Names the
+#                                            reconcile-while-small remedy.
+#   ff-clean (ahead=0 behind>0)           → safe fast-forward
+#                                            (`git merge --ff-only`, cannot conflict)
+#   nudge (0<ahead<=t, behind>t)          → advise landing the unique commits
+#                                            via `fw integrate run` (one-way)
+#                                            rather than merging origin/master in
+#   minor (0<ahead<=t, 0<behind<=t)       → advise `fw sync` (rebase+push)
+#
+# Exit codes: 0 = no action needed / safely reconciled / advisory printed.
+#             1 = refused (fork) or an attempted fast-forward failed.
+#             2 = usage error (not a repo / no origin / no origin/master).
+fw_go_live() {
+    local repo="${1:-.}"
+    local warn="${FW_BRANCH_BEHIND_WARN:-50}"
+
+    git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || {
+        echo "not a git repository: $repo" >&2
+        return 2
+    }
+    git -C "$repo" remote 2>/dev/null | grep -qx 'origin' || {
+        echo "no 'origin' remote — nothing to reconcile" >&2
+        return 2
+    }
+    git -C "$repo" fetch origin master >/dev/null 2>&1
+    git -C "$repo" rev-parse --verify -q origin/master >/dev/null 2>&1 || {
+        echo "origin/master not found — nothing to reconcile against" >&2
+        return 2
+    }
+
+    local branch ahead behind
+    branch=$(git -C "$repo" branch --show-current 2>/dev/null)
+    set -- $(git -C "$repo" rev-list --left-right --count origin/master...HEAD 2>/dev/null)
+    behind="${1:-0}"; ahead="${2:-0}"
+
+    if [ "$ahead" -eq 0 ] && [ "$behind" -eq 0 ]; then
+        echo "up to date with origin/master."
+        return 0
+    fi
+
+    if [ "$ahead" -gt "$warn" ] && [ "$behind" -gt "$warn" ]; then
+        echo "REFUSED: diverged-fork (ahead=$ahead behind=$behind, threshold $warn)." >&2
+        echo "A bare 'git merge origin/master' will conflict (see T-100194) — not doing that." >&2
+        echo "Reconcile while small instead:" >&2
+        echo "  - merge origin/master INTO ${branch:-HEAD} and resolve by hand, or" >&2
+        echo "  - reset ${branch:-HEAD} if its unique commits already landed elsewhere, or" >&2
+        echo "  - route through the T-2473 union resolver once it lands." >&2
+        echo "See T-100195 (detection) / T-100194 (RCA)." >&2
+        return 1
+    fi
+
+    if [ "$ahead" -eq 0 ]; then
+        echo "ff-clean (ahead=0 behind=$behind) — fast-forwarding."
+        if git -C "$repo" merge --ff-only origin/master; then
+            echo "fast-forwarded to origin/master."
+            return 0
+        fi
+        echo "fast-forward failed unexpectedly — investigate before retrying." >&2
+        return 1
+    fi
+
+    if [ "$behind" -eq 0 ]; then
+        echo "ahead of origin/master (ahead=$ahead) — nothing to reconcile; push when ready (fw sync / fw push)."
+        return 0
+    fi
+
+    if [ "$behind" -gt "$warn" ]; then
+        echo "behind-threshold (ahead=$ahead behind=$behind, threshold $warn) — a lag with unique commits, not a fork."
+        echo "Land your unique commits with 'fw integrate run master --push' (one-way) rather than merging origin/master in."
+        return 0
+    fi
+
+    echo "minor divergence (ahead=$ahead behind=$behind, threshold $warn) — reconcile with 'fw sync' (rebase+push) when ready."
+    return 0
+}
+
 # ── T-2516 (T-2121 prong 3): untracked .tasks/ files ──
 # Prints one repo-relative path per line for each untracked (not tracked, not
 # gitignored) file under .tasks/active/ or .tasks/completed/. Empty output +
