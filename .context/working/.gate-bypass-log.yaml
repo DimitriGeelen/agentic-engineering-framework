@@ -6533,3 +6533,8 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover — T-2902 closed, r
   tier: 2
   mechanism: FW_ALLOW_HOST_SIGNED_RAIL
   detail: "fw rail post dm:0e7ee6cad65137fc:6a646ce8b1bc6560"
+- timestamp: '2026-08-11T22:30:24Z'
+  task: 'T-1687'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: render-surface hit is a git-log artifact: T-1853 (completed, own [REVIEW] AC checked) shipped the /arcs lifecycle filter tabs under a commit tagged T-1687 due to stale focus at commit time. T-1687''s actual scope (grill-with-docs skill install) never touched web/blueprints/arcs.py or web/templates/arcs_index.html.'
+  reason: ''

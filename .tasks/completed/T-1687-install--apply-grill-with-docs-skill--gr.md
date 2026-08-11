@@ -6,16 +6,16 @@ description: >
   install + apply grill-with-docs skill — grilling session on orchestrator-as-triage
   architectural plan
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [012-ArcSystem.md, C-004, agents/audit/completed-task-scan.py, agents/context/check-settings-edit.sh, agents/context/lib/safe-commands.sh, agents/handover/handover.sh, agents/task-create/create-task.sh, bin/fw, C-009, lib/arc.sh, lib/workflow_coverage.py, tests/playwright/test_arcs_renders_without_constituent_field.py, tests/playwright/test_landing_arc_cards.py, tests/unit/arc_abandon.bats, tests/unit/arc_create_no_constituent_tasks.bats, tests/unit/arc_lifecycle_state_machine.bats, tests/unit/audit_ctl013_skip_nested_audit.bats, tests/unit/audit_ctl028_completed_status_consistency.bats, tests/unit/audit_d10_html_comment_blindness.bats, tests/unit/audit_stale_arc_warning.bats, tests/unit/hook_check_settings_edit.bats, tests/unit/safe_commands_env_prefix.bats, tests/unit/test_cron_generate_shape.bats, tests/unit/test_g064_readiness.py, tests/unit/test_workflow_coverage.py, tools/g064-readiness.py, web/blueprints/arcs.py, web/templates/arcs_index.html]
 related_tasks: []
 created: 2026-05-02T19:15:25Z
-last_update: 2026-07-31T08:47:03Z
-date_finished:
+last_update: 2026-08-11T22:30:22Z
+date_finished: 2026-08-11T22:30:22Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
     estimator: bvp-estimator-v1-heuristic
@@ -128,6 +128,23 @@ bvp_scores_proposed:
       D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-11T21:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -235,3 +252,15 @@ grep -q "Interview me relentlessly" .claude/skills/grill-with-docs/SKILL.md
   - Grilling session under this task ID already ran to completion in substance: 15 questions resolved 2026-05-02 → 2026-05-13, captured inline in root `CONTEXT.md` (Orchestrator/Agent/Worker/Workflow/Delegation domain model, three-tier prompt strategy, workflow schema, pi doctor-warn, pause-not-timeout policy) plus four ADRs (`docs/adr/0001`–`0004`). Commit trail: `81ac8dac0` (Q1) through `4f1188415` (Q15).
   - The ACs were never ticked despite the work being done — closing that gap here, not re-running the grilling session (Q15's "Flagged ambiguities" section shows no further open question queued; the one deferred branch — cross-agent-conversation/(b3) — was explicitly spun out to a separate joint AEF/TermLink arc, not left dangling under T-1687).
 - **Context:** Dispatched as a `--bare` worker against this task's existing ACs; no new grilling content authored — the task's substance was already complete, only the bookkeeping (AC ticks) was stale.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f4666b69
+- **Timestamp:** 2026-08-11T22:30:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-11T22:30:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

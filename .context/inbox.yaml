@@ -1680,3 +1680,38 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-225
+  text: "Frozen standard names a fixture this tree does not have: policy/standards/aef-bpmn-mapping-v1-partI.md:113 (inside '# Part I — Frozen (v1)') names 'tests/fixtures/aef-bpmn/inception-gonogo.bpmn' as a Reference fixture. That file does not exist here. tests/fixtures/aef-bpmn/ holds 6 files (boundary-events, dispatch-loop, session-handover, session-lifecycle-d3, task-lifecycle-with-workflowref, typed-events); 832 reports 18 at the same path on their side, including inception-gonogo. So the two trees share a PATH and not a SET, and this tree's frozen normative reference dangles. Found while answering 832's rail 548 rename question (their T-365) — the naming issue they raised is secondary to this. 832 shipped tools/_t365-normative-fixture-guard.py which derives fixture paths by READING the standards and asserts each resolves on disk; run against this tree it would fail on inception-gonogo. Two dispositions, both human calls because Part I is frozen and two-party: (a) the fixture is missing here and should be obtained/restored, or (b) the reference is wrong and needs a v1.x delta. Do not sed-rename the path: 'aef-bpmn' also matches the standards' own filenames, and 832 measured that the obvious one-line rename would rewrite references INSIDE the frozen document (their §3, 46 files match the string vs 22 matching the actual fixture path)."
+  captured: 2026-08-11T22:50:25Z
+  context_task: T-2928
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-226
+  text: "fw note promote puts the ENTIRE observation body in the task 'name' field. agents/observe/observe.sh:251 passes --name \"$text\" where $text is the full observation text; the description gets only the stub 'Promoted from observation OBS-NNN'. Result: task names of 300-700 characters, which is then what every handover, task list and Watchtower title prints. Reported by 832 (rail 547 item 4) who repaired four of theirs by hand; confirmed in this tree at the cited line. Fix shape: bound the name (first clause / first N chars, or derive a slug) and put the full text in description where it belongs. Deliberately NOT folded into T-2928 (the dismiss --reason fix) despite being in the same function family and the same report — one bug, one task; compounding destroys the causality trace."
+  captured: 2026-08-11T22:51:54Z
+  context_task: T-2928
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-227
+  text: "fw note add \"real text\" silently mis-captures: the literal string 'add' is stored as the observation and the rest is discarded. Exit 0, success message printed. The verb list (list/count/triage/promote/dismiss) makes 'add' the natural guess, and free-text capture means any mistyped verb becomes a valid one-word observation, indistinguishable from a real one until someone reads it. Reported by 832 (rail 546 section A) with a specimen: captured TWICE independently by two of their sessions that each made the same guess. This is silent WRONG capture, not a refusal. Fix shape (832's, and the right one): reject a bare first argument that matches a known verb but is not one, or require --text. A refused note is retyped; a mis-captured one is lost. Same family as T-2928: the command succeeds, the output is well-formed, and the file does not get what the operator was told it got."
+  captured: 2026-08-11T22:51:54Z
+  context_task: T-2928
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-228
+  text: "fw hook-enable has no inverse. Registering an enforcement hook is one governed command; DEREGISTERING one is hand-edited JSON against .claude/settings.json — the file holding check-tier0, check-active-task and budget-gate. Reported by 832 (rail 546 section B) with a live cost: under their T-420 a probe registration merged into the existing Bash matcher group, and removing it by group DELETED THE TIER 0 GATE for two tool calls. Their framing is the finding, not the missing command: a framework that makes it easy to ADD an enforcement hook and unsupported to REMOVE one guarantees removal happens by improvisation, on the highest-consequence file, with no gate watching. Direction they propose: fw hook-disable --script <path> --matcher <pat> --event <evt> removing the COMMAND from its group and dropping the group only when it empties, plus a post-write assertion that every previously-registered command is still present."
+  captured: 2026-08-11T22:52:05Z
+  context_task: T-2928
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-229
+  text: "Gap-closure-field heuristic keys on a substring. audit.sh classifies a gap's alternate closure field as 'unread' only when the key NAME contains the substring 'trigger'. Proven insufficient by 832 (rail 546 section C) with a teeth leg: the entry that motivated the check had its closure condition in a field named 'closure_condition' — no 'trigger' substring — so it would still be reported as MISSING a closure condition it visibly contains. Near-synonyms do not reliably share a substring with the field they shadow. 832 covered it project-side with an explicit read-field allowlist in their own schema checker; the framework-side heuristic is unchanged and stays weak for any future non-'trigger' synonym. Same shape as the aef-bpmn rename near-miss (OBS-225) and the T-2926/T-2927 comment-vs-code traps: a substring match answering a question about meaning."
+  captured: 2026-08-11T22:52:06Z
+  context_task: T-2928
+  tags: []
+  status: pending
+  promoted_to: null
