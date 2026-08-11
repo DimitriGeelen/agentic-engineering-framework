@@ -1695,6 +1695,17 @@ fi
 
 # Update owner
 if [ -n "$NEW_OWNER" ]; then
+    # T-2924: validate against the enum, as --type and --horizon already do below
+    # (lines ~1718/~1744). `owner` was the one sibling of the three that did not.
+    # T-2674 closed the CREATE side (create-task.sh:203) and left this one open,
+    # so `fw task update T-XXX --owner anything` wrote the string verbatim while
+    # Watchtower's dropdowns whitelist the enum. Measured cost of the gap: 10 task
+    # files outside the enum (6 `claude`, 4 empty). Raised by 832 on the DM rail,
+    # whose BPMN compiler is about to emit `owner` values into task files.
+    if ! is_valid_owner "$NEW_OWNER"; then
+        error "Invalid owner '$NEW_OWNER'"
+        die "Valid owners: $VALID_OWNERS (enum source: status-transitions.yaml)"
+    fi
     OLD_OWNER=$({ grep "^owner:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
     # T-198/R-033: Owner protection — owner: human is sticky
     if [ "$OLD_OWNER" = "human" ] && [ "$NEW_OWNER" != "human" ]; then

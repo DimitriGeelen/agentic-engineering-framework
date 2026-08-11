@@ -1,0 +1,20 @@
+id: tests/unit/t2924_update_task_owner_gate.bats
+name: t2924_update_task_owner_gate
+type: script
+subsystem: unknown
+location: tests/unit/t2924_update_task_owner_gate.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-11
+created_by: unknown
