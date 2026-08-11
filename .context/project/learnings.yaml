@@ -4379,3 +4379,9 @@ X'` returning empty group."
   task: T-2928
   date: 2026-08-11
   context: Added via context agent
+- id: L-581
+  learning: "A learning describing a failure class (L-533: fix N instances, ask what fails at N+1) does not prevent recurrence unless paired with a running guard — T-2514 fixed audit.sh's 2-space-indent split idiom, but two sibling sites in handover.sh kept the same idiom and silently dropped observations (112 pending, 1 listed) for months because nothing swept for the pattern. Prevention needs an enumerating guard with no maintained allowlist, not just documentation."
+  source: P-001
+  task: T-2927
+  date: 2026-08-11
+  context: Added via context agent

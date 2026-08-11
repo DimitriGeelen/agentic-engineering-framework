@@ -6538,3 +6538,17 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover — T-2902 closed, r
   flag: '--skip-render-review'
   caller: 'check_render_surface_human_ac: render-surface hit is a git-log artifact: T-1853 (completed, own [REVIEW] AC checked) shipped the /arcs lifecycle filter tabs under a commit tagged T-1687 due to stale focus at commit time. T-1687''s actual scope (grill-with-docs skill install) never touched web/blueprints/arcs.py or web/templates/arcs_index.html.'
   reason: ''
+- timestamp: '2026-08-11T22:56:44Z'
+  task: 'T-2928'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2927'
+  command: 'bin/fw task update T-2927 --status work-completed --switch-focus 2>&1 | tail -10'
+- timestamp: '2026-08-11T22:57:52Z'
+  task: 'T-2928'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2927'
+  command: 'FW_SWITCH_FOCUS=1 git add tests/unit/t2927_observation_inbox_listing.bats && FW_SWITCH_FOCUS=1 git commit -q -m "T-2927: guard anti-vacuity leg no longer depends on HEAD being pre-fix
+
+The leg read de'

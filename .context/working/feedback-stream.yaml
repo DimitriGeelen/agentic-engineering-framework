@@ -32000,3 +32000,21 @@ scan_id: R-f4666b69
 task_id: T-1687
 payload:
   task_file: .tasks/active/T-1687-install--apply-grill-with-docs-skill--gr.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T23:00:27Z'
+scan_id: R-3d4adb62
+task_id: T-2927
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T23:00:27Z'
+scan_id: R-3d4adb62
+task_id: T-2927
+payload:
+  task_file: .tasks/active/T-2927-handover-lists-1-of-112-pending-observat.md

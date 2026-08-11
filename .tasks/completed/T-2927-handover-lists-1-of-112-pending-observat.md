@@ -6,12 +6,12 @@ description: >
   handover lists 1 of 112 pending observations — T-2514 regex fix never swept its
   sibling sites
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, tests/integration/t2922_greenfield_first_inception.bats, tests/unit/t2927_observation_inbox_listing.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T22:19:54Z
-last_update: '2026-08-11T22:30:13Z'
-date_finished:
+last_update: 2026-08-11T23:00:19Z
+date_finished: 2026-08-11T23:00:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -133,19 +133,38 @@ bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** The handover's `## Observation Inbox` section rendered "112 pending"
+above a listing that showed exactly one row, and the URGENT_OBS count (used to
+gate the "run `fw note triage` first" escalation) returned 1 against a true 3
+urgent-and-pending entries in `.context/inbox.yaml`.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Both sites in `agents/handover/handover.sh` extracted
+observations with a text split on a hard-coded 2-space-indent regex
+(`re.split(r'\n  - '...)`), an idiom copied from `agents/audit/audit.sh` at the
+time T-2514 fixed audit.sh's own copy. Any observation entry whose YAML
+serialised with a different indent, quoting, or line-wrap silently dropped out
+of the split with no error — the two sites were never re-derived from the
+actual YAML shape after audit.sh's copy was fixed.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** L-533 ("when you fix N instances of a class in
+one file, ask what would fail if there were an N+1th") was already written
+after T-2514 but was advisory prose, not a running check — nothing swept
+`agents/handover/handover.sh` for the same idiom. The listing block also had no
+mismatch check: a count line and a listing block are two independent pieces of
+output with no assertion tying them together, so a listing that silently
+truncated still rendered as complete-looking, well-formed markdown.
+
+**Prevention:** (1) Both sites now parse `yaml.safe_load` instead of splitting
+text, eliminating the indent-fragility class outright. (2) A new enumerating
+guard (leg 8, `tests/unit/t2927_observation_inbox_listing.bats`) fails on any
+source file that contains the `re.split(r'\n  - '...)` idiom outside a comment
+— a predicate over shape, not a maintained allowlist, so a future N+1th site
+cannot silently survive the way these two did (legs 9-10 pin that the guard
+fires on reconstructed defective bytes and does not fire on the comment in
+`audit.sh` that documents the defect). (3) A mismatch check now makes the
+listing say so in the rendered document whenever it emits fewer rows than the
+count it just printed, closing the "renders complete with payload silently
+absent" failure mode 832 flagged independently in their own inbox.
 
 ## Evolution
 
@@ -234,3 +253,20 @@ is this task's: a check that cannot report what it did not look at.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2927-handover-lists-1-of-112-pending-observat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d4adb62
+- **Timestamp:** 2026-08-11T23:00:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/t2927_observation_inbox_listing.bats`
+
+### 2026-08-11T23:00:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
