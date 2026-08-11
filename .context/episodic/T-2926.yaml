@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2926: fw doctor surfaces stale in-flight dispatch latches (T-2915 follow-through, stranded uncommitted)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T21:14:46Z
+# ============================================================================
+
+task_id: T-2926
+task_name: "fw doctor surfaces stale in-flight dispatch latches (T-2915 follow-through, stranded uncommitted)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T20:50:45Z
+completed: 2026-08-11T21:11:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-11T23:10:48+02:00
+last_commit: 2026-08-11T23:10:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  land the stranded latch surface — 250 dead dispatches were invisible, and the sibling WARN had never fired
+
+# Key outcomes
+outcomes:
+  - '`fw doctor` emits a latch line — either the `OK No stale in-flight latches` form or the `WARN N dispatch(es) latched stale` form — where before it emitted neither'
+  - 'The WARN branch is reachable with real data: `fw resolver latched --json` currently returns a non-empty `latched` map, so `fw doctor` must show the WARN form and not the OK form — observed: `WARN 250 dispatch(es) latched stale`, oldest T-1696 at age=144492m'
+  - 'The stalled-block brace-expansion bug is fixed in the same file (`printf ''%s''` + explicit empty-check; no defective expansion remains on either JSON variable, comment lines excluded from the scan)'
+  - 'A regression test pins the brace-expansion bug specifically — `tests/unit/t2926_doctor_latch_surface.bats` legs 1-4: leg 1 reconstructs the defect and requires it to bite, leg 4 pins why it was *silent* (the payload raises, and the original `except` turned the raise into 0)'
+  - 'The latched listing is capped at 5 but names the dropped count (`… and 245 more`) with the full total in the WARN header — no silent truncation'
+  - '`bin/fw` and `.agentic-framework/bin/fw` agree after `fw vendor self` (T-2240 self-vendor gate green)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.tasks/active/T-2926-fw-doctor-surfaces-stale-in-flight-dispa.md'
+  - 'tests/unit/t2926_doctor_latch_surface.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T23:10:48'
+    action: 'T-2926: land the stranded latch surface — 250 dead dispatches were invisible, and the sibling WARN had never fired'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 6
+  lines_added: 539
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2926-fw-doctor-surfaces-stale-in-flight-dispa.md
+generated_by: context-agent-hybrid

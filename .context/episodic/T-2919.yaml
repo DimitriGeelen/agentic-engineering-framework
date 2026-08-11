@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2919: budget-gate allowlist matches anywhere in the command — any string containing 'git commit' is allowed at critical
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T14:32:19Z
+# ============================================================================
+
+task_id: T-2919
+task_name: "budget-gate allowlist matches anywhere in the command — any string containing 'git commit' is allowed at critical"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T13:42:50Z
+completed: 2026-08-11T14:31:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-11T15:44:28+02:00
+last_commit: 2026-08-11T16:22:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  budget-gate allowlist matches anywhere in the command — reproduced from 832's rail report. the budget gate judges command structure, not substring presence. refresh vendored copies (cmd_classify.py + budget-gate.sh) + register test card
+
+# Key outcomes
+outcomes:
+  - 'The classifier matches the command''s **leading** verb, not a substring anywhere —'
+  - 'Compound commands are decomposed and judged: a chain is allowed only if **every**'
+  - 'Comments cannot launder: `npm run build # git commit` blocks'
+  - 'Quoted mentions cannot launder: `echo ''see git log for details''` blocks'
+  - 'The five wrap-up commands the framework itself prints as remedies still pass —'
+  - 'Test pins BOTH directions: all 9 probe cases above, plus the wrap-up remedies, so the'
+  - 'Reply posted to 832 on the rail confirming reproduction and the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/lib/cmd_classify.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/budget-gate.sh'
+  - '.context/working/focus.yaml'
+  - '.fabric/components/lib-cmd_classify.yaml'
+  - '.fabric/components/tests-unit-t2919_budget_gate_command_classify.yaml'
+  - 'lib/cmd_classify.py'
+  - '.tasks/active/T-2919-budget-gate-allowlist-matches-anywhere-i.md'
+  - 'tests/lint/prescribed-commands-are-allowed.bats'
+  - 'tests/unit/t2919_budget_gate_command_classify.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T15:44:28'
+    action: 'T-2919: budget-gate allowlist matches anywhere in the command — reproduced from 832''s rail report'
+  - time: '2026-08-11T16:21:24'
+    action: 'T-2919: the budget gate judges command structure, not substring presence'
+  - time: '2026-08-11T16:22:04'
+    action: 'T-2919: refresh vendored copies (cmd_classify.py + budget-gate.sh) + register test card'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 49 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 49
+  commits: 3
+  files_changed: 11
+  lines_added: 1375
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2919-budget-gate-allowlist-matches-anywhere-i.md
+generated_by: context-agent-hybrid

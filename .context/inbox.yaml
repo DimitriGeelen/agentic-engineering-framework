@@ -1666,3 +1666,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-223
+  text: "Governance gates fire on READ-ONLY Bash — four instances in one session (2026-08-11), across THREE different gates. (1) inception Open-Questions gate blocked 'ls .tasks/... ; grep ## Open Questions'; (2) G-020 placeholder-AC gate blocked 'fw doctor | grep latch'; (3) G-020 again blocked 'sed -n 460,500p lib/inception.sh'; (4) G-020 again blocked 'grep -n watchtower lib/review.sh'. Every one printed an EMPTY 'Attempting to modify:' field — the hook had no target file because a read has none, and blocked anyway. In cases 3 and 4 the blocked command was the one needed to gather the facts required to WRITE the ACs the gate demands, so the prescribed remedy was unreachable by the obvious route. Worked around each time via the Read tool and mcp__fw__task_show, which are ungated — so the gate is simultaneously over-reaching on Bash and absent on the surfaces that can actually read files. Supersedes and generalises OBS-222 (which recorded only instance 1). Fix shape: the Write/Edit gate is correct as-is; the Bash arm should resolve the command to a write target and no-op when there is none. An empty 'Attempting to modify:' is the tell the predicate had no instance to judge."
+  captured: 2026-08-11T21:21:06Z
+  context_task: T-2922
+  tags: []
+  status: pending
+  promoted_to: null
