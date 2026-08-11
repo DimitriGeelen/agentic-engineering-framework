@@ -16,7 +16,7 @@ description: >
   does NOT verify reachability — setting WATCHTOWER_URL to an unreachable address
   satisfies it — so the fix may be as small as a sane default rather than a hard failure.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T15:42:17Z
-last_update: '2026-08-11T15:45:15Z'
+last_update: 2026-08-11T21:19:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,14 +80,43 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found by the T-2862 end-to-end greenfield run. On a genuinely fresh `fw init`
+project with no Watchtower running, the first inception a new user creates
+**cannot be completed by any path**.
+
+The mechanism, from source:
+
+- `lib/review.sh:338` writes the review marker
+  (`.context/working/.reviewed-<task_id>`) at the **end** of `emit_review`.
+  Anything that exits the function earlier leaves the marker uncreated.
+- `lib/inception.sh:474-483` refuses `fw inception decide` when that marker is
+  absent — and the gate is **unconditional**: it blocks `GO`, `NO-GO` *and*
+  `DEFER` alike. There is no escape hatch, not even the hedge.
+- Nothing in the greenfield onboarding set tells the user to run `fw serve`
+  first. Greenfield T-001 mentions Watchtower only under "what you can do
+  meanwhile" — an optional aside, not a prerequisite.
+
+Net: the gate is a chokepoint whose unblock command is the very command that
+fails. Sibling of T-2720's keystone (the onboarding set must contain nothing
+the agent cannot resolve) and on the arc-015/arc-017 line.
+
+**Load-bearing detail for the fix:** `fw task review` does **not** verify
+reachability — pointing `WATCHTOWER_URL` at an unreachable address satisfies it
+today. So the failure is not "Watchtower must be up"; it is that URL
+*resolution* fails when nothing has ever been started. The fix is therefore
+plausibly a sane default rather than a new dependency — and any fix that makes
+review *require* a live Watchtower would make onboarding strictly worse.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduced first: an automated leg drives a fresh `fw init` project with no Watchtower running and asserts that, **before** the fix, `fw task review` on an inception exits non-zero and leaves no `.reviewed-<id>` marker — the regression must bite before it is repaired
+- [ ] On that same fresh project with no Watchtower, `fw task review T-XXX` exits 0 and writes `.context/working/.reviewed-T-XXX`
+- [ ] `fw inception decide` then succeeds for **all three** dispositions on a fresh project — `go`, `no-go` and `defer` each verified, because the marker gate blocks all three and a fix tested only against `go` leaves two thirds of the escape hatch shut
+- [ ] The fix does **not** introduce a live-Watchtower requirement: a leg asserts `fw task review` still succeeds when no server is listening, so onboarding never gains a daemon prerequisite
+- [ ] `fw task review` output on a Watchtower-less project names how to start one (`fw serve`) rather than only emitting an unreachable URL — the user is told the thing the URL presumes
+- [ ] Existing behaviour with a live Watchtower is unchanged: URL, QR and marker all still emitted (regression leg, since the emit path is shared)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,3 +283,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2922-fresh-greenfield-project-cannot-complete.md
 - **Context:** Initial task creation
+
+### 2026-08-11T21:19:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
