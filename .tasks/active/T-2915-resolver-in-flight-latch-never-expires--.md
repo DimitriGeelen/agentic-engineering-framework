@@ -1,6 +1,7 @@
 ---
 id: T-2915
-name: "resolver in-flight latch never expires — 9 tasks locked out of the loop since 2026-07-05"
+name: "resolver in-flight latch never expires — 9 tasks locked out of the loop since
+  2026-07-05"
 description: >
   resolver in-flight latch never expires — 9 tasks locked out of the loop since 2026-07-05
 
@@ -22,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T11:08:56Z
-last_update: 2026-08-11T11:08:56Z
-date_finished: null
+last_update: '2026-08-11T11:15:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +35,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-11T11:15:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-11T11:15:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2915: resolver in-flight latch never expires — 9 tasks locked out of the loop since 2026-07-05
@@ -76,16 +105,28 @@ which is why neither is visible from the outside.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_inflight_task_ids()` treats a dispatch older than a bounded age (config, default
+- [x] `_inflight_task_ids()` treats a dispatch older than a bounded age (config, default
       documented) as NOT in-flight — a worker cannot be in flight indefinitely
-- [ ] The nine tasks above become re-eligible (or are excluded for a DIFFERENT, stated
+- [x] The nine tasks above become re-eligible (or are excluded for a DIFFERENT, stated
       reason) after the fix — verified by re-running `_select_eligible` and diffing reasons
-- [ ] `fw resolver loop --json` distinguishes "no eligible tasks because everything is done"
+- [x] `fw resolver loop --json` distinguishes "no eligible tasks because everything is done"
       from "no eligible tasks because N are latched" — the silence must name its cause
-- [ ] Unit test pins the expiry: a synthetic dispatch row beyond the threshold is not
+- [x] Unit test pins the expiry: a synthetic dispatch row beyond the threshold is not
       in-flight, one within it still is (both directions, so the test cannot pass vacuously)
-- [ ] A stale-latch count is surfaced where an operator sees it without asking
+- [x] A stale-latch count is surfaced where an operator sees it without asking
       (`fw orchestrator status` or `fw doctor`)
+
+**Measured extent — the Context above undercounts by 28×.** It says nine; that was the count
+*after* every other eligibility filter had already removed most candidates. The true figure
+from `fw resolver latched --json` is **254 tasks**, deaths clustered on 2026-05-05 (76),
+2026-05-23 (47), 2026-05-14 (27), continuing through 2026-08-10. The eligible pool has been
+shrinking monotonically for three months: every worker death permanently removed a task and
+nothing ever added one back. The nine were simply the last ones still visible.
+
+**Evidence the fix works, live rather than simulated:** at 13:58:43 the loop picked
+**T-2171** — latched since 2026-06-26 — and dispatched `27e29813`, ending 14 hours of
+starvation. The age bound was in effect at that moment as uncommitted working-tree state,
+because `resolver-loop.service` execs `bin/fw` directly from the tree.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -119,6 +160,12 @@ which is why neither is visible from the outside.
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t2915_resolver_inflight_expiry.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m pytest tests/unit/test_resolver.py -q > /tmp/.t2915-pytest 2>&1 && grep -q passed /tmp/.t2915-pytest
+bin/fw resolver latched --json > /tmp/.t2915-latched 2>&1 && python3 -c "import json;d=json.load(open('/tmp/.t2915-latched'));assert 'latched' in d and 'max_age_min' in d"
+bin/fw resolver loop --json --max 1 > /tmp/.t2915-loop 2>&1 && python3 -c "import json;d=json.load(open('/tmp/.t2915-loop'));assert 'in_flight_count' in d, 'AC3 field missing'"
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Autonomous Dispatch"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -185,6 +232,15 @@ which is why neither is visible from the outside.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import ast; ast.parse(open('lib/resolver.py').read())"
+bash -n bin/fw
+out=$(python3 -m pytest tests/unit/test_resolver.py -k inflight -q 2>&1); echo "$out" | grep -q "4 passed" && ! echo "$out" | grep -q failed
+out=$(python3 -m pytest tests/unit/test_resolver.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+out=$(bats tests/unit/t2915_resolver_inflight_expiry.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2914_resolver_stall_guard.bats 2>&1); echo "$out" | grep -q '^ok 10 ' && ! echo "$out" | grep -q '^not ok'
+python3 lib/resolver.py pick --json --stall-after 0 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); nine=['T-2171','T-1820','T-2389','T-2395','T-100196','T-1687','T-1719','T-2448','T-2385']; eligible=set(d.get('eligible') or []); excl=dict(d.get('excluded') or []); missing=[(t, excl.get(t, '???')) for t in nine if t not in eligible and excl.get(t) == 'in-flight dispatch']; assert not missing, missing"
+python3 -c "import yaml; yaml.safe_load(open('.context/concerns.yaml'))"
+
 ## RCA
 
 **Symptom:** the autonomous dispatch loop reports `no eligible tasks; dispatched 0` on every
@@ -212,6 +268,21 @@ observable, so the defect reads as the fix working.
 and "everything latched" stop being the same sentence; (c) surface the latched count in an
 operator-facing status so a growing latch set is visible without running a Python probe.
 (a) is the fix; (b) and (c) are what catch the next instance.
+
+**Addendum (OBS-185, found wiring (c) into `fw doctor`):** the sibling stalled-task WARN this
+new WARN was modeled on (T-2914, same "Autonomous Dispatch" doctor section) used
+`echo "${_json:-{}}" | python3 -c "... except Exception: d={} ..."` to default an empty
+capture to `{}`. That idiom is itself broken — bash's brace-matching in parameter expansion
+appends a stray `}` to the OUTPUT whenever the variable is set and ends in `}` (which valid
+JSON always does), corrupting the JSON before it reaches `python3`, which then silently
+falls back to `d={}` via the bare `except`. Net effect: the T-2914 stalled-task WARN had
+never actually fired, on any input, since it shipped — measured directly (real stalled
+count via `fw resolver stalled --json` vs the doctor-path count) rather than inferred. Same
+class this task's RCA describes one paragraph up: a green that asserts nothing, this time at
+one more remove (a shell quoting bug swallowed by a Python except-clause swallowed by a
+doctor WARN nobody had reason to distrust). Fixed alongside (both the stalled and the new
+latched blocks) rather than shipping this task's own new WARN right next to a sibling of the
+exact same shape, silently broken. Registered as OBS-185 (resolved, same commit).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -253,14 +324,44 @@ operator-facing status so a growing latch set is visible without running a Pytho
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-11 — adopting an autonomous worker's uncommitted implementation
+
+- **Chose:** adopt the implementation written by dispatch worker `593a2bcc` and commit it,
+  rather than discard it and rewrite, or leave it uncommitted.
+- **Why:** it satisfies all five ACs on their merits — age bound with a documented default and
+  env override, four distinct `stop_reason` strings, a `fw resolver latched` verb, a `fw doctor`
+  **Autonomous Dispatch** section, and a 6-leg bats suite whose legs 1 and 2 are the two
+  required directions (all green, plus 31 pytest). Discarding working, tested code to rewrite
+  it identically would be waste. Leaving it uncommitted was not an option: `resolver-loop.service`
+  execs `bin/fw` from the working tree, so the fix was already governing production while
+  existing only as unstaged state — one `git checkout` from being lost silently.
+- **Rejected:** committing it silently as my own. The authorship is recorded here and in the
+  commit body because T-2917 is open on exactly this — worker commits being indistinguishable
+  from operator commits. Filing that defect and then obscuring an instance of it would be
+  incoherent.
+- **Note:** the worker did not close its own task. It died `aborted_streaming` after 168 turns
+  and $10.54, having been refused three times by gates — twice on
+  `fw task update T-2915 --status work-completed`. It did the work and could not record it.
+
+### 2026-08-11 — in-flight age bound default (240min)
+- **Chose:** `FW_RESOLVER_INFLIGHT_MAX_AGE_MIN` defaults to 240 (4 hours), env-only
+  (no `FW_CONFIG_REGISTRY` entry yet).
+- **Why:** measured worst-case legitimate dispatch duration is well under an hour —
+  `TermLinkWorker` defaults to a 1800s (30min) internal timeout, and every
+  pi/ollama-loop row sampled from `dispatches.jsonl` completed inside a single 30-min
+  systemd tick. 240min is a wide safety margin above that ceiling (roughly 8x) while
+  remaining far short of "weeks" — the failure mode this fixes. Env-only mirrors the
+  existing precedent of `FW_RESOLVER_BVP_RANK` / `FW_DISPATCH_ORIGIN` (both read
+  directly via `os.environ` in `lib/resolver.py` with no registry entry) rather than
+  adding a new registry key for a single-consumer internal tuning constant.
+- **Rejected:** (a) tying the bound to `TERMLINK_WORKER_TIMEOUT` (600s/10min,
+  already in `FW_CONFIG_REGISTRY`) — rejected because that constant governs a
+  different worker_kind's internal timeout, not a general dispatch-row age bound,
+  and pi/ollama-loop dispatches have no such cap; conflating them would risk
+  expiring a genuinely-running non-TermLink worker. (b) a much shorter bound
+  (e.g. 60min) — rejected as leaving less margin for a slow but legitimate
+  dispatch to be mistaken for abandoned, with no offsetting benefit (the defect
+  this fixes was five *weeks*, not minutes).
 
 ## Decision
 
@@ -278,3 +379,28 @@ operator-facing status so a growing latch set is visible without running a Pytho
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2915-resolver-in-flight-latch-never-expires--.md
 - **Context:** Initial task creation
+
+### 2026-08-11T12:00Z — build [dispatched worker]
+- **Action:** Age-bounded the in-flight latch (`lib/resolver.py`): `_inflight_dispatch_status()`
+  now splits dispatch rows with no `terminal_event` into "in-flight" (within
+  `FW_RESOLVER_INFLIGHT_MAX_AGE_MIN`, default 240min) and "stale" (beyond it, no longer
+  excludes). `_inflight_task_ids()`/`_stale_inflight_ids()` are the two read sides.
+  `fw resolver loop --json` now names its own cause (`in_flight_count` field + stop_reason
+  text distinguishing "N in-flight" from "nothing to do" from "N excluded, none in-flight").
+  New `fw resolver latched [--json]` CLI surfaces the stale set; wired into `fw doctor`'s
+  Autonomous Dispatch section as a WARN/OK line alongside the existing stalled-task check.
+- **Discovered + fixed alongside (OBS-185):** the sibling stalled-task WARN (T-2914) used a
+  broken `${var:-{}}` bash idiom that silently corrupted its own JSON and always reported
+  zero regardless of the real count — same false-green shape as this task's core defect, one
+  layer down. Fixed both call sites (stalled + new latched) with an explicit empty-check +
+  `printf` instead of the buggy parameter-expansion default.
+- **Verified:** all nine originally-latched tasks (T-2171, T-1820, T-2389, T-2395, T-100196,
+  T-1687, T-1719, T-2448, T-2385) are eligible again per `fw resolver pick --json` (measured
+  directly, not inferred). New pytest unit tests (`test_resolver.py::test_inflight_*`, 4
+  tests) pin both directions of the expiry so the test cannot pass vacuously. New bats file
+  `t2915_resolver_inflight_expiry.bats` (6 tests) pins the CLI-level surfacing. Pre-existing
+  `t2914_resolver_stall_guard.bats` (10 tests) still green — no regression to the stall guard
+  it sits beside.
+- **Output:** `lib/resolver.py`, `bin/fw` (Autonomous Dispatch doctor section),
+  `tests/unit/test_resolver.py`, `tests/unit/t2915_resolver_inflight_expiry.bats`,
+  `.context/concerns.yaml` (OBS-185)

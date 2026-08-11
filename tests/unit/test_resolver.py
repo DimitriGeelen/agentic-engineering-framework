@@ -458,3 +458,80 @@ def test_assemble_prompt_custom_preamble_missing_falls_back(isolated_root, capsy
     assert "does-not-exist.md" in captured.err
     # Fell back to baseline
     assert "RISK POLICY" in out
+
+
+# ---------------------------------------------------------------------------
+# T-2915: in-flight latch expiry — a dispatch row with no terminal_event must
+# NOT exclude its task forever. Both directions are pinned so the test cannot
+# pass vacuously: a row within the age bound still latches (worker presumed
+# running); a row beyond it no longer does (worker presumed abandoned).
+# ---------------------------------------------------------------------------
+def _write_open_dispatch(root: Path, task_id: str, age_min: float) -> None:
+    """Append a dispatch row with NO terminal_event, timestamped `age_min`
+    minutes in the past — simulates a worker that never reported back."""
+    import datetime
+
+    log = root / ".context" / "dispatches.jsonl"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    ts = (
+        datetime.datetime.now(datetime.timezone.utc)
+        - datetime.timedelta(minutes=age_min)
+    ).isoformat()
+    row = {
+        "schema_version": 1,
+        "ts": ts,
+        "dispatch_id": f"dd-{task_id}-{age_min}",
+        "task_id": task_id,
+        "task_type": "default",
+        "worker_kind": "TermLink",
+        "outcome": None,
+        "origin": "test-seed",
+    }
+    with log.open("a") as f:
+        f.write(json.dumps(row) + "\n")
+
+
+def test_inflight_within_age_bound_still_latches(isolated_root):
+    """A dispatch row younger than the age bound is still presumed
+    in-flight — the picker must not double-dispatch a worker that may
+    genuinely still be running."""
+    root, r = isolated_root
+    _write_open_dispatch(root, "T-9201", age_min=10)
+    inflight = r._inflight_task_ids(max_age_min=60)
+    assert "T-9201" in inflight
+    stale = r._stale_inflight_ids(max_age_min=60)
+    assert "T-9201" not in stale
+
+
+def test_inflight_beyond_age_bound_expires(isolated_root):
+    """A dispatch row older than the age bound is presumed abandoned — it
+    must NOT latch its task out of the loop forever (T-2915 origin: nine
+    tasks locked out for five weeks by exactly this gap)."""
+    root, r = isolated_root
+    _write_open_dispatch(root, "T-9202", age_min=500)
+    inflight = r._inflight_task_ids(max_age_min=60)
+    assert "T-9202" not in inflight
+    stale = r._stale_inflight_ids(max_age_min=60)
+    assert "T-9202" in stale
+    assert stale["T-9202"]["age_min"] > 60
+
+
+def test_inflight_default_age_bound_is_documented_and_positive(isolated_root):
+    """Default resolves from FW_RESOLVER_INFLIGHT_MAX_AGE_MIN, falling back
+    to the documented module constant when unset/invalid."""
+    root, r = isolated_root
+    os.environ.pop("FW_RESOLVER_INFLIGHT_MAX_AGE_MIN", None)
+    assert r._inflight_max_age_min() == r._INFLIGHT_MAX_AGE_MIN_DEFAULT
+    assert r._inflight_max_age_min() > 0
+
+
+def test_inflight_age_bound_env_override(isolated_root, monkeypatch):
+    """FW_RESOLVER_INFLIGHT_MAX_AGE_MIN overrides the default — used by the
+    picker/loop/latched CLI surfaces without a code change."""
+    root, r = isolated_root
+    monkeypatch.setenv("FW_RESOLVER_INFLIGHT_MAX_AGE_MIN", "30")
+    assert r._inflight_max_age_min() == 30
+    _write_open_dispatch(root, "T-9203", age_min=45)
+    # 45min old, 30min bound → expired.
+    assert "T-9203" not in r._inflight_task_ids()
+    assert "T-9203" in r._stale_inflight_ids()

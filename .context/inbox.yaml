@@ -1602,3 +1602,11 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-214
+  text: "LIVE REPRODUCTION of T-2915/T-2917, observed 2026-08-11T13:27-13:44 CEST. Filing T-2915/T-2916/T-2917 (agent-owned, started-work, real ACs) made them ELIGIBLE — the loop had been starved for 12h because every candidate was latched. The very next tick (11:27:53Z) dispatched a TermLink worker onto T-2915, the task describing the latch defect. The worker edited lib/resolver.py (+145/-6, implementing the age bound exactly as the ACs specify) at 13:32:59, then went silent. 11min later terminal_event is still None — so it has either died or stalled, which under the unfixed predicate latches T-2915 in-flight PERMANENTLY. The defect is reproducing on the task that describes it. Also: FW_SKIP_SELF_VENDOR_CHECK=1 skips the push-hook check but NOT the pre-push audit section, which FAILs independently on the same drift — incomplete bypass contract, T-1890/L-399 producer-consumer parity class. Net effect: 2 commits unpushable without Tier-0 --no-verify while a concurrent worker holds the tree."
+  captured: 2026-08-11T11:44:48Z
+  context_task: T-2915
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

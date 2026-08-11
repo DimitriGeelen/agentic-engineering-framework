@@ -61,6 +61,32 @@ VAR_PAT = re.compile(r"\$([A-Z][A-Z0-9_]*)")
 # picked. Origin: T-2862 hit 57 dispatches / 0 outcomes before this existed.
 _DEFAULT_STALL_AFTER = 5
 
+# T-2915: default age bound (minutes) for the in-flight latch. A dispatch row
+# with no terminal_event is presumed "worker still running" — but nothing
+# ever bounded that presumption, so a worker that died mid-run (crash, OOM,
+# host reboot) latched its task out of the loop forever. Observed worst-case
+# legitimate runtime is well under an hour (TermLinkWorker default timeout
+# 1800s/30min + 30s grace; pi/ollama-loop dispatches complete inside a single
+# 30-min systemd tick in every measured row). 240min (4h) is a wide safety
+# margin above that ceiling while still being far short of "weeks" — the
+# failure mode this fixes (nine tasks latched five weeks, T-2915 origin).
+# Override via FW_RESOLVER_INFLIGHT_MAX_AGE_MIN (not yet in FW_CONFIG_REGISTRY
+# — env-only, consistent with FW_RESOLVER_BVP_RANK/FW_DISPATCH_ORIGIN above).
+_INFLIGHT_MAX_AGE_MIN_DEFAULT = 240
+
+
+def _inflight_max_age_min() -> int:
+    """Resolve the in-flight age bound: FW_RESOLVER_INFLIGHT_MAX_AGE_MIN env
+    var, falling back to the documented default on missing/invalid input."""
+    raw = os.environ.get("FW_RESOLVER_INFLIGHT_MAX_AGE_MIN", "")
+    try:
+        val = int(raw)
+        if val > 0:
+            return val
+    except ValueError:
+        pass
+    return _INFLIGHT_MAX_AGE_MIN_DEFAULT
+
 # NOTE: keep in sync with bin/fw:1804 (T-1734). Two tables drifted before: bin/fw
 # accepted "ollama-loop" while this one didn't, so workflows listed cleanly but
 # failed at dispatch. If you add a worker_kind here, add it there too (and vice versa).
@@ -1233,11 +1259,27 @@ def _read_task_meta(path: Path) -> Dict[str, Any]:
     }
 
 
-def _inflight_task_ids() -> set:
-    """Task IDs whose most-recent dispatch row has no terminal_event — a worker
-    may still be running, so the picker must not double-dispatch them."""
+def _inflight_dispatch_status(max_age_min: Optional[int] = None) -> Dict[str, Dict[str, Any]]:
+    """Task IDs whose most-recent dispatch row has no terminal_event, split by
+    age against `max_age_min` (T-2915, default `_inflight_max_age_min()`).
+
+    Absence of terminal_event is produced by two situations a raw predicate
+    cannot distinguish: a worker still running, and a worker that died
+    without ever writing one. Age is the only signal that separates them —
+    a dispatch older than the bound is presumed abandoned, not running.
+
+    Returns {task_id: {"ts", "age_min", "stale"}} for EVERY task with an
+    open (terminal_event-less) latest dispatch — "stale": False is still
+    in-flight (excludes from picking), "stale": True has aged out (no
+    longer excludes, but is worth surfacing as an anomaly — see
+    `_stale_inflight_ids`). Unparseable/missing timestamps fail OPEN (not
+    in-flight) — mirrors `_recently_dispatched_ids`'s convention of never
+    wrongly excluding on data this function can't interpret; a row this
+    corrupt cannot be verified as recent, so it must not block forever."""
     if not DISPATCHES_LOG.exists():
-        return set()
+        return {}
+    if max_age_min is None:
+        max_age_min = _inflight_max_age_min()
     latest: Dict[str, tuple] = {}  # task_id -> (ts, terminal_event)
     with DISPATCHES_LOG.open() as f:
         for line in f:
@@ -1254,7 +1296,45 @@ def _inflight_task_ids() -> set:
             ts = str(row.get("ts", ""))
             if tid not in latest or ts >= latest[tid][0]:
                 latest[tid] = (ts, row.get("terminal_event"))
-    return {tid for tid, (_ts, te) in latest.items() if not te}
+
+    now = datetime.now(timezone.utc)
+    status: Dict[str, Dict[str, Any]] = {}
+    for tid, (ts, te) in latest.items():
+        if te:
+            continue  # has a terminal_event — not in-flight at all
+        try:
+            parsed = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            continue  # unparseable ts — fail open, not in-flight
+        age_min = (now - parsed).total_seconds() / 60.0
+        status[tid] = {
+            "ts": ts,
+            "age_min": round(age_min, 1),
+            "stale": age_min > max_age_min,
+        }
+    return status
+
+
+def _inflight_task_ids(max_age_min: Optional[int] = None) -> set:
+    """Task IDs currently in-flight — most-recent dispatch has no
+    terminal_event AND is within the age bound (T-2915). A worker cannot be
+    in flight indefinitely: once a dispatch ages past `max_age_min` it is
+    presumed abandoned and stops excluding its task (see
+    `_stale_inflight_ids` for the surfaced-anomaly half)."""
+    status = _inflight_dispatch_status(max_age_min)
+    return {tid for tid, info in status.items() if not info["stale"]}
+
+
+def _stale_inflight_ids(max_age_min: Optional[int] = None) -> Dict[str, Dict[str, Any]]:
+    """Dispatch rows that WOULD have latched their task forever pre-T-2915 —
+    no terminal_event, older than the age bound. No longer excludes from
+    picking, but a nonzero/growing count means workers are dying without
+    writing a terminal event, which is an operational anomaly worth
+    surfacing (`fw resolver latched`, `fw doctor` Autonomous Dispatch)."""
+    status = _inflight_dispatch_status(max_age_min)
+    return {tid: info for tid, info in status.items() if info["stale"]}
 
 
 def _recently_dispatched_ids(cooldown_min: int) -> set:
@@ -1554,6 +1634,7 @@ def cmd_loop(args: argparse.Namespace) -> int:
     claimed: set = set()
     results: List[Dict[str, Any]] = []
     stop_reason = f"reached --max ({max_iter})"
+    in_flight_n = 0  # T-2915 AC3: last-observed in-flight exclusion count
 
     for i in range(max_iter):
         eligible, _excluded = _select_eligible(
@@ -1561,7 +1642,27 @@ def cmd_loop(args: argparse.Namespace) -> int:
         )
         pick = eligible[0] if eligible else None
         if not pick:
-            stop_reason = "no eligible tasks" if i == 0 else "no more eligible tasks"
+            in_flight_n = sum(1 for _id, r in _excluded if r == "in-flight dispatch")
+            if i > 0:
+                stop_reason = "no more eligible tasks"
+            elif in_flight_n:
+                # T-2915: name the cause instead of a silence identical to
+                # "everything is done" — the exact ambiguity that let nine
+                # tasks sit unpicked for five weeks with no distinguishing
+                # signal in `dispatched 0`.
+                stop_reason = (
+                    f"no eligible tasks — {in_flight_n} in-flight "
+                    f"(worker presumed still running; frees on completion "
+                    f"or after {_inflight_max_age_min()}m)"
+                )
+            elif _excluded:
+                stop_reason = (
+                    f"no eligible tasks — {len(_excluded)} excluded, none "
+                    f"in-flight (see --json excluded reasons or `fw resolver "
+                    f"pick --json`)"
+                )
+            else:
+                stop_reason = "no eligible tasks — nothing to do (no active tasks match)"
             break
         chosen_type = _pick_workflow_type(pick)
         claimed.add(pick["id"])  # never re-pick within this run, dispatched or not
@@ -1603,6 +1704,7 @@ def cmd_loop(args: argparse.Namespace) -> int:
             "stall_after": stall_after,
             "picked": results, "dispatched_count": dispatched_n,
             "stop_reason": stop_reason,
+            "in_flight_count": in_flight_n,  # T-2915 AC3
         }, indent=2, default=str))
     else:
         mode = "DISPATCH" if args.dispatch else "DRY-RUN"
@@ -1640,6 +1742,27 @@ def cmd_stalled(args: argparse.Namespace) -> int:
             f"  {tid:8s} dispatches={info['dispatch_count']:<4d} "
             f"outcomes={info['outcome_count']:<3d} since={info['since']}"
         )
+    return 0
+
+
+def cmd_latched(args: argparse.Namespace) -> int:
+    """fw resolver latched [--max-age-min N] [--json] — surface (T-2915 AC5)
+    dispatch rows with no terminal_event older than the in-flight age bound.
+    These no longer exclude their task from picking (see
+    `_inflight_task_ids`), but a nonzero/growing count means a worker died
+    without writing a terminal event — an operational anomaly, distinct from
+    a worker that is still genuinely running."""
+    max_age = max(1, int(args.max_age_min)) if args.max_age_min else _inflight_max_age_min()
+    stale = _stale_inflight_ids(max_age)
+    if args.json:
+        print(json.dumps({"max_age_min": max_age, "latched": stale}, indent=2, default=str))
+        return 0
+    if not stale:
+        print(f"resolver latched: no stale in-flight dispatches (threshold {max_age}m)")
+        return 0
+    print(f"Stale in-flight dispatches (no terminal_event, older than {max_age}m):")
+    for tid, info in sorted(stale.items()):
+        print(f"  {tid:8s} age={info['age_min']:>8.1f}m  last_dispatch={info['ts']}")
     return 0
 
 
@@ -1754,6 +1877,22 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     sp_s.add_argument("--json", action="store_true", help="Emit as JSON")
     sp_s.set_defaults(func=cmd_stalled)
+
+    sp_lt = sub.add_parser(
+        "latched",
+        help="List tasks whose in-flight latch has aged out — abandoned "
+             "dispatches with no terminal_event (T-2915)",
+    )
+    sp_lt.add_argument(
+        "--max-age-min",
+        type=int,
+        default=0,
+        dest="max_age_min",
+        help=f"Age bound in minutes (default {_INFLIGHT_MAX_AGE_MIN_DEFAULT}, "
+             f"or FW_RESOLVER_INFLIGHT_MAX_AGE_MIN)",
+    )
+    sp_lt.add_argument("--json", action="store_true", help="Emit as JSON")
+    sp_lt.set_defaults(func=cmd_latched)
 
     args = parser.parse_args(argv)
     return args.func(args)
