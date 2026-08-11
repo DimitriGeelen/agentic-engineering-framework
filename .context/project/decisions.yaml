@@ -2886,3 +2886,17 @@ decisions:
     date: 2026-08-11
     task: T-2917
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-415
+    decision: "(c) the persistent session runs on `master` — no session branch —"
+    scope: project
+    date: 2026-08-11
+    task: T-100196
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-416
+    decision: "ship Slice 2 (`fw worktree gc`) and the guard now (additive,"
+    scope: project
+    date: 2026-08-11
+    task: T-100196
+    rationale: "Auto-captured from task file on completion"

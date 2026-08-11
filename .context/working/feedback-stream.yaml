@@ -31802,3 +31802,183 @@ scan_id: R-c32a83c7
 task_id: T-2916
 payload:
   task_file: .tasks/active/T-2916-t-2914-stall-guard-is-inert--reports-no-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T14:29:57Z'
+scan_id: R-dd45a416
+task_id: T-2389
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T14:29:57Z'
+scan_id: R-dd45a416
+task_id: T-2389
+payload:
+  task_file: .tasks/active/T-2389-execute-arc-012-continuous-mode-live-fir.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T14:32:08Z'
+scan_id: R-7d5e909b
+task_id: T-2919
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T14:32:08Z'
+scan_id: R-7d5e909b
+task_id: T-2919
+payload:
+  task_file: .tasks/active/T-2919-budget-gate-allowlist-matches-anywhere-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T14:41:05Z'
+scan_id: R-3c8baaf1
+task_id: T-2920
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T14:41:05Z'
+scan_id: R-3c8baaf1
+task_id: T-2920
+payload:
+  task_file: .tasks/active/T-2920-check-project-boundary-matches-cd-to-pat.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T16:40:45Z'
+scan_id: R-d64e506e
+task_id: T-2923
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T16:40:45Z'
+scan_id: R-d64e506e
+task_id: T-2923
+payload:
+  task_file: .tasks/active/T-2923-cmdclassify-splits-heredoc-bodies-as-com.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T16:52:17Z'
+scan_id: R-1fc69649
+task_id: T-2862
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T16:52:17Z'
+scan_id: R-1fc69649
+task_id: T-2862
+payload:
+  task_file: .tasks/active/T-2862-greenfield-seed-t-002-ships-a-self-refer.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T17:04:38Z'
+scan_id: R-0dc0d018
+task_id: T-2924
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T17:04:38Z'
+scan_id: R-0dc0d018
+task_id: T-2924
+payload:
+  task_file: .tasks/active/T-2924-owner-enum-drift-10-task-files-carry-own.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T17:05:03Z'
+scan_id: R-dba46545
+task_id: T-2917
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T17:05:03Z'
+scan_id: R-dba46545
+task_id: T-2917
+payload:
+  task_file: .tasks/active/T-2917-autonomous-worker-commits-are-signed-wit.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T18:00:26Z'
+scan_id: R-2599189c
+task_id: T-2395
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T18:00:26Z'
+scan_id: R-2599189c
+task_id: T-2395
+payload:
+  task_file: .tasks/active/T-2395-execute-t-2393-consolidation-merge-maste.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T21:00:45Z'
+scan_id: R-8bbef5b3
+task_id: T-100196
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T21:00:45Z'
+scan_id: R-8bbef5b3
+task_id: T-100196
+payload:
+  task_file: .tasks/active/T-100196-safe-go-live-path-reconciling-fw-go-live.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T21:14:35Z'
+scan_id: R-f10b8d8b
+task_id: T-2926
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T21:14:35Z'
+scan_id: R-f10b8d8b
+task_id: T-2926
+payload:
+  task_file: .tasks/active/T-2926-fw-doctor-surfaces-stale-in-flight-dispa.md

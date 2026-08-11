@@ -1,8 +1,20 @@
 ---
 id: T-2922
-name: "fresh greenfield project cannot complete its first inception: fw task review fails closed without a Watchtower nothing told the user to start"
+name: "fresh greenfield project cannot complete its first inception: fw task review
+  fails closed without a Watchtower nothing told the user to start"
 description: >
-  On a genuinely fresh fw init greenfield project, fw task review exits non-zero and writes no .context/working/.reviewed-T-XXX marker when no Watchtower is reachable. fw inception decide refuses without that marker, and the marker gate (lib/inception.sh:474) is unconditional — it blocks GO, NO-GO and DEFER alike, so there is no escape hatch at all, not even the hedge. Nothing instructs the user to run fw serve: greenfield T-001 mentions Watchtower only as 'what you can do meanwhile', an optional aside, not a prerequisite. Net effect: the first inception a new user ever runs cannot be completed by any path out of the box. Directly on the arc-015/arc-017 onboarding line and a sibling of T-2720's keystone (the onboarding set must contain nothing the agent cannot resolve). Found by the T-2862 end-to-end run. Note fw task review does NOT verify reachability — setting WATCHTOWER_URL to an unreachable address satisfies it — so the fix may be as small as a sane default rather than a hard failure.
+  On a genuinely fresh fw init greenfield project, fw task review exits non-zero and
+  writes no .context/working/.reviewed-T-XXX marker when no Watchtower is reachable.
+  fw inception decide refuses without that marker, and the marker gate (lib/inception.sh:474)
+  is unconditional — it blocks GO, NO-GO and DEFER alike, so there is no escape hatch
+  at all, not even the hedge. Nothing instructs the user to run fw serve: greenfield
+  T-001 mentions Watchtower only as 'what you can do meanwhile', an optional aside,
+  not a prerequisite. Net effect: the first inception a new user ever runs cannot
+  be completed by any path out of the box. Directly on the arc-015/arc-017 onboarding
+  line and a sibling of T-2720's keystone (the onboarding set must contain nothing
+  the agent cannot resolve). Found by the T-2862 end-to-end run. Note fw task review
+  does NOT verify reachability — setting WATCHTOWER_URL to an unreachable address
+  satisfies it — so the fix may be as small as a sane default rather than a hard failure.
 
 status: captured
 workflow_type: build
@@ -22,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T15:42:17Z
-last_update: 2026-08-11T15:42:17Z
-date_finished: null
+last_update: '2026-08-11T15:45:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +46,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-11T15:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-11T15:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2922: fresh greenfield project cannot complete its first inception: fw task review fails closed without a Watchtower nothing told the user to start
