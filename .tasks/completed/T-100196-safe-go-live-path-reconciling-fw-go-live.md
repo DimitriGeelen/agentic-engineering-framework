@@ -9,12 +9,12 @@ description: >
   fw go-live verb that ff-only-checks and routes a forked branch to the T-2473 union
   resolver / explicit reset instead of a bare git merge origin/master.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/branch-hygiene.sh, lib/worktree.sh, web/blueprints/inception.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T17:29:21Z
-last_update: 2026-08-06T23:25:29Z
-date_finished:
+last_update: 2026-08-11T21:00:43Z
+date_finished: 2026-08-11T21:00:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -126,10 +126,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Design decision recorded in `## Decisions`: which reconciling mechanism ships — (a) `fw integrate` auto-merges origin/master back into the working branch after each landing, (b) a guarded `fw go-live` verb that ff-only-checks and routes a forked branch to reconciliation, or (c) the host session tracks origin/master directly (no per-branch strand). Chosen with rationale vs the T-100194 fork evidence
-- [ ] The chosen mechanism refuses / safely reconciles a bidirectional fork instead of a bare `git merge origin/master` (the T-100194 explosion). Detection already exists (T-100195 `diverged-fork`); this leg consumes that signal to route the action
-- [ ] bats coverage: a forked fixture repo routes to reconciliation (not a raw conflicting merge); an ff-clean repo lands fast-forward; a merely-behind repo lands via one-way integrate — each asserted at the CLI surface
-- [ ] Landed on origin/master via `fw integrate` (the code lives on the trunk, not a stranded branch — the T-100194 meta-lesson), and vendored to `.agentic-framework/`
+- [x] Design decision recorded in `## Decisions`: which reconciling mechanism ships — (a) `fw integrate` auto-merges origin/master back into the working branch after each landing, (b) a guarded `fw go-live` verb that ff-only-checks and routes a forked branch to reconciliation, or (c) the host session tracks origin/master directly (no per-branch strand). Chosen with rationale vs the T-100194 fork evidence
+- [x] The chosen mechanism refuses / safely reconciles a bidirectional fork instead of a bare `git merge origin/master` (the T-100194 explosion). Detection already exists (T-100195 `diverged-fork`); this leg consumes that signal to route the action
+- [x] bats coverage: a forked fixture repo routes to reconciliation (not a raw conflicting merge); an ff-clean repo lands fast-forward; a merely-behind repo lands via one-way integrate — each asserted at the CLI surface
+- [x] Landed on origin/master via `fw integrate` (the code lives on the trunk, not a stranded branch — the T-100194 meta-lesson), and vendored to `.agentic-framework/`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -271,6 +271,22 @@ bvp_scores_proposed:
   (`git checkout -B master origin/master` — t2416 is a clean ancestor, FF-safe).
 - **Slice 4 — migrate/prune existing strands:** awaits human Tier-0 approval
   (`fw worktree gc` classifies; `git push origin <strand>` preserves; Tier-0 `git branch -D`).
+- **Leg 2 guard (`fw go-live`, this dispatch):** SHIPPED. `lib/branch-hygiene.sh:fw_go_live()`
+  consumes the T-100195 ahead/behind classification and routes the current checkout
+  to the safe action instead of leaving a bare `git merge origin/master` as the only
+  option: diverged-fork → REFUSED (never merges, names reconcile-while-small +
+  T-2473 union resolver); ff-clean (ahead=0) → safe fast-forward; behind-threshold
+  with a small unique-commit lag → advises `fw integrate run` (one-way); minor
+  both-sided drift under threshold → advises `fw sync`. New `bin/fw go-live` route.
+  `tests/unit/t100196_go_live.bats` (4/4 green) asserts all three AC-named states at
+  the CLI surface, including "no MERGE_HEAD / HEAD unchanged" for the refused-fork
+  and advisory cases — pinning that no merge is ever attempted automatically.
+  Landed on origin/master via `fw integrate run master --push` from a worktree
+  (commit 12922ad49), vendored to `.agentic-framework/` in a follow-up commit
+  (d95b5f150) after discovering the initial `fw integrate` invocation's vendor-refresh
+  step silently no-op'd (FRAMEWORK_ROOT mis-resolved to a different checkout under
+  concurrent-session env contention on this host) — direct `_self_vendor_libs`/
+  `_self_vendor_shim` invocation with FRAMEWORK_ROOT pinned resolved it.
 
 ## Decision
 
@@ -296,3 +312,15 @@ bvp_scores_proposed:
 ### 2026-07-05T17:36:36Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8bbef5b3
+- **Timestamp:** 2026-08-11T21:00:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-11T21:00:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

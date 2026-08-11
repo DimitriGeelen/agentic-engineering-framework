@@ -1,0 +1,157 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100196: Safe go-live path: reconciling fw go-live / integrate auto-merge-back (not raw git merge)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T21:01:00Z
+# ============================================================================
+
+task_id: T-100196
+task_name: "Safe go-live path: reconciling fw go-live / integrate auto-merge-back (not raw git merge)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-05T17:29:21Z
+completed: 2026-08-11T21:00:43Z
+duration_days: 37
+updates_count: 3
+first_commit: 2026-07-05T19:34:39+02:00
+last_commit: 2026-08-11T22:34:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write real ACs for the safe-go-live follow-up. re-shelve to horizon later (deferred follow-up). ship fw worktree gc (content-verified reclaim) + design + decision. ship session-on-master keystone (Slice 1) — fw sync + trunk-flow docs. 832 re-vendor LANDED v1.6.763 (rail 269) — OBS-097 close condition met, flipped resolved w/ live-verify evidence; 3 payload findings filed T-2655/56/57 (mode bits, patternless scanner, do_vendor chicken-and-egg); rail 270 T-2652 answers logged in artifact (in-map mirror unsafe: workflowMeta 8-key re-synthesis; stateKind= preferred; 832 T-277 parked); acked at 272. capture L-2845 two-channel subprocess identity learning. add fw go-live safe reconcile guard (defense-in-depth, Leg 2). vendor fw go-live guard to .agentic-framework/ (self-vendor gate). register go-live in show_help — router/help parity invariant was RED. refresh vendored copies (self-vendor gate)
+
+# Key outcomes
+outcomes:
+  - 'Design decision recorded in `## Decisions`: which reconciling mechanism ships — (a) `fw integrate` auto-merges origin/master back into the working branch after each landing, (b) a guarded `fw go-live` verb that ff-only-checks and routes a forked branch to reconciliation, or (c) the host session tracks origin/master directly (no per-branch strand). Chosen with rationale vs the T-100194 fork evidence'
+  - 'The chosen mechanism refuses / safely reconciles a bidirectional fork instead of a bare `git merge origin/master` (the T-100194 explosion). Detection already exists (T-100195 `diverged-fork`); this leg consumes that signal to route the action'
+  - 'bats coverage: a forked fixture repo routes to reconciliation (not a raw conflicting merge); an ff-clean repo lands fast-forward; a merely-behind repo lands via one-way integrate — each asserted at the CLI surface'
+  - 'Landed on origin/master via `fw integrate` (the code lives on the trunk, not a stranded branch — the T-100194 meta-lesson), and vendored to `.agentic-framework/`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-05 — Mechanism: session tracks origin/master directly (option c)'
+    chose: '(c) the persistent session runs on `master` — no session branch —'
+    rationale: 'only (c) satisfies the target invariant *"the session never holds a'
+    alternatives_rejected: ['(a) auto-merge-back and (b) go-live-guard-only — both leave a']
+  - decision: '2026-07-05 — Slice ordering: additive tooling now, workflow flip on GO'
+    chose: 'ship Slice 2 (`fw worktree gc`) and the guard now (additive,'
+    rationale: 'Slice 1 changes the operator''s daily workflow and Slice 4 is'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/lib/worktree.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - '.context/approvals/pending-17d4dd0baaec.yaml'
+  - '.context/approvals/pending-5c7923bd67b0.yaml'
+  - '.context/approvals/pending-d45fc748c2b3.yaml'
+  - '.context/audits/2026-08-05.yaml'
+  - '.context/audits/2026-08-06.yaml'
+  - '.context/audits/2026-08-07.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-06.yaml'
+  - '.context/bvp-driver-proposals.jsonl'
+  - '.context/concerns.yaml'
+  - '.context/designer/projects/aef-dispatch-loop/meta.json'
+  - '.context/designer/projects/aef-dispatch-loop/v3.bpmn'
+  - '.context/episodic/T-2841.yaml'
+  - '.context/episodic/T-2843.yaml'
+  - '.context/episodic/T-2844.yaml'
+  - '.context/episodic/T-2845.yaml'
+  - '.context/handovers/S-2026-0806-1749.md'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.hook-crashes.log'
+  - '.context/working/.hook-failure-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - 'docs/reports/T-100196-permanent-branch-hygiene-design.md'
+  - 'docs/reports/T-2652-conformance-rail-generalization.md'
+  - 'lib/branch-hygiene.sh'
+  - 'lib/worktree.sh'
+  - '.tasks/active/T-100196-safe-go-live-path-reconciling-fw-go-live.md'
+  - '.tasks/active/T-2408-t-1700-v2--backprop-dispatch-outcomes-vi.md'
+  - '.tasks/active/T-2655-vendor-payload-runtime-exec-scripts-ship.md'
+  - '.tasks/active/T-2656-vendor-payload-secret-scan-patterns-miss.md'
+  - '.tasks/active/T-2657-fw-update-chicken-and-egg-old-dovendor-m.md'
+  - '.tasks/completed/T-100195-guard-trunk-divergence-fw-doctor-warn-on.md'
+  - 'tests/unit/t100196_go_live.bats'
+  - 'tests/unit/t100196_worktree_gc.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-07-05T19:34:39'
+    action: 'T-100196: write real ACs for the safe-go-live follow-up'
+  - time: '2026-07-05T19:37:13'
+    action: 'T-100196: re-shelve to horizon later (deferred follow-up)'
+  - time: '2026-07-05T21:39:39'
+    action: 'T-100196: ship fw worktree gc (content-verified reclaim) + design + decision'
+  - time: '2026-07-05T21:52:26'
+    action: 'T-100196: ship session-on-master keystone (Slice 1) — fw sync + trunk-flow docs'
+  - time: '2026-07-28T12:24:03'
+    action: 'T-100196: 832 re-vendor LANDED v1.6.763 (rail 269) — OBS-097 close condition met, flipped resolved w/ live-verify evidence; 3 payload findings filed T-2655/56/57 (mode bits, patternless scanner, do_vendor chicken-and-egg); rail 270 T-2652 answers logged in artifact (in-map mirror unsafe: workflowMeta 8-key re-synthesis; stateKind= preferred; 832 T-277 parked); acked at 272'
+  - time: '2026-08-07T01:28:47'
+    action: 'T-100196: capture L-2845 two-channel subprocess identity learning'
+  - time: '2026-08-11T21:12:05'
+    action: 'T-100196: add fw go-live safe reconcile guard (defense-in-depth, Leg 2)'
+  - time: '2026-08-11T21:21:58'
+    action: 'T-100196: vendor fw go-live guard to .agentic-framework/ (self-vendor gate)'
+  - time: '2026-08-11T22:34:14'
+    action: 'T-100196: register go-live in show_help — router/help parity invariant was RED'
+  - time: '2026-08-11T22:34:23'
+    action: 'T-100196: refresh vendored copies (self-vendor gate)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 53491 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 53491
+  commits: 11
+  files_changed: 62
+  lines_added: 8902
+  lines_removed: 14086
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100196-safe-go-live-path-reconciling-fw-go-live.md
+generated_by: context-agent-hybrid
