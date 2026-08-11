@@ -1595,3 +1595,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-213
+  text: "T-2914 stall guard is inert and its inertness is invisible: 'no tasks stalled at threshold 5' while T-2862 sits at 60 dispatches / 0 outcomes / 3 days unmoved. Guard requires task_snapshot (a field introduced by its own commit) so evaluable history is empty on day one. Meanwhile the loop is silent for a DIFFERENT reason: 9 agent-owned tasks latched 'in-flight' since 2026-07-05 with no expiry. The two defects mask each other — latch produces silence, silence reads as the guard working, and the guard's own report cannot distinguish abstention from success. Filed T-2915 (latch) + T-2916 (inert guard). Corrects the implication in OBS-212 that T-2914 closed the loop defect."
+  captured: 2026-08-11T11:12:22Z
+  context_task: T-2916
+  tags: []
+  status: pending
+  promoted_to: null
