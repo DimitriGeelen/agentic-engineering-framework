@@ -3,7 +3,8 @@
 # Unattended autonomy WITHOUT the host-cron deploy topology. Fired by
 # resolver-loop.timer every 30 min. One tick = pick + dispatch at most ONE
 # eligible task (agent-owned, scoped, non-inception, not in-flight, not focused,
-# not in cooldown) through resolve+spawn, then capture the outcome.
+# not stalled — see --stall-after, T-2914) through resolve+spawn, then capture
+# the outcome.
 #
 # WHY systemd, not cron (T-2494 RCA): the loop's runtime dependency (litellm) is
 # already a systemd unit (litellm-proxy.service). Running the loop off the
@@ -21,6 +22,10 @@
 # Observe:
 #   systemctl status resolver-loop.timer        # next/last fire
 #   journalctl -u resolver-loop.service -n 50   # per-tick dispatch logs
+#   fw doctor                                   # "Autonomous Dispatch" section (T-2914):
+#                                                # single surface for systemd-live state +
+#                                                # any currently-stalled/zero-outcome tasks
+#   fw resolver stalled --json                  # tasks the loop is refusing to re-dispatch
 # Pause autonomy:
 #   sudo systemctl disable --now resolver-loop.timer
 
@@ -32,7 +37,19 @@ Wants=litellm-proxy.service
 [Service]
 Type=oneshot
 WorkingDirectory=/opt/999-Agentic-Engineering-Framework
+# T-2914: FW_DISPATCH_ORIGIN makes every dispatch row this unit fires
+# self-identifying (`resolver stalled`/`fw doctor` no longer need to find this
+# timer by elimination across three schedulers).
+Environment=FW_DISPATCH_ORIGIN=systemd:resolver-loop.service
 # fw + PROJECT_ROOT both resolve to the canonical MAIN checkout (WorkingDirectory) —
-# no host-vendored-install dependency. --max 1 caps per-tick fan-out; --cooldown-min
-# 30 prevents re-dispatching a non-advancing task every tick.
-ExecStart=/opt/999-Agentic-Engineering-Framework/bin/fw resolver loop --dispatch --max 1 --cooldown-min 30
+# no host-vendored-install dependency. --max 1 caps per-tick fan-out.
+#
+# T-2914: --cooldown-min 30 was removed — equal to OnUnitActiveSec=30min in
+# the paired .timer, it had already expired by the time the next tick fired
+# (30min + this tick's own run time), so it never actually suppressed
+# anything (origin: T-2862, 57 dispatches / 0 outcomes over 2 days).
+# --stall-after replaces it as the real non-convergence guard: it excludes a
+# task once N consecutive dispatches show no advancement (status change, AC
+# tick, or a landed commit), which bounds retries by evidence of progress
+# instead of by a clock that the tick interval always wins.
+ExecStart=/opt/999-Agentic-Engineering-Framework/bin/fw resolver loop --dispatch --max 1 --stall-after 5

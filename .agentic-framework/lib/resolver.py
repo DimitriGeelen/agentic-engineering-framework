@@ -34,6 +34,7 @@ import sys
 import threading
 import time
 import uuid
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -44,6 +45,7 @@ import yaml
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
 DISPATCHES_LOG = PROJECT_ROOT / ".context" / "dispatches.jsonl"
+DISPATCH_OUTCOMES_LOG = PROJECT_ROOT / ".context" / "dispatch-outcomes.jsonl"
 BLOBS_ROOT = PROJECT_ROOT / ".context" / "dispatch-blobs"
 PATTERNS_YAML = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
 EXAMPLES_ROOT = PROJECT_ROOT / "prompts" / "examples"
@@ -52,6 +54,12 @@ TASKS_COMPLETED = PROJECT_ROOT / ".tasks" / "completed"
 
 DISPATCH_SCHEMA_VERSION = 1
 VAR_PAT = re.compile(r"\$([A-Z][A-Z0-9_]*)")
+
+# T-2914: default non-convergence threshold for `resolver loop`/`pick`/`stalled`
+# — a task dispatched this many times in a row with no measurable advancement
+# (status change, AC tick, or a landed commit referencing it) stops being
+# picked. Origin: T-2862 hit 57 dispatches / 0 outcomes before this existed.
+_DEFAULT_STALL_AFTER = 5
 
 # NOTE: keep in sync with bin/fw:1804 (T-1734). Two tables drifted before: bin/fw
 # accepted "ollama-loop" while this one didn't, so workflows listed cleanly but
@@ -450,6 +458,157 @@ def select_variant(workflow: Dict[str, Any]) -> Optional[str]:
 
 
 # ---------------------------------------------------------------------------
+# Provenance + non-convergence guard (T-2914)
+# ---------------------------------------------------------------------------
+def _dispatch_origin() -> str:
+    """Identify what invoked this dispatch — never None (defect 3, T-2914).
+
+    Resolution order: explicit `FW_DISPATCH_ORIGIN` env var (set by the
+    systemd unit / cron command that fired this run) → systemd-detected
+    (INVOCATION_ID is set by systemd for every unit it starts, even when the
+    unit doesn't set FW_DISPATCH_ORIGIN) → interactive session (tagged with
+    the current session id from session.yaml, if resolvable) → 'unknown'.
+    'unknown' is still non-null — it says "not attributable", not nothing.
+    """
+    env_origin = os.environ.get("FW_DISPATCH_ORIGIN", "").strip()
+    if env_origin:
+        return env_origin
+    if os.environ.get("INVOCATION_ID"):
+        return "systemd:unlabeled-unit"
+    try:
+        interactive = sys.stdin.isatty() or sys.stdout.isatty()
+    except Exception:
+        interactive = False
+    if interactive:
+        session = ""
+        session_file = PROJECT_ROOT / ".context" / "working" / "session.yaml"
+        if session_file.exists():
+            try:
+                sdata = yaml.safe_load(session_file.read_text()) or {}
+                session = str(sdata.get("session_id") or "").strip()
+            except (yaml.YAMLError, OSError):
+                pass
+        return f"interactive:{session}" if session else "interactive:unknown-session"
+    return "unknown"
+
+
+def _ac_ticked_count(ac_block: str) -> int:
+    """Count of ticked `- [x]` checkboxes in an Acceptance Criteria block
+    (case-insensitive). Used as one of the three stall-detector advancement
+    signals — a worker cannot trivially satisfy this without doing the work,
+    since ticking is gated by the reviewer/completion machinery, not free text."""
+    return len(re.findall(r"^\s*-\s*\[x\]", ac_block, re.IGNORECASE | re.MULTILINE))
+
+
+def _task_current_snapshot(task_id: str) -> Optional[Dict[str, Any]]:
+    """Read {status, ac_ticked} for `task_id` from .tasks/active/ right now.
+    Returns None if the task is no longer in active/ (completed, removed —
+    not the stall detector's concern; it only guards the autonomous loop)."""
+    if not TASKS_ACTIVE.is_dir():
+        return None
+    candidates = list(TASKS_ACTIVE.glob(f"{task_id}-*.md"))
+    if not candidates:
+        return None
+    meta = _read_task_meta(candidates[0])
+    return {"status": meta["status"], "ac_ticked": _ac_ticked_count(meta["ac_block"])}
+
+
+def _git_commit_count_since(task_id: str, since_iso: str) -> int:
+    """Count commits on the current branch referencing `task_id` in their
+    message, landed after `since_iso`. P-002 requires every commit reference
+    a task id, so a real advancing commit is findable this way regardless of
+    whether the task's own frontmatter/AC state was also touched."""
+    try:
+        result = subprocess.run(
+            ["git", "log", f"--since={since_iso}", "--oneline",
+             "--grep", rf"\b{re.escape(task_id)}\b", "-E"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return 0
+    if result.returncode != 0:
+        return 0
+    return len([ln for ln in result.stdout.splitlines() if ln.strip()])
+
+
+def _outcome_count(task_id: str) -> int:
+    """Rows in dispatch-outcomes.jsonl for `task_id` — the zero-outcome
+    signal from defect 6 (T-2914: 57 dispatches of T-2862, 0 outcome rows)."""
+    if not DISPATCH_OUTCOMES_LOG.exists():
+        return 0
+    n = 0
+    with DISPATCH_OUTCOMES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if row.get("task_id") == task_id:
+                n += 1
+    return n
+
+
+def _stalled_task_ids(stall_after: int) -> Dict[str, Dict[str, Any]]:
+    """Task IDs that have not advanced across the last `stall_after`
+    dispatches (T-2914 defect 1). 'Advanced' means at least one of: status
+    changed, AC-ticked count increased, or a commit referencing the task
+    landed — all measured against the `task_snapshot` captured AT dispatch
+    time, which a worker cannot retroactively edit (a dispatch row is
+    append-only history, not a self-report).
+
+    Rows without a `task_snapshot` (pre-T-2914 history) are skipped —
+    fail-open, matching `_recently_dispatched_ids`'s convention: never
+    wrongly exclude on data this function can't interpret.
+
+    Returns {task_id: {"dispatch_count", "since", "outcome_count"}} for
+    tasks that should stop being picked and be surfaced instead.
+    """
+    if stall_after <= 0 or not DISPATCHES_LOG.exists():
+        return {}
+    per_task: Dict[str, List[Tuple[str, Dict[str, Any]]]] = defaultdict(list)
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            tid = row.get("task_id")
+            ts = row.get("ts")
+            snap = row.get("task_snapshot")
+            if not tid or not ts or not isinstance(snap, dict):
+                continue
+            per_task[tid].append((str(ts), snap))
+
+    stalled: Dict[str, Dict[str, Any]] = {}
+    for tid, rows in per_task.items():
+        rows.sort(key=lambda r: r[0])
+        if len(rows) < stall_after:
+            continue
+        window = rows[-stall_after:]
+        earliest_ts, earliest_snap = window[0]
+        current = _task_current_snapshot(tid)
+        if current is None:
+            continue  # not active anymore — outside the loop's concern
+        status_changed = current["status"] != earliest_snap.get("status")
+        ac_grew = current["ac_ticked"] > int(earliest_snap.get("ac_ticked", -1))
+        commits = _git_commit_count_since(tid, earliest_ts)
+        if status_changed or ac_grew or commits > 0:
+            continue  # advanced by at least one signal — not stalled
+        stalled[tid] = {
+            "dispatch_count": len(rows),
+            "since": earliest_ts,
+            "outcome_count": _outcome_count(tid),
+        }
+    return stalled
+
+
+# ---------------------------------------------------------------------------
 # Telemetry capture (dispatches.jsonl + blob dir)
 # ---------------------------------------------------------------------------
 def capture_dispatch(
@@ -482,6 +641,11 @@ def capture_dispatch(
     template_path = workflow.get("prompt_template", "")
     template_sha = git_sha(template_path) if template_path else None
 
+    # T-2914 defect 3: provenance must be non-null on every row. defect 1:
+    # task_snapshot is the pre-dispatch state a worker cannot retroactively
+    # edit, which _stalled_task_ids compares against N dispatches later.
+    task_snapshot = _task_current_snapshot(task_id)
+
     row: Dict[str, Any] = {
         "schema_version": DISPATCH_SCHEMA_VERSION,
         "ts": ts,
@@ -501,6 +665,8 @@ def capture_dispatch(
         "variant_id": variant_id,
         "blob_dir": str(blob_dir.relative_to(PROJECT_ROOT)),
         "outcome": "pending",
+        "origin": _dispatch_origin(),
+        "task_snapshot": task_snapshot,
         "dry_run": (not write) or None,
     }
     if row["dry_run"] is None:
@@ -1208,20 +1374,26 @@ def _pick_rank_key(meta: Dict[str, Any]) -> tuple:
     return (status_rank, horizon_rank, quad_rank, value_key, cost_key, idnum)
 
 
-def _select_eligible(claimed: Optional[set] = None, cooldown_min: int = 0) -> tuple:
+def _select_eligible(
+    claimed: Optional[set] = None, cooldown_min: int = 0, stall_after: int = 0
+) -> tuple:
     """Return (eligible_sorted, excluded) — excluded is list of (id, reason).
 
     `claimed` (T-2491): task ids already picked earlier in the SAME loop run —
     excluded so a single invocation never re-picks the same task (a completed
     dispatch leaves frontmatter status unchanged, so the eligibility filter
     alone would re-select it). `cooldown_min` (T-2491): exclude tasks dispatched
-    within the window — cross-tick anti-thrash. Both default off, so the
-    single-shot `cmd_pick` caller is unchanged."""
+    within the window — cross-tick anti-thrash. `stall_after` (T-2914): exclude
+    tasks that have not advanced across the last N dispatches (defect 1 —
+    without this, cooldown alone cannot bound a task no worker can finish; it
+    just delays the next of an unbounded number of retries). All three default
+    off, so the single-shot `cmd_pick` caller with no flags is unchanged."""
     inflight = _inflight_task_ids()
     if claimed:
         inflight = inflight | set(claimed)
     focused = _focused_task_id()
     cooling = _recently_dispatched_ids(cooldown_min) if cooldown_min > 0 else set()
+    stalled = _stalled_task_ids(stall_after) if stall_after > 0 else {}
     eligible: List[Dict[str, Any]] = []
     excluded: List[tuple] = []
     for path in sorted(TASKS_ACTIVE.glob("T-*.md")):
@@ -1229,6 +1401,12 @@ def _select_eligible(claimed: Optional[set] = None, cooldown_min: int = 0) -> tu
         reason = _pick_eligibility(meta, inflight, focused)
         if reason is None and meta["id"] in cooling:
             reason = f"cooldown (<{cooldown_min}m since last dispatch)"
+        if reason is None and meta["id"] in stalled:
+            info = stalled[meta["id"]]
+            reason = (
+                f"stalled ({info['dispatch_count']} dispatches since "
+                f"{info['since']}, {info['outcome_count']} outcomes, no advancement)"
+            )
         if reason is None:
             eligible.append(meta)
         else:
@@ -1247,11 +1425,11 @@ def _pick_workflow_type(meta: Dict[str, Any]) -> str:
 
 
 def cmd_pick(args: argparse.Namespace) -> int:
-    """fw resolver pick [--dispatch] [--json] — autonomous task selection."""
+    """fw resolver pick [--dispatch] [--stall-after N] [--json] — autonomous task selection."""
     if not TASKS_ACTIVE.is_dir():
         print(f"resolver pick: no active tasks dir at {TASKS_ACTIVE}", file=sys.stderr)
         return 1
-    eligible, excluded = _select_eligible()
+    eligible, excluded = _select_eligible(stall_after=max(0, int(getattr(args, "stall_after", 0))))
     pick = eligible[0] if eligible else None
     chosen_type = _pick_workflow_type(pick) if pick else None
 
@@ -1361,19 +1539,26 @@ def cmd_loop(args: argparse.Namespace) -> int:
     Calls the picker up to --max times. Dry-run by default (surfaces the plan);
     --dispatch fires each pick through resolve+spawn. An in-run `claimed` set
     keeps a single invocation from re-picking the same task; --cooldown-min
-    blocks cross-tick re-dispatch of a non-advancing task. Stops early on no
-    eligible work or a dispatch error."""
+    blocks cross-tick re-dispatch within a short window (single-invocation
+    anti-thrash — NOT a bound on repeat count, see T-2914 defect 1/3);
+    --stall-after (T-2914) is the actual non-convergence guard — it excludes a
+    task once N consecutive dispatches produced no measurable advancement,
+    regardless of how much time has passed. Stops early on no eligible work
+    or a dispatch error."""
     if not TASKS_ACTIVE.is_dir():
         print(f"resolver loop: no active tasks dir at {TASKS_ACTIVE}", file=sys.stderr)
         return 1
     max_iter = max(1, int(args.max))
     cooldown = max(0, int(args.cooldown_min))
+    stall_after = max(0, int(getattr(args, "stall_after", 0)))
     claimed: set = set()
     results: List[Dict[str, Any]] = []
     stop_reason = f"reached --max ({max_iter})"
 
     for i in range(max_iter):
-        eligible, _excluded = _select_eligible(claimed=claimed, cooldown_min=cooldown)
+        eligible, _excluded = _select_eligible(
+            claimed=claimed, cooldown_min=cooldown, stall_after=stall_after
+        )
         pick = eligible[0] if eligible else None
         if not pick:
             stop_reason = "no eligible tasks" if i == 0 else "no more eligible tasks"
@@ -1415,12 +1600,13 @@ def cmd_loop(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps({
             "max": max_iter, "dispatch": bool(args.dispatch), "cooldown_min": cooldown,
+            "stall_after": stall_after,
             "picked": results, "dispatched_count": dispatched_n,
             "stop_reason": stop_reason,
         }, indent=2, default=str))
     else:
         mode = "DISPATCH" if args.dispatch else "DRY-RUN"
-        print(f"resolver loop [{mode}]  max={max_iter}  cooldown={cooldown}m")
+        print(f"resolver loop [{mode}]  max={max_iter}  cooldown={cooldown}m  stall-after={stall_after}")
         if not results:
             print(f"  nothing to do — {stop_reason}")
         for r in results:
@@ -1433,6 +1619,28 @@ def cmd_loop(args: argparse.Namespace) -> int:
                 print(f"  • {r['id']:8s} → {r['workflow']:10s} (would dispatch)")
         print(f"  stop: {stop_reason}; dispatched {dispatched_n}")
     return 2 if had_error else 0
+
+
+def cmd_stalled(args: argparse.Namespace) -> int:
+    """fw resolver stalled [--stall-after N] [--json] — surface (T-2914 defect
+    1 + 6) the non-advancing/zero-outcome tasks the loop is refusing to
+    re-dispatch. This is the "surfaced instead" half of AC1: exclusion alone
+    is silent unless something prints it."""
+    stall_after = max(1, int(args.stall_after))
+    stalled = _stalled_task_ids(stall_after)
+    if args.json:
+        print(json.dumps({"stall_after": stall_after, "stalled": stalled}, indent=2, default=str))
+        return 0
+    if not stalled:
+        print(f"resolver stalled: no tasks stalled at threshold {stall_after}")
+        return 0
+    print(f"Stalled tasks (>= {stall_after} dispatches, no advancement):")
+    for tid, info in sorted(stalled.items()):
+        print(
+            f"  {tid:8s} dispatches={info['dispatch_count']:<4d} "
+            f"outcomes={info['outcome_count']:<3d} since={info['since']}"
+        )
+    return 0
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -1492,6 +1700,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Fire the top pick through resolve+spawn (default: dry-run surface only)",
     )
+    sp_p.add_argument(
+        "--stall-after",
+        type=int,
+        default=0,
+        dest="stall_after",
+        help="Exclude a task once it has N consecutive non-advancing dispatches "
+             "(default 0 = off, T-2914)",
+    )
     sp_p.add_argument("--json", action="store_true", help="Emit selection (and outcome) as JSON")
     sp_p.set_defaults(func=cmd_pick)
 
@@ -1508,12 +1724,36 @@ def main(argv: Optional[List[str]] = None) -> int:
     sp_l.add_argument(
         "--cooldown-min",
         type=int,
-        default=30,
+        default=0,
         dest="cooldown_min",
-        help="Exclude tasks dispatched within N minutes — cross-tick anti-thrash (default 30)",
+        help="Exclude tasks dispatched within N minutes — single-invocation "
+             "anti-thrash only, NOT a repeat-count bound (default 0 = off; "
+             "see --stall-after for the non-convergence guard, T-2914)",
+    )
+    sp_l.add_argument(
+        "--stall-after",
+        type=int,
+        default=_DEFAULT_STALL_AFTER,
+        dest="stall_after",
+        help=f"Exclude a task once it has N consecutive non-advancing dispatches "
+             f"(default {_DEFAULT_STALL_AFTER}, T-2914). 0 disables the guard.",
     )
     sp_l.add_argument("--json", action="store_true", help="Emit loop plan/outcome as JSON")
     sp_l.set_defaults(func=cmd_loop)
+
+    sp_s = sub.add_parser(
+        "stalled",
+        help="List tasks excluded by the non-convergence guard (T-2914)",
+    )
+    sp_s.add_argument(
+        "--stall-after",
+        type=int,
+        default=_DEFAULT_STALL_AFTER,
+        dest="stall_after",
+        help=f"Threshold to check against (default {_DEFAULT_STALL_AFTER})",
+    )
+    sp_s.add_argument("--json", action="store_true", help="Emit as JSON")
+    sp_s.set_defaults(func=cmd_stalled)
 
     args = parser.parse_args(argv)
     return args.func(args)

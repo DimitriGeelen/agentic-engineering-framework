@@ -2632,6 +2632,66 @@ else:
         fi
     fi
 
+    # T-2914: Autonomous Dispatch — single surface for "is anything dispatching
+    # unattended right now" (covering the systemd path the cron-registry checks
+    # above cannot see) plus any tasks the loop is currently refusing to
+    # re-dispatch (stalled / zero-outcome). Without this, "Cron registry in
+    # sync" + registry status=paused reads as "nothing autonomous is running"
+    # while a systemd timer dispatches every 30 min (defect 3/5, T-2914 —
+    # found by elimination across root crontab, /etc/cron.d, systemctl).
+    if _doctor_quick_skip "Autonomous Dispatch"; then :; else
+    echo ""
+    echo -e "  ${BOLD}Autonomous Dispatch${NC}"
+    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files resolver-loop.timer >/dev/null 2>&1; then
+        if systemctl is-active --quiet resolver-loop.timer 2>/dev/null; then
+            echo -e "  ${GREEN}LIVE${NC}  systemd resolver-loop.timer is active — dispatching unattended every 30m"
+        else
+            echo -e "  ${CYAN}INFO${NC}  systemd resolver-loop.timer is installed but inactive"
+        fi
+    else
+        echo -e "  ${CYAN}INFO${NC}  systemd resolver-loop.timer not installed on this host"
+    fi
+    if [ -f "$cron_registry" ]; then
+        local _auto_cron_status
+        _auto_cron_status=$(python3 -c "
+import yaml
+try:
+    d = yaml.safe_load(open('$cron_registry')) or {}
+except Exception:
+    d = {}
+jobs = d.get('jobs') or []
+m = [j for j in jobs if str(j.get('id','')) == 'resolver-loop-autonomous']
+print(str(m[0].get('status','?')) if m else 'not-registered')
+" 2>/dev/null)
+        echo -e "  ${CYAN}INFO${NC}  cron entry resolver-loop-autonomous: ${_auto_cron_status:-?}"
+    fi
+    if [ -f "$FRAMEWORK_ROOT/lib/resolver.py" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
+        local _stalled_json _stalled_count
+        _stalled_json=$(cd "$PROJECT_ROOT" && PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/resolver.py" stalled --json 2>/dev/null)
+        _stalled_count=$(echo "${_stalled_json:-{}}" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    d = {}
+print(len(d.get('stalled') or {}))
+" 2>/dev/null || echo 0)
+        if [ "${_stalled_count:-0}" -gt 0 ] 2>/dev/null; then
+            echo -e "  ${YELLOW}WARN${NC}  $_stalled_count task(s) stalled — dispatched repeatedly with zero advancement:"
+            echo "$_stalled_json" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+for tid, info in sorted((d.get('stalled') or {}).items()):
+    print(f\"        {tid}  dispatches={info['dispatch_count']}  outcomes={info['outcome_count']}  since={info['since']}\")
+" 2>/dev/null
+            echo -e "        Details: fw resolver stalled --json"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  No stalled/zero-outcome tasks"
+        fi
+    fi
+    fi
+
     # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104/T-1421)
     if [ -f "$FRAMEWORK_ROOT/CLAUDE.md" ]; then
         local _qr_cmds _fw_cmds _missing _miss_count _prose_list

@@ -6,10 +6,10 @@ description: >
   Autonomous resolver loop re-dispatches non-advancing tasks indefinitely — 127x,
   94x, 57x with zero outcomes
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T20:43:43Z
-last_update: '2026-08-10T20:45:12Z'
-date_finished:
+last_update: 2026-08-11T00:03:13Z
+date_finished: 2026-08-11T00:03:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -165,25 +165,25 @@ not a bug fix — and must not be smuggled in here.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A task that has not advanced across N consecutive dispatches stops being
+- [x] A task that has not advanced across N consecutive dispatches stops being
       re-dispatched and is surfaced instead — "advanced" defined against something a
       worker cannot trivially satisfy (status change, AC tick, or a commit referencing
       it), not merely "a dispatch record was written"
-- [ ] Proven against the live evidence: T-2862 (57 dispatches, unchanged since
+- [x] Proven against the live evidence: T-2862 (57 dispatches, unchanged since
       2026-08-08, 0 outcomes) is excluded by the new rule, and the rule is shown RED
       against current code first — current behaviour is that it dispatches, so a test
       written after the fix would pass against the bug
-- [ ] `--cooldown-min` is reconciled with the timer interval, or removed. A cooldown
+- [x] `--cooldown-min` is reconciled with the timer interval, or removed. A cooldown
       equal to the fire interval cannot suppress anything across ticks and reads as a
       bound that is not one
-- [ ] Every dispatch record carries non-null provenance — at minimum what invoked it
+- [x] Every dispatch record carries non-null provenance — at minimum what invoked it
       (systemd unit / cron id / interactive session) — so "what dispatched this?" is
       answerable from the record instead of by elimination across three schedulers
-- [ ] A single surface reports whether autonomous dispatch is live, covering the systemd
+- [x] A single surface reports whether autonomous dispatch is live, covering the systemd
       path. Today `fw doctor` says "Cron registry in sync" and the registry says the loop
       is `paused`; both are true, and together they imply nothing is dispatching while a
       systemd timer dispatches every 30 minutes
-- [ ] Zero-outcome dispatches are visible: 57 dispatches of T-2862 produced 0 rows in
+- [x] Zero-outcome dispatches are visible: 57 dispatches of T-2862 produced 0 rows in
       `dispatch-outcomes.jsonl` and no surface reported that
 
 ### Human
@@ -284,6 +284,12 @@ not a bug fix — and must not be smuggled in here.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t2914_resolver_stall_guard.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 lib/resolver.py loop --help 2>&1 | grep -q "default 0"
+python3 lib/resolver.py stalled --json 2>&1 | python3 -c "import sys,json; json.load(sys.stdin)"
+diff lib/resolver.py .agentic-framework/lib/resolver.py >/dev/null
+diff bin/fw .agentic-framework/bin/fw >/dev/null
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -299,6 +305,41 @@ not a bug fix — and must not be smuggled in here.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `resolver-loop.timer` (systemd, every 30m) re-dispatched T-2862 57
+times over 2 days with zero rows in `dispatch-outcomes.jsonl` and no status/AC
+movement — a worker no human or agent was tracking, spawned repeatedly, doing
+nothing measurable.
+
+**Root cause:** three independent gaps compounded. (1) `--cooldown-min 30` on a
+30-minute timer expires by the time the next tick fires, so it can never
+suppress a repeat dispatch — a bound that looks like a bound but isn't. (2)
+Nothing measured "did this dispatch change anything" — eligibility only checked
+point-in-time task state (in-flight, focused, cooldown), never dispatch
+history against outcome. (3) Every dispatch row had `dispatched_by`, `origin`,
+`session`, `worker` all null, so the loop itself was undiscoverable except by
+elimination across root crontab, `/etc/cron.d`, and `systemctl list-timers`.
+
+**Why structurally allowed:** `fw doctor`'s cron-registry check and the
+systemd timer are two disjoint surfaces — the registry can truthfully report
+"in sync" / `paused` while a systemd unit dispatches unattended, because the
+registry only knows about jobs it manages. No surface joined "is anything
+autonomous running" across both schedulers, and no dispatch row said what
+fired it, so the loop's own effects (T-2908/T-2910/T-2913 side-effects noted
+in Context) were harder to diagnose than they should have been.
+
+**Prevention:** `_stalled_task_ids` (lib/resolver.py) compares each task's
+current `{status, ac_ticked}` against the snapshot captured at the start of
+its last N dispatches, plus a git-log check for a landed commit referencing
+the task — any one of the three clears the flag, all three absent trips it.
+`--stall-after 5` replaces `--cooldown-min 30` in
+`deploy/resolver-loop.service`. `_dispatch_origin()` makes every future
+dispatch row self-identifying (env override → systemd INVOCATION_ID → session
+id → `unknown`, never null). `fw doctor`'s new "Autonomous Dispatch" section
+joins systemd-timer state + cron-registry state + `fw resolver stalled` in
+one place. Regression pinned by
+`tests/unit/t2914_resolver_stall_guard.bats` (10 tests, RED-before-GREEN on
+the core exclusion case).
 
 ## Evolution
 
@@ -351,3 +392,24 @@ not a bug fix — and must not be smuggled in here.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2914-autonomous-resolver-loop-re-dispatches-n.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-645a6361
+- **Timestamp:** 2026-08-11T00:03:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 69
+     - evidence: `diff lib/resolver.py .agentic-framework/lib/resolver.py >/dev/null`
+  2. **empty-output-success** (partial, heuristic) @ Verification:line 70
+     - evidence: `diff bin/fw .agentic-framework/bin/fw >/dev/null`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 67
+     - evidence: `python3 lib/resolver.py loop --help 2>&1 | grep -q "default 0"`
+
+### 2026-08-11T00:03:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
