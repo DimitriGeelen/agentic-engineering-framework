@@ -4851,6 +4851,25 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         echo -e "  ${GREEN}✓${NC} in sync with origin/master."
         exit 0
         ;;
+    go-live)
+        # T-100196 (Leg 2 of T-100195/T-100194): safe go-live guard. Defense-in-
+        # depth on top of the session-on-master mechanism (Decisions §2026-07-05) —
+        # routes the current checkout's divergence from origin/master to the SAFE
+        # action instead of leaving a bare `git merge origin/master` as the only
+        # suggested command (the T-100194 explosion: a genuine bidirectional fork
+        # producing 100+ conflicts). Never merges a fork automatically; refuses and
+        # names the reconciliation path instead. See lib/branch-hygiene.sh:fw_go_live.
+        if [ ! -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
+            echo -e "${RED}✗${NC} lib/branch-hygiene.sh not found" >&2
+            exit 2
+        fi
+        # shellcheck disable=SC1091
+        . "$FRAMEWORK_ROOT/lib/branch-hygiene.sh"
+        echo -e "${BOLD}fw go-live${NC} — safe reconcile with origin/master (refuses bare merge on a fork)"
+        echo ""
+        fw_go_live "$PROJECT_ROOT"
+        exit $?
+        ;;
     push)
         # T-1153: Push to all remotes with per-remote status.
         # T-1513: align with handover hook's T-1255 logic — when `origin` exists
