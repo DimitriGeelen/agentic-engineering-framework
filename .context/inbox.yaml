@@ -1645,3 +1645,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-220
+  text: "Command-scanning hook audit is INCOMPLETE and this is the gap, not a covered item. Three predicates that scan a raw command string have now been caught reading data as commands: check-project-boundary (T-2920, heredoc body read as command verb), budget-gate/cmd_classify (T-2919 false allow, then T-2923 false block on a commit message body), and 832's census classifier. The remaining command-scanning hooks in .claude/settings.json are UNAUDITED. Named in T-2923's RCA as filed separately — this is that filing. Work: enumerate every PreToolUse hook that reads tool_input.command, and for each ask whether it strips heredoc bodies and quoted regions before matching. The ordering rule is load-bearing (larger unit first) and is currently expressed in two files' comments rather than in any shared helper — a lib/cmd_regions.py that both hooks import would make the obligation structural instead of remembered. Related: L-576, OBS-216."
+  captured: 2026-08-11T17:14:33Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-221
+  text: "Pre-push audit gate fails OPEN under lock contention: agents/audit/audit.sh:330 and :354 exit 0 when another audit holds the flock, and .git/hooks/pre-push:307 reads exit 0 as PASS. Observed live 2026-08-11: a push printed '=== Pre-Push Audit Check ===' followed by 'Another audit is already running — exiting' and was allowed through, while an invariant was in fact RED moments earlier. Nothing in the push output distinguishes 'audited and clean' from 'not audited at all'. exit 0 is correct for cron (QUIET=true, zero-zombie intent) and wrong for a gate caller. Fix shape: a distinct exit code (e.g. 3 = did-not-run) that cron maps to 0 and pre-push maps to block-or-wait; today one code carries two meanings and the gate consumer cannot tell them apart. Same false-green class as T-1376 port-3000 (a line that asserts nothing is indistinguishable from one that asserts everything) and the T-2916 denominator rule. Blast radius is every push that coincides with the daily audit cron."
+  captured: 2026-08-11T20:35:25Z
+  context_task: T-100196
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-222
+  text: "Inception Open-Questions gate (T-2194/G-067) blocks READ-ONLY Bash commands. Observed live 2026-08-11 on T-2925: 'ls .tasks/active/T-2925*.md; grep -n \"## Open Questions\" -A8 $f' was refused, and the block message's own 'Attempting to modify:' field was EMPTY — the hook could not name a target file because there was none. The gate's stated policy is 'Inception work cannot edit source files until at least one Open Question is declared'; a grep edits nothing. Worse, the blocked command was the one needed to READ the section the gate demands be filled, so the prescribed remedy was unreachable by the obvious route (prescribed-remedy-denied, same shape as the G-020 --type inception case and T-1730's context-focus-inside-a-compound case). Worked around via mcp__fw__task_show + Read, which is a different tool surface and therefore ungated — meaning the gate is also incomplete in the direction that matters less. Fix shape: gate Write|Edit, not Bash; or if Bash must be gated, gate only commands that resolve to a write. An empty 'Attempting to modify:' is the tell that the predicate had no instance to judge and blocked on the mention."
+  captured: 2026-08-11T20:42:20Z
+  context_task: T-2925
+  tags: []
+  status: pending
+  promoted_to: null

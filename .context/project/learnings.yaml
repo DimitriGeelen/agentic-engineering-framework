@@ -4355,3 +4355,9 @@ X'` returning empty group."
   task: T-2920
   date: 2026-08-11
   context: Added via context agent
+- id: L-577
+  learning: "A predicate that scans a raw command string must first remove the regions of that string which are DATA, and every such predicate in the repo owes the same treatment. T-2920 (project-boundary) and T-2923 (budget-gate wrap-up classifier) answer different questions — 'does this leave the project' vs 'is this wrap-up' — over the SAME substrate, and the obligation lived in one file and not the other because nothing expressed it as a shared rule. Ordering is load-bearing and counter-intuitive: strip the LARGER unit first (heredoc body, which can itself contain quotes and #) BEFORE the smaller strippers (comments, then segment split). Reversed, strip_comments eats a # inside a body and corrupts its own quote state. Two divergences a straight port gets wrong, both found by RUNNING the ported function rather than reading it: (1) blank the terminator line too — a stray EOF is inert to a path scanner but fatal to a verb judge, so the fix looks applied and changes nothing; (2) recognise << only OUTSIDE quotes, or a quoted mention plus a later stray EOF opens a phantom region and blanks real commands — a FALSE ALLOW introduced by the fix for a false block. Both directions belong in one suite: a fix that merely stops blocking must fail it."
+  source: P-001
+  task: T-2923
+  date: 2026-08-11
+  context: Added via context agent
