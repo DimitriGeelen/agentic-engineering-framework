@@ -4337,3 +4337,9 @@ X'` returning empty group."
   task: T-2911
   date: 2026-08-10
   context: Added via context agent
+- id: L-574
+  learning: "A commit record that misattributes is worse than one that is absent: dispatch-spawned workers inherit the repo git identity, so an autonomous 923-line source commit is byte-identical to an operator's hand-typed one (author==committer==the human). A missing T-XXX is rejected at the commit-msg hook; a falsely-attributed commit passes every check and reads as normal history forever. Two full investigations concluded 'a second operator session is live' because that is exactly what the audit trail said. Check author-class, not just task-reference — P-002 gates the T-XXX and nothing gates the who. Precedent that it is solvable: lib/init.sh:752 already sets GIT_AUTHOR_NAME='fw init' for its own bootstrap commit, and termlink-dispatch <agent@termlink> was in live use until April 2026."
+  source: P-002
+  task: T-2917
+  date: 2026-08-11
+  context: Added via context agent
