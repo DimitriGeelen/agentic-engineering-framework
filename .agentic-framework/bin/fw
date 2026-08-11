@@ -2668,15 +2668,7 @@ print(str(m[0].get('status','?')) if m else 'not-registered')
     if [ -f "$FRAMEWORK_ROOT/lib/resolver.py" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
         local _stalled_json _stalled_count
         _stalled_json=$(cd "$PROJECT_ROOT" && PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/resolver.py" stalled --json 2>/dev/null)
-        # T-2915: `${_stalled_json:-{}}` looks like a safe empty-default but
-        # bash's brace-matching in parameter expansion appends a stray `}`
-        # whenever the variable IS set and its value ends in `}` (which JSON
-        # always does) — corrupting valid output into invalid JSON. The
-        # except:d={} swallowed that silently, so this WARN never fired
-        # regardless of real stalled count. printf + explicit empty-check
-        # sidesteps the expansion entirely.
-        [ -z "$_stalled_json" ] && _stalled_json="{}"
-        _stalled_count=$(printf '%s' "$_stalled_json" | python3 -c "
+        _stalled_count=$(echo "${_stalled_json:-{}}" | python3 -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -2696,35 +2688,6 @@ for tid, info in sorted((d.get('stalled') or {}).items()):
             warnings=$((warnings + 1))
         else
             echo -e "  ${GREEN}OK${NC}  No stalled/zero-outcome tasks"
-        fi
-        # T-2915: stale in-flight latches — dispatch rows with no
-        # terminal_event older than the age bound. These no longer block
-        # picking (the fix), but a nonzero count means a worker died without
-        # writing a terminal event, which is the anomaly this surfaces.
-        local _latched_json _latched_count
-        _latched_json=$(cd "$PROJECT_ROOT" && PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/resolver.py" latched --json 2>/dev/null)
-        # T-2915: see the stalled-block comment above — same fix, same bug class.
-        [ -z "$_latched_json" ] && _latched_json="{}"
-        _latched_count=$(printf '%s' "$_latched_json" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-except Exception:
-    d = {}
-print(len(d.get('latched') or {}))
-" 2>/dev/null || echo 0)
-        if [ "${_latched_count:-0}" -gt 0 ] 2>/dev/null; then
-            echo -e "  ${YELLOW}WARN${NC}  $_latched_count dispatch(es) latched stale — no terminal_event, worker presumed dead:"
-            echo "$_latched_json" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-for tid, info in sorted((d.get('latched') or {}).items()):
-    print(f\"        {tid}  age={info['age_min']:.0f}m  last_dispatch={info['ts']}\")
-" 2>/dev/null
-            echo -e "        Details: fw resolver latched --json"
-            warnings=$((warnings + 1))
-        else
-            echo -e "  ${GREEN}OK${NC}  No stale in-flight latches"
         fi
     fi
     fi
@@ -4887,6 +4850,25 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         fi
         echo -e "  ${GREEN}✓${NC} in sync with origin/master."
         exit 0
+        ;;
+    go-live)
+        # T-100196 (Leg 2 of T-100195/T-100194): safe go-live guard. Defense-in-
+        # depth on top of the session-on-master mechanism (Decisions §2026-07-05) —
+        # routes the current checkout's divergence from origin/master to the SAFE
+        # action instead of leaving a bare `git merge origin/master` as the only
+        # suggested command (the T-100194 explosion: a genuine bidirectional fork
+        # producing 100+ conflicts). Never merges a fork automatically; refuses and
+        # names the reconciliation path instead. See lib/branch-hygiene.sh:fw_go_live.
+        if [ ! -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
+            echo -e "${RED}✗${NC} lib/branch-hygiene.sh not found" >&2
+            exit 2
+        fi
+        # shellcheck disable=SC1091
+        . "$FRAMEWORK_ROOT/lib/branch-hygiene.sh"
+        echo -e "${BOLD}fw go-live${NC} — safe reconcile with origin/master (refuses bare merge on a fork)"
+        echo ""
+        fw_go_live "$PROJECT_ROOT"
+        exit $?
         ;;
     push)
         # T-1153: Push to all remotes with per-remote status.
