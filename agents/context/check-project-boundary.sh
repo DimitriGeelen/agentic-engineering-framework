@@ -191,7 +191,27 @@ def _strip_quoted(s):
         i += 1
     return ''.join(out)
 
-command = _strip_quoted(command)
+# T-2920: heredoc stripping runs BEFORE quote stripping. Order is load-bearing.
+#
+# _strip_quoted blanks the contents of quoted literals. For the QUOTED heredoc
+# form `<<'EOF'` it therefore blanks the marker itself, leaving `<<'   '` — and
+# _strip_heredocs matches `<<-?\s*['"]?(\w+)['"]?`, whose \w+ cannot match
+# spaces. So with quote-stripping first, a quoted heredoc's body is NEVER
+# stripped, and prose inside it is scanned as if it were command text.
+#
+# Measured before the reorder:
+#   bare   <<EOF    marker survives quote-strip? True   -> body stripped
+#   quoted <<'EOF'  marker survives quote-strip? False  -> body NEVER STRIPPED
+#
+# Both mitigations were individually correct and individually tested; the first
+# silently voided the second. And L-294 MANDATES the quoted form (the bare form
+# command-substitutes $(...)), so following our own learning is what triggered
+# the false block — a rail message to 832 whose text quoted our own
+# Copy-Pasteable Commands rule.
+#
+# A heredoc body is a strictly larger unit than a quoted string, so it must be
+# removed first. Do not reorder these two calls. Pinned by
+# tests/unit/t2920_boundary_heredoc_strip_order.bats.
 
 # T-1702: strip simple heredoc bodies before pattern scanning so /opt/x inside
 # `cat > /tmp/x <<EOF\n...\nEOF` doesn't false-positive on Pattern 4. Mirrors
@@ -230,7 +250,8 @@ def _strip_heredocs(s):
             break
     return ''.join(out)
 
-command = _strip_heredocs(command)
+command = _strip_heredocs(command)   # T-2920: must precede _strip_quoted
+command = _strip_quoted(command)
 
 # Pattern 1: cd to absolute path outside project root
 cd_pattern = re.compile(r'cd\s+(/[^\s;&|]+)')
