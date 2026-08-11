@@ -1,19 +1,19 @@
 check-arc-id=2
 
-audit-task-tools=17
+audit-task-tools=20
 check-settings-edit=6
 commit-cadence=6
-checkpoint=17
-check-tier0=12
-error-watchdog=11
+checkpoint=20
+check-tier0=15
+error-watchdog=14
 check-inception-schema=4
-budget-gate=10
+budget-gate=13
 check-human-ac-tick=3
 check-onboarding-gate=2
 check-heredoc-cmd-sub=3
 check-inception-decisions=3
-check-project-boundary=8
-check-active-task=8
-loop-detect=7
+check-project-boundary=11
+check-active-task=11
+loop-detect=10
 check-fabric-new-file=1
 check-active-completed-dup=2

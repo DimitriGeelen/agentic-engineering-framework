@@ -4343,3 +4343,9 @@ X'` returning empty group."
   task: T-2917
   date: 2026-08-11
   context: Added via context agent
+- id: L-575
+  learning: "A guard that cannot read its input reports the same thing as a guard that found nothing. Three instances in one fix (T-2916): (1) the stall predicate required task_snapshot, a field its own commit introduced, so coverage was 11/1325 rows = 0.8% and it abstained on everything while printing 'no tasks stalled'; (2) _task_touched_since read last_update off a flattened meta dict that does not carry it, got None, failed open, and reported every task advanced; (3) _git_commit_count_since grepped the whole commit message, so an RCA CITING a stalled task cleared that task from the stalled set — writing about the stall made the stall undetectable. Rule: never print a verdict without its denominator. Every scan-style check must emit evaluated/skipped counts alongside the result, so abstention is legible and cannot be mistaken for success. Corollary for authors: an AC that proves a guard RUNS is not an AC that proves it JUDGES — pin a real verdict on real data, in both directions, or the guard ships inert with green ACs (T-2914 closed 6/6 while inert)."
+  source: P-011
+  task: T-2916
+  date: 2026-08-11
+  context: Added via context agent
