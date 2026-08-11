@@ -18,12 +18,12 @@ description: >
   an allowed chain. Workaround until fixed: use a quoted -m message, which is a single
   segment.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/cmd_classify.py, tests/unit/t2923_cmd_classify_heredoc.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -36,8 +36,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T15:44:31Z
-last_update: 2026-08-11T16:31:44Z
-date_finished:
+last_update: 2026-08-11T16:40:31Z
+date_finished: 2026-08-11T16:40:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -246,7 +246,10 @@ out=$(bats tests/unit/t2923_cmd_classify_heredoc.bats 2>&1); echo "$out" | grep 
 # would be worse than the defect being fixed, so it is verified, not assumed.
 out=$(bats tests/unit/t2919_budget_gate_command_classify.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # Vendored copy carries the fix (consumers importing the old module degrade).
-grep -q '_strip_heredocs' .agentic-framework/lib/cmd_classify.py
+# Asserts the CALL, not a mention: `_strip_heredocs` also appears in this
+# module's own docstring, naming the boundary hook's version. Grepping for that
+# would be the exact mention-vs-instance defect this task fixes (L-576).
+grep -q 'cleaned = strip_heredocs(command)' .agentic-framework/lib/cmd_classify.py
 
 ## RCA
 
@@ -359,3 +362,15 @@ as a separate observation rather than claimed as covered here.
 
 ### 2026-08-11T16:31:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d64e506e
+- **Timestamp:** 2026-08-11T16:40:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-11T16:40:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

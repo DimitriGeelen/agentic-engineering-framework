@@ -2851,3 +2851,10 @@ decisions:
     date: 2026-08-11
     task: T-2915
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-410
+    decision: "blank the heredoc TERMINATOR line as well as the body, and only"
+    scope: project
+    date: 2026-08-11
+    task: T-2923
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2923: cmd_classify splits heredoc bodies as commands - git commit -F - with a heredoc is false-blocked at critical
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T16:40:55Z
+# ============================================================================
+
+task_id: T-2923
+task_name: "cmd_classify splits heredoc bodies as commands - git commit -F - with a heredoc is false-blocked at critical"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T15:44:31Z
+completed: 2026-08-11T16:40:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-11T17:45:28+02:00
+last_commit: 2026-08-11T18:39:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the T-2919 heredoc false-positive found by its own gate blocking this session's commit. cmd_classify strips heredoc bodies before judging segments
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced against the SHIPPING file before any fix — both heredoc'
+  - '`_strip_heredocs` ported into `lib/cmd_classify.py` and called BEFORE'
+  - 'Both heredoc forms classify `allowed` after the fix'
+  - 'A real command AFTER the heredoc terminator still blocks — the stripper'
+  - 'A heredoc body cannot smuggle a disallowed leading verb into an allowed'
+  - 'An UNTERMINATED heredoc fails closed (blocks), not open'
+  - 'T-2919''s suite still green — all 22 legs, including the 9 probe cases and'
+  - 'Anti-vacuity leg present: the pre-fix behaviour is reconstructed and'
+  - 'Vendored copies refreshed (`bin/fw vendor self`) — consumers pulling the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-11 — two deliberate divergences from the boundary hook''s stripper'
+    chose: 'blank the heredoc TERMINATOR line as well as the body, and only'
+    rationale: 'the two hooks ask different questions over the same substrate, so a'
+    alternatives_rejected: ['a straight copy of `_strip_heredocs`. Verified rather than']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/cmd_classify.py'
+  - '.agentic-framework/VERSION'
+  - 'lib/cmd_classify.py'
+  - '.tasks/active/T-2923-cmdclassify-splits-heredoc-bodies-as-com.md'
+  - 'tests/unit/t2923_cmd_classify_heredoc.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T17:45:28'
+    action: 'T-2923: file the T-2919 heredoc false-positive found by its own gate blocking this session''s commit'
+  - time: '2026-08-11T18:39:59'
+    action: 'T-2923: cmd_classify strips heredoc bodies before judging segments'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 56 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 56
+  commits: 2
+  files_changed: 5
+  lines_added: 748
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2923-cmdclassify-splits-heredoc-bodies-as-com.md
+generated_by: context-agent-hybrid
