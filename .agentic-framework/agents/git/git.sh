@@ -39,6 +39,7 @@ Commands:
   install-hooks Install pre-commit and post-commit hooks
   log-bypass    Record a bypass in the bypass log
   log           Task-filtered git log
+  worker-commits What did autonomous dispatch commit on my behalf (T-2917)
   help          Show this help
 
 Examples:
@@ -49,6 +50,7 @@ Examples:
   git.sh install-hooks
   git.sh log-bypass --commit acb4594 --reason "Bootstrap exception"
   git.sh log --task T-003
+  git.sh worker-commits --days 7
 
 For command-specific help:
   git.sh <command> --help
@@ -81,6 +83,11 @@ case "${1:-}" in
         shift
         source "$LIB_DIR/log.sh"
         do_log "$@"
+        ;;
+    worker-commits)
+        shift
+        source "$LIB_DIR/worker-commits.sh"
+        do_worker_commits "$@"
         ;;
     help|--help|-h)
         show_help

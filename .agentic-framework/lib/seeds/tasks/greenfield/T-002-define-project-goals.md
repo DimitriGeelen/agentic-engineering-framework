@@ -86,8 +86,21 @@ becomes build tasks.
 
 # Research artifact exists
 ls docs/reports/T-002-*.md
-# Recommendation is filled in, not the shipped template comment (T-2862)
-sed '/<!--/,/-->/d' .tasks/active/T-002-*.md | grep -qE '^\*\*Recommendation:\*\*[[:space:]]*(GO|NO-GO|DEFER)'
+# Recommendation is filled in, not the shipped template comment (T-2862).
+#
+# Anchored at column 0 with no sed pre-pass. The template's own
+# "**Recommendation:** GO / NO-GO / DEFER" line lives INDENTED inside the HTML
+# comment below, so `^\*\*` already distinguishes a real filled recommendation
+# from the shipped placeholder — the comment-stripping stage was never doing
+# work the anchor doesn't do.
+#
+# It was also actively harmful: the P-011 extractor strips HTML comments from
+# the task body before running these lines, which ate the `<!--` and `-->`
+# LITERALS out of the command itself and executed `sed '//d'` — an empty regex,
+# "no previous regular expression", exit 1. The greenfield first inception
+# therefore failed its own verification gate on a fresh install. Found by the
+# T-2862 end-to-end run; the extractor defect is filed separately.
+grep -qE '^\*\*Recommendation:\*\*[[:space:]]*(GO|NO-GO|DEFER)' .tasks/active/T-002-*.md
 
 ## Recommendation
 
