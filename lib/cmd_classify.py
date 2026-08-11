@@ -103,6 +103,105 @@ _ENV_ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=[^\s]*\s+")
 
 _SUBSHELL_OPENERS = ("(", "{")
 
+# A heredoc operator, with the marker's quoting balanced: `<<EOF`, `<<'EOF'`,
+# `<<"EOF"`, `<<-EOF`. The backreference matters — `['\"]?(\w+)['\"]?` (the form
+# in check-project-boundary.sh) also matches the unbalanced `<<'EOF`, which is
+# not a thing bash produces and would let a stray apostrophe start a phantom
+# heredoc.
+_HEREDOC_RE = re.compile(r"<<-?\s*(['\"]?)(\w+)\1")
+
+
+def strip_heredocs(command):
+    """Blank heredoc bodies (and their terminator lines) before anything else.
+
+    T-2923. A heredoc body is DATA, not commands — but it is newline-separated
+    text outside shell quotes, which is exactly what `split_segments` treats as
+    a separator. So `git commit -F - <<'EOF' … EOF` had every line of the commit
+    MESSAGE judged as a command, and the first message line blocked the commit:
+    a false block on the primary wrap-up command at the moment a session must
+    wrap up.
+
+    Runs BEFORE `strip_comments` and `split_segments`, mirroring the ordering
+    T-2920 established in check-project-boundary.sh. The reason is the same
+    there and here: a heredoc body is a LARGER unit than a quoted string or a
+    comment, and it can contain either. A `#` in a commit message is not a
+    comment; an apostrophe in one is not an open quote. Strip the larger unit
+    first or the smaller strippers corrupt their own state on data they should
+    never have seen.
+
+    Two deliberate differences from the boundary hook's `_strip_heredocs`:
+
+    1. The TERMINATOR line is blanked too, not just the body. That hook scans
+       for path patterns, so a stray `EOF` token was harmless; this module
+       judges every segment's leading verb, and a bare `EOF` segment matches no
+       allowed verb and would block the very command we are trying to permit.
+    2. The operator is only recognised OUTSIDE quotes. `git commit -m "see
+       <<EOF"` starts no heredoc. Without that check a quoted mention followed
+       somewhere later by a line reading `EOF` would blank the real commands in
+       between — a false ALLOW, which is the silent direction and the one worth
+       spending code on.
+
+    Unterminated heredocs are left untouched, so the remaining text is judged as
+    commands. That fails closed.
+    """
+    out = list(command)
+    n = len(command)
+    i = 0
+    in_single = in_double = False
+
+    while i < n:
+        c = command[i]
+        if c == "\\" and not in_single and i + 1 < n:
+            i += 2
+            continue
+        if c == "'" and not in_double:
+            in_single = not in_single
+            i += 1
+            continue
+        if c == '"' and not in_single:
+            in_double = not in_double
+            i += 1
+            continue
+        if in_single or in_double or c != "<":
+            i += 1
+            continue
+
+        m = _HEREDOC_RE.match(command, i)
+        if not m:
+            i += 1
+            continue
+
+        marker = m.group(2)
+        nl = command.find("\n", m.end())
+        if nl == -1:
+            break  # operator with no body on this command line
+
+        j = nl + 1
+        found = False
+        while j < n:
+            line_end = command.find("\n", j)
+            if line_end == -1:
+                line_end = n
+            # `.strip()` rather than bash's exact rule (`<<-` eats leading tabs,
+            # terminator alone on the line). Ending the region EARLY is the safe
+            # error: the remaining body lines are then judged as commands and
+            # block. Ending it late would hide real commands.
+            if command[j:line_end].strip() == marker:
+                # Blank body AND terminator line; keep newlines so segment
+                # positions downstream are unchanged.
+                for k in range(nl + 1, line_end):
+                    if out[k] != "\n":
+                        out[k] = " "
+                i = line_end
+                found = True
+                break
+            j = line_end + 1
+
+        if not found:
+            break  # unterminated — leave the rest to be judged as commands
+
+    return "".join(out)
+
 
 def strip_comments(command):
     """Remove `#` comments, honouring quotes.
@@ -257,7 +356,13 @@ def classify(command):
     if not command or not command.strip():
         return False, "empty command"
 
-    cleaned = strip_comments(command)
+    # T-2923: heredocs first — a body can contain `#` and unbalanced quotes,
+    # both of which corrupt strip_comments' state. Do not reorder (see
+    # strip_heredocs' docstring, and T-2920 for the same ordering rule in
+    # check-project-boundary.sh, where getting it backwards voided the stripper
+    # entirely).
+    cleaned = strip_heredocs(command)
+    cleaned = strip_comments(cleaned)
     if not cleaned.strip():
         # The whole command was a comment.
         return False, "comment-only command"
