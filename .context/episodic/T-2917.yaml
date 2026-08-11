@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2917: autonomous worker commits are signed with the operator's git identity — no way to tell agent work from human work
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T17:05:15Z
+# ============================================================================
+
+task_id: T-2917
+task_name: "autonomous worker commits are signed with the operator's git identity — no way to tell agent work from human work"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T11:28:47Z
+completed: 2026-08-11T17:04:59Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-11T13:31:01+02:00
+last_commit: 2026-08-11T17:42:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  worker commits are signed with the operator's identity — the record said a human did it. vendor self-sync. give dispatch-spawned workers a git identity distinct from the operator's. record session progress, remaining work, and Decisions before budget-critical cutoff. refresh vendored copies (fw vendor self)
+
+# Key outcomes
+outcomes:
+  - 'Dispatch-spawned workers commit under a distinct identity (name + email) that is not'
+  - 'The identity names the mechanism, not just "agent" — a reader must be able to tell a'
+  - 'The dispatch_id is recoverable from the commit (trailer or identity), so a worker'
+  - 'A query exists that answers "what did the loop commit on my behalf this week" —'
+  - 'Test pins BOTH directions: a worker commit is attributed to the worker identity, and'
+  - 'Historical worker commits are NOT rewritten (Tier 0, and the record is evidence) —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-11 — Forward-only fix; historical commits are not rewritten'
+    chose: 'the identity fix (`lib/resolver.py:capture_dispatch` + the termlink-dispatch'
+    rationale: 'rewriting history is Tier 0 (rebase/force-push territory) for a repo with 7800+'
+    alternatives_rejected: ['any retroactive `git filter-branch`/`git-filter-repo` rewrite to reattribute']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/git.sh'
+  - '.agentic-framework/agents/git/lib/worker-commits.sh'
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/git-identity.sh'
+  - '.agentic-framework/lib/ollama_thin_loop.py'
+  - '.agentic-framework/lib/pi_worker.py'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - '.agentic-framework/lib/spawn.py'
+  - '.agentic-framework/lib/worker_identity.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/git/git.sh'
+  - 'agents/git/lib/worker-commits.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.context/project/learnings.yaml'
+  - '.context/working/focus.yaml'
+  - 'lib/git-identity.sh'
+  - 'lib/ollama_thin_loop.py'
+  - 'lib/pi_worker.py'
+  - 'lib/resolver.py'
+  - 'lib/spawn.py'
+  - 'lib/worker_identity.py'
+  - '.tasks/active/T-2917-autonomous-worker-commits-are-signed-wit.md'
+  - 'tests/unit/test_resolver.py'
+  - 'tests/unit/test_worker_identity.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T13:31:01'
+    action: 'T-2917: worker commits are signed with the operator''s identity — the record said a human did it'
+  - time: '2026-08-11T13:31:03'
+    action: 'T-2917: vendor self-sync'
+  - time: '2026-08-11T17:39:47'
+    action: 'T-2917: give dispatch-spawned workers a git identity distinct from the operator''s'
+  - time: '2026-08-11T17:41:10'
+    action: 'T-2917: record session progress, remaining work, and Decisions before budget-critical cutoff'
+  - time: '2026-08-11T17:42:01'
+    action: 'T-2917: refresh vendored copies (fw vendor self)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 336 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 336
+  commits: 5
+  files_changed: 25
+  lines_added: 1260
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2917-autonomous-worker-commits-are-signed-wit.md
+generated_by: context-agent-hybrid
