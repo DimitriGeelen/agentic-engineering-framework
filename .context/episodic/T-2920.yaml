@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2920: check-project-boundary matches cd-to-path anywhere in the command string — heredoc bodies and quoted prose false-block
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T14:41:16Z
+# ============================================================================
+
+task_id: T-2920
+task_name: "check-project-boundary matches cd-to-path anywhere in the command string — heredoc bodies and quoted prose false-block"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T14:33:04Z
+completed: 2026-08-11T14:40:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-11T16:40:34+02:00
+last_commit: 2026-08-11T16:40:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the boundary hook stopped reading heredoc bodies as commands
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: a `Bash` call whose **heredoc body** contains `cd /some/other/path`'
+  - 'The quoted-heredoc form `<<''EOF''` is stripped as reliably as the bare form'
+  - 'Ordering fixed: heredoc bodies are removed **before** quote-stripping, or the two'
+  - 'No loss of real coverage: `cd /opt/other-project && rm -rf x` still BLOCKS, and'
+  - 'The T-559 boundary invariant is re-asserted end-to-end: a genuine attempt to'
+  - 'Existing boundary-hook tests still pass unchanged'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/check-project-boundary.sh'
+  - '.fabric/components/tests-unit-t2920_boundary_heredoc_strip_order.yaml'
+  - '.tasks/active/T-2920-check-project-boundary-matches-cd-to-pat.md'
+  - '.tasks/completed/T-2919-budget-gate-allowlist-matches-anywhere-i.md'
+  - 'tests/unit/t2920_boundary_heredoc_strip_order.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T16:40:34'
+    action: 'T-2920: the boundary hook stopped reading heredoc bodies as commands'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 7
+  lines_added: 464
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2920-check-project-boundary-matches-cd-to-pat.md
+generated_by: context-agent-hybrid

@@ -4,12 +4,12 @@ name: "check-project-boundary matches cd-to-path anywhere in the command string 
 description: >
   check-project-boundary matches cd-to-path anywhere in the command string — heredoc bodies and quoted prose false-block
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-project-boundary.sh, tests/unit/t2920_boundary_heredoc_strip_order.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T14:33:04Z
-last_update: 2026-08-11T14:33:04Z
-date_finished: null
+last_update: 2026-08-11T14:40:47Z
+date_finished: 2026-08-11T14:40:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -290,3 +290,20 @@ python3 -c 'import json,sys;print(json.dumps({"tool_name":"Bash","tool_input":{"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2920-check-project-boundary-matches-cd-to-pat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c8baaf1
+- **Timestamp:** 2026-08-11T14:41:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 6
+     - evidence: `python3 -c 'import json,sys;print(json.dumps({"tool_name":"Bash","tool_input":{"command":"cd /opt/832-Workflow-designer && ls"}}))' > /tmp/.t2920-d.json && ! bash agents/context/check-project-boundary`
+
+### 2026-08-11T14:40:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

