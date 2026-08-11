@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:24:46Z
-last_update: '2026-08-08T20:30:08Z'
+last_update: 2026-08-11T14:45:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -136,6 +136,40 @@ framework's own prose forbids (T-2144). Fixing the seed removes the incentive.
 - [ ] End-to-end: a greenfield project seeded from the fixed seeds carries its first
       inception through the real decide preflight without `--force` or
       `--skip-acceptance-criteria`, and without a DEFER hedge
+
+      **Pickup note (2026-08-11, S-2026-0811-16xx).** Four of five ACs are done; this
+      is the only one left, and it is a single new bats file. Scoped but deliberately
+      not started — the session was at 85% context and starting an e2e that needs
+      iteration is the exact "work that cannot finish in remaining budget" the P-009
+      ladder forbids. It has burned **60 dispatches with 0 outcomes since 2026-08-08**
+      (the origin case the T-2916 stall guard now flags), so it deserves a session with
+      real headroom, not the tail of one.
+
+      Harness to copy, not invent: `tests/unit/init_project_shape_detection.bats:36`
+      `_shape_of()` already runs the **real** `fw init` under `env -i` with a scoped
+      `PATH`/`HOME`. That isolation is load-bearing (L-009/L-020, T-1633): an inherited
+      `PROJECT_ROOT`/`FRAMEWORK_ROOT` makes `fw` silently operate on the wrong project,
+      which is the whole failure mode being tested.
+
+      Shape: seed a temp greenfield project → do the minimal *legitimate* user work on
+      its first inception (fill `## Recommendation`, tick the two replacement Agent ACs)
+      → run the real `fw inception decide <id> go --rationale …` → assert **exit 0**.
+
+      Two traps that will otherwise eat the session:
+      1. `CLAUDECODE` is unset under `env -i`, so decide proceeds on the human path.
+         That is correct **for a test harness** — the suite is verifying preflight
+         arithmetic, not making a sovereignty decision. Do NOT reach for
+         `--i-am-human` in the agent's own shell to "check it works"; that is the
+         bypass T-1259 exists to refuse, and refusing it is what the operator got
+         right when they hit this live.
+      2. Assert on **exit 0 from decide**, not on the absence of an error string. An
+         absent string is exactly the abstention-vs-success ambiguity of T-2916/L-576,
+         and a preflight that cannot read its input prints nothing either.
+
+      Also worth pinning in the same suite: **DEFER must still skip the preflight**
+      (`lib/inception.sh:521`, guarded `go || no-go`). That asymmetry is T-2863's F-17
+      and is not a bug to fix here — but if a later change makes DEFER run the
+      preflight, this suite should be the thing that notices.
 
   <!-- BLOCKED, not skipped. Running this requires `fw inception decide` in a command
        string, which the Tier 0 hook refuses under agent control — correctly, and the

@@ -4349,3 +4349,9 @@ X'` returning empty group."
   task: T-2916
   date: 2026-08-11
   context: Added via context agent
+- id: L-576
+  learning: "mention-vs-instance (832's name, adopted): a predicate that answers 'is the thing named here' when the question was 'is this the thing'. Four instances in one day across two codebases — _git_commit_count_since grepping whole commit messages (T-2916), budget-gate's unanchored re.search over the raw command (T-2919), 832's census classifier matching '-eq 0' near 'exit 1' regardless of connective, and check-project-boundary reading a heredoc body as command text (T-2920). Two more were committed by ME inside twenty minutes while MEASURING the class: a '^owner:' grep that matched prose at column 0, and a '^owner:\\s*(.*)$' whose \\s* crossed a newline. The generalisation that matters: THE MEASURING INSTRUMENT IS ALWAYS A PREDICATE TOO, and nobody writes a guard for their own grep. Corollary from T-2920: two correct mitigations can be ordered so the first silently voids the second — _strip_quoted blanked the marker _strip_heredocs needed, and the form our own L-294 MANDATES (quoted heredoc) was the one that defeated the guard. Test discipline that catches it: pin BOTH directions in one suite, and verify the pin goes RED against the pre-fix code on a mirrored tree — a regression test never run against the regression is a tautology."
+  source: P-001
+  task: T-2920
+  date: 2026-08-11
+  context: Added via context agent
