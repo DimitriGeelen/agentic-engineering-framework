@@ -149,10 +149,10 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.claude/skills/grill-with-docs/SKILL.md` exists with frontmatter + content matching upstream.
-- [ ] `.claude/skills/grill-with-docs/CONTEXT-FORMAT.md` exists matching upstream.
-- [ ] `.claude/skills/grill-with-docs/ADR-FORMAT.md` exists matching upstream.
-- [ ] Application begins: first grilling question posed against the orchestrator-as-triage architectural plan.
+- [x] `.claude/skills/grill-with-docs/SKILL.md` exists with frontmatter + content matching upstream.
+- [x] `.claude/skills/grill-with-docs/CONTEXT-FORMAT.md` exists matching upstream.
+- [x] `.claude/skills/grill-with-docs/ADR-FORMAT.md` exists matching upstream.
+- [x] Application begins: first grilling question posed against the orchestrator-as-triage architectural plan.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,3 +227,11 @@ grep -q "Interview me relentlessly" .claude/skills/grill-with-docs/SKILL.md
 ### 2026-05-13T15:15:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-08-11T21:32:00Z — ac-verification [dispatched-worker]
+- **Action:** Verified all 4 Agent ACs against on-disk evidence and ticked them.
+- **Evidence:**
+  - `.claude/skills/grill-with-docs/{SKILL,CONTEXT-FORMAT,ADR-FORMAT}.md` all exist, committed, frontmatter and content intact (`## Verification` block passes clean: 5/5 checks green).
+  - Grilling session under this task ID already ran to completion in substance: 15 questions resolved 2026-05-02 → 2026-05-13, captured inline in root `CONTEXT.md` (Orchestrator/Agent/Worker/Workflow/Delegation domain model, three-tier prompt strategy, workflow schema, pi doctor-warn, pause-not-timeout policy) plus four ADRs (`docs/adr/0001`–`0004`). Commit trail: `81ac8dac0` (Q1) through `4f1188415` (Q15).
+  - The ACs were never ticked despite the work being done — closing that gap here, not re-running the grilling session (Q15's "Flagged ambiguities" section shows no further open question queued; the one deferred branch — cross-agent-conversation/(b3) — was explicitly spun out to a separate joint AEF/TermLink arc, not left dangling under T-1687).
+- **Context:** Dispatched as a `--bare` worker against this task's existing ACs; no new grilling content authored — the task's substance was already complete, only the bookkeeping (AC ticks) was stale.
