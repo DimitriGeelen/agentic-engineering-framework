@@ -31,6 +31,7 @@ T-1701, same as T-1700 deferred its claude-p spawn driver.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from typing import Iterator, Optional
 
@@ -43,6 +44,10 @@ class PiWorker:
         model:    pi --model value (e.g. "claude-3-5-sonnet-latest").
         cwd:      working directory for the pi subprocess.
         binary:   override pi binary path (default "pi" from PATH).
+        env:      overlay merged onto os.environ (T-2917 — this is how the
+                   resolver's worker-identity GIT_AUTHOR_*/GIT_COMMITTER_*
+                   env vars reach a pi worker's own `git commit`, matching
+                   the contract `OllamaLoopWorker._build_env` already uses).
 
     Usage:
         with closing(PiWorker("anthropic", "claude-3-5-sonnet-latest", "/tmp")) as w:
@@ -56,12 +61,14 @@ class PiWorker:
         model: str,
         cwd: str,
         binary: str = "pi",
+        env: Optional[dict] = None,
     ) -> None:
         self.provider = provider
         self.model = model
         self.cwd = cwd
         self.binary = binary
         self.req_id = 0
+        merged_env = {**os.environ, **(env or {})}
         self.proc: Optional[subprocess.Popen] = subprocess.Popen(
             [
                 binary,
@@ -74,6 +81,7 @@ class PiWorker:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=cwd,
+            env=merged_env,
             text=True,
             bufsize=1,
         )

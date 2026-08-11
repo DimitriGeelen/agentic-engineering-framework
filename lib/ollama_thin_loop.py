@@ -203,9 +203,16 @@ class OllamaThinLoopWorker:
             if d in low:
                 return f"ERROR: command blocked by sandbox (matched '{d}')"
         try:
+            # T-2917: merge the envelope env overlay (worker-identity
+            # GIT_AUTHOR_*/GIT_COMMITTER_* among others) so a `git commit` run
+            # through this tool picks up the dispatch identity instead of
+            # falling through to this process's ambient env. Every other
+            # dispatcher (_build_env in ollama_loop, PiWorker.__init__) merges
+            # the same way; this was the one Bash-executing path that didn't.
             proc = subprocess.run(
                 cmd, shell=True, capture_output=True, text=True,
                 timeout=TOOL_BASH_TIMEOUT, cwd=self.cwd,
+                env={**os.environ, **self._env_overlay},
             )
         except subprocess.TimeoutExpired:
             return f"ERROR: command timed out after {TOOL_BASH_TIMEOUT}s"

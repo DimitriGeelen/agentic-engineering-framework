@@ -41,6 +41,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
+import worker_identity
 
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
@@ -812,6 +813,16 @@ def capture_dispatch(
     cwd_template = workflow.get("cwd", "$PROJECT_ROOT")
     cwd_resolved = cwd_template.replace("$PROJECT_ROOT", str(PROJECT_ROOT))
 
+    # T-2917: give the worker a git identity distinct from the operator's,
+    # named for the mechanism that spawned it (row["origin"]) and carrying
+    # this dispatch_id in the email local-part so a worker's commit joins
+    # back to this row without depending on the worker to write a trailer.
+    # Workflow-declared `env:` is layered on top — it can override if a
+    # workflow ever needs to (none do today), never the other way round.
+    mechanism = worker_identity.mechanism_from_origin(row["origin"])
+    env = worker_identity.worker_git_env(mechanism, dispatch_id)
+    env.update(workflow.get("env", {}))
+
     envelope = {
         "dispatch_id": dispatch_id,
         "task_id": task_id,
@@ -829,7 +840,7 @@ def capture_dispatch(
         "mcp_config": workflow.get("mcp_config"),
         "cost_cap_usd": workflow.get("cost_cap_usd"),
         "cwd": cwd_resolved,
-        "env": workflow.get("env", {}),
+        "env": env,
         "blob_dir": str(blob_dir),
         "variant_id": variant_id,
     }

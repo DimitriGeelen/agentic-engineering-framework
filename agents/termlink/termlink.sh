@@ -19,6 +19,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+# T-2917: fw_worker_git_identity_env — default git identity for direct
+# `fw termlink dispatch` (see cmd_dispatch below).
+source "$FRAMEWORK_ROOT/lib/git-identity.sh"
 
 # Colors
 RED='\033[0;31m'
@@ -623,6 +626,18 @@ cmd_dispatch() {
     # Keys validated at parse time (KEY=VAL with KEY ∈ [A-Z_][A-Z0-9_]*).
     # Values are written verbatim with shell-quoted form so spaces/specials survive.
     : > "$wdir/env.sh"
+    # T-2917: default worker git identity, written FIRST so any caller-supplied
+    # --env GIT_AUTHOR_*/--env GIT_COMMITTER_* (e.g. forwarded by a resolver
+    # dispatch — TermLinkWorker._build_dispatch_argv turns envelope["env"]
+    # into --env pairs) overrides it: env.sh is sourced top-to-bottom, later
+    # `export` wins. `$name` (required, unique per dispatch) stands in for a
+    # dispatch_id here — this call path has no dispatches.jsonl row to join
+    # against; the TermLink worker dir at /tmp/tl-dispatch/$name is the join
+    # target instead. Mechanism is fixed "termlink-dispatch": this is the
+    # direct-dispatch path (CLAUDE.md §Sub-Agent Dispatch Protocol), distinct
+    # from a resolver-loop worker (which arrives with mechanism already set
+    # via --env and overrides these lines).
+    fw_worker_git_identity_env "termlink-dispatch" "$name" >> "$wdir/env.sh"
     local env_keys_json="[]"
     if [ "${#envs[@]}" -gt 0 ]; then
         local _key_list=""

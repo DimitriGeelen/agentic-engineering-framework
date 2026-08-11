@@ -203,6 +203,7 @@ def _spawn_pi(
             provider=provider,
             model=envelope["model"],
             cwd=envelope.get("cwd", str(PROJECT_ROOT)),
+            env=envelope.get("env") or {},
         )
         try:
             for event in worker.prompt(envelope["prompt"]):

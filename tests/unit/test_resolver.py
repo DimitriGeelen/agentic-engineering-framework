@@ -236,6 +236,64 @@ def test_capture_dispatch_writes_jsonl_and_blob(isolated_root):
     assert (blob_dir / "prompt.txt").is_file()
 
 
+def test_capture_dispatch_sets_worker_git_identity(isolated_root, monkeypatch):
+    """T-2917: a dispatch-spawned worker's envelope carries a git identity
+    distinct from the operator's, joinable back to this dispatch_id."""
+    root, r = isolated_root
+    monkeypatch.setenv("FW_DISPATCH_ORIGIN", "systemd:resolver-loop.service")
+    _write_template(root, "prompts/test.md", "Hi")
+    _write_workflow(
+        root,
+        "default",
+        {
+            "task_type": "default",
+            "worker_kind": "TermLink",
+            "model": "sonnet",
+            "prompt_template": "prompts/test.md",
+        },
+    )
+    envelope, row = r.resolve("T-001", "default", {})
+    env = envelope["env"]
+    assert env["GIT_AUTHOR_NAME"] == "fw worker (resolver-loop)"
+    assert env["GIT_AUTHOR_EMAIL"] == env["GIT_COMMITTER_EMAIL"]
+    assert env["GIT_AUTHOR_NAME"] == env["GIT_COMMITTER_NAME"]
+    assert env["GIT_AUTHOR_EMAIL"].startswith("dispatch+")
+    assert env["GIT_AUTHOR_EMAIL"].endswith("@aef.local")
+    # dispatch_id joinability: the email's short id is a prefix of the real dispatch_id.
+    short = env["GIT_AUTHOR_EMAIL"].split("+", 1)[1].split("@", 1)[0]
+    assert row["dispatch_id"].startswith(short)
+    # And it is not any plausible operator identity string.
+    assert "Dimitri" not in env["GIT_AUTHOR_NAME"]
+    assert "@" not in env["GIT_AUTHOR_NAME"]
+
+
+def test_capture_dispatch_mechanism_distinguishes_origin(isolated_root, monkeypatch):
+    """T-2917 AC: a reader must be able to tell a resolver-loop worker from a
+    manually-triggered resolver dispatch by identity name alone."""
+    root, r = isolated_root
+    _write_template(root, "prompts/test.md", "Hi")
+    _write_workflow(
+        root,
+        "default",
+        {
+            "task_type": "default",
+            "worker_kind": "TermLink",
+            "model": "sonnet",
+            "prompt_template": "prompts/test.md",
+        },
+    )
+
+    monkeypatch.setenv("FW_DISPATCH_ORIGIN", "systemd:resolver-loop.service")
+    envelope_loop, _ = r.resolve("T-001", "default", {})
+
+    monkeypatch.setenv("FW_DISPATCH_ORIGIN", "cli:manual-run")
+    envelope_cli, _ = r.resolve("T-001", "default", {})
+
+    assert envelope_loop["env"]["GIT_AUTHOR_NAME"] != envelope_cli["env"]["GIT_AUTHOR_NAME"]
+    assert "resolver-loop" in envelope_loop["env"]["GIT_AUTHOR_NAME"]
+    assert "resolver-cli" in envelope_cli["env"]["GIT_AUTHOR_NAME"]
+
+
 def test_dry_run_skips_writes(isolated_root):
     root, r = isolated_root
     _write_template(root, "prompts/test.md", "Hi")

@@ -57,3 +57,28 @@ fw_git_identity_remedy() {
     local dir="${1:-.}"
     printf "cd %s && git config user.email 'you@example.com' && git config user.name 'Your Name'\n" "$dir"
 }
+
+# fw_worker_git_identity_env <mechanism> <dispatch_id> — GIT_AUTHOR_*/
+# GIT_COMMITTER_* `export` lines for a dispatch-spawned worker (T-2917).
+#
+# Bash mirror of `lib/worker_identity.py:worker_git_env` — same format string
+# on both sides (dispatch+<8-char-id>@aef.local email, "fw worker (<mechanism>)"
+# name), pinned by tests on both sides so they cannot silently diverge. A bash
+# mirror rather than a shell-out to python: this is called from inside
+# `agents/termlink/termlink.sh:cmd_dispatch`, on the hot path for every direct
+# TermLink dispatch, where spawning python just to format four env lines would
+# be the wrong trade.
+#
+# Prints four `export KEY=VALUE` lines, ready to append into a script that
+# will `source` them before invoking `claude -p` (or plain `git commit`).
+fw_worker_git_identity_env() {
+    local mechanism="${1:-worker}" dispatch_id="${2:-}"
+    local short="${dispatch_id:0:8}"
+    [ -z "$short" ] && short="unknown"
+    local name="fw worker ($mechanism)"
+    local email="dispatch+${short}@aef.local"
+    printf 'export GIT_AUTHOR_NAME=%q\n' "$name"
+    printf 'export GIT_AUTHOR_EMAIL=%q\n' "$email"
+    printf 'export GIT_COMMITTER_NAME=%q\n' "$name"
+    printf 'export GIT_COMMITTER_EMAIL=%q\n' "$email"
+}
