@@ -14,7 +14,7 @@ owner: agent
 horizon: now
 tags: [termlink, peer-consult, cross-repo, joint-smoke]
 components: []
-related_tasks: [T-1818, T-1819, T-1804, T-1797, T-1821]
+related_tasks: [T-1818, T-1819, T-1804, T-1797, T-1821, T-2409, T-2363, T-2918]
 arc_id: orchestrator-rethink
 created: 2026-05-13T23:05:51Z
 last_update: '2026-07-07T10:45:03Z'
@@ -287,6 +287,40 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 - **Plan impact:** PARTIAL-SHIP recommendation **stands**. The fix's correctness inside the hub crate (integration test green, hub-level event.subscribe sees count=1 per termlink-agent's report) does NOT translate to anything the framework's `fw peer subscribe` can consume. Framework-side substrate (`lib/peer.py::poll_once`) calls `termlink event poll <target> --topic inbox.queued --since <cursor>` — per-session bus. The new emit appears to land somewhere session-poll cannot reach (hub-internal aggregator? a virtual aggregator session?). Headline mechanic (framework subscriber observes the event when a CLI post lands an inbox) is still not demonstrated end-to-end.
 - **Triggered:** Sent structured inject reply to termlink-agent asking which session bus the emit lands on (or how to subscribe from a CLI client). Keeping T-1820 in PARTIAL-SHIP awaiting clarification or a session-targeted wiring change.
 
+### 2026-08-11 — conclusive rerun: TermLink T-2363 confirmed shipped, real root cause found (framework-side)
+
+- **What changed:** Dispatched a read-only TermLink worker confirming T-2363
+  (the fix TermLink filed for the T-2409 investigation) shipped 2026-07-06,
+  commit `7aa968811`. Re-ran the live smoke against the shared hub
+  (`termlink 0.11.720`). Result: the fix is real and correct, but the smoke
+  still does not observe a live event — because of a **framework-side**
+  defect, not a TermLink-side one. Root cause confirmed by direct
+  reproduction: `lib/peer.py::poll_once` polls a per-session event bus
+  (`termlink event poll <session> --topic inbox.queued`), but `inbox.queued`
+  is injected into the hub-level aggregator under a synthetic `session_id:
+  "hub"` — per-session poll cannot reach it regardless of target or topic
+  correctness. Confirmed live: polling both the addressee session and an
+  unrelated ready session returned 0 events immediately after a proven emit,
+  while `termlink event watch --hub --topic inbox.queued` captured the same
+  emit instantly. Separately confirmed: the DM rail (T-2323, shipped after
+  T-1819's prompts map was authored) emits under topic `dm.queued`, not
+  `inbox.queued` — so `.context/peer-consult-prompts.yaml`'s `dm:design-*`
+  channel-prefix routing can never fire via the topic the subscriber polls,
+  even with the poll-primitive defect fixed. Full trail:
+  `docs/reports/T-1820-joint-smoke-demo.md` §"2026-08-11 — conclusive rerun".
+- **Plan impact:** T-1821's premise ("aggregator not wired at hub startup")
+  is disproven — the aggregator was wired the whole time. **T-2918** filed
+  as the precisely-scoped fix (lib/peer.py must consume the hub aggregator,
+  not per-session poll; resolve the inbox.queued/dm.queued topic question).
+  Registered as concern OBS-186 (three months of investigation, T-1820 →
+  T-2409 → TermLink T-2363, correctly fixed real TermLink-side emit bugs but
+  never re-tested whether the framework's own poll call could reach a
+  hub-injected event at all). AC #2/#4 remain unticked — the live smoke, as
+  literally scoped, still does not fire end-to-end; this is a definitive
+  negative result with a named, fixable cause, not an open question.
+- **Triggered:** T-2918 filed (build, owner: agent, horizon: now). T-1821
+  updated with a superseded-premise note pointing at T-2918.
+
 ### 2026-05-14 — pickup envelope delivered to TermLink-side inbox
 
 - **What changed:** Operator chose option 2 (hold T-1820 open until TermLink resolves the handler gap) — and asked the right question: have we filed a pickup with TermLink? Answer was no until now. Dispatched `t1820-pickup-deliver` (Haiku, ~30s) to /opt/termlink which ran `bin/fw pickup send --type bug-report --priority high --task-id T-1636 --tags cross-repo,joint-smoke,T-1820,T-1636,T-1821` with the full working-hypothesis detail (handler registered in test only via `router::init_aggregator`, three resolution paths A/B/C). Envelope `P-041-bug-report.yaml` created in /opt/termlink's `.context/pickup/inbox/`; visible on `bin/fw pickup list`. The TermLink-side maintainer (or their next agent session) will see it on routine pickup processing.
@@ -306,22 +340,27 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 
 ## Recommendation
 
-- **Recommendation:** **PARTIAL-SHIP** — close T-1820 as substrate-shipped + file
-  T-1821 follow-up for headline-mechanic trigger investigation. Agent will NOT
-  autonomously close T-1820 GO; surfacing the partial-ship framing to the
-  operator for explicit accept-or-reject (per §ACD discipline).
-- **Rationale:** post-deploy state — deploy landed cleanly (binary `termlink 0.9.2104`
-  active on hub PID 4091515, mtime today, framework subscriber polls the new hub
-  without error, `inbox.queued` topic recognized by `event poll`). Two user-facing
-  CLI trigger attempts (`file send` to offline target → fell back to legacy events
-  per `T-1249` warn; `channel post` to a topic with kill-9'd "member" → did not
-  fire) did NOT produce the new emit. The TermLink-side integration test passes
-  because it calls `mirror_inbox_deposit_with()` directly from inside the hub
-  crate — passing the test does NOT prove any CLI flow exercises the new emit
-  live. Substrate is real and useful; the headline-mechanic observation is a
-  distinct deliverable that deserves its own evidence bar (T-1821). Per
-  §ACD/G-062 ("acknowledged failure better than false success"), I am refusing
-  to close GO on substrate-only evidence.
+- **Recommendation:** **PARTIAL-SHIP** (unchanged conclusion, now on decisive
+  evidence) — close T-1820 as substrate-shipped; follow-up refiled as
+  **T-2918** (T-1821's premise is disproven — see 2026-08-11 Evolution
+  entry). Agent will NOT autonomously close T-1820 GO; surfacing to the
+  operator per §ACD discipline.
+- **Rationale (updated 2026-08-11):** TermLink's T-2363 fix (filed by T-2409's
+  investigation) landed 2026-07-06 and is confirmed correct — verified live by
+  re-triggering the exact `remote send-file` path it fixed. The smoke still
+  does not observe a live event, but the reason is now conclusively known
+  and framework-owned: `lib/peer.py::poll_once` polls a per-session event
+  bus, which structurally cannot see hub-aggregator-injected events
+  (confirmed by side-by-side comparison — per-session poll returns 0 events,
+  `event watch --hub` captures the identical emit instantly). A second,
+  independent defect was also found: the DM rail emits under topic
+  `dm.queued`, not the `inbox.queued` topic the subscriber polls, so the
+  AC's literal `dm:design-*` scenario can never route through
+  `peer-consult-prompts.yaml` even with defect #1 fixed. Both are scoped in
+  **T-2918** and registered as concern **OBS-186**. Per §ACD/G-062
+  ("acknowledged failure better than false success"), I am not closing
+  T-1820 GO on substrate-only evidence — but this is no longer an open
+  question, it's a named, fixable, framework-side bug.
 - **Evidence (green — what landed):**
   - Worker `t1636-build` exit 0 at 23:36Z (~22min); 3 files / 50 LOC / 2 tests; commits `f3927611` + `13a11741` on `/opt/termlink` master.
   - Worker `t1820-deploy` exit 0 (~7min); `cargo install` succeeded; new binary `termlink 0.9.2104` (was 0.9.1701), mtime today.
@@ -329,11 +368,14 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
   - `bin/fw peer subscribe --once` against live hub: exit 0, cursor written, no errors.
   - `event poll framework-agent --topic inbox.queued`: topic recognized (`next_seq: 342`, no error).
   - Framework peer tests: 12/12 PASS.
-  - Demo artefact: `docs/reports/T-1820-joint-smoke-demo.md` (worker report, deploy log, two trigger attempts with exit states, why partial, recommended next move).
+  - **(2026-08-11)** TermLink T-2363 confirmed shipped and correct (commit `7aa968811`).
+  - **(2026-08-11)** Hub aggregator confirmed wired at boot (`server.rs:279`, `run_with_tcp()`), disproving the T-1821 hypothesis.
+  - **(2026-08-11)** `termlink event watch --hub --topic inbox.queued` and `--topic dm.queued` both captured live emits within the same second they were triggered — proves TermLink's emit path works end-to-end for both rails.
+  - Demo artefact: `docs/reports/T-1820-joint-smoke-demo.md` (worker report, deploy log, 2026-08-11 conclusive rerun with full reproduction trail and named root cause).
   - Reviewer: Overall PASS / Needs Human yes (cross-project-blast Layer-1 is the cross-repo human-review signal).
 - **Evidence (red — what did NOT land):**
-  - No live `inbox.queued` event observed from outside the hub crate during this session.
-  - User-facing trigger path for the new emit is not yet identified (likely needs to read the integration test verbatim).
+  - No live `inbox.queued` event observed via `fw peer subscribe` / per-session `event poll` — root cause is now named (`lib/peer.py` polls the wrong primitive; see T-2918), not unknown.
+  - The AC's literal `dm:design-*` scenario cannot be reached even with the poll defect fixed, because the DM rail emits under `dm.queued`, not `inbox.queued` (also scoped in T-2918).
 
 **Investigation outcome (option 2 executed):**
 
@@ -381,18 +423,20 @@ the next move at the right scope. Operator confirms or overrides.
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-970b117a
-- **Timestamp:** 2026-05-14T05:50:07Z
+- **Scan ID:** R-36811a68
+- **Timestamp:** 2026-08-11T12:43:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 17
+     - evidence: `bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"`
 
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-repo`
-
-- **Suppressed:** 1 (by override)
-  - mock-only-integration @ AC vs Verification cross-check

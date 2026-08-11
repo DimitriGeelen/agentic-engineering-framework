@@ -1,4 +1,22 @@
 
+# T-2915 — found while wiring the AC5 stale-latch WARN into `fw doctor`'s
+# Autonomous Dispatch section: the sibling stalled-task WARN, live since
+# T-2914, used the identical broken idiom and had never actually fired.
+- id: OBS-185
+  type: bug
+  severity: medium
+  surface: "bin/fw do_doctor Autonomous Dispatch section — `${_stalled_json:-{}}` / `${_latched_json:-{}}` JSON-default idiom"
+  detected_in: T-2915 (building the AC5 stale-latch WARN alongside the T-2914 stalled-task WARN it mirrors)
+  symptom: "`fw doctor` unconditionally printed 'OK No stalled/zero-outcome tasks' even when `fw resolver stalled --json` truthfully reported stalled tasks — the WARN branch was structurally unreachable. Same idiom copied for the new latched-count check would have shipped identically broken (measured: real count 256, doctor-path count 0)."
+  root_cause: "`echo \"${_stalled_json:-{}}\"` looks like a safe empty-string fallback, but bash's brace-matching in parameter expansion appends a stray extra `}` to the OUTPUT whenever the variable IS set and its value ends in `}` — which valid JSON from `--json` always does (confirmed in isolation: `v='{\"a\":1}'; echo \"${v:-{}}\"` prints `{\"a\":1}}`, an extra closing brace, on stock bash 5.x). The corrupted string then fails `json.load` inside a bare `except Exception: d = {}`, silently producing count=0 regardless of the real value. Two independent failures compound: a shell-quoting footgun feeding a swallowed-exception fallback, and the fallback path is indistinguishable from the true-zero case at the WARN/OK branch — false green."
+  prevention: "Fixed same-commit for both the stalled and latched blocks: replaced the `${var:-{}}` default with `[ -z \"$var\" ] && var=\"{}\"` followed by `printf '%s' \"$var\" | python3 -c ...` — no parameter-expansion brace matching involved. Structural gap: nothing pins bash's json-passthrough-through-parameter-expansion pattern generally; a future `${x:-{...}}` elsewhere in bin/fw would reproduce this silently. No lint exists for this idiom specifically — noted here rather than built, since the fix is trivially inspectable at each of the two call sites and a generic lint for 'default value ending in brace' would be low-signal against bin/fw's much broader JSON-plumbing surface."
+  blast_radius: scoped
+  observed: 2026-08-11
+  fixed_in: T-2915
+  fixed_date: 2026-08-11
+  status: resolved
+  related: [T-2915, T-2914]
+
 # T-2834 — the Bash task gate's fast path judges a chain by its first word only,
 # so every gate below it can be skipped by prefixing an allowlisted command.
 # Registered BEFORE the fix per CLAUDE.md §"register first, fix second".
@@ -214,3 +232,20 @@
   status: open
   related: [T-2777, T-2776, T-2775, T-2782]
   related: [T-2645, T-1810, T-1808, T-1799, OBS-096, T-1633]
+
+# T-1820's live joint smoke has failed to observe a live inbox.queued event across
+# three months and multiple upstream investigations (T-2409, TermLink T-2363), all
+# of which correctly diagnosed and fixed TermLink-side emit bugs -- but the framework
+# subscriber itself was never able to see ANY hub-aggregator event, regardless.
+- id: OBS-186
+  type: tooling
+  severity: high
+  surface: "lib/peer.py::poll_once (T-1818 v2 peer-consult subscriber substrate)"
+  detected_in: T-1820 (2026-08-11 live joint smoke rerun)
+  symptom: "fw peer subscribe --once always polls cleanly (exit 0, cursor written) but never observes a live inbox.queued event, across every TermLink version tested (0.9.1701 through 0.11.720) and after TermLink fixed two independent emit-site bugs (T-1637, T-2363) explicitly to unblock this smoke."
+  root_cause: "poll_once() calls 'termlink event poll <session> --topic inbox.queued --since <cursor>' -- a per-SESSION event bus read. But inbox.queued (and its dm-rail sibling dm.queued, T-2323) are injected into the hub-level EventAggregator under a synthetic session_id='hub' (crates/termlink-hub, router::aggregator(), T-1645), a broadcast-only channel with no --since cursor. Per-session poll structurally cannot reach it: confirmed live by polling both the addressee session and an unrelated ready session immediately after a proven emit (both returned count=0), while 'termlink event watch --hub --topic inbox.queued' observed the identical emit instantly. Independently, the DM rail (T-2323) fires under topic 'dm.queued', not 'inbox.queued' -- so .context/peer-consult-prompts.yaml's dm:design-*/dm:escalate-*/dm:triage- channel-prefix routing (built for DM-addressed consults) can never be reached via the topic the subscriber polls, even once the poll-primitive defect is fixed."
+  prevention: "Two independent framework-side fixes needed, both scoped in T-2918: (1) lib/peer.py must consume the hub aggregator (event watch --hub or an equivalent cursor-capable read) instead of per-session poll; (2) decide whether inbox: and dm: are one trigger rail or two (subscribe both topics, or align TermLink's dm-rail topic name). Three months of investigation (T-1820 -> T-2409 -> TermLink T-2363) correctly fixed real TermLink-side bugs but never reached this framework-side defect because every rerun re-tested only the emit side, not whether the framework's own poll call could reach a hub-injected event at all."
+  blast_radius: scoped
+  observed: 2026-08-11
+  status: open
+  related: [T-1820, T-1821, T-1818, T-1819, T-2409, T-2363, T-2918]

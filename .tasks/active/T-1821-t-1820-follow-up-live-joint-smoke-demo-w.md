@@ -19,7 +19,7 @@ owner: agent
 horizon: next
 tags: [termlink, peer-consult, cross-repo, joint-smoke]
 components: []
-related_tasks: [T-1820, T-1636, T-1818, T-1819, T-1804]
+related_tasks: [T-1820, T-1636, T-1818, T-1819, T-1804, T-2918]
 arc_id: orchestrator-rethink
 created: 2026-05-14T05:48:29Z
 last_update: '2026-07-07T10:45:03Z'
@@ -152,7 +152,18 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Superseded premise (2026-08-11):** this task's title and description assume
+the aggregator handler is "not wired at hub startup." A live rerun of T-1820's
+joint smoke on 2026-08-11 disproved that hypothesis directly (the aggregator
+is wired at hub boot — `crates/termlink-hub/src/server.rs:279`) and found
+the real, conclusive root cause: `lib/peer.py::poll_once` polls a
+per-session event bus, which structurally cannot see hub-aggregator-injected
+events, plus a topic-name mismatch (`dm.queued` vs `inbox.queued`) on the DM
+rail. Full reproduction trail: `docs/reports/T-1820-joint-smoke-demo.md`
+§"2026-08-11 — conclusive rerun". **Follow-up work is now tracked in T-2918**
+(fixes `lib/peer.py` + resolves the topic question + reruns this smoke).
+Recommend closing this task as superseded by T-2918 rather than duplicating
+scope, pending operator confirmation.
 
 ## Acceptance Criteria
 
