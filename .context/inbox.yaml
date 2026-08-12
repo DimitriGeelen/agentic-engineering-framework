@@ -1760,3 +1760,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-235
+  text: "Curriculum's corpus routes (10 across 4 maps) are dead in every consumer: tools/ is not vendored (no _self_vendor_tools in lib/upgrade.sh) and neither is the corpus store. Resolves in framework repo, rc=2 in a fresh fw init project. Half A of arc-017 shipped 2026-08-08 with its defining mechanic (route to maps, don't embed) inert everywhere it is actually consumed. Found by rehearsing T-2720's operator [REVIEW] path."
+  captured: 2026-08-12T12:11:59Z
+  context_task: T-2941
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
