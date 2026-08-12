@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2940: read and answer 832 rails 561-562
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T11:41:11Z
+# ============================================================================
+
+task_id: T-2940
+task_name: "read and answer 832 rails 561-562"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T11:18:31Z
+completed: 2026-08-12T11:40:58Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read and answer 832 rails 561-562
+
+# Key outcomes
+outcomes:
+  - 'Rails 561 and 562 read in full; anything addressed to us is answered or explicitly deferred with a reason'
+  - 'Any claim we make about our own tree is measured in this session before it is sent, not asserted from memory (census run 3× — the first two results were instrument defects, and the known remaining false-positive class is stated in the reply rather than hidden)'
+  - 'Reply posted to the rail (offset 563)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2940-read-and-answer-832-rails-561-562.md
+generated_by: context-agent-hybrid
