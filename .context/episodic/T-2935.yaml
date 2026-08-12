@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2935: correct OBS-231 invalid-owner count 11 to 10 (11th was prose, not a frontmatter row)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T09:46:38Z
+# ============================================================================
+
+task_id: T-2935
+task_name: "correct OBS-231 invalid-owner count 11 to 10 (11th was prose, not a frontmatter row)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T09:41:41Z
+completed: 2026-08-12T09:46:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-12T11:46:20+02:00
+last_commit: 2026-08-12T11:46:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-231 invalid-owner count corrected 11 to 10 — the 11th was the prose line the observation itself quotes as evidence; denominator verified first (2922 files / 2922 rows / 0 missing / 0 dup); 6 x 'claude' + 4 x empty (NOT malformed merges — a first re-measure's regex consumed the newline); reported to 832 rail 559
+
+# Key outcomes
+outcomes:
+  - 'Count re-measured with a **frontmatter-scoped parse**, not a whole-file grep, and the'
+  - 'The corrected figure and the reason for the delta are written into OBS-231 so the'
+  - 'The 10 remaining invalid values are characterised by value (not just counted), so the'
+  - 'Correction reported to 832 on the DM rail, flagged as a correction of a figure I'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-12 — scope held to the correction'
+    chose: 'correct the figure and characterise the 10; do NOT fix the rows or add an'
+    rationale: 'OBS-231''s open question is whether to *change* the vocabulary — an operator'
+    alternatives_rejected: ['"fix the 10 while I''m here" — it would make the observation look resolved']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2935-correct-obs-231-invalid-owner-count-11-t.md'
+  - '.tasks/completed/T-2934-832-pair-draft-co-authorship-check--conf.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T11:46:20'
+    action: 'T-2935: OBS-231 invalid-owner count corrected 11 to 10 — the 11th was the prose line the observation itself quotes as evidence; denominator verified first (2922 files / 2922 rows / 0 missing / 0 dup); 6 x ''claude'' + 4 x empty (NOT malformed merges — a first re-measure''s regex consumed the newline); reported to 832 rail 559'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 288
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2935-correct-obs-231-invalid-owner-count-11-t.md
+generated_by: context-agent-hybrid
