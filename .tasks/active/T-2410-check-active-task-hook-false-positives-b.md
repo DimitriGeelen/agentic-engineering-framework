@@ -339,6 +339,32 @@ cases pin that mutating sub-verbs (`upstream pin`) still gate properly.
 
 ## Updates
 
+### 2026-08-13 — Case 3: six sightings in one session (S-2026-0813)
+
+Recorded as frequency evidence, not a fix. Every instance is the same chain: a task
+closes, focus goes empty, and the next command — including read-only ones — is refused.
+
+    1. git push (already-committed work)          -> No active task
+    2. termlink channel state --json (read-only)  -> No active task
+    3. fw arc list (read-only)                    -> No active task
+    4. sed -n '/x/,/y/p' file (read-only print)   -> matched as a mutation
+    5. cat .context/working/.budget-status        -> No active task
+    6. fw task review-batch (read-only emit)      -> No active task
+
+Sightings 2, 3, 5 and 6 are **read-only observability commands**, and 4 is a read-only
+`sed -n …p`. The gate's purpose is to stop unscoped *editing*; what it actually stopped
+six times in one session was looking at state. Twice the chain ran three deep
+(no-active-task -> captured-status -> G-020 placeholder ACs) and was resolved by writing
+real ACs for a task that needed them anyway — never by bypass.
+
+Note the compounding cost: each unblock costs a task file, so the session's task-creation
+rate is partly an artifact of the gate rather than of the work. T-2956/2957/2959 were all
+legitimate units, but the *timing* of when they had to be filed was set by the gate, not
+by the work breaking down that way.
+
+Still owner: human. No fix proposed here.
+
+
 ### 2026-06-15T19:55:42Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2410-check-active-task-hook-false-positives-b.md
