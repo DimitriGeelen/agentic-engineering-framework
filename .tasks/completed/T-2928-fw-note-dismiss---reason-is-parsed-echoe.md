@@ -6,12 +6,12 @@ description: >
   fw note dismiss --reason is parsed, echoed and discarded — the register cannot tell
   judged from swept
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, agents/observe/observe.sh, tests/integration/t2922_greenfield_first_inception.bats, tests/unit/t2927_observation_inbox_listing.bats, tests/unit/t2928_note_dismiss_persists_reason.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T22:35:00Z
-last_update: '2026-08-11T22:45:11Z'
-date_finished:
+last_update: 2026-08-11T23:02:05Z
+date_finished: 2026-08-11T23:02:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -256,3 +256,20 @@ rather than folded in, per one-bug-one-task.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2928-fw-note-dismiss---reason-is-parsed-echoe.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0eda32de
+- **Timestamp:** 2026-08-11T23:02:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 9
+     - evidence: `out=$(sed -n '/^do_dismiss()/,/^}/p' agents/observe/observe.sh); ! echo "$out" | grep -q '_sed_i'`
+
+### 2026-08-11T23:02:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

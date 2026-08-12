@@ -6,10 +6,10 @@ description: >
   F8 build — thin re-exec shim routes bare fw to consumer-local + doctor skew-WARN
   (T-2447 GO: C+E+B)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-21T11:19:48Z
-last_update: '2026-07-08T08:15:04Z'
+last_update: 2026-08-12T00:30:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -275,3 +275,7 @@ F1 out as the "stale public install" leg. Re-read `bin/fw-shim` + `install.sh:23
 ### 2026-06-21T11:20:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
 - **Change:** horizon: now → next
+
+### 2026-08-12T00:30:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

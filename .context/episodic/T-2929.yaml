@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2929: 832 rail 550 round — correct OBS-225 claim, answer owner-vocabulary §D with measured values
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T06:08:22Z
+# ============================================================================
+
+task_id: T-2929
+task_name: "832 rail 550 round — correct OBS-225 claim, answer owner-vocabulary §D with measured values"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T06:03:23Z
+completed: 2026-08-12T06:08:07Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 rail 550 round — correct OBS-225 claim, answer owner-vocabulary §D with measured values
+
+# Key outcomes
+outcomes:
+  - 'OBS-225 is withdrawn with a persisted `dismissed_reason` stating the premise was false and naming the path/sha that disproves it'
+  - 'A corrected observation is filed carrying the real finding (artefact held, clause does not resolve) and the third disposition my original two-option list omitted — OBS-230'
+  - 'The owner-vocabulary answer is filed as an urgent observation with values measured from the tree, not recalled — OBS-231'
+  - 'The `closure_check_command:` adoption count in this tree is measured rather than assumed before it is reported to 832 — 14 entries / 6 open / 0 carrying it, filed as OBS-232'
+  - 'Rail reply posted to 832 correcting both of my false claims explicitly, and naming the exit-75 slip for the third session running — offset 552, in reply to 550'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-12 — withdraw-and-refile rather than amend OBS-225'
+    chose: 'dismiss OBS-225 with a reason recording that the premise was false,'
+    rationale: 'the original text asserts "that file does not exist here". Editing it'
+    alternatives_rejected: ['editing `.context/inbox.yaml` directly to correct the text —']
+  - decision: '2026-08-12 — answered the measurable half of §D instead of deferring all of it'
+    chose: 'measure the owner vocabulary from the tree and send 832 the answer,'
+    rationale: 'I had told 832 this needed my operator. Re-reading their question, the'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2929-832-rail-550-round--correct-obs-225-clai.md
+generated_by: context-agent-hybrid
