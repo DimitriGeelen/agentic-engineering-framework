@@ -169,6 +169,35 @@ except:
     # Purely syntactic, no focus read — see _fw_extract_drift_target above.
     DRIFT_TARGET=$(_fw_extract_drift_target "$BASH_CMD")
 
+    # T-2936: task-bootstrap exemption, decided BEFORE the write-pattern chain.
+    #
+    # The bootstrap branch further down (~:198, T-2052) is only reachable when no
+    # write pattern matched, and its own comment says so. That ordering assumes a
+    # write pattern means a write. It does not when the operator is inside a QUOTED
+    # PAYLOAD: `fw task create --name "count 11->10"` matches `[^2>&]>[^>&]`, so
+    # creating a task is classified as a file write and blocked for having no active
+    # task — while the block message names that very command as the way out. With
+    # focus null there is then no route back inside the sanctioned path. Hit live
+    # filing T-2935; proven by changing one character class (` to ` was allowed).
+    #
+    # Decided on a QUOTE-STRIPPED view so the exemption cannot swallow a real
+    # redirect: `fw task create --name 'x' > /tmp/out` still has its `>` outside
+    # quotes after stripping, still matches, still falls through to the gate.
+    # Both failure directions of the stripper are safe: under-stripping leaves the
+    # metacharacter and blocks (today's behaviour, loud); an unbalanced quote fails
+    # to match the strip pattern at all and also blocks. It can only fail toward
+    # BLOCKING, which is the direction the T-2880 note above argues for.
+    #
+    # L-432 (T-2052) is this class keyed on a command's first WORD; this is the
+    # same class keyed on its quoted PAYLOAD — the hazard the pattern-3 comments
+    # at :102-108 already record for other branches, unfixed for this one.
+    if [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception)([[:space:]]|$) ]]; then
+        _bootstrap_unquoted=$(printf '%s' "$BASH_CMD" | sed "s/'[^']*'//g; s/\"[^\"]*\"//g")
+        if ! { type has_bash_write_pattern &>/dev/null && has_bash_write_pattern "$_bootstrap_unquoted"; }; then
+            exit 0
+        fi
+    fi
+
     # Check write patterns FIRST — even "safe" commands with redirects are writes
     if type has_bash_write_pattern &>/dev/null && has_bash_write_pattern "$BASH_CMD"; then
         # Command has write patterns — fall through to active-task check
