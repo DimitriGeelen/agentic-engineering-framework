@@ -912,7 +912,32 @@ echo ""
 "$AUDIT_SCRIPT" --section structure
 audit_exit=$?
 
-if [ $audit_exit -eq 2 ]; then
+if [ $audit_exit -eq 75 ]; then
+    # T-2930 / OBS-221: 75 = EX_TEMPFAIL = the audit DID NOT RUN (lock contention).
+    # This is not a pass. Before this branch existed, contention exited 0 and landed
+    # in the "no failures" path, so a push during the daily audit cron was waved
+    # through with the gate never having evaluated anything — observed live
+    # 2026-08-11 with an invariant RED at the time.
+    #
+    # BLOCK rather than warn. The asymmetry is what decides it: a push blocked on
+    # contention costs seconds — wait for the other audit and push again — whereas a
+    # push waved through on an unevaluated gate costs whatever the unaudited commit
+    # does downstream, discovered later and attributed elsewhere.
+    echo ""
+    echo "ERROR: Push blocked - audit COULD NOT RUN (another audit holds the lock)"
+    echo ""
+    echo "This is not an audit failure. No verdict was produced, so the gate has"
+    echo "nothing to pass you on."
+    echo ""
+    echo "What to do: wait for the running audit to finish, then push again."
+    echo "  Usually the daily cron audit — it finishes within a minute or two."
+    echo "  Check: ls -l $PROJECT_ROOT/.context/locks/audit.lock"
+    echo ""
+    echo "Bypass: git push --no-verify"
+    echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
+    echo ""
+    exit 1
+elif [ $audit_exit -eq 2 ]; then
     echo ""
     echo "ERROR: Push blocked - audit has FAILURES"
     echo ""
@@ -971,7 +996,7 @@ HOOK_EOF
     echo "  - Blocks commits without task references (T-XXX)"
     echo "  - Blocks commits introducing secrets (T-1844 — Azure PAT, AWS keys, SSH keys, etc.)"
     echo "  - Allows merge commits and rebases"
-    echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
+    echo "  - Runs audit before push (blocks on FAIL, blocks if audit could not run, warns on WARN)"
     echo "  - Bypass: $(_emit_user_command "tier0 approve") (Tier 0 protected)"
     echo "           then: git commit/push --no-verify"
 }
@@ -989,7 +1014,7 @@ Options:
 Installs:
   - commit-msg hook: Validates task reference in commit message
   - post-commit hook: Detects bypasses and reminds to log them
-  - pre-push hook: Runs audit before push (blocks on FAIL)
+  - pre-push hook: Runs audit before push (blocks on FAIL, and on could-not-run)
 
 The hooks enforce task traceability (P-002: Structural Enforcement).
 

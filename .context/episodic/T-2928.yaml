@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2928: fw note dismiss --reason is parsed, echoed and discarded — the register cannot tell judged from swept
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-11T23:02:21Z
+# ============================================================================
+
+task_id: T-2928
+task_name: "fw note dismiss --reason is parsed, echoed and discarded — the register cannot tell judged from swept"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T22:35:00Z
+completed: 2026-08-11T23:02:05Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-12T00:45:48+02:00
+last_commit: 2026-08-12T00:52:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw note dismiss --reason is persisted instead of echoed and discarded. 832 rail round — 5 observations filed (OBS-225..229 + owner-vocab urgent), 2 learnings captured
+
+# Key outcomes
+outcomes:
+  - 'Reproduced first: a leg drives `fw note dismiss OBS-NNN --reason "..."` against a fixture inbox and asserts that, BEFORE the fix, the reason appears in stdout and NOT in the file — the flag''s own success message is the thing that has to be shown lying'
+  - '`fw note dismiss --reason "..."` persists the reason onto the observation, alongside a dismissal timestamp, so a later reader can tell a judged dismissal from a swept one'
+  - 'The dismissal survives a YAML round-trip: a leg parses the inbox after dismissal and reads the reason back as structured data, not by grepping the line it just wrote'
+  - 'Omitting `--reason` still works and records the default, so the flag stays optional and no existing caller breaks'
+  - 'Reasons containing quotes, colons and newlines round-trip intact — the write path must not be a `sed` substitution that a `:` in the reason can corrupt'
+  - 'Existing reason-less dismissals are not silently backfilled with a fabricated reason: they stay distinguishable from newly-reasoned ones, because inventing a rationale for a past decision is worse than recording that none was captured'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/observe/observe.sh'
+  - 'agents/observe/observe.sh'
+  - '.context/audits/2026-08-11.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.fabric/components/tests-unit-t2927_observation_inbox_listing.yaml'
+  - '.fabric/components/tests-unit-t2928_note_dismiss_persists_reason.yaml'
+  - '.tasks/active/T-2928-fw-note-dismiss---reason-is-parsed-echoe.md'
+  - '.tasks/completed/T-1687-install--apply-grill-with-docs-skill--gr.md'
+  - 'tests/unit/t2928_note_dismiss_persists_reason.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T00:45:48'
+    action: 'T-2928: fw note dismiss --reason is persisted instead of echoed and discarded'
+  - time: '2026-08-12T00:52:56'
+    action: 'T-2928: 832 rail round — 5 observations filed (OBS-225..229 + owner-vocab urgent), 2 learnings captured'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 27
+  commits: 2
+  files_changed: 26
+  lines_added: 866
+  lines_removed: 162
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2928-fw-note-dismiss---reason-is-parsed-echoe.md
+generated_by: context-agent-hybrid

@@ -304,6 +304,36 @@ done
 # T-1162/T-866/T-1464: flock guard + timeout — prevent zombie accumulation in cron AND
 # foreground races. Cron-mode (QUIET=true) stays silent on collision; foreground prints
 # a stderr message so the human knows why their audit didn't run.
+#
+# T-2930 / OBS-221: contention exits 75 (EX_TEMPFAIL), NOT 0, in BOTH lock modes.
+#
+# The bug this fixes is not "contention exits 0" — exit 0 was deliberate, for cron's
+# zero-zombie contract. The bug is that ONE code carried TWO meanings, and the two
+# callers need opposite things from it:
+#
+#   cron      wants silence      — a contended run is a non-event, not a failure
+#   pre-push  wants to refuse    — a contended run means the gate DID NOT EVALUATE
+#
+# Under exit 0 the pre-push hook read "did not run" as "ran and passed". Observed live
+# 2026-08-11: a push printed "=== Pre-Push Audit Check ===", then "Another audit is
+# already running — exiting", and was allowed through while an invariant was RED
+# moments earlier. Nothing in the output distinguished audited-and-clean from
+# not-audited-at-all — the same false-green class as T-1376's port-3000 literal.
+#
+# 75 is EX_TEMPFAIL from sysexits.h: it already means transient/retry to any reader,
+# where a private code like 3 would mean nothing outside this repo. Exit codes now
+# partition cleanly and every caller can tell the three apart:
+#
+#   0   ran, no failures        1   ran, warnings        2   ran, FAILURES
+#   75  DID NOT RUN — lock contention; the verdict is unknown, not clean
+#
+# Callers decide what "did not run" is worth. See agents/git/lib/hooks.sh (blocks) and
+# the cron note below (immune — every generated audit line pipes to logger, so the
+# pipeline exit code is logger's and no audit code ever reaches cron; pinned by
+# tests/unit/t2930_audit_contention_exit_code.bats so that immunity stops being an
+# accident that a future edit could silently revoke).
+#
+# Remedy shape accepted from 832 on the DM rail (539/541), filed here as OBS-224.
 AUDIT_LOCK_DIR="${CONTEXT_DIR}/locks"
 mkdir -p "$AUDIT_LOCK_DIR" 2>/dev/null
 AUDIT_LOCK_FILE="$AUDIT_LOCK_DIR/audit.lock"
@@ -321,13 +351,13 @@ fi
 if command -v flock >/dev/null 2>&1; then
     exec 200>"$AUDIT_LOCK_FILE"
     if ! flock -n 200; then
-        # Another audit is running.
-        # Cron mode (QUIET=true): silent exit 0 — preserves zero-zombie cron behaviour.
-        # Foreground: print to stderr so the user understands why nothing ran.
+        # Another audit is running. Cron mode (QUIET=true) stays silent; foreground
+        # prints to stderr so the user understands why nothing ran. Both exit 75 —
+        # the code says "did not run", the caller decides what that is worth.
         if [ "$QUIET" != true ]; then
-            echo "Another audit is already running — exiting" >&2
+            echo "Another audit is already running — exiting (no verdict produced)" >&2
         fi
-        exit 0
+        exit 75
     fi
     # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds.
     # T-1464 + T-1772: detach EVERY inherited fd in the watchdog subshell, not
@@ -346,12 +376,16 @@ if command -v flock >/dev/null 2>&1; then
     AUDIT_TIMEOUT_PID=$!
     trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
 else
-    # Fallback: simple lock file (less robust but prevents most zombies)
+    # Fallback: simple lock file (less robust but prevents most zombies).
+    # Same 75 as the flock arm — "in ALL modes" is the point. A fix applied to only
+    # the arm the developer's host happens to take leaves the other silently on the
+    # old contract, and flock's presence varies by platform (it is the arm a mac or
+    # a slim container is most likely to miss).
     if [ -f "$AUDIT_LOCK_FILE" ]; then
         if [ "$QUIET" != true ]; then
-            echo "Another audit is already running — exiting" >&2
+            echo "Another audit is already running — exiting (no verdict produced)" >&2
         fi
-        exit 0
+        exit 75
     fi
     echo $$ > "$AUDIT_LOCK_FILE"
     trap "rm -f '$AUDIT_LOCK_FILE'" EXIT

@@ -392,7 +392,16 @@ else
     AUDIT_OUTPUT=$(PROJECT_ROOT="$TARGET_DIR" "$FRAMEWORK_ROOT/agents/audit/audit.sh" 2>&1) || true
     AUDIT_EXIT=$?
 
-    if [ $AUDIT_EXIT -eq 0 ]; then
+    if [ $AUDIT_EXIT -eq 75 ]; then
+        # T-2930: 75 = EX_TEMPFAIL = another audit held the lock, so nothing ran.
+        # Before 75 existed this returned 0 and printed "fw audit passed on day-1
+        # project" — a clean onboarding result produced by an audit that never
+        # executed. Reported as could-not-evaluate rather than as a failure: a
+        # contended run says nothing about the day-1 project, and calling it a
+        # failure sends the reader hunting for a defect that is not there.
+        warn "fw audit could not run (lock contention) — day-1 audit NOT evaluated"
+        detail "Re-run the onboarding test when no other audit is in progress."
+    elif [ $AUDIT_EXIT -eq 0 ]; then
         pass "fw audit passed on day-1 project"
     elif [ $AUDIT_EXIT -eq 1 ]; then
         # Warnings are acceptable on day-1 — count them

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2930: audit contention exits 75/EX_TEMPFAIL in all modes; cron maps 75→0; pre-push blocks on could-not-evaluate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T06:18:58Z
+# ============================================================================
+
+task_id: T-2930
+task_name: "audit contention exits 75/EX_TEMPFAIL in all modes; cron maps 75→0; pre-push blocks on could-not-evaluate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T06:09:12Z
+completed: 2026-08-12T06:18:35Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit contention exits 75/EX_TEMPFAIL in all modes; cron maps 75→0; pre-push blocks on could-not-evaluate
+
+# Key outcomes
+outcomes:
+  - 'Audit lock contention exits `75` (`EX_TEMPFAIL`) in **every** mode — both the `flock` arm and the no-flock fallback — never `0` and never a verdict code'
+  - 'Cron never surfaces `75` as a failure — **verified, not changed**: every generated audit line ends `2>&1 | logger`, so the pipeline status is `logger`''s and no audit code reaches cron. Immunity pinned by test rather than left accidental'
+  - 'The generated pre-push hook treats `75` as **could-not-evaluate and BLOCKS**, distinct from both its pass path and its `-eq 2` failure path'
+  - 'The block message names contention as the reason and states what to do (retry), so the operator is not left reading a generic audit failure'
+  - 'The four outcomes (`0`/`1`/`2`/`75`) are mutually distinguishable at the consumer — status *and* message'
+  - 'A test proves the contended arm is reachable in **both** lock modes, so neither arm can be vacuously green'
+  - 'Anti-vacuity: a test drives the reconstructed pre-fix consumer and shows it waved a contended push through, so the repair is demonstrably repairing something'
+  - 'Every other consumer of the audit exit code is swept and handled (L-533 N+1 rule), not just the two named in the observation'
+  - 'The spec implemented here matches OBS-221/224 as filed (read the observation; do not implement from memory of it)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-12 — no cron-side change, against the spec as filed'
+    chose: 'leave every cron call site untouched, and pin the existing immunity'
+    rationale: 'OBS-224 specifies "cron call sites map 75→0". Measured before'
+    alternatives_rejected: ['implementing the spec literally. It would have been defensible —']
+  - decision: '2026-08-12 — BLOCK at the push gate rather than warn'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2930-audit-contention-exits-75extempfail-in-a.md
+generated_by: context-agent-hybrid
