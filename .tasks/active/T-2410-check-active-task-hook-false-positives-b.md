@@ -105,6 +105,49 @@ Suggested fix: match task IDs only in argument positions that denote a target (t
 
 Reported from field install /mame/project. A GitHub-mirror issue (#19) was filed in error; this is the canonical onedev-side report.
 
+### Case 3 (added 2026-08-12, T-2952) — the gate refuses the remediation the framework itself printed
+
+Two independent sightings, one of them from a consumer project.
+
+`fw task update T-XXXX --status work-completed` clears focus as its last act, then
+prints:
+
+    LEARNING PROMPT — This looks like a bugfix task
+    Consider: cd /opt/... && bin/fw fix-learned T-XXXX "what was learned"
+
+The next command is refused by this hook with *"BLOCKED: No active task."* So the
+framework emits an instruction and then blocks it, at the exact moment the agent
+has the most context for capturing what it learned. Workaround each time is
+`fw context focus T-XXXX` pointing back at a task that was just completed —
+which is Case 2's state, so the workaround for Case 3 lands the session in the
+condition that produces Cases 1 and 2.
+
+Sightings:
+- **Here**, this session, after closing T-2921 and again after T-2951. The
+  `.gate-bypass-log.yaml` recorded **47** entries across the session; not all are
+  this shape, but the shape recurred at every close.
+- **832 (workflow-designer)**, independently, filed on their side as their OBS-036
+  — *"the framework's own learning prompt is blocked by its own focus gate"*.
+  Handed back to us at rail 578 per §Gap Homing: a gap belongs in the register
+  where the FIX lives, not where it was HIT, and this is not fixable from a
+  consumer.
+
+**Why this is a design error and not a third false positive.** L-588 (T-2944)
+established that a gate's remediation text is part of its predicate — G-020 was
+bypassable precisely via the text it printed to unblock you. Case 3 is the mirror
+image: the framework prints an instruction the gate then refuses. Either the
+prompt should not fire at a moment the gate forbids acting on it, or the gate
+should exempt the capture verbs (`fix-learned`, `context add-learning`,
+`context add-decision`, `context add-pattern`) that can only sensibly run about a
+task that has just finished. Two independent instances is the threshold at which
+this stops being a false positive and becomes a contract mismatch between two
+framework components.
+
+Candidate fix, narrower than Cases 1-2: exempt the capture verbs when their task
+argument names the task focus was JUST cleared from — the close already knows the
+id, so a short-lived `.context/working/.last-closed` would let the hook allow
+exactly that verb-plus-id pair without widening the gate generally.
+
 ## Acceptance Criteria
 
 ### Agent
