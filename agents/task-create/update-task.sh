@@ -1115,19 +1115,21 @@ check_verification_unjudged_test_runs() {
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {
-    local verify_section verify_cmds verify_total verify_pass verify_fail verify_failures
+    local verify_cmds verify_total verify_pass verify_fail verify_failures
     local cmd display_cmd exit_code
 
-    verify_section=$(sed -n '/^## Verification/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
-    verify_section=$(echo "$verify_section" | tail -n +2)
-    # Strip HTML comment blocks
-    verify_section=$(echo "$verify_section" | python3 -c "
-import sys, re
-text = sys.stdin.read()
-text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
-print(text)
-" 2>/dev/null || echo "$verify_section")
-    verify_cmds=$(echo "$verify_section" | grep -vE '^\s*$|^\s*#|^\s*```' || true)
+    # T-2921: extraction lives in lib/verification-port.sh so this gate and
+    # `fw verify-queue` cannot drift — same argument as find_port_literals two
+    # functions up (L-533: run THIS expression, not a re-typed copy). The copy
+    # that used to live here stripped `<!-- ... -->` over the whole block with a
+    # DOTALL regex, which corrupted any command carrying those delimiters as
+    # argument text and — worse — silently deleted every command between a
+    # mid-line `<!--` and the next `-->` below it, shrinking the population the
+    # gate then reported N/N green over. See the extractor's own comment.
+    if ! declare -F extract_verification_block >/dev/null 2>&1; then
+        source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/lib/verification-port.sh"
+    fi
+    verify_cmds=$(extract_verification_block "$TASK_FILE")
 
     [ -z "$verify_cmds" ] && return 0
 

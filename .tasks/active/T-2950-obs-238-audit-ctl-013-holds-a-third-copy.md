@@ -1,23 +1,13 @@
 ---
-id: T-2921
-name: "P-011 verification extractor strips HTML comments from the command text, mangling
-  lines containing comment delimiters"
+id: T-2950
+name: "OBS-238: audit CTL-013 holds a third copy of the verification-command extraction"
 description: >
-  The P-011 extractor strips HTML comments from the task body before executing Verification
-  lines. It does not distinguish a comment wrapping prose from the same delimiters
-  appearing INSIDE a command, so a legitimate verification line was executed as sed
-  '//d' — empty regex, no previous regular expression, exit 1. Found live by the T-2862
-  greenfield end-to-end run: the greenfield seed's own Recommendation check was destroyed
-  this way, so every new project's first inception failed its own verification gate.
-  The SEED was fixed in T-2862 by dropping the sed pre-pass; the extractor is still
-  broken for any other command containing the delimiters. Same mention-vs-instance
-  class as L-576: the stripper asks 'is this a comment delimiter' when the question
-  is 'is this delimiter structural, or is it argument text'.
+  CTL-013 (agents/audit/audit.sh:3406) drops any Verification line CONTAINING '<!--' anywhere rather than only lines OPENING with it, so audit's scan population silently omits delimiter-carrying commands and diverges from what the P-011 gate executes. Third independent implementation of one extraction; T-2921 collapsed the other two (update-task.sh and lib/verification-port.sh) onto extract_verification_block. Fix: make CTL-013 call the shared function so parity is by construction. Non-trivial: audit reads the file in a streaming loop while the shared function re-reads it. Measured blast radius at filing: 3 of 2939 task files affected (T-2160, T-1746, T-2554).
 
 status: captured
-workflow_type: build
+workflow_type: refactor
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -31,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-11T15:41:21Z
-last_update: '2026-08-11T15:45:15Z'
-date_finished:
+created: 2026-08-12T18:36:40Z
+last_update: 2026-08-12T18:36:40Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -44,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-11T15:45:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-11T15:45:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2921: P-011 verification extractor strips HTML comments from the command text, mangling lines containing comment delimiters
+# T-2950: OBS-238: audit CTL-013 holds a third copy of the verification-command extraction
 
 ## Context
 
@@ -225,6 +187,35 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+<!-- T-2945: same shape as inception.md's block — the gate that reads it
+     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
+     shape is copied rather than reinvented.
+
+     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
+     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
+     `fw task review` emission for build/refactor/test/decommission tasks in that
+     state with no substantive block here — the operator would otherwise open
+     /review/<id> to a blank Recommendation card and be asked to approve a form.
+
+     Not required while every Human AC is ticked or the task has none: the gate
+     only fires on the partial-complete transition. It is here from the start so
+     you write it while you still have the evidence, not when the gate refuses.
+
+     Format (the parser wants the `**Recommendation:**` line at the start of a
+     line; a leading `-` or `*` bullet is also accepted):
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
+     **Evidence:**
+     - Finding 1
+     - Finding 2
+
+     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
+     for Human Review). If the artefact is complete and you still don't want to
+     commit, that is a calibration failure — recommend GO or NO-GO.
+-->
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -248,7 +239,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-11T15:41:21Z — task-created [task-create-agent]
+### 2026-08-12T18:36:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2921-p-011-verification-extractor-strips-html.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2950-obs-238-audit-ctl-013-holds-a-third-copy.md
 - **Context:** Initial task creation

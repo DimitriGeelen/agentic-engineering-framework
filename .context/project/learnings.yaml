@@ -4427,3 +4427,21 @@ X'` returning empty group."
   task: T-2944
   date: 2026-08-12
   context: Added via context agent
+- id: L-589
+  learning: "A structural proxy plus an inference is not a measurement, and the inference is where it breaks. T-2943 counted 71 build tasks lacking a ## Recommendation heading (sound) and concluded all 70 refuse fw task review (wrong by 14x — the gate only fires on the partial-complete transition). The number went to a peer before the method did. 832 made the identical error in the same window, inside the instrument built to quantify the defect, and a third predicate of mine produced a third number. Rule: when the question is 'what does the gate do', run the gate; if that is too slow, copy its predicate VERBATIM and falsify the copy against the real command on a sample including every predicted positive. My 17-task falsification found one disagreement that turned out to be a different gate firing first — which I would not have known from the copy alone."
+  source: P-011
+  task: T-2947
+  date: 2026-08-12
+  context: Added via context agent
+- id: L-590
+  learning: "Comment-stripping is direction-dependent, and 'immune' is not the same as 'correct'. lib/review.sh's Human-AC counter skipped commented example ACs because its globs are column-0-anchored and the template's examples happen to be indented 7 spaces — correct answer, unrelated reason, and de-indenting them (pure formatting) would have made every fresh build task read as partial-complete 0/2. Strip where the span is DISCARDED as prose (G-067, G-020/T-2944, T-2948); never where it is handed to eval (T-2921/P-011). When a guard is right, ask WHY it is right — if the answer is a property nothing records as load-bearing, that is a landmine, not a pass."
+  source: P-011
+  task: T-2948
+  date: 2026-08-12
+  context: Added via context agent
+- id: L-591
+  learning: "A gate that silently shrinks its own input population is more dangerous than one that errors on it. P-011's comment-stripper corrupted commands carrying HTML comment delimiters as argument text (loud, noticed, reported as T-2921) and ALSO deleted every command between a mid-line opener and the next closer below it (quiet, never noticed). Measured: a 3-command block whose middle member was a failing assertion reported 'Running 2 verification command(s) / 2/2 passed' and closed clean. When a checker reports N/N over a population it computed itself, that count is an assertion too — test it, not just the verdict. Sibling to the port-3000 false-green class (371 instances) and to 832's G-034 (verdict over an empty population)."
+  source: P-011
+  task: T-2921
+  date: 2026-08-12
+  context: Added via context agent

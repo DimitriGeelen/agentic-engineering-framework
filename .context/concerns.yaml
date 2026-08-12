@@ -264,3 +264,19 @@
   observed: 2026-08-12
   status: open
   related: [T-2949, T-2948, T-2945, T-2421, T-2206, G-019]
+
+# A third copy of the same extraction, in a scan rather than an executor — so it
+# fails quietly in the other direction: audit's population omits what the gate runs.
+- id: OBS-238
+  type: tooling
+  severity: medium
+  surface: "agents/audit/audit.sh:3406 (CTL-013 verification-command scan)"
+  detected_in: T-2921 (found while removing the duplicate extraction the gate used)
+  symptom: "CTL-013 builds its own list of a task's verification commands with a line-based comment tracker that drops any line CONTAINING `<!--` anywhere, rather than only lines OPENING with it. A command carrying the delimiters as argument text — `sed '/<!--/,/-->/d' f`, an awk program matching a footer marker, a printf building a fixture — is silently omitted from audit's scan. Audit therefore reports on a different set of commands than the P-011 gate executes, with no indication the sets differ."
+  root_cause: "Same mention-vs-instance class as the T-2921 defect it was found next to (and as L-576, T-2948): the check asks 'does this line contain a comment delimiter' when the question is 'is this delimiter structural, or is it argument text'. Audit's copy is line-based and so avoids the DOTALL cross-newline deletion that made the gate's copy dangerous — it is closer to correct, which is likely why it was never revisited. It remains a third independent implementation of one extraction; T-2921 collapsed the other two into lib/verification-port.sh::extract_verification_block, and this one was left out of scope deliberately (one bug, one task) rather than by oversight."
+  prevention: "NOT YET BUILT. Correct fix is to make CTL-013 call extract_verification_block like the gate and fw verify-queue now do, so parity is by construction rather than by three matching implementations. Requires care: audit reads the file in a single streaming loop and the shared function re-reads the file, so this is a real refactor with its own test surface, not a one-line swap. Measured blast radius at filing: 3 task files corpus-wide (2939 scanned) carry a delimiter-bearing verification command — T-2160, T-1746, T-2554 — so audit currently under-scans exactly those three. Low volume, but the divergence is unbounded going forward and invisible when it happens."
+  blast_radius: scoped
+  observed: 2026-08-12
+  status: open
+  related: [T-2921, T-2950, T-2948, T-2765, T-2949, L-576, L-533]
+  follow_up_task: T-2950

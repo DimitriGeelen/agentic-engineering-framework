@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2921: P-011 verification extractor strips HTML comments from the command text, mangling lines containing comment delimiters
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T18:41:35Z
+# ============================================================================
+
+task_id: T-2921
+task_name: "P-011 verification extractor strips HTML comments from the command text, mangling lines containing comment delimiters"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T15:41:21Z
+completed: 2026-08-12T18:40:17Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  The P-011 extractor strips HTML comments from the task body before executing Verification lines. It does not distinguish a comment wrapping prose from the same delimiters appearing INSIDE a command, so a legitimate verification line was executed as sed '//d' — empty regex, no previous regular expression, exit 1. Found live by the T-2862 greenfield end-to-end run: the greenfield seed's own Recommendation check was destroyed this way, so every new project's first inception failed its own verification gate. The SEED was fixed in T-2862 by dropping the sed pre-pass; the extractor is still broken for any other command containing the delimiters. Same mention-vs-instance class as L-576: the stripper asks 'is this a comment delimiter' when the question is 'is this delimiter structural, or is it argument text'.
+
+# Key outcomes
+outcomes:
+  - 'A ## Verification line containing `<!--` and `-->` as argument text reaches `eval` byte-identical to the task file (the T-2862 mangling case is gone)'
+  - 'A structural comment block — opening `<!--` as the first non-blank token on its line — is still stripped in full, single-line and multi-line, including its closing line'
+  - 'Command lines are no longer swallowed between a mid-line `<!--` and a later structural `-->`; the command COUNT the gate reports equals the number of real command lines (the false-green)'
+  - '`tests/unit/t2921_verification_comment_strip.bats` drives the real `bin/fw task update --status work-completed` gate in a sandbox PROJECT_ROOT (not a reimplementation of the predicate), and every leg is falsified against the pre-fix extractor'
+  - '`## RCA` filled: symptom, root cause, why structurally allowed, prevention distinct from the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1618 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1618
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2921-p-011-verification-extractor-strips-html.md
+generated_by: context-agent-hybrid
