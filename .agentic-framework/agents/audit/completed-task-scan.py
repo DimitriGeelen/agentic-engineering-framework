@@ -34,12 +34,26 @@ T-2202 (PL-212 closure): CTL-012 3-class taxonomy refinement.
           from the genuine AC-drift class so the auditor can render a different hint.
         - Class field on every entry: "drift" (default, real CTL-012) or "missing-decide"
           (new CTL-012-MISSING-DECIDE sub-class).
+T-2385: missing-decide grandfather cutoff (MISSING_DECIDE_CUTOFF). Tasks whose
+        date_finished predates the classifier's own ship date (2026-06-13) are
+        skipped entirely rather than emitted as missing-decide — they are
+        confirmed historical L-390 git-mv-bypass instances (git archaeology:
+        T-1902/T-2000/T-1915/T-1905), not a live/open flip path. New instances
+        (date_finished on/after cutoff) are unaffected and still flagged.
 """
 
 import json
 import os
 import re
 import sys
+
+# T-2385: grandfather cutoff for the missing-decide sub-class. Tasks whose
+# date_finished predates the day the CTL-012-MISSING-DECIDE classifier
+# itself shipped (T-2202/PL-212 closure, commit 2c1576193, 2026-06-13) are
+# historical L-390 git-mv-bypass drift the detector could never have caught
+# live — flagging them forever adds no actionable signal (RCA: T-2385).
+# Tasks completed on/after this date are NOT exempt and are still flagged.
+MISSING_DECIDE_CUTOFF = "2026-06-13"
 
 
 def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
@@ -83,6 +97,7 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
         status = ""
         horizon = ""
         horizon_seen = False
+        date_finished = ""
         for line in content.split("\n"):
             if line.startswith("id:"):
                 task_id = line.split(":", 1)[1].strip().strip('"')
@@ -97,6 +112,11 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
                 if "#" in raw:
                     raw = raw.split("#", 1)[0]
                 horizon = raw.strip().strip('"').strip("'")
+            elif line.startswith("date_finished:"):
+                raw = line.split(":", 1)[1]
+                if "#" in raw:
+                    raw = raw.split("#", 1)[0]
+                date_finished = raw.strip().strip('"').strip("'")
             elif line.startswith("---") and task_id:
                 break  # past frontmatter
 
@@ -212,6 +232,22 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
                     ac_class = "drift"
                     if prev_was_auto_tick and decision_empty:
                         ac_class = "missing-decide"
+                        # T-2385 (grandfather): tasks that flipped to
+                        # work-completed via a bare git-mv into completed/
+                        # (L-390 class) BEFORE this classifier existed
+                        # (T-2202, shipped 2026-06-13) have no live decide
+                        # ceremony to backfill — the flip event predates the
+                        # detector that would have caught it. New instances
+                        # remain caught: CTL-028 (T-1870/T-1882/T-1883) fires
+                        # on the metadata desync at pre-push, independent of
+                        # this cutoff. RCA: T-2385, evidence: T-1902/T-2000/
+                        # T-1915/T-1905 (git archaeology confirms git-mv
+                        # side-effect renames, never `fw task update
+                        # --status work-completed` / `fw inception decide`).
+                        finished_date = date_finished[:10] if date_finished and date_finished.lower() not in ("null", "~", "") else ""
+                        if finished_date and finished_date < MISSING_DECIDE_CUTOFF:
+                            prev_was_auto_tick = False
+                            continue
                     unchecked_ac.append({"id": task_id, "line": line[:80], "class": ac_class})
                     break  # One unchecked AC is enough to flag
                 # Reset marker after a non-marker, non-AC line (prevents stale stick).
