@@ -1902,6 +1902,27 @@ else:
             if [ -n "$_wt_ident" ] && echo "$_wt_ident" | grep -q "\"service\"[[:space:]]*:[[:space:]]*\"watchtower\"" \
                 && echo "$_wt_ident" | grep -q "\"project_root\"[[:space:]]*:[[:space:]]*\"$PROJECT_ROOT\""; then
                 echo -e "  ${GREEN}OK${NC}  Watchtower running ($_wt_url, pid $_wt_pid)"
+                # T-2938: alive and identifying correctly is NOT the same as
+                # running current code. Flask serves with debug=False here, so
+                # there is no reloader — a process started before a web/ commit
+                # keeps serving the old bytes indefinitely, and the OK line above
+                # reads as though it had verified otherwise. Origin: T-2925's GO
+                # decision was refused at the commit boundary by the very defect
+                # T-2864 fixed 4 days earlier, because the process was 2 days
+                # older than the fix. See lib/watchtower-staleness.sh.
+                if [ -f "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh" ]; then
+                    # shellcheck source=/dev/null
+                    . "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh"
+                    local _wt_stale _wt_stale_n
+                    if _wt_stale=$(watchtower_stale_sources "$_wt_pid" "$PROJECT_ROOT/web"); then
+                        _wt_stale_n=$(printf '%s\n' "$_wt_stale" | grep -c .)
+                        echo -e "  ${YELLOW}WARN${NC}  Watchtower process predates its own source ($_wt_stale_n file(s) newer than pid $_wt_pid)"
+                        printf '%s\n' "$_wt_stale" | head -3 | sed 's|^|         - |'
+                        echo -e "         Every web/ change since it started is inert, including any awaiting [REVIEW]."
+                        echo -e "         Run: bin/fw watchtower restart"
+                        warnings=$((warnings + 1))
+                    fi
+                fi
             else
                 echo -e "  ${YELLOW}WARN${NC}  Watchtower triple present but identity mismatch or endpoint down"
                 echo -e "         Run: bin/watchtower.sh restart"

@@ -4403,3 +4403,21 @@ X'` returning empty group."
   task: T-2933
   date: 2026-08-12
   context: Added via context agent
+- id: L-585
+  learning: "A peer's bug report against a VENDORED copy is a report about BYTES, not about whether the defect exists. 832 reported fw note discarding a 1200-char payload; the defect was real and was fixed here four days earlier (T-2867, 26 notes lost). My tree said fixed, theirs said broken, and both were correct about the code they were running. Before fixing OR dismissing a peer report, establish which version they ran — otherwise you write a second guard against a version that no longer exists, or you dismiss a live defect on the strength of your own HEAD. Neither side's register can see this gap: it is not an instrument failure and not a ledger failure, it is a distribution lag."
+  source: P-001
+  task: T-2937
+  date: 2026-08-12
+  context: Added via context agent
+- id: L-586
+  learning: "Inserting a new '## Heading' between '### Agent' and '### Human' silently orphans the Human ACs under the new heading and breaks the AC split that partial-complete detection reads. Done twice in one session, one task apart (T-2935, T-2937) — both times while adding a Decisions block, because the natural place to type it is right after the ACs you just ticked. The template already carries a '## Decisions' section further down; use it. Detection is cheap and should be reflexive after any edit near the AC block: grep -n '^## |^### ' on the task file and confirm '### Human' still sits under '## Acceptance Criteria'. The failure is invisible in the rendered file — the text reads correctly and only the machine-parsed structure is wrong."
+  source: P-001
+  task: T-2937
+  date: 2026-08-12
+  context: Added via context agent
+- id: L-587
+  learning: "A running server is a third deployment surface: source can be fixed, the process still runs the deleted code. fw doctor's Watchtower check asserted liveness+identity and was read as currency for six days, while five web/ commits sat inert — including two human-owned tasks queued for [REVIEW] in the very server that was not running them. When three instruments agree a tree is clean and a fourth refuses it, the fourth is reading a tree the others cannot see."
+  source: P-001
+  task: T-2938
+  date: 2026-08-12
+  context: Added via context agent

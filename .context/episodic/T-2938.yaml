@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2938: T-2925 GO decision blocked at commit by G-052 duplicate-task-ID scan
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T11:07:28Z
+# ============================================================================
+
+task_id: T-2938
+task_name: "T-2925 GO decision blocked at commit by G-052 duplicate-task-ID scan"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T10:49:02Z
+completed: 2026-08-12T11:07:13Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2925 GO decision blocked at commit by G-052 duplicate-task-ID scan
+
+# Key outcomes
+outcomes:
+  - 'The tree the refusal was computed against is identified (AMENDED — see Decisions; the premise that a duplicate existed on disk or in the real index was wrong)'
+  - 'The divergence is explained: `scan-staged`, `scan-worktree` and `fw audit` all pass, because the duplicate existed only in the scratch index built by a stale in-memory `_commit_decision`'
+  - '`bash agents/git/lib/dup-task-scan.sh scan-staged` exits 0'
+  - 'T-2925''s GO decision is committed and pushed; `git rev-list --count origin/master..HEAD` = 0'
+  - 'RCA names the structural gap and a prevention distinct from the fix (`fw doctor` currency check, proven to fire AND to clear)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-12 — AC #1 amended mid-task after its premise was falsified'
+    chose: 'rewrite AC #1 from "the duplicate task IDs are identified, with both'
+    rationale: 'the original AC encodes a wrong premise. It assumes a duplicate exists'
+    alternatives_rejected: ['(a) leaving it unticked and closing with `--skip-acceptance-criteria`']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2938-t-2925-go-decision-blocked-at-commit-by-.md
+generated_by: context-agent-hybrid
