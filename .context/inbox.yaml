@@ -1748,5 +1748,7 @@ observations:
   captured: 2026-08-12T06:34:56Z
   context_task: T-2932
   tags: [bug]
-  status: pending
+  status: dismissed
+  dismissed_reason: "FIXED under T-2932, after this observation's own filing falsified the reason it was filed. It was filed as LATENT \u2014 handover.sh:381 and audit.sh:2663 counted pending observations with grep -c 'status: pending', measurably correct at the time (grep 117 == parse 117) because no observation's text contained the string. This observation quotes the string, in the very sentence describing the risk. Filing it pushed grep to 119 against a true 118, and the test leg written to guard the latency went red on its first full run \u2014 inside the same hour. The deferral rationale ('latent, so one-bug-one-task applies') was a statement about the corpus, and the corpus is something the session writes to. Both sites now parse. A FOURTH site was then found by the enumerating guard, not by reading: observe.sh do_triage, in the same file as two conversions made by hand minutes earlier, and the worst of the four \u2014 'Nothing to triage \u2014 inbox is clean' is an assertion ABOUT THE QUEUE, so a miscount there tells the operator the ritual is finished. All four now share one parsed helper that refuses loudly rather than returning 0. Guarded by tests/unit/t2932_note_count_urgent_filter.bats leg 11, which asserts no grep-based counter at ANY site rather than that the known sites are converted \u2014 a list of known sites would have gone green on do_triage."
+  dismissed_at: 2026-08-12T06:43:49Z
   promoted_to: null
