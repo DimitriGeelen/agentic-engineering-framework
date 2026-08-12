@@ -4463,3 +4463,15 @@ X'` returning empty group."
   task: T-2954
   date: 2026-08-12
   context: Added via context agent
+- id: L-595
+  learning: "Recursive-verification-leg self-contamination is fixed by scoping to the population's artefact type, NOT by an exclusion list. A denylist acquires a new entry every time you write about the subject, and each is discovered only after it has skewed a published number — measured 3 carriers in one class across 3 rounds: .git/ (the commit message), docs/reports/ (the report), .tasks/ (the leg's own text quoting the string it greps for). Scoping the leg to *.bpmn (what the corpus is made of) is invariant under writing about it."
+  source: P-011
+  task: T-2957
+  date: 2026-08-12
+  context: Added via context agent
+- id: L-596
+  learning: "Published a count that conflated the population with prose quoting it (25 'corpus maps' = 23 .bpmn maps + 2 .md files that mention the string), one section after correcting a peer for the identical phantom-vs-fabrication conflation. The discipline was applied to the number challenged, not to the number volunteered — an unchallenged figure in your own report gets no denominator scrutiny unless you give it some deliberately."
+  source: P-011
+  task: T-2957
+  date: 2026-08-12
+  context: Added via context agent
