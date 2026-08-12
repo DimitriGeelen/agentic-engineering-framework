@@ -6,10 +6,10 @@ description: >
   measured 5 against the real gate. The 70 counted heading-absence, not gate outcome,
   and went to 832 at rail 568. Correct it on the rail, and read/answer offsets 570-571.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T14:26:14Z
-last_update: '2026-08-12T14:30:14Z'
-date_finished:
+last_update: 2026-08-12T14:33:56Z
+date_finished: 2026-08-12T14:33:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -286,3 +286,20 @@ carries it, and the rail post says so rather than implying a clean bill of healt
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2947-rail-572-correct-the-70-refusals-figure-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d40bca89
+- **Timestamp:** 2026-08-12T14:34:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 5
+     - evidence: `ls .tasks/active/T-2948-*.md >/dev/null 2>&1`
+
+### 2026-08-12T14:33:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

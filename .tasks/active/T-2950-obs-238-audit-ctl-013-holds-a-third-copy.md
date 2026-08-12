@@ -2,7 +2,15 @@
 id: T-2950
 name: "OBS-238: audit CTL-013 holds a third copy of the verification-command extraction"
 description: >
-  CTL-013 (agents/audit/audit.sh:3406) drops any Verification line CONTAINING '<!--' anywhere rather than only lines OPENING with it, so audit's scan population silently omits delimiter-carrying commands and diverges from what the P-011 gate executes. Third independent implementation of one extraction; T-2921 collapsed the other two (update-task.sh and lib/verification-port.sh) onto extract_verification_block. Fix: make CTL-013 call the shared function so parity is by construction. Non-trivial: audit reads the file in a streaming loop while the shared function re-reads it. Measured blast radius at filing: 3 of 2939 task files affected (T-2160, T-1746, T-2554).
+  CTL-013 (agents/audit/audit.sh:3406) drops any Verification line CONTAINING '<!--'
+  anywhere rather than only lines OPENING with it, so audit's scan population silently
+  omits delimiter-carrying commands and diverges from what the P-011 gate executes.
+  Third independent implementation of one extraction; T-2921 collapsed the other two
+  (update-task.sh and lib/verification-port.sh) onto extract_verification_block. Fix:
+  make CTL-013 call the shared function so parity is by construction. Non-trivial:
+  audit reads the file in a streaming loop while the shared function re-reads it.
+  Measured blast radius at filing: 3 of 2939 task files affected (T-2160, T-1746,
+  T-2554).
 
 status: captured
 workflow_type: refactor
@@ -22,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T18:36:40Z
-last_update: 2026-08-12T18:36:40Z
-date_finished: null
+last_update: '2026-08-12T18:45:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +42,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-12T18:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 3
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-12T18:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2950: OBS-238: audit CTL-013 holds a third copy of the verification-command extraction
