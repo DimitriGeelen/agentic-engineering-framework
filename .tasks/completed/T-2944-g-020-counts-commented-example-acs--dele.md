@@ -1,13 +1,19 @@
 ---
 id: T-2944
-name: "G-020 counts commented example ACs — deleting placeholders as instructed passes the gate over zero real ACs"
+name: "G-020 counts commented example ACs — deleting placeholders as instructed passes
+  the gate over zero real ACs"
 description: >
-  check-active-task.sh:756 counts AC checkboxes without stripping HTML comments, unlike the G-067 gate at :700. default.md's two commented [REVIEW]/[REVIEWER] examples count as real ACs, so deleting the placeholders per the block message's own instruction clears both gate conditions with zero acceptance criteria. Verified end-to-end with the real hook (blocked with placeholders, exit 0 without). Reported by 832 as their T-453; confirmed live here by T-2943.
+  check-active-task.sh:756 counts AC checkboxes without stripping HTML comments, unlike
+  the G-067 gate at :700. default.md's two commented [REVIEW]/[REVIEWER] examples
+  count as real ACs, so deleting the placeholders per the block message's own instruction
+  clears both gate conditions with zero acceptance criteria. Verified end-to-end with
+  the real hook (blocked with placeholders, exit 0 without). Reported by 832 as their
+  T-453; confirmed live here by T-2943.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T12:35:19Z
-last_update: 2026-08-12T12:35:19Z
-date_finished: null
+last_update: 2026-08-12T13:45:13Z
+date_finished: 2026-08-12T13:45:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +40,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-12T12:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-12T12:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2944: G-020 counts commented example ACs — deleting placeholders as instructed passes the gate over zero real ACs
@@ -46,8 +80,17 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `check-active-task.sh` strips HTML comments from the AC section before counting,
+      mirroring the G-067 inception gate at `:700` in the same file
+- [x] The zero-AC bypass is closed, proven against the real hook: a task built by deleting
+      the template's placeholders (what the block message instructs) is now BLOCKED, where
+      it previously exited 0 and was allowed to write source
+- [x] Positive control retained: a task with genuine ACs still passes, and one with
+      placeholders still blocks — the fix must not simply make the gate refuse everything
+- [x] The strip is proven NOT to introduce T-2921's inverse defect: comments are stripped
+      from prose being *counted*, never from text handed to `eval`
+- [x] Regression test pins all four states (real ACs / placeholders / comment-only /
+      empty), and is shown to fail against the pre-fix predicate
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,21 +190,66 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t2944_g020_comment_strip.bats 2>&1); echo "$out" | grep -q '^ok 7 ' && ! echo "$out" | grep -q '^not ok'
+
+# Both counting gates in the file strip comments — the asymmetry was the bug.
+test "$(grep -c 'sed -E .s/<!--' agents/context/check-active-task.sh)" -ge 2
+
+
+## Evidence
+
+All three states driven against the **real hook** in a sandbox `PROJECT_ROOT`, not the predicate:
+
+    task shape                                    before      after
+    placeholders deleted, only commented examples  exit 0  ->  exit 2   (the hole)
+    placeholders present                           exit 2  ->  exit 2   (control)
+    one genuine AC outside comments                   -    ->  exit 0   (control)
+
+Blast radius: **0 of 305** build-class active tasks are newly blocked. No task in the tree
+depended on commented examples being counted.
+
+T-2921 inverse-defect check, by construction rather than assertion: `AC_SECTION` reaches
+exactly two `grep -c` calls (`:775`, `:776`) and no `eval`. The span is discarded, never
+executed — which is the whole difference between this strip and the one in P-011's
+extractor that eats live commands.
+
+Regression test `tests/unit/t2944_g020_comment_strip.bats`, 7/7. Leg 7 runs both the
+pre-fix and post-fix predicates over the same input and asserts they disagree, so the
+suite can tell fixed from broken rather than passing for unrelated reasons. Leg 4 is the
+positive control that stops "block everything" from satisfying legs 1, 2 and 5.
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** a `build` task with zero acceptance criteria passed the G-020 build-readiness
+gate and was allowed to write source files.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `check-active-task.sh:754-756` counted AC checkboxes over the raw
+`## Acceptance Criteria` section. The shipped `default.md` carries two illustrative
+`- [ ] [REVIEW]` / `- [ ] [REVIEWER]` lines *inside* the Human-guidance HTML comment
+block, which the count could not distinguish from real criteria. Both gate conditions —
+`HAS_PLACEHOLDER > 0 || REAL_AC_COUNT == 0` — were therefore cleared by deleting the two
+placeholders and adding nothing.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the gate's own block message says *"replace [First criterion]
+with real ACs"*. Performed as a deletion — the reading the words support — that instruction
+is the shortest path into the bypass. The remedy text and the predicate disagreed about
+what "an acceptance criterion" is, and the remedy text is what agents follow.
+
+The G-067 inception gate 56 lines above, at `:700`, already strips comments before counting
+IW entries. One file, two counting gates, one of them comment-aware. Nothing compared them.
+
+**Blind for:** the miscount is as old as the guidance block. It could only surface by
+counting the *template* rather than a task, which nothing did until 832 ran it.
+
+**Prevention:** the strip itself is the fix; the prevention is leg 6, which asserts **both**
+counting gates in this file strip comments, so a third counting gate added without the
+strip fails rather than shipping quietly. Distinct from the fix: leg 6 would go red on a
+regression the behavioural legs might not cover.
+
+**Credit:** reported by 832 as their T-453 (rail 564 §4), confirmed here by T-2943. Their
+count reproduced exactly; the severity did not — I found the block-message path only by
+running the hook instead of the predicate.
+
 
 ## Evolution
 
@@ -214,3 +302,18 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2944-g-020-counts-commented-example-acs--dele.md
 - **Context:** Initial task creation
+
+### 2026-08-12T13:42:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2cd8ff50
+- **Timestamp:** 2026-08-12T13:45:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-12T13:45:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

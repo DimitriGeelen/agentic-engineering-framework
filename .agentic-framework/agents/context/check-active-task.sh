@@ -752,6 +752,26 @@ if [ -n "$ACTIVE_FILE" ]; then
     case "$WORKFLOW_TYPE" in
         build|refactor|test|decommission)
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## [^A]/p' "$ACTIVE_FILE" 2>/dev/null | sed '$d')
+            # T-2944: strip HTML comments before counting, exactly as the G-067
+            # inception gate does at :700 in this same file. Without this, the two
+            # illustrative `- [ ] [REVIEW]` / `- [ ] [REVIEWER]` examples inside the
+            # shipped template's Human-guidance comment block count as real ACs — so
+            # deleting the two placeholders, which is *literally what this gate's own
+            # block message instructs*, clears both conditions below and leaves a
+            # build task with ZERO acceptance criteria able to write source.
+            # Measured against this hook before the fix: placeholders present → exit 2
+            # (positive control), placeholders deleted → exit 0, write allowed.
+            #
+            # The strip is correct HERE and would be a defect in P-011's extractor
+            # (T-2921, and 832's T-456 independently): this text is prose being
+            # COUNTED, not commands being handed to eval. Same regex, opposite
+            # correctness — the question is whether the span is discarded or executed.
+            #
+            # Reported by 832 as their T-453 (rail 564 §4), confirmed here by T-2943.
+            # The count reproduced exactly; the severity did not. Their report said the
+            # gate passes over zero ACs — the sharper statement is that the gate
+            # instructs you into that state.
+            AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
             HAS_PLACEHOLDER=$(echo "$AC_SECTION" | grep -ciE '\[(First|Second|Third|Fourth|Fifth) criterion\]' 2>/dev/null || true)
             REAL_AC_COUNT=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' 2>/dev/null || true)
             if [ "${HAS_PLACEHOLDER:-0}" -gt 0 ] || [ "${REAL_AC_COUNT:-0}" -eq 0 ]; then

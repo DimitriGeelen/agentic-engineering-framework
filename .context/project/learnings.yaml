@@ -4421,3 +4421,9 @@ X'` returning empty group."
   task: T-2938
   date: 2026-08-12
   context: Added via context agent
+- id: L-588
+  learning: "A gate's remediation text is part of its predicate. G-020 counted AC checkboxes without stripping HTML comments while the G-067 gate 56 lines up in the same file did strip them, so the shipped template's two commented REVIEW/REVIEWER examples counted as real ACs, and following the block message's own instruction (delete the placeholders) left a build task with ZERO acceptance criteria cleared to write source. When adding or auditing a counting gate, count the SHIPPED TEMPLATE, not a task: the template is the input every new task starts from and the one input nobody tests. Corollary: comment-stripping is correct when the span is discarded (counting prose) and a defect when the span is executed (P-011 handing lines to eval, T-2921) — same regex, opposite correctness."
+  source: P-001
+  task: T-2944
+  date: 2026-08-12
+  context: Added via context agent

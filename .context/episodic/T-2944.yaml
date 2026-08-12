@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2944: G-020 counts commented example ACs — deleting placeholders as instructed passes the gate over zero real ACs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T13:45:29Z
+# ============================================================================
+
+task_id: T-2944
+task_name: "G-020 counts commented example ACs — deleting placeholders as instructed passes the gate over zero real ACs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T12:35:19Z
+completed: 2026-08-12T13:45:13Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  check-active-task.sh:756 counts AC checkboxes without stripping HTML comments, unlike the G-067 gate at :700. default.md's two commented [REVIEW]/[REVIEWER] examples count as real ACs, so deleting the placeholders per the block message's own instruction clears both gate conditions with zero acceptance criteria. Verified end-to-end with the real hook (blocked with placeholders, exit 0 without). Reported by 832 as their T-453; confirmed live here by T-2943.
+
+# Key outcomes
+outcomes:
+  - '`check-active-task.sh` strips HTML comments from the AC section before counting,'
+  - 'The zero-AC bypass is closed, proven against the real hook: a task built by deleting'
+  - 'Positive control retained: a task with genuine ACs still passes, and one with'
+  - 'The strip is proven NOT to introduce T-2921''s inverse defect: comments are stripped'
+  - 'Regression test pins all four states (real ACs / placeholders / comment-only /'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 69
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2944-g-020-counts-commented-example-acs--dele.md
+generated_by: context-agent-hybrid
