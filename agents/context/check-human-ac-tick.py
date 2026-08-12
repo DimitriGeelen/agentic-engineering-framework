@@ -40,6 +40,14 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# T-2954: the structural comment rule is shared with lib/verification-port.sh's
+# extract_verification_block rather than copied here. Resolve via FRAMEWORK_ROOT
+# when set (vendored consumers), else two levels up from this file.
+_FW_ROOT = os.environ.get("FRAMEWORK_ROOT") or str(Path(__file__).resolve().parents[2])
+if os.path.join(_FW_ROOT, "lib") not in sys.path:
+    sys.path.insert(0, os.path.join(_FW_ROOT, "lib"))
+from comment_strip import strip_html_comment_lines  # noqa: E402
+
 
 def extract_human_section(text: str) -> str:
     """Extract the `### Human` section: from `### Human` up to next `### ` or `## `."""
@@ -53,8 +61,27 @@ def extract_human_section(text: str) -> str:
 
 
 def get_checkbox_states(text: str) -> list[str]:
-    """Return ordered list of checkbox states ('x' or ' ') in order of appearance."""
-    return re.findall(r"^\s*-\s*\[([x ])\]", text, re.MULTILINE)
+    """Return ordered list of checkbox states ('x' or ' ') in order of appearance.
+
+    T-2954 (832 OBS-037): HTML-comment spans are stripped first. The `### Human`
+    template ships example ACs INSIDE a comment block
+    (`- [ ] [REVIEW] Dashboard renders correctly`), and this counter had no
+    comment handling, so it counted them. Measured over the corpus at the time of
+    the fix: 1103 of 2942 task files carried 1-2 phantom boxes.
+
+    Phantoms are not merely miscounted — `detect_toggle` zips positionally, so an
+    edit that changes the comment block SHIFTS every real AC's index and the zip
+    misaligns. Demonstrated: deleting the two template example lines, touching no
+    real AC, produced `toggles=[(0, ' ', 'x')]` — the guard reporting a Human-AC
+    tick that never happened, blocking the edit, and (under override) writing a
+    fabricated tick into the Tier-2 bypass log.
+
+    The span is COUNTED here, so stripping is correct — see lib/comment_strip.py
+    for the direction rule and why this is not `re.sub(..., DOTALL)`.
+    """
+    return re.findall(
+        r"^\s*-\s*\[([x ])\]", strip_html_comment_lines(text), re.MULTILINE
+    )
 
 
 def detect_toggle(old_human: str, new_human: str) -> tuple[bool, list[tuple[int, str, str]]]:
@@ -64,6 +91,9 @@ def detect_toggle(old_human: str, new_human: str) -> tuple[bool, list[tuple[int,
     Robust to line additions/removals: zips up to the shorter list. If all
     positions in old were preserved (same state) and only new ones added, no
     toggle. Toggles in matched positions are flagged.
+
+    Reports BOTH directions — the caller decides which are blocking. See
+    `blocking_toggles` for why only one direction is.
     """
     old_boxes = get_checkbox_states(old_human)
     new_boxes = get_checkbox_states(new_human)
@@ -72,6 +102,26 @@ def detect_toggle(old_human: str, new_human: str) -> tuple[bool, list[tuple[int,
         if a != b:
             toggles.append((i, a, b))
     return (bool(toggles), toggles)
+
+
+def blocking_toggles(toggles: list[tuple[int, str, str]]) -> list[tuple[int, str, str]]:
+    """Keep only ticks (`[ ]` -> `[x]`). Un-ticks are reported but never blocked.
+
+    T-2954 (832 OBS-037). This guard was direction-SYMMETRIC: `detect_toggle` is
+    `if a != b`, so `[x]` -> `[ ]` tripped it exactly as hard as `[ ]` -> `[x]`.
+    An agent that wrongly ticked a Human AC therefore needed the same Tier-2
+    override to RESTORE the invariant as it had needed to violate it — the gate
+    refused the correction in the safe direction.
+
+    There is no threat model for the un-tick direction: a tick asserts human
+    verification, so removing one cannot fabricate approval. It can only make a
+    task look less complete, which the completion gate already treats as
+    blocking. Asymmetric enforcement is therefore strictly safe.
+
+    Un-ticks still emit an advisory line and are still logged, so the audit trail
+    keeps them — what changes is that they no longer need a bypass to happen.
+    """
+    return [t for t in toggles if t[1] == " " and t[2] in ("x", "X")]
 
 
 def log_bypass(project_root: Path, task_id: str, file_path: str, toggles: list) -> None:
@@ -171,6 +221,20 @@ def main() -> int:
         return 0
 
     task_id = derive_task_id(file_path)
+
+    # T-2954: only ticks are blocking. An un-tick restores the invariant this
+    # guard exists to protect and cannot fabricate approval — it must not need
+    # the same Tier-2 override as the violation. Still surfaced and still logged.
+    blocking = blocking_toggles(toggles)
+    if not blocking:
+        log_bypass(project_root, task_id, file_path, toggles)
+        sys.stderr.write(
+            f"NOTE: Human-AC un-tick allowed (restores the invariant; cannot "
+            f"fabricate approval) — logged, no override needed. "
+            f"Task: {task_id}, toggles: {toggles}\n"
+        )
+        return 0
+    toggles = blocking
 
     # Override
     if os.environ.get("FW_ALLOW_HUMAN_AC_TICK") == "1":

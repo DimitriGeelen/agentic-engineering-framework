@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2954: check-human-ac-tick is direction-symmetric and comment-blind (832 OBS-037)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T21:01:32Z
+# ============================================================================
+
+task_id: T-2954
+task_name: "check-human-ac-tick is direction-symmetric and comment-blind (832 OBS-037)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T20:34:16Z
+completed: 2026-08-12T21:00:59Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1731's guard flags any Human-AC checkbox state change (detect_toggle: 'if a != b'), so un-ticking [x]->[ ] — the direction that RESTORES the invariant — needs the same Tier-2 FW_ALLOW_HUMAN_AC_TICK override as ticking. Second leg: get_checkbox_states regexes the raw '### Human' section with no comment stripping, so the template's own example '- [ ] [REVIEW] Dashboard renders correctly' inside an HTML comment counts as a Human AC. review.sh was made comment-aware in T-2948; this guard was not — a parity gap between two consumers of the same section. Handed back by 832 as OBS-037 under gap-homing; reproduced here from source.
+
+# Key outcomes
+outcomes:
+  - '`detect_toggle` distinguishes direction: `[ ]` → `[x]` still BLOCKS under `$CLAUDECODE=1`; `[x]` → `[ ]` is ALLOWED without any override, because un-ticking cannot fabricate human approval'
+  - '`get_checkbox_states` no longer counts checkbox-shaped lines inside HTML comments, using the same structural rule as `lib/verification-port.sh:extract_verification_block` (`<!--` opens a comment only as the first non-blank token on its line)'
+  - 'The comment-stripping logic lives in ONE Python module imported by both this guard and `lib/verification-port.sh:extract_verification_block` — parity by construction for the two Python-reachable sites, not a fourth copy asserting parity in a comment (T-2949 shape)'
+  - 'The two remaining non-Python variants are registered rather than silently left: `audit.sh` (already OBS-238/T-2950) and `lib/review.sh`, whose rule is `<!--` ANYWHERE on the line rather than opening the line — a distinct, conservatively-wrong divergence that under-counts a real AC carrying a trailing comment'
+  - 'Blast radius measured before the change: every task file''s `### Human` section counted old-way vs new-way, with the diff enumerated and each difference shown to be a repair'
+  - 'Bats legs cover both directions and the comment case, and include a non-vacuity leg that runs the OLD expression inline and asserts it mis-counts the fixtures'
+  - 'The task template''s own `- [ ] [REVIEW] Dashboard renders correctly` example line inside the `### Human` comment block is confirmed no longer counted'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2954-check-human-ac-tick-is-direction-symmetr.md
+generated_by: context-agent-hybrid

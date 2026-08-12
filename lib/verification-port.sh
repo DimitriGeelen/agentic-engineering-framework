@@ -76,31 +76,20 @@ find_port_literals() {
 # Measured over 2939 task files at fix time: 3 differ, all three repairs, no
 # command-count change. See T-2921 for the enumeration.
 #
-# Rule: `<!--` opens a comment only as the first non-blank token on its line.
-# The opening line is dropped whole; if it does not also close, lines are
-# dropped until one contains `-->`, and that line is dropped too. Any other line
-# is emitted byte-identical. Pathological `<!-- a --> <!-- b` (close then reopen
-# on one line) is treated as closed and the line dropped — documented, not
-# handled, because it cannot occur in a command that would also survive `eval`.
+# The rule itself lives in lib/comment_strip.py and is NOT restated here.
+# T-2954 moved it there so this function and agents/context/check-human-ac-tick.py
+# share one implementation. Restating it in a comment beside a second copy is what
+# this file used to do about update-task.sh's copy — and that comment recorded
+# that the parity claim had already been found false once and been repaired by
+# editing the copy. Prose asserting parity between two implementations is not
+# parity (T-2949); a shared import is.
+#
+# Read lib/comment_strip.py for the rule, the DOTALL failure modes, and the
+# three-disposition direction rule (discarded / counted / executed).
 extract_verification_block() {
     local file="$1"
     sed -n '/^## Verification/,/^## /p' "$file" 2>/dev/null \
         | sed '$d' | tail -n +2 \
-        | python3 -c "
-import sys
-out, in_comment = [], False
-for line in sys.stdin.read().split('\n'):
-    stripped = line.lstrip()
-    if in_comment:
-        if '-->' in line:
-            in_comment = False
-        continue
-    if stripped.startswith('<!--'):
-        if '-->' not in stripped[4:]:
-            in_comment = True
-        continue
-    out.append(line)
-sys.stdout.write('\n'.join(out))
-" 2>/dev/null \
+        | python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/comment_strip.py" 2>/dev/null \
         | grep -vE '^\s*$|^\s*#|^\s*```' || true
 }

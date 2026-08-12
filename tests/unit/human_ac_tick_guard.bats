@@ -81,14 +81,21 @@ print(json.dumps({'tool_name':'Write','tool_input':{'file_path':sys.argv[1],'con
     echo "$output" | grep -q "T-9999"
 }
 
-@test "Agent unticks Human AC ([x] → [ ]) — also blocks (any toggle)" {
+# T-2954 (832 OBS-037): this leg previously asserted `[x] → [ ]` blocks too, and
+# that assertion is why the defect survived — the symmetry was pinned as intent.
+# An agent that wrongly ticked a Human AC needed the same Tier-2 override to
+# RESTORE the invariant as to violate it. An un-tick cannot fabricate approval,
+# so there is no threat model for the blocking direction. Still logged.
+@test "Agent unticks Human AC ([x] → [ ]) — ALLOWED, no override, still logged" {
     # First tick it (manually, not through hook)
     sed -i 's/- \[ \] \[REVIEW\] Human AC one/- [x] [REVIEW] Human AC one/' "$TASK_FILE"
     run_hook_edit "$TASK_FILE" \
         "- [x] [REVIEW] Human AC one" \
         "- [ ] [REVIEW] Human AC one"
-    [ "$status" -eq 2 ]
-    echo "$output" | grep -q "HUMAN-AC TICK BLOCKED"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "un-tick allowed"
+    # Audit trail is kept — allowing it is not the same as hiding it.
+    grep -q "FW_ALLOW_HUMAN_AC_TICK" "$TEST_ROOT/.context/working/.gate-bypass-log.yaml"
 }
 
 @test "Agent ticks Agent AC — passes (different section)" {

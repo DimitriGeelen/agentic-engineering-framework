@@ -280,3 +280,16 @@
   status: open
   related: [T-2921, T-2950, T-2948, T-2765, T-2949, L-576, L-533]
   follow_up_task: T-2950
+- id: OBS-239
+  type: tooling
+  severity: low
+  surface: "lib/review.sh:~150 (emit_review Human-AC counter, T-2948)"
+  detected_in: T-2954 (found while collapsing the Python copies of the same rule)
+  symptom: "The counter's comment tracker opens a comment span on `<!--` appearing ANYWHERE in a line (`case $line in *\"<!--\"*) in_comment=true`), rather than only when it is the first non-blank token. A real Human AC carrying a trailing comment — `- [ ] [REVIEW] Operator confirms X <!-- see T-123 -->` — opens and closes on its own line and is dropped, so the AC is not counted. Watchtower then renders one fewer Human AC than the task has, and the partial-complete gate sees a smaller population than the file."
+  root_cause: "Fourth site of the comment-boundary class, and the third distinct semantics for one rule. T-2921 established the structural rule (`<!--` opens only as the first non-blank token); T-2948 made this counter comment-aware but used the looser `contains` test; T-2954 moved the structural rule into lib/comment_strip.py and collapsed the two Python-reachable sites onto it. review.sh is bash with an inline streaming loop, so it did not come along. Wrong in the conservative direction — it UNDER-counts, so a task reads as having fewer Human ACs than it does, which cannot fabricate a completion."
+  prevention: "NOT YET BUILT. The rule now has one canonical implementation (lib/comment_strip.py, usable as a stdin filter: `printf '%s' \"$text\" | python3 lib/comment_strip.py`), so the fix is to route review.sh's Human-section text through it rather than re-implementing the tracker. Blast radius at filing: MEASURED, not latent — 1 live instance in 2942 task files. T-2521 carries `- [x] [REVIEW] The /designer page renders as a usable BPMN workflow editor  <!-- operator confirme...`, a genuine TICKED Human AC that this counter drops, so review.sh reports that task with one fewer Human AC than it has (both total and checked fall by one). The first draft of this entry asserted 0 and was written before the command was run — the same near-miss recorded in T-2951's RCA, caught this time by measuring before filing rather than after. Filed rather than fixed here: one bug, one task."
+  blast_radius: scoped
+  observed: 2026-08-12
+  status: open
+  related: [T-2954, T-2948, T-2921, T-2950, OBS-238, T-2949, L-576]
+  follow_up_task: null
