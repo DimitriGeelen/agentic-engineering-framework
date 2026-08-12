@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2925: VERSION discards the one component that makes it decidable — what marker should a consumer name
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T10:47:42Z
+# ============================================================================
+
+task_id: T-2925
+task_name: "VERSION discards the one component that makes it decidable — what marker should a consumer name"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T20:37:11Z
+completed: 2026-08-12T10:47:30Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-11T22:41:49+02:00
+last_commit: 2026-08-11T23:47:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  VERSION's third field is a distance, and the decidable string is discarded one line before it is written. capture L-577 (shared-substrate rule for command-string predicates) + OBS-221/222. 832 endorses Candidate B; their IW-4 argument raises confidence 1→2. session state — cron-regenerated scan/verdict artefacts (T-1549 corpus 2541→2563, T-1687 verdict block). capture the third-answer learning — UNKNOWN is what actually caught things
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-11.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-2925-version-decidability.md'
+  - '.tasks/active/T-1687-install--apply-grill-with-docs-skill--gr.md'
+  - '.tasks/active/T-2925-version-discards-the-one-component-that-.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T22:41:49'
+    action: 'T-2925: VERSION''s third field is a distance, and the decidable string is discarded one line before it is written'
+  - time: '2026-08-11T22:44:03'
+    action: 'T-2925: capture L-577 (shared-substrate rule for command-string predicates) + OBS-221/222'
+  - time: '2026-08-11T23:36:31'
+    action: 'T-2925: 832 endorses Candidate B; their IW-4 argument raises confidence 1→2'
+  - time: '2026-08-11T23:40:56'
+    action: 'T-2925: session state — cron-regenerated scan/verdict artefacts (T-1549 corpus 2541→2563, T-1687 verdict block)'
+  - time: '2026-08-11T23:47:01'
+    action: 'T-2925: capture the third-answer learning — UNKNOWN is what actually caught things'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 850 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 850
+  commits: 5
+  files_changed: 19
+  lines_added: 626
+  lines_removed: 166
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2925-version-discards-the-one-component-that-.md
+generated_by: context-agent-hybrid

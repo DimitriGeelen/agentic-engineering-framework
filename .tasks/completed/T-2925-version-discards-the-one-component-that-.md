@@ -6,16 +6,16 @@ description: >
   Inception: VERSION discards the one component that makes it decidable — what marker
   should a consumer name
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-11T20:37:11Z
-last_update: '2026-08-11T20:45:09Z'
-date_finished:
+last_update: 2026-08-12T10:47:30Z
+date_finished: 2026-08-12T10:47:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -157,15 +157,15 @@ consumer can name to decide bump direction; the readers that would consume it
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -236,7 +236,11 @@ coordinated migration across consumer trees we cannot schedule.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Measured: agents/git/lib/hooks.sh:886-899 derives VERSION from 'git describe --tags' (today v1.6.765-71-g4cc5852e9) and keeps only major.minor plus commits-since-tag, discarding the base tag's patch component (765). The third field is therefore a DISTANCE that resets to 0 at every tag cut, not a patch number — so two VERSION strings are comparable only when computed against the same base tag, and nothing records which base tag was used. 33 tags exist; the decidable string is already in hand at stamp time and is thrown away. Consequence surfaced by consumer 832: their vendored 1.6.354 vs our 1.6.9 is undecidable, T-2713 correctly reports it so, and their first vendor bump is an act of faith. GO because the defect is confirmed by measurement rather than suspected, and because the fix is blocked on a design choice (widen VERSION vs ship a sibling decidable marker) that changes every consumer pin and the T-1603 monotonicity hook — which is exactly what an inception is for.
+
+**Date**: 2026-08-12T10:47:30Z
 
 ## Updates
 
@@ -245,3 +249,36 @@ coordinated migration across consumer trees we cannot schedule.
 
 ### 2026-08-11T20:39:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-12T10:47:30Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Measured: agents/git/lib/hooks.sh:886-899 derives VERSION from 'git describe --tags' (today v1.6.765-71-g4cc5852e9) and keeps only major.minor plus commits-since-tag, discarding the base tag's patch component (765). The third field is therefore a DISTANCE that resets to 0 at every tag cut, not a patch number — so two VERSION strings are comparable only when computed against the same base tag, and nothing records which base tag was used. 33 tags exist; the decidable string is already in hand at stamp time and is thrown away. Consequence surfaced by consumer 832: their vendored 1.6.354 vs our 1.6.9 is undecidable, T-2713 correctly reports it so, and their first vendor bump is an act of faith. GO because the defect is confirmed by measurement rather than suspected, and because the fix is blocked on a design choice (widen VERSION vs ship a sibling decidable marker) that changes every consumer pin and the T-1603 monotonicity hook — which is exactly what an inception is for.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d336719
+- **Timestamp:** 2026-08-12T10:47:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-5668985f
+- **Timestamp:** 2026-08-12T10:47:31Z
+- **Overall:** CONTRADICTED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `agents/git/lib/hooks.sh:886-899` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `major.minor` | module | ✓ pass |
+| `docs/reports/T-2925-version-decidability.md` | file | ✓ pass |
+| `T-2713` | task | ✓ pass |
+| `T-1603` | task | ✓ pass |
+
+### 2026-08-12T10:47:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
