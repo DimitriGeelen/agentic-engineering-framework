@@ -94,11 +94,22 @@ EOF
 
 @test "emit_review block message names review class for build tasks" {
     local file
+    # T-2949: the ## Recommendation block is required for the fixture to REACH
+    # the gate under test. T-2421 (2026-06-16) extended the empty-Recommendation
+    # BLOCK to partial-complete build-class tasks, which is what this fixture is
+    # (one unticked Human AC) — so without it emit_review returns 1 from the
+    # rec-gate and never evaluates the review-link homework check this leg is
+    # about. Red for 57 days on exactly that. Not bypassed with
+    # FW_ALLOW_EMPTY_RECOMMENDATION=1: the fixture should satisfy live gates.
     file=$(_write_task "T-9993" "build" "## Acceptance Criteria
 ### Human
 - [ ] [REVIEW] open
   **Steps:**
   1. (URL from \`bin/fw watchtower url\`) — /foo
+
+## Recommendation
+**Recommendation:** GO
+Substantive rationale text spanning enough characters to pass the substantive-recommendation guard.
 ")
     run emit_review "T-9993" "$file"
     [ "$status" -eq 2 ]
@@ -123,11 +134,17 @@ Substantive rationale text spanning enough characters to pass the substantive-re
 
 @test "FW_ALLOW_REVIEW_LINK_HOMEWORK=1 bypasses block + logs Tier-2" {
     local file
+    # T-2949: see T-9993 above — the rec-gate would otherwise block first and
+    # this leg would be asserting the bypass of a gate it never reached.
     file=$(_write_task "T-9995" "build" "## Acceptance Criteria
 ### Human
 - [ ] [REVIEW] open
   **Steps:**
   1. Open (URL from \`bin/fw watchtower url\`)/foo
+
+## Recommendation
+**Recommendation:** GO
+Substantive rationale text spanning enough characters to pass the substantive-recommendation guard.
 ")
     FW_ALLOW_REVIEW_LINK_HOMEWORK=1 run emit_review "T-9995" "$file"
     [ "$status" -eq 0 ]

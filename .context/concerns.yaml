@@ -249,3 +249,18 @@
   observed: 2026-08-11
   status: open
   related: [T-1820, T-1821, T-1818, T-1819, T-2409, T-2363, T-2918]
+
+# A gate extension silently invalidated its own test fixtures, and the comment
+# above them explained the breakage as intent — so 57 days of red read as normal.
+- id: OBS-237
+  type: process
+  severity: high
+  surface: "tests/unit/{lib_review,review_link_blocking_gate}.bats fixtures vs lib/review.sh:205-211 (T-2421 rec-gate)"
+  detected_in: T-2949 (found incidentally during T-2948's regression check)
+  symptom: "7 bats legs across 2 suites returned `not ok` continuously from 2026-06-16 to 2026-08-12 — 57 days. No audit, doctor check, cron job or close gate reported it. Found only because an unrelated task ran the neighbouring suites to prove it had not caused a regression."
+  root_cause: "T-2421 extended the empty-`## Recommendation` BLOCK from inceptions to partial-complete build-class tasks. It updated lib/review.sh and shipped green — but the fixtures those suites build are partial-complete build tasks (1 of 3 Human ACs checked) with no Recommendation section, so emit_review began returning 1 where the legs asserted 0 or 2. Third artefact of one extension: code updated; the task TEMPLATE not (T-2945, reported independently by 832 as their T-455); the test FIXTURES not (this). Compounding it, the fixture helper carried the comment 'Build tasks do not gate on Recommendation, so the heading is conditional' — true when T-2206 wrote it, made false by T-2421 — so anyone glancing at the red legs found a written explanation that the conditional was deliberate."
+  prevention: "PARTIAL. T-2949 fixed all 7 fixtures (by satisfying the gate, NOT by FW_ALLOW_EMPTY_RECOMMENDATION=1 — bypassing a gate inside its own suite makes the suite blind to what it guards), corrected the stale comment in place, and added a leg asserting the rec-gate still FIRES so the suite covers T-2421 rather than merely tolerating it. NOT STRUCTURAL: nothing yet surfaces a persistently-red bats suite. `fw audit` and `fw doctor` do not run the unit suites, no cron does, and the P-011 close gate only runs the commands a task author writes — so a suite nobody names in a Verification block is invisible by construction. The next gate extension can repeat this exactly. Needed: a scheduled full-suite run whose failures reach the same surface as audit WARNs."
+  blast_radius: systemic
+  observed: 2026-08-12
+  status: open
+  related: [T-2949, T-2948, T-2945, T-2421, T-2206, G-019]

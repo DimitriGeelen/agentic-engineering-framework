@@ -32,7 +32,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T14:45:28Z
-last_update: 2026-08-12T14:48:58Z
+last_update: '2026-08-12T15:00:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,27 +62,40 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-12T15:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2949: 7 review test legs red for 57 days — T-2421 extended the rec-gate past its own fixtures
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found incidentally: T-2948 ran the neighbouring review suites to prove it had not caused a
+regression, and 7 legs were already red. They had been red since T-2421 landed on
+2026-06-16 — **57 days** — and nothing surfaced it.
+
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] All 7 legs green: `lib_review.bats` 13/13 and `review_link_blocking_gate.bats` 5/5
-- [ ] The fixtures are fixed by giving partial-complete build tasks a `## Recommendation`
+- [x] All 7 legs green: `lib_review.bats` 13/13 and `review_link_blocking_gate.bats` 5/5
+- [x] The fixtures are fixed by giving partial-complete build tasks a `## Recommendation`
       (what T-2421 actually requires), NOT by setting `FW_ALLOW_EMPTY_RECOMMENDATION=1` —
       bypassing the gate in its own test would make the suite blind to the thing it guards
-- [ ] The stale fixture comment ("Build tasks do not gate on Recommendation") is corrected
+- [x] The stale fixture comment ("Build tasks do not gate on Recommendation") is corrected
       in place, since it is the sentence that made the breakage read as intentional
-- [ ] At least one leg asserts the gate still FIRES on a partial-complete build fixture with
+- [x] At least one leg asserts the gate still FIRES on a partial-complete build fixture with
       no Recommendation — the suite must cover T-2421's behaviour, not just tolerate it
-- [ ] A gap is registered in `concerns.yaml` for 57 days of unnoticed red (G-019: >7 days
+- [x] A gap is registered in `concerns.yaml` for 57 days of unnoticed red (G-019: >7 days
       blind is systemic), naming what makes the next red suite visible — the fix here is
       mitigation, not prevention
 
@@ -119,86 +132,91 @@ bvp_scores_proposed:
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. grep scans the whole captured string anyway, so the tail-3 was
-# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
-# for the captures they were written about, and both invert above the pipe
-# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
-# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
-# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
-# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
-# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
-# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
-# For anything that might be large, redirect to a file:
-#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# This is the better default even when size is not a concern: `&&` keeps the
-# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
-# the T-2738 problem one layer down. A 404 from curl fails the line instead of
-# silently producing an empty capture for grep to not-match.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
-# 141 under P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# BUT NOT for a test runner (T-2738): the capture above discards the command's
-# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
-# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
-# that exit code WAS the verdict, and the pass marker you grep instead survives
-# a partial failure: a suite printing "3 failed, 9 passed" satisfies
-# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
-# same output. Either keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# All 7 previously-red legs green, plus the new coverage leg.
+out=$(timeout 300 bats tests/unit/lib_review.bats 2>&1); echo "$out" | grep -q '^ok 14 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 300 bats tests/unit/review_link_blocking_gate.bats 2>&1); echo "$out" | grep -q '^ok 5 ' && ! echo "$out" | grep -q '^not ok'
+# Sibling suites unaffected.
+out=$(timeout 300 bats tests/unit/emit_review_ac_counter.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 300 bats tests/unit/t2948_review_human_ac_comment_aware.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+# Fixed by satisfying the gate, not by bypassing it in its own suite.
+# (non-comment lines only — the files DISCUSS the bypass in a comment explaining why it was not used)
+bash -c '! grep -E "^[[:space:]]*[^#[:space:]].*FW_ALLOW_EMPTY_RECOMMENDATION" tests/unit/lib_review.bats tests/unit/review_link_blocking_gate.bats'
+# The gap is registered and the file still parses.
+python3 -c "import yaml,sys; d=yaml.safe_load(open('.context/concerns.yaml')); sys.exit(0 if any(e.get('id')=='OBS-237' for e in d) else 1)"
+
+## Evidence
+
+### Before / after
+
+    tests/unit/lib_review.bats                 8 ok / 5 not ok   ->  14 ok / 0 not ok
+    tests/unit/review_link_blocking_gate.bats  3 ok / 2 not ok   ->   5 ok / 0 not ok
+
+Plus the suites that were already green and had to stay so: `t2948` 6/6, `t2945` 6/6,
+`emit_review_ac_counter` 6/6, `review_batch` 7/7. **44 legs, 0 red.**
+
+The +1 in lib_review is new coverage, not a renamed leg — see below.
+
+### Root cause, proven not assumed
+
+Both suites build partial-complete build-class fixtures (1 of 3 Human ACs checked) with no
+`## Recommendation`. T-2421 extended the empty-Recommendation BLOCK to exactly that state, so
+`emit_review` began returning 1 where the legs asserted 0 or 2. Demonstrated on an isolated
+fixture pair before touching either suite:
+
+    fixture as-is              rc=1  BLOCKED
+    fixture + Recommendation   rc=0  prints 1/3
+
+### Why 57 days of red read as normal
+
+The fixture helper carried:
+
+    # Build tasks do not gate on Recommendation, so the heading is conditional.
+
+True when T-2206 wrote it. Made false by T-2421. Anyone who looked at the red legs found a
+written explanation that the conditional was deliberate — which is worse than no comment,
+because it converts an anomaly into documented intent. Corrected in place rather than
+deleted, with the date the sentence stopped being true.
+
+### Fixed by satisfying the gate, not bypassing it
+
+`FW_ALLOW_EMPTY_RECOMMENDATION=1` would have turned all 7 green in one line. Rejected:
+bypassing a gate inside its own suite makes the suite blind to the thing it guards, which is
+the same failure one layer up from the one being fixed.
+
+Added instead: `review: T-2421 rec-gate BLOCKS a partial-complete build fixture with no
+Recommendation` — strips the block back out and asserts the gate still fires, with a
+non-vacuity check (`grep -c '^## Recommendation$'` = 0) so the leg cannot pass against a
+fixture that still has one. Without it the suite would merely tolerate T-2421; a regression
+disabling the gate would leave every leg green.
+
+### The residual is the real finding
+
+Nothing surfaces a persistently-red bats suite. `fw audit` and `fw doctor` do not run the
+unit suites; no cron does; P-011 runs only the commands a task author writes — so a suite
+nobody names in a Verification block is invisible **by construction**. This task is
+mitigation. Registered as **OBS-237** (systemic, open) with prevention stated as not done.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** 7 bats legs red continuously for 57 days, unreported by every automated surface.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** T-2421 extended a gate and updated the code that implements it, but not the
+artefacts that must satisfy it. Third such artefact from one change — code (done), task
+template (missed; T-2945, reported by 832 as T-455), test fixtures (missed; this).
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** two independent holes. (1) No surface runs the unit suites on a
+schedule, so red is only ever seen by someone who happens to run them. (2) A stale comment
+asserted the broken behaviour was intentional, so the one human signal that could have
+flagged it argued the other way.
+
+**Blind for:** 2026-06-16 → 2026-08-12, 57 days. Well past G-019's 7-day systemic threshold.
+
+**Prevention:** the leg asserting the gate still FIRES stops the suite from going green on a
+regression — but that is coverage, not visibility. Visibility is unfixed and registered as
+OBS-237. The honest statement is that the next gate extension can repeat this exactly.
+
+**Credit:** surfaced by T-2948's regression check. Same session as 832's T-455 report, which
+is the sibling artefact of the same 2026-06-16 change.
 
 ## Evolution
 

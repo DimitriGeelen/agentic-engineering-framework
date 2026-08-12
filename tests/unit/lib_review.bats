@@ -30,11 +30,21 @@ _create_review_task() {
     local file="$TEST_TEMP_DIR/.tasks/active/${task_id}-test.md"
     # T-2206: inception fixtures need a substantive ## Recommendation block,
     # otherwise emit_review BLOCKS them via the Slice C consumer-side gate.
-    # Build tasks do not gate on Recommendation, so the heading is conditional.
-    local rec_block=""
-    if [ "$workflow" = "inception" ]; then
-        rec_block=$'\n## Recommendation\n\n**Recommendation:** GO\n**Rationale:** test fixture\n'
-    fi
+    #
+    # T-2949: this used to add the block for inceptions ONLY, on the reasoning
+    # that "build tasks do not gate on Recommendation". That was true when it was
+    # written and T-2421 (2026-06-16) made it false — the same BLOCK now applies
+    # to partial-complete build-class tasks, which is exactly what this fixture
+    # builds (1 of 3 Human ACs checked). Five legs here went red that day and
+    # stayed red for 57 days; the comment above them read as intent, so nobody
+    # re-read the code. Unconditional now — a fixture must satisfy the gates that
+    # are live, not the ones that were live when it was authored.
+    #
+    # Deliberately NOT fixed with FW_ALLOW_EMPTY_RECOMMENDATION=1: bypassing a
+    # gate inside its own suite makes the suite blind to the thing it guards.
+    # The leg that asserts the gate still FIRES is below (`rec-gate blocks a
+    # partial-complete build fixture`).
+    local rec_block=$'\n## Recommendation\n\n**Recommendation:** GO\n**Rationale:** test fixture\n'
     cat > "$file" <<EOF
 ---
 id: ${task_id}
@@ -243,4 +253,22 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"http://custom:8080/review/T-800"* ]]
     unset WATCHTOWER_URL
+}
+
+@test "review: T-2421 rec-gate BLOCKS a partial-complete build fixture with no Recommendation" {
+    # T-2949. Every other build fixture in this file now carries a Recommendation
+    # block, which is what T-2421 requires — but that alone would leave the suite
+    # merely TOLERATING the gate rather than covering it. Strip the block back out
+    # and the gate must still fire; otherwise a regression that disables T-2421
+    # would turn this whole file green and tell us nothing.
+    local task_file
+    task_file=$(_create_review_task "T-810" "build")
+    # Remove the ## Recommendation section (up to the next `## ` heading).
+    sed -i '/^## Recommendation$/,/^## /{/^## Acceptance Criteria$/!d}' "$task_file"
+    run grep -c '^## Recommendation$' "$task_file"
+    [ "$output" -eq 0 ]   # fixture really is bare, or the assertion below is vacuous
+
+    run emit_review "T-810" "$task_file"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Recommendation"* ]]
 }
