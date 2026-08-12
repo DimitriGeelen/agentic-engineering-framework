@@ -157,8 +157,15 @@ EOF
 
 do_list() {
     ensure_inbox
-    local pending
-    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending=0
+    # T-2932: same parsed source as do_count, so the header can never disagree
+    # with the rows printed below it. T-2317 fixed the LISTING to parse YAML and
+    # left this header on the grep — the sibling-site shape again (L-533).
+    local counts pending
+    if ! counts=$(_inbox_counts) || [ -z "$counts" ]; then
+        echo -e "${RED}Inbox unreadable${NC} — cannot list observations (check $INBOX_FILE)" >&2
+        return 1
+    fi
+    pending=${counts% *}
 
     if [ "$pending" -eq 0 ]; then
         echo -e "${GREEN}Inbox empty${NC} — no pending observations"
@@ -192,12 +199,50 @@ for obs in data.get('observations', []) or []:
 PYEOF
 }
 
+# T-2932: counts come from the parsed inbox, not from grepping lines.
+#
+# The urgent figure was `grep -c 'urgent: true'` over the WHOLE file, with no
+# status filter — so every observation ever marked urgent was counted forever.
+# Measured when this was found: reported 8, true 4; the four phantoms had been
+# dismissed. That figure is the headline in the handover and in the session-start
+# ritual, so it was inflating the one number an agent is told to act on.
+#
+# Over-reporting urgency is not the safe direction. An operator who opens the
+# queue and finds half the "urgent" items already dismissed learns the number is
+# decorative — an urgency signal dies by inflation, not by silence.
+#
+# The pending figure moved too, though `grep -c 'status: pending'` happened to be
+# correct at the time. It is only correct while no observation's TEXT contains the
+# string; observations quote YAML routinely, and this one now does.
+#
+# Echoes "pending urgent" on success. On a parse failure it prints nothing and
+# returns 1 — callers must SAY so rather than print a zero, because "0 pending"
+# from a broken inbox is indistinguishable from a healthy empty one (L-578: give
+# every check an explicit, loud, distinct refusal path).
+_inbox_counts() {
+    python3 -c '
+import sys, yaml
+try:
+    with open(sys.argv[1]) as f:
+        data = yaml.safe_load(f) or {}
+    obs = [o for o in (data.get("observations") or []) if isinstance(o, dict)]
+except Exception:
+    sys.exit(1)
+pending = [o for o in obs if o.get("status") == "pending"]
+urgent = [o for o in pending if o.get("urgent") is True]
+print(len(pending), len(urgent))
+' "$INBOX_FILE" 2>/dev/null
+}
+
 do_count() {
     ensure_inbox
-    local pending
-    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending=0
-    local urgent
-    urgent=$(grep -c 'urgent: true' "$INBOX_FILE" 2>/dev/null) || urgent=0
+    local counts pending urgent
+    if ! counts=$(_inbox_counts) || [ -z "$counts" ]; then
+        echo "inbox unreadable — count unavailable (check $INBOX_FILE)" >&2
+        return 1
+    fi
+    pending=${counts% *}
+    urgent=${counts#* }
 
     if [ "$urgent" -gt 0 ]; then
         echo "$pending pending ($urgent urgent)"
@@ -335,8 +380,17 @@ open(path, "w").write("\n".join(lines))
 
 do_triage() {
     ensure_inbox
-    local pending
-    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending=0
+    # T-2932: fourth site of the same grep, and the one with the worst failure —
+    # "Nothing to triage — inbox is clean" is an assertion about the queue, and a
+    # miscount here tells the operator the ritual is done. Found by the
+    # enumerating guard in t2932, not by reading: three sites were converted by
+    # hand and this one was missed, in the same file as two of them.
+    local counts pending
+    if ! counts=$(_inbox_counts) || [ -z "$counts" ]; then
+        echo -e "${RED}Inbox unreadable${NC} — cannot triage (check $INBOX_FILE)" >&2
+        return 1
+    fi
+    pending=${counts% *}
 
     if [ "$pending" -eq 0 ]; then
         echo -e "${GREEN}Nothing to triage${NC} — inbox is clean"

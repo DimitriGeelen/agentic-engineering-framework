@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2932: fw note count reports urgent from a whole-file grep — dismissed observations still counted
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T06:38:01Z
+# ============================================================================
+
+task_id: T-2932
+task_name: "fw note count reports urgent from a whole-file grep — dismissed observations still counted"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T06:31:26Z
+completed: 2026-08-12T06:37:44Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw note count reports urgent from a whole-file grep — dismissed observations still counted
+
+# Key outcomes
+outcomes:
+  - '`fw note count` reports urgent as *pending AND urgent*, matching a YAML-parsed count exactly'
+  - 'The pending figure is derived the same way, not by grepping a line that could appear inside an observation''s text'
+  - 'Count and list agree: the number `fw note count` reports equals the number of urgent rows `fw note list` shows'
+  - 'The counter degrades loudly, not to zero, if the inbox cannot be parsed — a silent `0 pending` reads identically to a healthy empty inbox'
+  - 'A test drives the real script and pins the exact defect: an inbox with dismissed-urgent entries must not inflate the count'
+  - 'Anti-vacuity: the reconstructed pre-fix grep is shown to over-count on the same fixture'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-12 — deferred the sibling sites as latent, then reversed within the hour'
+    alternatives_rejected: ['leaving it filed and letting the guard carry it. The guard was']
+  - decision: '2026-08-12 — the enumerating guard found a site I had already read past'
+    chose: 'assert *no grep-based counter at any site*, rather than assert the'
+    rationale: 'on its first run the leg failed on `observe.sh:384` — `do_triage`, in'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2932-fw-note-count-reports-urgent-from-a-whol.md
+generated_by: context-agent-hybrid

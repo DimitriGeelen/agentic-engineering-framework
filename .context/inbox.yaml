@@ -1743,3 +1743,10 @@ observations:
   tags: [governance]
   status: pending
   promoted_to: null
+- id: OBS-233
+  text: "Two sibling sites still count PENDING observations by grep, latent today. agents/handover/handover.sh:381 and agents/audit/audit.sh:2663 both do pending=$(grep -c 'status: pending' \"$INBOX_FILE\"). Measured 2026-08-12: grep=117, YAML-parsed=117 — exactly right, because no observation's TEXT currently contains the literal string 'status: pending'. So this is LATENT, not live, and was filed rather than fixed under T-2932 (one bug, one task). Why it is worth a ticket anyway: the URGENT counter at both sites was already converted to YAML parsing (T-2514 in audit.sh, T-2927 in handover.sh) and the PENDING counter beside it was left on the grep both times — the same half-swept shape that let T-2927's two sites survive T-2514, and that let observe.sh keep a grep-based urgent count through both. The trigger is cheap and getting cheaper: observations routinely quote YAML now (OBS-230 and OBS-231 both contain YAML fragments), and the day one of them quotes this exact string, both counters over-report with nothing to notice. Note the direction: over-reporting pending inflates the number CLAUDE.md's session-start ritual tells an agent to act on, which is how an inbox signal dies — not by silence but by being wrong often enough to be ignored. Guarded meanwhile: tests/unit/t2932_note_count_urgent_filter.bats has a leg asserting grep==YAML for pending on the real inbox, so drift goes red rather than silent. Fix shape: hoist the _inbox_counts helper added to observe.sh, or inline the same parse at both sites."
+  captured: 2026-08-12T06:34:56Z
+  context_task: T-2932
+  tags: [bug]
+  status: pending
+  promoted_to: null

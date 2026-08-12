@@ -2660,7 +2660,20 @@ echo "=== OBSERVATION INBOX CHECKS ==="
 INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
 
 if [ -f "$INBOX_FILE" ]; then
-    pending_obs=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending_obs=0
+    # T-2932: parse, do not grep — see handover.sh for the full note. The urgent
+    # count below was converted to a YAML parse by T-2514; this line beside it was
+    # left on the grep, which is the half-swept shape L-533 describes. It counted
+    # the string anywhere in the file, so an observation quoting `status: pending`
+    # inflated the total (OBS-233 did exactly that within an hour of being filed).
+    pending_obs=$(python3 -c "
+import yaml
+try:
+    d = yaml.safe_load(open('$INBOX_FILE')) or {}
+    obs = d.get('observations', []) if isinstance(d, dict) else []
+except Exception:
+    obs = []
+print(sum(1 for o in obs if isinstance(o, dict) and o.get('status') == 'pending'))
+" 2>/dev/null) || pending_obs=0
     urgent_obs=0
     stale_obs=0
 

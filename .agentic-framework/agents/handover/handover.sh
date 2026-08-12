@@ -378,7 +378,24 @@ INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
 PENDING_OBS=0
 URGENT_OBS=0
 if [ -f "$INBOX_FILE" ]; then
-    PENDING_OBS=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || PENDING_OBS=0
+    # T-2932: parse, do not grep. `grep -c 'status: pending'` counts the string
+    # ANYWHERE in the file, including inside an observation's own text. That was
+    # correct for as long as no observation quoted it — and it stopped being
+    # correct the same hour it was written down: OBS-233, filed to record the
+    # risk, quotes the string and pushed the count from 118 to 119. The latent
+    # case went live on the act of describing it.
+    PENDING_OBS=$(VALIDATE_FILE="$INBOX_FILE" python3 -c "
+import os, sys
+try:
+    import yaml
+    with open(os.environ['VALIDATE_FILE']) as f:
+        d = yaml.safe_load(f) or {}
+    print(sum(1 for o in (d.get('observations') or [])
+              if isinstance(o, dict) and o.get('status') == 'pending'))
+except Exception as e:
+    print('handover: could not read the observation inbox (%s)' % e.__class__.__name__, file=sys.stderr)
+    print(0)
+" 2>/dev/null) || PENDING_OBS=0
     # T-2927: parse the YAML, do not guess its indentation. The previous form
     # split on `\n  - ` — the 2-space list indent used by patterns.yaml, NOT the
     # column-0 form inbox.yaml actually uses. T-2514 named that exact mismatch

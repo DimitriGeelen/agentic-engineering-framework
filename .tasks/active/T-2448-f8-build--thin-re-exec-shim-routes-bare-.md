@@ -124,21 +124,50 @@ F1 out as the "stale public install" leg. Re-read `bin/fw-shim` + `install.sh:23
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] AC1 (Candidate C) — `fw init`/`fw upgrade` install the PATH shim as a **thin re-exec wrapper**
+- [x] AC1 (Candidate C) — `fw init`/`fw upgrade` install the PATH shim as a **thin re-exec wrapper**
       (not a symlink to the global `bin/fw`): if cwd-ancestry has `.agentic-framework/bin/fw` AND no
       sentinel set → `exec` it with `FW_REEXEC_GUARD=1`; else fall through to the global `bin/fw`.
-- [ ] AC2 (recursion guard) — the wrapper carries a `T-2099`-style env-sentinel so a project-local fw
+      **Superseded, exceeded:** `bin/fw-router` (T-2793, `install.sh:link_fw`) is exactly this thin
+      wrapper — walk-up from `$PWD`, `exec` the resolved project-local `bin/fw`. It goes further than
+      the AC asked: T-2800/T-2809/T-2814/T-2854/T-2856 (D-377) removed the "fall through to the global
+      `bin/fw`" branch entirely — there is no global fallback left to fall through to.
+- [x] AC2 (recursion guard) — the wrapper carries a `T-2099`-style env-sentinel so a project-local fw
       that itself re-resolves cannot recurse. A regression test drives the guard (no fork bomb).
-- [ ] AC3 (Candidate E) — `fw doctor` emits a WARN when the bare-`fw`-resolved shim's version differs
+      **Superseded:** `fw-router` guards recursion by resolved-path identity (`readlink -f` self ==
+      target → refuse, exit 126) rather than an env-sentinel — same defence-in-depth goal, pinned by
+      `tests/unit/fw_router.bats` ("refuses to exec itself (routing loop)", green).
+- [x] AC3 (Candidate E) — `fw doctor` emits a WARN when the bare-`fw`-resolved shim's version differs
       from the cwd consumer's vendored version, with an actionable message (use project-local path / run
       `fw upgrade`). Zero change to bin/fw's resolution hot path.
-- [ ] AC4 (Candidate B) — the T-2441 install prompt + onboarding text use `.agentic-framework/bin/fw`
+      **Obsoleted by architecture, not implemented as specified:** the premise (bare `fw` can resolve to
+      a stale *global* shim whose version differs from the project's) no longer exists — D-377 removed
+      the global-fallback route the skew could occur on. `bin/fw:1730-1750` (T-666/T-662, predates this
+      task) already WARNs when `~/.local/bin/fw` symlinks straight to a global `bin/fw` instead of the
+      router; `tests/unit/upgrade_fresh_machine_simulation.bats` ("the router ignores a STALE global
+      install when the project has its own") pins that a stale/mismatched global is never routed to at
+      all, so no skew is observable to warn about. Building a version-compare WARN now would document a
+      failure mode the router makes structurally unreachable.
+- [x] AC4 (Candidate B) — the T-2441 install prompt + onboarding text use `.agentic-framework/bin/fw`
       for consumer steps (no bare `fw` for consumers), per §Copy-Pasteable Commands / T-1257.
-- [ ] AC5 (4-mode + simulation) — `tests/unit/upgrade_fresh_machine_simulation.bats` stays green AND
+      **Residual gap found + fixed this session:** `prompts/aef-fresh-install-onboarding.md` (STEP 5 +
+      THROUGHOUT) still described "the bare-fw routing bug" as live and told operators to avoid bare
+      `fw`. Since the router makes that failure mode structurally unreachable, the correct fix is the
+      opposite of the original AC wording — updated the prompt to say bare `fw` is now safe from inside
+      the project directory, citing T-2793/D-377, while keeping `.agentic-framework/bin/fw` as the
+      handoff-safe form per §Copy-Pasteable Commands (durability, not routing safety).
+- [x] AC5 (4-mode + simulation) — `tests/unit/upgrade_fresh_machine_simulation.bats` stays green AND
       gains assertions for all four invocation modes (framework-repo-self, direct-vendored,
       global-from-consumer, global-from-non-project). Live-fired via a TermLink shell (OBS-080 bypass).
-- [ ] AC6 (env contract intact) — explicit `PROJECT_ROOT` still wins (T-2391/T-2446); the existing
+      **Superseded:** the simulation suite already carries T-2793-era coverage for all four modes
+      (`T-2793: vendored consumer agrees with itself about its version`, `...reaches the consumer's own
+      CLI with no global install`, `...ignores a STALE global install`, plus the framework-repo-self and
+      bootstrap-refusal cases in `fw_router.bats`); full suite green, see `## Verification`.
+- [x] AC6 (env contract intact) — explicit `PROJECT_ROOT` still wins (T-2391/T-2446); the existing
       resolver bats (t2390/t2391/t2446) + `test_project_root_discovery.py` stay green.
+      **Confirmed unaffected:** the router sets nothing but `FW_ROUTED_FROM`/`FW_ROUTER_TARGET` and hands
+      off — `PROJECT_ROOT`/`FRAMEWORK_ROOT` resolution stays entirely the downstream CLI's job (by
+      design, per `bin/fw-router`'s own comments). t2390/t2391/t2446 bats: 13/13 green, re-run this
+      session.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -204,6 +233,12 @@ F1 out as the "stale public install" leg. Re-read `bin/fw-shim` + `install.sh:23
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n bin/fw-router
+out=$(bats tests/unit/fw_router.bats tests/unit/router_no_global_fallback.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2390_project_root_claude_dir.bats tests/unit/t2391_project_root_inherited_stale.bats tests/unit/t2446_project_root_cwd_consistency.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+grep -q "T-2793" prompts/aef-fresh-install-onboarding.md && ! grep -q "you hit the bare-fw routing bug" prompts/aef-fresh-install-onboarding.md
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -243,6 +278,27 @@ F1 out as the "stale public install" leg. Re-read `bin/fw-shim` + `install.sh:23
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-08-12 — superseded by the D-377 total-isolation router
+- **What changed:** this task was filed 2026-06-21 against an architecture where a global
+  `~/.local/bin/fw` shim was a legitimate, permanent fallback — the plan was to make that
+  fallback path safe (thin wrapper, recursion guard, skew detection). Between filing and this
+  session, T-2793 ("total isolation — vendor the CLI too") through T-2800/T-2809/T-2814/T-2854/
+  T-2856 (D-377) reframed the goal from *"make the global fallback safe"* to *"remove the global
+  fallback"* — `bin/fw-router` walks up from `$PWD` to the project's own `bin/fw` and, since
+  T-2854, never falls through to a global install at all, stale or not
+  (`tests/unit/upgrade_fresh_machine_simulation.bats`: "the router ignores a STALE global install
+  when the project has its own").
+- **Plan impact:** AC1/AC2/AC5/AC6 are satisfied by `bin/fw-router` and its test suites,
+  unchanged from what those tasks shipped — nothing to build. AC3 (doctor skew-WARN) is moot:
+  its premise (a bare-fw-resolved shim with a version that can differ from the project's) is no
+  longer reachable, so a WARN for it would document an impossible state. Building any of AC1/2/3
+  now would either duplicate or contradict the router that already shipped.
+- **Triggered:** no new sub-task. One residual gap found and fixed in this session: the T-2441
+  onboarding prompt (`prompts/aef-fresh-install-onboarding.md`) still described "the bare-fw
+  routing bug" as a live hazard to avoid — stale advice now that the router makes it structurally
+  unreachable. Updated STEP 5 + THROUGHOUT to say bare `fw` is safe inside the project directory,
+  citing T-2793/D-377.
 
 ## Decisions
 
