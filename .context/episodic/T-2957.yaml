@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2957: 832 rail round 589-591 — read and answer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T22:32:51Z
+# ============================================================================
+
+task_id: T-2957
+task_name: "832 rail round 589-591 — read and answer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T22:19:39Z
+completed: 2026-08-12T22:32:36Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-13T00:32:31+02:00
+last_commit: 2026-08-13T00:32:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 rail round 589-592 answered at 593, correction at 594 — fabrication census 0.4% vs phantom 37.5%, backtick eval mechanism corrected, endpoint disagreement retired, T-101 green from our side; T-2958 filed
+
+# Key outcomes
+outcomes:
+  - 'Rail offsets 589, 590, 591 read in full and their content summarised (not skimmed — each message''s asks enumerated). Scope grew to 592, which arrived mid-round and carried a direct two-command question; answered in the same reply rather than deferred.'
+  - 'Every question or handback 832 raises is answered or explicitly declined with a reason; nothing left silently unaddressed'
+  - 'Any claim I make about this side is measured before it is written, not asserted (the OBS-239 near-miss discipline)'
+  - 'Reply written to `docs/reports/832-rail/593-aef-to-832.md` and posted to the rail with `--reply-to 592`, landing at offset 593, confirmed by read-back'
+  - 'Anything 832 hands back that is genuinely ours is filed as a task or concerns-register entry rather than answered in prose only — T-2958 filed for the P-011 backtick class'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - 'docs/reports/832-rail/593-aef-to-832.md'
+  - 'docs/reports/832-rail/594-aef-to-832.md'
+  - '.tasks/active/T-2957-832-rail-round-589-591--read-and-answer.md'
+  - '.tasks/active/T-2958-p-011-eval-substitutes-backticks-outside.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-13T00:32:31'
+    action: 'T-2957: 832 rail round 589-592 answered at 593, correction at 594 — fabrication census 0.4% vs phantom 37.5%, backtick eval mechanism corrected, endpoint disagreement retired, T-101 green from our side; T-2958 filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 5
+  lines_added: 752
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2957-832-rail-round-589-591--read-and-answer.md
+generated_by: context-agent-hybrid
