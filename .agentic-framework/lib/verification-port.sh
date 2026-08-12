@@ -49,10 +49,58 @@ find_port_literals() {
 # `fw verify-queue` — was scanning template prose as if it were shell. Found by
 # running the whole review queue through it: T-558 reported "5/5 commands
 # failing" for a section that is empty.
+#
+# T-2921: this is now THE extractor — update-task.sh's P-011 gate calls it
+# instead of keeping its own copy. The comment above claimed parity with the
+# executor twice and had to be corrected once already; parity asserted in prose
+# between two copies is the T-2949 class (one change, three artefacts, 57 days
+# red). Shared by construction is the only version of that claim that stays true.
+#
+# The strip is STRUCTURAL, not textual, and that distinction is the whole bug.
+# Every line surviving this function is handed to `eval`. A `<!--` opening a
+# line is prose the author wrote for a reader — discard it. The same delimiter
+# INSIDE a line is argument text belonging to a command — `sed '/<!--/,/-->/d'`,
+# an awk program matching a footer marker, a printf building a fixture — and
+# rewriting it corrupts the command. The old whole-block
+# `re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)` could not tell those apart
+# and did both:
+#   * mangled  — `sed '/<!--/,/-->/d' f` became `sed '/d' f`, which errors. Loud.
+#   * deleted  — `.*?` spans newlines under DOTALL, so a mid-line `<!--` pairs
+#                with the NEXT `-->` anywhere below, including the close of a
+#                real comment block further down. Every command between them
+#                vanishes before `wc -l` counts them, and the gate then prints
+#                "N/N passed" over a population it silently shrank. That is a
+#                false green, and a green line asserting nothing is
+#                indistinguishable from one asserting everything (cf. the
+#                port-3000 class, 371 instances).
+# Measured over 2939 task files at fix time: 3 differ, all three repairs, no
+# command-count change. See T-2921 for the enumeration.
+#
+# Rule: `<!--` opens a comment only as the first non-blank token on its line.
+# The opening line is dropped whole; if it does not also close, lines are
+# dropped until one contains `-->`, and that line is dropped too. Any other line
+# is emitted byte-identical. Pathological `<!-- a --> <!-- b` (close then reopen
+# on one line) is treated as closed and the line dropped — documented, not
+# handled, because it cannot occur in a command that would also survive `eval`.
 extract_verification_block() {
     local file="$1"
     sed -n '/^## Verification/,/^## /p' "$file" 2>/dev/null \
         | sed '$d' | tail -n +2 \
-        | python3 -c "import re,sys;sys.stdout.write(re.sub(r'<!--.*?-->','',sys.stdin.read(),flags=re.DOTALL))" 2>/dev/null \
+        | python3 -c "
+import sys
+out, in_comment = [], False
+for line in sys.stdin.read().split('\n'):
+    stripped = line.lstrip()
+    if in_comment:
+        if '-->' in line:
+            in_comment = False
+        continue
+    if stripped.startswith('<!--'):
+        if '-->' not in stripped[4:]:
+            in_comment = True
+        continue
+    out.append(line)
+sys.stdout.write('\n'.join(out))
+" 2>/dev/null \
         | grep -vE '^\s*$|^\s*#|^\s*```' || true
 }
