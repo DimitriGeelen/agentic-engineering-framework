@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2448: F8 build — thin re-exec shim routes bare fw to consumer-local + doctor skew-WARN (T-2447 GO: C+E+B)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T19:15:45Z
+# ============================================================================
+
+task_id: T-2448
+task_name: "F8 build — thin re-exec shim routes bare fw to consumer-local + doctor skew-WARN (T-2447 GO: C+E+B)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-21T11:19:48Z
+completed: 2026-08-12T06:38:57Z
+duration_days: 52
+updates_count: 3
+first_commit: 2026-06-21T13:20:55+02:00
+last_commit: 2026-06-21T13:58:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture F8 build task (T-2447 GO Candidate C+E+B) — ACs + context, parked horizon:next for a focused session. scope reframe — fw-shim (T-664) already implements Candidate C; F8 symptom was the install.sh legacy fallback firing (ties F1/F2/F8)
+
+# Key outcomes
+outcomes:
+  - 'AC1 (Candidate C) — `fw init`/`fw upgrade` install the PATH shim as a **thin re-exec wrapper**'
+  - 'AC2 (recursion guard) — the wrapper carries a `T-2099`-style env-sentinel so a project-local fw'
+  - 'AC3 (Candidate E) — `fw doctor` emits a WARN when the bare-`fw`-resolved shim''s version differs'
+  - 'AC4 (Candidate B) — the T-2441 install prompt + onboarding text use `.agentic-framework/bin/fw`'
+  - 'AC5 (4-mode + simulation) — `tests/unit/upgrade_fresh_machine_simulation.bats` stays green AND'
+  - 'AC6 (env contract intact) — explicit `PROJECT_ROOT` still wins (T-2391/T-2446); the existing'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2448-f8-build--thin-re-exec-shim-routes-bare-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-06-21T13:20:55'
+    action: 'T-2448: capture F8 build task (T-2447 GO Candidate C+E+B) — ACs + context, parked horizon:next for a focused session'
+  - time: '2026-06-21T13:58:34'
+    action: 'T-2448: scope reframe — fw-shim (T-664) already implements Candidate C; F8 symptom was the install.sh legacy fallback firing (ties F1/F2/F8)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 74599 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 74599
+  commits: 2
+  files_changed: 1
+  lines_added: 228
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2448-f8-build--thin-re-exec-shim-routes-bare-.md
+generated_by: context-agent-hybrid
