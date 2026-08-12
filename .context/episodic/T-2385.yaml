@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2385: RCA: CTL-012-MISSING-DECIDE + D10 — historical inceptions flagged as flipped without decide ceremony
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T02:11:21Z
+# ============================================================================
+
+task_id: T-2385
+task_name: "RCA: CTL-012-MISSING-DECIDE + D10 — historical inceptions flagged as flipped without decide ceremony"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T23:08:20Z
+completed: 2026-08-12T02:10:50Z
+duration_days: 60
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Audit WARNs CTL-012-MISSING-DECIDE (T-1902/T-2000/T-1915/T-1905) and D10 decision-without-dialogue (T-1902/T-1846/T-1915/T-1905). Classify each FP-vs-real: likely predate the decide-gate (T-1259/T-1260) or were decided via an unrecognized path. If FP, scope the detector to post-gate tasks; if real, close the flip path.
+
+# Key outcomes
+outcomes:
+  - 'Each of T-1902 / T-2000 / T-1915 / T-1905 / T-1846 classified FP-or-real with evidence (creation date vs decide-gate ship date; presence/absence of a decide record or `## Decision` block)'
+  - 'If all FP (pre-gate): CTL-012-MISSING-DECIDE + D10 detectors scoped to post-cutoff inceptions (cutoff surfaced to operator as a policy call), OR a TTL''d reviewer-style suppression filed for the named tasks'
+  - 'If any real: a separate fix task filed for the flip path (one bug = one task)'
+  - 'RCA filled (post-investigation); reviewer PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-12 — Grandfather cutoff vs. TTL''d per-task suppression'
+    chose: 'a date-based cutoff (`MISSING_DECIDE_CUTOFF = "2026-06-13"`) in the classifier itself,'
+    rationale: 'the cutoff is self-scoping and requires no maintained list. Any *future* task that flips via'
+    alternatives_rejected: ['TTL''d reviewer-style suppression per named task (T-1902/T-2000/T-1915/T-1905) — rejected']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 85142 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, governance, inception]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 85142
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2385-rca-ctl-012-missing-decide--d10--histori.md
+generated_by: context-agent-hybrid

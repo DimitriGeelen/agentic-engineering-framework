@@ -2900,3 +2900,10 @@ decisions:
     date: 2026-08-11
     task: T-100196
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-417
+    decision: "a date-based cutoff (`MISSING_DECIDE_CUTOFF = \"2026-06-13\"`) in the classifier itself,"
+    scope: project
+    date: 2026-08-12
+    task: T-2385
+    rationale: "Auto-captured from task file on completion"

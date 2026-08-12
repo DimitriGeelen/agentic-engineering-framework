@@ -4385,3 +4385,9 @@ X'` returning empty group."
   task: T-2927
   date: 2026-08-11
   context: Added via context agent
+- id: L-582
+  learning: "A detective-only audit check (CTL-012-MISSING-DECIDE, T-2202) with no cutoff re-flags every pre-existing historical instance forever, even when the underlying mechanism (bare git-mv into completed/, L-390) already has a live-detection prevention (CTL-028) covering NEW occurrences. RCA on 5 flagged tasks (T-1902/T-2000/T-1915/T-1905/T-1846) found the initial hypothesis wrong — they postdate the decide-gate (T-1259/T-1260, April) but predate the classifier itself (T-2202, shipped 2026-06-13, same day this RCA was filed). Fix: scope new sub-classifiers with a date_finished-based grandfather cutoff = the classifier's own ship date (not an arbitrary date), same pattern as the sibling R4 grandfather remediation for C-001. D10 needed no fix — its original 30-day time-box (T-248) already self-resolves this exact class. General rule: when adding a new audit sub-classifier for a historical-drift pattern, always ask whether pre-existing instances predate the classifier itself, and grandfather them by the classifier's ship date rather than re-flagging forever."
+  source: P-002
+  task: T-2385
+  date: 2026-08-12
+  context: Added via context agent
