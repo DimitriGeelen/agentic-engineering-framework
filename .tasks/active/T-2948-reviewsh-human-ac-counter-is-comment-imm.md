@@ -2,9 +2,16 @@
 id: T-2948
 name: "review.sh Human-AC counter is comment-immune only by accident of indentation"
 description: >
-  832 rail 570 §3: lib/review.sh:151-183 matches '- [ ]' only at column 0, and default.md's commented example ACs are indented 7 spaces — so the rec-gate skips them for a reason unrelated to comments. De-indenting those examples (pure formatting, no reviewer stops it) would make every fresh build task count 2 phantom Human ACs, read as partial-complete 0/2, and trip T-2421's rec-gate on work nobody started. Fix: make the counter comment-aware in the same pass (as G-067 and now G-020/T-2944 do) so its correctness stops resting on whitespace it does not know it depends on. Fourth site of the comment-boundary class 832 registered as their G-036.
+  832 rail 570 §3: lib/review.sh:151-183 matches '- [ ]' only at column 0, and default.md's
+  commented example ACs are indented 7 spaces — so the rec-gate skips them for a reason
+  unrelated to comments. De-indenting those examples (pure formatting, no reviewer
+  stops it) would make every fresh build task count 2 phantom Human ACs, read as partial-complete
+  0/2, and trip T-2421's rec-gate on work nobody started. Fix: make the counter comment-aware
+  in the same pass (as G-067 and now G-020/T-2944 do) so its correctness stops resting
+  on whitespace it does not know it depends on. Fourth site of the comment-boundary
+  class 832 registered as their G-036.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T14:31:59Z
-last_update: 2026-08-12T14:31:59Z
-date_finished: null
+last_update: '2026-08-12T14:45:07Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +41,67 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-12T14:34:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-12T14:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2948: review.sh Human-AC counter is comment-immune only by accident of indentation
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 rail 570 §3. `lib/review.sh`'s Human-AC counter is comment-immune **by accident**: its
+globs are `"- [ ]"*` (whitespace-intolerant) and `default.md`'s commented example ACs happen
+to sit indented seven spaces. Nothing in the file records that the indentation is
+load-bearing, so de-indenting those examples — pure formatting — would make the counter see
+two phantom Human ACs on every task created from the template, read each fresh build task as
+partial-complete 0/2, and trip T-2421's rec-gate on work nobody started.
+
+Fourth site of the comment-boundary class (their G-036), and the only one getting the right
+answer for the wrong reason. Siblings already fixed: G-067 (`:700`) and G-020 (`:754`,
+T-2944) in `check-active-task.sh`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The counter skips HTML-comment spans explicitly, so its correctness no longer depends
+      on indentation it does not know it relies on
+- [x] The landmine is proven closed: a task whose commented example ACs are **de-indented to
+      column 0** is still counted 0/0 and does not trip the rec-gate — measured against the
+      real `fw task review`, not the predicate
+- [x] Falsified: the same de-indent fixture is shown to trip the gate under the pre-fix
+      counter, so the test can distinguish fixed from broken
+- [x] No behaviour change on the live corpus: Human-AC counts across all active tasks are
+      identical before and after, and the diff is reported (a silent change here would
+      re-class tasks as partial-complete or clear them, both of which move the rec-gate)
+- [x] Real ACs are still counted, including a commented span that ENDS mid-file (positive
+      control — a fix that skips everything would satisfy the first three criteria)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -82,86 +136,94 @@ date_finished: null
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. grep scans the whole captured string anyway, so the tail-3 was
-# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
-# for the captures they were written about, and both invert above the pipe
-# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
-# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
-# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
-# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
-# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
-# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
-# For anything that might be large, redirect to a file:
-#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# This is the better default even when size is not a concern: `&&` keeps the
-# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
-# the T-2738 problem one layer down. A 404 from curl fails the line instead of
-# silently producing an empty capture for grep to not-match.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
-# 141 under P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# BUT NOT for a test runner (T-2738): the capture above discards the command's
-# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
-# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
-# that exit code WAS the verdict, and the pass marker you grep instead survives
-# a partial failure: a suite printing "3 failed, 9 passed" satisfies
-# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
-# same output. Either keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# The fix is present and comment-aware.
+bash -c 'out=$(grep -c "in_comment" lib/review.sh); [ "$out" -ge 4 ]'
+# Regression suite: 6 legs against the real fw task review.
+out=$(timeout 300 bats tests/unit/t2948_review_human_ac_comment_aware.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+# Sibling suite from this session stays green (shared surface).
+out=$(timeout 300 bats tests/unit/t2945_default_template_recommendation.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+# The pre-existing red legs are filed, not absorbed into this task.
+ls .tasks/active/T-2949-*.md >/dev/null 2>&1
+
+## Evidence
+
+### The fix
+
+`lib/review.sh:151` — the Human-AC counter now tracks HTML-comment spans and `continue`s
+through them, before the heading cases (so a commented `## `/`### ` heading can no longer
+open or close a block either). Direction is stated in the comment: the span is being
+DISCARDED as prose, so stripping is correct — unlike T-2921/P-011, where the same regex over
+text about to be `eval`'d is a defect.
+
+### No behaviour change on the live corpus (AC 4)
+
+Counter run over all 335 active tasks, before and after:
+
+    NOGATE 87 · PASS 243 · REFUSE 5      (before)
+    NOGATE 87 · PASS 243 · REFUSE 5      (after)
+    diff: IDENTICAL — 0 tasks change class or count
+
+That is the intended result: this defuses a latent landmine, it does not move any current
+state. A diff here would have meant tasks silently re-classing into or out of the rec-gate.
+
+### The landmine, measured (AC 2/3)
+
+`tests/unit/t2948_review_human_ac_comment_aware.bats`, 6 legs, driving the real
+`bin/fw task review` in a sandbox `PROJECT_ROOT`, fixtures built from the shipped template:
+
+    1  commented examples DE-INDENTED to column 0  -> emits      (the landmine, closed)
+    2  same fixture under the PRE-FIX counter      -> counts >0  (falsification: fixture is live)
+    3  template as shipped                         -> emits      (the accident still holds)
+    4  a real unticked Human AC at column 0        -> REFUSED    (positive control: gate still fires)
+    5  AC after a closed <!-- --> span             -> counted    (over-reach guard)
+    6  fix present and names its direction
+
+Falsified end-to-end: with the comment-tracking block deleted, leg 1 goes red and the other
+five stay green; restored, 6/6. Leg 2 exists because leg 1 alone would pass for a fixture
+that never had column-0 checkboxes in it.
+
+Leg 5 was red on first run for a fixture bug of my own — I appended a SECOND
+`## Acceptance Criteria` block at EOF, which the counter never reaches because it breaks at
+the first `## ` after the first AC block. Fixed by injecting into the real Human section; the
+reason is recorded in the test so the next reader does not repeat it.
+
+### Regression check, and a finding it turned up
+
+Nine existing review-related suites run. Seven legs are red — `lib_review.bats` (5) and
+`review_link_blocking_gate.bats` (2) — and they are **pre-existing**: identical ok/fail
+counts with this change stashed. Zero regression from T-2948.
+
+Not walked past. Root cause proven: those fixtures build a partial-complete build task with
+no `## Recommendation`, so T-2421's rec-gate refuses them. Same fixture plus a Recommendation
+block returns rc=0 and prints `1/3`. The fixture helper still carries the comment *"Build
+tasks do not gate on Recommendation, so the heading is conditional"* — true when T-2206 wrote
+it, made false by T-2421 on 2026-06-16. **57 days red.** Filed as T-2949: third artefact of
+one gate extension (code updated; template not → T-2945 / 832's T-455; fixtures not → this).
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** none observed — this is a latent defect, reported by a peer reading our code.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the Human-AC counter's immunity to commented example ACs came from its globs
+being anchored at column 0, not from any notion of comments. `default.md`'s examples are
+indented seven spaces, so they were skipped for a reason unrelated to why they *should* be
+skipped. Correctness rested on formatting that nothing recorded as load-bearing.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the counter and the template are in different files with no
+link, and the invariant ("these lines must not be counted") was satisfied by coincidence.
+There is no test that de-indents them, because nobody knew indentation mattered.
+
+**Blind for:** since the counter was written. Found by 832 as the *negative control* of a
+census — they were explaining why their own count was correct, and the explanation was the
+finding.
+
+**Prevention:** the fix removes the dependency rather than documenting it, and leg 1 pins the
+de-indent case that would have fired. Leg 5 pins the opposite over-reach. Distinct from the
+fix: leg 2 proves the fixture can still go red, so a future refactor cannot make legs 1/3
+pass by making the counter blind to everything.
+
+**Credit:** 832, rail 570 §3 — offered as the reason their measurement was trustworthy, not
+as a defect report.
 
 ## Evolution
 
@@ -243,3 +305,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2948-reviewsh-human-ac-counter-is-comment-imm.md
 - **Context:** Initial task creation
+
+### 2026-08-12T14:34:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
