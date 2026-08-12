@@ -396,6 +396,28 @@ do_vendor() {
         # `agent` to owners: a stale vendored copy would make the new
         # creation-side owner gate reject fw work-on's default owner.
         status-transitions.yaml
+        # T-2942 (OBS-235): the corpus reader. `fw corpus explain <map>` execs
+        # tools/corpus_explain.py, so without this a consumer gets
+        #   python3: can't open file '<proj>/.agentic-framework/tools/corpus_explain.py'
+        # Third instance of the T-2656 / T-2674 class above — the script ships
+        # and the thing it reads does not, except here it was the reader itself.
+        # Load-bearing for onboarding: arc-017's curriculum is built to ROUTE to
+        # corpus maps rather than embed them, and its eleven operator sections
+        # carry 10 `fw corpus explain` calls. All 10 were dead in every consumer
+        # from the day Half A shipped, because the routes resolve here — in the
+        # only tree they were ever exercised in.
+        tools
+        # T-2942: and the maps the reader reads. corpus_explain resolves its
+        # store from `Path(__file__).parents[1]/.context/designer/projects`, so
+        # a vendored tools/ looks for a vendored store beside it — vendoring one
+        # without the other swaps "no such file" for "no such map".
+        #
+        # Framework-relative, not PROJECT_ROOT-relative, and deliberately so:
+        # the aef-* maps describe the FRAMEWORK's own lifecycles, which is why a
+        # consumer wants them at all. That is the direction audit's T-2648 check
+        # requires for framework-owned assets. A consumer's own maps live in its
+        # own .context/designer/projects and are untouched by this.
+        .context/designer/projects
     )
 
     # What to exclude within copied dirs.
@@ -423,6 +445,14 @@ do_vendor() {
         "lib/ts/package.json"
         "lib/ts/package-lock.json"
         "lib/ts/node_modules"
+        # T-2942: consumers get the framework's PUBLISHED lifecycle maps, not our
+        # work in progress. Wholesale-include-minus-drafts rather than an explicit
+        # aef-* list on purpose: an explicit list drifts silently the first time a
+        # seventh map is added, which is the exact shape of the bug this task
+        # fixes. Naming the drafts instead means new aef-* maps vendor themselves.
+        # (636K of drafts excluded, 196K of aef maps shipped.)
+        ".context/designer/projects/draft-*"
+        ".context/designer/projects/t2584-scratch"
     )
 
     if [ "$dry_run" = true ]; then

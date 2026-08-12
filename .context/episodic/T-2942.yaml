@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2942: Vendor the corpus reader and aef maps so the onboarding curriculum's routes resolve in consumers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T12:26:19Z
+# ============================================================================
+
+task_id: T-2942
+task_name: "Vendor the corpus reader and aef maps so the onboarding curriculum's routes resolve in consumers"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T12:18:44Z
+completed: 2026-08-12T12:26:05Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Vendor the corpus reader and aef maps so the onboarding curriculum's routes resolve in consumers
+
+# Key outcomes
+outcomes:
+  - '`tools/` is in `do_vendor`''s includes list with an origin comment in the style of'
+  - 'The framework''s published `aef-*` corpus maps are vendored; `draft-*` and scratch'
+  - 'A fresh `fw init` project resolves all four routed map ids: `aef-task-lifecycle`,'
+  - 'Drift guard: a test asserts every `aef-*` map in the store is reachable from a'
+  - 'The guard is proven able to fail, not merely observed green — a guard seen only'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-12 — wholesale include minus drafts, not an explicit aef-* list'
+    chose: 'include `.context/designer/projects` entirely and exclude'
+    rationale: 'an explicit six-entry `aef-*` list is silently wrong the first time a seventh'
+    alternatives_rejected: ['enumerating the six current maps (drifts, and re-creates this bug);']
+  - decision: '2026-08-12 — no code change to path resolution'
+    chose: 'rely on `corpus_explain.py`''s existing `Path(__file__).parents[1]` root.'
+    rationale: 'vendored to `.agentic-framework/tools/`, that already resolves the store to'
+    alternatives_rejected: ['adding a PROJECT_ROOT fallback — it would make a consumer''s own map']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2942-vendor-the-corpus-reader-and-aef-maps-so.md
+generated_by: context-agent-hybrid
