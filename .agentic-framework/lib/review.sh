@@ -148,8 +148,39 @@ emit_review() {
     # next `## ` heading (`## Context`), so the counter never reached the real
     # AC block and Watchtower rendered `Human ACs: 0/0`. Mirror update-task.sh's
     # `sed -n '/^## Acceptance Criteria/,/^## /p'` anchoring discipline.
-    local human_total=0 human_checked=0 in_ac=false in_human=false
+    #
+    # T-2948 (832 rail 570 §3): skip HTML-comment spans before counting.
+    #
+    # This counter was already comment-*immune*, but by accident: its globs are
+    # `"- [ ]"*`, whitespace-intolerant, and default.md's commented example ACs
+    # happen to sit indented seven spaces. Nothing recorded that the indentation
+    # was load-bearing, so de-indenting those examples — pure formatting, the
+    # kind no reviewer stops — would have made this counter see two phantom
+    # Human ACs on EVERY task created from the template. Each fresh build task
+    # would read as partial-complete 0/2 and trip T-2421's rec-gate below on
+    # work nobody had started.
+    #
+    # Same direction as G-067 (:700) and G-020 (:754) in check-active-task.sh:
+    # the span is being DISCARDED as prose, so stripping it is correct. The
+    # opposite case — P-011 stripping comments out of text it is about to hand
+    # to `eval` — is T-2921, and there the same regex is a defect. The rule is
+    # not "strip comments"; it is "strip them where the span is discarded".
+    #
+    # Fourth site of the comment-boundary class 832 registered as their G-036,
+    # and the only one that was getting the right answer for the wrong reason.
+    local human_total=0 human_checked=0 in_ac=false in_human=false in_comment=false
     while IFS= read -r line; do
+        # Runs BEFORE the heading cases, so a commented `## `/`### ` heading can
+        # no longer open or close a block either.
+        case "$line" in
+            *"<!--"*) in_comment=true ;;
+        esac
+        if $in_comment; then
+            case "$line" in
+                *"-->"*) in_comment=false ;;
+            esac
+            continue
+        fi
         case "$line" in
             "## Acceptance Criteria"*)
                 in_ac=true
