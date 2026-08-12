@@ -1,10 +1,20 @@
 ---
 id: T-2949
-name: "7 review test legs red for 57 days — T-2421 extended the rec-gate past its own fixtures"
+name: "7 review test legs red for 57 days — T-2421 extended the rec-gate past its
+  own fixtures"
 description: >
-  T-2421 (2026-06-16) extended the empty-Recommendation BLOCK from inceptions to partial-complete build-class tasks, but did not update the test fixtures that must satisfy it. tests/unit/lib_review.bats (5 legs) and tests/unit/review_link_blocking_gate.bats (2 legs) build fixtures with 1/3 Human ACs checked and no ## Recommendation, so emit_review now returns 1 and the legs fail. The fixture helper still carries the comment 'Build tasks do not gate on Recommendation, so the heading is conditional' — true under T-2206, made false by T-2421. Proven: same fixture plus a Recommendation block returns rc=0 and prints 1/3. Third artefact of one gate extension (code updated; template not, T-2945/832-T-455; fixtures not, this). 57 days red and nobody looked — G-019 territory, register a gap.
+  T-2421 (2026-06-16) extended the empty-Recommendation BLOCK from inceptions to partial-complete
+  build-class tasks, but did not update the test fixtures that must satisfy it. tests/unit/lib_review.bats
+  (5 legs) and tests/unit/review_link_blocking_gate.bats (2 legs) build fixtures with
+  1/3 Human ACs checked and no ## Recommendation, so emit_review now returns 1 and
+  the legs fail. The fixture helper still carries the comment 'Build tasks do not
+  gate on Recommendation, so the heading is conditional' — true under T-2206, made
+  false by T-2421. Proven: same fixture plus a Recommendation block returns rc=0 and
+  prints 1/3. Third artefact of one gate extension (code updated; template not, T-2945/832-T-455;
+  fixtures not, this). 57 days red and nobody looked — G-019 territory, register a
+  gap.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T14:45:28Z
-last_update: 2026-08-12T14:45:28Z
-date_finished: null
+last_update: 2026-08-12T14:48:58Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +44,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-12T14:48:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2949: 7 review test legs red for 57 days — T-2421 extended the rec-gate past its own fixtures
@@ -46,8 +74,17 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] All 7 legs green: `lib_review.bats` 13/13 and `review_link_blocking_gate.bats` 5/5
+- [ ] The fixtures are fixed by giving partial-complete build tasks a `## Recommendation`
+      (what T-2421 actually requires), NOT by setting `FW_ALLOW_EMPTY_RECOMMENDATION=1` —
+      bypassing the gate in its own test would make the suite blind to the thing it guards
+- [ ] The stale fixture comment ("Build tasks do not gate on Recommendation") is corrected
+      in place, since it is the sentence that made the breakage read as intentional
+- [ ] At least one leg asserts the gate still FIRES on a partial-complete build fixture with
+      no Recommendation — the suite must cover T-2421's behaviour, not just tolerate it
+- [ ] A gap is registered in `concerns.yaml` for 57 days of unnoticed red (G-019: >7 days
+      blind is systemic), naming what makes the next red suite visible — the fix here is
+      mitigation, not prevention
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -243,3 +280,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2949-7-review-test-legs-red-for-57-days--t-24.md
 - **Context:** Initial task creation
+
+### 2026-08-12T14:48:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
