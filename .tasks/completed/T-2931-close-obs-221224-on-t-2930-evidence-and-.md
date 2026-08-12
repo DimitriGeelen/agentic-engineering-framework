@@ -4,10 +4,10 @@ name: "close OBS-221/224 on T-2930 evidence and report the cron-leg deviation to
 description: >
   close OBS-221/224 on T-2930 evidence and report the cron-leg deviation to 832
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T06:19:30Z
-last_update: 2026-08-12T06:19:30Z
-date_finished: null
+last_update: 2026-08-12T06:26:35Z
+date_finished: 2026-08-12T06:26:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -48,7 +48,7 @@ date_finished: null
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] OBS-221 dismissed with a reason citing the shipped behaviour (75 in both arms, installed hook carries the branch), not the intent to fix
 - [x] OBS-224 dismissed with a reason that states the cron-leg deviation explicitly rather than implying the spec was followed in full
-- [ ] The deviation is reported to 832 on the rail, since they authored the remedy spec and would otherwise read "implemented" as "implemented as written"
+- [x] The deviation is reported to 832 on the rail, since they authored the remedy spec and would otherwise read "implemented" as "implemented as written" — rail offset 553
 - [x] Vendored copies refreshed so consumers inherit the fixed `audit.sh` and `hooks.sh`, and the self-vendor gate passes on push — 3 agents/ files + VERSION 1.6.98
 
 ### Human
@@ -149,6 +149,16 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Both observations are dismissed AND carry a persisted reason. A closure with no
+# recorded rationale cannot answer the only question anyone asks of a dismissed
+# entry — judged, or swept? (T-2928.)
+python3 -c "import yaml;obs={x['id']:x for x in yaml.safe_load(open('.context/inbox.yaml'))['observations']};assert all(obs[i]['status']=='dismissed' and len(obs[i].get('dismissed_reason') or '')>200 for i in ('OBS-221','OBS-224'))"
+# The OBS-224 reason states the deviation rather than implying full compliance —
+# the whole point of this task. Asserted on the text, not on my memory of it.
+python3 -c "import yaml;o=[x for x in yaml.safe_load(open('.context/inbox.yaml'))['observations'] if x['id']=='OBS-224'][0];r=o['dismissed_reason'];assert 'NOT implemented' in r and 'logger' in r, r[:200]"
+# Vendored copies are level with source for the three files T-2930 changed.
+out=$(bin/fw vendor self 2>&1); echo "$out" | grep -q "synced 0 agents/ file(s)" || ! echo "$out" | grep -q "agents/ file(s)"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -216,3 +226,15 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2931-close-obs-221224-on-t-2930-evidence-and-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4cfa0f87
+- **Timestamp:** 2026-08-12T06:26:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-12T06:26:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
