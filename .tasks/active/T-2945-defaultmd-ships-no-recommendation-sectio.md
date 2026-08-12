@@ -74,23 +74,35 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 reported (their T-455) that `default.md` ships zero `## Recommendation` sections while
+`inception.md` ships one, and that `lib/review.sh:205-211` (T-2421) BLOCKS `fw task review`
+emission for partial-complete build-class tasks whose block is empty. T-2943 confirmed the
+template asymmetry here. This task closes it.
+
+The gate fails identically whether the section is **absent** or **present-but-commented** —
+so this is not a gate-behaviour fix. It is an author-prompting fix: the anchor heading and
+its guidance now exist at the moment the task is written, instead of appearing only when the
+gate refuses the handoff days later.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `default.md` carries a `## Recommendation` section modelled on the one that already
+- [x] `default.md` carries a `## Recommendation` section modelled on the one that already
       works in `inception.md` — copied, not reinvented, since the sibling template's shape
       is what `audit_inception_recommendation` already parses
-- [ ] A task created from the template and taken to partial-complete emits from
-      `fw task review` instead of refusing — measured against the real gate, not the parser
-- [ ] The template's new section does not itself satisfy the gate: a task that never fills
-      it in must still block, or the fix trades a refusal for a false green
-- [ ] The 70 existing partial-complete build-class tasks are counted after the change and
-      the number reported — the template fix does not retroactively repair them, and
-      saying so is part of the deliverable
-- [ ] Regression test pins both directions (template-only → blocked, filled → emits)
+- [x] A task created from the template and taken to partial-complete emits from
+      `fw task review` **once the block is filled in** — measured against the real gate,
+      not the parser (bats leg 2 drives `bin/fw task review` in a sandbox PROJECT_ROOT)
+- [x] The template's new section does not itself satisfy the gate: a task that never fills
+      it in must still block, or the fix trades a refusal for a false green (bats leg 1)
+- [x] The existing partial-complete build-class tasks are counted **against the real gate**
+      after the change and the number reported — including the correction that the "70"
+      in this task's own title is wrong (it counted heading-absence, not gate outcome).
+      The template fix does not retroactively repair any of them, and saying so is part
+      of the deliverable
+- [x] Regression test pins both directions (template-only → blocked, filled → emits) and
+      is falsified by reverting the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -125,86 +137,104 @@ bvp_scores_proposed:
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. grep scans the whole captured string anyway, so the tail-3 was
-# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
-# for the captures they were written about, and both invert above the pipe
-# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
-# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
-# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
-# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
-# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
-# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
-# For anything that might be large, redirect to a file:
-#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# This is the better default even when size is not a concern: `&&` keeps the
-# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
-# the T-2738 problem one layer down. A 404 from curl fails the line instead of
-# silently producing an empty capture for grep to not-match.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
-# 141 under P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# BUT NOT for a test runner (T-2738): the capture above discards the command's
-# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
-# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
-# that exit code WAS the verdict, and the pass marker you grep instead survives
-# a partial failure: a suite printing "3 failed, 9 passed" satisfies
-# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
-# same output. Either keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# The fix is present in the framework template and in the vendored consumer copy.
+test "$(grep -c '^## Recommendation$' .tasks/templates/default.md)" -eq 1
+test "$(grep -c '^## Recommendation$' .agentic-framework/.tasks/templates/default.md)" -eq 1
+# The shipped block must NOT itself satisfy the gate (false-green guard).
+bash -c 'source lib/task-audit.sh; ! audit_inception_recommendation .tasks/templates/default.md'
+bash -c 'source lib/task-audit.sh; ! audit_inception_recommendation .agentic-framework/.tasks/templates/default.md'
+# Regression suite: 6 legs against the real `fw task review`.
+out=$(timeout 300 bats tests/unit/t2945_default_template_recommendation.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+
+## Evidence
+
+### The fix
+
+`.tasks/templates/default.md` gains `## Recommendation` between `## Evolution` and
+`## Decisions` — the same slot inception.md uses. The block is an HTML comment carrying the
+`**Recommendation:** / **Rationale:** / **Evidence:**` shape the shared parser accepts,
+plus the partial-complete trigger condition and the DEFER-is-not-a-hedge rule.
+
+    default.md    ## Recommendation sections   0  ->  1
+    inception.md  ## Recommendation sections   1      (unchanged)
+
+Self-vendored, so consumers get it: `.agentic-framework/.tasks/templates/default.md` carries
+the section and still fails the gate when unfilled (checked explicitly — the T-2942 lesson
+about framework-vs-consumer asymmetry applied without being asked for).
+
+### The 70 was wrong — corrected here
+
+T-2943 reported "294 partial-complete build-class tasks, 70 with no `## Recommendation`,
+every one of those 70 refuses emission", and I posted that figure to 832 at rail 568. The
+first two numbers are a structural count; the third is an **inference from it**, and it does
+not hold. The gate only fires when `human_total > 0 AND human_checked < human_total`. Most
+tasks lacking the heading have no Human ACs at all, so no gate class is assigned and they
+emit fine.
+
+Measured against the real gate (`bin/fw task review`, all 335 active tasks):
+
+    build-class active tasks                        304
+    lacking the ## Recommendation heading            71   <- what T-2943 counted
+    actually REFUSING emission today                  5   <- what the gate does
+      T-1719, T-2172, T-2269, T-2353  (pc-build)
+      T-449                           (pc-refactor)
+
+Method: `review.sh`'s Human-AC counter copied verbatim (it does NOT strip HTML comments and
+matches `- [ ]` only at column 0 — my first reimplementation did both wrong and produced yet
+a third number), then falsified against the real `bin/fw task review` on 17 tasks: the 5
+predicted refusals plus 12 sampled. 16/17 agreed. The one disagreement (T-2767, predicted
+NOGATE, really BLOCKED) is the **placeholder** gate firing first on `[First criterion]` —
+a different gate, not a flaw in the copy.
+
+So 832's defect is real and the template fix is right, but the blast radius I reported was
+14x too large. Correction owed on the rail.
+
+### Residual — stated, not fixed
+
+The 71 tasks lacking the heading are not repaired by a template change; templates are read
+at creation. 5 refuse today; the other 66 refuse the moment they gain an unticked Human AC.
+No backfill is attempted here — that is a separate decision about mutating 71 task files.
+
+### Test
+
+`tests/unit/t2945_default_template_recommendation.bats` — 6 legs, all driving the real
+`bin/fw task review` against a sandbox `PROJECT_ROOT`, with every fixture built **from the
+shipped template** so the tests stay coupled to it:
+
+    1  unfilled template block  -> REFUSED      (false-green guard)
+    2  filled block             -> EMITS        (the fix)
+    3  all Human ACs ticked     -> EMITS        (positive control: gate is scoped)
+    4  exactly one heading in default.md
+    5  both templates' unfilled blocks rejected by the same parser (shape parity)
+    6  FW_ALLOW_EMPTY_RECOMMENDATION=1 still emits (T-1890 bypass parity)
+
+Falsified: with the section stripped from the template, legs 2 and 4 go red and the rest
+stay green; restored, 6/6.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** partial-complete build-class tasks refuse `fw task review` — the command
+CLAUDE.md mandates for human handoff — because their `## Recommendation` block is empty.
+The build template never shipped the section.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** T-2421 extended a gate written for inceptions to build-class tasks, and
+updated `lib/review.sh` but not `.tasks/templates/default.md`. The gate and the template
+that has to satisfy it live in different files with no link between them; inception.md
+satisfied it only because the gate was originally written for inceptions.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** nothing asserts that every template reaching a gate carries
+the section that gate demands. The parity is between `lib/review.sh` and *two* templates,
+and only one of them was ever exercised against it. Same shape as this session's other
+findings: the artefact that certifies is not the artefact that runs.
+
+**Blind for:** T-2421 landed 2026-06; found by a peer (832 T-455), not by us.
+
+**Prevention:** bats leg 5 asserts both templates are judged by the same parser and agree —
+so a third template, or a template that drifts out of the accepted shape, goes red. Legs 1
+and 3 pin the gate's scope so a future widening of it cannot silently start refusing
+fully-ticked tasks.
+
+**Credit:** reported by 832 as T-453/T-455 in the same rail message; confirmed by T-2943.
 
 ## Evolution
 
@@ -232,14 +262,22 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-12 — do not backfill the 71 tasks lacking the heading
+- **Chose:** ship the template fix only; report the 5 live refusals and the 66 latent ones.
+- **Why:** templates are read at creation, so the fix is forward-looking by construction.
+  Backfilling means mutating 71 active task files to insert a section whose content only
+  their author can write — an empty inserted block satisfies nothing and would convert a
+  loud refusal into 71 blank Recommendation cards, which is the exact failure T-2417 filed.
+- **Rejected:** auto-inserting the heading at `fw task update` time — same objection, and it
+  would make the gate unfalsifiable from the task-file side.
+
+### 2026-08-12 — correct the 70 rather than restate it
+- **Chose:** measure against the real gate, report 5, and correct the figure to 832.
+- **Why:** I posted "70 of 294 (24%)" to a peer at rail 568 on the strength of a structural
+  count. It was an inference presented as a measurement — the same substitution this session
+  has now found three times in other people's code. Restating it in this task's Evidence
+  would have propagated it into the permanent record.
+- **Rejected:** quietly reporting the right number without flagging the correction.
 
 ## Decision
 
