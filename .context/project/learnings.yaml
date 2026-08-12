@@ -4451,3 +4451,15 @@ X'` returning empty group."
   task: T-2951
   date: 2026-08-12
   context: Added via context agent
+- id: L-593
+  learning: "Fix-one-of-N is the likelier failure mode on a duplicated rule, precisely because it feels finished. T-2948 made review.sh's Human-AC counter comment-aware — one of FOUR sites reading the same section — producing a green suite, a clean commit, and a lesson confidently sent to a peer. The unfixed sibling (check-human-ac-tick) was then handed back by that peer as their OBS-037. A blanket replace at least announces itself in the diff; fixing one site is invisible. Remedy: when fixing a rule that could be duplicated, run the census FIRST and attach it to the task, so the register shows N sites even when you only fix one (one bug, one task)."
+  source: P-001
+  task: T-2954
+  date: 2026-08-12
+  context: Added via context agent
+- id: L-594
+  learning: "A defect encoded in a PASSING test cannot be found by scanning — the suite defends it. check-human-ac-tick's direction symmetry survived because human_ac_tick_guard.bats leg 2 asserted 'unticks also block' as intended behaviour. The bug was not unnoticed; it was ratified. When a gate's enforcement direction is asymmetric in policy (only the human may TICK), check that the test names the direction rather than 'any toggle'."
+  source: P-001
+  task: T-2954
+  date: 2026-08-12
+  context: Added via context agent
