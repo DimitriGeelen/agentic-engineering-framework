@@ -4,10 +4,10 @@ name: "refresh vendored .agentic-framework after T-2938 watchtower currency chec
 description: >
   refresh vendored .agentic-framework after T-2938 watchtower currency check
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T11:08:41Z
-last_update: 2026-08-12T11:08:41Z
-date_finished: null
+last_update: 2026-08-12T11:14:22Z
+date_finished: 2026-08-12T11:14:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -48,7 +48,7 @@ date_finished: null
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `bin/fw vendor self` run; `lib/watchtower-staleness.sh` and `bin/fw` present in `.agentic-framework/` and byte-identical to their repo copies
 - [x] `bin/fw vendor self --check` reports in sync (the T-2240 pre-push gate passes without `FW_SKIP_SELF_VENDOR_CHECK=1`)
-- [ ] T-2938's commit and this refresh are pushed; both refs level
+- [x] T-2938's commit and this refresh are pushed; both refs level (4e7e2a872; `origin/master..HEAD` = 0)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -215,3 +215,20 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2939-refresh-vendored-agentic-framework-after.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a52e4835
+- **Timestamp:** 2026-08-12T11:14:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `bin/fw vendor self` run; `lib/watchtower-staleness.sh` and `bin/fw` present in `.agentic-framework/` and byte-identical to their repo copies
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/watchtower-staleness.sh in: `bin/fw vendor self` run; `lib/watchtower-staleness.sh` and `bin/fw` present in `.agentic-framework/` and byte-identical to their repo copies`
+
+### 2026-08-12T11:14:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

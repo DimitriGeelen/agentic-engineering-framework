@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2939: refresh vendored .agentic-framework after T-2938 watchtower currency check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T11:14:34Z
+# ============================================================================
+
+task_id: T-2939
+task_name: "refresh vendored .agentic-framework after T-2938 watchtower currency check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T11:08:41Z
+completed: 2026-08-12T11:14:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-12T13:10:22+02:00
+last_commit: 2026-08-12T13:10:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored .agentic-framework — watchtower-staleness.sh + bin/fw + VERSION 1.6.113
+
+# Key outcomes
+outcomes:
+  - '`bin/fw vendor self` run; `lib/watchtower-staleness.sh` and `bin/fw` present in `.agentic-framework/` and byte-identical to their repo copies'
+  - '`bin/fw vendor self --check` reports in sync (the T-2240 pre-push gate passes without `FW_SKIP_SELF_VENDOR_CHECK=1`)'
+  - 'T-2938''s commit and this refresh are pushed; both refs level (4e7e2a872; `origin/master..HEAD` = 0)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/watchtower-staleness.sh'
+  - '.agentic-framework/VERSION'
+  - '.tasks/active/T-2939-refresh-vendored-agentic-framework-after.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T13:10:22'
+    action: 'T-2939: refresh vendored .agentic-framework — watchtower-staleness.sh + bin/fw + VERSION 1.6.113'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 343
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2939-refresh-vendored-agentic-framework-after.md
+generated_by: context-agent-hybrid
