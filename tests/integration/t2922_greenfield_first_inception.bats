@@ -120,7 +120,13 @@ setup() {
 # ── AC2 + AC4: the fix, and that it adds no daemon prerequisite ──────────────
 
 @test "t2922: fw task review exits 0 and writes the marker with no Watchtower" {
-    run bash -c "cd '$T2922_PROJ' && '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK'"
+    # T-2922 follow-up: an inherited PROJECT_ROOT (env wins unconditionally per
+    # T-2391) makes bin/fw resolve to whatever project the *calling* shell was
+    # already rooted in instead of $T2922_PROJ — exactly the ambient state a
+    # verification-gate run or an already-focused dev shell has. Pin PROJECT_ROOT
+    # to the fixture explicitly, the same way setup_file does for `inception
+    # start`, so this leg's outcome depends on the fix, not on caller env hygiene.
+    run bash -c "cd '$T2922_PROJ' && PROJECT_ROOT='$T2922_PROJ' '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK'"
     [ "$status" -eq 0 ] || { echo "$output" >&2; return 1; }
     [ -f "$T2922_PROJ/.context/working/.reviewed-$T2922_TASK" ]
 }
@@ -131,14 +137,14 @@ setup() {
     # If a future change makes emit_review require a reachable server, this
     # fails here rather than silently on somebody's fresh machine.
     [ ! -f "$T2922_PROJ/.context/working/watchtower.pid" ]
-    run bash -c "cd '$T2922_PROJ' && '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK'"
+    run bash -c "cd '$T2922_PROJ' && PROJECT_ROOT='$T2922_PROJ' '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK'"
     [ "$status" -eq 0 ]
 }
 
 # ── AC5: name the prerequisite, don't just print a URL that presumes it ──────
 
 @test "t2922: review output names 'fw serve' when nothing is serving" {
-    run bash -c "cd '$T2922_PROJ' && '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK' 2>&1"
+    run bash -c "cd '$T2922_PROJ' && PROJECT_ROOT='$T2922_PROJ' '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK' 2>&1"
     [ "$status" -eq 0 ]
     [[ "$output" == *"fw serve"* ]] || {
         echo "output does not tell the user how to start the server the URL presumes" >&2
@@ -150,7 +156,7 @@ setup() {
     # An empty base_url concatenates into "/review/T-XXX" — a broken relative
     # path that still reads as a link. The placeholder must be a real absolute
     # URL, correct the moment `fw serve` runs.
-    run bash -c "cd '$T2922_PROJ' && '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK' 2>&1"
+    run bash -c "cd '$T2922_PROJ' && PROJECT_ROOT='$T2922_PROJ' '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK' 2>&1"
     [[ "$output" == *"http://localhost:"*"/inception/$T2922_TASK"* ]] || {
         echo "no absolute placeholder URL in output" >&2
         return 1

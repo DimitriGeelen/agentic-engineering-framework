@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2922: fresh greenfield project cannot complete its first inception: fw task review fails closed without a Watchtower nothing told the user to start
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T01:12:39Z
+# ============================================================================
+
+task_id: T-2922
+task_name: "fresh greenfield project cannot complete its first inception: fw task review fails closed without a Watchtower nothing told the user to start"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-11T15:42:17Z
+completed: 2026-08-12T01:10:54Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-11T23:20:56+02:00
+last_commit: 2026-08-12T00:15:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs for the greenfield first-inception blocker (was a stub). session state — OBS-223 (read-only over-block: 4 instances, 3 gates). greenfield first inception no longer needs a Watchtower nobody mentioned
+
+# Key outcomes
+outcomes:
+  - 'Reproduced first: an automated leg drives a fresh `fw init` project with no Watchtower running and asserts that, **before** the fix, `fw task review` on an inception exits non-zero and leaves no `.reviewed-<id>` marker — the regression must bite before it is repaired'
+  - 'On that same fresh project with no Watchtower, `fw task review T-XXX` exits 0 and writes `.context/working/.reviewed-T-XXX`'
+  - '`fw inception decide` then succeeds for **all three** dispositions on a fresh project — `go`, `no-go` and `defer` each verified, because the marker gate blocks all three and a fix tested only against `go` leaves two thirds of the escape hatch shut'
+  - 'The fix does **not** introduce a live-Watchtower requirement: a leg asserts `fw task review` still succeeds when no server is listening, so onboarding never gains a daemon prerequisite'
+  - '`fw task review` output on a Watchtower-less project names how to start one (`fw serve`) rather than only emitting an unreachable URL — the user is told the thing the URL presumes'
+  - 'Existing behaviour with a live Watchtower is unchanged: URL, QR and marker all still emitted (regression leg, since the emit path is shared)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-08-11.yaml'
+  - '.context/episodic/T-2919.yaml'
+  - '.context/episodic/T-2926.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - 'lib/review.sh'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-2922-fresh-greenfield-project-cannot-complete.md'
+  - 'tests/integration/t2922_greenfield_first_inception.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-11T23:20:56'
+    action: 'T-2922: real ACs for the greenfield first-inception blocker (was a stub)'
+  - time: '2026-08-11T23:22:49'
+    action: 'T-2922: session state — OBS-223 (read-only over-block: 4 instances, 3 gates)'
+  - time: '2026-08-12T00:15:10'
+    action: 'T-2922: greenfield first inception no longer needs a Watchtower nobody mentioned'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 568 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 568
+  commits: 3
+  files_changed: 19
+  lines_added: 708
+  lines_removed: 158
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2922-fresh-greenfield-project-cannot-complete.md
+generated_by: context-agent-hybrid

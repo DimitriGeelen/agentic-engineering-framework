@@ -16,12 +16,12 @@ description: >
   does NOT verify reachability — setting WATCHTOWER_URL to an unreachable address
   satisfies it — so the fix may be as small as a sane default rather than a hard failure.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, lib/review.sh, lib/watchtower.sh, tests/integration/t2922_greenfield_first_inception.bats, tests/unit/t2927_observation_inbox_listing.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -34,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T15:42:17Z
-last_update: 2026-08-11T21:19:22Z
-date_finished:
+last_update: 2026-08-12T01:10:54Z
+date_finished: 2026-08-12T01:10:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -171,19 +171,49 @@ bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** On a genuinely fresh `fw init` project with no Watchtower running,
+`fw task review T-XXX` on a new inception exited non-zero and wrote no
+`.context/working/.reviewed-T-XXX` marker. `fw inception decide` refuses
+unconditionally without that marker — it gates `go`, `no-go` and `defer`
+alike — so the first inception a new user creates could not be completed by
+any path. Nothing in the greenfield onboarding set (T-001..T-006) told the
+user `fw serve` was a prerequisite; T-001 mentions Watchtower only as an
+optional aside.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `emit_review` (`lib/review.sh`) resolved its base URL with a
+bare `base_url=$(_watchtower_url "$task_id")` under the script's `set -e`.
+`_watchtower_url` fails loud by design (exit 1, no stdout) when nothing
+identifies as this project's Watchtower — a Layer 3 invariant that exists to
+stop a *different* project's Watchtower being silently used (the T-1155
+consumer-port bug class). Under `set -e`, that failing assignment aborted
+`emit_review` immediately, before control ever reached the function's final
+act: writing the review marker. The marker write was the only unblock for
+`fw inception decide`, so the gate's own unblock command was the command that
+failed.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The marker gate (`lib/inception.sh:474`) was
+added (T-973) as a homework-completion check with no thought given to the
+"nothing is running yet" state — it assumes `fw task review` always succeeds
+and only ever needs the marker written. `emit_review`'s error path (loud
+`_watchtower_url` failure) was correct in isolation (T-1155) but nobody had
+traced its interaction with the T-973 gate through to "a fresh machine has no
+escape hatch, not even DEFER". Neither surface's tests exercised a genuinely
+unconfigured project — the marker-gate tests always ran against a repo with
+a task file already present, and the Watchtower tests always ran with a
+server either up or explicitly simulated down via a stub, never against
+`fw init`'s true zero-state.
+
+**Prevention:** `lib/watchtower.sh` gained `_watchtower_base_or_placeholder`,
+which answers in both states (live/absent) and distinguishes them by exit
+code (0/2) rather than by raising — `emit_review` now always reaches its
+marker write regardless of Watchtower reachability, and tells the user to
+run `fw serve` when it fell through to the placeholder. `tests/integration/
+t2922_greenfield_first_inception.bats` pins this with a real `fw init`
+fixture (no stub, no pre-existing task) and a reproduce-before-repair leg
+(AC1) that fails loud if the regression is ever reintroduced. The fallback
+was deliberately kept inside `lib/watchtower.sh` — a first draft inlined it
+into `lib/review.sh` and went RED on `tests/lint/single-port-detection.bats`,
+which pins port resolution to the one file that owns it (T-1155).
 
 ## Evolution
 
@@ -229,6 +259,20 @@ gate, which three real executions would catch. If you want that closed, the
 executions are yours to run — the fixture project is torn down by the suite, so
 it would be three `fw inception decide` calls on this repo or a scratch project.
 
+**Test isolation gap found at close-time.** Running the Verification suite for
+real (via `fw task update --status work-completed`, which necessarily runs
+with `PROJECT_ROOT` already pointed at this repo) turned legs 2/4/5 RED even
+though the fix itself was correct — `bin/fw`'s "env wins unconditionally"
+contract (T-2391) means an inherited, valid `PROJECT_ROOT` beats the fixture's
+`cd "$T2922_PROJ"`, so the four `fw task review` legs were silently exercising
+*this* repo's live Watchtower instead of the fixture's absent one. Fixed by
+pinning `PROJECT_ROOT="$T2922_PROJ"` on each of those four invocations, the
+same pattern `setup_file` already used for `inception start`. Left unfixed:
+the underlying poisoning is real outside this test too (a shell already
+focused on one project will misresolve `fw task review` run against a
+different project path) — out of scope here, but worth a future `concerns.yaml`
+entry if it recurs.
+
 **Placement of the fallback.** The first draft put the port fallback inline in
 `lib/review.sh` and went RED on two of T-1155's invariants. Those invariants
 guard the consumer-port bug (framework defaults to 3000, consumer serves
@@ -255,3 +299,15 @@ already resolves; the invariant was right and the draft was wrong.
 
 ### 2026-08-11T21:19:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d8a15e9b
+- **Timestamp:** 2026-08-12T01:12:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-12T01:10:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
