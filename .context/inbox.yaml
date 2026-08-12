@@ -1768,3 +1768,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-236
+  text: "Agent-side grep is a Claude Code shim routing to ugrep 7.5.0 with --ignore-files; every gate/hook/script gets /usr/bin/grep. TWO divergences, both false-absence: (1) regex semantics — mid-pattern $ anchors under ugrep, literal under GNU (832 rail 570/571); (2) FILE SET — --ignore-files silently drops gitignored files from every recursive agent sweep. Measured: grep -rl in agent shell = 1 file, /usr/bin/grep -rl = 3, same dir. 'I swept and found nothing' is the sentence this corrupts. Any gate/audit check whose baseline was authored from an agent-side sweep needs re-measuring under bash -c. Sibling to G-034 (verdict over empty population) and G-035 (instrument with no live caller): instrument and subject are different programs. Confirmed identical shim in 832's tree."
+  captured: 2026-08-12T14:30:17Z
+  context_task: T-2947
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
