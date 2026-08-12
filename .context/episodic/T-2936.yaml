@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2936: task-gate deadlock: a redirect char in a quoted task name blocks the bootstrap commands the block message prescribes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T09:56:41Z
+# ============================================================================
+
+task_id: T-2936
+task_name: "task-gate deadlock: a redirect char in a quoted task name blocks the bootstrap commands the block message prescribes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T09:50:40Z
+completed: 2026-08-12T09:56:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-12T11:55:59+02:00
+last_commit: 2026-08-12T11:55:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  task-gate deadlock — a redirect char inside a quoted task name blocked the bootstrap commands the block message prescribes; exemption now decided on a quote-stripped view BEFORE the write-pattern chain, so a real redirect still falls through; 9 legs incl. verb-set derived from the hook source (L-533)
+
+# Key outcomes
+outcomes:
+  - 'Task-bootstrap commands (`fw work-on`, `fw task create`, `fw context focus`,'
+  - '`fw task create --name "a->b"` with focus null is allowed by the hook'
+  - 'The exemption is still scoped to bootstrap verbs — a genuine redirect on a'
+  - 'A bats test drives the hook directly with the real JSON payload shape for all three'
+  - 'The test enumerates the bootstrap verbs from the hook source rather than restating'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/check-active-task.sh'
+  - '.tasks/active/T-2936-task-gate-deadlock-a-redirect-char-in-a-.md'
+  - 'tests/unit/t2936_bootstrap_quoted_redirect.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T11:55:59'
+    action: 'T-2936: task-gate deadlock — a redirect char inside a quoted task name blocked the bootstrap commands the block message prescribes; exemption now decided on a quote-stripped view BEFORE the write-pattern chain, so a real redirect still falls through; 9 legs incl. verb-set derived from the hook source (L-533)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 5
+  lines_added: 445
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2936-task-gate-deadlock-a-redirect-char-in-a-.md
+generated_by: context-agent-hybrid
