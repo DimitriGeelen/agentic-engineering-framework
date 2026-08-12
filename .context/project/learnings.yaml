@@ -4445,3 +4445,9 @@ X'` returning empty group."
   task: T-2921
   date: 2026-08-12
   context: Added via context agent
+- id: L-592
+  learning: "When the SUBJECT of a claim is an instrument, the claim must be produced by running that instrument — never by reasoning about it from a neighbouring tool. Nearly shipped a register entry asserting an agent-side grep divergence would not reproduce here 'because the files are tracked', derived from git ls-files + git check-ignore. It reproduced: ugrep applies ignore PATTERNS with no knowledge of git's index, so tracked-but-pattern-matched files are invisible agent-side while check-ignore reports them safe — and the effective ignore set depends on the SEARCH ROOT, so the same file flips visibility on cd. git check-ignore answers 'does git ignore this', not 'does an in-scope ignore pattern match this', and answers reassuringly for exactly the at-risk files."
+  source: G-019
+  task: T-2951
+  date: 2026-08-12
+  context: Added via context agent

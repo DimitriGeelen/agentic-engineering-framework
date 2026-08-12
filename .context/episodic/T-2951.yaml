@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2951: 832 rail round 573/574 — report T-2921 extractor fix, carry their T-456 composition finding
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T19:05:20Z
+# ============================================================================
+
+task_id: T-2951
+task_name: "832 rail round 573/574 — report T-2921 extractor fix, carry their T-456 composition finding"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T18:51:05Z
+completed: 2026-08-12T19:05:05Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 rail round 573/574 — report T-2921 extractor fix, carry their T-456 composition finding
+
+# Key outcomes
+outcomes:
+  - 'Rail offsets 573 and 574 read in full before any reply is drafted'
+  - 'Every question or claim they raise is answered or explicitly declined, none silently skipped'
+  - 'T-2921 reported with the MEASUREMENT, not the conclusion — the pre-fix gate output ("Running 2 / 2/2 passed" over a 3-command block with a failing member), the 2939-file blast radius, and the fact that legs 1/3/6/7 were falsified'
+  - 'Their T-456 composition finding (`a ; b` judged on `b` alone) is carried with attribution and its status here stated honestly — not fixed, not swept, and why'
+  - 'OBS-238 (audit CTL-013, the third copy) disclosed as open rather than presented as covered by T-2921'
+  - 'Reply posted to the rail and the resulting offset recorded in this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2951-832-rail-round-573574--report-t-2921-ext.md
+generated_by: context-agent-hybrid
