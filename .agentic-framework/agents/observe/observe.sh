@@ -33,14 +33,59 @@ EOF
     fi
 }
 
+# T-2966: two independent defects lived in one grep, and neither fix subsumes
+# the other.
+#
+#   1. FIELD-BLINDNESS. The scan was `grep -oE 'OBS-[0-9]+' "$INBOX_FILE"` — over
+#      the whole file, not over `id:` fields. So an observation whose BODY cited
+#      a peer's id permanently dragged the counter up to it. 832 measured their
+#      own inbox jumping OBS-049 → OBS-239 by quoting one of ours, in a note
+#      written to record this very defect.
+#
+#   2. MAX-OVER-SURVIVORS. Triage REMOVES the entry it converts into a task, so
+#      triaging the highest-numbered observation lowered the maximum and the next
+#      note reused its id. Confirmed live: T-2950 is titled "OBS-238: audit
+#      CTL-013 holds a third copy…" and a later note was also issued OBS-238 —
+#      two unrelated observations, one id, the older unreachable by it.
+#
+# Field-scoping stops the counter being pushed UP by prose. The high-water mark
+# stops it being pulled DOWN by triage. Both are needed.
+#
+# Ids must be unique, not contiguous — so the mark is persisted at generation
+# time rather than after a successful write. A crash between the two skips an
+# id, which is harmless; the failure this exists to prevent is reuse.
+OBS_HIGHWATER_FILE="$PROJECT_ROOT/.context/working/.obs-highwater"
+
+# `id:` fields only. Never body text — that is defect 1.
+_obs_max_in_inbox() {
+    [ -f "$INBOX_FILE" ] || return 0
+    grep -oE '^[[:space:]]*-?[[:space:]]*id:[[:space:]]*OBS-[0-9]+' "$INBOX_FILE" 2>/dev/null \
+        | grep -oE '[0-9]+$' | sort -n | tail -1 || true
+}
+
+# Triage renames the observation into a task titled "OBS-NNN: …", which is the
+# only surviving record that the id was ever issued once the inbox entry is gone.
+# Anchored to the `name:` field so a task BODY citing a peer id cannot move it.
+_obs_max_in_tasks() {
+    grep -rhoE '^name:[[:space:]]*"?OBS-[0-9]+' \
+        "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" 2>/dev/null \
+        | grep -oE '[0-9]+$' | sort -n | tail -1 || true
+}
+
 next_id() {
-    local max=0
-    if [ -f "$INBOX_FILE" ]; then
-        local found
-        found=$(grep -oE 'OBS-[0-9]+' "$INBOX_FILE" 2>/dev/null | grep -oE '[0-9]+' | sort -n | tail -1 || true)
-        [ -n "$found" ] && max=$((10#$found))
-    fi
-    printf "OBS-%03d" $((max + 1))
+    local max=0 candidate
+    for candidate in \
+        "$(cat "$OBS_HIGHWATER_FILE" 2>/dev/null || true)" \
+        "$(_obs_max_in_inbox)" \
+        "$(_obs_max_in_tasks)"
+    do
+        [ -n "$candidate" ] || continue
+        [ "$((10#$candidate))" -gt "$max" ] && max=$((10#$candidate))
+    done
+    local next=$((max + 1))
+    mkdir -p "$(dirname "$OBS_HIGHWATER_FILE")"
+    printf '%s\n' "$next" > "$OBS_HIGHWATER_FILE"
+    printf "OBS-%03d" "$next"
 }
 
 # Auto-detect current focus task
