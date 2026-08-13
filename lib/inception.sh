@@ -423,6 +423,47 @@ do_inception_decide() {
         exit 1
     fi
 
+    # Target validation runs BEFORE the sovereignty gate (T-2964, 832's OBS-047).
+    # The ordering is load-bearing, not cosmetic. The sovereignty refusal below
+    # dispatches on the COMMAND NAME and never looks at an argument, so while it ran
+    # first, EVERY malformed request came back as "this belongs to the human" —
+    # including `decide` aimed at a build task, which is not an inception decision at
+    # all. A refusal is where the agent's next hypothesis comes from, and that one
+    # sent 832's agent to hand its operator a command that could not have worked;
+    # two independent gates refusing read as corroboration when in fact both were
+    # dispatching on the same blind spot. The four sibling sovereignty gates in
+    # lib/arc.sh already validate their target first (_arc_exists /
+    # _arc_require_status ahead of the CLAUDECODE check) — this site was the
+    # outlier, not the pattern.
+
+    # Find task file
+    local task_file
+    task_file=$(find_task_file "$task_id" active)
+    if [ -z "$task_file" ]; then
+        echo -e "${RED}Task $task_id not found in active tasks${NC}" >&2
+        exit 1
+    fi
+
+    # Verify it's an inception task
+    if ! grep -q "workflow_type: inception" "$task_file"; then
+        local _wf
+        _wf=$(grep -m1 '^workflow_type:' "$task_file" | sed 's/^workflow_type:[[:space:]]*//' | tr -d '"'"'" )
+        echo -e "${RED}ERROR: $task_id is not an inception task (workflow_type: ${_wf:-unset})${NC}" >&2
+        echo "" >&2
+        echo -e "'fw inception decide' records GO/NO-GO/DEFER on an exploration. It does not" >&2
+        echo -e "apply to a ${_wf:-non-inception} task, however real the ruling it is carrying." >&2
+        echo "" >&2
+        echo -e "What applies instead:" >&2
+        echo -e "  • Ruling belongs to an unchecked Human AC on this task:" >&2
+        echo -e "      $(_emit_user_command "task review $task_id")" >&2
+        echo -e "    (human ticks the AC, then 'fw task update $task_id --status work-completed')" >&2
+        echo -e "  • Ruling is a design choice worth recording:" >&2
+        echo -e "      $(_emit_user_command "context add-decision --task $task_id")" >&2
+        echo -e "  • The task genuinely IS an exploration — fix its frontmatter first:" >&2
+        echo -e "      $(_emit_user_command "task update $task_id --type inception")" >&2
+        exit 1
+    fi
+
     # Gate (T-1259): block agent invocation — enforces T-679
     # Agents must use `fw task review T-XXX` + Watchtower; never call decide directly.
     # $CLAUDECODE=1 is set by Claude Code when running agent sessions.
@@ -442,20 +483,6 @@ do_inception_decide() {
         echo "" >&2
         echo -e "If this is a human running inside an agent session (rare), pass --i-am-human." >&2
         echo -e "See CLAUDE.md §Presenting Work for Human Review." >&2
-        exit 1
-    fi
-
-    # Find task file
-    local task_file
-    task_file=$(find_task_file "$task_id" active)
-    if [ -z "$task_file" ]; then
-        echo -e "${RED}Task $task_id not found in active tasks${NC}"
-        exit 1
-    fi
-
-    # Verify it's an inception task
-    if ! grep -q "workflow_type: inception" "$task_file"; then
-        echo -e "${RED}$task_id is not an inception task${NC}"
         exit 1
     fi
 

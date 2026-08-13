@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2964: inception decide refuses on sovereignty before checking the target is an inception — agent's next hypothesis comes from the wrong refusal (832 OBS-047)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-13T08:30:19Z
+# ============================================================================
+
+task_id: T-2964
+task_name: "inception decide refuses on sovereignty before checking the target is an inception — agent's next hypothesis comes from the wrong refusal (832 OBS-047)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-13T08:23:13Z
+completed: 2026-08-13T08:30:03Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception decide refuses on sovereignty before checking the target is an inception — agent's next hypothesis comes from the wrong refusal (832 OBS-047)
+
+# Key outcomes
+outcomes:
+  - '`do_inception_decide` resolves the task file and checks `workflow_type: inception` BEFORE the `$CLAUDECODE=1` sovereignty refusal, so a non-inception target is refused for the reason that actually applies'
+  - 'The non-inception refusal names the mechanism that DOES apply for the target''s actual workflow_type (build/refactor/test → `fw task review` → `/review/<id>`), rather than leaving the agent to infer one'
+  - 'A missing task still refuses clearly (the reordering must not turn "task not found" into a confusing type error)'
+  - 'Regression test pins all three paths: non-inception target under CLAUDECODE=1 → type error not sovereignty error; inception target under CLAUDECODE=1 → sovereignty error preserved; unknown task → not-found error'
+  - '`## RCA` section records why the ordering was wrong here while the four sibling `lib/arc.sh` sovereignty gates all validate their target first'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2964-inception-decide-refuses-on-sovereignty-.md
+generated_by: context-agent-hybrid

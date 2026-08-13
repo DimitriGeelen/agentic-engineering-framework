@@ -1783,3 +1783,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-238
+  text: "Tier 0 hook name-dispatch reads as evidence about the argument: check-tier0.sh blocked an attempt to TEST that 'fw inception decide' refuses on a build-typed target (T-2964), because it matches the command string and cannot see that the invocation asserts a refusal. Working as designed per its documented scope boundary (CLAUDE.md Enforcement Tiers) — the observation is that the designed scope produces the same name-dispatch blind spot that caused T-2964/832-OBS-047, and agents read a Tier 0 block as corroboration about the target. Two gates that both dispatch on command name share a blind spot the size of every argument (832, rail 604). Not claiming this is common: one measured instance."
+  captured: 2026-08-13T08:28:29Z
+  context_task: T-2964
+  tags: []
+  status: pending
+  promoted_to: null
