@@ -6552,3 +6552,76 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-012: Session handover — T-2902 closed, r
   command: 'FW_SWITCH_FOCUS=1 git add tests/unit/t2927_observation_inbox_listing.bats && FW_SWITCH_FOCUS=1 git commit -q -m "T-2927: guard anti-vacuity leg no longer depends on HEAD being pre-fix
 
 The leg read de'
+- timestamp: '2026-08-12T05:56:07Z'
+  task: 'T-2448'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2385'
+  command: 'git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2385: refresh vendored copies — completed-task-scan.py + VERSION 1.6.93" 2>&1 | tail -20; echo "rc=$?"; git log --oneline -1'
+- timestamp: '2026-08-12T06:21:28Z'
+  task: 'T-2931'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2930'
+  command: 'git add agents/ tests/unit/t2930_audit_contention_exit_code.bats .tasks/ .context/inbox.yaml .context/episodic/ .context/project/learnings.yaml .agentic-framework/ 2>&1 | head -3
+FW_SWITCH_FOCUS=1 git'
+- timestamp: '2026-08-12T10:47:30Z'
+  task: 'T-2925'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-08-12T10:53:39Z'
+  task: 'T-2938'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2925'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2925: inception decision GO (recorded via Watchtower 10:47Z, commit was refused at the boundary)
+
+The decision text and the active->completed move were on disk bu'
+- timestamp: '2026-08-12T13:46:20Z'
+  task: 'T-2945'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2944'
+  command: 'git add agents/context/check-active-task.sh tests/unit/t2944_g020_comment_strip.bats .tasks/completed/T-2944-*.md .context/episodic/T-2944.yaml .context/project/learnings.yaml .context/working/focus.y'
+- timestamp: '2026-08-12T13:46:51Z'
+  task: 'T-2945'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2944'
+  command: 'git add agents/context/check-active-task.sh tests/unit/t2944_g020_comment_strip.bats .tasks/completed/T-2944-*.md .context/episodic/T-2944.yaml .context/project/learnings.yaml .context/working/focus.y'
+- timestamp: '2026-08-12T14:49:48Z'
+  task: 'T-2949'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2948'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+timeout 180 bin/fw vendor self 2>&1 | tail -3
+git add .agentic-framework/ 2>&1 | tail -2
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2948: self-vendor lib/review.sh'
+- timestamp: '2026-08-12T19:15:57Z'
+  task: 'T-2716'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2448'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .context/episodic/T-2448.yaml 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2448: generate missing episodic summary
+
+Flagged in every handover sin'
+- timestamp: '2026-08-12T21:03:03Z'
+  task: 'T-2410'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2954'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .fabric/components/lib-comment_strip.yaml && FW_SWITCH_FOCUS=1 git commit -m "T-2954: register lib/comment_strip.py in the component'
+- timestamp: '2026-08-12T21:12:58Z'
+  task: 'T-2410'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2954'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add docs/reports/832-rail/588-aef-to-832.md .context/project/learnings.yaml 2>/dev/null
+git diff --cached --name-only
+FW_SWITCH_FOCUS=1 '

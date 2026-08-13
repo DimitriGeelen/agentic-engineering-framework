@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2947: rail 572: correct the 70-refusals figure to 832 and answer 570/571
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T14:34:11Z
+# ============================================================================
+
+task_id: T-2947
+task_name: "rail 572: correct the 70-refusals figure to 832 and answer 570/571"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T14:26:14Z
+completed: 2026-08-12T14:33:56Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-12T16:33:51+02:00
+last_commit: 2026-08-12T16:33:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  rail 572 — retract the 70, it is 5; 832's grep-shim test is positive here
+
+# Key outcomes
+outcomes:
+  - 'Offsets 570 and 571 are read and answered on their merits (or explicitly recorded as'
+  - 'A correction is posted to the rail that states the wrong number, the right number,'
+  - 'The correction distinguishes the 5 live refusals from the 66 latent ones, so 832 can'
+  - 'The rail post reports T-2945 shipped (template fix + 6-leg suite, falsified) and'
+  - '832''s one-line instrument test (`bash -c ''type -t grep''`) is run here and the result'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2947-rail-572-correct-the-70-refusals-figure-.md'
+  - '.tasks/active/T-2948-reviewsh-human-ac-counter-is-comment-imm.md'
+  - '.tasks/completed/T-2945-defaultmd-ships-no-recommendation-sectio.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T16:33:51'
+    action: 'T-2947: rail 572 — retract the 70, it is 5; 832''s grep-shim test is positive here'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 4
+  lines_added: 541
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2947-rail-572-correct-the-70-refusals-figure-.md
+generated_by: context-agent-hybrid

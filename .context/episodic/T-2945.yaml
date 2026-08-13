@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2945: default.md ships no Recommendation section — 70 partial-complete build tasks refuse fw task review emission
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T14:26:00Z
+# ============================================================================
+
+task_id: T-2945
+task_name: "default.md ships no Recommendation section — 70 partial-complete build tasks refuse fw task review emission"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T12:36:25Z
+completed: 2026-08-12T14:25:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-12T16:20:51+02:00
+last_commit: 2026-08-12T16:20:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  default.md ships the ## Recommendation section the review gate demands
+
+# Key outcomes
+outcomes:
+  - '`default.md` carries a `## Recommendation` section modelled on the one that already'
+  - 'A task created from the template and taken to partial-complete emits from'
+  - 'The template''s new section does not itself satisfy the gate: a task that never fills'
+  - 'The existing partial-complete build-class tasks are counted **against the real gate**'
+  - 'Regression test pins both directions (template-only → blocked, filled → emits) and'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-12 — do not backfill the 71 tasks lacking the heading'
+    chose: 'ship the template fix only; report the 5 live refusals and the 66 latent ones.'
+    rationale: 'templates are read at creation, so the fix is forward-looking by construction.'
+    alternatives_rejected: ['auto-inserting the heading at `fw task update` time — same objection, and it']
+  - decision: '2026-08-12 — correct the 70 rather than restate it'
+    chose: 'measure against the real gate, report 5, and correct the figure to 832.'
+    rationale: 'I posted "70 of 294 (24%)" to a peer at rail 568 on the strength of a structural'
+    alternatives_rejected: ['quietly reporting the right number without flagging the correction.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/VERSION'
+  - '.tasks/active/T-2945-defaultmd-ships-no-recommendation-sectio.md'
+  - '.tasks/templates/default.md'
+  - 'tests/unit/t2945_default_template_recommendation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T16:20:51'
+    action: 'T-2945: default.md ships the ## Recommendation section the review gate demands'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 109 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 109
+  commits: 1
+  files_changed: 5
+  lines_added: 306
+  lines_removed: 94
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2945-defaultmd-ships-no-recommendation-sectio.md
+generated_by: context-agent-hybrid

@@ -1776,3 +1776,10 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-237
+  text: "verify-acs.sh:297 and handover.sh:906 match '### Human' unanchored but require \\s*\\n / \\n immediately after, which incidentally excludes mid-sentence mentions — protection is by end-of-line requirement, not by ^ anchor. A prose line ENDING in '### Human' would still capture the wrong region. Narrow residual; review.sh:143 already carries the anchored fix + a comment recording the same class. Found while an ad-hoc probe of mine WITHOUT the end-of-line requirement returned a confident 0/0 on T-2720 (real answer 0/2) and I reported it to the operator."
+  captured: 2026-08-13T07:04:09Z
+  context_task: T-2720
+  tags: []
+  status: pending
+  promoted_to: null

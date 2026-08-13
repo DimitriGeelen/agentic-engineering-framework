@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2948: review.sh Human-AC counter is comment-immune only by accident of indentation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T14:48:43Z
+# ============================================================================
+
+task_id: T-2948
+task_name: "review.sh Human-AC counter is comment-immune only by accident of indentation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T14:31:59Z
+completed: 2026-08-12T14:48:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-12T16:47:36+02:00
+last_commit: 2026-08-12T16:47:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  make review.sh's Human-AC counter comment-aware instead of accidentally immune
+
+# Key outcomes
+outcomes:
+  - 'The counter skips HTML-comment spans explicitly, so its correctness no longer depends'
+  - 'The landmine is proven closed: a task whose commented example ACs are **de-indented to'
+  - 'Falsified: the same de-indent fixture is shown to trip the gate under the pre-fix'
+  - 'No behaviour change on the live corpus: Human-AC counts across all active tasks are'
+  - 'Real ACs are still counted, including a commented span that ENDS mid-file (positive'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-t2948_review_human_ac_comment_aware.yaml'
+  - 'lib/review.sh'
+  - '.tasks/active/T-2948-reviewsh-human-ac-counter-is-comment-imm.md'
+  - '.tasks/active/T-2949-7-review-test-legs-red-for-57-days--t-24.md'
+  - '.tasks/completed/T-2947-rail-572-correct-the-70-refusals-figure-.md'
+  - 'tests/unit/t2948_review_human_ac_comment_aware.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T16:47:36'
+    action: 'T-2948: make review.sh''s Human-AC counter comment-aware instead of accidentally immune'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 6
+  lines_added: 578
+  lines_removed: 84
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2948-reviewsh-human-ac-counter-is-comment-imm.md
+generated_by: context-agent-hybrid

@@ -2907,3 +2907,101 @@ decisions:
     date: 2026-08-12
     task: T-2385
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-418
+    decision: "dismiss OBS-225 with a reason recording that the premise was false,"
+    scope: project
+    date: 2026-08-12
+    task: T-2929
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-419
+    decision: "measure the owner vocabulary from the tree and send 832 the answer,"
+    scope: project
+    date: 2026-08-12
+    task: T-2929
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-420
+    decision: "lead 832's answer with \"your `agent` rows are valid\", then give the"
+    scope: project
+    date: 2026-08-12
+    task: T-2929
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-421
+    decision: "leave every cron call site untouched, and pin the existing immunity"
+    scope: project
+    date: 2026-08-12
+    task: T-2930
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-422
+    decision: "exit 1 (block) when the pre-push audit returns 75."
+    scope: project
+    date: 2026-08-12
+    task: T-2930
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-423
+    decision: "distinct messages at every consumer — \"COULD NOT RUN … this is not an"
+    scope: project
+    date: 2026-08-12
+    task: T-2930
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-424
+    decision: "assert *no grep-based counter at any site*, rather than assert the"
+    scope: project
+    date: 2026-08-12
+    task: T-2932
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-425
+    decision: "correct the figure and characterise the 10; do NOT fix the rows or add an"
+    scope: project
+    date: 2026-08-12
+    task: T-2935
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-426
+    decision: "run 832's exact command in this tree and diff the inbox length before"
+    scope: project
+    date: 2026-08-12
+    task: T-2937
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-427
+    decision: "rewrite AC #1 from \"the duplicate task IDs are identified, with both"
+    scope: project
+    date: 2026-08-12
+    task: T-2938
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-428
+    decision: "include `.context/designer/projects` entirely and exclude"
+    scope: project
+    date: 2026-08-12
+    task: T-2942
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-429
+    decision: "rely on `corpus_explain.py`'s existing `Path(__file__).parents[1]` root."
+    scope: project
+    date: 2026-08-12
+    task: T-2942
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-430
+    decision: "ship the template fix only; report the 5 live refusals and the 66 latent ones."
+    scope: project
+    date: 2026-08-12
+    task: T-2945
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-431
+    decision: "measure against the real gate, report 5, and correct the figure to 832."
+    scope: project
+    date: 2026-08-12
+    task: T-2945
+    rationale: "Auto-captured from task file on completion"

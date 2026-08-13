@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2949: 7 review test legs red for 57 days — T-2421 extended the rec-gate past its own fixtures
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-12T15:17:46Z
+# ============================================================================
+
+task_id: T-2949
+task_name: "7 review test legs red for 57 days — T-2421 extended the rec-gate past its own fixtures"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-12T14:45:28Z
+completed: 2026-08-12T15:16:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-12T16:49:26+02:00
+last_commit: 2026-08-12T17:16:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs — fix the fixtures, do not bypass the gate in its own test. fix 7 review legs red for 57 days — T-2421 extended the rec-gate past its own fixtures
+
+# Key outcomes
+outcomes:
+  - 'All 7 legs green: `lib_review.bats` 13/13 and `review_link_blocking_gate.bats` 5/5'
+  - 'The fixtures are fixed by giving partial-complete build tasks a `## Recommendation`'
+  - 'The stale fixture comment ("Build tasks do not gate on Recommendation") is corrected'
+  - 'At least one leg asserts the gate still FIRES on a partial-complete build fixture with'
+  - 'A gap is registered in `concerns.yaml` for 57 days of unnoticed red (G-019: >7 days'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix 7 review legs red for 57 days — T-2421 extended the rec-gate past its own fixtures'
+    source: git-mined
+  - description: 'real ACs — fix the fixtures, do not bypass the gate in its own test'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/concerns.yaml'
+  - '.tasks/active/T-2949-7-review-test-legs-red-for-57-days--t-24.md'
+  - '.tasks/completed/T-2948-reviewsh-human-ac-counter-is-comment-imm.md'
+  - 'tests/unit/lib_review.bats'
+  - 'tests/unit/review_link_blocking_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-12T16:49:26'
+    action: 'T-2949: real ACs — fix the fixtures, do not bypass the gate in its own test'
+  - time: '2026-08-12T17:16:50'
+    action: 'T-2949: fix 7 review legs red for 57 days — T-2421 extended the rec-gate past its own fixtures'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 31
+  commits: 2
+  files_changed: 5
+  lines_added: 213
+  lines_removed: 95
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2949-7-review-test-legs-red-for-57-days--t-24.md
+generated_by: context-agent-hybrid

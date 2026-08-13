@@ -1,8 +1,8 @@
-timestamp: 2026-08-12T00:50:01+02:00
+timestamp: 2026-08-13T09:00:01+02:00
 host: dimitrimintdev
 state: up
-pid: 523280
-etime_sec: 435944
-rss_kb: 268328
-vsz_kb: 2256164
-pcpu: 5.8
+pid: 1240191
+etime_sec: 71852
+rss_kb: 302228
+vsz_kb: 942932
+pcpu: 0.2

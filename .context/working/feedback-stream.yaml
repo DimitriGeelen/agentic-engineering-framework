@@ -32018,3 +32018,659 @@ scan_id: R-3d4adb62
 task_id: T-2927
 payload:
   task_file: .tasks/active/T-2927-handover-lists-1-of-112-pending-observat.md
+---
+kind: scan_emitted
+timestamp: '2026-08-11T23:02:10Z'
+scan_id: R-0eda32de
+task_id: T-2928
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-11T23:02:10Z'
+scan_id: R-0eda32de
+task_id: T-2928
+payload:
+  task_file: .tasks/active/T-2928-fw-note-dismiss---reason-is-parsed-echoe.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T01:12:28Z'
+scan_id: R-d8a15e9b
+task_id: T-2922
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T01:12:28Z'
+scan_id: R-d8a15e9b
+task_id: T-2922
+payload:
+  task_file: .tasks/active/T-2922-fresh-greenfield-project-cannot-complete.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T02:09:38Z'
+scan_id: R-8d807347
+task_id: T-2385
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T02:09:38Z'
+scan_id: R-8d807347
+task_id: T-2385
+payload:
+  task_file: .tasks/active/T-2385-rca-ctl-012-missing-decide--d10--histori.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T02:11:10Z'
+scan_id: R-ea4f35dc
+task_id: T-2385
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T02:11:10Z'
+scan_id: R-ea4f35dc
+task_id: T-2385
+payload:
+  task_file: .tasks/active/T-2385-rca-ctl-012-missing-decide--d10--histori.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T06:08:11Z'
+scan_id: R-192500e2
+task_id: T-2929
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T06:08:11Z'
+scan_id: R-192500e2
+task_id: T-2929
+payload:
+  task_file: .tasks/active/T-2929-832-rail-550-round--correct-obs-225-clai.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T06:18:46Z'
+scan_id: R-784d9dca
+task_id: T-2930
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T06:18:46Z'
+scan_id: R-784d9dca
+task_id: T-2930
+payload:
+  task_file: .tasks/active/T-2930-audit-contention-exits-75extempfail-in-a.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T06:26:38Z'
+scan_id: R-4cfa0f87
+task_id: T-2931
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T06:26:38Z'
+scan_id: R-4cfa0f87
+task_id: T-2931
+payload:
+  task_file: .tasks/active/T-2931-close-obs-221224-on-t-2930-evidence-and-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T06:37:50Z'
+scan_id: R-d859c54f
+task_id: T-2932
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T06:37:50Z'
+scan_id: R-d859c54f
+task_id: T-2932
+payload:
+  task_file: .tasks/active/T-2932-fw-note-count-reports-urgent-from-a-whol.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T06:44:11Z'
+scan_id: R-d7a8bc32
+task_id: T-2448
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T06:44:11Z'
+scan_id: R-d7a8bc32
+task_id: T-2448
+payload:
+  task_file: .tasks/active/T-2448-f8-build--thin-re-exec-shim-routes-bare-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T06:45:37Z'
+scan_id: R-c77c42c4
+task_id: T-2933
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T06:45:37Z'
+scan_id: R-c77c42c4
+task_id: T-2933
+payload:
+  task_file: .tasks/active/T-2933-close-obs-233-and-capture-the-latency-fa.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T09:40:25Z'
+scan_id: R-a059100f
+task_id: T-2934
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T09:40:25Z'
+scan_id: R-a059100f
+task_id: T-2934
+payload:
+  task_file: .tasks/active/T-2934-832-pair-draft-co-authorship-check--conf.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T09:46:27Z'
+scan_id: R-35dfb9e0
+task_id: T-2935
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T09:46:27Z'
+scan_id: R-35dfb9e0
+task_id: T-2935
+payload:
+  task_file: .tasks/active/T-2935-correct-obs-231-invalid-owner-count-11-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T09:56:30Z'
+scan_id: R-6559a502
+task_id: T-2936
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T09:56:30Z'
+scan_id: R-6559a502
+task_id: T-2936
+payload:
+  task_file: .tasks/active/T-2936-task-gate-deadlock-a-redirect-char-in-a-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T10:05:46Z'
+scan_id: R-eb788adb
+task_id: T-2937
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T10:05:46Z'
+scan_id: R-eb788adb
+task_id: T-2937
+payload:
+  task_file: .tasks/active/T-2937-read-and-answer-832-rail-558.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T10:47:31Z'
+scan_id: R-3d336719
+task_id: T-2925
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T10:47:31Z'
+scan_id: R-3d336719
+task_id: T-2925
+payload:
+  task_file: .tasks/active/T-2925-version-discards-the-one-component-that-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-12T10:47:31Z'
+scan_id: RC-5668985f
+task_id: T-2925
+payload:
+  overall: CONTRADICTED
+  claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-08-12T11:07:17Z'
+scan_id: R-9ef3238c
+task_id: T-2938
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T11:07:17Z'
+scan_id: R-9ef3238c
+task_id: T-2938
+payload:
+  task_file: .tasks/active/T-2938-t-2925-go-decision-blocked-at-commit-by-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T11:14:23Z'
+scan_id: R-a52e4835
+task_id: T-2939
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T11:14:23Z'
+scan_id: R-a52e4835
+task_id: T-2939
+payload:
+  task_file: .tasks/active/T-2939-refresh-vendored-agentic-framework-after.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T11:41:00Z'
+scan_id: R-041229da
+task_id: T-2940
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T11:41:00Z'
+scan_id: R-041229da
+task_id: T-2940
+payload:
+  task_file: .tasks/active/T-2940-read-and-answer-832-rails-561-562.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T12:13:14Z'
+scan_id: R-be5336c0
+task_id: T-2941
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T12:13:14Z'
+scan_id: R-be5336c0
+task_id: T-2941
+payload:
+  task_file: .tasks/active/T-2941-rehearse-the-arc-017-operator-trial-befo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T12:26:08Z'
+scan_id: R-5183755c
+task_id: T-2942
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T12:26:08Z'
+scan_id: R-5183755c
+task_id: T-2942
+payload:
+  task_file: .tasks/active/T-2942-vendor-the-corpus-reader-and-aef-maps-so.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T12:37:43Z'
+scan_id: R-195bc59a
+task_id: T-2943
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T12:37:43Z'
+scan_id: R-195bc59a
+task_id: T-2943
+payload:
+  task_file: .tasks/active/T-2943-verify-832s-t-453t-455-template-defects-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T12:46:07Z'
+scan_id: R-0b24a17b
+task_id: T-2946
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T12:46:07Z'
+scan_id: R-0b24a17b
+task_id: T-2946
+payload:
+  task_file: .tasks/active/T-2946-832-rail-round-answer-564s-two-questions.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T13:45:17Z'
+scan_id: R-2cd8ff50
+task_id: T-2944
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T13:45:17Z'
+scan_id: R-2cd8ff50
+task_id: T-2944
+payload:
+  task_file: .tasks/active/T-2944-g-020-counts-commented-example-acs--dele.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T14:25:47Z'
+scan_id: R-0ae0ffcf
+task_id: T-2945
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T14:25:47Z'
+scan_id: R-0ae0ffcf
+task_id: T-2945
+payload:
+  task_file: .tasks/active/T-2945-defaultmd-ships-no-recommendation-sectio.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T14:34:00Z'
+scan_id: R-d40bca89
+task_id: T-2947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T14:34:00Z'
+scan_id: R-d40bca89
+task_id: T-2947
+payload:
+  task_file: .tasks/active/T-2947-rail-572-correct-the-70-refusals-figure-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T14:48:31Z'
+scan_id: R-840ab593
+task_id: T-2948
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T14:48:31Z'
+scan_id: R-840ab593
+task_id: T-2948
+payload:
+  task_file: .tasks/active/T-2948-reviewsh-human-ac-counter-is-comment-imm.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T15:17:34Z'
+scan_id: R-2bafa906
+task_id: T-2949
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T15:17:34Z'
+scan_id: R-2bafa906
+task_id: T-2949
+payload:
+  task_file: .tasks/active/T-2949-7-review-test-legs-red-for-57-days--t-24.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T18:41:23Z'
+scan_id: R-e34bf82f
+task_id: T-2921
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T18:41:23Z'
+scan_id: R-e34bf82f
+task_id: T-2921
+payload:
+  task_file: .tasks/active/T-2921-p-011-verification-extractor-strips-html.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T19:05:08Z'
+scan_id: R-f99bc6b9
+task_id: T-2951
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T19:05:08Z'
+scan_id: R-f99bc6b9
+task_id: T-2951
+payload:
+  task_file: .tasks/active/T-2951-832-rail-round-573574--report-t-2921-ext.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T19:39:59Z'
+scan_id: R-1bb0294c
+task_id: T-2952
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T19:39:59Z'
+scan_id: R-1bb0294c
+task_id: T-2952
+payload:
+  task_file: .tasks/active/T-2952-832-rail-round-577--reply-on-grep-witnes.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T20:41:32Z'
+scan_id: R-6e38743a
+task_id: T-2953
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T20:41:32Z'
+scan_id: R-6e38743a
+task_id: T-2953
+payload:
+  task_file: .tasks/active/T-2953-832-rail-round-579581582--seam-re-pin-an.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T21:01:19Z'
+scan_id: R-c5c8cc88
+task_id: T-2954
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T21:01:19Z'
+scan_id: R-c5c8cc88
+task_id: T-2954
+payload:
+  task_file: .tasks/active/T-2954-check-human-ac-tick-is-direction-symmetr.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T22:08:04Z'
+scan_id: R-361572db
+task_id: T-2956
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T22:08:04Z'
+scan_id: R-361572db
+task_id: T-2956
+payload:
+  task_file: .tasks/active/T-2956-register-greenfield-run-with-feedback-lo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T22:32:39Z'
+scan_id: R-70c5e591
+task_id: T-2957
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T22:32:39Z'
+scan_id: R-70c5e591
+task_id: T-2957
+payload:
+  task_file: .tasks/active/T-2957-832-rail-round-589-591--read-and-answer.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T22:46:19Z'
+scan_id: R-2bd44616
+task_id: T-2959
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T22:46:19Z'
+scan_id: R-2bd44616
+task_id: T-2959
+payload:
+  task_file: .tasks/active/T-2959-832-rail-round-595-596--read-and-answer.md
+---
+kind: scan_emitted
+timestamp: '2026-08-12T23:15:22Z'
+scan_id: R-e566f529
+task_id: T-2960
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-12T23:15:22Z'
+scan_id: R-e566f529
+task_id: T-2960
+payload:
+  task_file: .tasks/active/T-2960-832-rail-round-598-599--answer-t-2925-ch.md
