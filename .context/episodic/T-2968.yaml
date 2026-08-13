@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2968: arc status read is comment-blind — a YAML comment on status: silently disables every status-gated arc verb
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-13T11:49:04Z
+# ============================================================================
+
+task_id: T-2968
+task_name: "arc status read is comment-blind — a YAML comment on status: silently disables every status-gated arc verb"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-13T11:41:14Z
+completed: 2026-08-13T11:48:22Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc status read is comment-blind — a YAML comment on status: silently disables every status-gated arc verb
+
+# Key outcomes
+outcomes:
+  - '`_arc_get_status arc-013` returns exactly `in-progress` with the comment still in the file (the comment is the fixture — do not delete it to pass)'
+  - '`fw arc close arc-013` no longer refuses on status; it reaches the T-1671 sovereignty gate instead'
+  - 'Comment stripping is YAML-faithful: `status: a#b` (no space before `#`) keeps `a#b`, since YAML only starts a comment after whitespace'
+  - 'Control preserved: arcs with no inline comment return the same value as before the change'
+  - 'bats regression test pins all four, and its counterfactual against pre-fix `lib/arc.sh` is measured and recorded in the file header'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2968-arc-status-read-is-comment-blind--a-yaml.md
+generated_by: context-agent-hybrid

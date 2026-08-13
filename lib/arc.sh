@@ -90,12 +90,41 @@ _arc_validate_id() {
 }
 
 # T-1852: state-machine helpers.
+#
+# T-2968: ONE reader for status:. There were five, and they disagreed.
+#
+# The arc YAML template itself writes inline comments on top-level keys
+# (`scoped_drivers: []   # max 3, weight <=6 each (M2)...`), so a comment on
+# `status:` is house style, not an exotic input. arc-013 carries one, and the
+# five readers returned five different values from that one line — the gate's
+# reader welded the comment onto the value (having deleted every space first),
+# `fw arc list` printed it raw, and one site was correct purely because it used
+# awk's default field splitting rather than -F': '. Correct by accident is not
+# correct: nothing stopped the next reader from being written the other way.
+#
+# Consequence while it stood: every _arc_require_status caller refused for
+# arc-013 on a status value that appears nowhere in the file, while YAML-reading
+# surfaces (fw audit, Watchtower) rendered it in-progress. Structurally
+# unclosable, and only the refusal text said so.
+#
+# Comment stripping is YAML-faithful: a `#` opens a comment only when preceded
+# by whitespace, so `status: a#b` keeps `a#b` — matching what yaml.safe_load does.
+_arc_status_from_file() {
+    local f="$1"
+    [ -f "$f" ] || return 1
+    awk -F': ' '/^status:/ {
+            sub(/^status:[[:space:]]*/, "")
+            sub(/[[:space:]]+#.*$/, "")
+            print; exit
+        }' "$f" \
+        | tr -d ' "' | head -c 32
+}
+
 _arc_get_status() {
     local id="$1" f
     f="$(_arc_path "$id")"
     [ -f "$f" ] || return 1
-    awk -F': ' '/^status:/ {sub(/^status:[[:space:]]*/, ""); print; exit}' "$f" \
-        | tr -d ' "' | head -c 32
+    _arc_status_from_file "$f"
 }
 
 _arc_require_status() {
@@ -512,7 +541,7 @@ arc_list() {
         # T-1848: slug is the tag namespace; arc-NNN is the display id.
         slug=$(awk -F': ' '/^slug:/ {print $2; exit}' "$f")
         [ -z "$slug" ] && slug="$(basename "$f" .yaml)"
-        status=$(awk -F': ' '/^status:/ {print $2; exit}' "$f")
+        status=$(_arc_status_from_file "$f")   # T-2968: was printing the inline comment too
         name=$(awk -F': ' '/^name:/ {sub(/^name: /,""); print; exit}' "$f")
         task_count=$(_arc_tasks_for "${slug}" | wc -l | tr -d ' ')
         marker="  "
@@ -1023,7 +1052,7 @@ arc_review() {
 
     local arc_path status anchor name
     arc_path="$(_arc_path "$id")"
-    status=$(awk '/^status:[[:space:]]/ {print $2; exit}' "$arc_path" | tr -d ' "')
+    status=$(_arc_status_from_file "$arc_path")   # T-2968: was correct only via default field splitting
     anchor=$(awk '/^anchor_task:[[:space:]]/ {print $2; exit}' "$arc_path" | tr -d ' "')
     name=$(awk -F': ' '/^name:[[:space:]]/ {sub(/^[[:space:]"]+/,"",$2); sub(/[[:space:]"]+$/,"",$2); print $2; exit}' "$arc_path")
 
@@ -1283,7 +1312,7 @@ PY
 
     echo "OK: approved scoped driver '$name' (weight=$w) on arc '$id'."
     local new_status
-    new_status=$(awk -F': ' '/^status:/ {print $2; exit}' "$f" | tr -d ' ')
+    new_status=$(_arc_status_from_file "$f")   # T-2968
     [ "$new_status" = "in-progress" ] && echo "  Arc status: draft → in-progress (first driver decision)."
 
     # T-2076 (T-2065 GO): deterministic-consequence rescore. Driver authorisation
@@ -1766,7 +1795,7 @@ _arc_flip_to_in_progress_if_draft() {
     local f
     f="$(_arc_path "$id")"
     local cur
-    cur=$(awk -F': ' '/^status:/ {print $2; exit}' "$f" | tr -d ' ')
+    cur=$(_arc_status_from_file "$f")   # T-2968: a commented draft arc never auto-promoted
     if [ "$cur" = "draft" ]; then
         python3 - "$f" <<'PY'
 import re, sys
