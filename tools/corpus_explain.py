@@ -145,7 +145,14 @@ def explain(root: Path, map_id: str) -> int:
         if m.get("state"):
             print(f"    state: {m['state']}")
         if m.get("note"):
-            print(f"    note: {m['note']}")
+            # T-2974: notes carry multi-line operator prose (newlines survive the
+            # attribute channel as &#10;). Indent continuation lines so a long note
+            # stays visually nested under its node instead of running flush-left
+            # and dissolving the walkthrough's structure.
+            head, *rest = str(m["note"]).split("\n")
+            print(f"    note: {head}")
+            for line in rest:
+                print(f"          {line}" if line.strip() else "")
         h = n.get("handoff") or {}
         if h:
             print(f"    handoff -> {h.get('name') or h.get('target')}")

@@ -6,9 +6,14 @@
       "v": 1,
       "note": "T-2972: initial greenfield onboarding prologue diagram (T-001 through T-005)",
       "ts": 1723592400
+    },
+    {
+      "v": 2,
+      "note": "T-2974: operator-facing explanations on every node; prose moved to the aef:meta note attribute channel (v1's aef:description child elements were invisible to both readers)",
+      "ts": 1786665600
     }
   ],
-  "latest": 1,
-  "updated": 1723592400,
+  "latest": 2,
+  "updated": 1786665600,
   "uuid": "a1b2c3d4-5678-90ab-cdef-1234567890ab"
 }

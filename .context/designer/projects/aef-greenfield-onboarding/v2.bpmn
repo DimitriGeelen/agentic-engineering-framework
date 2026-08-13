@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-greenfield-onboarding"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- designer-corpus T-2974 (arc-017, onboarding-curriculum): the greenfield onboarding prologue
+       (T-001 through T-005) with operator-facing explanations on every node. Topology is unchanged
+       from T-2972 v1 — 5 tasks, 2 lanes, the agent works T-001/T-003/T-004/T-005 and the human
+       decides T-002. What v2 adds is the prose: each node answers WHAT'S HAPPENING / WHY IT MATTERS /
+       WHAT YOU CAN DO / KEY LEARNING / NEXT, lifted from the seed tasks' `## For the Operator`
+       sections (lib/seeds/tasks/greenfield/T-00*.md).
+
+       Channel note (T-2974): the prose lives in `<aef:meta note="…"/>` ATTRIBUTES, not in
+       `<aef:description>` child elements as v1 had it. Both readers are attribute-based —
+       corpus_spec.py:_ext() does dict(c.attrib), and the pinned designer's metaKeys vocabulary
+       (aef-workflow-designer-0.8.0.html:9025) is attributes too — so v1's child-element prose
+       parsed to {} and rendered nowhere. That is why the v1 diagram read as bare boxes.
+       Newlines survive as &#10; character refs (XML 1.0 §3.3.3). -->
+
+  <bpmn:collaboration id="Collaboration_greenfield_onboarding">
+    <bpmn:participant id="Pool_greenfield_onboarding" name="AEF Greenfield Onboarding: Your First 5 Tasks" processRef="Process_greenfield_onboarding"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_greenfield_onboarding" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-greenfield-onboarding" version="2" schemaVersion="2"
+                        title="AEF greenfield onboarding prologue (T-001 through T-005) - Enhanced" tier_default="1"/>
+    </bpmn:extensionElements>
+
+    <bpmn:laneSet id="LaneSet_gfo">
+      <bpmn:lane id="agent" name="Agent · Initiative (The agent works these autonomously)">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_orientation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_first_commit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_lifecycle</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_handover</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_ready</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty (You decide this one)">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_2_goals</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- START: fw init completes -->
+    <bpmn:startEvent id="agt_0_start" name="You just ran: fw init">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_start"/>
+        <aef:position x="120.0" y="130.0"/>
+        <aef:meta note="THE STARTING POINT&#10;&#10;You've just run `fw init` in your new project directory. The framework has:&#10;  • Created .tasks/, .context/, .agentic-framework/ directories&#10;  • Seeded 5 onboarding tasks (T-001 through T-005)&#10;  • Set up git hooks for task traceability&#10;  • Configured the agent prologue&#10;&#10;What you're looking at: This diagram shows the next 5 tasks that will run automatically&#10;(except T-002, where you make the decision). Think of it as a guided tour where the&#10;agent is the tour guide, and you're learning by watching — until T-002, where you&#10;decide what your project will actually build."/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_start_t001</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- T-001: ORIENTATION -->
+    <bpmn:serviceTask id="agt_1_orientation" name="T-001: Orientation and Framework Health Check">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t001"/>
+        <aef:position x="240.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent is reading CLAUDE.md (the framework's operating manual) and running two health checks:&#10;  • `fw doctor` — &quot;Is this install wired correctly?&quot;&#10;  • `fw audit` — &quot;Is this project's governance in good standing?&quot;&#10;&#10;On a brand-new project, audit will show warnings — that's expected. You don't have a&#10;history yet, so metrics like &quot;stale tasks&quot; don't apply.&#10;&#10;═══ WHY IT MATTERS ═══&#10;The ONE RULE everything else hangs off: **Nothing gets done without a task**&#10;&#10;This isn't a convention the agent agreed to follow — it's a PreToolUse hook that&#10;refuses file edits when no task is active. If you ever see the agent blocked, this is&#10;usually why. It's working as intended.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;Nothing is needed from you. But if you're curious:&#10;  • Run `fw serve` and open the URL it prints → Watchtower dashboard&#10;  • Click around: Tasks, Fabric, Audit, Arcs&#10;  • It's safe to explore while the agent works&#10;&#10;═══ KEY LEARNING ═══&#10;The framework enforces governance structurally (via hooks), not by asking the agent&#10;to remember rules. Hooks run BEFORE the agent's tool executes, so violations are&#10;impossible, not just discouraged.&#10;&#10;═══ NEXT ═══&#10;Agent proceeds to T-002, which hands control to you."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_start_t001</bpmn:incoming>
+      <bpmn:outgoing>flow_t001_t002</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_start_t001" name="seeds are on disk; agent picks up T-001"
+                       sourceRef="agt_0_start" targetRef="agt_1_orientation"/>
+
+    <bpmn:sequenceFlow id="flow_t001_t002" name="install is healthy — the project question is now yours"
+                       sourceRef="agt_1_orientation" targetRef="hum_2_goals"/>
+
+    <!-- T-002: DEFINE PROJECT GOALS (INCEPTION - HUMAN DECISION) -->
+    <bpmn:subProcess id="hum_2_goals" name="T-002: Define Your Project Goals (You decide: GO / NO-GO / DEFER)">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t002"/>
+        <aef:position x="400.0" y="320.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;This is an INCEPTION task — the framework's word for &quot;explore a question and reach a&#10;go/no-go decision.&quot; The question: &quot;What is this project for?&quot;&#10;&#10;The agent will:&#10;  1. Create a research artifact: docs/reports/T-002-*.md&#10;  2. Research and write down: problem statement, goals, constraints, initial architecture&#10;  3. Fill in a Recommendation section with GO / NO-GO / DEFER and rationale&#10;  4. Run `fw task review T-002` and give you a Watchtower link&#10;&#10;═══ WHY IT MATTERS ═══&#10;This is the ONE STEP in the prologue that ends with a decision only you can make.&#10;&#10;The agent is structurally prevented from deciding this itself. Even if you say &quot;go&#10;ahead,&quot; `fw inception decide` will refuse when an agent runs it ($CLAUDECODE=1).&#10;&#10;The agent explores and recommends. You confirm or overrule.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;1. The agent hands you a Watchtower link ending in /inception/T-002 (the host and&#10;   port come from your own install — `fw watchtower url` prints them).&#10;2. Open it and read:&#10;   • The research artifact (what the agent found)&#10;   • The Recommendation (GO, NO-GO, or DEFER with rationale)&#10;3. You decide by clicking one of the three buttons in Watchtower&#10;4. Your decision is recorded in the task file&#10;&#10;═══ KEY LEARNING ═══&#10;Inceptions separate exploration (agent's job) from decisions (your job). The split is&#10;enforced by the framework:&#10;  • Agent can propose, never decide&#10;  • Human sovereignty over go/no-go is structural, not cultural&#10;&#10;If you DEFER, you can set a revisit date — the framework will resurface it when&#10;conditions change.&#10;&#10;═══ NEXT ═══&#10;After you click GO, the agent proceeds to T-003 (implementation begins)."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t001_t002</bpmn:incoming>
+      <bpmn:outgoing>flow_t002_t003</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:sequenceFlow id="flow_t002_t003" name="GO recorded — agent resumes the tour"
+                       sourceRef="hum_2_goals" targetRef="agt_3_first_commit"/>
+
+    <!-- T-003: FIRST GOVERNED COMMIT -->
+    <bpmn:serviceTask id="agt_3_first_commit" name="T-003: Your First Governed Commit">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t003"/>
+        <aef:position x="600.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent makes a simple code change (usually a README update or a placeholder file)&#10;and commits it with the message format:&#10;&#10;  T-003: (one-line description of the change)&#10;&#10;  Co-Authored-By: Claude Sonnet 4.5 &lt;noreply@anthropic.com&gt;&#10;&#10;The framework's git hooks check:&#10;  • Every commit message must reference a task (T-XXX)&#10;  • The task must exist in .tasks/active/&#10;  • The commit is recorded in the task's audit trail&#10;&#10;═══ WHY IT MATTERS ═══&#10;This demonstrates TASK TRACEABILITY (Policy P-002):&#10;  • Every commit → linked to a task&#10;  • Every task → linked to commits&#10;  • You can always answer: &quot;Why was this line changed?&quot; → follow the commit → read the task&#10;&#10;This isn't aspirational — the commit-msg hook enforces it. Commits without task&#10;references are rejected before they're created.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;Watch the agent work. After the commit:&#10;  • Run `git log` — see the T-003 reference&#10;  • Run `fw fabric blast-radius HEAD` — see what changed and what depends on it&#10;  • Open Watchtower /tasks/T-003 — see the commit listed in the Updates section&#10;&#10;═══ KEY LEARNING ═══&#10;The framework builds an evidence trail automatically. Six months from now, when you&#10;ask &quot;why does this file exist?&quot;, you can trace: file → commit → task → decision.&#10;&#10;This isn't optional bookkeeping. It's structural: the hooks make non-traced work&#10;impossible.&#10;&#10;═══ NEXT ═══&#10;Agent moves to T-004 to demonstrate the full task lifecycle."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t002_t003</bpmn:incoming>
+      <bpmn:outgoing>flow_t003_t004</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- T-004: COMPLETE TASK LIFECYCLE -->
+    <bpmn:serviceTask id="agt_4_lifecycle" name="T-004: Walk Through Task States and Gates">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t004"/>
+        <aef:position x="780.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent demonstrates the full task lifecycle by working a small task from start to&#10;finish. You'll see these states:&#10;&#10;  captured → started-work → (optionally: issues) → work-completed&#10;&#10;Each transition is gated:&#10;  • started-work: requires an active task&#10;  • work-completed: requires all Agent ACs checked + verification commands passed&#10;&#10;The agent will:&#10;  1. Pick a simple task (or create a demonstration task)&#10;  2. Make a small change&#10;  3. Check the acceptance criteria boxes&#10;  4. Run verification commands&#10;  5. Complete the task (which moves it to .tasks/completed/ and generates episodic memory)&#10;&#10;═══ WHY IT MATTERS ═══&#10;This shows you the states your own tasks will go through. Key concepts:&#10;&#10;  • **Acceptance Criteria (ACs)** — checkboxes that define &quot;done&quot;&#10;  • **Verification commands** — shell commands that MUST pass before completion&#10;  • **Episodic memory** — auto-generated summary of the task (what changed, why, outcomes)&#10;&#10;The framework enforces completion criteria mechanically:&#10;  • P-010 gate: refuses work-completed if any Agent AC is unchecked&#10;  • P-011 gate: refuses work-completed if any verification command exits non-zero&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;  • Watch the agent's moves in real-time via Watchtower /tasks&#10;  • See the acceptance criteria get checked off one by one&#10;  • Run `fw audit` after completion — see the task in the audit trail&#10;  • Read the episodic memory file: .context/episodic/T-004.yaml&#10;&#10;═══ KEY LEARNING ═══&#10;&quot;Done&quot; is defined structurally, not subjectively:&#10;  • ACs are checkboxes, not vibes&#10;  • Verification is automated, not eyeballed&#10;  • Episodic capture is automatic, not optional&#10;&#10;The agent can't skip steps or &quot;good enough&quot; a task. The gates enforce completion.&#10;&#10;═══ NEXT ═══&#10;Agent moves to T-005 to demonstrate session handoff."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t003_t004</bpmn:incoming>
+      <bpmn:outgoing>flow_t004_t005</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- T-005: HANDOVER -->
+    <bpmn:serviceTask id="agt_5_handover" name="T-005: Generate Your First Handover (Session End Protocol)">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t005"/>
+        <aef:position x="960.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent runs:&#10;&#10;  fw handover --commit&#10;&#10;This generates a handover document and commits + pushes it. The handover captures:&#10;  • What was accomplished this session&#10;  • What's in progress&#10;  • What's next (suggested first action)&#10;  • Outstanding questions or blockers&#10;&#10;The handover is written to: .context/handovers/S-YYYY-MMDD-HHMM.md&#10;&#10;═══ WHY IT MATTERS ═══&#10;Sessions don't persist forever — context gets compacted, or you close the terminal.&#10;The handover is how a session hands its work to the next session (or to you).&#10;&#10;Without it:&#10;  • The next agent starts cold (no memory of what you just did)&#10;  • You lose the &quot;why&quot; behind in-progress work&#10;  • Decisions made in conversation are lost&#10;&#10;With it:&#10;  • Next session reads the handover and picks up where you left off&#10;  • You can review what happened even weeks later&#10;  • The &quot;Suggested First Action&quot; tells the next agent what to do&#10;&#10;This is mandatory: `fw handover --commit` should run at the end of EVERY session.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;After the agent runs it:&#10;  • Read the handover file (it's in .context/handovers/LATEST.md)&#10;  • See what the agent captured about this session&#10;  • Notice the &quot;Suggested First Action&quot; section — that's for the next agent&#10;&#10;In future sessions:&#10;  • The SessionStart hook automatically loads the latest handover&#10;  • Run `fw resume status` to see a full session synthesis&#10;  • Run `fw resume quick` for a one-line summary&#10;&#10;═══ KEY LEARNING ═══&#10;Context is ephemeral. Handovers are permanent.&#10;&#10;The framework treats session endings as a first-class event:&#10;  • Handovers are committed and pushed (survive machine failures)&#10;  • The next session auto-loads them (via hooks)&#10;  • You never lose the thread&#10;&#10;═══ NEXT ═══&#10;Prologue complete! You're ready to start your own first real task."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t004_t005</bpmn:incoming>
+      <bpmn:outgoing>flow_t005_ready</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- END: Ready for Real Work -->
+    <bpmn:endEvent id="agt_6_ready" name="✓ Ready to build your project">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_ready"/>
+        <aef:position x="1140.0" y="130.0"/>
+        <aef:meta note="PROLOGUE COMPLETE&#10;&#10;You've now seen:&#10;  ✓ How the framework organizes itself (T-001)&#10;  ✓ How inceptions work and who decides (T-002)&#10;  ✓ How commits trace to tasks (T-003)&#10;  ✓ How tasks move through states with gates (T-004)&#10;  ✓ How sessions hand off work (T-005)&#10;&#10;What's next:&#10;  • Run: `fw work-on &quot;Your first real task&quot; --type build`&#10;  • The agent will create a task and set focus&#10;  • You're now operating under the same governance you just learned&#10;&#10;The training wheels are off. The framework rules still apply — but now you know why&#10;they're there and how they help.&#10;&#10;═══ QUICK REFERENCE ═══&#10;  • Start work: `fw work-on &quot;task name&quot; --type build`&#10;  • Check status: `fw resume quick`&#10;  • End session: `fw handover --commit`&#10;  • Get help: `fw help` or read CLAUDE.md&#10;&#10;═══ IF YOU GET STUCK ═══&#10;  • The agent blocked? Check: `fw context status` (do you have an active task?)&#10;  • Verification failed? Check: the task's ## Verification section (what command failed?)&#10;  • Gate refused you? Read the error message — it tells you the bypass flag" state="ready"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t005_ready</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_t003_t004" sourceRef="agt_3_first_commit" targetRef="agt_4_lifecycle"/>
+    <bpmn:sequenceFlow id="flow_t004_t005" sourceRef="agt_4_lifecycle" targetRef="agt_5_handover"/>
+    <bpmn:sequenceFlow id="flow_t005_ready" sourceRef="agt_5_handover" targetRef="agt_6_ready"/>
+
+  </bpmn:process>
+
+  <!-- Visual layout (BPMN DI) - keeping original positions -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_greenfield_onboarding">
+    <bpmndi:BPMNPlane id="BPMNPlane_greenfield_onboarding" bpmnElement="Collaboration_greenfield_onboarding">
+
+      <!-- Pool -->
+      <bpmndi:BPMNShape id="Pool_shape" bpmnElement="Pool_greenfield_onboarding" isHorizontal="true">
+        <dc:Bounds x="50" y="50" width="1200" height="460"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="agent_lane_shape" bpmnElement="agent" isHorizontal="true">
+        <dc:Bounds x="80" y="50" width="1170" height="260"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="human_lane_shape" bpmnElement="human" isHorizontal="true">
+        <dc:Bounds x="80" y="310" width="1170" height="200"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Start event -->
+      <bpmndi:BPMNShape id="start_shape" bpmnElement="agt_0_start">
+        <dc:Bounds x="120" y="130" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Agent tasks -->
+      <bpmndi:BPMNShape id="t001_shape" bpmnElement="agt_1_orientation">
+        <dc:Bounds x="240" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t003_shape" bpmnElement="agt_3_first_commit">
+        <dc:Bounds x="600" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t004_shape" bpmnElement="agt_4_lifecycle">
+        <dc:Bounds x="780" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t005_shape" bpmnElement="agt_5_handover">
+        <dc:Bounds x="960" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Human inception -->
+      <bpmndi:BPMNShape id="t002_shape" bpmnElement="hum_2_goals">
+        <dc:Bounds x="400" y="340" width="140" height="120"/>
+      </bpmndi:BPMNShape>
+
+      <!-- End event -->
+      <bpmndi:BPMNShape id="ready_shape" bpmnElement="agt_6_ready">
+        <dc:Bounds x="1140" y="130" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Flows -->
+      <bpmndi:BPMNEdge id="flow_start_t001_edge" bpmnElement="flow_start_t001">
+        <di:waypoint x="156" y="148"/>
+        <di:waypoint x="240" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t001_t002_edge" bpmnElement="flow_t001_t002">
+        <di:waypoint x="360" y="140"/>
+        <di:waypoint x="380" y="140"/>
+        <di:waypoint x="380" y="400"/>
+        <di:waypoint x="400" y="400"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t002_t003_edge" bpmnElement="flow_t002_t003">
+        <di:waypoint x="540" y="400"/>
+        <di:waypoint x="570" y="400"/>
+        <di:waypoint x="570" y="140"/>
+        <di:waypoint x="600" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t003_t004_edge" bpmnElement="flow_t003_t004">
+        <di:waypoint x="720" y="140"/>
+        <di:waypoint x="780" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t004_t005_edge" bpmnElement="flow_t004_t005">
+        <di:waypoint x="900" y="140"/>
+        <di:waypoint x="960" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t005_ready_edge" bpmnElement="flow_t005_ready">
+        <di:waypoint x="1080" y="140"/>
+        <di:waypoint x="1140" y="148"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
