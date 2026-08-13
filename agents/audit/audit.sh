@@ -809,10 +809,24 @@ if [ -d "$PROJECT_ROOT/.context/arcs" ] && command -v git >/dev/null 2>&1 \
     # fork inside per-arc loop — 8 arcs × 2,261 tasks = ~18K awk subprocesses,
     # ~90-100s wall-clock). Now: 1 python3 read of all task heads, in-memory
     # filter per arc. Skips T-Test-* sentinels (T-2228 parity with _is_test_sentinel).
+    # T-2970: the map must union BOTH membership forms — `arc_id:` (T-1849
+    # canonical) and the legacy `tags: [arc:<slug>]` — because arc_tasks_for
+    # (lib/arc_membership.sh:108) does, and it is the reader everything else
+    # agrees with. Reading arc_id: alone made four arcs read as ZERO tasks
+    # (onboarding 015/016/017 and ladder-trigger-producer) and undercounted four
+    # more; they then hit the zero-population `continue` below, whose stated
+    # reason is "no tasks" and which therefore absorbed "tasks this map cannot
+    # see" without distinction.
+    #
+    # This union already exists in this file at ~5250, added by T-1875 after the
+    # same class cost 163 task-arc relationships across 5 arcs. T-2298's
+    # performance rewrite of THIS pass (awk-fork-per-task → single python read)
+    # did not carry it across. Keep both readers in step.
     task_arc_map=$(python3 -c "
 import os, re
 project_root = '$PROJECT_ROOT'
 arc_id_re = re.compile(r'^arc_id:\s*([^\s#]+)', re.M)
+arc_tag_re = re.compile(r'^tags:.*?\barc:([A-Za-z0-9_-]+)', re.M)
 for d in ('active', 'completed'):
     tdir = os.path.join(project_root, '.tasks', d)
     if not os.path.isdir(tdir):
@@ -832,11 +846,19 @@ for d in ('active', 'completed'):
                 head = f.read(4096)
         except Exception:
             continue
+        # T-2970: emit one row per membership declaration; the per-arc filter
+        # below matches on either, and duplicates are harmless (a task matching
+        # both forms of the same arc still yields one arc).
+        emitted = set()
         m = arc_id_re.search(head)
-        if not m:
-            continue
-        tag = m.group(1).strip().strip('\"').strip(chr(39))
-        if tag and tag != 'null':
+        if m:
+            tag = m.group(1).strip().strip('\"').strip(chr(39))
+            if tag and tag != 'null':
+                emitted.add(tag)
+        mt = arc_tag_re.search(head)
+        if mt:
+            emitted.add(mt.group(1).strip())
+        for tag in emitted:
             print(f'{path}\t{tag}')
 " 2>/dev/null)
 
@@ -856,14 +878,27 @@ for d in ('active', 'completed'):
         # T-2298: filter pre-computed map by this arc's slug or arc-NNN id —
         # was per-task awk fork (one awk per task per arc). Now in-memory only.
         matching_tasks=()
+        seen_paths=" "
         while IFS=$'\t' read -r tp ttag; do
             [ -z "$tp" ] && continue
             if [ "$ttag" = "$arc_slug" ] || [ "$ttag" = "$arc_numeric" ]; then
+                # T-2970: a task may declare membership via BOTH arc_id: and the
+                # legacy arc:<slug> tag, emitting two rows. Dedupe by path so the
+                # "(N task(s) in arc)" count matches `fw arc list`.
+                case "$seen_paths" in *" $tp "*) continue;; esac
+                seen_paths="${seen_paths}${tp} "
                 matching_tasks+=("$tp")
             fi
         done <<< "$task_arc_map"
 
         # Zero-population arcs can't be assessed for staleness — skip.
+        #
+        # T-2970: this skip is a reasoned EXCLUSION (staleness is not a
+        # meaningful question for an arc with no constituents), and it used to
+        # double as a HOLE — arcs whose tasks the map could not read landed here
+        # too, indistinguishable. The union above closes the hole; the exclusion
+        # stands. The PASS line below now reports the assessed count so the two
+        # can never silently merge again.
         [ "${#matching_tasks[@]}" -eq 0 ] && continue
 
         arcs_checked_for_staleness=$((arcs_checked_for_staleness + 1))
@@ -881,7 +916,66 @@ for d in ('active', 'completed'):
     done
 fi
 if [ "$arcs_checked_for_staleness" -gt 0 ] && [ "$stale_arc_count" -eq 0 ]; then
-    pass "All $arcs_checked_for_staleness in-progress arc(s) had task commits within ${stale_arc_threshold} days"
+    # T-2970: name the ASSESSED count, not "all". The previous wording ("All N
+    # in-progress arc(s) ...") read as total coverage while N was whatever the
+    # membership map happened to see — a census over survivors. Stating the
+    # denominator is what makes a future shortfall visible.
+    pass "Assessed $arcs_checked_for_staleness in-progress arc(s) with constituents; all had task commits within ${stale_arc_threshold} days"
+fi
+
+# T-2969: draft arc with all constituents complete. `fw arc close` requires
+# `in-progress` (lib/arc.sh:665), so an arc left in `draft` whose constituent
+# tasks are all work-completed has no path to closure and nothing reports
+# it — the stale-arc check above is silent on draft arcs BY DESIGN (right
+# question, wrong population: draft-with-no-activity is backlog, not stall),
+# and the close refusal itself names no remedy. Reuses task_arc_map computed
+# above (same membership union: arc_id: + legacy arc:<slug> tag).
+draft_complete_count=0
+if [ -d "$PROJECT_ROOT/.context/arcs" ] && [ -n "${task_arc_map:-}" ]; then
+    for af in "$PROJECT_ROOT/.context/arcs"/*.yaml; do
+        [ -f "$af" ] || continue
+
+        status_val=$(awk -F': ' '/^status:/ {sub(/^status:[[:space:]]*/, ""); print; exit}' "$af" \
+                     | tr -d ' "' | head -c 32)
+        [ "$status_val" = "draft" ] || continue
+
+        arc_numeric=$(awk -F': ' '/^id:/ {sub(/^id:[[:space:]]*/, ""); print; exit}' "$af" \
+                      | tr -d ' "' | head -c 32)
+        arc_slug=$(awk -F': ' '/^slug:/ {sub(/^slug:[[:space:]]*/, ""); print; exit}' "$af" \
+                   | tr -d ' "' | head -c 64)
+        [ -z "$arc_slug" ] && arc_slug=$(basename "$af" .yaml)
+
+        matching_tasks=()
+        seen_paths=" "
+        while IFS=$'\t' read -r tp ttag; do
+            [ -z "$tp" ] && continue
+            if [ "$ttag" = "$arc_slug" ] || [ "$ttag" = "$arc_numeric" ]; then
+                case "$seen_paths" in *" $tp "*) continue;; esac
+                seen_paths="${seen_paths}${tp} "
+                matching_tasks+=("$tp")
+            fi
+        done <<< "$task_arc_map"
+
+        # Zero-population draft arcs don't warn: 0/0 is vacuously "all
+        # complete", which would fire on every empty draft arc — the
+        # always-answers shape this whole class exists to avoid.
+        [ "${#matching_tasks[@]}" -eq 0 ] && continue
+
+        all_complete=1
+        for tp in "${matching_tasks[@]}"; do
+            case "$tp" in
+                */completed/*) ;;
+                *) all_complete=0; break ;;
+            esac
+        done
+
+        if [ "$all_complete" -eq 1 ]; then
+            warn "Arc '$arc_slug' is draft with all ${#matching_tasks[@]} constituent task(s) work-completed" \
+                 "Draft arcs can't be closed directly ('fw arc close' requires in-progress) — this arc's work is finished but there's no path out of draft" \
+                 "Run 'fw arc start $arc_slug' to move it to in-progress, then close via Watchtower (/arcs/$arc_slug/close)"
+            draft_complete_count=$((draft_complete_count + 1))
+        fi
+    done
 fi
 
 # T-2169 (T-NEW-C, value-drivers v3 follow-up): retire_when advisory.
