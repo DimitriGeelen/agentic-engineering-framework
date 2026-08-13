@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-greenfield-onboarding"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- designer-corpus T-2972 (arc-017, onboarding-curriculum): the greenfield onboarding prologue
+       as actually operated. Sources of truth: lib/seeds/tasks/greenfield/T-00*.md (Half A curriculum),
+       CLAUDE.md §Inception Discipline, T-2720 keystone. The agent works T-001/T-003/T-004/T-005
+       (orientation, commit, lifecycle, handover); the human decides T-002 (project goals inception).
+       Pair-draft v1. -->
+
+  <bpmn:collaboration id="Collaboration_greenfield_onboarding">
+    <bpmn:participant id="Pool_greenfield_onboarding" name="AEF greenfield onboarding prologue" processRef="Process_greenfield_onboarding"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_greenfield_onboarding" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-greenfield-onboarding" version="1" schemaVersion="2"
+                        title="AEF greenfield onboarding prologue (T-001 through T-005)" tier_default="1"/>
+    </bpmn:extensionElements>
+
+    <bpmn:laneSet id="LaneSet_gfo">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_orientation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_first_commit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_lifecycle</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_handover</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_ready</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_2_goals</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- Agent lane: prologue automation -->
+    <bpmn:startEvent id="agt_0_start" name="fw init completes">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_start"/>
+        <aef:position x="120.0" y="120.0"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_start_t001</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_1_orientation" name="T-001: Orientation and framework health">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t001"/>
+        <aef:position x="220.0" y="90.0"/>
+        <aef:description>Agent runs fw doctor, checks cron setup, verifies framework health. Teaches operator about framework structure and tooling. No decisions needed — all automated.</aef:description>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_start_t001</bpmn:incoming>
+      <bpmn:outgoing>flow_t001_t002</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_start_t001" sourceRef="agt_0_start" targetRef="agt_1_orientation"/>
+    <bpmn:sequenceFlow id="flow_t001_t002" sourceRef="agt_1_orientation" targetRef="hum_2_goals"/>
+
+    <!-- Human lane: project definition (inception) -->
+    <bpmn:subProcess id="hum_2_goals" name="T-002: Define project goals (inception)">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t002"/>
+        <aef:position x="380.0" y="300.0"/>
+        <aef:description>Inception task — agent explores, human decides. The one step in the prologue requiring human judgment. Agent researches, fills Recommendation, hands off via fw task review. Human reviews and decides GO/NO-GO/DEFER in Watchtower. Collapsed subprocess per G-3 ratified pattern.</aef:description>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t001_t002</bpmn:incoming>
+      <bpmn:outgoing>flow_t002_t003</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:sequenceFlow id="flow_t002_t003" sourceRef="hum_2_goals" targetRef="agt_3_first_commit">
+      <bpmn:extensionElements>
+        <aef:description>After GO decision, agent proceeds with implementation tasks</aef:description>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <!-- Agent lane: implementation tasks -->
+    <bpmn:serviceTask id="agt_3_first_commit" name="T-003: First governed commit">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t003"/>
+        <aef:position x="560.0" y="90.0"/>
+        <aef:description>Agent makes a simple change, commits with T-003 reference, demonstrates task traceability (P-002). First real code change.</aef:description>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t002_t003</bpmn:incoming>
+      <bpmn:outgoing>flow_t003_t004</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_4_lifecycle" name="T-004: Complete task lifecycle">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t004"/>
+        <aef:position x="720.0" y="90.0"/>
+        <aef:description>Agent demonstrates full task lifecycle — started-work, issues (optional), work-completed, episodic capture. Walks through task states and gates.</aef:description>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t003_t004</bpmn:incoming>
+      <bpmn:outgoing>flow_t004_t005</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_5_handover" name="T-005: Generate first handover">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_t005"/>
+        <aef:position x="880.0" y="90.0"/>
+        <aef:description>Agent runs fw handover --commit, demonstrates session-end protocol. Teaches operator about context preservation and session handoff mechanics.</aef:description>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t004_t005</bpmn:incoming>
+      <bpmn:outgoing>flow_t005_ready</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="agt_6_ready" name="Ready for real work">
+      <bpmn:extensionElements>
+        <aef:uid value="gfo_ready"/>
+        <aef:position x="1040.0" y="120.0"/>
+        <aef:state value="ready"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t005_ready</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_t003_t004" sourceRef="agt_3_first_commit" targetRef="agt_4_lifecycle"/>
+    <bpmn:sequenceFlow id="flow_t004_t005" sourceRef="agt_4_lifecycle" targetRef="agt_5_handover"/>
+    <bpmn:sequenceFlow id="flow_t005_ready" sourceRef="agt_5_handover" targetRef="agt_6_ready"/>
+
+  </bpmn:process>
+
+  <!-- Visual layout (BPMN DI) -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_greenfield_onboarding">
+    <bpmndi:BPMNPlane id="BPMNPlane_greenfield_onboarding" bpmnElement="Collaboration_greenfield_onboarding">
+
+      <!-- Pool -->
+      <bpmndi:BPMNShape id="Pool_shape" bpmnElement="Pool_greenfield_onboarding" isHorizontal="true">
+        <dc:Bounds x="50" y="50" width="1100" height="400"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="agent_lane_shape" bpmnElement="agent" isHorizontal="true">
+        <dc:Bounds x="80" y="50" width="1070" height="220"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="human_lane_shape" bpmnElement="human" isHorizontal="true">
+        <dc:Bounds x="80" y="270" width="1070" height="180"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Start event -->
+      <bpmndi:BPMNShape id="start_shape" bpmnElement="agt_0_start">
+        <dc:Bounds x="120" y="120" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Agent tasks -->
+      <bpmndi:BPMNShape id="t001_shape" bpmnElement="agt_1_orientation">
+        <dc:Bounds x="220" y="90" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t003_shape" bpmnElement="agt_3_first_commit">
+        <dc:Bounds x="560" y="90" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t004_shape" bpmnElement="agt_4_lifecycle">
+        <dc:Bounds x="720" y="90" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t005_shape" bpmnElement="agt_5_handover">
+        <dc:Bounds x="880" y="90" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Human inception -->
+      <bpmndi:BPMNShape id="t002_shape" bpmnElement="hum_2_goals">
+        <dc:Bounds x="380" y="300" width="120" height="100"/>
+      </bpmndi:BPMNShape>
+
+      <!-- End event -->
+      <bpmndi:BPMNShape id="ready_shape" bpmnElement="agt_6_ready">
+        <dc:Bounds x="1040" y="120" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Flows -->
+      <bpmndi:BPMNEdge id="flow_start_t001_edge" bpmnElement="flow_start_t001">
+        <di:waypoint x="156" y="138"/>
+        <di:waypoint x="220" y="130"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t001_t002_edge" bpmnElement="flow_t001_t002">
+        <di:waypoint x="320" y="130"/>
+        <di:waypoint x="350" y="130"/>
+        <di:waypoint x="350" y="350"/>
+        <di:waypoint x="380" y="350"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t002_t003_edge" bpmnElement="flow_t002_t003">
+        <di:waypoint x="500" y="350"/>
+        <di:waypoint x="530" y="350"/>
+        <di:waypoint x="530" y="130"/>
+        <di:waypoint x="560" y="130"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t003_t004_edge" bpmnElement="flow_t003_t004">
+        <di:waypoint x="660" y="130"/>
+        <di:waypoint x="720" y="130"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t004_t005_edge" bpmnElement="flow_t004_t005">
+        <di:waypoint x="820" y="130"/>
+        <di:waypoint x="880" y="130"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t005_ready_edge" bpmnElement="flow_t005_ready">
+        <di:waypoint x="980" y="130"/>
+        <di:waypoint x="1040" y="138"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
