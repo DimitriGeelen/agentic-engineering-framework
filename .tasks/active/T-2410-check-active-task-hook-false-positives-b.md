@@ -174,6 +174,45 @@ argument names the task focus was JUST cleared from — the close already knows 
 id, so a short-lived `.context/working/.last-closed` would let the hook allow
 exactly that verb-plus-id pair without widening the gate generally.
 
+### Frequency evidence (added 2026-08-13, session S-2026-0813-0953)
+
+**Twelve sightings in one session**, which changes what this is. Two instances read
+as a contract mismatch worth fixing eventually; twelve in a single working day is
+the dominant interruption in the session, and every one of them cost a real
+detour.
+
+The distribution matters more than the count:
+
+- **Ten of the twelve blocked read-only commands.** A `find`+`grep` census over
+  `*.bpmn`; reading the observation inbox with `python3 -c`; reading the rail via
+  `termlink channel state`; `cat .context/working/.budget-status`; `fw arc list`;
+  `sed -n '/x/,/y/p'`; `fw task review-batch`. None of these modify anything. The
+  hook's own block text says *"Framework rule: nothing gets done without a task"* —
+  but nothing was being **done**.
+- **Three blocked a `git push`** of work that was already committed under a task
+  that had just closed correctly. The push is the last step of the governed
+  workflow, and the gate fires precisely when the task it wants no longer exists.
+- **The chain ran three deep twice**: no-active-task → (set focus) → captured-status
+  → (pick another) → G-020 placeholder-ACs. Each unblock exposed the next gate.
+
+Two secondary observations from working through it twelve times:
+
+1. **`fw context focus T-XXX` is not always a sufficient unblock.** Focusing a task
+   with `status: captured` trades the no-active-task block for the started-work
+   block; focusing a `owner: human` task is *not* an acceptable workaround, because
+   flipping it to `started-work` to satisfy the gate would misrepresent a task
+   awaiting the operator. Twice the only honest unblock was to create a new task
+   for work that was genuinely next — which is fine, but it means the gate is
+   shaping the task ledger rather than recording it.
+2. **The gate evaluates the whole compound command.** `bin/fw context focus T-2410
+   >/dev/null 2>&1; git push …` was blocked as a unit, because focus was not yet
+   set when the hook read the command string. The self-remediating one-liner does
+   not work; the two halves must be separate calls. Worth naming in the block text.
+
+None of the twelve was resolved by a bypass. The cost is not correctness, it is
+attention — and the failure mode is that an agent under budget pressure learns to
+reach for `FW_SAFE_MODE` rather than write the task.
+
 ## Acceptance Criteria
 
 ### Agent
