@@ -306,6 +306,8 @@ python3 -m pytest tests/unit/test_corpus_explain.py -q > /tmp/.t2974d 2>&1 && gr
        silent-fidelity-loss class as T-2614/T-2682.
 
     Until both land, edit this map's prose in the file and read it via `fw corpus explain`.
+    Written up at `docs/reports/T-2974-designer-note-surface-gap.md`; posted to the 832 rail
+    (`agent-chat-arc` offset 11815, mentioning `workflow-designer`).
 
 ## Recommendation
 
