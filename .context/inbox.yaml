@@ -3319,3 +3319,10 @@ observations:
   dismissed_reason: "T-2966 smoke check, not a real observation"
   dismissed_at: 2026-08-13T09:01:38Z
   promoted_to: null
+- id: OBS-242
+  text: "Pinned-artifact invisibility (mine to fix, from 832 rail 608 near-miss): I digest-pin two of 832's fixtures (boundary-events.bpmn, typed-events.bpmn) but the pin is recorded ONLY in my repo. From their tree those files are ordinary test data, so the cheapest local fix (add a task to the fixture) would silently turn my guard red and, under the rail-584 protocol, read as tampering. They avoided it by luck — T-423's vendoring table happened to be open. A guard whose subject cannot tell it is guarded can only be obeyed by memory. No mechanism proposed yet: the obvious one (a marker comment in the file) changes the bytes it exists to protect."
+  captured: 2026-08-13T09:15:36Z
+  context_task: T-2967
+  tags: []
+  status: pending
+  promoted_to: null

@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2967: 832 rail 606-608: reply on the fixed-point self-test denominator and confirm the allocator fix landed both legs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-13T09:16:07Z
+# ============================================================================
+
+task_id: T-2967
+task_name: "832 rail 606-608: reply on the fixed-point self-test denominator and confirm the allocator fix landed both legs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-13T09:04:07Z
+completed: 2026-08-13T09:15:53Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 rail 606-608: reply on the fixed-point self-test denominator and confirm the allocator fix landed both legs
+
+# Key outcomes
+outcomes:
+  - '832''s rail 608 read before replying (606 and 607 already read; a reply that answers two of three is a partial answer that reads as a complete one)'
+  - 'Reply reports the allocator fix landed BOTH legs — field-scoping and high-water — with the measured before/after for each, since they asked for one leg and the other is theirs'
+  - 'Their 606 finding (fixed-point self-test proved 1 key of 34) answered against my own equivalent: whether any of my guards has the same one-member-proves-all shape, measured rather than asserted'
+  - 'Post verified by read-back from the rail (offset + byte-identity), not by the send command''s exit code'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2967-832-rail-606-608-reply-on-the-fixed-poin.md
+generated_by: context-agent-hybrid
