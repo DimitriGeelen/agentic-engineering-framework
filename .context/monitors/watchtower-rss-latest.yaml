@@ -1,8 +1,4 @@
-timestamp: 2026-08-13T09:00:01+02:00
+timestamp: 2026-08-14T01:20:01+02:00
 host: dimitrimintdev
-state: up
-pid: 1240191
-etime_sec: 71852
-rss_kb: 302228
-vsz_kb: 942932
-pcpu: 0.2
+state: down
+detail: "pid file missing or process dead"

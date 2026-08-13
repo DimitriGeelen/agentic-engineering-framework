@@ -938,3 +938,5 @@ Press CTRL+C to quit
 192.168.10.107 - - [13/Aug/2026 09:04:17] "GET /api/_identity HTTP/1.1" 200 -
 192.168.10.107 - - [13/Aug/2026 09:04:27] "GET /api/_identity HTTP/1.1" 200 -
 192.168.10.107 - - [13/Aug/2026 09:04:27] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [13/Aug/2026 10:04:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/Aug/2026 10:25:38] "GET /api/_identity HTTP/1.1" 200 -

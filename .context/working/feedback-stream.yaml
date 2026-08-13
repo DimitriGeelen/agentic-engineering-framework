@@ -32674,3 +32674,147 @@ scan_id: R-e566f529
 task_id: T-2960
 payload:
   task_file: .tasks/active/T-2960-832-rail-round-598-599--answer-t-2925-ch.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T08:30:05Z'
+scan_id: R-82dd4557
+task_id: T-2964
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T08:30:05Z'
+scan_id: R-82dd4557
+task_id: T-2964
+payload:
+  task_file: .tasks/active/T-2964-inception-decide-refuses-on-sovereignty-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T08:45:17Z'
+scan_id: R-66eee2d9
+task_id: T-2965
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T08:45:17Z'
+scan_id: R-66eee2d9
+task_id: T-2965
+payload:
+  task_file: .tasks/active/T-2965-832-rail-602-604-answer-obs-046-seam-que.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T09:02:43Z'
+scan_id: R-e25ba284
+task_id: T-2966
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T09:02:43Z'
+scan_id: R-e25ba284
+task_id: T-2966
+payload:
+  task_file: .tasks/active/T-2966-obs-id-allocator-recycles-ids-nextid-is-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T09:15:55Z'
+scan_id: R-fd474c72
+task_id: T-2967
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T09:15:55Z'
+scan_id: R-fd474c72
+task_id: T-2967
+payload:
+  task_file: .tasks/active/T-2967-832-rail-606-608-reply-on-the-fixed-poin.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T11:48:51Z'
+scan_id: R-2595a8e3
+task_id: T-2968
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T11:48:51Z'
+scan_id: R-2595a8e3
+task_id: T-2968
+payload:
+  task_file: .tasks/active/T-2968-arc-status-read-is-comment-blind--a-yaml.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T12:10:51Z'
+scan_id: R-767e9caa
+task_id: T-2970
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T12:10:51Z'
+scan_id: R-767e9caa
+task_id: T-2970
+payload:
+  task_file: .tasks/active/T-2970-stale-arc-audit-is-blind-to-legacy-arc-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T23:19:11Z'
+scan_id: R-c59671f4
+task_id: T-2972
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T23:19:11Z'
+scan_id: R-c59671f4
+task_id: T-2972
+payload:
+  task_file: .tasks/active/T-2972-create-greenfield-onboarding-flow-diagra.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T23:23:28Z'
+scan_id: R-6004f7fc
+task_id: T-2973
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T23:23:28Z'
+scan_id: R-6004f7fc
+task_id: T-2973
+payload:
+  task_file: .tasks/active/T-2973-start-watchtower-server.md

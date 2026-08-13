@@ -4,10 +4,10 @@ name: "Create greenfield onboarding flow diagram for curriculum"
 description: >
   Create greenfield onboarding flow diagram for curriculum
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -19,8 +19,8 @@ arc_id: onboarding-curriculum
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-13T23:12:36Z
-last_update: '2026-08-13T23:15:11Z'
-date_finished:
+last_update: 2026-08-13T23:19:10Z
+date_finished: 2026-08-13T23:19:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -226,6 +226,11 @@ grep -q "^arc_id: onboarding-curriculum" .tasks/active/T-2972-*.md
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-08-13 — BPMN element types and corpus registration
+- **What changed:** Discovered that the corpus parser only supports specific BPMN elements (`<bpmn:serviceTask>`, not `<bpmn:task>`). Also learned that workflow projects require both v1.bpmn and meta.json files for corpus registration.
+- **Plan impact:** No impact to plan — these are implementation details discovered during build. The diagram structure (T-001→T-005 sequence with agent/human lanes) remained as specified.
+- **Triggered:** None — implementation completed within original scope
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -282,3 +287,20 @@ grep -q "^arc_id: onboarding-curriculum" .tasks/active/T-2972-*.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2972-create-greenfield-onboarding-flow-diagra.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c59671f4
+- **Timestamp:** 2026-08-13T23:19:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 70
+     - evidence: `out=$(bin/fw corpus explain aef-greenfield-onboarding 2>&1) && echo "$out" | grep -q "T-001" && echo "$out" | grep -q "T-002" && echo "$out" | grep -q "T-005"`
+
+### 2026-08-13T23:19:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

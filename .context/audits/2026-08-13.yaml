@@ -1,9 +1,9 @@
-# Audit Results - 2026-08-13-0128
-timestamp: 2026-08-12T23:28:31Z
+# Audit Results - 2026-08-13-2231
+timestamp: 2026-08-13T20:31:38Z
 sections: "structure"
 summary:
   pass: 29
-  warn: 5
+  warn: 7
   fail: 0
 findings:
   - level: PASS
@@ -23,11 +23,17 @@ findings:
   - level: PASS
     check: "All 17 arc anchor_task references resolve to existing tasks"
   - level: WARN
-    check: "Arc 'capability-overlay' has no task commits in the last 30 days (12 task(s) in arc)"
+    check: "Arc 'capability-overlay' has no task commits in the last 30 days (15 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
   - level: WARN
     check: "Arc 'embeddings-strategy' has no task commits in the last 30 days (3 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
+  - level: WARN
+    check: "Arc 'horizon-axis-hardening' has no task commits in the last 30 days (5 task(s) in arc)"
+    mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
+  - level: WARN
+    check: "Arc 'readme-first-run' is draft with all 2 constituent task(s) work-completed"
+    mitigation: "Run 'fw arc start readme-first-run' to move it to in-progress, then close via Watchtower (/arcs/readme-first-run/close)"
   - level: INFO
     check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
   - level: INFO

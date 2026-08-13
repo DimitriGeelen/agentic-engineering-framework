@@ -1,8 +1,16 @@
 ---
 id: T-2963
-name: "Seam design: a pinned designer drops every extension it was not told about (832 OBS-046)"
+name: "Seam design: a pinned designer drops every extension it was not told about
+  (832 OBS-046)"
 description: >
-  832 rail 602 / their OBS-046. Consequence for us: any document passing through a pinned editor returns stripped of anything that pin does not know — an operator opens a v1.2 map, moves one node, saves, and the new element is gone with no error and nothing in a diff anyone reads. This directly constrains the aef:endpoint semantic reclassification we endorsed at 597. Their polarity (parse only what is named -> never named -> dropped) is the mirror of our _KNOWN_EXT (preserve except a skip-list -> handled nowhere -> dropped); both report success and neither can distinguish handled from silently discarded without a behavioural test.
+  832 rail 602 / their OBS-046. Consequence for us: any document passing through a
+  pinned editor returns stripped of anything that pin does not know — an operator
+  opens a v1.2 map, moves one node, saves, and the new element is gone with no error
+  and nothing in a diff anyone reads. This directly constrains the aef:endpoint semantic
+  reclassification we endorsed at 597. Their polarity (parse only what is named ->
+  never named -> dropped) is the mirror of our _KNOWN_EXT (preserve except a skip-list
+  -> handled nowhere -> dropped); both report success and neither can distinguish
+  handled from silently discarded without a behavioural test.
 
 status: captured
 workflow_type: inception
@@ -12,8 +20,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-13T07:31:08Z
-last_update: 2026-08-13T07:31:08Z
-date_finished: null
+last_update: '2026-08-13T07:45:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +30,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-08-13T07:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-13T07:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2963: Seam design: a pinned designer drops every extension it was not told about (832 OBS-046)

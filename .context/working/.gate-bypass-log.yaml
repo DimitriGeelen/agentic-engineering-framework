@@ -6625,3 +6625,25 @@ FW_SWITCH_FOCUS=1 git add .fabric/components/lib-comment_strip.yaml && FW_SWITCH
 FW_SWITCH_FOCUS=1 git add docs/reports/832-rail/588-aef-to-832.md .context/project/learnings.yaml 2>/dev/null
 git diff --cached --name-only
 FW_SWITCH_FOCUS=1 '
+- timestamp: '2026-08-13T07:32:21Z'
+  task: 'T-2720'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2963'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2963* && FW_SWITCH_FOCUS=1 git commit -q -m "T-2963: file 832s OBS-046 seam question — a pinned designer drops every extension it was not told about, const'
+- timestamp: '2026-08-13T11:51:22Z'
+  task: 'T-2969'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2968'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bin/fw vendor self >/dev/null 2>&1 && echo "vendor self OK"
+FW_SWITCH_FOCUS=1 git add lib/arc.sh tests/unit/t2968_arc_status_comment_blind.bats .tasks/complet'
+- timestamp: '2026-08-13T11:52:01Z'
+  task: 'T-2969'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2968'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bin/fw vendor self >/dev/null 2>&1 && echo "vendor self OK"
+FW_SWITCH_FOCUS=1 git add lib/arc.sh tests/unit/t2968_arc_status_comment_blind.bats .tasks/complet'
