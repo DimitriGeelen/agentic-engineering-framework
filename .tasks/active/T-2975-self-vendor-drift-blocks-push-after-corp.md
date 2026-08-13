@@ -1,17 +1,16 @@
 ---
-id: T-2974
-name: "Enhance greenfield onboarding workflow with detailed explanations"
+id: T-2975
+name: "self-vendor drift blocks push after corpus_explain change"
 description: >
-  Enhance greenfield onboarding workflow with detailed explanations
+  self-vendor drift blocks push after corpus_explain change
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
-tags: [designer-corpus, curriculum]
-components: [tests/unit/t2974_greenfield_operator_prose.py, tools/corpus_explain.py]
-related_tasks: [T-2972, T-2720]
-arc_id: onboarding-curriculum
+tags: []
+components: []
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,9 +21,9 @@ arc_id: onboarding-curriculum
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-13T23:25:24Z
-last_update: 2026-08-13T23:47:13Z
-date_finished: 2026-08-13T23:47:13Z
+created: 2026-08-13T23:47:39Z
+last_update: 2026-08-13T23:47:39Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,72 +34,26 @@ date_finished: 2026-08-13T23:47:13Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-13T23:30:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-13T23:30:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2974: Enhance greenfield onboarding workflow with detailed explanations
+# T-2975: self-vendor drift blocks push after corpus_explain change
 
 ## Context
 
-T-2972 shipped `aef-greenfield-onboarding` v1 — a structurally correct BPMN map of the
-T-001→T-005 prologue, but with one-sentence node descriptions. Operator feedback on the
-rendered diagram: *"i have it but it pretty limited and also we still missing teh comment
-or eplenations"*. The map showed **what** the sequence is; it did not carry **why each step
-matters to the operator or what they can do while it runs** — which is the whole point of a
-curriculum artefact, and is exactly the content the seed tasks' `## For the Operator`
-sections already carry in prose.
+The pre-push self-vendor check (T-2240) is refusing every push on this branch: one file
+under `.agentic-framework/lib/` is stale relative to its framework-repo original. It was
+already blocking before this session's work (it surfaced in the S-2026-0814-0132 handover's
+push step) and T-2974's edit to `tools/corpus_explain.py` is in the same class, so the
+resync covers both. Consumers vendoring from origin would otherwise inherit the divergence
+silently — which is the whole reason the check exists.
 
-v2 lifts that operator-facing prose onto the `<aef:meta note="…"/>` attribute channel — the
-one both readers actually read — so `fw corpus explain aef-greenfield-onboarding` becomes a
-self-contained teaching surface rather than a bare box-and-arrow sketch.
-
-Source of truth for the prose: `lib/seeds/tasks/greenfield/T-00*.md` `## For the Operator`.
-
-**Surface caveat (found during build, see Evolution):** the CLI reads the notes; the pinned
-`/designer` build does **not**. `note` is absent from `AEF_FIELDS`
-(`aef-workflow-designer-0.8.0.html:1771`), so the inspector panel never offers or displays
-it — the designer only round-trips it through `metaKeys` on export. Making the prose visible
-in `/designer` is upstream work in 832, not something AEF can fix (the blueprint is read-only
-by contract, `policy/designer-pin.yaml`). This task delivers the CLI surface and reports the
-designer gap upstream.
+Mechanical resync, no logic change: `bin/fw vendor self` + commit the result.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `v2.bpmn` exists with a `WHAT'S HAPPENING / WHY IT MATTERS / WHAT YOU CAN DO / KEY LEARNING / NEXT` explanation on every T-001…T-005 node
-- [x] The prose is on a channel a reader actually reads — `<aef:meta note="…"/>` attributes, not `<aef:description>` child elements — and reaches `fw corpus explain` output
-- [x] `meta.json` lists v2 and sets `latest: 2`, so `fw corpus explain aef-greenfield-onboarding` serves the enhanced version
-- [x] Node/flow topology is unchanged from v1 (same 5 tasks, same 2 lanes, same agent/human authority split) — this task enriches content, not structure
-- [x] `fw corpus lint` reports zero findings against `aef-greenfield-onboarding`
-- [x] No hard-coded Watchtower port/host literal survives in the map (CLAUDE.md §Watchtower Port) — the T-002 node described the review link as `http://192.168.10.107:3000/…`
-- [x] Regression test pins channel, multi-line survival, and explain's indentation (`tests/unit/t2974_greenfield_operator_prose.py`)
+- [ ] `bin/fw vendor self` runs clean and the resulting `.agentic-framework/` diff is committed
+- [ ] The pre-push self-vendor check reports no drift (push is no longer blocked)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,20 +85,6 @@ designer gap upstream.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-- [ ] [REVIEW] The node explanations answer the "limited / missing explanations" feedback
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw corpus explain aef-greenfield-onboarding`
-  2. Read the `note:` block under T-001 (the first node) and under T-002 (your decision node)
-  **Expected:** each node tells you what is happening, why it matters to you, what you can do
-  meanwhile, and what you should take away — not just a one-line "the agent runs X".
-  **If not:** name the node that still reads thin and the question it left unanswered; that
-  becomes the next enrichment pass (the prose source is `lib/seeds/tasks/greenfield/T-00*.md`).
-  **Note — why the CLI and not `/designer`:** the pinned designer build does not display
-  `note` at all (`AEF_FIELDS` has no entry for it), so `/designer` will still show bare boxes
-  no matter how good the prose is. That gap is upstream in 832 and is reported, not fixed
-  here. Do not re-save this map from `/designer` in the meantime — the designer's `escAttr`
-  does not encode newlines, so a round-trip collapses the five sections into one run-on line.
 
 ## Verification
 
@@ -214,15 +153,6 @@ designer gap upstream.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/t2974_greenfield_operator_prose.py -q > /tmp/.t2974a 2>&1 && grep -q passed /tmp/.t2974a
-bin/fw corpus explain aef-greenfield-onboarding > /tmp/.t2974b 2>&1 && grep -q "version v2" /tmp/.t2974b
-# corpus lint exits 1 on findings in OTHER maps (aef-session-lifecycle geometry,
-# t2584-scratch legacy-ref). The assertion here is scoped deliberately: no finding
-# names OUR map. The trailing grep is the verdict by design, not by oversight.
-bin/fw corpus lint > /tmp/.t2974c 2>&1 || true; ! grep -q "aef-greenfield-onboarding" /tmp/.t2974c
-# corpus_explain.py gained a rendering branch — its own suite must stay green.
-python3 -m pytest tests/unit/test_corpus_explain.py -q > /tmp/.t2974d 2>&1 && grep -q passed /tmp/.t2974d
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -263,52 +193,6 @@ python3 -m pytest tests/unit/test_corpus_explain.py -q > /tmp/.t2974d 2>&1 && gr
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-08-14 — the task was mis-scoped: the prose already existed, the channel was wrong
-
-- **What changed:** the filing assumed v1's explanations were *thin* and needed writing.
-  They were not thin — v1 carried them in `<aef:description>` **child elements**, and no
-  reader reads that shape. `corpus_spec.py:_ext()` builds its dict from `dict(c.attrib)`,
-  so a text-bearing child parses to `{}`; the pinned designer build's per-node vocabulary
-  (`aef-workflow-designer-0.8.0.html:9025` `metaKeys`) is attributes too, and `description`
-  exists there only as a map-level `workflowMeta` attribute. So the operator's "pretty
-  limited / missing the explanations" was not an authoring complaint — it was an accurate
-  report of a **silent data-visibility hole**. The prose was in the file and rendered
-  nowhere, in both surfaces.
-- **Plan impact:** "write richer descriptions" became "move the prose onto the canonical
-  `<aef:meta note="…"/>` attribute channel and prove it reaches a reader." Writing more
-  prose into the wrong channel would have produced the identical complaint again, with
-  more words invisible. Newlines only survive attribute-value normalisation as `&#10;`
-  character references (XML 1.0 §3.3.3) — pinned as an executable assertion in the test
-  rather than a comment, because it is the reason the channel has a rule.
-- **Triggered:**
-  - `tests/unit/t2974_greenfield_operator_prose.py` — pins channel, five-section coverage,
-    multi-line survival, explain's indentation, and v1↔v2 topology parity.
-  - `tools/corpus_explain.py` — multi-line notes now indent their continuation lines;
-    flush-left prose dissolved the walkthrough structure at exactly the length where the
-    prose becomes worth reading.
-  - Two defects the coverage test caught that reading would not have: the T-002 node — the
-    **one node where the operator has something to do** — was the only node missing its
-    `WHAT YOU CAN DO` section (it was headed `WHAT YOU'LL DO`), and its worked example
-    hard-coded `http://192.168.10.107:3000/inception/T-002`, the exact §Watchtower Port
-    anti-pattern, inside the artefact that teaches new operators the framework.
-  - **Upstream (needs 832) — two defects, both verified against the pinned build, not inferred:**
-    1. **`note` is never displayed.** `AEF_FIELDS` (line 1771) lists no `note` entry for any
-       node type, and the inspector's Extensions panel iterates exactly that list
-       (line 5493). The build round-trips `note` through `metaKeys` on export but offers no
-       way to read or author it. So `/designer` shows bare boxes for this map regardless of
-       how much prose the file carries — which is very likely what the operator was actually
-       looking at when they said "pretty limited". The CLI surface is fixed here; the
-       designer surface cannot be fixed from AEF (read-only vendored build by contract,
-       `policy/designer-pin.yaml`).
-    2. **`escAttr` collapses multi-line values.** Line 8969 escapes `& < > "` but not `\n`.
-       A designer re-save writes literal newlines into `note=`, which the next parse
-       normalises to spaces — the five sections become one run-on line, silently. Same
-       silent-fidelity-loss class as T-2614/T-2682.
-
-    Until both land, edit this map's prose in the file and read it via `fw corpus explain`.
-    Written up at `docs/reports/T-2974-designer-note-surface-gap.md`; posted to the 832 rail
-    (`agent-chat-arc` offset 11815, mentioning `workflow-designer`).
-
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -338,34 +222,6 @@ python3 -m pytest tests/unit/test_corpus_explain.py -q > /tmp/.t2974d 2>&1 && gr
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO
-
-**Rationale:** Your feedback turned out to be a bug report, not a content note. The
-explanations were already written in v1 — they were in `<aef:description>` child
-elements, which neither reader reads, so the diagram rendered as bare boxes in both
-Watchtower and the CLI. Moving the prose to the `<aef:meta note>` attribute channel makes
-it visible without rewriting it. Two further defects surfaced from the coverage test, both
-in the T-002 node specifically: the section telling you what to do was missing, and the
-review link was hard-coded to this host's IP and port. Everything mechanical is verified;
-what's left is whether the explanations now read as genuinely explanatory to you, which is
-the one thing I can't check for you.
-
-**Evidence:**
-- `fw corpus explain aef-greenfield-onboarding` now serves v2 and prints 589–1794 chars of
-  operator prose per node; v1 printed none.
-- `tests/unit/t2974_greenfield_operator_prose.py` — 6/6 pass; pins the channel, the
-  five-section coverage, multi-line survival, and v1↔v2 topology parity.
-- `fw corpus lint` — zero findings against this map (the 4 findings it reports are
-  pre-existing, on `aef-session-lifecycle` and `t2584-scratch`).
-- Topology is byte-for-byte equivalent to T-2972 v1: same 7 nodes, same 6 flows, same 2
-  lanes with the same authority split. This changed what the map says, not what it claims.
-- Known limitation, honest version: **`/designer` still shows bare boxes.** The pinned build
-  has no `note` field in `AEF_FIELDS`, so it never displays the prose — and re-saving from it
-  would collapse the multi-line text (`escAttr` does not encode newlines). Both are upstream
-  832 defects, reported, not fixable from AEF. Read the map via `fw corpus explain` until
-  they land. If the designer surface specifically is what you need, that is a separate task
-  gated on an 832 release, not something this one can close.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -389,19 +245,7 @@ the one thing I can't check for you.
 
 ## Updates
 
-### 2026-08-13T23:25:24Z — task-created [task-create-agent]
+### 2026-08-13T23:47:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2974-enhance-greenfield-onboarding-workflow-w.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2975-self-vendor-drift-blocks-push-after-corp.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-aabac7a9
-- **Timestamp:** 2026-08-13T23:47:16Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-08-13T23:47:13Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

@@ -86,9 +86,9 @@ against a second reader I already had.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Rail artefact written to `docs/reports/832-rail/611-aef-to-832.md`
+- [x] Rail artefact written to `docs/reports/832-rail/611-aef-to-832.md`
 - [ ] Posted to the DM rail and read back byte-identical (post is not delivery)
-- [ ] Every claim about T-2968/T-2970 in it matches what those tasks actually shipped — no rounded-up numbers
+- [x] Every claim about T-2968/T-2970 in it matches what those tasks actually shipped — no rounded-up numbers
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -122,6 +122,26 @@ against a second reader I already had.
 -->
 
 ## Verification
+
+# Rail artifact exists and contains expected content
+test -f docs/reports/832-rail/611-aef-to-832.md
+grep -q "five readers" docs/reports/832-rail/611-aef-to-832.md
+grep -q "18/18" docs/reports/832-rail/611-aef-to-832.md
+grep -q "~4,400 lines apart" docs/reports/832-rail/611-aef-to-832.md
+grep -q "three broken probes" docs/reports/832-rail/611-aef-to-832.md
+
+# Verify T-2968 claims
+grep -q "five" .tasks/completed/T-2968-arc-status-read-is-comment-blind--a-yaml.md
+
+# Verify T-2970 claims
+grep -q "18/18" .tasks/completed/T-2970-stale-arc-audit-is-blind-to-legacy-arc-t.md
+grep -q "~4,400" .tasks/completed/T-2970-stale-arc-audit-is-blind-to-legacy-arc-t.md
+
+# Post to DM rail and verify byte-identical readback
+# Topic: dm:0e7ee6cad65137fc:6a646ce8b1bc6560 (AEF<->832 DM rail)
+# This uses the same verification pattern as T-2967 and T-2965
+cat docs/reports/832-rail/611-aef-to-832.md | bin/fw rail post dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --msg-type artifact --ensure-topic
+python3 -c "import json,subprocess; d=json.loads(subprocess.run(['termlink','channel','state','dm:0e7ee6cad65137fc:6a646ce8b1bc6560','--json'],capture_output=True,text=True).stdout); p=[x for x in d if x['offset']==611][0]['payload']; assert p==open('docs/reports/832-rail/611-aef-to-832.md').read(); print('identical',len(p.encode()))"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

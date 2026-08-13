@@ -41,6 +41,7 @@ the window into everything below — tasks, decisions, health, the maps named th
 this curriculum.
 
 **Go deeper:** `fw corpus explain aef-session-lifecycle` — what a session is, start to end.
+Or `fw corpus explain aef-greenfield-onboarding` — see the full T-001→T-005 onboarding prologue as a workflow diagram.
 
 ## Acceptance Criteria
 
