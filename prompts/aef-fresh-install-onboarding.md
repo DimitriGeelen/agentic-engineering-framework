@@ -6,7 +6,7 @@ kind: agent
 tags: [onboarding, install, bootstrap, greenfield]
 variables: [dir, provider]
 created: 2026-06-21T07:00:00Z
-updated: 2026-06-21T07:00:00Z
+updated: 2026-08-12T00:00:00Z
 ---
 
 You are onboarding a NEW project at `{{dir}}` to the Agentic Engineering Framework.
@@ -132,10 +132,11 @@ but does NOT modify PATH by default — add `~/.local/bin` to PATH (or re-source
 
 - **[dogfood — important]** Do NOT trust a bare `curl … 200` as "my dashboard is up". If the default port
   is held by a foreign service, `fw serve` refuses it (good) but starts nothing, while `fw watchtower url`
-  + curl can still return 200 from the *foreign* server. VERIFY identity: confirm the `fw serve` log names
+  + curl can still return 200 from the *foreign* server — that mismatch is a **port collision**, not a
+  routing defect (T-2793's router walks up from `$PWD` with no global fallback, so bare `fw` here cannot
+  itself resolve to a different project — T-2448). VERIFY identity: confirm the `fw serve` log names
   **your** project (`Starting Watchtower … (project: {{dir}})`), not another. If it names a different
-  project, you hit the bare-fw routing bug — use the **project-local** fw (`{{dir}}/.agentic-framework/bin/fw serve --port <free>`)
-  and re-verify.
+  project, another service is squatting on the port — pick a free one with `--port N` and re-verify.
 - Self-heal: if the port is busy, pick another with `--port N`. Report the real URL + what it shows
   (task board, audit, fabric, BVP).
 
@@ -151,9 +152,12 @@ Once they choose, create the task (or inception), set focus, start. **[dogfood]*
 installing/framework session does not coordinate the consumer's build.
 
 ## THROUGHOUT
-- Use the **project-appropriate fw path**: bare `fw` only if you've confirmed the shim resolves to THIS
-  project; in a consumer prefer `{{dir}}/.agentic-framework/bin/fw`. **[dogfood]** on a multi-project host,
-  bare `fw` resolves to the global shim and can operate on the wrong project (Watchtower, doctor scope).
+- Bare `fw` is safe to use from inside `{{dir}}`: since T-2793 (total-isolation CLI router, completed by
+  T-2854/T-2856's removal of the global-install fallback) `fw` on PATH always walks up from `$PWD` to
+  **this** project's own `.agentic-framework/bin/fw` and never falls through to a global or foreign-project
+  install — there is no longer a global install to fall back to (D-377). `{{dir}}/.agentic-framework/bin/fw`
+  remains equivalent and is still the right choice when handing off a command that outlives this session
+  (§Copy-Pasteable Commands) or when `$PWD` is not yet `{{dir}}`.
 - Every commit traces to a task; every destructive command waits for the operator's approval.
 - **Session end:** `fw handover --commit` (generates + commits + pushes). Never end with unpushed commits.
 - **Final report:** project path · provider · fw version · dashboard URL (+ which project it names) ·

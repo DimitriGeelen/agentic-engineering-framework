@@ -1,22 +1,15 @@
 #!/usr/bin/env bats
-# DRAFT — belongs at tests/unit/t2862_greenfield_first_inception_e2e.bats
-#
-# Parked here because the budget gate (correctly) blocked writes to tests/ at
-# 96% context. Move it into place verbatim and run it; it was authored against
-# a live end-to-end run, not from reading source. Nothing in it is speculative:
-# every assertion below was observed manually first.
-#
 # ── What the live run established (2026-08-11, S-2026-0811) ──────────────────
 # On a fresh `fw init` greenfield project, doing only the work the seed asks:
 #   1. AC preflight            PASS  (T-2862's fix works — no self-gating AC)
-#   2. review-marker gate      PASS  (needs WATCHTOWER_URL, see leg 6)
+#   2. review-marker gate      PASS
 #   3. Recommendation gate     PASS
 #   4. P-011 verification      FAILED until the seed line was fixed this session
 #   5. `**Decision**: GO`      RECORDED
 #   6. decide exit code        1, from the Watchtower emit AFTER the record
 #
 # Two defects found by running it that a scanner could never see — both filed
-# separately, neither fixed here:
+# separately:
 #   A. The P-011 extractor strips HTML comments from the task body before
 #      running verification lines, which eats `<!--`/`-->` LITERALS out of a
 #      command. The seed's own Recommendation check became `sed '//d'` — empty
@@ -25,12 +18,14 @@
 #      work, since the template's line is indented inside the comment). The
 #      EXTRACTOR is still broken for any other command containing those
 #      delimiters.
-#   B. `fw task review` exits non-zero and writes no `.reviewed-T-XXX` marker
-#      when no Watchtower is reachable, and `fw inception decide` refuses
+#   B. `fw task review` exited non-zero and wrote no `.reviewed-T-XXX` marker
+#      when no Watchtower was reachable, and `fw inception decide` refused
 #      without that marker on ALL THREE decision values — including DEFER. On a
 #      genuinely fresh machine, where nothing instructs the user to run
 #      `fw serve` (T-001 mentions it only as "what you can do meanwhile"), the
-#      first inception cannot be completed by any path.
+#      first inception could not be completed by any path. FIXED by T-2922 —
+#      `emit_review` (lib/review.sh) no longer aborts under `set -e` when
+#      `_watchtower_url` fails loud; see leg 6 below for the pinned behaviour.
 #
 # Also observed: decide returns 1 having already written the decision. An agent
 # or script reading that exit code concludes failure and may retry a completed
@@ -171,19 +166,24 @@ PY
     ! echo "$output" | grep -q 'verification(s) failed'
 }
 
-# ── Boundary of what this suite establishes ───────────────────────────────────
+# ── T-2922: fw task review must not fail closed with no Watchtower reachable ──
+#
+# Every leg above passes WATCHTOWER_URL, sidestepping the question entirely
+# (the fast path in _watchtower_url never probes reachability). This leg drops
+# WATCHTOWER_URL and confirms the real out-of-the-box path: no Watchtower
+# started, nothing set. Before T-2922, `fw task review` exited non-zero and
+# never wrote `.reviewed-T-002` here (this suite's own leg 6 pinned the bug —
+# see git history). Full AC coverage (all three dispositions, the
+# no-daemon-prerequisite invariant, and the live-Watchtower regression leg)
+# lives in tests/integration/t2922_greenfield_first_inception.bats, which
+# builds its own dedicated fixture; this leg keeps the cheaper PRISTINE-reuse
+# fixture here honest rather than leaving it green for the wrong reason.
 
-@test "t2862: fw task review fails closed with no marker when no Watchtower is reachable" {
-    # Not a fix — a boundary marker. Every leg above passes WATCHTOWER_URL,
-    # because without it `fw task review` exits non-zero and never writes
-    # .context/working/.reviewed-T-002, and `fw inception decide` refuses
-    # without that marker on all three decision values including DEFER.
-    #
-    # This leg exists so nobody reads the green suite above as proof that the
-    # out-of-the-box experience works. It does not.
+@test "t2862/t2922: fw task review succeeds and writes the marker with no Watchtower reachable" {
     do_the_agent_work
     run env -u WATCHTOWER_URL -i PATH="/usr/local/bin:/usr/bin:/bin" \
         HOME="$WORK/home" bash -c "cd '$PROJ' && '$FW' task review T-002"
-    [ "$status" -ne 0 ]
-    [ ! -f "$PROJ/.context/working/.reviewed-T-002" ]
+    [ "$status" -eq 0 ]
+    [ -f "$PROJ/.context/working/.reviewed-T-002" ]
+    echo "$output" | grep -q 'fw serve'
 }
