@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2975: self-vendor drift blocks push after corpus_explain change
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-13T23:55:41Z
+# ============================================================================
+
+task_id: T-2975
+task_name: "self-vendor drift blocks push after corpus_explain change"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-13T23:47:39Z
+completed: 2026-08-13T23:55:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T01:49:32+02:00
+last_commit: 2026-08-14T01:49:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  resync vendored greenfield T-001 seed — pre-push self-vendor check was blocking
+
+# Key outcomes
+outcomes:
+  - '`bin/fw vendor self` runs clean and the resulting `.agentic-framework/` diff is committed'
+  - 'The pre-push self-vendor check reports no drift (push is no longer blocked) — verified by an actual successful push, `a25497afe..d4d1d2064 t2539-staging`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-001-orientation-and-framework-health.md'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2971-rail-611--exclusion-vs-hole-applied-to-s.md'
+  - '.tasks/active/T-2974-enhance-greenfield-onboarding-workflow-w.md'
+  - '.tasks/active/T-2975-self-vendor-drift-blocks-push-after-corp.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T01:49:32'
+    action: 'T-2975: resync vendored greenfield T-001 seed — pre-push self-vendor check was blocking'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 19
+  lines_added: 427
+  lines_removed: 143
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2975-self-vendor-drift-blocks-push-after-corp.md
+generated_by: context-agent-hybrid

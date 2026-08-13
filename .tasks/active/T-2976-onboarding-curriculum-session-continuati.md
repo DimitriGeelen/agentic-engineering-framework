@@ -1,8 +1,8 @@
 ---
-id: T-2975
-name: "self-vendor drift blocks push after corpus_explain change"
+id: T-2976
+name: "onboarding curriculum session continuation"
 description: >
-  self-vendor drift blocks push after corpus_explain change
+  onboarding curriculum session continuation
 
 status: started-work
 workflow_type: build
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-13T23:47:39Z
-last_update: 2026-08-13T23:47:39Z
+created: 2026-08-13T23:55:45Z
+last_update: 2026-08-13T23:55:45Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,24 +36,18 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2975: self-vendor drift blocks push after corpus_explain change
+# T-2976: onboarding curriculum session continuation
 
 ## Context
 
-The pre-push self-vendor check (T-2240) is refusing every push on this branch: one file
-under `.agentic-framework/lib/` is stale relative to its framework-repo original. It was
-already blocking before this session's work (it surfaced in the S-2026-0814-0132 handover's
-push step) and T-2974's edit to `tools/corpus_explain.py` is in the same class, so the
-resync covers both. Consumers vendoring from origin would otherwise inherit the divergence
-silently — which is the whole reason the check exists.
-
-Mechanical resync, no logic change: `bin/fw vendor self` + commit the result.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw vendor self` runs clean and the resulting `.agentic-framework/` diff is committed
-- [ ] The pre-push self-vendor check reports no drift (push is no longer blocked)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -245,7 +239,7 @@ Mechanical resync, no logic change: `bin/fw vendor self` + commit the result.
 
 ## Updates
 
-### 2026-08-13T23:47:39Z — task-created [task-create-agent]
+### 2026-08-13T23:55:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2975-self-vendor-drift-blocks-push-after-corp.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2976-onboarding-curriculum-session-continuati.md
 - **Context:** Initial task creation

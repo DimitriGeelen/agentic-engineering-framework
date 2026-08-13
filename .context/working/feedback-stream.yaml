@@ -32872,3 +32872,21 @@ scan_id: R-aabac7a9
 task_id: T-2974
 payload:
   task_file: .tasks/active/T-2974-enhance-greenfield-onboarding-workflow-w.md
+---
+kind: scan_emitted
+timestamp: '2026-08-13T23:55:31Z'
+scan_id: R-674dc22a
+task_id: T-2975
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-13T23:55:31Z'
+scan_id: R-674dc22a
+task_id: T-2975
+payload:
+  task_file: .tasks/active/T-2975-self-vendor-drift-blocks-push-after-corp.md
