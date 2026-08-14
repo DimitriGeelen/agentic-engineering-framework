@@ -4,12 +4,12 @@ name: "P-011 evaluates unparseable verification lines as shell — preflight ref
 description: >
   P-011 evaluates unparseable verification lines as shell — preflight refusal
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, bin/fw, lib/root-pollution.sh, lib/verification-port.sh, lib/verify_queue.py, tests/unit/t2990_root_pollution.bats, tests/unit/t2991_verification_preflight.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T17:21:33Z
-last_update: 2026-08-14T17:21:33Z
-date_finished: null
+last_update: 2026-08-14T17:26:46Z
+date_finished: 2026-08-14T17:26:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -326,3 +326,15 @@ agent's workaround routed around it for three weeks.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2991-p-011-evaluates-unparseable-verification.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d6f4425c
+- **Timestamp:** 2026-08-14T17:27:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-14T17:26:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

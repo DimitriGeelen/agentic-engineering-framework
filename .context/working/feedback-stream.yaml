@@ -33214,3 +33214,39 @@ scan_id: R-ceab86e6
 task_id: T-2989
 payload:
   task_file: .tasks/active/T-2989-two-standing-corpus-findings-are-permane.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T17:21:17Z'
+scan_id: R-b0350676
+task_id: T-2990
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T17:21:17Z'
+scan_id: R-b0350676
+task_id: T-2990
+payload:
+  task_file: .tasks/active/T-2990-root-level-postscript-junk-written-by-im.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T17:27:25Z'
+scan_id: R-d6f4425c
+task_id: T-2991
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T17:27:25Z'
+scan_id: R-d6f4425c
+task_id: T-2991
+payload:
+  task_file: .tasks/active/T-2991-p-011-evaluates-unparseable-verification.md

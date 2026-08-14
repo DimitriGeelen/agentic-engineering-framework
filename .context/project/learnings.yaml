@@ -4493,3 +4493,9 @@ X'` returning empty group."
   task: T-2989
   date: 2026-08-14
   context: Added via context agent
+- id: L-600
+  learning: "A gate that EXECUTES text from a task file is an execution surface, and must validate the text is a command before running it. P-011 evals each line of ## Verification; nothing checked parseability first, so a multi-line 'python3 -c' block had its PYTHON BODY eval'd as bash — and 'import yaml,sys' is a valid bash line that runs ImageMagick's screenshot tool, writing multi-MB PostScript into the repo root (cwd=PROJECT_ROOT). 56MB across four incidents over three months (T-2990/T-2991). Two properties made it survive: (1) the gate's FAIL output is indistinguishable from an ordinary broken verification command, so the agent repairs the block within minutes and the offending state never persists — 0 of 2118 stored blocks are unparseable today, the evidence deletes itself; (2) the side effect is silent and lands where nothing watches. Generalise: wherever a framework component evals task-authored strings, ask what happens to the LINES THAT ARE NOT COMMANDS, and whether their side effects land anywhere anyone looks. Fix shape: bash -n preflight refusing the whole block, at every execution site in the same commit (L-399)."
+  source: P-001
+  task: T-2991
+  date: 2026-08-14
+  context: Added via context agent

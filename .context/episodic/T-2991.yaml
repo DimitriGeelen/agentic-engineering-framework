@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2991: P-011 evaluates unparseable verification lines as shell — preflight refusal
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T17:27:37Z
+# ============================================================================
+
+task_id: T-2991
+task_name: "P-011 evaluates unparseable verification lines as shell — preflight refusal"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T17:21:33Z
+completed: 2026-08-14T17:26:46Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T19:26:36+02:00
+last_commit: 2026-08-14T19:26:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refuse a verification block bash cannot parse, before eval'ing it
+
+# Key outcomes
+outcomes:
+  - 'A `check_verification_parseable` predicate lives in'
+  - 'The predicate refuses a block containing a line bash cannot parse, and the'
+  - '`fw task update --status work-completed` refuses such a block **before**'
+  - '`lib/verify_queue.py` refuses the same block rather than running it —'
+  - 'The exact T-2990 block is pinned as a regression test: given the real'
+  - 'The corpus stays green: re-measured after the change — 0 blocks refused'
+  - 'A bypass exists and is logged Tier-2 (`FW_ALLOW_UNPARSEABLE_VERIFICATION=1`),'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-t2991_verification_preflight.yaml'
+  - 'lib/verification-port.sh'
+  - 'lib/verify_queue.py'
+  - '.tasks/active/T-2991-p-011-evaluates-unparseable-verification.md'
+  - '.tasks/completed/T-2990-root-level-postscript-junk-written-by-im.md'
+  - 'tests/unit/t2991_verification_preflight.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T19:26:36'
+    action: 'T-2991: refuse a verification block bash cannot parse, before eval''ing it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 13
+  lines_added: 1316
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2991-p-011-evaluates-unparseable-verification.md
+generated_by: context-agent-hybrid

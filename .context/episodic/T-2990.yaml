@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2990: root-level PostScript junk written by ImageMagick import — remove and detect
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T17:21:28Z
+# ============================================================================
+
+task_id: T-2990
+task_name: "root-level PostScript junk written by ImageMagick import — remove and detect"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T16:55:03Z
+completed: 2026-08-14T17:18:36Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T19:18:18+02:00
+last_commit: 2026-08-14T19:18:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  56MB of junk in the repo root was written by our own verification gate. fabric card for the root-pollution regression test
+
+# Key outcomes
+outcomes:
+  - 'The mechanism is reproduced, not asserted — with a fake `import` on PATH so'
+  - 'All four PostScript files are removed from the repo root, and the removal'
+  - 'Why git never surfaced them is established and recorded — `/os` and `/sys`'
+  - 'A detection rail exists: `fw doctor` reports root-level untracked binary'
+  - 'The rail is proven in BOTH directions by a test — and the positive controls'
+  - 'The rail does not flag the ~14 legitimate root PNGs or source files at the'
+  - '`## RCA` records symptom, root cause, why it was structurally allowed, and'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.fabric/components/lib-root-pollution.yaml'
+  - '.fabric/components/tests-unit-t2990_root_pollution.yaml'
+  - '.gitignore'
+  - 'lib/root-pollution.sh'
+  - '.tasks/active/T-2990-root-level-postscript-junk-written-by-im.md'
+  - 'tests/unit/t2990_root_pollution.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T19:18:18'
+    action: 'T-2990: 56MB of junk in the repo root was written by our own verification gate'
+  - time: '2026-08-14T19:18:36'
+    action: 'T-2990: fabric card for the root-pollution regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 23
+  commits: 2
+  files_changed: 7
+  lines_added: 694
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2990-root-level-postscript-junk-written-by-im.md
+generated_by: context-agent-hybrid

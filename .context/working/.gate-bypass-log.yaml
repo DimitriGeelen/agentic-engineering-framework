@@ -6665,3 +6665,12 @@ FW_SWITCH_FOCUS=1 git add lib/arc.sh tests/unit/t2968_arc_status_comment_blind.b
   command: 'git add .agentic-framework/ VERSION && FW_SWITCH_FOCUS=1 git commit -q -m "T-2986: vendor the approvals blocked-arc change
 
 Exactly the two web/ files this task edited, plus the VERSION stamp. Checked'
+- timestamp: '2026-08-14T15:52:01Z'
+  task: 'T-100201'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2989'
+  command: 'git add .fabric
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2989: fabric card for the seam-marker regression test
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>" && git log --oneline -1'
