@@ -212,9 +212,9 @@ verification failing in a project where nothing is wrong.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bats tests/unit/t2996_seed_commit_assertion.bats > /tmp/.t2996.out 2>&1 && grep -q "^ok 7" /tmp/.t2996.out
+bats tests/unit/t2996_seed_commit_assertion.bats > /tmp/.t2996.out 2>&1 && grep -q "^ok 8" /tmp/.t2996.out
 # The fixed line itself, run the way P-011 runs it, against this repo's history.
-bash -c 'set -eo pipefail; out=$(git log --format=%s); echo "$out" | grep -q "T-2996"'
+bash -c 'set -eo pipefail; [ -n "$(git log --grep=T-2996 -1 --format=%s)" ]'
 # No seed EXECUTES the HEAD-only form (comments explaining why are fine).
 ! awk '/^## Verification$/{f=1;next} f && /^## /{exit} f && !/^[[:space:]]*#/ && NF' lib/seeds/tasks/greenfield/T-003-first-governed-commit.md | grep -q 'git log -1'
 

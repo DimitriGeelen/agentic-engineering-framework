@@ -54,12 +54,20 @@ which gates guard each transition.
 
 # Some commit in history references this task.
 #
-# NOT `git log -1` (T-2996 / G-006): that asserts a property of HEAD, which is
-# true the moment this task completes and false from the very next commit
-# onward — a permanently-red CTL-013 in every project built on AEF, clearable by
-# nothing, because the work it checks is correct and the question is wrong.
+# NOT `git log -1 --format=%s` alone (T-2996 / G-006): that asserts a property
+# of HEAD, true the moment this task completes and false from the very next
+# commit onward -- a permanently-red CTL-013 in every project built on AEF,
+# clearable by nothing, because the work it checks is correct and the question
+# is wrong.
 #
-# Capture-then-grep, not a pipeline (L-387): `git log | grep -q` exits 141 under
-# P-011's `set -eo pipefail` once history is long enough that grep matches and
-# closes stdin while git is still writing.
-out=$(git log --format=%s); echo "$out" | grep -q "T-002"
+# NO PIPE AT ALL, deliberately (L-387 + T-2743). The obvious repair is
+# `out=$(git log --format=%s); echo "$out" | grep -q "T-XXX"`, and it is still
+# wrong: that form is SIGPIPE-free only while the capture fits the 65536-byte
+# pipe buffer. This framework's own log is 608KB, and the repaired line exited
+# 141 under P-011 on the first run. A fresh consumer would not hit it; a mature
+# one would -- which is the same "goes red later" shape as the original defect.
+#
+# `git log --grep` filters inside git, so nothing is piped and nothing can
+# SIGPIPE, at any history length. `-1` bounds git's own output AFTER filtering,
+# so this is still a search over all history, not a check on HEAD.
+[ -n "$(git log --grep="T-002" -1 --format=%s)" ]

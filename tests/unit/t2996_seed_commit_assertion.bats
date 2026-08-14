@@ -54,9 +54,23 @@ _verif() {
     done
 }
 
-@test "T-2996: both seeds use the capture-then-grep shape" {
-    _verif "$GF" | grep -q 'out=$(git log --format=%s)'
-    _verif "$EP" | grep -q 'out=$(git log --format=%s)'
+@test "T-2996: both seeds use the pipe-free --grep form" {
+    # Not capture-then-grep. That repair still SIGPIPEs once the capture exceeds
+    # the 65536-byte pipe buffer, and P-011 caught it doing exactly that against
+    # this repo's 608KB log. git log --grep filters inside git: no pipe exists.
+    _verif "$GF" | grep -q 'git log --grep="T-003" -1'
+    _verif "$EP" | grep -q 'git log --grep="T-002" -1'
+}
+
+@test "T-2996: neither seed executes ANY pipe in its assertion" {
+    # The strongest form of the L-387 guard: no pipeline, nothing to SIGPIPE,
+    # at any history length. Weaker shape-checks kept passing while the line
+    # was still broken.
+    local f
+    for f in "$GF" "$EP"; do
+        run bash -c "$(declare -f _verif); _verif '$f' | grep -c '|'"
+        [ "$output" = "0" ] || { echo "assertion in $f still contains a pipe" >&2; return 1; }
+    done
 }
 
 # --- behaviour: the whole point ---
@@ -105,12 +119,20 @@ _verif() {
 
 @test "T-2996: it holds on a long history (the SIGPIPE case)" {
     # L-387 fires when grep matches early and closes stdin while git is still
-    # writing. With the match at the very bottom of a long log, the old pipeline
-    # form is most exposed; the capture form cannot be.
+    # writing. Note the capture-then-grep form does NOT escape this -- it only
+    # moves the threshold to the 65536-byte pipe buffer, which is where this
+    # task's first repair died (rc=141 against a 608KB log). Only the pipe-free
+    # form is safe at any length.
     cd "$SB"
     git init -q . && git config user.email t@t && git config user.name t
     git commit -q --allow-empty -m "T-003: Initial project structure"
-    for i in $(seq 1 400); do git commit -q --allow-empty -m "filler commit $i"; done
+    # 1200 commits with long subjects: the log must exceed the 65536-byte pipe
+    # buffer, or this test cannot see the failure it exists for. The 400-commit
+    # version passed against the broken capture-then-grep form.
+    for i in $(seq 1 1200); do
+        git commit -q --allow-empty -m "filler commit $i — padding to push the log past the pipe buffer"
+    done
+    [ "$(git log --format=%s | wc -c)" -gt 65536 ]
 
     local line
     line=$(_verif "$GF" | tail -1)
