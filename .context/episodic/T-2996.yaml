@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2996: seed first-governed-commit asserts HEAD, not history — permanent CTL-013 red in every consumer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T19:50:13Z
+# ============================================================================
+
+task_id: T-2996
+task_name: "seed first-governed-commit asserts HEAD, not history — permanent CTL-013 red in every consumer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T19:43:40Z
+completed: 2026-08-14T19:49:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T21:47:44+02:00
+last_commit: 2026-08-14T21:49:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the onboarding seeds asserted a property of HEAD. the repair had the same defect one buffer further out
+
+# Key outcomes
+outcomes:
+  - 'Both seeds assert the task ref appears **anywhere in history**, not only in HEAD'
+  - 'Both use the capture-then-grep shape (`out=$(git log --format=%s); echo "$out" | grep -q …`) — no `git log | grep -q` pipeline, per L-387'
+  - 'Rehearsed under real gate conditions: `bash -c ''set -eo pipefail; <line>''` returns 0 on this repo''s history (not just an interactive shell — T-2743)'
+  - 'Positive control: the new line still FAILS in a repo whose history contains no such task ref (the check is not vacuous)'
+  - '`tests/unit/t2996_seed_commit_assertion.bats` green, covering both seed variants and both controls'
+  - 'No other seed carries the `git log -1 … | grep -q` shape (swept, not assumed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-t2996_seed_commit_assertion.yaml'
+  - 'lib/seeds/tasks/existing-project/T-002-first-governed-commit.md'
+  - 'lib/seeds/tasks/greenfield/T-003-first-governed-commit.md'
+  - '.tasks/active/T-2996-seed-first-governed-commit-asserts-head-.md'
+  - 'tests/unit/t2996_seed_commit_assertion.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T21:47:44'
+    action: 'T-2996: the onboarding seeds asserted a property of HEAD'
+  - time: '2026-08-14T21:49:38'
+    action: 'T-2996: the repair had the same defect one buffer further out'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 5
+  lines_added: 539
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2996-seed-first-governed-commit-asserts-head-.md
+generated_by: context-agent-hybrid
