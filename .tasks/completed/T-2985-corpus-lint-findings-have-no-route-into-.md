@@ -2,15 +2,19 @@
 id: T-2985
 name: "corpus lint findings have no route into work — advisory, unscheduled, ungated"
 description: >
-  fw corpus lint is not in fw audit, not on cron, and not in any Verification block, so a finding persists until someone types the command. T-2984 found two that had stood ~4 weeks on a vendored, seed-referenced map. Decide the surfacing mechanism (audit section vs cron vs close-gate on corpus-touching tasks) and wire it.
+  fw corpus lint is not in fw audit, not on cron, and not in any Verification block,
+  so a finding persists until someone types the command. T-2984 found two that had
+  stood ~4 weeks on a vendored, seed-referenced map. Decide the surfacing mechanism
+  (audit section vs cron vs close-gate on corpus-touching tasks) and wire it.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
-tags: []
-components: []
-related_tasks: []
+horizon: null
+tags: [corpus, audit]
+components: [tests/unit/t2984_session_lifecycle_lane_geometry.py]
+related_tasks: [T-2984, T-2980, T-2684, T-2688, T-2689, T-2930]
+arc_id: designer-corpus
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T11:48:30Z
-last_update: 2026-08-14T11:48:30Z
-date_finished: null
+last_update: 2026-08-14T12:08:07Z
+date_finished: 2026-08-14T12:08:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +38,87 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-14T11:50:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-14T12:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2985: corpus lint findings have no route into work — advisory, unscheduled, ungated
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw corpus lint` reports only when a human types it. It is not in `fw audit`, not on cron,
+not in any `## Verification` block. A finding therefore persists exactly as long as nobody
+happens to run the command.
+
+T-2984 is the worked example: `lane-geometry` (T-2684) and `lane-overflow` (T-2688/T-2689)
+both fired on `aef-session-lifecycle` for ~4 weeks. That map is vendored into every consumer
+by T-2942 and is the one `existing-project/T-001` routes a first-time operator to. It was
+found by hand-auditing arc-014 — not a mechanism.
+
+This is the surfacing half of arc-014's headline mechanic ("every vocabulary gap discovered
+en route tracked to closure in the arc"). The detectors are the *finding* half and they work;
+nothing converts a finding into work.
+
+**Tier is WARN, not FAIL** — and that is the substantive design decision, not a hedge. The
+sibling check from T-2980 (seed → corpus-map references) is FAIL because a dangling reference
+is unambiguously broken and ships to new installs. Corpus-lint findings are not homogeneous:
+of the two currently standing, `legacy-ref` on `t2584-scratch` is a scratch artefact and
+`emitterless-typed-event` on `aef-dispatch-loop@v3` is a **real seam** — a typed catch whose
+throw legitimately lives outside the corpus. A blanket FAIL would make `fw audit` exit 2 on
+a correct corpus, and the reliable response to an audit that fails for a known-acceptable
+reason is that people stop reading it. WARN puts every finding in the daily output where
+drift becomes visible, without teaching anyone to ignore the exit code.
+
+**Scope fence:** audit only. `fw doctor` is the usual second surface for drift classes
+(cron registry, tool-set manifest) but is deliberately out of scope — doctor is the
+fast-feedback path agents run mid-session, and corpus lint parses every map in the store.
+If daily audit proves too slow a loop, adding doctor is a follow-up with its own evidence.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw audit` runs corpus lint over the store and emits one WARN per finding, each naming
+      the map, the node(s), and the rule — enough to act on without re-running the linter
+- [x] Zero findings emits a PASS line carrying the scanned-map count (same shape as T-2980's
+      `All N onboarding-seed corpus references resolve...`), so "clean" is distinguishable
+      from "did not run"
+- [x] Findings are WARN tier: with findings present `fw audit` exits ≤ 1, never 2 — pinned by
+      a test, since the tier IS the decision and a later blanket-FAIL would be silent
+- [x] Degrades silently where the linter or store is absent (vendored consumers without
+      `tools/corpus_lint.py`, fresh projects with no `.context/designer/projects/`) — no
+      traceback, no spurious WARN, no PASS line claiming a scan that did not happen
+- [x] A test asserts the check sees the REAL store in this checkout, not just fixtures —
+      the T-2980 lesson: a scan that drifts from what it claims to cover leaves every
+      fixture test green
+- [x] The two currently-standing findings (`t2584-scratch` legacy-ref, `aef-dispatch-loop`
+      emitterless-typed-event) appear as WARNs rather than being suppressed — if they are
+      acceptable, that is a judgement to record against them, not a reason to hide them
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +152,11 @@ date_finished: null
 -->
 
 ## Verification
+
+out=$(timeout 580 bats tests/unit/audit_corpus_lint_findings.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/audit/audit.sh
+grep -q "T-2985 (arc-014, designer-corpus): corpus-lint findings reach the daily audit" agents/audit/audit.sh
+out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q "Self-vendor drift"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -165,6 +241,26 @@ date_finished: null
 
 ## Evolution
 
+### 2026-08-14 — the mechanism question answered itself; the test found a real contract
+
+- **What changed:** Filed as "decide the surfacing mechanism (audit vs cron vs close-gate)",
+  expecting that to be the work. It was not a real fork. `fw audit` already runs daily on
+  cron, so an audit section *is* the cron option, and a close-gate only fires on tasks that
+  touch corpus files — which is precisely the population that does not need reminding. Audit
+  section, no inception needed.
+- **Plan impact:** The genuine decision turned out to be the **tier**, not the surface, and
+  it inverts the T-2980 sibling directly above it in the same file. Seed→map references are
+  homogeneous (dangling is always broken → FAIL). Corpus findings are not: one of the two
+  standing findings is a real seam. So the reasoning had to be written down *at the divergence*
+  rather than left as an unexplained inconsistency between adjacent checks.
+- **Triggered:** The real-store test initially failed with "no corpus lines at all" — but the
+  audit had exited 75 (EX_TEMPFAIL) because the daily cron audit held the lock. T-2930/OBS-221
+  chose 75 over 0 specifically so readers could distinguish contention from a verdict, and the
+  test was ignoring that contract with `|| true`. Fixed to skip on 75. Worth noting as a class:
+  a test that asserts through a lock is flaky exactly on the hosts where the thing it tests is
+  actually scheduled. Verified the test passes for real once the lock cleared, since a skip
+  proves nothing.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -243,3 +339,24 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2985-corpus-lint-findings-have-no-route-into-.md
 - **Context:** Initial task creation
+
+### 2026-08-14T11:50:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c37167f
+- **Timestamp:** 2026-08-14T12:15:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q "Self-vendor drift"`
+
+### 2026-08-14T12:08:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

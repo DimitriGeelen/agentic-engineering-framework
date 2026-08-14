@@ -834,6 +834,62 @@ if [ "$seed_ref_checked" -gt 0 ] && [ "$seed_ref_missing" -eq 0 ]; then
     pass "All $seed_ref_checked onboarding-seed corpus references resolve to existing maps"
 fi
 
+# T-2985 (arc-014, designer-corpus): corpus-lint findings reach the daily audit.
+#
+# The detectors work; nothing converted their output into work. `fw corpus lint` is
+# not in audit, not on cron, not in any `## Verification` block — so a finding
+# persisted exactly as long as nobody happened to type the command. T-2984 is the
+# worked example: lane-geometry (T-2684) and lane-overflow (T-2688/T-2689) both fired
+# on aef-session-lifecycle for ~4 weeks. That map is vendored into every consumer
+# (T-2942) and is the one existing-project/T-001 routes a first-time operator to. It
+# was found by hand-auditing arc-014, which is not a mechanism.
+#
+# WARN, not FAIL — and unlike the T-2980 sibling directly above, that divergence is
+# the point. Seed→map references are homogeneous: dangling is always broken. Corpus
+# findings are not. `emitterless-typed-event` on aef-dispatch-loop@v3 is a real seam
+# (a typed catch whose throw legitimately lives outside the corpus), and `legacy-ref`
+# on t2584-scratch is a scratch artefact. A blanket FAIL would exit 2 on a correct
+# corpus, and an audit that fails for a known-acceptable reason trains people to stop
+# reading it — which costs more than the findings do.
+#
+# Silent where the linter or the store is absent: vendored consumers may not carry
+# tools/, and a fresh project has no map store. No traceback, no spurious WARN, and
+# no PASS line claiming a scan that did not happen.
+corpus_lint_findings=0
+corpus_lint_scanned=0
+_corpus_lint_py="$PROJECT_ROOT/tools/corpus_lint.py"
+if [ -f "$_corpus_lint_py" ] && [ -d "$PROJECT_ROOT/.context/designer/projects" ]; then
+    _cl_json=$(cd "$PROJECT_ROOT" && timeout 120 python3 "$_corpus_lint_py" --json 2>/dev/null)
+    _cl_rows=$(printf '%s' "$_cl_json" | python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+print("SCANNED\t%d\t\t" % len(d.get("scanned", [])))
+for f in d.get("findings", []):
+    print("FINDING\t%s\t%s\t%s\t%s" % (
+        f.get("rule", "?"), f.get("map", "?"), f.get("node", "") or "-",
+        " ".join(str(f.get("detail", "")).split())))
+' 2>/dev/null)
+    while IFS=$'\t' read -r _clk _cl1 _cl2 _cl3 _cl4; do
+        case "$_clk" in
+            SCANNED) corpus_lint_scanned="${_cl1:-0}" ;;
+            FINDING)
+                warn "Corpus lint [$_cl1] ${_cl2} :: ${_cl3}" \
+                     "${_cl4}" \
+                     "Inspect with 'fw corpus explain ${_cl2%@*}'. Fix the map, or — if the finding is a genuine seam rather than a defect — mark it (aef:meta seamPending=\"...\") so it stops reporting and the marker records the judgement"
+                corpus_lint_findings=$((corpus_lint_findings + 1))
+                ;;
+        esac
+    done <<CORPUSLINT
+$_cl_rows
+CORPUSLINT
+fi
+if [ "$corpus_lint_scanned" -gt 0 ] && [ "$corpus_lint_findings" -eq 0 ]; then
+    pass "All $corpus_lint_scanned corpus map(s) lint clean"
+fi
+
 # T-1855 (T-NEW-7): Stale-arc warning.
 # For each arc with status: in-progress, check whether ANY task with matching
 # arc_id: (slug or arc-NNN form) has been touched by a commit in the last

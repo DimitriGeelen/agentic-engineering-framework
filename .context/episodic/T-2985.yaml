@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2985: corpus lint findings have no route into work — advisory, unscheduled, ungated
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T12:15:53Z
+# ============================================================================
+
+task_id: T-2985
+task_name: "corpus lint findings have no route into work — advisory, unscheduled, ungated"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T11:48:30Z
+completed: 2026-08-14T12:08:07Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw corpus lint is not in fw audit, not on cron, and not in any Verification block, so a finding persists until someone types the command. T-2984 found two that had stood ~4 weeks on a vendored, seed-referenced map. Decide the surfacing mechanism (audit section vs cron vs close-gate on corpus-touching tasks) and wire it.
+
+# Key outcomes
+outcomes:
+  - '`fw audit` runs corpus lint over the store and emits one WARN per finding, each naming'
+  - 'Zero findings emits a PASS line carrying the scanned-map count (same shape as T-2980''s'
+  - 'Findings are WARN tier: with findings present `fw audit` exits ≤ 1, never 2 — pinned by'
+  - 'Degrades silently where the linter or store is absent (vendored consumers without'
+  - 'A test asserts the check sees the REAL store in this checkout, not just fixtures —'
+  - 'The two currently-standing findings (`t2584-scratch` legacy-ref, `aef-dispatch-loop`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [corpus, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2985-corpus-lint-findings-have-no-route-into-.md
+generated_by: context-agent-hybrid
