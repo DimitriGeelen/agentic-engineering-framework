@@ -178,6 +178,7 @@ FW_CONFIG_REGISTRY=(
     "BRANCH_BEHIND_WARN|50|Commits-behind-origin/master threshold for the branch-hygiene WARN and the handover merge-back nudge (agents/handover/handover.sh). T-100143/T-100144."
     "STALE_ARC_DAYS|30|Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale (agents/audit/audit.sh). T-1855."
     "RETIRE_WHEN_ADVISORY|1|Enable the audit retire_when advisory rail for free drivers; 0 silences the section entirely (agents/audit/audit.sh). T-2169."
+    "GITIGNORE_REGISTER_ADVISORY|1|Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it (agents/audit/audit.sh, lib/gitignore-register.sh). T-2994."
 )
 
 # fw_config_registry — Print all known settings with current values

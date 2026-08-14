@@ -2304,6 +2304,33 @@ check_stale_drafts() {
 }
 check_stale_drafts
 
+# T-2994 (build slice of T-2992). A .gitignore rule is the only common
+# suppression that emits nothing when it fires — no run, no report, no moment at
+# which it says "I am suppressing something". So a comment beside one that
+# promises future work is the single place where deferral prose is a strong
+# signal rather than noise (measured: 184 false positives if the same
+# vocabulary is scanned across lib/ + agents/).
+#
+# WARN, never FAIL. The remedy is "file it or name it", which is a judgement the
+# operator makes, not a condition a gate can settle.
+check_gitignore_register() {
+    [ "${FW_GITIGNORE_REGISTER_ADVISORY:-1}" != "0" ] || return 0
+    [ -f "$FRAMEWORK_ROOT/lib/gitignore-register.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/gitignore-register.sh"
+
+    local _out _n _first
+    if _out=$(fw_gitignore_unregistered_defers "$PROJECT_ROOT"); then
+        return 0
+    fi
+    _n=$(echo "$_out" | grep -c .)
+    _first=$(echo "$_out" | head -1 | cut -f2 | cut -c1-72)
+    warn ".gitignore: $_n comment block(s) defer work without naming a register entry" \
+         "First at line $(echo "$_out" | head -1 | cut -f1): $_first" \
+         "File it (fw work-on / concerns.yaml) and name the id in the comment, or drop the promise. Origin T-2990: 'root-cause task pending' beside two rules, no task ever filed, 56MB over three months. Silence with FW_GITIGNORE_REGISTER_ADVISORY=0."
+}
+check_gitignore_register
+
 echo ""
 fi # end structure
 
