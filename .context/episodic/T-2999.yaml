@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2999: seed assertion matches the commit body, not the subject — false green
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T20:27:23Z
+# ============================================================================
+
+task_id: T-2999
+task_name: "seed assertion matches the commit body, not the subject — false green"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T20:06:17Z
+completed: 2026-08-14T20:27:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T22:22:26+02:00
+last_commit: 2026-08-14T22:22:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the seed assertion matched the commit body, not the subject. vendor resync — corrected seed assertions
+
+# Key outcomes
+outcomes:
+  - 'Both seeds anchor the pattern to the start of the subject (`^T-00N:`)'
+  - 'Both compare the returned subject explicitly, not merely test it non-empty'
+  - 'Still pipe-free (the T-2996 property must not regress)'
+  - '**The missing control:** a test where the task id appears only in another commit''s *body* — the old form passes it, the new form must fail it'
+  - 'A test asserting the printed subject belongs to the matched task, not an unrelated one'
+  - 'Long-history (>65536 bytes) and after-later-commits controls still green'
+  - '`tests/unit/t2996_seed_commit_assertion.bats` extended, all green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-002-first-governed-commit.md'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-003-first-governed-commit.md'
+  - '.agentic-framework/VERSION'
+  - 'lib/seeds/tasks/existing-project/T-002-first-governed-commit.md'
+  - 'lib/seeds/tasks/greenfield/T-003-first-governed-commit.md'
+  - '.tasks/active/T-2999-seed-assertion-matches-the-commit-body-n.md'
+  - 'tests/unit/t2996_seed_commit_assertion.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T22:22:26'
+    action: 'T-2999: the seed assertion matched the commit body, not the subject'
+  - time: '2026-08-14T22:22:46'
+    action: 'T-2999: vendor resync — corrected seed assertions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 2
+  files_changed: 8
+  lines_added: 463
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2999-seed-assertion-matches-the-commit-body-n.md
+generated_by: context-agent-hybrid

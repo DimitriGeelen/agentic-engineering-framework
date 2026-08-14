@@ -1,11 +1,11 @@
 ---
-id: T-2999
-name: "seed assertion matches the commit body, not the subject — false green"
+id: T-3000
+name: "task template teaches the unsafe SIGPIPE shape first, corrects it 20 lines later"
 description: >
-  seed assertion matches the commit body, not the subject — false green
+  task template teaches the unsafe SIGPIPE shape first, corrects it 20 lines later
 
 status: started-work
-workflow_type: build
+workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-14T20:06:17Z
-last_update: '2026-08-14T20:15:13Z'
-date_finished:
+created: 2026-08-14T20:27:45Z
+last_update: 2026-08-14T20:27:45Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,101 +34,53 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-14T20:15:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-14T20:15:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2999: seed assertion matches the commit body, not the subject — false green
+# T-3000: task template teaches the unsafe SIGPIPE shape first, corrects it 20 lines later
 
 ## Context
 
-Third correction in one chain, and the second to my own work. T-2996 fixed
-G-006 (seeds asserted a property of HEAD), then had to fix its own repair
-(capture-then-grep SIGPIPEs above the 64KB pipe buffer). This fixes the
-*replacement*, caught by the consumer session that reported the original.
+`.tasks/templates/default.md` ships a SIGPIPE hint block into the `## Verification`
+section of **every** generated task file. It has accreted chronologically — each task
+appended its correction below the previous one — so it now reads as a sequence of
+"here is the rule / actually that is wrong / actually that is wrong too":
 
-What shipped in T-2996:
+| Line | Says | Task |
+|------|------|------|
+| 96 | **"Safe pattern: capture first, grep the capture"** → `out=$(cmd); echo "$out" \| grep -q PAT` | L-387 |
+| 102 | that form is fine, just drop intermediate stages | T-2090 |
+| 108-110 | that same form **"is NOT SIGPIPE-free"** above the 65536-byte pipe buffer | T-2743 |
+| 116-122 | the file-redirect form is **"the better default even when size is not a concern"** | T-2743 |
 
-```
-[ -n "$(git log --grep="T-003" -1 --format=%s)" ]
-```
+The form an agent copies is the one at line 96: it comes first, it is the only one
+labelled *Safe pattern*, and it carries an explicit origin citation (`L-387, captured
+4×`). The correction that inverts it sits 20 lines further down, after a hint about a
+different thing, and is introduced by a sentence fragment (`AND ONLY WHILE THE CAPTURE
+IS SMALL`) that does not read as a retraction of the labelled rule above it.
 
-**`git log --grep` searches the whole commit message, subject and body.** So any
-commit that merely *mentions* T-003 in its body satisfies it. Reproduced:
+**This is not hypothetical — it is the T-2996 origin.** My first repair to the seed
+assertion adopted the line-96 form verbatim. P-011 refused it with rc=141 against this
+repo's 608KB log. The template taught the shape and the gate caught it one layer later;
+in a consumer with a shorter history it would not have been caught at all, which is the
+same goes-red-later shape as the defect being repaired.
 
-```
-commit subject: "TX-016: close gate"
-commit body:    "also finishes work related to T-003 and TX-015"
+Reported by the 001-CashWeb consumer session, which noted precisely that the earlier
+hint "is the one with L-387's authority attached."
 
-[ -n "$(git log --grep="T-003" -1 --format=%s)" ]   -> PASSES
-git log --grep="T-003" -1 --format=%s               -> "TX-016: close gate"
-```
-
-No T-003 commit exists in that repo. The check passes anyway, and the subject it
-prints belongs to a different task. The consumer hit this for real: their
-`--grep=T-003` selected `T-016: close onboarding gate, complete T-013, add T-015`.
-
-Two distinct defects:
-1. **Body matching** — `--grep` is not subject-anchored.
-2. **Subject/selection mismatch** — `--grep` selects the commit, `--format=%s`
-   prints *that commit's* subject, so a body match surfaces an unrelated one.
-   The bare `-n` test cannot tell them apart because it only asks whether
-   anything was printed.
-
-**Why my tests missed it.** Every behavioural test built a repo where the seed
-commit either existed or nothing referenced the task at all. I never built the
-case in between — task mentioned, never committed — which is the only case that
-separates "a commit whose subject IS this task" from "the string appears
-somewhere". A control that never constructs the ambiguous case cannot detect
-ambiguity. Same shape as the 400-commit history control in T-2996 that sat
-under the pipe buffer and proved nothing.
-
-Fix (the consumer's, adopted as-is):
-
-```
-s=$(git log --grep='^T-003:' -1 --format=%s); [ "${s%%:*}" = "T-003" ]
-```
-
-Anchored selection *and* an explicit subject comparison — belt and braces,
-because either alone still admits an edge (an anchored body line at the start
-of a paragraph; a `--grep` that matches for the wrong reason).
+**Scope fence:** reorder and re-anchor the existing prose in one file. No new gate, no
+detector, no behaviour change to P-011. Every rule currently in the block stays in the
+block — this task changes which one leads and where each caveat sits, not what is true.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Both seeds anchor the pattern to the start of the subject (`^T-00N:`)
-- [x] Both compare the returned subject explicitly, not merely test it non-empty
-- [x] Still pipe-free (the T-2996 property must not regress)
-- [x] **The missing control:** a test where the task id appears only in another commit's *body* — the old form passes it, the new form must fail it
-- [x] A test asserting the printed subject belongs to the matched task, not an unrelated one
-- [x] Long-history (>65536 bytes) and after-later-commits controls still green
-- [x] `tests/unit/t2996_seed_commit_assertion.bats` extended, all green
+- [ ] The hint block leads with the file-redirect form (`cmd > /tmp/.out 2>&1 && grep -q PAT /tmp/.out`) as the stated default — the form that is safe at any capture size AND preserves the producing command's exit code
+- [ ] The capture-then-grep form is retained but demoted to a size-bounded exception, with its 65536-byte caveat adjacent to it rather than 20 lines below
+- [ ] The phrase "Safe pattern" no longer labels the capture-then-grep form (no label in the block asserts unconditional safety for a conditionally-safe shape)
+- [ ] Every rule presently in the block still appears: L-387 mechanism, T-2090 no-intermediate-stages, T-2743 pipe-buffer inversion, T-2743 rehearsal-under-pipefail, T-2738 test-runner exit-code guard
+- [ ] All origin citations (L-387, T-2090, T-2743, T-2738) survive, each attached to the rule it originated
+- [ ] A test pins the ordering property, so the block cannot re-accrete into "unsafe form first" the next time a correction is appended
+- [ ] The test is proven non-vacuous: revert the template and watch it go red
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -228,39 +180,7 @@ of a paragraph; a `--grep` that matches for the wrong reason).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bats tests/unit/t2996_seed_commit_assertion.bats > /tmp/.t2999.out 2>&1 && grep -q "^ok 10" /tmp/.t2999.out
-bash -c 'set -eo pipefail; s=$(git log --grep="^T-2999:" -1 --format=%s); [ "${s%%:*}" = "T-2999" ]'
-! awk '/^## Verification$/{f=1;next} f && /^## /{exit} f && !/^[[:space:]]*#/ && NF' lib/seeds/tasks/greenfield/T-003-first-governed-commit.md | grep -qE '\[ -n '
-
 ## RCA
-
-**Symptom:** the seed assertion shipped in T-2996 returns a false green when any
-commit merely mentions the task id in its body, and prints an unrelated subject.
-
-**Root cause:** `git log --grep` searches the whole commit message, not the
-subject. The `-n` test only asks whether anything printed, so it cannot tell a
-subject match from a body match. Two defects, one line.
-
-**Why structurally allowed:** the test suite never constructed the ambiguous
-case. Every behavioural test built a repo where the seed commit existed or
-nothing referenced the task at all — never "mentioned but not committed", which
-is the only case that distinguishes the two readings. A control that cannot
-construct the ambiguity cannot detect it.
-
-This is the third instance of the same shape in one chain, and the pattern is
-worth naming: **T-2996's 400-commit history control sat under the pipe buffer;
-its first body-mention control had the task id replaced with prose to dodge the
-focus-drift gate, and passed against the known-broken line; this one used a
-quoted heredoc so `$SEED` never expanded.** Each looked like coverage. Each was
-caught only by deliberately reverting the fix and re-running — never by reading
-the test.
-
-**Prevention:** every behavioural control in this suite is now proven by
-reverting the seed to the broken form and confirming the specific test goes red.
-That step is recorded in the commit message so the next author knows the bar.
-The generalisable rule — *a positive control is not a control until you have
-watched it fail* — is filed as a learning rather than left in this file.
-
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -352,7 +272,7 @@ watched it fail* — is filed as a learning rather than left in this file.
 
 ## Updates
 
-### 2026-08-14T20:06:17Z — task-created [task-create-agent]
+### 2026-08-14T20:27:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2999-seed-assertion-matches-the-commit-body-n.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3000-task-template-teaches-the-unsafe-sigpipe.md
 - **Context:** Initial task creation

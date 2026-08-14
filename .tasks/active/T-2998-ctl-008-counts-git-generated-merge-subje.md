@@ -2,7 +2,18 @@
 id: T-2998
 name: "CTL-008 counts git-generated merge subjects as task-less commits"
 description: >
-  G-008 (consumer 001-CashWeb), confirmed at 1.6.227. agents/audit/audit.sh:3410 counts offenders via git log --oneline -20 | grep -cv '^[a-f0-9]* T-', with no merge-commit exemption. A git-written subject (Merge branch 'worktree-X') therefore counts as lacking a task reference — and the commit-msg hook must permit those or no merge could complete. Net effect: the traceability metric degrades every time an agent uses the worktree flow the framework itself mandates (CLAUDE.md Trunk-Based Session Flow). Reporter's repro: git merge --no-ff <branch>, then fw audit; offenders 3092d69 and bb3b907, 2/20 reported as 90%. Reporter also supplied a POSITIVE CONTROL: switching to git merge --no-ff -m 'T-021: merge <branch>' made the warning disappear while the merge commits remained — so it is purely the subject string. Suggested fix: exempt two-parent commits, or accept git's default merge subject as structural. Note that line is also the L-387 pipeline shape.
+  G-008 (consumer 001-CashWeb), confirmed at 1.6.227. agents/audit/audit.sh:3410 counts
+  offenders via git log --oneline -20 | grep -cv '^[a-f0-9]* T-', with no merge-commit
+  exemption. A git-written subject (Merge branch 'worktree-X') therefore counts as
+  lacking a task reference — and the commit-msg hook must permit those or no merge
+  could complete. Net effect: the traceability metric degrades every time an agent
+  uses the worktree flow the framework itself mandates (CLAUDE.md Trunk-Based Session
+  Flow). Reporter's repro: git merge --no-ff <branch>, then fw audit; offenders 3092d69
+  and bb3b907, 2/20 reported as 90%. Reporter also supplied a POSITIVE CONTROL: switching
+  to git merge --no-ff -m 'T-021: merge <branch>' made the warning disappear while
+  the merge commits remained — so it is purely the subject string. Suggested fix:
+  exempt two-parent commits, or accept git's default merge subject as structural.
+  Note that line is also the L-387 pipeline shape.
 
 status: captured
 workflow_type: build
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T19:55:48Z
-last_update: 2026-08-14T19:55:48Z
-date_finished: null
+last_update: '2026-08-14T20:00:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-14T20:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-14T20:00:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2998: CTL-008 counts git-generated merge subjects as task-less commits

@@ -1,21 +1,15 @@
 ---
-id: T-2997
-name: "fw doctor claude-fw drift compares router against wrapper"
+id: T-2999
+name: "seed assertion matches the commit body, not the subject — false green"
 description: >
-  G-007 (consumer 001-CashWeb). bin/fw:2035 does cmp -s against FRAMEWORK_ROOT/bin/claude-fw
-  (the WRAPPER), but the file installed on PATH is the ROUTER (T-2854 / D-377), byte-identical
-  to bin/claude-fw-router. Repro: diff /root/.local/bin/claude-fw .agentic-framework/bin/claude-fw-router
-  -> identical; diff against .agentic-framework/bin/claude-fw -> differs; fw doctor
-  reports drift. The false positive is the lesser half: doctor's prescribed rm + cp
-  bin/claude-fw would reinstate the fixed-copy design T-2854 deliberately removed,
-  so following the advice regresses the install. Confirmed present at 1.6.227.
+  seed assertion matches the commit body, not the subject — false green
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/t2996_seed_commit_assertion.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-14T19:54:43Z
-last_update: '2026-08-14T20:00:16Z'
-date_finished:
+created: 2026-08-14T20:06:17Z
+last_update: 2026-08-14T20:27:00Z
+date_finished: 2026-08-14T20:27:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -41,7 +35,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-14T20:00:08Z'
+  - ts: '2026-08-14T20:15:07Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -51,7 +45,7 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-14T20:00:16Z'
+  - ts: '2026-08-14T20:15:13Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -70,18 +64,71 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-2997: fw doctor claude-fw drift compares router against wrapper
+# T-2999: seed assertion matches the commit body, not the subject — false green
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Third correction in one chain, and the second to my own work. T-2996 fixed
+G-006 (seeds asserted a property of HEAD), then had to fix its own repair
+(capture-then-grep SIGPIPEs above the 64KB pipe buffer). This fixes the
+*replacement*, caught by the consumer session that reported the original.
+
+What shipped in T-2996:
+
+```
+[ -n "$(git log --grep="T-003" -1 --format=%s)" ]
+```
+
+**`git log --grep` searches the whole commit message, subject and body.** So any
+commit that merely *mentions* T-003 in its body satisfies it. Reproduced:
+
+```
+commit subject: "TX-016: close gate"
+commit body:    "also finishes work related to T-003 and TX-015"
+
+[ -n "$(git log --grep="T-003" -1 --format=%s)" ]   -> PASSES
+git log --grep="T-003" -1 --format=%s               -> "TX-016: close gate"
+```
+
+No T-003 commit exists in that repo. The check passes anyway, and the subject it
+prints belongs to a different task. The consumer hit this for real: their
+`--grep=T-003` selected `T-016: close onboarding gate, complete T-013, add T-015`.
+
+Two distinct defects:
+1. **Body matching** — `--grep` is not subject-anchored.
+2. **Subject/selection mismatch** — `--grep` selects the commit, `--format=%s`
+   prints *that commit's* subject, so a body match surfaces an unrelated one.
+   The bare `-n` test cannot tell them apart because it only asks whether
+   anything was printed.
+
+**Why my tests missed it.** Every behavioural test built a repo where the seed
+commit either existed or nothing referenced the task at all. I never built the
+case in between — task mentioned, never committed — which is the only case that
+separates "a commit whose subject IS this task" from "the string appears
+somewhere". A control that never constructs the ambiguous case cannot detect
+ambiguity. Same shape as the 400-commit history control in T-2996 that sat
+under the pipe buffer and proved nothing.
+
+Fix (the consumer's, adopted as-is):
+
+```
+s=$(git log --grep='^T-003:' -1 --format=%s); [ "${s%%:*}" = "T-003" ]
+```
+
+Anchored selection *and* an explicit subject comparison — belt and braces,
+because either alone still admits an edge (an anchored body line at the start
+of a paragraph; a `--grep` that matches for the wrong reason).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Both seeds anchor the pattern to the start of the subject (`^T-00N:`)
+- [x] Both compare the returned subject explicitly, not merely test it non-empty
+- [x] Still pipe-free (the T-2996 property must not regress)
+- [x] **The missing control:** a test where the task id appears only in another commit's *body* — the old form passes it, the new form must fail it
+- [x] A test asserting the printed subject belongs to the matched task, not an unrelated one
+- [x] Long-history (>65536 bytes) and after-later-commits controls still green
+- [x] `tests/unit/t2996_seed_commit_assertion.bats` extended, all green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -181,7 +228,39 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t2996_seed_commit_assertion.bats > /tmp/.t2999.out 2>&1 && grep -q "^ok 10" /tmp/.t2999.out
+bash -c 'set -eo pipefail; s=$(git log --grep="^T-2999:" -1 --format=%s); [ "${s%%:*}" = "T-2999" ]'
+! awk '/^## Verification$/{f=1;next} f && /^## /{exit} f && !/^[[:space:]]*#/ && NF' lib/seeds/tasks/greenfield/T-003-first-governed-commit.md | grep -qE '\[ -n '
+
 ## RCA
+
+**Symptom:** the seed assertion shipped in T-2996 returns a false green when any
+commit merely mentions the task id in its body, and prints an unrelated subject.
+
+**Root cause:** `git log --grep` searches the whole commit message, not the
+subject. The `-n` test only asks whether anything printed, so it cannot tell a
+subject match from a body match. Two defects, one line.
+
+**Why structurally allowed:** the test suite never constructed the ambiguous
+case. Every behavioural test built a repo where the seed commit existed or
+nothing referenced the task at all — never "mentioned but not committed", which
+is the only case that distinguishes the two readings. A control that cannot
+construct the ambiguity cannot detect it.
+
+This is the third instance of the same shape in one chain, and the pattern is
+worth naming: **T-2996's 400-commit history control sat under the pipe buffer;
+its first body-mention control had the task id replaced with prose to dodge the
+focus-drift gate, and passed against the known-broken line; this one used a
+quoted heredoc so `$SEED` never expanded.** Each looked like coverage. Each was
+caught only by deliberately reverting the fix and re-running — never by reading
+the test.
+
+**Prevention:** every behavioural control in this suite is now proven by
+reverting the seed to the broken form and confirming the specific test goes red.
+That step is recorded in the commit message so the next author knows the bar.
+The generalisable rule — *a positive control is not a control until you have
+watched it fail* — is filed as a learning rather than left in this file.
+
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -273,7 +352,24 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-14T19:54:43Z — task-created [task-create-agent]
+### 2026-08-14T20:06:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2997-fw-doctor-claude-fw-drift-compares-route.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2999-seed-assertion-matches-the-commit-body-n.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-16d2f330
+- **Timestamp:** 2026-08-14T20:27:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 68
+     - evidence: `! awk '/^## Verification$/{f=1;next} f && /^## /{exit} f && !/^[[:space:]]*#/ && NF' lib/seeds/tasks/greenfield/T-003-first-governed-commit.md | grep -qE '\[ -n '`
+
+### 2026-08-14T20:27:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
