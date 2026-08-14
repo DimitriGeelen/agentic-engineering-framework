@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3003: answer 832's corpus population question with a measurement, not a recalled count
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T21:04:06Z
+# ============================================================================
+
+task_id: T-3003
+task_name: "answer 832's corpus population question with a measurement, not a recalled count"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T21:00:55Z
+completed: 2026-08-14T21:03:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T23:03:52+02:00
+last_commit: 2026-08-14T23:03:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the corpus gap I reported to 832 was measured wrong
+
+# Key outcomes
+outcomes:
+  - '`bin/fw corpus explain` is actually run here and its real behaviour recorded — exists / ENOENTs / lists something — rather than my recalled claim repeated'
+  - 'The population is stated as a **command plus its output plus file locations**, not as a bare count'
+  - 'Vendored (`.agentic-framework/`) and worktree (`.claude/worktrees/`) copies are excluded from any count, and the exclusion is shown rather than asserted — these are the duplicates that inflate every naive grep in this repo'
+  - 'The `worktree`-absence claim from T-2993 is re-run against the measured population and confirmed or withdrawn'
+  - 'If my original "8 maps" figure was wrong, it is stated as wrong with the correct figure, not quietly superseded'
+  - '832 receives the measurement in the form they asked for'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3003-answer-832s-corpus-population-question-w.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T23:03:52'
+    action: 'T-3003: the corpus gap I reported to 832 was measured wrong'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 1
+  lines_added: 320
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3003-answer-832s-corpus-population-question-w.md
+generated_by: context-agent-hybrid
