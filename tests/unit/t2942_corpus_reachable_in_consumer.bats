@@ -59,7 +59,14 @@ _excludes() {
 @test "t2942: drafts and scratch are NOT shipped to consumers" {
     # Consumers get the framework's published lifecycle maps, not our WIP.
     _excludes | grep -q 'designer/projects/draft-\*'
-    _excludes | grep -q 'designer/projects/t2584-scratch'
+    # T-2989: the scratch map used to need its own exclusion line because it was
+    # named `t2584-scratch`. Renaming it `draft-t2584-scratch` folded it into the
+    # glob above — and into corpus_lint's `draft-` skip, which is what the lint
+    # baseline needed. Assert the map is still excluded, via whichever mechanism:
+    # naming the line would re-pin the special case this task removed.
+    run bash -c "cd '$FRAMEWORK_ROOT' && ls .context/designer/projects"
+    [[ "$output" != *"projects/t2584-scratch"* ]]
+    echo "$output" | grep -q 'draft-t2584-scratch'
 }
 
 @test "t2942: every map id the curriculum routes to actually exists" {

@@ -451,8 +451,15 @@ do_vendor() {
         # seventh map is added, which is the exact shape of the bug this task
         # fixes. Naming the drafts instead means new aef-* maps vendor themselves.
         # (636K of drafts excluded, 196K of aef maps shipped.)
+        # T-2989 removed a sibling line here that named `t2584-scratch`
+        # explicitly. It was a scratch artefact carrying a deliberately dangling
+        # ghost ref, excluded for exactly the reasons drafts are, and hard-coded
+        # only because its name predated this convention. Renaming it to
+        # `draft-t2584-scratch` brought it under the glob — and under
+        # corpus_lint's `draft-` skip at the same time, which is what the second
+        # subsystem needed. If a future not-for-consumers map appears, name it
+        # `draft-*` rather than adding a line back.
         ".context/designer/projects/draft-*"
-        ".context/designer/projects/t2584-scratch"
     )
 
     if [ "$dry_run" = true ]; then

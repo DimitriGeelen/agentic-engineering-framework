@@ -33196,3 +33196,21 @@ scan_id: R-7f2a5168
 task_id: T-2987
 payload:
   task_file: .tasks/active/T-2987-task-gate-advertises-an-unblock-command-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T15:49:36Z'
+scan_id: R-ceab86e6
+task_id: T-2989
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T15:49:36Z'
+scan_id: R-ceab86e6
+task_id: T-2989
+payload:
+  task_file: .tasks/active/T-2989-two-standing-corpus-findings-are-permane.md

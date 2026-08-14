@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2989: two standing corpus findings are permanently unactionable as filed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T15:49:47Z
+# ============================================================================
+
+task_id: T-2989
+task_name: "two standing corpus findings are permanently unactionable as filed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T15:26:19Z
+completed: 2026-08-14T15:45:43Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  two standing corpus findings are permanently unactionable as filed
+
+# Key outcomes
+outcomes:
+  - '`aef-dispatch-loop` `agt_4_worker` carries an `aef:meta seamPending="..."` marker whose'
+  - '`t2584-scratch` is reclassified into the existing draft tier, keeping the artefact:'
+  - '`fw corpus lint` reports **zero** findings, and the scanned count drops by exactly one'
+  - 'The drafts remain lintable on demand (`corpus_lint.py` accepts an explicit target), so'
+  - '`fw audit --section structure` emits the clean line and no `Corpus lint [` WARN, and'
+  - 'A test pins that a seam marker suppresses `emitterless-typed-event` and that removing'
+  - 'The two corpus baseline tests left RED by earlier work today are green, and neither is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2989-two-standing-corpus-findings-are-permane.md
+generated_by: context-agent-hybrid

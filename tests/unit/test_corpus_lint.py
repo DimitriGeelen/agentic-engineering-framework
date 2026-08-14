@@ -339,15 +339,15 @@ def test_live_corpus_current_findings():
         typed.extend(t)
     findings.extend(corpus_lint.cross_map_typed_events(typed))
     pinned = sorted((f["rule"], f["map"].split("@")[0]) for f in findings)
-    assert pinned == [
-        ("emitterless-typed-event", "aef-dispatch-loop"),
-        ("lane-geometry", "aef-session-lifecycle"),
-        ("lane-overflow", "aef-session-lifecycle"),
-        ("legacy-ref", "t2584-scratch"),
-    ], (
-        "live-corpus lint drifted from the T-2609 post-rollout baseline — a new "
-        "legacy-ref means a map regressed to a legacy-form save; a missing "
-        "finding means t2584-scratch or T-2551 moved (update deliberately)",
+    assert pinned == [], (
+        "the served corpus is expected to lint CLEAN (T-2989). Any entry here is "
+        "a real regression: a legacy-form save, a re-layout that breaks a lane "
+        "band, or a typed catch whose emitter vanished. Fix the map — do not "
+        "re-pin the finding. The two long-standing entries were retired by "
+        "recording a judgement, not by relaxing a rule: aef-dispatch-loop's "
+        "catch carries an aef:meta seamPending naming TermLink as the "
+        "out-of-corpus emitter, and the scratch map moved to the draft tier as "
+        "draft-t2584-scratch (still lintable by explicit target).",
         findings,
     )
     # T-2684 deliberate baseline move (2 → 3): the lane-geometry rule shipped and
@@ -418,12 +418,42 @@ def test_live_corpus_all_versions_census():
     argued from a diff: the pre-change tree was extracted at `a25497afe` (its
     store AND its `corpus_lint`) and the census re-run against it, yielding
     those 15 names. All 15 are still flagged here. The 16th is the new rule
-    finding its origin case."""
+    finding its origin case.
+
+    T-2989 baseline move (16 -> 14 flagged; 42 versions unchanged), 2026-08-14.
+    Two versions dropped out DELIBERATELY, which is the stop condition above, so
+    each is named and justified rather than absorbed into a count:
+
+    - `aef-session-lifecycle@v1` - T-2984 repaired it. One stale `aef:position`
+      put an agent-lane terminal inside the human band, so `lane-geometry` and
+      `lane-overflow` both fired; moving it to y=380 cleared both.
+    - `aef-dispatch-loop@v3` - `emitterless-typed-event` retired by RECORDING a
+      judgement, not by relaxing a rule: `agt_4_worker` now carries an
+      `aef:meta seamPending` naming TermLink as the out-of-corpus emitter.
+
+    A third entry only appears to have moved: `t2584-scratch@v1` is now
+    `draft-t2584-scratch@v1`. It is still flagged with the same `legacy-ref` and
+    still counted here - the rename moved it out of the DEFAULT scan (which skips
+    `draft-`) while `collect_all_versions` continues to see it. That is the point
+    of the rename: the finding is unfixable by construction (its ghost ref is the
+    T-2584 reproduction) so it should not sit in the standing baseline, but it
+    must stay visible to a census that claims to cover everything.
+
+    Checked by construction, per the discipline above: the flagged set was
+    re-derived and diffed name-by-name against the previous 16. Exactly the two
+    named versions left; the other 13 are unchanged and the scratch map is
+    present under its new name. Nothing dropped silently.
+
+    This move also records a repeat of the lapse this docstring already warns
+    about: `test_live_corpus_current_findings` was left red by T-2984 earlier the
+    same day - the corpus was changed and its pin was not re-derived, exactly as
+    happened before `a25497afe`. The discipline was written here and still not
+    followed. Cheap to fix, worth not hiding."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 39, [n for n, _ in targets]
+    assert len(targets) == 42, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:
@@ -433,7 +463,7 @@ def test_live_corpus_all_versions_census():
     findings.extend(corpus_lint.cross_map_typed_events(typed))
 
     versions_with_findings = sorted({f["map"] for f in findings})
-    assert len(versions_with_findings) == 16, versions_with_findings
+    assert len(versions_with_findings) == 14, versions_with_findings
     # T-2976: the no-drop condition, asserted rather than only counted. A count
     # cannot tell "one added, none lost" from "one added, one lost" — which is
     # the failure mode the docstring's stop condition exists for.

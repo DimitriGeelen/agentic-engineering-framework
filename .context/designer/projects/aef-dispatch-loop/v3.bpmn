@@ -133,7 +133,7 @@
       <bpmn:extensionElements>
         <aef:uid value="dl_msg_result"/>
         <aef:position x="620.0" y="120.0"/>
-        <aef:meta note="fw bus post → orchestrator reads manifest (5 lines, not 25KB); size gate auto-blobs &gt;=2KB payloads"/>
+        <aef:meta note="fw bus post → orchestrator reads manifest (5 lines, not 25KB); size gate auto-blobs &gt;=2KB payloads" seamPending="Emitter is out of corpus scope, not missing. The throw for bus:task-channel is 'fw bus post' executed inside a TermLink-dispatched worker — a separate machine-wide binary that is deliberately not modelled in this store (CLAUDE.md §TermLink Integration: per-project vendoring would defeat its cross-session socket discovery). So the catch is correctly emitterless HERE and would stay so however this map is redrawn. Retire this marker if a TermLink map ever joins the scanned corpus, or if the throw moves in-framework."/>
         <aef:eventDef kind="message" binding="bus:task-channel"/>
       </bpmn:extensionElements>
       <bpmn:incoming>flow_3</bpmn:incoming>

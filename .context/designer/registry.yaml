@@ -2,7 +2,7 @@ ghosts:
 - uuid: 398f4752-c35d-4d57-9ded-4779d256d715
   name: t2584-ghost-target
   referenced_by:
-  - id: t2584-scratch
+  - id: draft-t2584-scratch
     node: hum_1_handoff
     nodeName: "Handoff \u2192"
   task: T-2585

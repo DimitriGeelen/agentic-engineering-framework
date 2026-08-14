@@ -384,18 +384,71 @@ def test_fires_on_both_live_knowledge_leveling_overflows():
     assert "spilling 36px" in by_lane["framework"]
 
 
-def test_fires_on_the_live_session_lifecycle_spill():
-    """A CANONICAL map, not a draft — this is why the default lint baseline moved from
-    3 to 4 in T-2689. 6px is small enough to look like noise and is a real spill by the
-    renderer's own containment function; the lowest node is a gateway (66px occupancy),
-    which the top-y form and a height-only table would both have got wrong."""
+def _spill_fixture():
+    """The geometry aef-session-lifecycle carried until T-2984: a lane declaring
+    height=260 whose members run from an outlier at y=100 down to a gateway at
+    y=300. 300 + 66 - 100 = 266, so it spills 6px."""
+    return """<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_spill" targetNamespace="https://aef.anchorpoint.dev/workflows">
+  <bpmn:process id="Process_spill" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="spill-fixture" version="1" schemaVersion="2" title="spill" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="ls_1">
+      <bpmn:lane id="agent" name="Agent">
+        <bpmn:extensionElements><aef:laneMeta abbr="agt" authority="initiative" height="260"/></bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_outlier</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gate</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:endEvent id="agt_outlier" name="outlier">
+      <bpmn:extensionElements><aef:uid value="sp_o"/><aef:position x="1580.0" y="100.0"/></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="agt_gate" name="gate">
+      <bpmn:extensionElements><aef:uid value="sp_g"/><aef:position x="900.0" y="300.0"/></bpmn:extensionElements>
+    </bpmn:exclusiveGateway>
+  </bpmn:process>
+</bpmn:definitions>
+"""
+
+
+def test_fires_on_a_canonical_shaped_spill():
+    """The witness this rule was shipped for, preserved as a fixture.
+
+    It used to read the LIVE aef-session-lifecycle map, which carried exactly this
+    geometry — a CANONICAL map, not a draft, which is why the default lint baseline
+    moved from 3 to 4 in T-2689. 6px is small enough to look like noise and is a real
+    spill by the renderer's own containment function; the lowest node is a gateway
+    (66px occupancy), which the top-y form and a height-only table would both have
+    got wrong.
+
+    T-2984 repaired that map, so the assertion had to move or die. Pinning a rule to
+    a live DEFECT means the test fails the moment the defect is fixed — the property
+    being asserted is about the rule, not about the corpus, so it belongs on a
+    fixture. (It did fail exactly that way, silently, for several hours.) The live
+    map's now-clean state is asserted separately below."""
+    f = corpus_lint.lane_overflow("spill-fixture", _spill_fixture())
+    assert len(f) == 1, f
+    assert "spilling 6px" in f[0]["detail"]
+    assert f"(gateway, y=300 + {GATEWAY}px occupancy)" in f[0]["detail"]
+
+
+def test_the_live_session_lifecycle_no_longer_spills():
+    """Regression guard for the T-2984 repair, on the map the onboarding seed routes
+    a first-time operator to. Reads the live store on purpose: the fixture above proves
+    the rule works, this proves the corpus is actually clean."""
     d = REPO_ROOT / ".context/designer/projects/aef-session-lifecycle"
     import json
     latest = json.loads((d / "meta.json").read_text())["latest"]
     f = corpus_lint.lane_overflow("aef-session-lifecycle", (d / f"v{latest}.bpmn").read_text())
-    assert len(f) == 1
-    assert "spilling 6px" in f[0]["detail"]
-    assert f"(gateway, y=300 + {GATEWAY}px occupancy)" in f[0]["detail"]
+    assert f == [], (
+        "aef-session-lifecycle spills again — a node moved back outside its lane band. "
+        "T-2984 fixed this by moving the agent-lane terminal from y=100 (inside the "
+        "human band) to y=380.",
+        f,
+    )
 
 
 def test_rule_is_documented_in_module_docstring():

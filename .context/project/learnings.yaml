@@ -4487,3 +4487,9 @@ X'` returning empty group."
   task: T-2988
   date: 2026-08-14
   context: Added via context agent
+- id: L-599
+  learning: "Do not pin a rule's test to a LIVE defect — the test then fails the moment someone fixes the defect, which punishes the repair and looks like the fixer broke something. T-2989 found two corpus tests red from T-2984 earlier the same day: test_live_corpus_current_findings (a baseline pin listing the exact standing findings, not re-derived after the corpus changed) and test_fires_on_the_live_session_lifecycle_spill (asserted the live map HAS a 6px lane spill — the very spill T-2984 repaired). The second is the instructive one: the property being asserted is about the RULE (per-type occupancy correctly catches a 6px gateway-driven spill that a height-only table would miss), not about the corpus, so it belongs on a fixture. Fixed by reproducing the pre-repair geometry as a synthetic map plus a SEPARATE live assertion that the real map is now clean — fixture proves the rule works, live test proves the corpus is clean, and neither breaks when the other changes. Second half of the lesson: a baseline pin that enumerates current findings must be re-derived in the SAME task that changes the thing it counts. The census docstring in test_corpus_lint.py already warned about this exact lapse citing a prior occurrence at a25497afe, and it recurred anyway — so prefer pinning the CLEAN state (assert findings == []) over enumerating known-bad entries: an empty pin turns every future finding into a signal and cannot go stale."
+  source: P-011
+  task: T-2989
+  date: 2026-08-14
+  context: Added via context agent

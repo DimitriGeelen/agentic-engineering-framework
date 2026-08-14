@@ -3363,3 +3363,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-248
+  text: "Consumer projects vendor from origin/master, but framework work accumulates on a session/staging branch that is never landed — so a consumer can vendor CORRECTLY and still receive month-old defects, and re-vendoring changes nothing. Measured 2026-08-14: /005-Yellowtwig vendored at 12:59 and got VERSION 1.6.145, which is EXACTLY origin/master — the vendor was right. Meanwhile t2539-staging carried 42 unlanded commits touching 6 consumer-facing files under agents/lib/bin. Both defects the consumer hit (T-2987, T-2988) were fixed on staging hours later and are still not on master, so 'run fw upgrade' would have been useless advice. Secondary: master's VERSION file (1.6.145) is stale relative to its own newest commits — the vendored code carried T-2936/T-2944 (Aug 12) while the version label predates them, so VERSION cannot be used to reason about what a consumer actually has; only content markers can. No gate surfaces this: FW_BRANCH_BEHIND_WARN watches branches BEHIND master, and nothing watches consumer-facing commits sitting AHEAD of it. Sibling to the T-100199 strand class, but the cost lands on consumers rather than on the session."
+  captured: 2026-08-14T15:16:57Z
+  context_task: T-100201
+  tags: []
+  status: pending
+  promoted_to: null
