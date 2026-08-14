@@ -70,7 +70,7 @@
     <bpmn:endEvent id="agt_9_session" name="session closed — next launch resumes from LATEST.md">
       <bpmn:extensionElements>
         <aef:uid value="sl_done_closed"/>
-        <aef:position x="1580.0" y="100.0"/>
+        <aef:position x="1580.0" y="380.0"/>
         <aef:meta terminalKind="success" state="closed"/>
       </bpmn:extensionElements>
       <bpmn:incoming>flow_12</bpmn:incoming>
