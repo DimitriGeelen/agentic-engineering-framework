@@ -26,7 +26,7 @@ Flow:
 | [notify](/docs/generated/lib-notify) | calls | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
 | [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
 
-## Used By (10)
+## Used By (13)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -39,6 +39,9 @@ Flow:
 | [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
 | [tier0_hash_normalization](/docs/generated/tests-unit-tier0_hash_normalization) | called_by | TODO: describe what this component does |
 | [tier0_hash_normalization](/docs/generated/tests-unit-tier0_hash_normalization) | tests_by | TODO: describe what this component does |
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | TODO: describe what this component does |
+| [session_start_hook_warning](/docs/generated/tests-unit-session_start_hook_warning) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

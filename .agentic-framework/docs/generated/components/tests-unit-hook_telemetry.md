@@ -17,13 +17,14 @@ Pins the contract that:
 Origin: T-1626 inception (ring20-dashboard 2026-04-30) — dozens of hook
 failures flowed past while framework reported clean. Telemetry is the
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hook-telemetry](/docs/generated/lib-hook-telemetry) | calls | TODO: describe what this component does |
 | [hook-telemetry](/docs/generated/lib-hook-telemetry) | tests | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_telemetry.yaml`*

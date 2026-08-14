@@ -17,13 +17,14 @@ Files (in $PROJECT_ROOT/.context/working/):
 .hook-counter            — per-hook fire count, one `<hookname>=<count>` line
 .hook-failure-counter    — per-hook non-zero-exit count, same format
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | called_by | TODO: describe what this component does |
 | [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | tests_by | TODO: describe what this component does |
 | [hook-threshold](/docs/generated/lib-hook-threshold) | called_by | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-hook-telemetry.yaml`*

@@ -23,7 +23,7 @@ Agent-relevant settings:
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
 - `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
 - `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
-- `FW_STALE_ARC_DAYS` (30) — T-1855: stale-arc audit WARN threshold. In-progress arcs whose constituent tasks
+- `FW_NTFY_URL` / config `NTFY_URL` (empty) — T-2439: ntfy server base URL for push notifications. Empty = le
 
 *(truncated — see CLAUDE.md for full section)*
 
@@ -33,7 +33,7 @@ Agent-relevant settings:
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (27)
+## Used By (29)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -64,6 +64,8 @@ Agent-relevant settings:
 | [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | called_by | TODO: describe what this component does |
 | [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | tests_by | TODO: describe what this component does |
 | [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
+| [master-guard](/docs/generated/agents-git-lib-master-guard) | called_by | TODO: describe what this component does |
+| [notify](/docs/generated/lib-notify) | called_by | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
 
 ## Related
 

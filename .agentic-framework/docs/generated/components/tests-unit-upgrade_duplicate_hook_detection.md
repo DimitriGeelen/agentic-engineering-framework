@@ -12,13 +12,15 @@ user-level (~/.claude/settings.json) and project-level
 state). This addresses the structural cause of OBS-023 (T-1478 mitigates
 the symptom in pre-compact.sh).
 
-## Dependencies (3)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [pre-compact](/docs/generated/agents-context-pre-compact) | calls | Pre-Compaction Hook — Save structured context before lossy compaction |
+| [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_duplicate_hook_detection.yaml`*

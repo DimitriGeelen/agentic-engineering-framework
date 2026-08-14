@@ -1,0 +1,14 @@
+{
+  "id": "aef-session-lifecycle",
+  "title": "aef-session-lifecycle",
+  "versions": [
+    {
+      "v": 1,
+      "note": "fw corpus prove \u2014 identity-preserving recreate (aef-session-lifecycle)",
+      "ts": 1785171538
+    }
+  ],
+  "latest": 1,
+  "updated": 1785171538,
+  "uuid": "2640d597-80ec-4232-b263-11ef01bc726c"
+}

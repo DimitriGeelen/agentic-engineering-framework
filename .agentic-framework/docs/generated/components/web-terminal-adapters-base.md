@@ -8,6 +8,20 @@
 
 ## What It Does
 
+### Framework Reference
+
+> **⚠ KNOWN CONFLICT — read before following this section (T-100201).** The
+> "session runs on `master`, commits go straight to master" mechanism below
+> **contradicts the T-2394 master-merge-only gate** (`agents/git/lib/master-guard.sh`),
+> which is **live in this repo** (`PROTECT_MASTER=1`) and structurally BLOCKS any
+> direct authored commit on `master`. A fast-forward never fires the guard; a direct
+> commit does. This conflict was hit live on 2026-07-05 (operator got
+> `BLOCKED: direct commit on 'master' — master is merge-only`).
+>
+> **Interim safe rule (until T-100201 resolves the mechan
+
+*(truncated — see CLAUDE.md for full section)*
+
 ## Used By (3)
 
 | Component | Relationship | Description |

@@ -1,0 +1,105 @@
+# Conformance registry — which corpus maps have a conformance rail, and what
+# each conforms against (T-2652 GO, slice 1 / T-2654).
+#
+# This file is the single place a map opts into a rail. The checker
+# (tools/corpus_conformance.py) iterates these entries; the audit section
+# (agents/audit/audit.sh check_map_conformance) reports one line per entry.
+# Maps absent from this registry are descriptive-only by definition — the
+# T-2619 transitional rule (CLAUDE.md prose wins) applies to them until an
+# entry lands AND stays green.
+#
+# Entry shape:
+#   <map_id>:
+#     primitive: transition-table | vocabulary-set | gate-referent
+#     source: <repo-relative path to the enforced canonical artifact>
+#     # primitive-specific keys documented per primitive below.
+#
+# Primitives (see docs/reports/T-2652-conformance-rail-generalization.md):
+#   transition-table — collapse aef:meta state= carrier nodes to transition
+#     pairs (T-2621 walk: through non-carriers, terminate at carriers,
+#     same-state ignored) and compare against the source's `transitions:`
+#     list (entries flagged legacy: true excluded).
+#   vocabulary-set — a named gateway's outgoing branch labels vs an enforced
+#     enum in the source (T-2652 slice 2 / T-2658). Extra keys:
+#       gateway: <gateway node name in the map>
+#       branch_vocab:  {regex, [split], [anchor], [first_only]} — tokenizes
+#         each outgoing flow label; union over branches = map vocabulary.
+#       source_vocab:  {regex, [split], [anchor], [first_only]} — extracts the
+#         enforced enum from the source file. anchor narrows the region;
+#         regex matches (capture group 1 if present); split fans matches out.
+#         Tokens are lowercased/stripped on both sides. Empty source
+#         extraction is a LOAD ERROR (stale anchor must fail loudly).
+#   gate-referent — enforcement points cited by the map must resolve to
+#     live code (T-1984 ships_in sibling; not yet implemented).
+#
+# state= semantics are scoped PER ENTRY by its primitive+source (the T-2652
+# IW-4 working default): aef-task-lifecycle's carriers are task statuses;
+# a future inception-flow entry's carriers are decision outcomes. A ratified
+# designer-schema stateKind= convention (832 dialogue, rail 268) would
+# harden this in slice 5.
+
+aef-task-lifecycle:
+  primitive: transition-table
+  source: status-transitions.yaml
+
+# Decision gateway branches (GO | NO-GO / DEFER) vs the decide-verb case
+# pattern in do_inception_decide (lib/inception.sh — `go|no-go|defer)`).
+aef-inception-flow:
+  primitive: vocabulary-set
+  source: lib/inception.sh
+  gateway: "decision?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    anchor: 'case "\$decision" in'
+    regex: '([a-z|-]+)\)'
+    first_only: true
+    split: "|"
+
+# Worker-paused gateway branches vs the enforced dispatch-outcome status enum
+# (ADR-0004: lib/spawn.py _VALID_OUTCOME_STATUSES = {success, error, paused}).
+# T-2659 shipped this knowingly DIVERGENT (event-type labels); the T-2660
+# pair-draft relabeled the branches to the enforced enum and T-2671 promoted
+# it (operator GO 2026-07-28) — green since map v2. branch_vocab tokenizes the
+# compound "no — success / error" label by splitting on "/".
+aef-dispatch-loop:
+  primitive: vocabulary-set
+  source: lib/spawn.py
+  gateway: "worker paused?"
+  branch_vocab:
+    regex: '— ([a-z_/ ]+)'
+    split: "/"
+  source_vocab:
+    regex: '_VALID_OUTCOME_STATUSES = frozenset\(\{([^}]+)\}'
+    first_only: true
+    split: '"'
+
+# Sweep-result gateway branches (exit 0 | exit 1/2) vs the audit exit-code
+# contract (agents/audit/audit.sh tail block: FAIL>0 → 2, WARN>0 → 1, else 0).
+aef-audit-cron:
+  primitive: vocabulary-set
+  source: agents/audit/audit.sh
+  gateway: "sweep result?"
+  branch_vocab:
+    regex: 'exit ([\d/]+)'
+    split: "/"
+  source_vocab:
+    anchor: '# Exit code based on findings'
+    regex: 'exit (\d)'
+
+# Disposition gateway branches (approved | rejected) vs the decide_approval
+# enum guard — the only place both tier-0 outcomes are validated
+# (web/blueprints/approvals.py decide_approval). Added at promotion of
+# draft-tier0-escalation (operator GO 2026-07-28, T-2664 — the P4
+# falsifiability test map).
+aef-tier0-escalation:
+  primitive: vocabulary-set
+  source: web/blueprints/approvals.py
+  gateway: "disposition?"
+  branch_vocab:
+    regex: "[A-Za-z][A-Za-z-]*"
+  source_vocab:
+    anchor: 'def decide_approval'
+    regex: 'decision not in \(([^)]+)\)'
+    first_only: true
+    split: '"'

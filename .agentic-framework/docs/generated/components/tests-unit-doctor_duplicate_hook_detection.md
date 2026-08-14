@@ -10,11 +10,13 @@ T-1480 — `fw doctor` surfaces the same duplicate-hook scan as T-1479's
 `fw upgrade` check. Read-only diagnostic so users see the overlap on
 every health check, not only when upgrading.
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [pre-compact](/docs/generated/agents-context-pre-compact) | calls | Pre-Compaction Hook — Save structured context before lossy compaction |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-doctor_duplicate_hook_detection.yaml`*

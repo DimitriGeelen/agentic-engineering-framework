@@ -1,0 +1,20 @@
+# bpmn_to_tasks
+
+> TODO: describe what this component does
+
+**Type:** script | **Subsystem:** unknown | **Location:** `tools/bpmn_to_tasks.py`
+
+## What It Does
+
+## Used By (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [bpmn_promote](/docs/generated/tools-bpmn_promote) | called_by | TODO: describe what this component does |
+| [test_bpmn_frozen_v1_pin](/docs/generated/tests-web-test_bpmn_frozen_v1_pin) | called_by | T-2556 AC3 absent-marker half: frozen-v1 byte-pin of the compile→stage→reconcile pipeline on a NO-kind-marker diagram (832's byte-pinned pair-draft-3 fixture). Pins manifest sha256 golden + all-NEW reconcile so the post-ratification kind= consumption legs (compile stamps kind:, promote refuses documentation) provably keep unmarked diagrams byte-identical. Harness-first pattern (T-2579/T-2590). |
+| [test_pair_draft3_intake](/docs/generated/tests-web-test_pair_draft3_intake) | called_by | T-2590/T-2591 drop-point test for 832's pair-draft #3 byte-fixture: sha-verifies tests/fixtures/832/pair-draft-3.bpmn against its .sha256 pin, compiles via Pass-5, and asserts contract-v0 three-leg taxonomy (RESOLVED silent / GHOST claim-WARN / LEGACY legacy-WARN); skips cleanly while the fixture is absent, with a synthetic three-leg sibling keeping the assertions proven |
+| [test_s4_exemplar_intake](/docs/generated/tests-web-test_s4_exemplar_intake) | called_by | Drop-point intake harness for 832's future PICKER-authored S4 exemplar (their T-228): skips until tests/fixtures/832/s4-exemplar.{bpmn,sha256} are delivered, then flips to full asserts — sha pin verify, editor-authorship fingerprint (workflowMeta uuid present, no linkEventThrow/Catch host tags, links ride extensionElements on intermediate throw/catch), Pass-5 three-leg classification vs the live corpus, and per-leg registry outcome via sync_project_refs on a meta-clone store. Synthetic editor-dialect test runs green pre-delivery (T-2593; pattern sibling of test_pair_draft3_intake). |
+
+---
+*Auto-generated from Component Fabric. Card: `tools-bpmn_to_tasks.yaml`*
+*Last verified: 2026-07-11*

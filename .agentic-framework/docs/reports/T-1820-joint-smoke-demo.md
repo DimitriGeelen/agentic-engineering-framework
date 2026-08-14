@@ -1,6 +1,8 @@
 # T-1820 — Joint Smoke Demo Artefact
 
-**Status:** build complete, live smoke deploy-blocked (awaiting operator deploy decision)
+**Status:** build complete + T-2363 (TermLink CLI-surface fix) landed; live smoke
+now has a CONCLUSIVE root cause (2026-08-11) — a framework-side defect
+(`lib/peer.py`), not a TermLink-side one. Follow-up filed: **T-2918**.
 **Arc:** dispatch-safety + orchestrator-rethink (v2 peer-consult slice 1)
 **Cross-repo joint:** framework T-1818/T-1819/T-1820 ↔ TermLink T-1636
 **Seam:** `inbox.queued` event (T-1804 inception GO)
@@ -288,6 +290,114 @@ needed:
 - Accept partial-ship + file T-1821 follow-up
 - Or keep T-1820 open and authorise another investigation worker (read the
   integration test verbatim, identify the precise trigger, retry smoke)
+
+## 2026-08-11 — conclusive rerun: framework-side root cause found, T-2363 confirmed shipped
+
+TermLink `T-2363` (fix for `remote send-file` legacy fallback wrong RPC,
+filed by T-2409) landed 2026-07-06, commit `7aa968811` — confirmed live via a
+read-only TermLink dispatch worker (`t1820-check-2363`) that verified
+`crates/termlink-cli/src/commands/remote.rs:1750/1785/1820` now call
+`event.emit_to` (3 call sites: file.init/file.chunk/file.complete).
+
+With the known TermLink-side bug fixed, this session re-ran the live smoke
+against the shared hub (`termlink 0.11.720`, PID 2532204, TCP `0.0.0.0:9100`,
+321 active sessions). Findings supersede the "handler not wired at hub boot"
+hypothesis from the 2026-05-14 evolution entry — **that hypothesis is now
+proven false** (see below).
+
+### Reproduction trail
+
+1. **Aggregator IS wired at hub startup** (not test-only). Confirmed via
+   read-only worker: `crates/termlink-hub/src/server.rs:279`,
+   `run_with_tcp()` calls `router::init_aggregator()` on every `hub start`.
+   This invalidates the working hypothesis carried since 2026-05-14.
+2. **Spawned a fresh target session** `t1820-remote-target`, killed it
+   (`termlink signal ... SIGKILL`) to simulate offline, confirmed via
+   `termlink status t1820-remote-target` → `Session not found`.
+3. **Triggered via the T-2363-fixed path**: `termlink remote send-file
+   127.0.0.1:9100 t1820-remote-target /tmp/t1820-smoke/payload.txt --json`
+   → `{"ok":true,...}`, confirmed spooled via `termlink inbox list
+   t1820-remote-target`.
+4. **Triggered via the canonical DM rail** (matching the AC's literal "posts
+   a DM into a dm:design-* channel" language): `termlink channel dm
+   t1820-remote-target --send '...' --json` → topic auto-resolves to
+   `dm:d1993c2c3ec44c94:t1820-remote-target` (confirmed via
+   `channel dm ... --topic-only`).
+5. **Polled per-session** (`termlink event poll termlink-agent --topic
+   inbox.queued --since 0`) and (`termlink event poll t1820-remote-target
+   --topic inbox.queued --since 0`) immediately after triggers #3 and #4 —
+   **both returned `count: 0`** on every attempt, matching every prior
+   session's outcome back to 2026-05-14.
+6. **Polled the hub aggregator directly**: `termlink event watch --hub
+   --topic inbox.queued --json --timeout 8` running concurrently with
+   trigger #3 → **captured the event instantly**:
+   ```json
+   {"ok":true,"payload":{"addressee_session_id":"t1820-remote-target",
+   "channel":"inbox:t1820-remote-target","enqueued_at":1786451925622,
+   "message_offset":3,"schema_version":"1.0"},"seq":0,"session":"hub",
+   "session_name":"hub","source":"hub-aggregator","topic":"inbox.queued"}
+   ```
+7. **Polled the hub aggregator for `dm.queued`** concurrently with trigger
+   #4 → also captured instantly:
+   ```json
+   {"ok":true,"payload":{"addressee_session_id":"t1820-remote-target",
+   "channel":"dm:d1993c2c3ec44c94:t1820-remote-target","enqueued_at":
+   1786451903419,"message_offset":3,"schema_version":"1.0"},"seq":0,
+   "session":"hub","session_name":"hub","source":"hub-aggregator",
+   "topic":"dm.queued"}
+   ```
+
+### Two independent, now-confirmed defects
+
+1. **Framework-side (new, previously undiagnosed — T-2918):**
+   `lib/peer.py::poll_once` calls `termlink event poll <session> --topic
+   inbox.queued --since <cursor>` — a per-session event-bus read. Hub-
+   aggregator events are injected under a synthetic `session_id: "hub"`
+   (`EventAggregator`, T-1645) that per-session poll structurally cannot
+   reach, regardless of which session is targeted or whether the topic name
+   is correct. This is confirmed by step 5 above returning zero events on
+   **both** the addressee session and an unrelated session, immediately
+   after a proven emit that step 6 captured within the same second. **`fw
+   peer subscribe` has never been able to observe a live `inbox.queued`
+   event since T-1818 shipped** — independent of the TermLink-side bugs
+   T-2409/T-2363 correctly found and fixed.
+2. **Topic-name mismatch (new, previously undiagnosed — also T-2918):** the
+   DM rail (T-2323, arc-004 slice 1 — shipped after T-1819's
+   `peer-consult-prompts.yaml` was authored) emits under topic
+   **`dm.queued`**, not `inbox.queued` (`termlink-protocol/src/events.rs:463`
+   vs `:457`). `.context/peer-consult-prompts.yaml`'s `dm:design-*` /
+   `dm:escalate-*` / `dm:triage-*` channel-prefix routing — which the AC's
+   original wording ("posts a DM into a dm:design-* channel") assumes reads
+   `inbox.queued` — can **never** fire via the topic `fw peer subscribe`
+   polls, even with defect #1 fixed. Separately, the DM rail's channel field
+   is a literal `dm:<fingerprint-a>:<fingerprint-b>` pair (T-2323,
+   `channel.rs:826-863`) — the sender fingerprint cannot be spoofed to
+   `design-*` (hub rejects `sender_id` mismatches with the real ed25519
+   identity, error -32014), so even a topic-name fix alone would not let a
+   `dm:design-*`-literal channel exist under the current DM-rail design.
+
+### Why three months of investigation missed this
+
+T-1820 (2026-05-14) → T-2409 (2026-07-05) → TermLink T-2363 (2026-07-06) each
+re-tested the **emit side** (does TermLink fire the event?) and each time
+found and fixed a real bug there. None re-tested whether the framework's own
+`poll_once` call could reach a hub-injected event **at all**, because the
+emit-side bugs were sufficient to explain a silent miss on their own — a
+green "hub fires the event" report from a TermLink-side worker (using
+`event watch --hub`) was read as "the smoke should work now," without
+noticing the framework subscriber uses a structurally different primitive
+(`event poll <session>`) than the one used to verify the fix.
+
+### Recommendation impact
+
+This does not change the AC #2 outcome (still cannot be ticked — the live
+smoke, taken as literally scoped, still does not fire end-to-end), but it
+replaces "unknown TermLink-side gap, awaiting their fix" with a conclusive,
+actionable, framework-owned root cause. **T-2918** filed to fix `lib/peer.py`
+and (separately) decide the `inbox.queued`/`dm.queued` two-rail question.
+T-1821's original hypothesis ("aggregator not wired at hub boot") is
+superseded — the aggregator was wired the whole time; the miss was on the
+polling side.
 
 ## Provenance / cross-repo trail
 

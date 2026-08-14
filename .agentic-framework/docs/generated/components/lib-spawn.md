@@ -6,12 +6,13 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [pi_worker](/docs/generated/lib-pi_worker) | calls | TODO: describe what this component does |
 | [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [ollama_loop](/docs/generated/lib-ollama_loop) | calls | TODO: describe what this component does |
 
 ## Used By (2)
 

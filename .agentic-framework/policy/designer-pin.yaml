@@ -1,0 +1,126 @@
+# T-2521: pinned Workflow Designer build — the AEF↔832 integration contract.
+#
+# 832-Workflow-designer is the single source of truth (SoT). AEF vendors a
+# RELEASED single-file build artifact — never 832 source — and never edits the
+# vendored copy in place. Improvements route upstream to 832 (see protocol).
+#
+# Bump procedure (pull-at-tag, T-247/D-335, first used for 0.4.0): 832 cuts a
+# release (annotated tag designer-vX.Y.Z carrying dist artifact + MANIFEST.yaml)
+# → rail announce (version, sha256, bytes, tag — stays the trigger + verdict
+# handshake) → update this pin from the announce → `fw designer sync --from-tag`
+# (canonical intake step, T-2616) fetches artifact + MANIFEST AT the tag from
+# `source_origin:` below → independent sha256 must match BOTH the MANIFEST at
+# the SAME tag AND `sha256:` below, rejecting (non-zero exit) on any mismatch,
+# then installs read-only. file_send + `sync --from <file>` remains fallback
+# (pre-T-247 phase-1 flow). The pin is the reproducibility anchor; T-559 ruling:
+# frozen annotated tag = published frozen bytes — 832's working tree stays
+# off-limits.
+
+version: "0.8.0"
+sha256: "cab3c75183979b0e15e23192518f9360ea12fe33b6a4f78641d7e264f6110935"
+bytes: 903600
+
+source_repo: "832-Workflow-designer"
+source_artifact: "dist/aef-workflow-designer-0.8.0.html"
+source_tag: "designer-v0.8.0"
+source_manifest: "dist/MANIFEST.yaml"                 # 832 side
+# Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
+# `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
+# from here — frozen published bytes only (T-559), never 832's working tree.
+source_origin: "ssh://git@192.168.10.201:6611/workflow-designer"
+protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
+
+# Where the verified build lands inside AEF (tracked, served by the blueprint).
+# 0.8.0 = 0.7.1 + four zero-seam-surface fixes (832 T-296, re-pinned T-2673;
+#   no BPMN serialization, aef:* vocabulary, or consumer-API change):
+#   (1) 832 T-264 save-target guard set — ID-collision notice, ID commit-on-blur/
+#   Enter, load-source mismatch confirm (rail-225 scratch-overwrite class; AEF
+#   sibling class T-2589 stale-tab clobber). (2) 832 T-125 vertical lane
+#   compaction in Clean layout — lanes fit content height (corpus Clean height
+#   ~76% of baseline). (3) 832 T-286 badge z-order — node-id badges below edges,
+#   selected badge raised. (4) 832 T-293 endpoint-handle layer — reconnect
+#   halos/dots on an interactive layer ABOVE node bodies (fixes the operator's
+#   'endpoint drag starts a node drag' field report — root cause of the retest
+#   gap was PIN LAG, every reachable designer served 0.7.1 until this re-pin).
+#   MANIFEST capabilities unchanged (annotation_seam: 1); the 0.7.0
+#   annotations/tone/title intake alias is NOT retired in 0.8.0 — operator-
+#   sequenced retirement window stays open.
+# 0.7.1 = 0.7.0 + 832 T-261 wire-shape reconciliation (crossed-release fix):
+#   annotate intake accepts AEF's live wire shape as canonical —
+#   {nodes:[{uid,badge,text,severity:info|warn|alert}]} (severity→tone mapping,
+#   text→tooltip, map/generated ignored; fixture = our live /api/overlay bytes
+#   pinned in their harness) — PLUS the 0.7.0 {annotations/tone/title} form as
+#   alias. Guards unchanged. CONVERGENCE RESOLVED (T-2635): 832 confirmed
+#   canonical at rail 230; AEF emitter flipped back to nodes/severity/text
+#   (bytes posted rail 233, fixture==live shape restored). The alias form
+#   stays accepted-intake until an operator-sequenced retirement no earlier
+#   than 0.8.0 (832's release note will say so).
+# 0.7.0 = 0.6.0 + (1) 832 T-259 eventDef preservation (their T-257 inception →
+#   GO): aef:eventDef survives open→save on ANY host the typed-catch override
+#   doesn't consume (startEvent, intermediateThrowEvent, link-with-target);
+#   re-emit canonical (kind + binding=""); editor can no longer manufacture
+#   emitterless typed catches (T-2551 class closed at the editor).
+#   (2) 832 T-258 annotation seam v0 (T-250 GO contract, rail 216/222):
+#   aef:ready re-handshake per render; aef:annotate intake {uid, badge<=48,
+#   tone:info|ok|warn|err, title<=200}; parent-source-gated, read-only, never
+#   serialized, thumbnail-stripped. First release where AEF's overlay wrapper
+#   (T-2630) fires end-to-end. (3) MANIFEST gains structured capabilities block
+#   (capabilities: {annotation_seam: 1}) — key conditional behavior off it at
+#   re-pin instead of byte-sniffing.
+# 0.6.0 = 0.5.0 + 832 T-255 pool right-edge resize (ZERO seam surface): page
+#   right edge draggable like a lane boundary, backed by OPTIONAL additive-only
+#   pageWidth attr on aef:workflowMeta — a floor inside contentRightEdge(),
+#   never cropping; maps without the attr behave byte-identically to 0.5.0.
+#   Consumer note: our spec generator rebuilds workflowMeta attrs, so authored
+#   pageWidth drops on spec-side regeneration — 832 confirms view-layout, safe.
+# 0.5.0 = 0.4.0 + 832 T-251 canvas navigation (ZERO seam surface — no BPMN
+#   serialization, aef:* vocabulary, or consumer-API change): header zoom
+#   controls (Fit/100%/+/−), Ctrl+wheel zoom-at-cursor, native scrollbars past
+#   fit, drag-to-pan (middle-mouse or space+drag), overlay/nudge scroll pinning,
+#   thumbnails zoom-independent. Zoom is transient view state — never serialized.
+# 0.4.0 = 0.3.2 + 832 T-245 view-chrome controls (ZERO seam surface — no
+#   document/bridge/contract change): ◧/◨ per-panel hide-show toggles persisted
+#   in editor-local prefs; ⛶ fullscreen focus mode (transient, floating-exit/Esc
+#   restore); hidden properties panel auto-reveals on explicit selection.
+#   First release taken via pull-at-tag intake (T-247 contract / D-335 / T-2617).
+# 0.3.2 = 0.3.1 + (1) 832 T-240 uuid workflowRef auto-resolve — at map load the
+#   editor resolves each aef:link workflowRef (uuid) against /api/list and binds
+#   the jump ONLY on an exactly-one live-map uuid match; ghost refs stay disabled;
+#   resolution is runtime-only (never writes targetWorkflow back into the XML);
+#   raw-uuid jump accepted. Closes the T-2612 uuid-only-unbindable class at the
+#   consumer root. (2) 832 T-242 dual-form contract hardening — a targetWorkflow
+#   compat alias present alongside workflowRef is preserved VERBATIM on re-export
+#   (was either/or: alias silently dropped), and a RESOLVABLE workflowRef is
+#   authoritative over the slug (stale slug cannot shadow the uuid); slug fallback
+#   only when the uuid is unresolvable.
+# 0.3.1 = 0.3.0 + (1) 832 T-234 jump-autosave root fix (_loadSrcKey tracks the
+#   adopted map identity; post-jump autosaves no longer stamp the deep-link src —
+#   the T-2596 wrong-map-restore class closed at the root; AEF keeps the T-2599
+#   server-side 302 nonce-mint as defense-in-depth, see T-2611 Decisions);
+#   (2) 832 T-237 + full T-204 typed-event vocabulary (aef:eventDef ⇒ typed
+#   rendering, no jump affordance; linkEventCatch reserved for aef:link carriers —
+#   the 0.3.0 misclassification of agt_msg_result was a release-lineage gap:
+#   0.3.0 was cut 2026-07-18, one day before T-204 landed).
+# 0.3.0 = 0.2.0 + 832 T-200: (1) IW-9 editor owner-collapse — node-level `owner`
+#   override RETIRED from the authoring surface; owner is now a READ-ONLY readout
+#   derived from lane authority (sovereignty→human, initiative/authority→agent);
+#   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
+#   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
+vendored_path: "vendor/designer/aef-workflow-designer-0.8.0.html"
+
+# Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
+# on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
+# air-gapped deployments. This is why bytes jumped 395178 → 826643. The 0.2.0
+# CDN-fonts caveat no longer applies.
+cdn_fonts: false
+
+# T-2612: capability flag — can the pinned build auto-resolve a workflowRef
+# (uuid) link target for the handoff jump WITHOUT a targetWorkflow slug alias?
+# 0.4.0 CAN (T-240 retained; markers re-verified at re-pin): uuid-only links auto-resolve at load against
+# /api/list (exactly-one live-map match binds; ghosts stay disabled). While
+# true, `fw corpus` emits canonical uuid-only links (no targetWorkflow alias)
+# and corpus lint rule `editor-unbindable` stays dormant. If a future re-pin
+# ever regresses this capability, flip back to false — the dual-form emit and
+# the lint gate reactivate automatically (T-2612 guard).
+resolves_workflow_ref: true
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority)"

@@ -20,7 +20,7 @@ T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [timeline](/docs/generated/web-templates-timeline) | renders | Page template: Timeline |
 
-## Used By (6)
+## Used By (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -29,6 +29,7 @@ T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
 | [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 | [test_api_timeline_detail](/docs/generated/tests-playwright-test_api_timeline_detail) | called_by | Playwright tests for timeline task detail API (T-1025). |
+| [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Related
 

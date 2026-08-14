@@ -8,6 +8,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [learnings-data](/docs/generated/learnings-data) | calls | Persistent store of all project learnings. Read by web UI and audit. Written by add-learning command. |
+
 ## Used By (2)
 
 | Component | Relationship | Description |

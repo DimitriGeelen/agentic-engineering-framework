@@ -17,7 +17,7 @@ Fix mirrors lib/init.sh:584 (T-1364, G-053-A): canonicalize the project
 root from --file path, detect framework-mode (FRAMEWORK.md + bin/fw) vs
 consumer-mode (.agentic-framework/bin/fw), emit absolute path either way.
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,7 @@ consumer-mode (.agentic-framework/bin/fw), emit absolute path either way.
 | [hook-enable](/docs/generated/bin-hook-enable) | tests | Register framework hooks in .claude/settings.json idempotently — adds { type "command", command ".agentic-framework/bin/fw hook <name>" } entries under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015). |
 | [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_enable_absolute_path.yaml`*

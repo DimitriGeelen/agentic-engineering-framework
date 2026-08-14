@@ -17,7 +17,7 @@ manifest emitted from tool-set.yaml          — t1
 manifest contract (name+gated only)          — t2
 16 read_only + 6 agent_authority             — t3
 
-## Dependencies (7)
+## Dependencies (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +28,7 @@ manifest contract (name+gated only)          — t2
 | [manifest](/docs/generated/agents-mcp-manifest) | tests | TODO: describe what this component does |
 | [framework_mcp_server](/docs/generated/agents-mcp-framework_mcp_server) | tests | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-test_framework_mcp_server.yaml`*

@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [settings](/docs/generated/web-blueprints-settings) | rendered_by | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-appearance.yaml`*

@@ -13,6 +13,12 @@ Three filter dimensions:
 2. completion_ratio >= 0.80
 3. anchor-task has a non-empty `## Recommendation` block (verdict OK to be '?')
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [approvals](/docs/generated/web-blueprints-approvals) | tests | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-approvals_close_ready_arcs.yaml`*
-*Last verified: 2026-05-21*
+*Last verified: 2026-07-22*

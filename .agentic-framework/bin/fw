@@ -1428,6 +1428,26 @@ do_doctor() {
         fi
     fi
 
+    # T-2990: root-level pollution — the UNtracked sibling of the check above.
+    # The large-file gate watches what git knows about; these files were never
+    # added, and two of them were gitignored on a wrong guess, so no git-facing
+    # surface could see them. Four accumulated over three months (56MB).
+    source "$FRAMEWORK_ROOT/lib/root-pollution.sh"
+    local rp_out rp_count
+    if rp_out=$(fw_root_pollution_scan "$PROJECT_ROOT"); then
+        echo -e "  ${GREEN}OK${NC}  Repo root: no untracked binary files"
+    else
+        rp_count=$(echo "$rp_out" | grep -c . || true)
+        echo -e "  ${YELLOW}WARN${NC}  Repo root: $rp_count untracked binary file(s) — not source, not screenshots"
+        echo "$rp_out" | while IFS=$'\t' read -r _sz _nm _ty; do
+            echo -e "         $(numfmt --to=iec --suffix=B "$_sz" 2>/dev/null || echo "${_sz}B")\t$_nm — $_ty"
+        done
+        echo -e "         A file here is usually a stray tool writing to the repo root."
+        echo -e "         If it is PostScript named after a Python module, it is the P-011"
+        echo -e "         line-splitting class — see T-2990. Inspect, then delete."
+        warnings=$((warnings + 1))
+    fi
+
     # Check 5b: Git user identity (T-685; probe corrected T-2883)
     # Asks the question the way `git commit` answers it — see lib/git-identity.sh.
     # The old `git config user.email` read missed env-supplied identity and warned

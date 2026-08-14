@@ -6,7 +6,14 @@
 
 ## What It Does
 
-## Used By (5)
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [outcome](/docs/generated/lib-outcome) | calls | TODO: describe what this component does |
+
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -15,6 +22,7 @@
 | [reparse-historical-parsefails](/docs/generated/tools-reparse-historical-parsefails) | called_by | TODO: describe what this component does |
 | [test_cron_generate_shape](/docs/generated/tests-unit-test_cron_generate_shape) | tests_by | TODO: describe what this component does |
 | [g064-readiness](/docs/generated/tools-g064-readiness) | called_by | TODO: describe what this component does |
+| [test_escalation_v05_parser](/docs/generated/tests-unit-test_escalation_v05_parser) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-escalation-scan-v0-5.yaml`*

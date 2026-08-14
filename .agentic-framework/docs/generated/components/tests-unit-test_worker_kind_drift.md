@@ -16,7 +16,7 @@ These tests pin the invariant: every TermLink-routed kind in
 VALID_WORKER_KINDS has a matching case in termlink.sh's --worker-kind
 acceptor. Adding a kind to one without the other now fails loudly.
 
-## Dependencies (5)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,7 @@ acceptor. Adding a kind to one without the other now fails loudly.
 | [termlink](/docs/generated/agents-termlink-termlink) | tests | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 | [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | tests | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_worker_kind_drift.yaml`*

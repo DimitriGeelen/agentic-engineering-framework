@@ -19,7 +19,7 @@ agents/onboarding-test/test-onboarding.sh --quiet       # Machine-readable outpu
 Exit codes: 0=all pass, 1=warnings, 2=failures
 From T-307 inception GO → T-317 build task.
 
-## Dependencies (8)
+## Dependencies (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,6 +31,7 @@ From T-307 inception GO → T-317 build task.
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [self-audit](/docs/generated/agents-audit-self-audit) | calls | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
 | [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Used By (1)
 

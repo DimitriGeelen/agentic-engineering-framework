@@ -17,6 +17,12 @@ T-DEMO-B → docs/reports/_demo/B.md).
 - records dispatch start row to sandbox dispatches.jsonl (outcome="")
 - sleeps briefly (creates overlap window)
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-dispatch-single-host-parallel-demo.yaml`*
 *Last verified: 2026-06-11*

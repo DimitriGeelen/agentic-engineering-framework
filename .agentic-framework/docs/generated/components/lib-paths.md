@@ -28,7 +28,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [tasks](/docs/generated/lib-tasks) | calls | fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts. |
 | [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 
-## Used By (55)
+## Used By (62)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -87,6 +87,13 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [check-visual-verification](/docs/generated/agents-context-check-visual-verification) | called_by | TODO: describe what this component does |
 | [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | called_by | TODO: describe what this component does |
 | [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | tests_by | TODO: describe what this component does |
+| [discard-manifest](/docs/generated/agents-handover-discard-manifest) | called_by | TODO: describe what this component does |
+| [JSONL Transcript Reader](/docs/generated/capture-reader) | called_by | Extracts human/agent conversation turns from the current Claude Code session's JSONL transcript. Used by the /capture skill to save volatile conversation content to disk before it is lost. |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | TODO: describe what this component does |
+| [t2465_reanchor_from_cwd](/docs/generated/tests-unit-t2465_reanchor_from_cwd) | called_by | TODO: describe what this component does |
+| [t2465_reanchor_from_cwd](/docs/generated/tests-unit-t2465_reanchor_from_cwd) | tests_by | TODO: describe what this component does |
+| [hook_paths](/docs/generated/lib-hook_paths) | called_by | TODO: describe what this component does |
+| [bpmn_promote](/docs/generated/tools-bpmn_promote) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-paths.yaml`*

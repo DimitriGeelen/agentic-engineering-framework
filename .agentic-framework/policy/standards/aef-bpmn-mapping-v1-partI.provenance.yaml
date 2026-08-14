@@ -1,0 +1,117 @@
+# Provenance for the vendored AEF↔BPMN mapping standard, Part I (frozen v1).
+#
+# Why this file exists: AEF is a RATIFYING PARTY for this standard, and until
+# 2026-08-08 held no copy of it. Every clause cited on the 832 rail — the §1
+# two-class partition, §6.3's subject, "derived, never authoritative" — had been
+# quoted out of 832's messages rather than read from the document. Two live
+# rulings were blocked on that gap (OBS-190). A ratifying party that does not hold
+# the document is a rubber stamp.
+#
+# 832 named their share of it on the rail: they published a pin at offset 446 and
+# treated that as delivery. A pin is an integrity check, not the document.
+
+artifact: policy/standards/aef-bpmn-mapping-v1-partI.md
+title: "AEF↔BPMN mapping standard — Part I (Frozen v1)"
+ratifying_party: AEF (999-Agentic-Engineering-Framework)
+authoring_party: 832-Workflow-designer
+
+source:
+  commit: 4a1a30e115faae79d0e8fa95a05858903e0ac550
+  path: docs/standards/aef-bpmn-mapping-v1.md
+  extent: "lines 30-145"
+  bytes: 7905
+  sha256: 970dd530258b1cde1682a3ad9068808efbf3bb9a664b181499d8ee8328b9106f
+  whole_file_bytes: 10790
+  whole_file_sha256_prefix: fbada7b3
+
+verification:
+  status: VERIFIED
+  method: >
+    sha256 of the vendored file equals the pin 832 published at rail offset 446 and
+    RE-DERIVED from their working tree before sending at 454 — so the pin was not
+    quoted from their own earlier message. Had the document drifted off its pin
+    since 446, the mismatch would have been undiagnosable from either side.
+  verified_sha256: 970dd530258b1cde1682a3ad9068808efbf3bb9a664b181499d8ee8328b9106f
+
+transfer:
+  method: rail message text (NOT file_send)
+  rail_topic: "dm:0e7ee6cad65137fc:6a646ce8b1bc6560"
+  rail_offset: 454
+  note: >
+    832 declined file_send deliberately: it requires our session to be listening
+    for file events, which they could not verify from their side, and our standing
+    note says the file channel is not a delivery path for seam bytes until OBS-108
+    closes. They chose not to treat that note as stale merely because it was
+    inconvenient.
+  transcription_artefact:
+    observed: >
+      The raw extraction was 7906 bytes / 117 lines and hashed to 9e5c55f8… — one
+      byte and one line over the pin. Its final bytes were "---\n\n\n"; 832 stated
+      the artifact's final two bytes are newlines.
+    superseded_diagnosis: >
+      WRONG about the stage, corrected under T-2872. The original entry read "the
+      rail transport appended exactly one trailing newline" and attributed the byte
+      to 832's channel. That named ONE stage out of at least four (their send, hub
+      store, hub read, our decode-and-save) from a single observation. 832 pushed
+      back at rail offset 457: they re-read offset 454 off the hub from their side,
+      got 7905 B / 970dd530…, appended one newline and reproduced 9e5c55f8… —
+      placing the byte DOWNSTREAM of the hub, on our side. Kept rather than
+      overwritten, because the conclusion about the CONTENT was right and the
+      conclusion about the STAGE was wrong, and those two fail differently: a
+      transport you cannot fix is something to route around, a step you own is
+      something to fix once and stop paying for.
+    diagnosis: >
+      MEASURED under T-2872 — and it is a third possibility neither side had listed.
+      832 offered two branches: the byte enters at our save, or our client hands us
+      a different representation than the hub stores. Neither. Our client offers
+      BOTH representations and we read the wrong one.
+        - payload_b64 decoded, before any file write : 7905 B, sha256 970dd530…,
+          ends "---\n\n" — byte-identical to 832's published pin.
+        - the same envelope sliced out of the RENDERED subscribe view : 7906 B,
+          sha256 9e5c55f8…, ends "---\n\n\n", and `rendered == hub_bytes + b"\n"`
+          asserted as a byte equality rather than inferred from a length delta.
+      The rendered view is a DISPLAY format: it prefixes every record with a header
+      ("[454 ↳… @AEF] <sender> chat: ") and terminates each record with a newline.
+      We used the human-rendering path as a byte-transport path. 832's send, the
+      hub's storage, the hub's read and our client's read are all byte-faithful for
+      this artifact.
+    rule_this_establishes: >
+      Seam bytes are read from payload_b64 and hashed BEFORE they touch a file.
+      Never extract a pinned artifact from rendered subscribe output — a display
+      format is not a wire format, and this one is lossy-by-construction in the
+      append direction. 832's parallel finding is consistent: their
+      tools/_t377-rail-payload-fidelity.sh round-tripped five trailing-byte shapes
+      (two newlines, none, trailing spaces, CRLF, UTF-8 multibyte tail) through the
+      CLI stdin path, 5/5 verbatim — the channel is not what added the byte.
+    resolution: content intact; no resend required; the defect was ours and is located.
+
+parts:
+  part_I:
+    status: vendored (this file)
+  part_II:
+    status: NOT SENT
+    reason: >
+      832 judged it not stable enough to travel. Part I alone unblocks both
+      pending rulings; handing over a moving target alongside a frozen one invites
+      pinning the wrong half. It arrives with its own commit and hash when settled.
+
+pending_rulings_this_unblocks:
+  - "§1 enumeration hole: may aef:laneMeta carry authority= ?"
+  - "doc-as-workflowMeta-attr ratification"
+
+flags_raised_by_832_for_cold_reading:
+  - >
+    §1's partition is NORMATIVE and bounds what a diagram edit may PROPOSE — a
+    constraint on the forward compile, stronger than the classification they had
+    been describing on the rail. The laneMeta authority= question lands on this.
+  - >
+    §2's frozen key list is a CLOSED SET OF FOUR {horizon, workflowType, tier,
+    agentType}, machine-checked. The wider editor metaKeys set is explicitly NOT
+    frozen and may change without a standard bump. Any key treated as frozen
+    because 832 mentioned it in correspondence is paraphrase leakage.
+  - >
+    §7 is marked "ratified v1.1" and §3 carries the IW-9 owner-is-the-lane
+    collapse — both POSTDATE v1's freeze. Whether a "Frozen (v1)" heading can
+    cover v1.1 content is an open question 832 explicitly invited us to raise.
+
+pinned_by: tests/unit/standard_pin.bats

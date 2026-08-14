@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-dispatch-loop"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_aef-dispatch-loop">
+    <bpmn:participant id="Pool_dispatch_loop" name="AEF dispatch-orchestration loop" processRef="Process_aef-dispatch-loop"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_aef-dispatch-loop" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-dispatch-loop" uuid="70c34cdd-b10d-4083-a5ef-97ae5c13481d" version="2" schemaVersion="2" title="AEF dispatch-orchestration loop (resolver dispatch → worker → outcome backprop, with pause chain)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_task</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_8_loop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_spawn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_re</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_worker</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_9_handoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_worker</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_task" name="task selected for dispatch">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_start"/>
+        <aef:position x="122.0" y="134.0"/>
+        <aef:meta triggeredBy="resolver pick, operator ask, or orchestrated demo (arc-010); main agent delegates bounded sub-tasks via fw resolver run"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:endEvent id="agt_8_loop" name="loop closed — dispatch + outcome queryable">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_done"/>
+        <aef:position x="1282.0" y="87.3"/>
+        <aef:meta terminalKind="success" state="closed"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="agt_2_fw" name="fw resolver dispatch — match workflow, assemble envelope, telemetry to dispatches.jsonl">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_resolve"/>
+        <aef:position x="260.0" y="120.0"/>
+        <aef:meta note="envelope is the forensic unit: fw resolver explain &lt;dispatch_id&gt; reconstructs any captured dispatch"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_3_spawn" name="spawn isolated worker — fw termlink dispatch (task-tagged, kill watchdog T-577)">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_spawn"/>
+        <aef:position x="440.0" y="120.0"/>
+        <aef:meta note="TermLink worker = independent process, zero parent-context cost; writes results to repo targets, posts to fw bus (T-818)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_7_re" name="re-dispatch retry envelope — linked via retry_of_dispatch_id">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_retry"/>
+        <aef:position x="985.0" y="208.0"/>
+        <aef:meta note="the retry is a NEW envelope carrying the operator's answer, chained to the paused one for forensics"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_6_fw" name="fw outcome evaluate + backprop — outcome rows joined to dispatch rows (dispatch-outcomes.jsonl)">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_outcome"/>
+        <aef:position x="985.0" y="112.0"/>
+        <aef:meta note="runs for success AND error outcomes — error rows are recorded too, resolver exits 2 and the owning task may enter issues/healing; a separate error end-path would assert a fork the code does not have. best-effort hook also fires from update-task.sh on work-completed; fw outcome read joins both JSONL files"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_1_operator" name="operator resolves pause — fw pause resolve &lt;dispatch_id&gt; --answer">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_pause_resolve"/>
+        <aef:position x="749.0" y="368.0"/>
+        <aef:meta note="sovereignty boundary: the worker asked, only the human answers; fw pause list surfaces the queue"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="agt_5_worker" name="worker paused?">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_gw_paused"/>
+        <aef:position x="780.0" y="120.0"/>
+        <aef:meta note="routes on the ADR-0004 classified outcome status (lib/spawn.py _classify_status: pause_requested→paused, error→error, result+is_error→error, else→success); pause_requested = worker hit a question only the operator can answer (dispatch-safety arc slice 5)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:intermediateThrowEvent id="agt_9_handoff" name="Handoff → task lifecycle">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_handoff_back"/>
+        <aef:position x="1282.0" y="162.0"/>
+        <aef:meta note="dispatch outcome lands back in the owning task — status/AC updates continue in aef-task-lifecycle (return leg of the tl_handoff_dispatch jump; T-2600)"/>
+        <aef:link workflowRef="1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7" name="aef-task-lifecycle"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:intermediateCatchEvent id="agt_4_worker" name="worker result on bus">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_msg_result"/>
+        <aef:position x="620.0" y="120.0"/>
+        <aef:meta note="fw bus post → orchestrator reads manifest (5 lines, not 25KB); size gate auto-blobs &gt;=2KB payloads" seamPending="Emitter is out of corpus scope, not missing. The throw for bus:task-channel is 'fw bus post' executed inside a TermLink-dispatched worker — a separate machine-wide binary that is deliberately not modelled in this store (CLAUDE.md §TermLink Integration: per-project vendoring would defeat its cross-session socket discovery). So the catch is correctly emitterless HERE and would stay so however this map is redrawn. Retire this marker if a TermLink map ever joins the scanned corpus, or if the throw moves in-framework."/>
+        <aef:eventDef kind="message" binding="bus:task-channel"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_task" targetRef="agt_2_fw">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e1"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_fw" targetRef="agt_3_spawn">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e2"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_3_spawn" targetRef="agt_4_worker">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e3"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_4_worker" targetRef="agt_5_worker">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e4"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" name="yes — paused" sourceRef="agt_5_worker" targetRef="hum_1_operator">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e5"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" name="no — success / error" sourceRef="agt_5_worker" targetRef="agt_6_fw">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e6"/>
+        <aef:anchors sourcePort="E" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" sourceRef="hum_1_operator" targetRef="agt_7_re">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e7"/>
+        <aef:anchors sourcePort="E" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" name="retry envelope" sourceRef="agt_7_re" targetRef="agt_3_spawn">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e8"/>
+        <aef:anchors sourcePort="W" targetPort="S"/>
+        <aef:forceStraight value="true"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" sourceRef="agt_6_fw" targetRef="agt_8_loop">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e9"/>
+        <aef:anchors sourcePort="NE"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" name="outcome → owning task" sourceRef="agt_6_fw" targetRef="agt_9_handoff">
+      <bpmn:extensionElements>
+        <aef:uid value="dl_e10"/>
+        <aef:anchors sourcePort="SE"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
+</bpmn:definitions>

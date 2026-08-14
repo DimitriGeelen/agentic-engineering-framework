@@ -105,7 +105,57 @@ Prevents mid-session updates that could change behavior. Updates are applied man
 
 ## Project Hooks (`.claude/settings.json`)
 
-The framework's enforcement system runs through Claude Code hooks. This is the most critical configuration. All hooks use portable paths (`.agentic-framework/bin/fw hook <name>`) — no hardcoded absolute paths (T-496/T-498).
+The framework's enforcement system runs through Claude Code hooks. This is the most critical configuration.
+
+### Hook command path form (read this before editing settings.json)
+
+Hook commands are emitted by the generators — **never hand-edit them**. Both generators
+([`lib/init.sh:generate_claude_code_config`](../lib/init.sh) and
+[`bin/hook-enable.sh`](../bin/hook-enable.sh)) emit the `${CLAUDE_PROJECT_DIR}`
+placeholder, which Claude Code expands to the project root before the hook runs:
+
+| Project shape | Emitted command |
+|---------------|-----------------|
+| Framework repo (root `bin/fw` + `FRAMEWORK.md`) | `${CLAUDE_PROJECT_DIR}/bin/fw hook <name>` |
+| Consumer project (vendored) | `${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw hook <name>` |
+
+The placeholder is **absolute after expansion** and **host-portable** — it satisfies both
+constraints that the history below traded off against each other.
+
+#### Why the form changed three times — the actual history
+
+Getting this wrong has cost real incidents in both directions, so the reasoning is
+recorded here rather than left to be re-derived:
+
+| Period | Form | What it fixed | What it broke |
+|--------|------|---------------|---------------|
+| T-496 / T-498 | bare-relative `.agentic-framework/bin/fw hook <name>` | removed hardcoded absolute paths | Claude Code's hook runner (POSIX `sh -c`) does **not** chdir to the project root, so the command only resolved when the parent shell happened to sit at project root |
+| T-1364 / T-1504 | literal absolute `<checkout>/bin/fw hook <name>` | CWD drift — 680 silent hook failures in one session at 003-NTB-ATC-Plugin | baked in the **generating host's** checkout path, so every clone on any other host had all hooks fail to resolve → governance silently OFF |
+| T-2704 / T-2709 | `${CLAUDE_PROJECT_DIR}/…` | both: absolute after expansion **and** host-portable | — |
+
+The T-1364 framing was *relative vs absolute* — a false dichotomy. The third option was
+never considered, and the remediation then pinned its own framing as a test invariant
+(`tests/unit/hook_absolute_paths.bats` asserted `startswith('/')`), so from 2026-04-20
+portability was not merely unimplemented, it was actively enforced against. Meanwhile
+this very paragraph claimed hooks used "portable paths (`.agentic-framework/bin/fw`)"
+for months after the generators had stopped emitting that form — a doc-vs-artifact
+mismatch that let the next reader conclude the problem was already solved. Full RCA:
+`docs/reports/T-2704-hook-path-portability.md`.
+
+**Guards** — the invariant is now mechanical, not documentary:
+
+- `tests/lint/hook-paths-portable.bats` — fails if any framework hook command hardcodes
+  an absolute path (scoped to `fw hook` commands; project-local `--script`
+  registrations are counted separately and never flagged)
+- `tests/unit/hook_absolute_paths.bats` — placeholder-or-absolute, **never** bare-relative
+  (the original T-1364 CWD-drift guard, re-expressed against the right invariant)
+- `lib/hook_portability.py` — the shared predicate behind both `fw doctor`'s Check 6 and
+  `fw upgrade`'s regenerate trigger, so an existing consumer on the old absolute form is
+  detected *and* actually migrated
+
+After regenerating settings.json, refresh the enforcement baseline
+(`bin/fw enforcement baseline`) — otherwise `fw doctor` reports "Enforcement baseline
+CHANGED" (L-398).
 
 ### All Available Hook Events (Claude Code 2026)
 

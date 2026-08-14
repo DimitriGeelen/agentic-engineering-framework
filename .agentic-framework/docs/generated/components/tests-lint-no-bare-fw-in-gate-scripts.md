@@ -6,8 +6,16 @@
 
 ## What It Does
 
-Invariant: gate scripts must not emit bare 'fw' commands — use _emit_user_command/_fw_cmd
-Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007
+Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the
+_emit_user_command/_fw_cmd helpers that resolve the right path per project.
+Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007.
+T-2700 rewrote the detector, which had been red and unrun (T-2697). It flagged
+six lines; two were real and four were not, in two distinct ways:
+1. `\bfw\b` matches inside `bin/fw`, because `/` is a word boundary. The
+guard flagged the exact form it wants. A guard that fires on its own fix
+cannot be acted on — the only way to satisfy it was to stop mentioning fw.
+2. It could not tell a COMMAND from PROSE ABOUT a command. Lines like
+"Works for: fw task update, fw context add-*." are sentences naming verbs,
 
 ## Dependencies (11)
 

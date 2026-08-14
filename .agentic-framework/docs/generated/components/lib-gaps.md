@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [g064-readiness](/docs/generated/tools-g064-readiness) | calls | TODO: describe what this component does |
+
 ## Used By (3)
 
 | Component | Relationship | Description |

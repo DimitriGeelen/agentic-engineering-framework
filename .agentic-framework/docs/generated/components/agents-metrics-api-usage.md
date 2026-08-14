@@ -17,6 +17,12 @@ windows for incremental feedback. Exit
 code reflects the 60d (gate) window.
 - --last-Nd N:                  single window, original CI-gate behavior.
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-metrics-api-usage.yaml`*
 *Last verified: 2026-04-28*

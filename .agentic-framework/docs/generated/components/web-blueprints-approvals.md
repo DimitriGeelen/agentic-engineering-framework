@@ -7,8 +7,10 @@
 ## What It Does
 
 T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
+T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
+split-root consumers (masked here by the try/except fallback, feature silently dead).
 
-## Dependencies (10)
+## Dependencies (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -22,8 +24,9 @@ T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports
 | [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [arcs](/docs/generated/web-blueprints-arcs) | registers | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [bvp](/docs/generated/web-blueprints-bvp) | calls | TODO: describe what this component does |
+| [bvp](/docs/generated/web-blueprints-bvp) | registers | TODO: describe what this component does |
 
-## Used By (8)
+## Used By (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -34,6 +37,8 @@ T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports
 | [test_inception](/docs/generated/tests-playwright-test_inception) | called_by | Playwright tests for Inception pages (T-970) |
 | [test_inception](/docs/generated/tests-playwright-test_inception) | registered_by | Playwright tests for Inception pages (T-970) |
 | [test_api_approvals](/docs/generated/tests-playwright-test_api_approvals) | called_by | Playwright tests for approvals API endpoints (T-1031). |
+| [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [approvals_close_ready_arcs](/docs/generated/tests-unit-approvals_close_ready_arcs) | tests_by | TODO: describe what this component does |
 
 ## Related
 

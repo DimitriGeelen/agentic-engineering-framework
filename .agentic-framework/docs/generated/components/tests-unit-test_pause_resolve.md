@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [pause_resolve](/docs/generated/lib-pause_resolve) | calls | TODO: describe what this component does |
+| [default](/docs/generated/prompts-default) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_pause_resolve.yaml`*

@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [approvals](/docs/generated/web-templates-approvals) | included_by | Full page template: approvals queue — wrapper around _approvals_content partial with nav, filters, bulk actions. |
+| [test_approvals_content_tokens](/docs/generated/tests-unit-test_approvals_content_tokens) | called_by | TODO: describe what this component does |
 
 ## Related
 

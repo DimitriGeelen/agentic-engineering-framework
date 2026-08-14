@@ -8,7 +8,7 @@
 
 ── F4a: presets no longer carry a nav layout ──────────────────────────────
 
-## Dependencies (4)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -16,6 +16,8 @@
 | [__init__](/docs/generated/web-blueprints-__init__) | calls | Flask blueprint:   Init |
 | [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 | [settings](/docs/generated/web-blueprints-settings) | registers | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
+| [base](/docs/generated/web-templates-base) | calls | Template: {{ page_title \| default("Watchtower") }} — Agentic Engineering Framework |
+| [appearance](/docs/generated/web-templates-appearance) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_nav_layout_polish.yaml`*

@@ -1,0 +1,101 @@
+[32mPASS[0m  T-332  1/1
+[32mPASS[0m  T-334  5/5
+[32mPASS[0m  T-449  4/4
+[32mPASS[0m  T-464  6/6
+[90mNONE[0m  T-544  no stored verification
+[90mNONE[0m  T-550  no stored verification
+[90mNONE[0m  T-558  no stored verification
+[32mPASS[0m  T-705  2/2
+[90mNONE[0m  T-844  no stored verification
+[90mNONE[0m  T-1271  no stored verification
+[33mTIME[0m  T-1792  1/1 did not finish in budget (not counted red)
+[33mTIME[0m  T-1794  1/1 did not finish in budget (not counted red)
+[33mTIME[0m  T-1795  1/1 did not finish in budget (not counted red)
+[33mTIME[0m  T-1796  1/1 did not finish in budget (not counted red)
+[32mPASS[0m  T-1797  1/1
+[32mPASS[0m  T-1799  1/1
+[32mPASS[0m  T-1801  2/2
+[32mPASS[0m  T-1802  2/2
+[32mPASS[0m  T-1803  2/2
+[32mPASS[0m  T-1773  5/5
+[32mPASS[0m  T-1774  6/6
+[32mPASS[0m  T-1775  6/6
+[31mFAIL[0m  T-1805  1/4 command(s) failing
+        $ python3 -m pytest tests/unit/test_outcome_read.py tests/unit/test_outcome_list.py -q 2>&1 | tail -5 || python3 -m pytest
+          rc=1
+          | ERROR: file or directory not found: tests/unit/test_outcome_read.py
+          | 
+          | 
+          | no tests ran in 0.01s
+          | ..................FF..................................................   [100%]
+[32mPASS[0m  T-1806  3/3
+[33mTIME[0m  T-1807  2/3 did not finish in budget (not counted red)
+[32mPASS[0m  T-1810  3/3
+[31mFAIL[0m  T-1811  1/3 command(s) failing
+        $ bin/fw verify-acs T-1811 --verbose 2>&1 | grep -q "Reviewer"
+          rc=1
+[32mPASS[0m  T-1818  5/5
+[32mPASS[0m  T-1834  3/3
+[32mPASS[0m  T-1891  3/3
+[31mFAIL[0m  T-1928  1/5 command(s) failing
+        $ out=$(curl -sf "$(bin/fw watchtower url)/bvp" 2>&1); echo "$out" | grep -qi "quadrant\|scatter"
+          rc=141
+[33mTIME[0m  T-1929  1/5 did not finish in budget (not counted red)
+[33mTIME[0m  T-1930  1/4 did not finish in budget (not counted red)
+[32mPASS[0m  T-1933  4/4
+[31mFAIL[0m  T-1947  1/6 command(s) failing
+        $ grep -q "necessary-but-not-sufficient" CLAUDE.md
+          rc=1
+[90mNONE[0m  T-1954  no stored verification
+[90mNONE[0m  T-1955  no stored verification
+[90mNONE[0m  T-1957  no stored verification
+[33mTIME[0m  T-1909  1/6 did not finish in budget (not counted red)
+[31mFAIL[0m  T-1910  1/6 command(s) failing
+        $ out=$(bin/fw test playwright tests/playwright/test_arc_page_parity.py 2>&1); grep -qE "[0-9]+ passed" <<<"$out"
+          rc=1
+[33mTIME[0m  T-1911  1/5 did not finish in budget (not counted red)
+[32mPASS[0m  T-1934  4/4
+[33mTIME[0m  T-1935  1/6 did not finish in budget (not counted red)
+[32mPASS[0m  T-1936  5/5
+[32mPASS[0m  T-1939  3/3
+[32mPASS[0m  T-1964  9/9
+[32mPASS[0m  T-1965  6/6
+[31mFAIL[0m  T-1968  1/2 command(s) failing
+        $ WT=$(bin/fw watchtower url); out=$(curl -sf "$WT/" 2>&1); echo "$out" | awk '/\.arc-badge \{/,/^[[:space:]]*\}/' | grep 
+          rc=1
+[33mTIME[0m  T-1969  1/3 did not finish in budget (not counted red)
+[32mPASS[0m  T-1970  4/4
+[31mFAIL[0m  T-1971  1/1 command(s) failing
+        $ WT=$(bin/fw watchtower url); out=$(curl -s "$WT/bvp" 2>&1); grep -q "Drag a slider below to preview re-ranking" <<<"$out
+          rc=1
+[90mNONE[0m  T-1827  no stored verification
+[32mPASS[0m  T-1842  8/8
+[31mFAIL[0m  T-1843  1/7 command(s) failing
+        $ bats tests/unit/test_pre_push_monotonic_ancestor.bats
+          rc=1
+          | 1..7
+          | ok 1 T-1843: pre-push hook contains T-1829 ancestor-check marker
+          | not ok 2 T-1843: pre-push hook VERSION bumped to 1.4
+          | # (in test file tests/unit/test_pre_push_monotonic_ancestor.bats, line 60)
+          | #   `[ "$status" -eq 0 ]' failed
+[32mPASS[0m  T-1844  10/10
+[31mFAIL[0m  T-1951  1/5 command(s) failing
+        $ out=$(FW_REVIEWER_IN_DISPATCH=1 python3 -m lib.reviewer.dispatch_cli T-1951 2>&1); echo "$out" | grep -q "FW_REVIEWER_IN
+          rc=3
+[31mFAIL[0m  T-1960  1/5 command(s) failing
+        $ FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_close_recommendation_panel.py -q
+          rc=1
+          | FFFFF                                                                    [100%]
+          | =================================== FAILURES ===================================
+          | _________________ test_arc_close_renders_recommendation_panel __________________
+          | 
+          | page = <Page url='http://localhost:3000/arcs/value-prioritisation/close'>
+[31mFAIL[0m  T-1961  1/4 command(s) failing
+        $ FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_approvals_arc_closure_section.py -q
+          rc=1
+          | F....                                                                    [100%]
+          | =================================== FAILURES ===================================
+          | __________________ test_approvals_renders_arc_closure_section __________________
+          | 
+          | page = <Page url='http://localhost:3000/approvals'>
+Terminated

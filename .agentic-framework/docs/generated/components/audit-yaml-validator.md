@@ -19,7 +19,7 @@ audit.sh --cron                       # Shorthand for --output .context/audits/c
 audit.sh schedule install|remove|status  # Manage cron schedule
 Sections: structure, compliance, quality, traceability, enforcement,
 
-## Dependencies (15)
+## Dependencies (21)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -38,8 +38,14 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | TODO: describe what this component does |
 | [large-file-scan](/docs/generated/agents-git-lib-large-file-scan) | calls | TODO: describe what this component does |
 | [cron_dry_run](/docs/generated/lib-cron_dry_run) | calls | TODO: describe what this component does |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | TODO: describe what this component does |
+| [notify](/docs/generated/lib-notify) | calls | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
+| [manifest](/docs/generated/agents-mcp-manifest) | calls | TODO: describe what this component does |
+| [workflow_coverage](/docs/generated/lib-workflow_coverage) | calls | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [corpus_conformance](/docs/generated/tools-corpus_conformance) | calls | TODO: describe what this component does |
 
-## Used By (32)
+## Used By (35)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -75,6 +81,9 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | [static_scan](/docs/generated/lib-reviewer-static_scan) | called_by | TODO: describe what this component does |
 | [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | called_by | TODO: describe what this component does |
 | [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
+| [watchtower_health_verdict_identity](/docs/generated/tests-unit-watchtower_health_verdict_identity) | called_by | TODO: describe what this component does |
+| [watchtower_health_verdict_identity](/docs/generated/tests-unit-watchtower_health_verdict_identity) | tests_by | TODO: describe what this component does |
+| [cron_dry_run](/docs/generated/lib-cron_dry_run) | called_by | TODO: describe what this component does |
 
 ## Related
 

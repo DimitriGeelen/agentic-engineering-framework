@@ -23,11 +23,12 @@ Output: JSON with additionalContext when warning threshold reached
 |-----------|--------------|-------------|
 | [checkpoint](/docs/generated/checkpoint) | reads | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [checkpoint](/docs/generated/checkpoint) | complements | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-commit-cadence.yaml`*

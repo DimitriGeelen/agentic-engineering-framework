@@ -7,6 +7,8 @@
 ## What It Does
 
 T-1810: paused-dispatch helpers live in lib/ (CLI parity with `fw pause list`).
+T-2645 (832 G-004): lib/ is FRAMEWORK-owned — resolving it via PROJECT_ROOT
+500s every /review page in split-root consumers (roots coincide only here).
 
 ### Framework Reference
 
@@ -20,7 +22,7 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (5)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -29,6 +31,7 @@ When agent ACs are complete and human ACs remain:
 | [tasks](/docs/generated/web-blueprints-tasks) | registers | Flask blueprint: Tasks |
 | [inception](/docs/generated/web-blueprints-inception) | calls | Blueprint 'inception' — routes: /inception |
 | [inception](/docs/generated/web-blueprints-inception) | registers | Blueprint 'inception' — routes: /inception |
+| [review](/docs/generated/lib-review) | calls | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 
 ## Used By (6)
 

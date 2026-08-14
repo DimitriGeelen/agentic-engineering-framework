@@ -19,6 +19,12 @@ Part of: Agentic Engineering Framework (T-371)
 |-----------|--------------|-------------|
 | [fabric](/docs/generated/agents-fabric-fabric) | calls | Fabric Agent - Component topology system for codebase self-awareness |
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-fabric-new-file.yaml`*
 *Last verified: 2026-03-09*

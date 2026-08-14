@@ -6,13 +6,27 @@
 
 ## What It Does
 
+### Framework Reference
+
+> **⚠ KNOWN CONFLICT — read before following this section (T-100201).** The
+> "session runs on `master`, commits go straight to master" mechanism below
+> **contradicts the T-2394 master-merge-only gate** (`agents/git/lib/master-guard.sh`),
+> which is **live in this repo** (`PROTECT_MASTER=1`) and structurally BLOCKS any
+> direct authored commit on `master`. A fast-forward never fires the guard; a direct
+> commit does. This conflict was hit live on 2026-07-05 (operator got
+> `BLOCKED: direct commit on 'master' — master is merge-only`).
+>
+> **Interim safe rule (until T-100201 resolves the mechan
+
+*(truncated — see CLAUDE.md for full section)*
+
 ## Dependencies (1)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [_pins](/docs/generated/web-templates-_pins) | includes | TODO: describe what this component does |
 
-## Used By (10)
+## Used By (13)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,6 +40,9 @@
 | [arcs_index](/docs/generated/web-templates-arcs_index) | extended_by | Renders /arcs index — list of every arc with focus dot indicator, status badge (in-progress/closed), constituent count, anchor task link, link to arc detail. |
 | [orchestrator](/docs/generated/web-templates-orchestrator) | extended_by | TODO: describe what this component does |
 | [bvp](/docs/generated/web-templates-bvp) | extended_by | TODO: describe what this component does |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | called_by | TODO: describe what this component does |
+| [test_settings_nav_link](/docs/generated/tests-unit-test_settings_nav_link) | called_by | TODO: describe what this component does |
+| [test_theme_toggle_contrast](/docs/generated/tests-unit-test_theme_toggle_contrast) | called_by | TODO: describe what this component does |
 
 ## Related
 

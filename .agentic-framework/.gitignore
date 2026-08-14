@@ -4,3 +4,8 @@ __pycache__/
 *.pyc
 *.pyo
 .DS_Store
+
+# T-2896: Watchtower's signing key, if a Watchtower ever runs with this vendored
+# copy as its PROJECT_ROOT. Unanchored so it matches at any depth beneath here.
+# See lib/init.sh for the consumer-side twin and the full rationale.
+.fw-secret-key
