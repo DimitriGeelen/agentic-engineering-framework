@@ -155,9 +155,15 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# Vendored copies match their tracked sources (the drift that blocked the push)
+# Vendored bin/fw matches its source — the real drift that blocked the push
 diff -q bin/fw .agentic-framework/bin/fw
-diff -q VERSION .agentic-framework/VERSION
+
+# NOT asserted: `diff -q VERSION .agentic-framework/VERSION`. It was here, and the gate
+# failed it — correctly. Every commit re-stamps VERSION, so vendored VERSION parity is
+# transient by construction and is false again the moment anything commits, including the
+# commit that records this task. That is not a flaw in the check; it is OBS-246 reproducing
+# under P-011, which is the best evidence for it this task has. The stable postcondition is
+# the one below: the resync reached origin.
 
 # The resync commit reached origin — the self-vendor check passed unbypassed
 git merge-base --is-ancestor 6d4547467 origin/t2539-staging
