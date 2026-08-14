@@ -223,6 +223,13 @@
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
         <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
             {% set _v = a.verdict %}
+            {# T-2986: a blocked arc has no advisory to show. Rendering a verdict badge
+               it does not have would invite a close on evidence nobody has written. #}
+            {% if a.blocked_reason %}
+            <span class="verdict-badge" data-verdict="BLOCKED"
+                  style="display:inline-block; padding:0.15rem 0.55rem; border-radius:3px; font-size:0.72rem; font-weight:700; letter-spacing:0.05em; background:var(--wt-warn); color:#1a1a1a;"
+                  title="Meets the completion threshold but is not yet reviewable">BLOCKED</span>
+            {% else %}
             <span class="verdict-badge" data-verdict="{{ _v }}"
                   style="display:inline-block; padding:0.15rem 0.55rem; border-radius:3px; font-size:0.72rem; font-weight:700; letter-spacing:0.05em;
                   {% if _v == 'CLOSE' %}background:var(--wt-success); color:#fff;
@@ -233,6 +240,7 @@
                   {% else %}background:var(--wt-muted); color:#fff;
                   {% endif %}"
                   title="Anchor-task agent recommendation: {{ _v }}">{{ _v }}</span>
+            {% endif %}
             {# T-2112: explicit hx-target="#content" on every cross-page navigation link
                inside this template. The wrapping #approvals-content div sets
                hx-target="this" for its own 10s polling (T-669 / T-2060); htmx INHERITS
@@ -258,11 +266,30 @@
             <a href="/arcs/{{ a.slug }}/review" role="button" class="secondary outline"
                hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
                style="margin:0; font-size:0.78rem;">Review</a>
+            {# T-2986: no Approve/Override on a blocked arc — there is no advisory to
+               approve or override yet, so the button would offer a decision that cannot
+               be made on the evidence available. #}
+            {% if not a.blocked_reason %}
             <a href="/arcs/{{ a.slug }}/close" role="button"
                hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
                style="margin:0; font-size:0.78rem;">Approve / Override</a>
+            {% endif %}
         </div>
     </div>
+    {% if a.blocked_reason %}
+    {# T-2986: say what unblocks it. A row the operator cannot act on and cannot explain
+       is worse than the silent exclusion it replaced. #}
+    <div class="headline-mechanic-box" style="border-left-color:var(--wt-warn);">
+        <strong>Not yet reviewable.</strong> {{ a.blocked_reason }}
+        {% if a.anchor %}
+        Write the advisory on
+        <a href="/tasks/{{ a.anchor }}"
+           hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ a.anchor }}</a>
+        (<code>## Recommendation</code> — verdict, rationale, evidence), then this arc
+        becomes reviewable here.
+        {% endif %}
+    </div>
+    {% endif %}
     {% if a.headline_mechanic %}
     {# T-2111: headline_mechanic moved out of .approval-meta (0.75rem muted) into
        the readable .headline-mechanic-box callout — body text + accent stripe on

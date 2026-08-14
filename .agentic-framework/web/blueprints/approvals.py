@@ -416,6 +416,20 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
     Filters: status=='in-progress' AND completion_ratio >= threshold AND
     anchor-task `## Recommendation` block present. Returns one dict per
     qualifying arc with the fields the template needs to render a row.
+
+    T-2986: the third condition no longer drops the arc silently. An arc that
+    meets the threshold but whose anchor carries no `## Recommendation` is
+    returned with ``blocked_reason`` set, and the template renders it without a
+    verdict badge. Close-ready rows are unchanged and carry ``blocked_reason``
+    as an empty string.
+
+    The motivating instance was arc-015 (onboarding-shape-detection): 2/2
+    complete, demo evidence captured and verified under T-2910, and absent from
+    the queue because its anchor closed without a Recommendation block. A bare
+    ``continue`` made "finished but blocked" look exactly like "not ready yet",
+    which is the one state an approvals queue exists to distinguish. Widening by
+    this single condition is deliberate — the queue stays bounded by the
+    threshold (T-2038 unbounded-list class).
     """
     import glob
     import yaml as _yaml
@@ -437,14 +451,26 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
         if stats["ratio"] < threshold:
             continue
         rec = _anchor_recommendation(arc)
+        anchor_id = rec.get("anchor_id", "") or str(arc.get("anchor_task") or "").strip()
+        blocked_reason = ""
         if not rec.get("present"):
-            continue
+            blocked_reason = (
+                f"anchor {anchor_id or '(none set)'} has no `## Recommendation` — the agent "
+                f"advisory that closure review reads. Until it is written the arc cannot be "
+                f"judged, only counted."
+            ) if anchor_id else (
+                "no anchor_task is set on the arc, so there is nowhere for the closure "
+                "advisory to live."
+            )
         out.append({
             "slug": str(arc.get("slug") or "").strip(),
             "id": str(arc.get("id") or "").strip(),
             "name": str(arc.get("name") or arc.get("slug") or ""),
-            "anchor": rec.get("anchor_id", ""),
-            "verdict": rec.get("verdict", "?"),
+            "anchor": anchor_id,
+            # Blocked rows carry no verdict: showing GO/CLOSE here would invite a close
+            # on evidence nobody has written down yet.
+            "verdict": rec.get("verdict", "?") if not blocked_reason else "",
+            "blocked_reason": blocked_reason,
             "completion_ratio": stats["ratio"],
             "completed": stats["completed"],
             "total": stats["total"],
