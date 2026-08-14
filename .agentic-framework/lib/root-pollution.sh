@@ -2,11 +2,14 @@
 # T-2990 — root-level pollution detector.
 #
 # Four ImageMagick PostScript files accumulated in the repo root over three
-# months (`os` 36MB, `sys` 14MB, `yaml,sys` 6.8MB, `yaml` 5.9KB) without anything
+# months ('os' 36MB, 'sys' 14MB, 'yaml,sys' 6.8MB, 'yaml' 5.9KB) without anything
 # noticing. They were written by the framework's own P-011 verification gate:
-# it evals each LINE of `## Verification` separately, so the Python body of a
-# multi-line `python3 -c "` command runs as bash, and `import yaml,sys` reaches
-# ImageMagick's screenshot tool — which writes to the repo root, the gate's cwd.
+# it evals each LINE of the Verification section separately, so the Python body
+# of a multi-line inline-python command runs as bash, and 'import yaml,sys'
+# reaches ImageMagick's screenshot tool — which writes to the repo root, the
+# gate's cwd. (Quotes here are deliberately plain, not backticks: this file is
+# scanned by tests/lint/no-backticks-in-inline-python.bats, and prose ABOUT an
+# inline-python command trips it just as real code would.)
 #
 # T-2991 prevents that at the gate. This is the other half: whatever writes a
 # binary into the repo root next — a different tool, a different mechanism, a
