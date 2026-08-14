@@ -6,16 +6,16 @@ description: >
   Inception: suppression without a register — how many known-open root causes are
   parked in comments?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-14T17:28:13Z
-last_update: '2026-08-14T17:30:08Z'
-date_finished:
+last_update: 2026-08-14T18:26:30Z
+date_finished: 2026-08-14T18:26:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -170,15 +170,15 @@ whether a rail is warranted and at which surface.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -283,7 +283,45 @@ is established, and the scope is decided.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: T-2990 found 56MB of junk that survived three months. The mechanism is now fixed (T-2991), but the mechanism is not why it survived. It survived because the first two instances were silenced with a .gitignore rule annotated 'root-cause task pending' — a task that was never filed. That note is a known-open root cause parked in a comment, and the suppression it annotates deleted the one signal (git status) that would have prompted anyone to read it. Instances 3 and 4 then sat visible in git status for days and were still not investigated, because by then the class had been normalised. The framework already has the right home for this: concerns.yaml is checked by audit and rendered in Watchtower, where a comment beside an ignore rule is read by nobody. Recommending GO because the specific instance is proven and the generalisation is cheap to test — a scan for suppression sites (gitignore rules, skip markers, xfail, allowlists, disabled hooks) that carry a deferral note but no register entry is a bounded piece of work, and the answer is useful whether the count is 1 or 40. NO-GO would assert the class is one-off, which the four-instance history contradicts; DEFER would be a hedge, since the evidence for the class is already in hand.
+
+The filing rationale above predicted the census would justify a broad rail, and
+said the answer would be useful "whether the count is 1 or 40". It came back ~2,
+with a 184-hit false-positive surface. That cuts against the rail I had in mind
+when filing, and the honest thing is to say so rather than quietly restate it.
+
+Still **GO**, for a **narrower** thing:
+
+> An audit WARN over `.gitignore` only, firing on a rule whose comment promises
+> future work but names no task / gap / observation id.
+
+The census is what narrowed it, by exposing an asymmetry the original framing
+missed. Not all suppressions are equal:
+
+- a `skip "…"` **prints its reason every run** — it announces itself;
+- an allowlist entry is **echoed by the scanner** that consults it;
+- a `.gitignore` rule emits **nothing, ever**.
+
+`.gitignore` is the only common suppression that deletes its own signal. That is
+precisely what happened here: `/os` and `/sys` did not merely fail to remind
+anyone, they removed `git status` — the surface that would have. The two later
+instances, uncovered by any rule, did keep appearing as `??` for days.
+
+So the target is not "suppression sites"; it is the subclass that is
+structurally silent. Population ~1 today, cost ~20 lines in audit, and it would
+have caught this exact incident three months and 56MB ago.
+
+Why not the alternatives: a **write-time gate** would fire on every legitimate
+ignore rule (most have no deferral and need none). A **prose-keyed scan** across
+the repo is the 184-hit version — noise that trains people to ignore it, which is
+how the original note got ignored. **NO-GO** would assert the class is one-off;
+the four-incident history and the explicit written "root-cause task pending"
+contradict that. **DEFER** would be a hedge — the census is done, the asymmetry
+is established, and the scope is decided.
+
+**Date**: 2026-08-14T18:26:29Z
 
 ## Updates
 
@@ -292,3 +330,78 @@ is established, and the scope is decided.
 
 ### 2026-08-14T17:29:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-14T18:26:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** T-2990 found 56MB of junk that survived three months. The mechanism is now fixed (T-2991), but the mechanism is not why it survived. It survived because the first two instances were silenced with a .gitignore rule annotated 'root-cause task pending' — a task that was never filed. That note is a known-open root cause parked in a comment, and the suppression it annotates deleted the one signal (git status) that would have prompted anyone to read it. Instances 3 and 4 then sat visible in git status for days and were still not investigated, because by then the class had been normalised. The framework already has the right home for this: concerns.yaml is checked by audit and rendered in Watchtower, where a comment beside an ignore rule is read by nobody. Recommending GO because the specific instance is proven and the generalisation is cheap to test — a scan for suppression sites (gitignore rules, skip markers, xfail, allowlists, disabled hooks) that carry a deferral note but no register entry is a bounded piece of work, and the answer is useful whether the count is 1 or 40. NO-GO would assert the class is one-off, which the four-instance history contradicts; DEFER would be a hedge, since the evidence for the class is already in hand.
+
+The filing rationale above predicted the census would justify a broad rail, and
+said the answer would be useful "whether the count is 1 or 40". It came back ~2,
+with a 184-hit false-positive surface. That cuts against the rail I had in mind
+when filing, and the honest thing is to say so rather than quietly restate it.
+
+Still **GO**, for a **narrower** thing:
+
+> An audit WARN over `.gitignore` only, firing on a rule whose comment promises
+> future work but names no task / gap / observation id.
+
+The census is what narrowed it, by exposing an asymmetry the original framing
+missed. Not all suppressions are equal:
+
+- a `skip "…"` **prints its reason every run** — it announces itself;
+- an allowlist entry is **echoed by the scanner** that consults it;
+- a `.gitignore` rule emits **nothing, ever**.
+
+`.gitignore` is the only common suppression that deletes its own signal. That is
+precisely what happened here: `/os` and `/sys` did not merely fail to remind
+anyone, they removed `git status` — the surface that would have. The two later
+instances, uncovered by any rule, did keep appearing as `??` for days.
+
+So the target is not "suppression sites"; it is the subclass that is
+structurally silent. Population ~1 today, cost ~20 lines in audit, and it would
+have caught this exact incident three months and 56MB ago.
+
+Why not the alternatives: a **write-time gate** would fire on every legitimate
+ignore rule (most have no deferral and need none). A **prose-keyed scan** across
+the repo is the 184-hit version — noise that trains people to ignore it, which is
+how the original note got ignored. **NO-GO** would assert the class is one-off;
+the four-incident history and the explicit written "root-cause task pending"
+contradict that. **DEFER** would be a hedge — the census is done, the asymmetry
+is established, and the scope is decided.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-901cdc03
+- **Timestamp:** 2026-08-14T18:26:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-bb7910f7
+- **Timestamp:** 2026-08-14T18:26:31Z
+- **Overall:** CONFIRMED
+- **Claims:** 6
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2992-suppression-without-a-register.md` | file | ✓ pass |
+| `agents/audit/audit.sh:1175` | file_line | ✓ pass |
+| `tests/unit/t2924_update_task_owner_gate.bats:127` | file_line | ✓ pass |
+| `tests/unit/t2932_note_count_urgent_filter.bats:215` | file_line | ✓ pass |
+| `T-2990` | task | ✓ pass |
+| `T-2991` | task | ✓ pass |
+
+### 2026-08-14T18:26:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

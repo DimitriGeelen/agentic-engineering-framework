@@ -4,12 +4,12 @@ name: "audit rail: gitignore rules that suppress silently with no register refer
 description: >
   audit rail: gitignore rules that suppress silently with no register reference
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [C-004, lib/config.sh, lib/gitignore-register.sh, tests/unit/t2994_gitignore_register.bats, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T19:06:30Z
-last_update: '2026-08-14T19:15:12Z'
-date_finished:
+last_update: 2026-08-14T19:20:20Z
+date_finished: 2026-08-14T19:20:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -112,6 +112,15 @@ prose as qualifier, not the other way round.
 …and silent against the real file in the same run.
 
 ### Human
+
+- [ ] [REVIEW] The new `GITIGNORE_REGISTER_ADVISORY` row reads clearly on `/config`
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/config`
+  2. Find the `GITIGNORE_REGISTER_ADVISORY` row (it sits directly under `RETIRE_WHEN_ADVISORY`)
+  3. Read its description cold, as someone who has not seen T-2990
+  **Expected:** the row explains what turning it off costs you, and does not wrap or overflow its column. The description is one line longer than its neighbours — if that unbalances the table, say so.
+  **If not:** note the wording or the column that breaks; the text lives at `web/blueprints/config.py:47` and is a one-line edit.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -222,6 +231,37 @@ grep -q "GITIGNORE_REGISTER_ADVISORY" lib/config.sh && grep -q "GITIGNORE_REGIST
 # The audit wiring is present and guarded by the advisory flag.
 grep -q "check_gitignore_register" agents/audit/audit.sh
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 7 Agent ACs verified, 11/11 tests green, and the rail was
+shown live to discriminate — WARN on a planted deferral, silent on this repo's
+real `.gitignore` in the same run. The single Human AC is one row of text on
+`/config`; nothing structural depends on it.
+
+Worth your attention on two points rather than a rubber stamp:
+
+1. **It is deliberately narrow.** T-2992 was filed expecting a rail over all
+   suppression sites. The census (~2 genuine instances, 184 false positives on
+   prose) killed that, and this ships only the `.gitignore` leg. If you wanted
+   the broader thing, this is not it, and that was a judgement call made on
+   census evidence rather than on the filed intent.
+2. **WARN, never FAIL.** "File it or name it" is a judgement you make. A gate
+   would force a fake task id to clear it, which is the failure mode the rail
+   exists to detect.
+
+**Evidence:**
+
+- `tests/unit/t2994_gitignore_register.bats` — 11/11, incl. positive control
+  (the historical T-2990 block IS flagged) and negative control (this repo clean)
+- Live: `[WARN] .gitignore: 1 comment block(s) defer work without naming a
+  register entry / First at line 108` on a planted line, restored after
+- `tests/lint/config-registry-parity.bats` — 3/3 after it caught the missing
+  `web/blueprints/config.py` mirror entry
+- `lib/gitignore-register.sh`, `agents/audit/audit.sh:check_gitignore_register`
+- Research: `docs/reports/T-2992-suppression-without-a-register.md`
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -318,3 +358,15 @@ grep -q "check_gitignore_register" agents/audit/audit.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2994-audit-rail-gitignore-rules-that-suppress.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4e593fbd
+- **Timestamp:** 2026-08-14T19:20:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-14T19:20:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
