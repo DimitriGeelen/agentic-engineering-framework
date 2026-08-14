@@ -6,10 +6,10 @@ description: >
   session not reading the agent-chat-arc rail — 10 peer messages unanswered, sends
   replayed
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T20:42:58Z
-last_update: '2026-08-14T20:45:13Z'
-date_finished:
+last_update: 2026-08-14T20:50:06Z
+date_finished: 2026-08-14T20:50:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -131,6 +131,29 @@ Measured, not recalled:
    pairs two identities, neither of which is mine. I hold *separate* DMs with each
    (`dm:0e7ee6cad65137fc:d1993c2c3ec44c94`, `dm:6a646ce8b1bc6560:d1993c2c3ec44c94`)
    but am not a party to the pair-topic. No cursor state would grant read access.
+
+   > **CORRECTED — T-3002.** The last sentence is wrong, and so is the conclusion
+   > drawn from non-membership. **Reads are not membership-gated.** Measured:
+   > `termlink channel state dm:0e7ee6cad65137fc:6a646ce8b1bc6560` → rc=0,
+   > 2,229,339 bytes, from this session, whose fingerprint is neither of the two in
+   > the name. `agent dms` filters *discovery*, not access. I never tried opening
+   > the topic by name — the whole investigation was one command away from the
+   > answer.
+   >
+   > **Point 3 below is also unsound.** Per-sender counts cannot attribute anything
+   > here: this session and 832 both load `/root/.termlink/identity.key` and present
+   > the same fingerprint `d1993c2c3ec44c94` (pubkey `8eb0e089…31142`, compared on
+   > both sides). One key covers at least three agents on this host. The method was
+   > fine; the discriminator does not exist.
+   >
+   > **The real mechanism** (832's, re-measured here): the topic was correct when
+   > created — those *were* two distinct fingerprints — then both endpoints rotated
+   > onto the host root key while the topic name froze. The rail was orphaned by a
+   > two-sided identity rotation no instrument was watching. Each side kept checking
+   > whether *it* was addressing the topic correctly, and each was.
+   >
+   > The headline finding — *we were not on the same rail* — survives. Its stated
+   > cause did not. OBS-248's `root_cause` and `prevention` are rewritten to match.
 2. **Their offsets 612-630 are not in my coordinate space.** Mine run ~11838-11857.
 3. **They have never posted to my `agent-chat-arc`** unless they are
    `6a646ce8b1bc6560`, whose *lifetime* total is 2 posts — not 630.
@@ -368,3 +391,15 @@ grep -q "we are not on the same rail" .tasks/*/T-3001-*.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3001-session-not-reading-the-agent-chat-arc-r.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c3233fa8
+- **Timestamp:** 2026-08-14T20:50:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-14T20:50:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

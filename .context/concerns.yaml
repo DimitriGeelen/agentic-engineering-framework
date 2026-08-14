@@ -626,26 +626,40 @@
     standing directive was explicitly to communicate often with that peer, so the failure DEFEATED
     a directive while APPEARING to comply with it — the agent reported coordination in good
     faith.
-  root_cause: Sending is verified (the transport confirms the write); ARRIVAL AT A SHARED SURFACE
-    is not. Nothing checks that the topic written to is one both parties can read, that the
-    peer's identity is a member, or that offsets cited by a peer exist in the local coordinate
-    space. The measured facts were each one command away — `agent identity`, `agent info` (Senders),
-    `agent dms` — but no rail asks for them, so the question 'is this channel actually bidirectional?'
-    is only asked after a human or a peer notices silence. Here it took the peer explicitly
-    enumerating two hypotheses and saying it could not distinguish them.
-  prevention: 'NOT YET BUILT — filed, not fixed (one bug, one task). Candidate shape, cheapest
-    first: (a) a `fw peer verify <name>` that asserts the local fingerprint is a member of the
-    topic before it is used for coordination, and that the peer appears in the topic''s sender
-    list; (b) a doctor/audit WARN when a session has posted to a topic whose Senders list does
-    not include the intended peer; (c) an author-time rule that a coordination claim in a handover
-    names the surface AND its measured membership, not just ''messaged the peer''. Note (a)
-    is only meaningful if it distinguishes window-relative from absolute offsets — see the TermLink
-    defect cross-linked below, which made the diagnosis harder and is homed upstream per T-1333.'
+  root_cause: 'CORRECTED (T-3002, peer-supplied mechanism, re-measured here). The original entry
+    described a membership/addressing fault: ''nothing checks that the topic written to is one
+    both parties can read''. Both halves of that were wrong. Reads are NOT membership-gated
+    — `termlink channel state dm:0e7ee6cad65137fc:6a646ce8b1bc6560` returned rc=0 and 2,229,339
+    bytes from a session whose fingerprint is neither of the two in the topic name; `agent dms`
+    filters DISCOVERY, not access. And the two sessions were not two parties at all: both load
+    /root/.termlink/identity.key and present fingerprint d1993c2c3ec44c94 with pubkey 8eb0e089…31142,
+    verified identical on both sides. THE ACTUAL MECHANISM: the topic was correct when created
+    — those were two distinct fingerprints — and then both endpoints rotated onto the host root
+    key while the topic name froze. The rail was orphaned by a two-sided identity rotation that
+    no instrument on either side was watching. Each party kept checking whether IT was addressing
+    the topic correctly, and each was. Consequence: while two sessions share a key, no DM topic
+    between them can exist at all — dm:X:Y needs two distinct fingerprints, and dm:<fp>:<fp>
+    is indistinguishable from talking to oneself.'
+  prevention: 'NOT YET BUILT — filed, not fixed. The corrected mechanism changes what to build:
+    a membership assertion would NOT have caught this (membership was never the gate), and a
+    sender-count check is unsound because the fingerprint is not a discriminator — one key covers
+    at least three agents on this host (this session, 832, and an opencode agent running as
+    dimitri-mint-dev over a sudo bridge). Candidate shapes, cheapest first: (a) detect that
+    a DM topic''s name contains a fingerprint no longer presented by either endpoint — i.e.
+    watch for identity ROTATION orphaning a live topic, which is the thing nobody watches; (b)
+    require an explicit producer field in the envelope rather than inferring authorship from
+    the signing key (832 already enforces this via their T-420 gate: metadata={''from_project'':
+    ...} — a signature cannot say which project spoke, so the envelope has to); (c) an author-time
+    rule that a coordination claim names the surface AND a measured read of it, not just ''messaged
+    the peer''. Note the sibling evidence: a distinct fingerprint bdd184bd89f318e4 replayed
+    one message byte-identically four times on the same rail (offsets 612/617/621/622 against
+    original 611), unidentified and unexplained.'
   blast_radius: cross-project
   observed: '2026-08-14'
   status: open
   related:
   - T-3001
+  - T-3002
   - T-2904
   - T-2905
   - T-1333
