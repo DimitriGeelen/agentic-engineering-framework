@@ -396,12 +396,34 @@ def test_live_corpus_all_versions_census():
     If you are updating this pin again: re-derive all three values, enumerate
     the added versions by NAME, and if the findings count moves — especially
     if a version DROPS out of the flagged set — stop. A drop means a rule
-    changed and is a different investigation, not a corpus-growth story."""
+    changed and is a different investigation, not a corpus-growth story.
+
+    T-2976 baseline move (32 → 39 versions, 14 → 16 flagged), 2026-08-14, and
+    it carries a correction: **this pin had already been red for some time
+    before this task touched it.** At `a25497afe` — the commit before any of
+    T-2974/T-2976's work — the live store already held 37 versions with 15
+    flagged, against a pin of 32/14. Five versions had been added without
+    re-deriving, so the previous paragraph's discipline was written and then
+    not followed. Recorded rather than quietly corrected: a stale pin that
+    fails loudly is recoverable, and the reason it drifted is worth keeping.
+
+    Of the 7 added since the pin, 2 are this arc's (`aef-greenfield-onboarding`
+    v1 and v2). The findings move from 15 → 16 is entirely `unread-node-prose`
+    (T-2974) firing on `aef-greenfield-onboarding@v1`, whose ~8KB of operator
+    prose sat in `aef:description` children that no reader reads; v2 moved it
+    to the `aef:meta note` attribute and is clean.
+
+    **No version dropped out**, which the docstring above rightly makes the
+    stop condition — and this time it was checked by construction rather than
+    argued from a diff: the pre-change tree was extracted at `a25497afe` (its
+    store AND its `corpus_lint`) and the census re-run against it, yielding
+    those 15 names. All 15 are still flagged here. The 16th is the new rule
+    finding its origin case."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 32, [n for n, _ in targets]
+    assert len(targets) == 39, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:
@@ -411,7 +433,12 @@ def test_live_corpus_all_versions_census():
     findings.extend(corpus_lint.cross_map_typed_events(typed))
 
     versions_with_findings = sorted({f["map"] for f in findings})
-    assert len(versions_with_findings) == 14, versions_with_findings
+    assert len(versions_with_findings) == 16, versions_with_findings
+    # T-2976: the no-drop condition, asserted rather than only counted. A count
+    # cannot tell "one added, none lost" from "one added, one lost" — which is
+    # the failure mode the docstring's stop condition exists for.
+    assert "aef-greenfield-onboarding@v1" in versions_with_findings
+    assert "aef-greenfield-onboarding@v2" not in versions_with_findings
     # the independently-confirmed headline witness (832 rail 342/343): the
     # pinned promotion candidate's v3 ancestor was never judged by us before
     # this mode existed, and reproduces their wholesale-inversion report
@@ -488,3 +515,55 @@ def test_census_summary_prints_clean_versions_and_carries_witnesses():
     assert [r["map"] for r in rows] == ["m@v1", "m@v2"]
     assert rows[0]["rules"] == [] and rows[0]["skipped_lanes"] == 1
     assert rows[1]["rules"] == [{"rule": "lane-overflow", "witness": "a, b"}]
+
+
+# ── unread-node-prose (origin T-2974) ─────────────────────────────────────────
+
+def _task_with_ext(nid, ext):
+    return (f'<bpmn:serviceTask id="{nid}" name="n">'
+            f"<bpmn:extensionElements>{ext}</bpmn:extensionElements>"
+            f"</bpmn:serviceTask>")
+
+
+def test_unread_prose_fires_on_text_bearing_unknown_child(tmp_path):
+    """The T-2974 defect: prose in a child element no per-node reader reads."""
+    store = _store(tmp_path)
+    f = _lint(_task_with_ext("n1", "<aef:description>why this step "
+                             "matters to the operator</aef:description>"), store)
+    assert _rules(f) == ["unread-node-prose"], f
+    assert "aef:meta note" in f[0]["detail"]
+
+
+def test_unread_prose_silent_on_attribute_only_unknown_child(tmp_path):
+    """The cry-wolf case that decides whether this rule is usable.
+
+    ``aef:contextReads`` is outside ``_KNOWN_EXT`` and rides ``ext_raw`` exactly
+    like ``aef:description`` did — so a rule keyed on "unrecognised tag" would
+    fire on every legitimate map in the corpus. The trigger is TEXT.
+    """
+    store = _store(tmp_path)
+    f = _lint(_task_with_ext("n1", '<aef:contextReads paths=".context/x"/>'), store)
+    assert f == [], f
+
+
+def test_unread_prose_silent_on_the_canonical_note_channel(tmp_path):
+    store = _store(tmp_path)
+    f = _lint(_task_with_ext("n1", '<aef:meta note="why this step matters"/>'), store)
+    assert f == [], f
+
+
+def test_unread_prose_exempts_endpoint(tmp_path):
+    """``aef:endpoint`` is emitted AND read as a text-bearing child — its text
+    is on a channel that works, so it is an exemption rather than a finding."""
+    store = _store(tmp_path)
+    f = _lint(_task_with_ext("n1", "<aef:endpoint>bin/fw doctor</aef:endpoint>"), store)
+    assert f == [], f
+
+
+def test_unread_prose_names_the_node_and_reports_size(tmp_path):
+    store = _store(tmp_path)
+    body = "x" * 300
+    f = _lint(_task_with_ext("agt_1_orientation",
+                             f"<aef:description>{body}</aef:description>"), store)
+    assert f[0]["node"] == "agt_1_orientation"
+    assert "300 chars" in f[0]["detail"]

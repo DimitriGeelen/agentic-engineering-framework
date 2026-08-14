@@ -1,16 +1,20 @@
 ---
 id: T-2976
-name: "onboarding curriculum session continuation"
+name: "corpus lint: authored prose in a channel no reader reads is silent"
 description: >
-  onboarding curriculum session continuation
+  Add a corpus lint rule for the T-2974 class — per-node prose written into an
+  extension CHILD ELEMENT (aef:description, aef:note) instead of the aef:meta
+  note ATTRIBUTE. Both readers are attribute-based, so the content is preserved
+  on disk, survives every round-trip, and renders nowhere. Nothing is red.
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [designer-corpus, lint]
 components: []
-related_tasks: []
+related_tasks: [T-2974]
+arc_id: onboarding-curriculum
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-13T23:55:45Z
-last_update: 2026-08-13T23:55:45Z
-date_finished: null
+last_update: '2026-08-14T00:00:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +38,80 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-14T00:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-14T00:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2976: onboarding curriculum session continuation
+# T-2976: corpus lint — authored prose in a channel no reader reads is silent
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2974's G-019 question: *why did the framework allow this?*
+
+An author put ~8KB of operator prose into `<aef:description>` child elements on
+`aef-greenfield-onboarding` v1. `corpus_spec._ext()` reads attributes only, so the content
+parsed to `{}` and rendered nowhere; the pinned designer's per-node vocabulary is attributes
+too. The map looked complete in the file, passed lint, round-tripped losslessly, and taught
+nobody anything. It took an operator complaint to find it, and the complaint read as an
+authoring critique rather than a defect report — the framework offered no signal that would
+have distinguished the two.
+
+That is the gap: **the parser has a bucket for extension children it does not understand
+(`ext_raw`, added by T-2614 precisely so they are not silently dropped), and nothing ever
+looks in it.** T-2614 made the data survive; it did not make anyone notice. A text-bearing
+entry in `ext_raw` is authored prose that no reader will ever show.
+
+Corpus lint already carries rules of exactly this genre — `legacy-ref` (a ref form the
+editor cannot bind), `editor-unbindable` (content the pinned build cannot resolve). This is
+the same shape: content the pinned readers cannot display.
+
+**Scope note:** the corpus is currently clean. A sweep of all 39 stored version files found
+the class only in `aef-greenfield-onboarding` v1, already superseded. This rule is
+preventive, not corrective — it exists so the next author gets told at lint time instead of
+via an operator's confusion three weeks later.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `corpus_lint` gains an `unread-node-prose` rule: a node extension child that is not in
+      `_KNOWN_EXT` and carries non-empty text is a finding, naming the node, the tag, and the
+      `aef:meta note` attribute it should have used
+- [x] Attribute-only unknown children (`<aef:contextReads paths="…"/>` and friends) do NOT
+      fire — they are a legitimate, in-use extension shape and the rule must not cry wolf
+- [x] The rule fires on `aef-greenfield-onboarding` v1 (the known instance, scanned via
+      `--all-versions`) and stays silent on every current `latest` map — default sweep holds
+      at its pre-change 4 findings
+- [x] Unit test covers both directions — text-bearing child fires, attribute-only child does not
+- [x] `aef:endpoint` is exempt: `corpus_spec` emits it as a text-bearing child and the designer
+      reads it back that way, so its text is on a channel that works
+- [x] The all-versions census pin is re-derived and its no-drop condition **asserted**, not
+      merely counted (see Evolution — the pin was already red before this task)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +145,16 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_corpus_lint.py -q > /tmp/.t2976a 2>&1 && grep -q passed /tmp/.t2976a
+python3 -m pytest tests/unit/test_corpus_explain.py tests/unit/t2974_greenfield_operator_prose.py -q > /tmp/.t2976b 2>&1 && grep -q passed /tmp/.t2976b
+# The rule finds its origin case under --all-versions...
+python3 tools/corpus_lint.py --all-versions > /tmp/.t2976c 2>&1 || true; grep -q 'unread-node-prose.*aef-greenfield-onboarding@v1' /tmp/.t2976c
+# ...and stays silent on the default (latest-only) sweep — no new noise in the
+# standing baseline, which is the difference between a usable rule and one that
+# gets ignored. Same `|| true` + trailing-grep shape as the sibling lint checks:
+# corpus lint legitimately exits 1 on pre-existing findings in other maps.
+bin/fw corpus lint > /tmp/.t2976d 2>&1 || true; ! grep -q 'unread-node-prose' /tmp/.t2976d
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -187,6 +261,30 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-08-14 — the rule's usefulness turns on what it does NOT fire on
+
+- **What changed:** the obvious predicate — "an extension child the parser does not
+  recognise" — is unusable. `aef:contextReads`, `aef:artifactsWrites` and `aef:endpoint` all
+  sit outside `_KNOWN_EXT` and ride `ext_raw` exactly as `aef:description` did, so that rule
+  would fire on legitimate maps across the corpus and be ignored within a week. The signal is
+  not the unrecognised tag; it is **character data on one**. Attributes on an unknown child
+  are a working extension shape. Text on one is content with no reader.
+- **Plan impact:** `aef:endpoint` needed an explicit exemption rather than falling out of the
+  predicate — `corpus_spec` emits it as a text-bearing child *and* the designer reads it back
+  that way, so its text is on a channel that genuinely works. Kept in its own
+  `_TEXT_BEARING_EXT` set rather than folded into `_KNOWN_EXT`, which answers a different
+  question ("does the parser lift this into the spec?").
+- **Triggered:** the census pin. `test_live_corpus_all_versions_census` pinned 32 versions /
+  14 flagged and was **already red before this task** — at `a25497afe` the store held 37 with
+  15 flagged. Five versions had been added without re-deriving, so the pin's own instructions
+  ("re-derive all three values… if a version DROPS out, stop") had been written and then not
+  followed. Rather than bump the number and move on, the pre-change tree was extracted at
+  `a25497afe` (its store *and* its `corpus_lint`) and the census re-run against it — 15
+  names, all 15 still flagged now. The 16th is this rule finding its origin case. The no-drop
+  condition is now **asserted** in the test, not merely counted: a count cannot distinguish
+  "one added, none lost" from "one added, one lost", which is the exact failure the stop
+  condition exists for.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -243,3 +341,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2976-onboarding-curriculum-session-continuati.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5151474f
+- **Timestamp:** 2026-08-14T05:42:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

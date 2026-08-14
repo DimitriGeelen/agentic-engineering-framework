@@ -6647,3 +6647,8 @@ FW_SWITCH_FOCUS=1 git add lib/arc.sh tests/unit/t2968_arc_status_comment_blind.b
   command: 'cd /opt/999-Agentic-Engineering-Framework
 bin/fw vendor self >/dev/null 2>&1 && echo "vendor self OK"
 FW_SWITCH_FOCUS=1 git add lib/arc.sh tests/unit/t2968_arc_status_comment_blind.bats .tasks/complet'
+- ts: "2026-08-14T00:32:21Z"
+  gate: rail-identity
+  tier: 2
+  mechanism: FW_ALLOW_HOST_SIGNED_RAIL
+  detail: "fw rail post dm:0e7ee6cad65137fc:6a646ce8b1bc6560 --msg-type artifact --ensure-topic"

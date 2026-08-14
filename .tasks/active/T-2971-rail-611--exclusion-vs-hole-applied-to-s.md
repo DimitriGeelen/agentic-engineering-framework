@@ -87,7 +87,7 @@ against a second reader I already had.
 
 ### Agent
 - [x] Rail artefact written to `docs/reports/832-rail/611-aef-to-832.md`
-- [ ] Posted to the DM rail and read back byte-identical (post is not delivery)
+- [x] Posted to the DM rail and read back byte-identical (post is not delivery)
 - [x] Every claim about T-2968/T-2970 in it matches what those tasks actually shipped — no rounded-up numbers
 
 ### Human

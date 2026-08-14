@@ -84,6 +84,28 @@ discipline: no speculative rules — each one has a task-traceable origin).
                           like "never evaluated", which is the G-071 false green. Lanes
                           with no members or no declared height make no containment
                           claim and stay silent — out of scope, not unevaluable.
+  unread-node-prose       a node extension child outside _KNOWN_EXT carrying non-empty
+                          TEXT. Every reader of per-node annotation in this dialect is
+                          attribute-based — corpus_spec._ext() builds from
+                          dict(c.attrib), and the pinned designer's metaKeys vocabulary
+                          is attributes too — so text in a child element is authored
+                          content that no surface will ever display. It is not lost:
+                          T-2614 added ext_raw so unrecognised children survive
+                          round-trip verbatim. That is exactly what makes it silent —
+                          the map is well-formed, lints clean under every other rule,
+                          saves and reloads losslessly, and teaches nobody anything.
+                          Nothing looks in ext_raw, so nothing ever says so.
+                          ATTRIBUTE-only unknown children (aef:contextReads paths="…",
+                          aef:artifactsWrites, aef:endpoint) are a legitimate in-use
+                          shape and do NOT fire — the rule keys on text content, not on
+                          the tag being unrecognised. Origin: T-2974 — ~8KB of operator
+                          prose sat in aef:description children on
+                          aef-greenfield-onboarding v1, invisible in both /designer and
+                          fw corpus explain, and surfaced only as an operator saying the
+                          diagram looked "pretty limited". Sibling to editor-unbindable:
+                          same question (can the pinned reader show this?), asked of
+                          prose instead of links. Fix is always the same — move it to
+                          aef:meta note="…", encoding newlines as &#10;.
 
 Exit codes: 0 clean, 1 findings, 2 usage/environment error.
 
@@ -105,7 +127,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpus_spec import (  # noqa: E402
-    BPMN_NS, STORE, UUID_RE, _ext, _q, parse_map, store_index,
+    BPMN_NS, STORE, UUID_RE, _ext, _KNOWN_EXT, _q, parse_map, store_index,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -271,9 +293,65 @@ def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set,
                         "origin": "T-2614",
                     })
 
+    findings.extend(unread_node_prose(map_name, proc))
     findings.extend(lane_geometry(map_name, xml_text))
     findings.extend(lane_overflow(map_name, xml_text))
     return findings, typed
+
+
+def unread_node_prose(map_name: str, proc) -> list:
+    """unread-node-prose: text in an extension child no reader reads.
+
+    The trigger is TEXT, not the tag being unrecognised. Unknown children are
+    normal and load-bearing in this dialect — ``aef:contextReads paths="…"``,
+    ``aef:artifactsWrites``, ``aef:endpoint`` all live outside ``_KNOWN_EXT`` and
+    round-trip through ``ext_raw`` by design. What no surface can render is
+    *character data* on such a child: ``_ext()`` builds from ``dict(c.attrib)``,
+    and the pinned designer's per-node vocabulary is attributes too, so the text
+    reaches neither ``fw corpus explain`` nor the inspector panel.
+
+    ``aef:endpoint`` is the deliberate exception: ``corpus_spec`` emits it as a
+    text-bearing child (``<aef:endpoint>path</aef:endpoint>``) and the designer
+    reads it back the same way, so its text is on a channel that does work.
+    """
+    findings = []
+    for el in proc:
+        if not isinstance(el.tag, str):
+            continue
+        if el.tag.split("}")[-1] in ("laneSet", "extensionElements"):
+            continue
+        ee = el.find(_q("extensionElements"))
+        if ee is None:
+            continue
+        for child in ee:
+            if not isinstance(child.tag, str):
+                continue
+            local = child.tag.split("}")[-1]
+            if local in _KNOWN_EXT or local in _TEXT_BEARING_EXT:
+                continue
+            text = "".join(child.itertext()).strip()
+            if not text:
+                continue
+            preview = " ".join(text.split())[:60]
+            findings.append({
+                "rule": "unread-node-prose", "map": map_name, "node": el.get("id"),
+                "detail": f'<aef:{local}> carries {len(text)} chars of text '
+                          f'("{preview}…") — every per-node reader in this dialect '
+                          f"is attribute-based, so this renders in neither "
+                          f"fw corpus explain nor the designer inspector. It is "
+                          f"preserved verbatim (T-2614 ext_raw), which is what makes "
+                          f'the loss silent. Move it to <aef:meta note="…"/>, '
+                          f"encoding newlines as &#10; (a literal newline in an "
+                          f"attribute value normalises to a space, XML 1.0 §3.3.3)",
+                "origin": "T-2974",
+            })
+    return findings
+
+
+#: Unknown-to-``_KNOWN_EXT`` children whose TEXT is genuinely read somewhere, so
+#: text on them is not a finding. Kept separate from ``_KNOWN_EXT`` because that
+#: set means "the parser lifts this into the spec", a different question.
+_TEXT_BEARING_EXT = {"endpoint"}
 
 
 def lane_geometry(map_name: str, xml_text: str) -> list:
