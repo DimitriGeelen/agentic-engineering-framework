@@ -33070,3 +33070,21 @@ scan_id: R-b06a3453
 task_id: T-2982
 payload:
   task_file: .tasks/active/T-2982-resync-vendored-auditsh-after-t-2980--pr.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T08:23:44Z'
+scan_id: R-2603b6ff
+task_id: T-2983
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T08:23:44Z'
+scan_id: R-2603b6ff
+task_id: T-2983
+payload:
+  task_file: .tasks/active/T-2983-push-blocked-by-self-vendor-drift-from-a.md
