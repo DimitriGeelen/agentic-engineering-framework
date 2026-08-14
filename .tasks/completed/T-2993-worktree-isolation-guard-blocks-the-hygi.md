@@ -4,16 +4,16 @@ name: "worktree isolation guard blocks the hygiene it exists to enable"
 description: >
   Inception: worktree isolation guard blocks the hygiene it exists to enable
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-14T18:50:44Z
-last_update: 2026-08-14T18:51:53Z
-date_finished:
+last_update: 2026-08-14T19:05:25Z
+date_finished: 2026-08-14T19:05:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -38,6 +38,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-14T19:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -170,15 +180,15 @@ T-2394 merge-only conflict (adjacent, separately tracked); anything in the
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -291,7 +301,14 @@ guard. A build task should verify it before depending on it.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Re-filed from DEFER. The DEFER was honest at filing (I could not say who owned
+the guard) and the spikes closed that gap in three greps — but they also
+displaced the frame I filed under, so the change is substantive, not a
+confidence upgrade.
+
+**Date**: 2026-08-14T19:05:25Z
 
 ## Updates
 
@@ -300,3 +317,44 @@ guard. A build task should verify it before depending on it.
 
 ### 2026-08-14T18:51:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-14T19:05:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Re-filed from DEFER. The DEFER was honest at filing (I could not say who owned
+the guard) and the spikes closed that gap in three greps — but they also
+displaced the frame I filed under, so the change is substantive, not a
+confidence upgrade.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-416383f9
+- **Timestamp:** 2026-08-14T19:05:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-cd7d1636
+- **Timestamp:** 2026-08-14T19:05:26Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/worktree.sh:398` | file_line | ✓ pass |
+| `T-2428` | task | ✓ pass |
+| `T-2825` | task | ✓ pass |
+| `T-100194` | task | ✓ pass |
+| `T-100199` | task | ✓ pass |
+
+### 2026-08-14T19:05:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
