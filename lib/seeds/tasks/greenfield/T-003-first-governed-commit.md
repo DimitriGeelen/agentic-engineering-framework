@@ -49,8 +49,17 @@ which gates guard each transition.
 
 ## Verification
 
-# Last commit references this task
-git log -1 --format=%s | grep -q "T-003"
+# Some commit in history references this task.
+#
+# NOT `git log -1` (T-2996 / G-006): that asserts a property of HEAD, which is
+# true the moment this task completes and false from the very next commit
+# onward — a permanently-red CTL-013 in every project built on AEF, clearable by
+# nothing, because the work it checks is correct and the question is wrong.
+#
+# Capture-then-grep, not a pipeline (L-387): `git log | grep -q` exits 141 under
+# P-011's `set -eo pipefail` once history is long enough that grep matches and
+# closes stdin while git is still writing.
+out=$(git log --format=%s); echo "$out" | grep -q "T-003"
 
 ## Updates
 
