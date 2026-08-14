@@ -1,0 +1,20 @@
+id: tests/unit/audit_seed_corpus_refs.bats
+name: audit_seed_corpus_refs
+type: script
+subsystem: unknown
+location: tests/unit/audit_seed_corpus_refs.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-14
+created_by: unknown

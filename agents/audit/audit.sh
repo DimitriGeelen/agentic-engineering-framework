@@ -793,6 +793,47 @@ if [ "$anchor_checked" -gt 0 ] && [ "$anchor_missing" -eq 0 ]; then
     pass "All $anchor_checked arc anchor_task references resolve to existing tasks"
 fi
 
+# T-2980 (arc-017, onboarding-curriculum): seed → corpus-map reference resolution.
+#
+# arc-017 chose to have the onboarding curriculum ROUTE to corpus maps rather than
+# embed their content. That created a reference class nothing checked: each seeded
+# task's `## For the Operator` section ends with `fw corpus explain <id>`, and if
+# that id stops resolving the operator gets a tool error in their first hour, from
+# a system they have no model of yet.
+#
+# FAIL rather than WARN, deliberately diverging from the anchor_task sibling above.
+# Three reasons: the reference is a command we TELL a first-time operator to run,
+# so the blast radius is the framework's first impression; the seeds are templates
+# copied into every consumer project by `fw init`, so a dangling ref ships to every
+# install made after it lands and is found one confused operator at a time; and the
+# fix is a one-line edit. Warning about a deterministic, trivially-fixable,
+# operator-facing dead end would be the wrong tier.
+#
+# Scope is seed → corpus-map only. Watchtower path refs (/fabric, /designer) resolve
+# through a different mechanism and are not checked here.
+seed_ref_missing=0
+seed_ref_checked=0
+if [ -d "$PROJECT_ROOT/lib/seeds/tasks" ] && [ -d "$PROJECT_ROOT/.context/designer/projects" ]; then
+    while IFS= read -r _line; do
+        [ -z "$_line" ] && continue
+        _sfile="${_line%%:*}"
+        _sref="${_line##* }"
+        [ -z "$_sref" ] && continue
+        seed_ref_checked=$((seed_ref_checked + 1))
+        if [ ! -d "$PROJECT_ROOT/.context/designer/projects/$_sref" ]; then
+            fail "Seed '${_sfile#"$PROJECT_ROOT"/}' routes to corpus map '$_sref', which is not in the store" \
+                 "The seed tells a first-time operator to run 'fw corpus explain $_sref'; that command will error. Seeds are copied into every project by 'fw init', so this ships to new installs." \
+                 "Either the reference is stale (fix the id in the seed — check 'ls .context/designer/projects/' for the current name), or the map is genuinely missing (restore it, or drop the 'Go deeper' line rather than leaving it dangling)"
+            seed_ref_missing=$((seed_ref_missing + 1))
+        fi
+    done <<SEEDREFS
+$(grep -roE --include='*.md' "corpus explain [a-z0-9][a-z0-9-]*" "$PROJECT_ROOT/lib/seeds/tasks" 2>/dev/null)
+SEEDREFS
+fi
+if [ "$seed_ref_checked" -gt 0 ] && [ "$seed_ref_missing" -eq 0 ]; then
+    pass "All $seed_ref_checked onboarding-seed corpus references resolve to existing maps"
+fi
+
 # T-1855 (T-NEW-7): Stale-arc warning.
 # For each arc with status: in-progress, check whether ANY task with matching
 # arc_id: (slug or arc-NNN form) has been touched by a commit in the last
