@@ -33052,3 +33052,21 @@ scan_id: R-f378c9ba
 task_id: T-2981
 payload:
   task_file: .tasks/active/T-2981-verify-the-new-onboarding-map-is-reachab.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T08:12:30Z'
+scan_id: R-b06a3453
+task_id: T-2982
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T08:12:30Z'
+scan_id: R-b06a3453
+task_id: T-2982
+payload:
+  task_file: .tasks/active/T-2982-resync-vendored-auditsh-after-t-2980--pr.md

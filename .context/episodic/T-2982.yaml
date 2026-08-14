@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2982: resync vendored audit.sh after T-2980 — pre-push self-vendor check is blocking
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T08:12:40Z
+# ============================================================================
+
+task_id: T-2982
+task_name: "resync vendored audit.sh after T-2980 — pre-push self-vendor check is blocking"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T08:05:12Z
+completed: 2026-08-14T08:12:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T10:08:06+02:00
+last_commit: 2026-08-14T10:12:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  resync vendored audit.sh — and do not ship a parallel session's WIP with it. verification block — vendored parity, clean push, WIP stays untracked. fix a verification line that could not be true when the gate runs it
+
+# Key outcomes
+outcomes:
+  - '`bin/fw vendor self` run and the resulting `.agentic-framework/` changes committed —'
+  - '`git push` succeeds: the T-2240 pre-push self-vendor check passes rather than being'
+  - 'The recurrence is recorded rather than absorbed: this is the second time in one'
+  - 'The two untracked files `fw vendor self` also copied — `lib/antigravity_bridge.py`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix a verification line that could not be true when the gate runs it'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-08-14.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-2981.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2982-resync-vendored-auditsh-after-t-2980--pr.md'
+  - '.tasks/completed/T-2981-verify-the-new-onboarding-map-is-reachab.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T10:08:06'
+    action: 'T-2982: resync vendored audit.sh — and do not ship a parallel session''s WIP with it'
+  - time: '2026-08-14T10:12:11'
+    action: 'T-2982: verification block — vendored parity, clean push, WIP stays untracked'
+  - time: '2026-08-14T10:12:28'
+    action: 'T-2982: fix a verification line that could not be true when the gate runs it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 3
+  files_changed: 19
+  lines_added: 559
+  lines_removed: 89
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2982-resync-vendored-auditsh-after-t-2980--pr.md
+generated_by: context-agent-hybrid
