@@ -1,295 +1,652 @@
-
-# T-2915 — found while wiring the AC5 stale-latch WARN into `fw doctor`'s
-# Autonomous Dispatch section: the sibling stalled-task WARN, live since
-# T-2914, used the identical broken idiom and had never actually fired.
 - id: OBS-185
   type: bug
   severity: medium
-  surface: "bin/fw do_doctor Autonomous Dispatch section — `${_stalled_json:-{}}` / `${_latched_json:-{}}` JSON-default idiom"
-  detected_in: T-2915 (building the AC5 stale-latch WARN alongside the T-2914 stalled-task WARN it mirrors)
-  symptom: "`fw doctor` unconditionally printed 'OK No stalled/zero-outcome tasks' even when `fw resolver stalled --json` truthfully reported stalled tasks — the WARN branch was structurally unreachable. Same idiom copied for the new latched-count check would have shipped identically broken (measured: real count 256, doctor-path count 0)."
-  root_cause: "`echo \"${_stalled_json:-{}}\"` looks like a safe empty-string fallback, but bash's brace-matching in parameter expansion appends a stray extra `}` to the OUTPUT whenever the variable IS set and its value ends in `}` — which valid JSON from `--json` always does (confirmed in isolation: `v='{\"a\":1}'; echo \"${v:-{}}\"` prints `{\"a\":1}}`, an extra closing brace, on stock bash 5.x). The corrupted string then fails `json.load` inside a bare `except Exception: d = {}`, silently producing count=0 regardless of the real value. Two independent failures compound: a shell-quoting footgun feeding a swallowed-exception fallback, and the fallback path is indistinguishable from the true-zero case at the WARN/OK branch — false green."
-  prevention: "Fixed same-commit for both the stalled and latched blocks: replaced the `${var:-{}}` default with `[ -z \"$var\" ] && var=\"{}\"` followed by `printf '%s' \"$var\" | python3 -c ...` — no parameter-expansion brace matching involved. Structural gap: nothing pins bash's json-passthrough-through-parameter-expansion pattern generally; a future `${x:-{...}}` elsewhere in bin/fw would reproduce this silently. No lint exists for this idiom specifically — noted here rather than built, since the fix is trivially inspectable at each of the two call sites and a generic lint for 'default value ending in brace' would be low-signal against bin/fw's much broader JSON-plumbing surface."
+  surface: bin/fw do_doctor Autonomous Dispatch section — `${_stalled_json:-{}}` / `${_latched_json:-{}}`
+    JSON-default idiom
+  detected_in: T-2915 (building the AC5 stale-latch WARN alongside the T-2914 stalled-task WARN
+    it mirrors)
+  symptom: '`fw doctor` unconditionally printed ''OK No stalled/zero-outcome tasks'' even when
+    `fw resolver stalled --json` truthfully reported stalled tasks — the WARN branch was structurally
+    unreachable. Same idiom copied for the new latched-count check would have shipped identically
+    broken (measured: real count 256, doctor-path count 0).'
+  root_cause: '`echo "${_stalled_json:-{}}"` looks like a safe empty-string fallback, but bash''s
+    brace-matching in parameter expansion appends a stray extra `}` to the OUTPUT whenever the
+    variable IS set and its value ends in `}` — which valid JSON from `--json` always does (confirmed
+    in isolation: `v=''{"a":1}''; echo "${v:-{}}"` prints `{"a":1}}`, an extra closing brace,
+    on stock bash 5.x). The corrupted string then fails `json.load` inside a bare `except Exception:
+    d = {}`, silently producing count=0 regardless of the real value. Two independent failures
+    compound: a shell-quoting footgun feeding a swallowed-exception fallback, and the fallback
+    path is indistinguishable from the true-zero case at the WARN/OK branch — false green.'
+  prevention: 'Fixed same-commit for both the stalled and latched blocks: replaced the `${var:-{}}`
+    default with `[ -z "$var" ] && var="{}"` followed by `printf ''%s'' "$var" | python3 -c
+    ...` — no parameter-expansion brace matching involved. Structural gap: nothing pins bash''s
+    json-passthrough-through-parameter-expansion pattern generally; a future `${x:-{...}}` elsewhere
+    in bin/fw would reproduce this silently. No lint exists for this idiom specifically — noted
+    here rather than built, since the fix is trivially inspectable at each of the two call sites
+    and a generic lint for ''default value ending in brace'' would be low-signal against bin/fw''s
+    much broader JSON-plumbing surface.'
   blast_radius: scoped
   observed: 2026-08-11
   fixed_in: T-2915
   fixed_date: 2026-08-11
   status: resolved
-  related: [T-2915, T-2914]
-
-# T-2834 — the Bash task gate's fast path judges a chain by its first word only,
-# so every gate below it can be skipped by prefixing an allowlisted command.
-# Registered BEFORE the fix per CLAUDE.md §"register first, fix second".
+  related:
+  - T-2915
+  - T-2914
 - id: OBS-184
   type: bug
   severity: high
-  surface: "agents/context/lib/safe-commands.sh:36 (is_bash_safe_command base extraction); consumed by agents/context/check-active-task.sh:95"
+  surface: agents/context/lib/safe-commands.sh:36 (is_bash_safe_command base extraction); consumed
+    by agents/context/check-active-task.sh:95
   detected_in: T-2833 probe harness (measuring OBS-180, whose stated mechanism did not reproduce)
-  symptom: "A Bash command whose FIRST word is on the safe-command allowlist skips every gate that follows, however unsafe the rest of the chain is. Measured in a sandbox PROJECT_ROOT: with focus on task A, bare `git commit -m 'B: x'` blocks but `echo hi && git commit -m 'B: x'` is ALLOWED; bare `fw task update B --status work-completed` blocks but `ls && fw task update B --status work-completed` is ALLOWED. With NO active task, `echo hi && bash deploy.sh` and `ls && python3 mutate.py` are ALLOWED — the allowlist deliberately admits `bash` only with `-n` and `python3` only with `-c` and no write indicators, and the chain form defeats both conditions. Arbitrary script execution is the sharp end, because Tier 0 is documented (CLAUDE.md) as matching the command string only and never inspecting the contents of a file that command runs. The gates skipped are the no-active-task check, the task-is-active check, the G-020 build-readiness gate and the T-1730 focus-drift gate."
-  correction: "An earlier draft of this entry claimed `echo hi && rm -rf <dir>` is allowed with no active task. That is WRONG and was withdrawn before the fix landed. It was inferred from a probe run whose sandbox still had an active anchor task from the previous probe — so the observed `allow` meant 'a task was active', not 'the gate was bypassed'. Re-measured with `current_task: null` (scratchpad/obs180/probe6.sh): both bare and chained `rm` BLOCK, because has_bash_write_pattern runs before the allowlist and greps the WHOLE string. Recorded rather than silently edited: the near-miss is the reason the fast path reads as string-aware when it is only word-aware."
-  root_cause: "is_bash_safe_command derives the command base with `awk '{print $1}'` and its own comment asserts the assumption out loud — 'For compound commands, the first word is still the primary command' (safe-commands.sh:34). That is false for `A && B`, `A; B`, `A || B`. check-active-task.sh:95 treats a safe verdict as terminal and exits 0 at line 97, so nothing downstream ever sees segment B. The reason this survived is that the fast path was designed as a READ-ONLY exemption and reviewed as one: has_bash_write_pattern runs first and DOES scan the whole string, so the obvious chain (`echo x > file`) is caught, and that near-miss makes the path look string-aware when it is only word-aware."
-  prevention: "PENDING — T-2834. Fix must classify every segment of a chain, not the first word. Both directions need pinning: chained-unsafe must block, and chained-ALL-safe (`ls && git status`, `cd /x && fw doctor`) must keep passing, since that shape is used constantly and a naive fix would deny service."
+  symptom: 'A Bash command whose FIRST word is on the safe-command allowlist skips every gate
+    that follows, however unsafe the rest of the chain is. Measured in a sandbox PROJECT_ROOT:
+    with focus on task A, bare `git commit -m ''B: x''` blocks but `echo hi && git commit -m
+    ''B: x''` is ALLOWED; bare `fw task update B --status work-completed` blocks but `ls &&
+    fw task update B --status work-completed` is ALLOWED. With NO active task, `echo hi && bash
+    deploy.sh` and `ls && python3 mutate.py` are ALLOWED — the allowlist deliberately admits
+    `bash` only with `-n` and `python3` only with `-c` and no write indicators, and the chain
+    form defeats both conditions. Arbitrary script execution is the sharp end, because Tier
+    0 is documented (CLAUDE.md) as matching the command string only and never inspecting the
+    contents of a file that command runs. The gates skipped are the no-active-task check, the
+    task-is-active check, the G-020 build-readiness gate and the T-1730 focus-drift gate.'
+  correction: 'An earlier draft of this entry claimed `echo hi && rm -rf <dir>` is allowed with
+    no active task. That is WRONG and was withdrawn before the fix landed. It was inferred from
+    a probe run whose sandbox still had an active anchor task from the previous probe — so the
+    observed `allow` meant ''a task was active'', not ''the gate was bypassed''. Re-measured
+    with `current_task: null` (scratchpad/obs180/probe6.sh): both bare and chained `rm` BLOCK,
+    because has_bash_write_pattern runs before the allowlist and greps the WHOLE string. Recorded
+    rather than silently edited: the near-miss is the reason the fast path reads as string-aware
+    when it is only word-aware.'
+  root_cause: 'is_bash_safe_command derives the command base with `awk ''{print $1}''` and its
+    own comment asserts the assumption out loud — ''For compound commands, the first word is
+    still the primary command'' (safe-commands.sh:34). That is false for `A && B`, `A; B`, `A
+    || B`. check-active-task.sh:95 treats a safe verdict as terminal and exits 0 at line 97,
+    so nothing downstream ever sees segment B. The reason this survived is that the fast path
+    was designed as a READ-ONLY exemption and reviewed as one: has_bash_write_pattern runs first
+    and DOES scan the whole string, so the obvious chain (`echo x > file`) is caught, and that
+    near-miss makes the path look string-aware when it is only word-aware.'
+  prevention: 'PENDING — T-2834. Fix must classify every segment of a chain, not the first word.
+    Both directions need pinning: chained-unsafe must block, and chained-ALL-safe (`ls && git
+    status`, `cd /x && fw doctor`) must keep passing, since that shape is used constantly and
+    a naive fix would deny service.'
   blast_radius: cross-cutting
   observed: 2026-08-06
   status: open
-  scope_bound: "Measured, not assumed: Tier 0 is a SEPARATE hook that pattern-matches the whole command string. `echo hi && git push --force` and `echo hi && git reset --hard` remain blocked by check-tier0.sh (scratchpad/obs180/probe5.sh). This is a task-gate and focus-gate bypass, NOT a destructive-action bypass."
+  scope_bound: 'Measured, not assumed: Tier 0 is a SEPARATE hook that pattern-matches the whole
+    command string. `echo hi && git push --force` and `echo hi && git reset --hard` remain blocked
+    by check-tier0.sh (scratchpad/obs180/probe5.sh). This is a task-gate and focus-gate bypass,
+    NOT a destructive-action bypass.'
   related:
   - T-2834
   - T-2833
-  - T-2054   # L-433 warned that allowlisting a verb short-circuits later gates — but about WHICH verbs, never the base extraction
-  - OBS-180  # the observation whose unreproduced mechanism led here
+  - T-2054
+  - OBS-180
   - OBS-182
-
-# T-2421 sibling observation — emit_review human-AC counter false-enters when
-# task title/description contains literal "### Human" string.
 - id: OBS-079
   type: bug
   severity: low
   surface: lib/review.sh:emit_review
   detected_in: T-2421 smoke against T-2420
-  symptom: "CLI `fw task review T-XXX` emit_review counter false-entered human-mode on tasks whose `name:`/`description:` frontmatter contained literal `### Human` string, causing the partial-complete Recommendation gate to mis-fire (could either falsely-block or silently allow depending on AC layout). NOT a Watchtower bug — web/blueprints/tasks.py:_parse_acceptance_criteria was always correctly anchored on `## Acceptance Criteria`; the symptom was the CLI counter only."
-  root_cause: "Bash while-loop AC counter (lib/review.sh:122-136 pre-T-2422) matched `### Human` anywhere in the file via `grep -q '### Human'` — no `^` anchor, no `in_ac` precondition. Frontmatter line `name: \"PreToolUse hook: detect ### Human outside ## Acceptance Criteria\"` flipped `in_human=true` on line 3, then broke at the very next `^## ` heading (`## Context`). Loop exited before reaching the real AC block, so `human_total=0`. Counter diverged from update-task.sh's `sed -n '/^## Acceptance Criteria/,/^## /p'` discipline."
-  prevention: "T-2422: anchored counter on `^## Acceptance Criteria` first (in_ac state); only matches `^### Human` start-of-line within the AC block; bats `tests/unit/emit_review_ac_counter.bats` (6/6) pins the class — title containing `### Human` must not flip the counter; prose containing `### Human` must not flip the counter."
+  symptom: CLI `fw task review T-XXX` emit_review counter false-entered human-mode on tasks
+    whose `name:`/`description:` frontmatter contained literal `### Human` string, causing the
+    partial-complete Recommendation gate to mis-fire (could either falsely-block or silently
+    allow depending on AC layout). NOT a Watchtower bug — web/blueprints/tasks.py:_parse_acceptance_criteria
+    was always correctly anchored on `## Acceptance Criteria`; the symptom was the CLI counter
+    only.
+  root_cause: 'Bash while-loop AC counter (lib/review.sh:122-136 pre-T-2422) matched `### Human`
+    anywhere in the file via `grep -q ''### Human''` — no `^` anchor, no `in_ac` precondition.
+    Frontmatter line `name: "PreToolUse hook: detect ### Human outside ## Acceptance Criteria"`
+    flipped `in_human=true` on line 3, then broke at the very next `^## ` heading (`## Context`).
+    Loop exited before reaching the real AC block, so `human_total=0`. Counter diverged from
+    update-task.sh''s `sed -n ''/^## Acceptance Criteria/,/^## /p''` discipline.'
+  prevention: 'T-2422: anchored counter on `^## Acceptance Criteria` first (in_ac state); only
+    matches `^### Human` start-of-line within the AC block; bats `tests/unit/emit_review_ac_counter.bats`
+    (6/6) pins the class — title containing `### Human` must not flip the counter; prose containing
+    `### Human` must not flip the counter.'
   blast_radius: scoped
   observed: 2026-06-16
   fixed_in: T-2422
   fixed_date: 2026-06-16
-
-# T-2476 — surfaced while building T-2473 (integrate union resolver). Registered
-# late (governance miss: T-2473 folded the integrate.py leg of this flaw into a
-# feature task instead of registering it first). This entry remediates that.
 - id: OBS-085
   type: bug
   severity: medium
-  surface: "lib/bvp.sh:836-869, agents/termlink/bvp-estimator/estimator.py:2389/2596/2724/2751 (PyYAML fallback); lib/integrate.py (fixed)"
+  surface: lib/bvp.sh:836-869, agents/termlink/bvp-estimator/estimator.py:2389/2596/2724/2751
+    (PyYAML fallback); lib/integrate.py (fixed)
   detected_in: T-2473 union-resolver validation
-  symptom: "PyYAML's implicit timestamp resolver parses an unquoted ISO `2026-06-02T00:00:00Z` to a Python datetime on safe_load and re-emits it as `2026-06-02 00:00:00+00:00` on safe_dump — different text. Any code that safe_load -> safe_dump's task `.md` frontmatter (unquoted `last_update:`/`created:`/`date_finished:`) or decisions.yaml silently rewrites the timestamp format, churning frontmatter and breaking `...Z`-expecting readers/greps."
-  root_cause: "PyYAML SafeLoader has an implicit `tag:yaml.org,2002:timestamp` resolver that auto-types unquoted ISO datetimes. BVP confirm + the BVP estimator round-trip frontmatter via a ruamel-preferred path with a `yaml.safe_load` -> `yaml.safe_dump` FALLBACK; the fallback corrupts. ruamel round-trip (load+dump) preserves the original string, so the corruption is MASKED on any host where ruamel.yaml is installed (present 0.19.1 on the framework host) — latent, not currently firing here. lib/integrate.py's union resolver used plain PyYAML with no ruamel guard, so its path corrupted on ALL hosts (which is how the class was caught)."
-  prevention: "ALL legs FIXED. integrate.py leg in T-2473 (custom SafeLoader with the timestamp resolver stripped -> `_str_loader`, round-trips timestamps as strings; pinned by tests/unit/t2473_union_resolve.bats field-merge case asserting `...Z` survives). bvp.sh + estimator.py latent fallback legs CLOSED in T-2477: ported the resolver-stripped loader (`_str_safe_load`) into the PyYAML fallback in BOTH lib/bvp.sh (PYEOF block) and estimator.py (4 frontmatter sites) — the fallback is now correct regardless of whether ruamel is installed, removing the env-presence dependency per the Portability directive. Pinned by tests/unit/t2477_bvp_yaml_timestamp_fallback.bats (3 tests: estimator helper preserves Z with ruamel forced absent; a control asserting plain safe_load WOULD corrupt so the test is meaningful; and an end-to-end `fw bvp confirm` proving Z survives the rewritten frontmatter). Learning L-495 captured."
+  symptom: PyYAML's implicit timestamp resolver parses an unquoted ISO `2026-06-02T00:00:00Z`
+    to a Python datetime on safe_load and re-emits it as `2026-06-02 00:00:00+00:00` on safe_dump
+    — different text. Any code that safe_load -> safe_dump's task `.md` frontmatter (unquoted
+    `last_update:`/`created:`/`date_finished:`) or decisions.yaml silently rewrites the timestamp
+    format, churning frontmatter and breaking `...Z`-expecting readers/greps.
+  root_cause: PyYAML SafeLoader has an implicit `tag:yaml.org,2002:timestamp` resolver that
+    auto-types unquoted ISO datetimes. BVP confirm + the BVP estimator round-trip frontmatter
+    via a ruamel-preferred path with a `yaml.safe_load` -> `yaml.safe_dump` FALLBACK; the fallback
+    corrupts. ruamel round-trip (load+dump) preserves the original string, so the corruption
+    is MASKED on any host where ruamel.yaml is installed (present 0.19.1 on the framework host)
+    — latent, not currently firing here. lib/integrate.py's union resolver used plain PyYAML
+    with no ruamel guard, so its path corrupted on ALL hosts (which is how the class was caught).
+  prevention: 'ALL legs FIXED. integrate.py leg in T-2473 (custom SafeLoader with the timestamp
+    resolver stripped -> `_str_loader`, round-trips timestamps as strings; pinned by tests/unit/t2473_union_resolve.bats
+    field-merge case asserting `...Z` survives). bvp.sh + estimator.py latent fallback legs
+    CLOSED in T-2477: ported the resolver-stripped loader (`_str_safe_load`) into the PyYAML
+    fallback in BOTH lib/bvp.sh (PYEOF block) and estimator.py (4 frontmatter sites) — the fallback
+    is now correct regardless of whether ruamel is installed, removing the env-presence dependency
+    per the Portability directive. Pinned by tests/unit/t2477_bvp_yaml_timestamp_fallback.bats
+    (3 tests: estimator helper preserves Z with ruamel forced absent; a control asserting plain
+    safe_load WOULD corrupt so the test is meaningful; and an end-to-end `fw bvp confirm` proving
+    Z survives the rewritten frontmatter). Learning L-495 captured.'
   blast_radius: cross-cutting
   observed: 2026-06-24
   status: resolved
-  related: [T-2473, T-2476, T-2477]
-
-# T-2481 — zone-3 go-live friction. `fw integrate run` makes worktree->master
-# smooth (quiesce regenerable transients, FF/union-merge, restore) but offers
-# NOTHING for the third zone: going live on MAIN's busy checkout. The operator's
-# `git merge` aborted on uncommitted real-state transients + an untracked vendored
-# file. The land tool's own smoothness does not extend to the host it reports on.
+  related:
+  - T-2473
+  - T-2476
+  - T-2477
 - id: OBS-086
   type: gap
   severity: medium
-  surface: "lib/integrate.py (cmd_run hybrid-landing) — zone-3 reported but not actioned"
+  surface: lib/integrate.py (cmd_run hybrid-landing) — zone-3 reported but not actioned
   detected_in: T-2481 (operator go-live merge aborted)
-  symptom: "After `fw integrate run master --push` lands zone 1 (origin/master) and reports zone 3 (MAIN host on a different branch, hooks run MAIN's bin/fw), the operator's manual `cd MAIN && git merge <branch>` aborts: 16 tracked regenerable/real-state transients have local edits and 1 untracked vendored `.agentic-framework/lib/integrate.py` would be overwritten. Go-live is the one merge-back step the arc never made smooth."
-  root_cause: "Zone 3 is the MAIN checkout, on a divergent session branch (t2417-fw-sessions) with CONTINUOUS hook/cron/watchtower writes + accumulating real-state (feedback-stream, gate-bypass-log, decisions, inbox, metrics-history). Two distinct failure modes, both proven LIVE (T-2482 script `--apply`): (1) MERGE MODEL IS WRONG — the script committed MAIN's transients as a checkpoint then merged origin/master, which guaranteed a content conflict on EVERY transient both sides touched (18 files, not the 1 the dry-run predicted — `merge-tree` compared pre-checkpoint HEAD, but the real merge runs post-checkpoint). Worse, the whitelist `take-theirs` would have DROPPED MAIN-side appends on accumulators (feedback-stream/gate-bypass-log/decisions/inbox) that need UNION, not theirs. (2) WRITER RACE — a concurrent git process grabbed `.git/index.lock` mid-resolution and the script crashed half-merged. A busy checkout is never quiescent, so any multi-step git mutation races."
-  prevention: "CORRECT PATTERN (proven LIVE, T-2481 go-live succeeded this way): do NOT merge two divergent busy checkouts. Going live = making MAIN's CODE match master; the data must stay MAIN's. Surgical sync: `git checkout origin/master -- lib agents bin && git commit` (T-XXX) — brings master's code, touches ZERO `.context/` data, no conflicts, no accumulator loss, no writer race (single quick index op). Verified: MAIN went live (b2cdff6fe) with union resolver + reanchor + timestamp fixes, 30 `.context/` files preserved untouched. FOLLOW-UP: rewrite `bin/integrate-go-live.sh` (T-2482) around code-only checkout (drop the commit-then-merge + whitelist model entirely); then promote to `fw integrate go-live`. The current T-2482 script is a FLAWED prototype — DO NOT USE as-is (it merges, which is the wrong model)."
+  symptom: 'After `fw integrate run master --push` lands zone 1 (origin/master) and reports
+    zone 3 (MAIN host on a different branch, hooks run MAIN''s bin/fw), the operator''s manual
+    `cd MAIN && git merge <branch>` aborts: 16 tracked regenerable/real-state transients have
+    local edits and 1 untracked vendored `.agentic-framework/lib/integrate.py` would be overwritten.
+    Go-live is the one merge-back step the arc never made smooth.'
+  root_cause: 'Zone 3 is the MAIN checkout, on a divergent session branch (t2417-fw-sessions)
+    with CONTINUOUS hook/cron/watchtower writes + accumulating real-state (feedback-stream,
+    gate-bypass-log, decisions, inbox, metrics-history). Two distinct failure modes, both proven
+    LIVE (T-2482 script `--apply`): (1) MERGE MODEL IS WRONG — the script committed MAIN''s
+    transients as a checkpoint then merged origin/master, which guaranteed a content conflict
+    on EVERY transient both sides touched (18 files, not the 1 the dry-run predicted — `merge-tree`
+    compared pre-checkpoint HEAD, but the real merge runs post-checkpoint). Worse, the whitelist
+    `take-theirs` would have DROPPED MAIN-side appends on accumulators (feedback-stream/gate-bypass-log/decisions/inbox)
+    that need UNION, not theirs. (2) WRITER RACE — a concurrent git process grabbed `.git/index.lock`
+    mid-resolution and the script crashed half-merged. A busy checkout is never quiescent, so
+    any multi-step git mutation races.'
+  prevention: 'CORRECT PATTERN (proven LIVE, T-2481 go-live succeeded this way): do NOT merge
+    two divergent busy checkouts. Going live = making MAIN''s CODE match master; the data must
+    stay MAIN''s. Surgical sync: `git checkout origin/master -- lib agents bin && git commit`
+    (T-XXX) — brings master''s code, touches ZERO `.context/` data, no conflicts, no accumulator
+    loss, no writer race (single quick index op). Verified: MAIN went live (b2cdff6fe) with
+    union resolver + reanchor + timestamp fixes, 30 `.context/` files preserved untouched. FOLLOW-UP:
+    rewrite `bin/integrate-go-live.sh` (T-2482) around code-only checkout (drop the commit-then-merge
+    + whitelist model entirely); then promote to `fw integrate go-live`. The current T-2482
+    script is a FLAWED prototype — DO NOT USE as-is (it merges, which is the wrong model).'
   blast_radius: scoped
   observed: 2026-06-24
   status: watching
-  related: [T-2481, T-2482, T-2474]
-
-# T-2484 Spike 2 — keystone bug: the orchestrator dispatch CLI is unrunnable.
-# Found while proving the dispatch spine works (it does — one real dispatch landed
-# with zero new code). The reason it had NEVER dispatched is this perms bug.
+  related:
+  - T-2481
+  - T-2482
+  - T-2474
 - id: OBS-087
   type: bug
   severity: high
-  surface: "bin/fw (exec \"$FW_LIB_DIR/<x>.sh\" dispatch, lines ~4773/4780); lib/resolver.sh, lib/outcome.sh, lib/pause.sh (committed mode 100644)"
+  surface: bin/fw (exec "$FW_LIB_DIR/<x>.sh" dispatch, lines ~4773/4780); lib/resolver.sh, lib/outcome.sh,
+    lib/pause.sh (committed mode 100644)
   detected_in: T-2484 Spike 2 (one real dispatch)
-  symptom: "`fw resolver run` and `fw outcome backprop` (the two verbs needed to drive + capture a dispatch) fail with `Permission denied`. The orchestrator dispatch substrate is fully implemented but was unrunnable from the CLI for its entire existence — `fw orchestrator status` showed 'no dispatches captured yet' because no one could invoke it (it only runs via `python3 lib/*.py` directly, which no caller does)."
-  root_cause: "bin/fw routes these verbs via `exec \"$FW_LIB_DIR/<x>.sh\"`, which requires the target to be executable. lib/resolver.sh, lib/outcome.sh (and lib/pause.sh) are committed at git mode 100644 (verified: `git ls-files -s` — NOT a worktree perms glitch). lib/ask.sh is the only exec-style verb committed 100755, which is why it is the lone survivor. Verbs invoked via `bash \"$FW_LIB_DIR/...\"` or sourced (e.g. inception) are unaffected, which masked the bug for the more commonly-used verbs."
-  prevention: "FIX (T-2484 GO slice 1, one bug = one task): either `git update-index --chmod=+x` the exec-style lib/*.sh, OR change bin/fw to `bash \"$FW_LIB_DIR/...\"` (more robust — survives future mode loss). PIN with a test asserting every `exec \"$FW_LIB_DIR/*.sh\"` target in bin/fw is executable (closes the class, not just resolver/outcome). G-019 question — why was the framework blind? No gate checks that exec-routed lib scripts keep their +x bit; the verbs were never exercised end-to-end so the breakage never surfaced. The regression test IS the structural prevention."
+  symptom: '`fw resolver run` and `fw outcome backprop` (the two verbs needed to drive + capture
+    a dispatch) fail with `Permission denied`. The orchestrator dispatch substrate is fully
+    implemented but was unrunnable from the CLI for its entire existence — `fw orchestrator
+    status` showed ''no dispatches captured yet'' because no one could invoke it (it only runs
+    via `python3 lib/*.py` directly, which no caller does).'
+  root_cause: 'bin/fw routes these verbs via `exec "$FW_LIB_DIR/<x>.sh"`, which requires the
+    target to be executable. lib/resolver.sh, lib/outcome.sh (and lib/pause.sh) are committed
+    at git mode 100644 (verified: `git ls-files -s` — NOT a worktree perms glitch). lib/ask.sh
+    is the only exec-style verb committed 100755, which is why it is the lone survivor. Verbs
+    invoked via `bash "$FW_LIB_DIR/..."` or sourced (e.g. inception) are unaffected, which masked
+    the bug for the more commonly-used verbs.'
+  prevention: 'FIX (T-2484 GO slice 1, one bug = one task): either `git update-index --chmod=+x`
+    the exec-style lib/*.sh, OR change bin/fw to `bash "$FW_LIB_DIR/..."` (more robust — survives
+    future mode loss). PIN with a test asserting every `exec "$FW_LIB_DIR/*.sh"` target in bin/fw
+    is executable (closes the class, not just resolver/outcome). G-019 question — why was the
+    framework blind? No gate checks that exec-routed lib scripts keep their +x bit; the verbs
+    were never exercised end-to-end so the breakage never surfaced. The regression test IS the
+    structural prevention.'
   blast_radius: cross-cutting
   observed: 2026-06-24
   status: resolved
   fixed_in: T-2486
   fixed_date: 2026-06-24
-  related: [T-2484, T-2485, T-2486]
-
-# T-2488 — second keystone-class bug found the moment the orchestrator dispatch
-# spine actually ran live. The first real worker (T-2487) failed "Prompt is too
-# long" because it inherited the parent .mcp.json (~175K tokens of MCP schemas).
-# Sibling to OBS-087/PL-014: a zero-usage feature's most basic failure mode sat
-# undetected the whole time it couldn't run.
+  related:
+  - T-2484
+  - T-2485
+  - T-2486
 - id: OBS-088
   type: bug
   severity: high
-  surface: "agents/termlink/termlink.sh:846 (claude -p assembly); .context/project/workflows/default.yaml; lib/{resolver,spawn,termlink_worker}.py"
+  surface: agents/termlink/termlink.sh:846 (claude -p assembly); .context/project/workflows/default.yaml;
+    lib/{resolver,spawn,termlink_worker}.py
   detected_in: T-2487 (first real fw resolver dispatch) → RCA/fix T-2488
-  symptom: "A resolver-dispatched TermLink worker's `claude -p` died with `result: 'Prompt is too long'`, `is_error: true`, `terminal_reason: blocking_limit` on a TRIVIAL task (install litellm + curl). The assembled prompt was a clean 4925 chars — the blow-up was entirely tool-schema injection."
-  root_cause: "The default workflow passed no `--strict-mcp-config`, so the worker's `claude -p` inherited the parent worktree `.mcp.json` (5 servers: termlink ~300 tools, skills ~150, playwright, fw, context7). Their schemas injected ~175,817 tokens into iteration-0 system prompt (terminal cache_creation 224,865 > 200K contextWindow). `--tools`/`--allowed-tools` (which the workflow DID set) gate which tools the model may CALL, not which MCP servers connect/inject — only `--strict-mcp-config` (T-2284 lever) stops the inheritance. The substrate had never run end-to-end before (OBS-087 made it unrunnable), so no dispatched worker had ever started with the inherited catalogue — the foot-gun was invisible because the gun had never fired."
-  prevention: "FIXED in T-2488. (1) Resolver envelope defaults strict-mcp ON: `workflow.get('strict_mcp_config', True)` in lib/resolver.py; default.yaml declares `strict_mcp_config: true` explicitly. Plumbed end-to-end resolver→spawn→TermLinkWorker(`--strict-mcp-config`)→cmd_dispatch sentinel→run.sh→claude -p. Lean is the default; MCP is opt-in (`strict_mcp_config: false` + `mcp_config: <path>`). (2) tests/unit/t2488_strict_mcp_lean_worker.bats (3/3) pins the class at workflow/envelope/worker joins. (3) Verified live: re-dispatch of probe T-2485 dropped cache_creation 224,865 → 48,516, cost $1.35 → $0.29, is_error False. G-019 answer: the blindness was 'feature never exercised end-to-end' — the regression test + lean default are the structural prevention."
+  symptom: 'A resolver-dispatched TermLink worker''s `claude -p` died with `result: ''Prompt
+    is too long''`, `is_error: true`, `terminal_reason: blocking_limit` on a TRIVIAL task (install
+    litellm + curl). The assembled prompt was a clean 4925 chars — the blow-up was entirely
+    tool-schema injection.'
+  root_cause: 'The default workflow passed no `--strict-mcp-config`, so the worker''s `claude
+    -p` inherited the parent worktree `.mcp.json` (5 servers: termlink ~300 tools, skills ~150,
+    playwright, fw, context7). Their schemas injected ~175,817 tokens into iteration-0 system
+    prompt (terminal cache_creation 224,865 > 200K contextWindow). `--tools`/`--allowed-tools`
+    (which the workflow DID set) gate which tools the model may CALL, not which MCP servers
+    connect/inject — only `--strict-mcp-config` (T-2284 lever) stops the inheritance. The substrate
+    had never run end-to-end before (OBS-087 made it unrunnable), so no dispatched worker had
+    ever started with the inherited catalogue — the foot-gun was invisible because the gun had
+    never fired.'
+  prevention: 'FIXED in T-2488. (1) Resolver envelope defaults strict-mcp ON: `workflow.get(''strict_mcp_config'',
+    True)` in lib/resolver.py; default.yaml declares `strict_mcp_config: true` explicitly. Plumbed
+    end-to-end resolver→spawn→TermLinkWorker(`--strict-mcp-config`)→cmd_dispatch sentinel→run.sh→claude
+    -p. Lean is the default; MCP is opt-in (`strict_mcp_config: false` + `mcp_config: <path>`).
+    (2) tests/unit/t2488_strict_mcp_lean_worker.bats (3/3) pins the class at workflow/envelope/worker
+    joins. (3) Verified live: re-dispatch of probe T-2485 dropped cache_creation 224,865 → 48,516,
+    cost $1.35 → $0.29, is_error False. G-019 answer: the blindness was ''feature never exercised
+    end-to-end'' — the regression test + lean default are the structural prevention.'
   blast_radius: cross-cutting
   observed: 2026-06-24
   status: resolved
   fixed_in: T-2488
   fixed_date: 2026-06-24
-  related: [T-2484, T-2487, T-2488, T-2284]
-
-# T-2490 — third "authored-ahead-of-use" bug surfaced by the litellm lane going
-# live. fw doctor's litellm reachability check curled the wrong (auth-required)
-# endpoint → false WARN even when the proxy was healthy.
+  related:
+  - T-2484
+  - T-2487
+  - T-2488
+  - T-2284
 - id: OBS-089
   type: bug
   severity: low
-  surface: "bin/fw:1663 (do_doctor litellm reachability check, T-1700)"
+  surface: bin/fw:1663 (do_doctor litellm reachability check, T-1700)
   detected_in: T-2490 (litellm lane durability follow-up)
-  symptom: "`fw doctor` emitted a host WARN 'litellm-proxy not reachable on http://localhost:4000' even when the proxy was fully up and serving completions."
-  root_cause: "The check ran `curl -sf --max-time 2 http://localhost:4000/health`. litellm serves /health as an AUTH-REQUIRED endpoint → HTTP 401 without a key. `curl -f` treats 4xx as failure (non-zero exit), so the WARN branch fired regardless of proxy health. The unauthenticated liveness probe is /health/liveliness (200). The check was authored against an assumed endpoint and never run against a live litellm (the lane only came up in T-2487) — a health check never exercised against a healthy target shipped a guaranteed false-negative. Same authored-ahead-of-use class as OBS-087/OBS-088/PL-014."
-  prevention: "FIXED in T-2490: endpoint → /health/liveliness; port via FW_LITELLM_PORT (default 4000). tests/unit/t2490_litellm_doctor.bats pins it structurally (check targets /health/liveliness, not bare /health) + functionally (stub mirrors litellm auth: /health=401, /health/liveliness=200; -sf distinguishes). systemd unit deploy/litellm-proxy.service (Restart=on-failure) closes the persistence leg and probes the same correct endpoint in ExecStartPost."
+  symptom: '`fw doctor` emitted a host WARN ''litellm-proxy not reachable on http://localhost:4000''
+    even when the proxy was fully up and serving completions.'
+  root_cause: The check ran `curl -sf --max-time 2 http://localhost:4000/health`. litellm serves
+    /health as an AUTH-REQUIRED endpoint → HTTP 401 without a key. `curl -f` treats 4xx as failure
+    (non-zero exit), so the WARN branch fired regardless of proxy health. The unauthenticated
+    liveness probe is /health/liveliness (200). The check was authored against an assumed endpoint
+    and never run against a live litellm (the lane only came up in T-2487) — a health check
+    never exercised against a healthy target shipped a guaranteed false-negative. Same authored-ahead-of-use
+    class as OBS-087/OBS-088/PL-014.
+  prevention: 'FIXED in T-2490: endpoint → /health/liveliness; port via FW_LITELLM_PORT (default
+    4000). tests/unit/t2490_litellm_doctor.bats pins it structurally (check targets /health/liveliness,
+    not bare /health) + functionally (stub mirrors litellm auth: /health=401, /health/liveliness=200;
+    -sf distinguishes). systemd unit deploy/litellm-proxy.service (Restart=on-failure) closes
+    the persistence leg and probes the same correct endpoint in ExecStartPost.'
   blast_radius: scoped
   observed: 2026-06-24
   status: resolved
   fixed_in: T-2490
   fixed_date: 2026-06-24
-  related: [T-1700, T-2487, T-2490]
-
-# OBS-087 SIBLING in an uncovered surface. OBS-087's prevention test pinned the
-# exec bit on `exec "$FW_LIB_DIR/*.sh"` ROUTED verbs (lib/*.sh) — it never covered
-# STANDALONE bin/*.sh scripts. So three runnable bin scripts kept shipping 100644.
+  related:
+  - T-1700
+  - T-2487
+  - T-2490
 - id: OBS-090
   type: bug
   severity: medium
-  surface: "bin/integrate-go-live.sh, bin/hook-enable.sh, bin/migrate-horizon-null-completed.sh (committed mode 100644)"
+  surface: bin/integrate-go-live.sh, bin/hook-enable.sh, bin/migrate-horizon-null-completed.sh
+    (committed mode 100644)
   detected_in: T-2497 follow-up (operator ran the documented MAIN go-live command)
-  symptom: "`bin/integrate-go-live.sh --apply` fails with `Permission denied` on a clean checkout (the host MAIN go-live step). Two sibling bin scripts (hook-enable, migrate-horizon-null-completed) carried the same defect, latent."
-  root_cause: "Same git-mode-not-set class as OBS-087: a runnable script (has a `#!` shebang) tracked at git mode 100644 fails the moment a caller invokes it directly on a checkout that lacks a stray local exec bit. OBS-087 was fixed for `lib/*.sh` exec-routed verbs and its regression test asserted those targets only — `bin/*.sh` standalone scripts were outside the test's scope, so the class re-surfaced in a sibling surface. The dev checkout had a local +x bit masking it; the operator's MAIN checkout did not."
-  prevention: "FIXED in T-2498: `git update-index --chmod=+x` on all three; regression guard tests/unit/t2498_bin_scripts_executable.bats asserts EVERY tracked `bin/*.sh` with a `#!` shebang is mode 100755 — closes the bin surface the way T-2486 closed the lib-routed surface. The two guards together cover both invocation shapes (routed exec + standalone)."
+  symptom: '`bin/integrate-go-live.sh --apply` fails with `Permission denied` on a clean checkout
+    (the host MAIN go-live step). Two sibling bin scripts (hook-enable, migrate-horizon-null-completed)
+    carried the same defect, latent.'
+  root_cause: 'Same git-mode-not-set class as OBS-087: a runnable script (has a `#!` shebang)
+    tracked at git mode 100644 fails the moment a caller invokes it directly on a checkout that
+    lacks a stray local exec bit. OBS-087 was fixed for `lib/*.sh` exec-routed verbs and its
+    regression test asserted those targets only — `bin/*.sh` standalone scripts were outside
+    the test''s scope, so the class re-surfaced in a sibling surface. The dev checkout had a
+    local +x bit masking it; the operator''s MAIN checkout did not.'
+  prevention: 'FIXED in T-2498: `git update-index --chmod=+x` on all three; regression guard
+    tests/unit/t2498_bin_scripts_executable.bats asserts EVERY tracked `bin/*.sh` with a `#!`
+    shebang is mode 100755 — closes the bin surface the way T-2486 closed the lib-routed surface.
+    The two guards together cover both invocation shapes (routed exec + standalone).'
   blast_radius: scoped
   observed: 2026-06-25
   status: resolved
   fixed_in: T-2498
   fixed_date: 2026-06-25
-  related: [OBS-087, T-2486, T-2483, T-2497, T-2498]
-
-# Self-introduced structural contradiction: a new CLAUDE.md keystone (T-100196)
-# was authored instructing an action that a pre-existing live pre-commit gate
-# (T-2394 master-guard) structurally blocks. Born already-contradicting — the
-# inverse of the L-405 advisory-decay class.
+  related:
+  - OBS-087
+  - T-2486
+  - T-2483
+  - T-2497
+  - T-2498
 - id: OBS-091
   type: design
   severity: medium
-  surface: "CLAUDE.md §Trunk-Based Session Flow (T-100196) vs agents/git/lib/master-guard.sh (T-2394, PROTECT_MASTER=1)"
+  surface: CLAUDE.md §Trunk-Based Session Flow (T-100196) vs agents/git/lib/master-guard.sh
+    (T-2394, PROTECT_MASTER=1)
   detected_in: T-100201 (this session's GO-commit cascade)
-  symptom: "CLAUDE.md §Trunk-Based instructs 'the persistent session runs on master; governance commits go straight to master', but PROTECT_MASTER=1 (T-2394 master-guard) structurally BLOCKS any direct authored commit on master. Live 2026-07-05: operator's GO commit refused with 'master is merge-only', triggering a six-command workaround cascade + a manual FF push."
-  root_cause: "The T-100196 keystone was authored and landed into CLAUDE.md without cross-checking it against the already-active structural gates it collides with. T-2394 (structural) and T-100196 (advisory prose) are mutually exclusive on the 'how does the session reach master' axis; nothing forced reconciliation. No gate — nor checklist step — validates a new CLAUDE.md keystone against the set of live PreToolUse/pre-commit hooks."
-  prevention: "INTERIM (T-100201): correction callout added to §Trunk-Based naming the conflict + interim safe rule (worktree→FF, no direct master commit while PROTECT_MASTER=1; structural gate wins per Instruction Precedence + L-405). Mechanism reconciliation (scope the guard / bypass in fw sync / exempt the persistent session) is an OPEN operator Level-D decision — Human [REVIEW] AC on T-100201. DURABLE candidate (out of T-100201 scope): doctor/reviewer detector that flags CLAUDE.md guidance instructing an action a live hook blocks."
+  symptom: 'CLAUDE.md §Trunk-Based instructs ''the persistent session runs on master; governance
+    commits go straight to master'', but PROTECT_MASTER=1 (T-2394 master-guard) structurally
+    BLOCKS any direct authored commit on master. Live 2026-07-05: operator''s GO commit refused
+    with ''master is merge-only'', triggering a six-command workaround cascade + a manual FF
+    push.'
+  root_cause: The T-100196 keystone was authored and landed into CLAUDE.md without cross-checking
+    it against the already-active structural gates it collides with. T-2394 (structural) and
+    T-100196 (advisory prose) are mutually exclusive on the 'how does the session reach master'
+    axis; nothing forced reconciliation. No gate — nor checklist step — validates a new CLAUDE.md
+    keystone against the set of live PreToolUse/pre-commit hooks.
+  prevention: 'INTERIM (T-100201): correction callout added to §Trunk-Based naming the conflict
+    + interim safe rule (worktree→FF, no direct master commit while PROTECT_MASTER=1; structural
+    gate wins per Instruction Precedence + L-405). Mechanism reconciliation (scope the guard
+    / bypass in fw sync / exempt the persistent session) is an OPEN operator Level-D decision
+    — Human [REVIEW] AC on T-100201. DURABLE candidate (out of T-100201 scope): doctor/reviewer
+    detector that flags CLAUDE.md guidance instructing an action a live hook blocks.'
   blast_radius: scoped
   observed: 2026-07-05
   status: open
-  related: [T-100196, T-2394, T-100201, L-405, L-300]
-
-# Vendored-consumer snapshot ships lib/reviewer/* code WITHOUT policy/ catalogue
-# data — fw reviewer crashes on every vendored consumer. Discovered by 832
-# (their G-011, rail 229): first-ever consumer-side `fw reviewer` run failed
-# "catalogue not found at .../policy/anti-patterns.yaml".
+  related:
+  - T-100196
+  - T-2394
+  - T-100201
+  - L-405
+  - L-300
 - id: OBS-096
   type: tooling
   severity: medium
-  surface: "fw vendor / fw upgrade snapshot content vs lib/reviewer/static_scan.py:2691 + lib/reviewer/audit.py:36 catalogue resolution"
+  surface: fw vendor / fw upgrade snapshot content vs lib/reviewer/static_scan.py:2691 + lib/reviewer/audit.py:36
+    catalogue resolution
   detected_in: T-2636 (832 rail 229, their T-262/G-011)
-  symptom: "Consumer's vendored .agentic-framework/ carries the full reviewer subsystem (lib/reviewer/*) but no policy/ directory; the code's framework_root/policy lookup misses, the project_root/policy fallback is empty by default, and fw reviewer ERRORs out. Reviewer is unusable on every vendored consumer until someone hand-installs the two catalogue YAMLs."
-  root_cause: "The vendor filter includes lib/**/*.py (T-2455 widened it for code) but policy/ data files were never added to the vendored set — code and the data it hard-requires ship on different criteria. Producer/consumer split: the reviewer landed framework-side where policy/ is always present, so the missing-data path was never exercised (same class as T-1633 fresh-machine blindness)."
-  prevention: "STRUCTURAL (T-2637, 2026-07-28): T-2329 already paired code+data in the vendor set (.agentic-framework/policy/ + self-vendor push gate); T-2637 added the detection leg — upgrade_fresh_machine_simulation.bats tests 4+5 assert the catalogue pairing in the synthetic consumer AND smoke-run `fw reviewer` in the scrubbed env (exit≠3, no 'catalogue not found', verdict line). Negative-checked: removing policy/ reproduces exit 3 — the guard bites. 832's G-011 snapshot predated T-2329; catalogues hand-delivered interim (rail 234)."
+  symptom: Consumer's vendored .agentic-framework/ carries the full reviewer subsystem (lib/reviewer/*)
+    but no policy/ directory; the code's framework_root/policy lookup misses, the project_root/policy
+    fallback is empty by default, and fw reviewer ERRORs out. Reviewer is unusable on every
+    vendored consumer until someone hand-installs the two catalogue YAMLs.
+  root_cause: 'The vendor filter includes lib/**/*.py (T-2455 widened it for code) but policy/
+    data files were never added to the vendored set — code and the data it hard-requires ship
+    on different criteria. Producer/consumer split: the reviewer landed framework-side where
+    policy/ is always present, so the missing-data path was never exercised (same class as T-1633
+    fresh-machine blindness).'
+  prevention: 'STRUCTURAL (T-2637, 2026-07-28): T-2329 already paired code+data in the vendor
+    set (.agentic-framework/policy/ + self-vendor push gate); T-2637 added the detection leg
+    — upgrade_fresh_machine_simulation.bats tests 4+5 assert the catalogue pairing in the synthetic
+    consumer AND smoke-run `fw reviewer` in the scrubbed env (exit≠3, no ''catalogue not found'',
+    verdict line). Negative-checked: removing policy/ reproduces exit 3 — the guard bites. 832''s
+    G-011 snapshot predated T-2329; catalogues hand-delivered interim (rail 234).'
   blast_radius: cross-project
   observed: 2026-07-27
   status: resolved
-  related: [T-2636, T-2637, T-2329, T-2455, T-1633, T-1635, T-1443]
-
-# Split-root blindspot class: framework-owned assets resolved via PROJECT_ROOT.
-# Invisible in this repo (roots coincide); breaks/degrades shared-tooling
-# consumers. 2nd shared-mode blindspot in a month (832: G-011 then G-004).
+  related:
+  - T-2636
+  - T-2637
+  - T-2329
+  - T-2455
+  - T-1633
+  - T-1635
+  - T-1443
 - id: OBS-097
   type: tooling
   severity: high
-  surface: "web/blueprints/{review,approvals,orchestrator}.py sys.path resolution of framework lib/ via PROJECT_ROOT; class-wide: any PROJECT_ROOT resolution of framework-owned assets"
+  surface: 'web/blueprints/{review,approvals,orchestrator}.py sys.path resolution of framework
+    lib/ via PROJECT_ROOT; class-wide: any PROJECT_ROOT resolution of framework-owned assets'
   detected_in: T-2645 (832 rail 253, their T-270/G-004)
-  symptom: "In split-root consumers every /review/T-XXX page 500s with ModuleNotFoundError: dispatch_pause — the operator's entire review queue dead while every partial-complete Human AC points at those URLs. Siblings found in same sweep: approvals.py (identical insert, masked by try/except → paused-dispatch surface silently dead) and orchestrator.py (workflow-coverage panel silently 'unavailable')."
-  root_cause: "web/blueprints/review.py:18 inserted PROJECT_ROOT/'lib' on sys.path before importing dispatch_pause, but lib/ is FRAMEWORK-owned. Roots coincide in this repo so the wrong resolution passes every framework-side test; only a split-root consumer exercises the difference. Producer/consumer split, same class as OBS-096/T-1633: the failing path structurally cannot fire where the code is developed."
-  prevention: "Fix (T-2645): all three sys.path sites now resolve FRAMEWORK_ROOT/'lib'. GREP-LINT BUILT (T-2648): audit structure check FAILs on PROJECT_ROOT-resolution of framework-owned dirs (lib/agents/policy/bin/web) in web/+lib/ Python; semantic allowlist for T-2229 per-project policy instances (value-drivers.yaml, bvp-scoring-rubric.md) + inline OBS-097-allow annotations; pinned by tests/unit/audit_split_root_asset_lint.bats (10 tests incl. drift tripwire). T-2648 calibration found+dispositioned 8 more sites: 4 fixed to FRAMEWORK_ROOT (designer pin+draft-new fw path, approvals batch fw path, cron FW_BIN), 4 allowlisted with reasons (bvp.py/resolver.py policy-instance reads; core.py /project listing — PROJECT_ROOT-relative end-to-end, lone flip would 500 in split-root). SHELL LEG CALIBRATED (T-2649): all 23 shell sites dispositioned — 12 fixed (govd_policy.py interpreter paths, mcp manifest/fragment reads, designer pin/notify, liveness config, arc.sh update-task resolution) and 12 kept-with-reason (framework-repo detection guards, T-1396 fallback chains, T-2229 per-project instances, T-2547 documented design choice); a grep-shape shell LINT was rejected (12/23 hits legitimate — signal/noise inverted vs Python) in favor of a count-baseline ratchet test (audit_split_root_asset_lint.bats 'shell-idiom ratchet', baseline 12). CI-SMOKE LEG BUILT (T-2650): tests/web/test_split_root_smoke.py boots the app in a subprocess with PROJECT_ROOT=synthetic-consumer (FRAMEWORK_ROOT file-derived), sweeps every parameterless GET route + curated parameterized probes (/review /tasks /inception on a seeded task) and fails on any 500/import error; negative-checked against the faithful G-004 origin state (all 3 sys.path sites broken → red on ModuleNotFoundError, revert → green). Known limit documented in-test: process-global sys.path masks SINGLE-site regressions — grep-lint layer (T-2648) owns those; the smoke owns request-time shapes lints can't see. /PROJECT DUAL-ROOT BUILT (T-2651, closes prevention scope): framework AGENT.md docs list from FRAMEWORK_ROOT with fw-- doc_id prefix (split-root only), project_doc routes fw-- back to FRAMEWORK_ROOT with own containment check; coincident behavior byte-identical; pinned by tests/web/test_project_dual_root.py (split-root probes + coincident + traversal 404). ALL FOUR PREVENTION LEGS BUILT (T-2645 fixes, T-2648 Python grep-lint, T-2649 shell sweep + count ratchet, T-2650 behavioral smoke, T-2651 dual-root). CLOSE CONDITION MET 2026-07-28 (832 rail 269, their T-276): real consumer re-vendored at v1.6.763 and LIVE-VERIFIED split-root — review/approvals/orchestrator FRAMEWORK_ROOT fixes present, dispatch_pause shim deleted, /review/* /approvals /orchestrator all 200, fw doctor 0 failures, fw audit 0 fail. Resolved."
+  symptom: 'In split-root consumers every /review/T-XXX page 500s with ModuleNotFoundError:
+    dispatch_pause — the operator''s entire review queue dead while every partial-complete Human
+    AC points at those URLs. Siblings found in same sweep: approvals.py (identical insert, masked
+    by try/except → paused-dispatch surface silently dead) and orchestrator.py (workflow-coverage
+    panel silently ''unavailable'').'
+  root_cause: 'web/blueprints/review.py:18 inserted PROJECT_ROOT/''lib'' on sys.path before
+    importing dispatch_pause, but lib/ is FRAMEWORK-owned. Roots coincide in this repo so the
+    wrong resolution passes every framework-side test; only a split-root consumer exercises
+    the difference. Producer/consumer split, same class as OBS-096/T-1633: the failing path
+    structurally cannot fire where the code is developed.'
+  prevention: 'Fix (T-2645): all three sys.path sites now resolve FRAMEWORK_ROOT/''lib''. GREP-LINT
+    BUILT (T-2648): audit structure check FAILs on PROJECT_ROOT-resolution of framework-owned
+    dirs (lib/agents/policy/bin/web) in web/+lib/ Python; semantic allowlist for T-2229 per-project
+    policy instances (value-drivers.yaml, bvp-scoring-rubric.md) + inline OBS-097-allow annotations;
+    pinned by tests/unit/audit_split_root_asset_lint.bats (10 tests incl. drift tripwire). T-2648
+    calibration found+dispositioned 8 more sites: 4 fixed to FRAMEWORK_ROOT (designer pin+draft-new
+    fw path, approvals batch fw path, cron FW_BIN), 4 allowlisted with reasons (bvp.py/resolver.py
+    policy-instance reads; core.py /project listing — PROJECT_ROOT-relative end-to-end, lone
+    flip would 500 in split-root). SHELL LEG CALIBRATED (T-2649): all 23 shell sites dispositioned
+    — 12 fixed (govd_policy.py interpreter paths, mcp manifest/fragment reads, designer pin/notify,
+    liveness config, arc.sh update-task resolution) and 12 kept-with-reason (framework-repo
+    detection guards, T-1396 fallback chains, T-2229 per-project instances, T-2547 documented
+    design choice); a grep-shape shell LINT was rejected (12/23 hits legitimate — signal/noise
+    inverted vs Python) in favor of a count-baseline ratchet test (audit_split_root_asset_lint.bats
+    ''shell-idiom ratchet'', baseline 12). CI-SMOKE LEG BUILT (T-2650): tests/web/test_split_root_smoke.py
+    boots the app in a subprocess with PROJECT_ROOT=synthetic-consumer (FRAMEWORK_ROOT file-derived),
+    sweeps every parameterless GET route + curated parameterized probes (/review /tasks /inception
+    on a seeded task) and fails on any 500/import error; negative-checked against the faithful
+    G-004 origin state (all 3 sys.path sites broken → red on ModuleNotFoundError, revert → green).
+    Known limit documented in-test: process-global sys.path masks SINGLE-site regressions —
+    grep-lint layer (T-2648) owns those; the smoke owns request-time shapes lints can''t see.
+    /PROJECT DUAL-ROOT BUILT (T-2651, closes prevention scope): framework AGENT.md docs list
+    from FRAMEWORK_ROOT with fw-- doc_id prefix (split-root only), project_doc routes fw-- back
+    to FRAMEWORK_ROOT with own containment check; coincident behavior byte-identical; pinned
+    by tests/web/test_project_dual_root.py (split-root probes + coincident + traversal 404).
+    ALL FOUR PREVENTION LEGS BUILT (T-2645 fixes, T-2648 Python grep-lint, T-2649 shell sweep
+    + count ratchet, T-2650 behavioral smoke, T-2651 dual-root). CLOSE CONDITION MET 2026-07-28
+    (832 rail 269, their T-276): real consumer re-vendored at v1.6.763 and LIVE-VERIFIED split-root
+    — review/approvals/orchestrator FRAMEWORK_ROOT fixes present, dispatch_pause shim deleted,
+    /review/* /approvals /orchestrator all 200, fw doctor 0 failures, fw audit 0 fail. Resolved.'
   blast_radius: cross-project
   observed: 2026-07-28
   status: resolved
   resolved: 2026-07-28
-
-# T-2777's own "sustained host contention" RCA was itself a misdiagnosis: the real
-# cause was one specific unmanaged process, not the host in general. A prior worker
-# session on the same task measured load-average and concurrent process count and
-# concluded the readings were an unavoidable environmental boundary; a later pass on
-# the same task killed the one process actually responsible and the same routes went
-# from 13-16s to under 3s.
 - id: OBS-098
   type: tooling
   severity: medium
-  surface: "tests/playwright/conftest.py:watchtower_server (T-969) reuse-existing-server branch"
+  surface: tests/playwright/conftest.py:watchtower_server (T-969) reuse-existing-server branch
   detected_in: T-2777 (Playwright load-time warm-up fix, second pass)
-  symptom: "tests/playwright/test_all_routes_load_time.py failed /approvals, /approvals/content, /metrics reproducibly across multiple sessions, ~13-16s per request on a 5s cap. A live server on the SAME box, hit directly with curl outside Playwright, answered the same routes in 0.9-2.8s — ruling out a real page regression. A prior worker session attributed this to sustained host-wide contention (load average 3-5, 16-18 concurrent web.app processes) and left the finding as an acknowledged, uncontrolled boundary."
-  root_cause: "watchtower_server's early-return branch ('Server already running, don't manage it') reuses whatever process is already listening on FW_TEST_PORT (3099) with no staleness or age check, and never tears it down at session end if it didn't start it. A test session had left a server running unmanaged since 2026-08-03 — 656MB RSS, 66 minutes of accumulated CPU by the time it was found, roughly a day old. Killing that one process (letting the fixture spawn a fresh one) took the identical 3 routes from 13-16s to under 3s and the full 54-route suite from ~9min/51-passed to 4min/54-passed. The host-contention diagnosis was plausible (load average genuinely was 3-5) and even correctly cited in the fix's own docstring as an acknowledged boundary — but it was diagnosing the wrong variable. Nothing distinguished 'this box is generally busy' from 'this one long-lived process has degraded', because the fixture that could have prevented the second condition (bound the server's age, recycle it) doesn't attempt to and nothing else checks server age either."
-  prevention: "PARTIAL: T-2777 killed the specific stale process and confirmed 54/54 green as a result — resolves the immediate false-red. NOT YET STRUCTURAL: no staleness bound exists in the fixture, so a future session's shared server can silently accumulate the same way and reproduce the identical misdiagnosis. Follow-up filed: T-2782 (bound process age / recycle policy in watchtower_server)."
+  symptom: tests/playwright/test_all_routes_load_time.py failed /approvals, /approvals/content,
+    /metrics reproducibly across multiple sessions, ~13-16s per request on a 5s cap. A live
+    server on the SAME box, hit directly with curl outside Playwright, answered the same routes
+    in 0.9-2.8s — ruling out a real page regression. A prior worker session attributed this
+    to sustained host-wide contention (load average 3-5, 16-18 concurrent web.app processes)
+    and left the finding as an acknowledged, uncontrolled boundary.
+  root_cause: watchtower_server's early-return branch ('Server already running, don't manage
+    it') reuses whatever process is already listening on FW_TEST_PORT (3099) with no staleness
+    or age check, and never tears it down at session end if it didn't start it. A test session
+    had left a server running unmanaged since 2026-08-03 — 656MB RSS, 66 minutes of accumulated
+    CPU by the time it was found, roughly a day old. Killing that one process (letting the fixture
+    spawn a fresh one) took the identical 3 routes from 13-16s to under 3s and the full 54-route
+    suite from ~9min/51-passed to 4min/54-passed. The host-contention diagnosis was plausible
+    (load average genuinely was 3-5) and even correctly cited in the fix's own docstring as
+    an acknowledged boundary — but it was diagnosing the wrong variable. Nothing distinguished
+    'this box is generally busy' from 'this one long-lived process has degraded', because the
+    fixture that could have prevented the second condition (bound the server's age, recycle
+    it) doesn't attempt to and nothing else checks server age either.
+  prevention: 'PARTIAL: T-2777 killed the specific stale process and confirmed 54/54 green as
+    a result — resolves the immediate false-red. NOT YET STRUCTURAL: no staleness bound exists
+    in the fixture, so a future session''s shared server can silently accumulate the same way
+    and reproduce the identical misdiagnosis. Follow-up filed: T-2782 (bound process age / recycle
+    policy in watchtower_server).'
   blast_radius: scoped
   observed: 2026-08-04
   status: open
-  related: [T-2777, T-2776, T-2775, T-2782]
-  related: [T-2645, T-1810, T-1808, T-1799, OBS-096, T-1633]
-
-# T-1820's live joint smoke has failed to observe a live inbox.queued event across
-# three months and multiple upstream investigations (T-2409, TermLink T-2363), all
-# of which correctly diagnosed and fixed TermLink-side emit bugs -- but the framework
-# subscriber itself was never able to see ANY hub-aggregator event, regardless.
+  related:
+  - T-2645
+  - T-1810
+  - T-1808
+  - T-1799
+  - OBS-096
+  - T-1633
 - id: OBS-186
   type: tooling
   severity: high
-  surface: "lib/peer.py::poll_once (T-1818 v2 peer-consult subscriber substrate)"
+  surface: lib/peer.py::poll_once (T-1818 v2 peer-consult subscriber substrate)
   detected_in: T-1820 (2026-08-11 live joint smoke rerun)
-  symptom: "fw peer subscribe --once always polls cleanly (exit 0, cursor written) but never observes a live inbox.queued event, across every TermLink version tested (0.9.1701 through 0.11.720) and after TermLink fixed two independent emit-site bugs (T-1637, T-2363) explicitly to unblock this smoke."
-  root_cause: "poll_once() calls 'termlink event poll <session> --topic inbox.queued --since <cursor>' -- a per-SESSION event bus read. But inbox.queued (and its dm-rail sibling dm.queued, T-2323) are injected into the hub-level EventAggregator under a synthetic session_id='hub' (crates/termlink-hub, router::aggregator(), T-1645), a broadcast-only channel with no --since cursor. Per-session poll structurally cannot reach it: confirmed live by polling both the addressee session and an unrelated ready session immediately after a proven emit (both returned count=0), while 'termlink event watch --hub --topic inbox.queued' observed the identical emit instantly. Independently, the DM rail (T-2323) fires under topic 'dm.queued', not 'inbox.queued' -- so .context/peer-consult-prompts.yaml's dm:design-*/dm:escalate-*/dm:triage- channel-prefix routing (built for DM-addressed consults) can never be reached via the topic the subscriber polls, even once the poll-primitive defect is fixed."
-  prevention: "Two independent framework-side fixes needed, both scoped in T-2918: (1) lib/peer.py must consume the hub aggregator (event watch --hub or an equivalent cursor-capable read) instead of per-session poll; (2) decide whether inbox: and dm: are one trigger rail or two (subscribe both topics, or align TermLink's dm-rail topic name). Three months of investigation (T-1820 -> T-2409 -> TermLink T-2363) correctly fixed real TermLink-side bugs but never reached this framework-side defect because every rerun re-tested only the emit side, not whether the framework's own poll call could reach a hub-injected event at all."
+  symptom: fw peer subscribe --once always polls cleanly (exit 0, cursor written) but never
+    observes a live inbox.queued event, across every TermLink version tested (0.9.1701 through
+    0.11.720) and after TermLink fixed two independent emit-site bugs (T-1637, T-2363) explicitly
+    to unblock this smoke.
+  root_cause: 'poll_once() calls ''termlink event poll <session> --topic inbox.queued --since
+    <cursor>'' -- a per-SESSION event bus read. But inbox.queued (and its dm-rail sibling dm.queued,
+    T-2323) are injected into the hub-level EventAggregator under a synthetic session_id=''hub''
+    (crates/termlink-hub, router::aggregator(), T-1645), a broadcast-only channel with no --since
+    cursor. Per-session poll structurally cannot reach it: confirmed live by polling both the
+    addressee session and an unrelated ready session immediately after a proven emit (both returned
+    count=0), while ''termlink event watch --hub --topic inbox.queued'' observed the identical
+    emit instantly. Independently, the DM rail (T-2323) fires under topic ''dm.queued'', not
+    ''inbox.queued'' -- so .context/peer-consult-prompts.yaml''s dm:design-*/dm:escalate-*/dm:triage-
+    channel-prefix routing (built for DM-addressed consults) can never be reached via the topic
+    the subscriber polls, even once the poll-primitive defect is fixed.'
+  prevention: 'Two independent framework-side fixes needed, both scoped in T-2918: (1) lib/peer.py
+    must consume the hub aggregator (event watch --hub or an equivalent cursor-capable read)
+    instead of per-session poll; (2) decide whether inbox: and dm: are one trigger rail or two
+    (subscribe both topics, or align TermLink''s dm-rail topic name). Three months of investigation
+    (T-1820 -> T-2409 -> TermLink T-2363) correctly fixed real TermLink-side bugs but never
+    reached this framework-side defect because every rerun re-tested only the emit side, not
+    whether the framework''s own poll call could reach a hub-injected event at all.'
   blast_radius: scoped
   observed: 2026-08-11
   status: open
-  related: [T-1820, T-1821, T-1818, T-1819, T-2409, T-2363, T-2918]
-
-# A gate extension silently invalidated its own test fixtures, and the comment
-# above them explained the breakage as intent — so 57 days of red read as normal.
+  related:
+  - T-1820
+  - T-1821
+  - T-1818
+  - T-1819
+  - T-2409
+  - T-2363
+  - T-2918
 - id: OBS-237
   type: process
   severity: high
-  surface: "tests/unit/{lib_review,review_link_blocking_gate}.bats fixtures vs lib/review.sh:205-211 (T-2421 rec-gate)"
+  surface: tests/unit/{lib_review,review_link_blocking_gate}.bats fixtures vs lib/review.sh:205-211
+    (T-2421 rec-gate)
   detected_in: T-2949 (found incidentally during T-2948's regression check)
-  symptom: "7 bats legs across 2 suites returned `not ok` continuously from 2026-06-16 to 2026-08-12 — 57 days. No audit, doctor check, cron job or close gate reported it. Found only because an unrelated task ran the neighbouring suites to prove it had not caused a regression."
-  root_cause: "T-2421 extended the empty-`## Recommendation` BLOCK from inceptions to partial-complete build-class tasks. It updated lib/review.sh and shipped green — but the fixtures those suites build are partial-complete build tasks (1 of 3 Human ACs checked) with no Recommendation section, so emit_review began returning 1 where the legs asserted 0 or 2. Third artefact of one extension: code updated; the task TEMPLATE not (T-2945, reported independently by 832 as their T-455); the test FIXTURES not (this). Compounding it, the fixture helper carried the comment 'Build tasks do not gate on Recommendation, so the heading is conditional' — true when T-2206 wrote it, made false by T-2421 — so anyone glancing at the red legs found a written explanation that the conditional was deliberate."
-  prevention: "PARTIAL. T-2949 fixed all 7 fixtures (by satisfying the gate, NOT by FW_ALLOW_EMPTY_RECOMMENDATION=1 — bypassing a gate inside its own suite makes the suite blind to what it guards), corrected the stale comment in place, and added a leg asserting the rec-gate still FIRES so the suite covers T-2421 rather than merely tolerating it. NOT STRUCTURAL: nothing yet surfaces a persistently-red bats suite. `fw audit` and `fw doctor` do not run the unit suites, no cron does, and the P-011 close gate only runs the commands a task author writes — so a suite nobody names in a Verification block is invisible by construction. The next gate extension can repeat this exactly. Needed: a scheduled full-suite run whose failures reach the same surface as audit WARNs."
+  symptom: 7 bats legs across 2 suites returned `not ok` continuously from 2026-06-16 to 2026-08-12
+    — 57 days. No audit, doctor check, cron job or close gate reported it. Found only because
+    an unrelated task ran the neighbouring suites to prove it had not caused a regression.
+  root_cause: 'T-2421 extended the empty-`## Recommendation` BLOCK from inceptions to partial-complete
+    build-class tasks. It updated lib/review.sh and shipped green — but the fixtures those suites
+    build are partial-complete build tasks (1 of 3 Human ACs checked) with no Recommendation
+    section, so emit_review began returning 1 where the legs asserted 0 or 2. Third artefact
+    of one extension: code updated; the task TEMPLATE not (T-2945, reported independently by
+    832 as their T-455); the test FIXTURES not (this). Compounding it, the fixture helper carried
+    the comment ''Build tasks do not gate on Recommendation, so the heading is conditional''
+    — true when T-2206 wrote it, made false by T-2421 — so anyone glancing at the red legs found
+    a written explanation that the conditional was deliberate.'
+  prevention: 'PARTIAL. T-2949 fixed all 7 fixtures (by satisfying the gate, NOT by FW_ALLOW_EMPTY_RECOMMENDATION=1
+    — bypassing a gate inside its own suite makes the suite blind to what it guards), corrected
+    the stale comment in place, and added a leg asserting the rec-gate still FIRES so the suite
+    covers T-2421 rather than merely tolerating it. NOT STRUCTURAL: nothing yet surfaces a persistently-red
+    bats suite. `fw audit` and `fw doctor` do not run the unit suites, no cron does, and the
+    P-011 close gate only runs the commands a task author writes — so a suite nobody names in
+    a Verification block is invisible by construction. The next gate extension can repeat this
+    exactly. Needed: a scheduled full-suite run whose failures reach the same surface as audit
+    WARNs.'
   blast_radius: systemic
   observed: 2026-08-12
   status: open
-  related: [T-2949, T-2948, T-2945, T-2421, T-2206, G-019]
-
-# A third copy of the same extraction, in a scan rather than an executor — so it
-# fails quietly in the other direction: audit's population omits what the gate runs.
+  related:
+  - T-2949
+  - T-2948
+  - T-2945
+  - T-2421
+  - T-2206
+  - G-019
 - id: OBS-238
   type: tooling
   severity: medium
-  surface: "agents/audit/audit.sh:3406 (CTL-013 verification-command scan)"
+  surface: agents/audit/audit.sh:3406 (CTL-013 verification-command scan)
   detected_in: T-2921 (found while removing the duplicate extraction the gate used)
-  symptom: "CTL-013 builds its own list of a task's verification commands with a line-based comment tracker that drops any line CONTAINING `<!--` anywhere, rather than only lines OPENING with it. A command carrying the delimiters as argument text — `sed '/<!--/,/-->/d' f`, an awk program matching a footer marker, a printf building a fixture — is silently omitted from audit's scan. Audit therefore reports on a different set of commands than the P-011 gate executes, with no indication the sets differ."
-  root_cause: "Same mention-vs-instance class as the T-2921 defect it was found next to (and as L-576, T-2948): the check asks 'does this line contain a comment delimiter' when the question is 'is this delimiter structural, or is it argument text'. Audit's copy is line-based and so avoids the DOTALL cross-newline deletion that made the gate's copy dangerous — it is closer to correct, which is likely why it was never revisited. It remains a third independent implementation of one extraction; T-2921 collapsed the other two into lib/verification-port.sh::extract_verification_block, and this one was left out of scope deliberately (one bug, one task) rather than by oversight."
-  prevention: "NOT YET BUILT. Correct fix is to make CTL-013 call extract_verification_block like the gate and fw verify-queue now do, so parity is by construction rather than by three matching implementations. Requires care: audit reads the file in a single streaming loop and the shared function re-reads the file, so this is a real refactor with its own test surface, not a one-line swap. Measured blast radius at filing: 3 task files corpus-wide (2939 scanned) carry a delimiter-bearing verification command — T-2160, T-1746, T-2554 — so audit currently under-scans exactly those three. Low volume, but the divergence is unbounded going forward and invisible when it happens."
+  symptom: CTL-013 builds its own list of a task's verification commands with a line-based comment
+    tracker that drops any line CONTAINING `<!--` anywhere, rather than only lines OPENING with
+    it. A command carrying the delimiters as argument text — `sed '/<!--/,/-->/d' f`, an awk
+    program matching a footer marker, a printf building a fixture — is silently omitted from
+    audit's scan. Audit therefore reports on a different set of commands than the P-011 gate
+    executes, with no indication the sets differ.
+  root_cause: 'Same mention-vs-instance class as the T-2921 defect it was found next to (and
+    as L-576, T-2948): the check asks ''does this line contain a comment delimiter'' when the
+    question is ''is this delimiter structural, or is it argument text''. Audit''s copy is line-based
+    and so avoids the DOTALL cross-newline deletion that made the gate''s copy dangerous — it
+    is closer to correct, which is likely why it was never revisited. It remains a third independent
+    implementation of one extraction; T-2921 collapsed the other two into lib/verification-port.sh::extract_verification_block,
+    and this one was left out of scope deliberately (one bug, one task) rather than by oversight.'
+  prevention: 'NOT YET BUILT. Correct fix is to make CTL-013 call extract_verification_block
+    like the gate and fw verify-queue now do, so parity is by construction rather than by three
+    matching implementations. Requires care: audit reads the file in a single streaming loop
+    and the shared function re-reads the file, so this is a real refactor with its own test
+    surface, not a one-line swap. Measured blast radius at filing: 3 task files corpus-wide
+    (2939 scanned) carry a delimiter-bearing verification command — T-2160, T-1746, T-2554 —
+    so audit currently under-scans exactly those three. Low volume, but the divergence is unbounded
+    going forward and invisible when it happens.'
   blast_radius: scoped
   observed: 2026-08-12
   status: open
-  related: [T-2921, T-2950, T-2948, T-2765, T-2949, L-576, L-533]
+  related:
+  - T-2921
+  - T-2950
+  - T-2948
+  - T-2765
+  - T-2949
+  - L-576
+  - L-533
   follow_up_task: T-2950
 - id: OBS-239
   type: tooling
   severity: low
-  surface: "lib/review.sh:~150 (emit_review Human-AC counter, T-2948)"
+  surface: lib/review.sh:~150 (emit_review Human-AC counter, T-2948)
   detected_in: T-2954 (found while collapsing the Python copies of the same rule)
-  symptom: "The counter's comment tracker opens a comment span on `<!--` appearing ANYWHERE in a line (`case $line in *\"<!--\"*) in_comment=true`), rather than only when it is the first non-blank token. A real Human AC carrying a trailing comment — `- [ ] [REVIEW] Operator confirms X <!-- see T-123 -->` — opens and closes on its own line and is dropped, so the AC is not counted. Watchtower then renders one fewer Human AC than the task has, and the partial-complete gate sees a smaller population than the file."
-  root_cause: "Fourth site of the comment-boundary class, and the third distinct semantics for one rule. T-2921 established the structural rule (`<!--` opens only as the first non-blank token); T-2948 made this counter comment-aware but used the looser `contains` test; T-2954 moved the structural rule into lib/comment_strip.py and collapsed the two Python-reachable sites onto it. review.sh is bash with an inline streaming loop, so it did not come along. Wrong in the conservative direction — it UNDER-counts, so a task reads as having fewer Human ACs than it does, which cannot fabricate a completion."
-  prevention: "NOT YET BUILT. The rule now has one canonical implementation (lib/comment_strip.py, usable as a stdin filter: `printf '%s' \"$text\" | python3 lib/comment_strip.py`), so the fix is to route review.sh's Human-section text through it rather than re-implementing the tracker. Blast radius at filing: MEASURED, not latent — 1 live instance in 2942 task files. T-2521 carries `- [x] [REVIEW] The /designer page renders as a usable BPMN workflow editor  <!-- operator confirme...`, a genuine TICKED Human AC that this counter drops, so review.sh reports that task with one fewer Human AC than it has (both total and checked fall by one). The first draft of this entry asserted 0 and was written before the command was run — the same near-miss recorded in T-2951's RCA, caught this time by measuring before filing rather than after. Filed rather than fixed here: one bug, one task."
+  symptom: The counter's comment tracker opens a comment span on `<!--` appearing ANYWHERE in
+    a line (`case $line in *"<!--"*) in_comment=true`), rather than only when it is the first
+    non-blank token. A real Human AC carrying a trailing comment — `- [ ] [REVIEW] Operator
+    confirms X <!-- see T-123 -->` — opens and closes on its own line and is dropped, so the
+    AC is not counted. Watchtower then renders one fewer Human AC than the task has, and the
+    partial-complete gate sees a smaller population than the file.
+  root_cause: Fourth site of the comment-boundary class, and the third distinct semantics for
+    one rule. T-2921 established the structural rule (`<!--` opens only as the first non-blank
+    token); T-2948 made this counter comment-aware but used the looser `contains` test; T-2954
+    moved the structural rule into lib/comment_strip.py and collapsed the two Python-reachable
+    sites onto it. review.sh is bash with an inline streaming loop, so it did not come along.
+    Wrong in the conservative direction — it UNDER-counts, so a task reads as having fewer Human
+    ACs than it does, which cannot fabricate a completion.
+  prevention: 'NOT YET BUILT. The rule now has one canonical implementation (lib/comment_strip.py,
+    usable as a stdin filter: `printf ''%s'' "$text" | python3 lib/comment_strip.py`), so the
+    fix is to route review.sh''s Human-section text through it rather than re-implementing the
+    tracker. Blast radius at filing: MEASURED, not latent — 1 live instance in 2942 task files.
+    T-2521 carries `- [x] [REVIEW] The /designer page renders as a usable BPMN workflow editor  <!--
+    operator confirme...`, a genuine TICKED Human AC that this counter drops, so review.sh reports
+    that task with one fewer Human AC than it has (both total and checked fall by one). The
+    first draft of this entry asserted 0 and was written before the command was run — the same
+    near-miss recorded in T-2951''s RCA, caught this time by measuring before filing rather
+    than after. Filed rather than fixed here: one bug, one task.'
   blast_radius: scoped
   observed: 2026-08-12
   status: open
-  related: [T-2954, T-2948, T-2921, T-2950, OBS-238, T-2949, L-576]
+  related:
+  - T-2954
+  - T-2948
+  - T-2921
+  - T-2950
+  - OBS-238
+  - T-2949
+  - L-576
+  follow_up_task: null
+- id: OBS-248
+  type: process
+  severity: medium
+  surface: cross-session peer coordination (TermLink rails / SendMessage) — no delivery or membership
+    verification
+  detected_in: T-3001 (832-workflow-designer reported ten unanswered messages; investigation
+    found no shared rail existed)
+  symptom: A session can believe it is coordinating with a peer while reaching nobody, and nothing
+    on either side goes red. This session posted to a rail and recorded sends with no failures;
+    the peer sent ten messages to a DM topic this session's fingerprint is not a party to, and
+    recorded sends with no replies. Both ledgers stayed clean for the duration. The operator's
+    standing directive was explicitly to communicate often with that peer, so the failure DEFEATED
+    a directive while APPEARING to comply with it — the agent reported coordination in good
+    faith.
+  root_cause: Sending is verified (the transport confirms the write); ARRIVAL AT A SHARED SURFACE
+    is not. Nothing checks that the topic written to is one both parties can read, that the
+    peer's identity is a member, or that offsets cited by a peer exist in the local coordinate
+    space. The measured facts were each one command away — `agent identity`, `agent info` (Senders),
+    `agent dms` — but no rail asks for them, so the question 'is this channel actually bidirectional?'
+    is only asked after a human or a peer notices silence. Here it took the peer explicitly
+    enumerating two hypotheses and saying it could not distinguish them.
+  prevention: 'NOT YET BUILT — filed, not fixed (one bug, one task). Candidate shape, cheapest
+    first: (a) a `fw peer verify <name>` that asserts the local fingerprint is a member of the
+    topic before it is used for coordination, and that the peer appears in the topic''s sender
+    list; (b) a doctor/audit WARN when a session has posted to a topic whose Senders list does
+    not include the intended peer; (c) an author-time rule that a coordination claim in a handover
+    names the surface AND its measured membership, not just ''messaged the peer''. Note (a)
+    is only meaningful if it distinguishes window-relative from absolute offsets — see the TermLink
+    defect cross-linked below, which made the diagnosis harder and is homed upstream per T-1333.'
+  blast_radius: cross-project
+  observed: '2026-08-14'
+  status: open
+  related:
+  - T-3001
+  - T-2904
+  - T-2905
+  - T-1333
   follow_up_task: null
