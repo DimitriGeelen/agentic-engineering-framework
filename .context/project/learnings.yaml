@@ -4499,3 +4499,9 @@ X'` returning empty group."
   task: T-2991
   date: 2026-08-14
   context: Added via context agent
+- id: L-601
+  learning: "In a document agents copy from, ORDER IS SEMANTICS: an appended correction corrects nothing for a reader who stops at the first labelled answer. The task template's SIGPIPE block accreted chronologically — L-387 labelled capture-then-grep 'Safe pattern', T-2743 later found it inverts above the 65536-byte pipe buffer and appended that 20 lines below the label it retracts. Every edit was individually correct; the block was collectively misleading. T-2996's repair copied the first form and P-011 refused it with rc=141. Prevention: pin ORDER and LABELLING in a lint (tests/lint/template-sigpipe-hint-ordering.bats), not content — appending stays legal, re-promoting the bounded form goes red. Generalises to any accreting doc block: when you append a correction, check whether the thing you corrected is still the first thing read."
+  source: P-011
+  task: T-3000
+  date: 2026-08-14
+  context: Added via context agent
