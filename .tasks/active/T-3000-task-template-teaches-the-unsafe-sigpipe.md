@@ -1,6 +1,7 @@
 ---
 id: T-3000
-name: "task template teaches the unsafe SIGPIPE shape first, corrects it 20 lines later"
+name: "task template teaches the unsafe SIGPIPE shape first, corrects it 20 lines
+  later"
 description: >
   task template teaches the unsafe SIGPIPE shape first, corrects it 20 lines later
 
@@ -22,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T20:27:45Z
-last_update: 2026-08-14T20:27:45Z
-date_finished: null
+last_update: '2026-08-14T20:30:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +35,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-14T20:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 3
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-14T20:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3000: task template teaches the unsafe SIGPIPE shape first, corrects it 20 lines later
@@ -74,13 +103,13 @@ block — this task changes which one leads and where each caveat sits, not what
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The hint block leads with the file-redirect form (`cmd > /tmp/.out 2>&1 && grep -q PAT /tmp/.out`) as the stated default — the form that is safe at any capture size AND preserves the producing command's exit code
-- [ ] The capture-then-grep form is retained but demoted to a size-bounded exception, with its 65536-byte caveat adjacent to it rather than 20 lines below
-- [ ] The phrase "Safe pattern" no longer labels the capture-then-grep form (no label in the block asserts unconditional safety for a conditionally-safe shape)
-- [ ] Every rule presently in the block still appears: L-387 mechanism, T-2090 no-intermediate-stages, T-2743 pipe-buffer inversion, T-2743 rehearsal-under-pipefail, T-2738 test-runner exit-code guard
-- [ ] All origin citations (L-387, T-2090, T-2743, T-2738) survive, each attached to the rule it originated
-- [ ] A test pins the ordering property, so the block cannot re-accrete into "unsafe form first" the next time a correction is appended
-- [ ] The test is proven non-vacuous: revert the template and watch it go red
+- [x] The hint block leads with the file-redirect form (`cmd > /tmp/.out 2>&1 && grep -q PAT /tmp/.out`) as the stated default — the form that is safe at any capture size AND preserves the producing command's exit code
+- [x] The capture-then-grep form is retained but demoted to a size-bounded exception, with its 65536-byte caveat adjacent to it rather than 20 lines below
+- [x] The phrase "Safe pattern" no longer labels the capture-then-grep form (no label in the block asserts unconditional safety for a conditionally-safe shape)
+- [x] Every rule presently in the block still appears: L-387 mechanism, T-2090 no-intermediate-stages, T-2743 pipe-buffer inversion, T-2743 rehearsal-under-pipefail, T-2738 test-runner exit-code guard
+- [x] All origin citations (L-387, T-2090, T-2743, T-2738) survive, each attached to the rule it originated
+- [x] A test pins the ordering property, so the block cannot re-accrete into "unsafe form first" the next time a correction is appended
+- [x] The test is proven non-vacuous: revert the template and watch it go red
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,6 +209,12 @@ block — this task changes which one leads and where each caveat sits, not what
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Both lines use the file-redirect form this task promotes to the default —
+# the block should be able to survive its own advice.
+bats tests/lint/template-sigpipe-hint-ordering.bats > /tmp/.t3000.out 2>&1 && grep -q "^ok 5" /tmp/.t3000.out
+# The label that made the wrong form authoritative must be gone from the template.
+! grep -q "Safe pattern" .tasks/templates/default.md
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -195,6 +230,45 @@ block — this task changes which one leads and where each caveat sits, not what
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-2996's first repair to the onboarding seed assertion used
+`out=$(git log --format=%s); echo "$out" | grep -q "T-003"`. P-011 refused the task
+with rc=141 against this repo's 608KB log. The line had been copied from the task
+template's own hint block, where it is labelled *Safe pattern*.
+
+**Root cause:** the hint block accreted chronologically. L-387 established the
+capture-then-grep form and labelled it safe. T-2090 refined it. T-2743 then
+discovered the form inverts above the 65536-byte pipe buffer and appended that
+finding — 20 lines below the label it retracts, behind an unrelated hint, opening
+with a sentence fragment (`AND ONLY WHILE THE CAPTURE IS SMALL`) that reads as a
+new hint rather than a retraction. Each edit was individually correct and left the
+block collectively misleading, because nobody re-read it top-down afterwards.
+
+**Why structurally allowed:** nothing checks a documentation block for internal
+consistency, and the correction pattern the framework rewards — append your finding
+with its citation — is exactly the pattern that produced this. The gate that would
+have caught it (P-011) fires *after* an agent has already written and shipped the
+wrong line, and only where output happens to exceed the buffer. This repo has a
+608KB log so it fired; a young consumer would have gone green, and the line would
+have flipped red months later with no change to the code it guards. That is the same
+goes-red-later shape as the seed defect T-2996 was repairing — the template
+reproduced its own bug class one level up.
+
+**Prevention:** `tests/lint/template-sigpipe-hint-ordering.bats` pins the *ordering
+and labelling*, not the content: the file-redirect form must precede the bounded
+form, no label may assert unconditional safety, and the size bound must sit within
+12 lines of the form it qualifies. Appending a future correction to the bottom stays
+legal; re-promoting the bounded form or re-labelling it as unconditionally safe goes
+red. Two of the five tests instead guard the restructure itself — every rule and
+every citation must survive — so compression cannot quietly drop a hard-won finding.
+Verified non-vacuous: reverting the template turns tests 1, 2 and 3 red.
+
+**The generalisable point,** and the reason this is filed as a defect rather than
+tidying: in a document that agents copy from, *order is semantics*. An appended
+correction does not correct anything for a reader who stops at the first labelled
+answer. The sibling rule from T-2999 was "a positive control is not a control until
+you have watched it fail"; this one is its documentation counterpart — a correction
+is not a correction until the thing it corrects stops being the first thing read.
 
 ## Evolution
 

@@ -90,54 +90,48 @@ date_finished: null
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 #
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
+# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
+#
+# THE DEFAULT — redirect to a file, then grep the file:
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. grep scans the whole captured string anyway, so the tail-3 was
-# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
-# for the captures they were written about, and both invert above the pipe
-# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
-# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
-# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
-# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
-# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
-# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
-# For anything that might be large, redirect to a file:
-#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
 #     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# This is the better default even when size is not a concern: `&&` keeps the
-# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
-# the T-2738 problem one layer down. A 404 from curl fails the line instead of
-# silently producing an empty capture for grep to not-match.
+# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
+# the verdict. Reach for this first; the alternative below is the special case.
 #
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
-# 141 under P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
+# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
+# pipefail`. When grep matches it exits and closes stdin while cmd is still
+# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
+# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
 #
-# BUT NOT for a test runner (T-2738): the capture above discards the command's
-# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
-# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
-# that exit code WAS the verdict, and the pass marker you grep instead survives
-# a partial failure: a suite printing "3 failed, 9 passed" satisfies
-# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
-# same output. Either keep the exit code:
+# THE EXCEPTION — capture first, grep the capture:
+#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
+# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
+# know that it does. Above that the form inverts and becomes the very failure
+# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
+# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
+# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
+# page is over the line). It also discards cmd's exit code, so a 404 yields an
+# empty capture that grep merely fails to match rather than a failed line.
+# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
+# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
+# on, and grep scans the whole captured string anyway, so the `tail -3` was
+# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
+#
+# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
+# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
+# verdict — and the pass marker you grep for survives a partial failure: a suite
+# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
+# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
 #     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
 # or add the guard the exit code used to supply:
 #     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
+#
+# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
+# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
+# P-011, from the same directory, the same second. To rehearse for real:
+#     bash -c 'set -eo pipefail; <your verification line>'
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
