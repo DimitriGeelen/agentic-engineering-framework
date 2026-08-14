@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-existing-project-onboarding"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- designer-corpus T-2979 (arc-017, onboarding-curriculum): the existing-project onboarding
+       prologue (T-001 through T-006). Counterpart to aef-greenfield-onboarding, which existed
+       from T-2972 while this path had no map at all — so the operator adopting the framework
+       into a codebase they already have got strictly less orientation than the greenfield one.
+       Prose is lifted from lib/seeds/tasks/existing-project/T-00*.md `## For the Operator`.
+
+       Channel note (inherited from T-2974, applied here at author time rather than retrofitted):
+       per-node prose lives in `<aef:meta note="…"/>` ATTRIBUTES. Both readers are attribute-based
+       — corpus_spec.py:_ext() does dict(c.attrib), and the pinned designer's metaKeys vocabulary
+       is attributes too — so prose in `<aef:description>` CHILD elements parses to {} and renders
+       nowhere. Newlines survive as &#10; character refs (XML 1.0 §3.3.3); a literal newline in an
+       attribute value is normalised to a space and the structure is lost. corpus_lint's
+       `unread-node-prose` rule (T-2976) is the standing guard against the child-element shape.
+
+       TWO STRUCTURAL DIFFERENCES FROM THE GREENFIELD MAP, both deliberate:
+
+       1. There is no blocking human node. Greenfield has one — T-002, an inception where the
+          operator decides GO/NO-GO on what the project is for. The existing-project path has no
+          such gate: the project already exists, so the question was answered before the framework
+          arrived. Every step here is agent-owned.
+
+       2. The human lane therefore holds ONE node that is deliberately NOT on the sequence chain
+          (`hum_alongside` has no incoming or outgoing flows). This is not an authoring mistake
+          and not a dropped edge — it is the honest shape of the thing. Five of the six seeded
+          tasks end by inviting the operator to look and push back ("tell it", "worth judging",
+          "say so"), and none of them wait for an answer. That is arc-017's headline mechanic
+          stated as geometry: the curriculum sits ALONGSIDE and is readable, but never blocks.
+          Wiring that node into the chain would draw a gate that does not exist, and would
+          contradict the invariant the arc is built on. Verified lint-clean: `dangling-flow-ref`
+          flags flows naming absent nodes, not nodes named by no flow. Open question raised with
+          832 on the chat-arc: whether an unwired lane node renders sensibly in their build. -->
+
+  <bpmn:collaboration id="Collaboration_existing_project_onboarding">
+    <bpmn:participant id="Pool_existing_project_onboarding" name="AEF Existing-Project Onboarding: Adopting the Framework into a Codebase You Already Have" processRef="Process_existing_project_onboarding"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_existing_project_onboarding" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-existing-project-onboarding" version="1" schemaVersion="2"
+                        title="AEF existing-project onboarding prologue (T-001 through T-006)" tier_default="1"/>
+    </bpmn:extensionElements>
+
+    <bpmn:laneSet id="LaneSet_epo">
+      <bpmn:lane id="agent" name="Agent · Initiative (The agent works all six of these autonomously)">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_orientation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_first_commit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_fabric</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_lifecycle</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_handover</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_learning</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_released</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty (Alongside the whole way — nothing here blocks the agent)">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_alongside</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- START: fw init completes on a repo that already has code -->
+    <bpmn:startEvent id="agt_0_start" name="You just ran: fw init (in an existing repo)">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_start"/>
+        <aef:position x="120.0" y="130.0"/>
+        <aef:meta note="THE STARTING POINT&#10;&#10;You've run `fw init` inside a codebase that already exists — one with history, habits,&#10;and probably a few places only you know about. The framework has:&#10;  • Created .tasks/, .context/, .agentic-framework/ directories&#10;  • Seeded 6 onboarding tasks (T-001 through T-006)&#10;  • Installed git hooks for task traceability&#10;  • Configured the agent prologue&#10;&#10;What you're looking at: the six tasks the agent works through before it touches what you&#10;actually came here to build. Unlike a greenfield start, nothing in this prologue asks you&#10;to decide anything — your project's purpose was settled long before the framework arrived.&#10;&#10;What it asks instead is that you LOOK. Five of these six steps end by inviting you to&#10;check the agent's judgement about YOUR codebase. That is the human lane below, and it&#10;runs the whole width of this diagram without ever stopping the agent."/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_start_t001</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- T-001: ORIENTATION -->
+    <bpmn:serviceTask id="agt_1_orientation" name="T-001: Orientation and Framework Health Check">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_t001"/>
+        <aef:position x="220.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent is learning your project — reading the README, finding the entry points — and&#10;running two health checks:&#10;  • `fw doctor` — &quot;is this install wired correctly?&quot;&#10;  • `fw audit` — &quot;is this project's governance in good standing?&quot;&#10;&#10;═══ WHY IT MATTERS ═══&#10;This is an existing codebase, so the audit numbers the agent records now are a BASELINE,&#10;not a verdict. Warnings on first run are normal — the framework has just arrived and is&#10;measuring a project that predates it. What matters is the direction that number moves over&#10;the coming weeks, not where it starts.&#10;&#10;The rule everything else hangs off: **nothing gets done without a task.** That is a hook&#10;that refuses file edits when no task is active, not a habit the agent has agreed to. When&#10;you see the agent stop and report itself blocked, this is usually why, and it is correct.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;Nothing is required. If you're curious, open Watchtower — run `fw serve` and visit the URL&#10;it prints. That's the window into tasks, decisions, health, and every map named in this&#10;curriculum, including this one.&#10;&#10;═══ KEY LEARNING ═══&#10;The framework enforces governance structurally, through hooks that run BEFORE a tool&#10;executes — so violations are impossible rather than merely discouraged. On an existing&#10;project that also means the first audit is a measurement, not a grade.&#10;&#10;═══ NEXT ═══&#10;T-002 — the agent makes its first commit through the hooks."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_start_t001</bpmn:incoming>
+      <bpmn:outgoing>flow_t001_t002</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_start_t001" name="seeds are on disk; agent picks up T-001"
+                       sourceRef="agt_0_start" targetRef="agt_1_orientation"/>
+
+    <!-- T-002: FIRST GOVERNED COMMIT -->
+    <bpmn:serviceTask id="agt_2_first_commit" name="T-002: Your First Governed Commit">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_t002"/>
+        <aef:position x="400.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent makes a deliberately small, safe change to your project and commits it through&#10;the framework's git hooks. Small on purpose — the point is to exercise the path, not to&#10;change anything you care about.&#10;&#10;The commit message format:&#10;&#10;  T-002: (one-line description of the change)&#10;&#10;═══ WHY IT MATTERS ═══&#10;That `T-002:` prefix is enforced — a hook refuses commits without it. From here on,&#10;`git log` answers &quot;why does this line exist?&quot; by pointing at a task file that still holds&#10;the reasoning, the acceptance criteria, and the decisions.&#10;&#10;On an existing codebase this creates something greenfield projects never have: TWO ERAS in&#10;your history. Everything before this commit is as self-explaining as it ever was. Everything&#10;after it explains itself. You are standing on the boundary right now.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;Nothing required. But if the agent proposes touching a file you would rather it left alone,&#10;say so — &quot;small and safe&quot; is its judgement about a codebase it met an hour ago, and yours&#10;overrides it.&#10;&#10;After the commit, `git log` shows the T-002 reference, and Watchtower /tasks/T-002 lists&#10;the commit in the task's Updates section.&#10;&#10;═══ KEY LEARNING ═══&#10;Traceability is structural, not clerical: file → commit → task → decision is a chain you&#10;can walk backwards in six months. The hooks make untraced work impossible rather than&#10;frowned upon.&#10;&#10;═══ NEXT ═══&#10;T-003 — mapping what depends on what. This step is unique to existing projects."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t001_t002</bpmn:incoming>
+      <bpmn:outgoing>flow_t002_t003</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_t001_t002" name="baseline recorded — path not yet exercised"
+                       sourceRef="agt_1_orientation" targetRef="agt_2_first_commit"/>
+
+    <!-- T-003: REGISTER KEY COMPONENTS (existing-project only) -->
+    <bpmn:serviceTask id="agt_3_fabric" name="T-003: Register Key Components in the Fabric">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_t003"/>
+        <aef:position x="580.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent picks 5-10 files that actually matter in your project — entry points, core&#10;modules, config — and registers each one in the COMPONENT FABRIC.&#10;&#10;═══ WHY IT MATTERS ═══&#10;The fabric is a map of what depends on what. Once it exists, the agent can answer &quot;what&#10;breaks if I change this file?&quot; BEFORE changing it, rather than finding out afterwards.&#10;`fw fabric blast-radius` is the question it answers, and it is the difference between a&#10;confident edit and a hopeful one.&#10;&#10;This step exists ONLY for projects that already have code. A greenfield project builds its&#10;fabric as it builds its files, one card at a time; yours has to be mapped after the fact.&#10;That is the whole reason this path has six steps and the greenfield path has five.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;This is the step most worth your attention in the whole prologue.&#10;&#10;Look at the list it chose. Which files get registered is a judgement call the agent is&#10;making about YOUR codebase, on an hour's acquaintance. If it missed the module everything&#10;actually routes through, tell it — the map is only as good as its coverage, and you know&#10;this codebase better than it does right now.&#10;&#10;Watchtower `/fabric` shows the same map, clickable, with the dependency graph rendered.&#10;&#10;═══ KEY LEARNING ═══&#10;The framework's knowledge of your project is not automatic and not complete. It is seeded&#10;by judgement — first the agent's, then yours correcting it. A fabric with the wrong 8 files&#10;in it is worse than useless, because blast-radius will answer confidently and wrongly.&#10;&#10;═══ NEXT ═══&#10;T-004 — one real task all the way round the loop."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t002_t003</bpmn:incoming>
+      <bpmn:outgoing>flow_t003_t004</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_t002_t003" name="history now has two eras — map the older one"
+                       sourceRef="agt_2_first_commit" targetRef="agt_3_fabric"/>
+
+    <!-- T-004: COMPLETE TASK LIFECYCLE -->
+    <bpmn:serviceTask id="agt_4_lifecycle" name="T-004: Walk One Task All the Way Round">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_t004"/>
+        <aef:position x="760.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent runs one real task all the way round the loop — create, work, complete — on your&#10;project, so the machinery has been exercised once before it matters.&#10;&#10;  captured → started-work → (optionally: issues) → work-completed&#10;&#10;═══ WHY IT MATTERS ═══&#10;Completion is not the agent declaring itself finished. Two gates run mechanically first:&#10;&#10;  • **P-010** refuses to close a task with unticked agent acceptance criteria&#10;  • **P-011** executes the shell commands the agent wrote in the task's `## Verification`&#10;    block and refuses if any of them fails&#10;&#10;Neither can be argued with. They run commands and read exit codes.&#10;&#10;Then an EPISODIC SUMMARY lands in `.context/episodic/`. That is the project's memory: what&#10;was done, what was decided, what broke. Later sessions read it, which is how the framework&#10;stops relearning the same lesson every few weeks.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;Watch it in Watchtower. Seeing a task move through its states teaches the model faster than&#10;reading about it.&#10;&#10;This is also your first look at the agent doing REAL work under governance rather than&#10;onboarding chores — worth judging. Does the way it scoped the task match how you would&#10;have scoped it?&#10;&#10;═══ KEY LEARNING ═══&#10;&quot;Done&quot; is defined structurally, not subjectively: acceptance criteria are checkboxes rather&#10;than vibes, verification is automated rather than eyeballed, and episodic capture happens&#10;whether anyone remembers to ask for it or not.&#10;&#10;═══ NEXT ═══&#10;T-005 — the thing that survives the agent's memory ending."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t003_t004</bpmn:incoming>
+      <bpmn:outgoing>flow_t004_t005</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_t003_t004" name="the map exists — now exercise the loop"
+                       sourceRef="agt_3_fabric" targetRef="agt_4_lifecycle"/>
+
+    <!-- T-005: HANDOVER -->
+    <bpmn:serviceTask id="agt_5_handover" name="T-005: Generate Your First Handover">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_t005"/>
+        <aef:position x="940.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The agent writes a handover — where the work stands, what is in flight, what the next&#10;session should pick up first.&#10;&#10;═══ WHY IT MATTERS ═══&#10;An agent's memory ends when its context window does. The handover is what survives that.&#10;&#10;It is also what YOU read after a week away, to reload the state of your project without&#10;re-reading the code. If the handover is vague, every session after it starts vague — which&#10;is why the framework refuses to leave `[TODO]` placeholders in one.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;Read it. This one genuinely benefits from your eyes.&#10;&#10;If it does not tell you what you would need to know cold, say so — that is exactly the&#10;feedback the format wants, and it is far easier to fix the first handover than the&#10;fiftieth.&#10;&#10;═══ KEY LEARNING ═══&#10;Context is finite and non-renewable within a session. The framework treats that as a&#10;design constraint rather than an inconvenience: commit often, hand over before the window&#10;closes, and never end a session holding work nobody else can see.&#10;&#10;═══ NEXT ═══&#10;T-006 — the last step, and the one that lifts the gate."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t004_t005</bpmn:incoming>
+      <bpmn:outgoing>flow_t005_t006</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_t004_t005" name="loop exercised — now make it survive the session"
+                       sourceRef="agt_4_lifecycle" targetRef="agt_5_handover"/>
+
+    <!-- T-006: FIRST LEARNING (final prologue step) -->
+    <bpmn:serviceTask id="agt_6_learning" name="T-006: Record Your First Project Learning">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_t006"/>
+        <aef:position x="1120.0" y="100.0"/>
+        <aef:meta note="═══ WHAT'S HAPPENING ═══&#10;The last step of the prologue. The agent records one thing it actually learned during&#10;T-001 through T-005 as a LEARNING — a durable note that later sessions read.&#10;&#10;═══ WHY IT MATTERS ═══&#10;This is the framework's first directive, ANTIFRAGILITY, made concrete. A failure or a&#10;surprise is supposed to leave the project stronger than it found it, and that only works&#10;if the lesson outlives the session that learned it. Learnings are surfaced back at task&#10;creation, so the next agent gets told before it repeats you.&#10;&#10;═══ WHAT YOU CAN DO ═══&#10;Worth checking what it wrote. The quality range here is enormous:&#10;&#10;  • Noise:  &quot;the framework has hooks&quot;&#10;  • Useful: &quot;`fw audit` exits 1 for warnings, so `test $? -le 1` is the right check&quot;&#10;&#10;You are a better judge of which one it produced than it is.&#10;&#10;═══ KEY LEARNING ═══&#10;Memory is a deliberate act here, not a byproduct. Episodic summaries are automatic;&#10;learnings are chosen. What gets chosen is what the next session is told.&#10;&#10;═══ NEXT ═══&#10;The prologue ends. The gate lifts."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t005_t006</bpmn:incoming>
+      <bpmn:outgoing>flow_t006_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="flow_t005_t006" name="state survives the window — capture what was learned"
+                       sourceRef="agt_5_handover" targetRef="agt_6_learning"/>
+
+    <!-- END: onboarding gate lifts -->
+    <bpmn:endEvent id="agt_7_released" name="Prologue over — the onboarding gate lifts">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_released"/>
+        <aef:position x="1320.0" y="130.0"/>
+        <aef:meta note="THE GATE LIFTS&#10;&#10;With T-006 closed, the prologue is over. The gate holding the agent to onboarding work&#10;releases, and it starts on whatever you actually came here to build.&#10;&#10;That is the moment this curriculum exists for. You should now have enough of the model to&#10;follow along, disagree, and redirect — which is a different and more useful state than&#10;having read the documentation.&#10;&#10;WHAT YOU CARRY FORWARD&#10;  • Nothing gets done without a task — including by you&#10;  • Every commit names its task; every task holds its reasoning&#10;  • The fabric answers &quot;what breaks if I change this?&quot; — keep it honest as the code moves&#10;  • Gates refuse rather than warn; being blocked is usually the system working&#10;  • What the next session knows is what this one wrote down&#10;&#10;WHERE TO GO NEXT&#10;  • `fw work-on &quot;the thing you actually want&quot; --type build` — your first real task&#10;  • `fw corpus explain aef-task-lifecycle` — the states, and the refusal loop&#10;  • `fw corpus explain aef-session-lifecycle` — start to end, including handover&#10;  • `fw corpus explain aef-audit-cron` — how the framework keeps checking itself&#10;  • Watchtower `/designer` — every map at once, this one included"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_t006_end</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_t006_end" name="six of six closed — onboarding set is clear"
+                       sourceRef="agt_6_learning" targetRef="agt_7_released"/>
+
+    <!-- HUMAN LANE: deliberately NOT wired into the sequence chain. See the doc comment
+         at the top of this file, point 2 — this is the arc-017 invariant drawn as geometry,
+         not a dropped edge. -->
+    <bpmn:userTask id="hum_alongside" name="You: reading alongside, correcting when it matters (never blocking)">
+      <bpmn:extensionElements>
+        <aef:uid value="epo_human_alongside"/>
+        <aef:position x="400.0" y="360.0"/>
+        <aef:meta note="═══ WHY THIS BOX HAS NO ARROWS ═══&#10;Every other node on this diagram sits on a chain: something finishes, the next thing&#10;starts. This one doesn't, and that is the point rather than an omission.&#10;&#10;Compare the greenfield path, which has exactly one human node — T-002, an inception where&#10;the operator decides GO / NO-GO on what the project is even for. The agent is structurally&#10;forbidden from deciding it, so the whole flow stops and waits.&#10;&#10;Your project already exists. That question was answered before the framework arrived, so&#10;this path has no gate of that kind. Not one of these six steps waits for you.&#10;&#10;═══ WHAT YOU ACTUALLY DO ═══&#10;Five of the six invite you to look, and none of them pause for an answer:&#10;&#10;  • T-002 — if it proposes touching a file you'd rather it left alone, say so&#10;  • T-003 — check which components it registered; you know this codebase, it doesn't yet&#10;  • T-004 — first look at real work under governance; judge how it scoped the task&#10;  • T-005 — read the handover; if it wouldn't orient you cold, say so now&#10;  • T-006 — check whether the learning it recorded is signal or noise&#10;&#10;T-003 is the one most worth your time. A fabric seeded with the wrong files answers&#10;blast-radius questions confidently and wrongly, and the error is invisible until it costs&#10;you something.&#10;&#10;═══ WHY IT'S BUILT THIS WAY ═══&#10;An onboarding curriculum that blocks is an onboarding curriculum that gets skipped. The&#10;framework enforces this on itself: nothing an agent cannot resolve alone is allowed into&#10;the gated onboarding set, so a step can never sit waiting on a human who has stepped away.&#10;&#10;Readable past, not a gate you have to clear. Your authority here is real — the agent&#10;defers to you on every one of these — but it is exercised by speaking up, not by the&#10;system stopping until you do."/>
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_existing_project_onboarding">
+    <bpmndi:BPMNPlane id="BPMNPlane_existing_project_onboarding" bpmnElement="Collaboration_existing_project_onboarding">
+
+      <!-- Pool -->
+      <bpmndi:BPMNShape id="Pool_shape" bpmnElement="Pool_existing_project_onboarding" isHorizontal="true">
+        <dc:Bounds x="50" y="50" width="1400" height="460"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="agent_lane_shape" bpmnElement="agent" isHorizontal="true">
+        <dc:Bounds x="80" y="50" width="1370" height="260"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="human_lane_shape" bpmnElement="human" isHorizontal="true">
+        <dc:Bounds x="80" y="310" width="1370" height="200"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Start event -->
+      <bpmndi:BPMNShape id="start_shape" bpmnElement="agt_0_start">
+        <dc:Bounds x="120" y="130" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Agent tasks -->
+      <bpmndi:BPMNShape id="t001_shape" bpmnElement="agt_1_orientation">
+        <dc:Bounds x="220" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t002_shape" bpmnElement="agt_2_first_commit">
+        <dc:Bounds x="400" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t003_shape" bpmnElement="agt_3_fabric">
+        <dc:Bounds x="580" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t004_shape" bpmnElement="agt_4_lifecycle">
+        <dc:Bounds x="760" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t005_shape" bpmnElement="agt_5_handover">
+        <dc:Bounds x="940" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="t006_shape" bpmnElement="agt_6_learning">
+        <dc:Bounds x="1120" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- End event -->
+      <bpmndi:BPMNShape id="released_shape" bpmnElement="agt_7_released">
+        <dc:Bounds x="1320" y="130" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Human advisory band (unwired by design) -->
+      <bpmndi:BPMNShape id="human_alongside_shape" bpmnElement="hum_alongside">
+        <dc:Bounds x="400" y="360" width="700" height="100"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Flows -->
+      <bpmndi:BPMNEdge id="flow_start_t001_edge" bpmnElement="flow_start_t001">
+        <di:waypoint x="156" y="148"/>
+        <di:waypoint x="220" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t001_t002_edge" bpmnElement="flow_t001_t002">
+        <di:waypoint x="340" y="140"/>
+        <di:waypoint x="400" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t002_t003_edge" bpmnElement="flow_t002_t003">
+        <di:waypoint x="520" y="140"/>
+        <di:waypoint x="580" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t003_t004_edge" bpmnElement="flow_t003_t004">
+        <di:waypoint x="700" y="140"/>
+        <di:waypoint x="760" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t004_t005_edge" bpmnElement="flow_t004_t005">
+        <di:waypoint x="880" y="140"/>
+        <di:waypoint x="940" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t005_t006_edge" bpmnElement="flow_t005_t006">
+        <di:waypoint x="1060" y="140"/>
+        <di:waypoint x="1120" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_t006_end_edge" bpmnElement="flow_t006_end">
+        <di:waypoint x="1240" y="140"/>
+        <di:waypoint x="1320" y="148"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

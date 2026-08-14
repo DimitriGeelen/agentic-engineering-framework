@@ -43,6 +43,9 @@ you see the agent stop and report itself blocked, this is usually why, and it is
 window into tasks, decisions, health, and the maps named through this curriculum.
 
 **Go deeper:** `fw corpus explain aef-session-lifecycle` — what a session is, start to end.
+Or `fw corpus explain aef-existing-project-onboarding` — the whole T-001→T-006 prologue you
+are standing at the front of, as one diagram, including what is worth your attention at each
+step and why none of it waits for you.
 
 ## Acceptance Criteria
 
