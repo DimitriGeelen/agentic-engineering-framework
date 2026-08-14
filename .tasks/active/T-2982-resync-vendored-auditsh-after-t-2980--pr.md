@@ -165,8 +165,11 @@ edit, and the other two were another session's untracked work-in-progress. See O
 # The vendored audit.sh matches its framework original (the drift that blocked the push)
 diff -q agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
 
-# Nothing is unpushed — the push landed without FW_SKIP_SELF_VENDOR_CHECK or --no-verify
-test "$(git rev-list --count origin/t2539-staging..HEAD)" -eq 0
+# The resync commit reached origin — i.e. the pre-push self-vendor check passed, with no
+# FW_SKIP_SELF_VENDOR_CHECK and no --no-verify. Asserted against that specific commit rather
+# than "nothing unpushed": completing a task generates commits of its own, so the general
+# form is false at exactly the moment the gate runs it (caught by the gate doing its job).
+git merge-base --is-ancestor 96e4df0c4 origin/t2539-staging
 
 # The other session's WIP was NOT vendored into tracked state. Both must stay untracked:
 # committing them would ship unreviewed in-flight source to consumers (OBS-245).
