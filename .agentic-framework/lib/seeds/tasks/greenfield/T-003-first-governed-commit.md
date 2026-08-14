@@ -67,7 +67,17 @@ which gates guard each transition.
 # `git log --grep` filters inside git, so nothing is piped and nothing can
 # SIGPIPE, at any history length. `-1` bounds git's own output AFTER filtering,
 # so this is still a search over all history, not a check on HEAD.
-[ -n "$(git log --grep="T-003" -1 --format=%s)" ]
+# ANCHORED, and the subject compared explicitly (T-2999). `git log --grep`
+# searches the whole commit MESSAGE, subject and body -- so an unanchored
+# pattern passes on any commit that merely mentions this task id in its body,
+# and --format then prints THAT commit's subject, which belongs to someone
+# else. Observed in a consumer repo: --grep=T-003 selected
+# "T-016: close onboarding gate, complete T-013, add T-015".
+#
+# The property both halves of this line mean is "a commit whose SUBJECT is this
+# task". A bare -n test cannot express it: it only asks whether anything
+# printed at all.
+s=$(git log --grep='^T-003:' -1 --format=%s); [ "${s%%:*}" = "T-003" ]
 
 ## Updates
 
