@@ -4475,3 +4475,9 @@ X'` returning empty group."
   task: T-2957
   date: 2026-08-12
   context: Added via context agent
+- id: L-597
+  learning: "A gate that names a remedy in its block message must be tested for that remedy's REACHABILITY in the shape agents actually type — not merely for the rule the gate enforces. T-2987: check-active-task blocked on stale focus and said 'run fw work-on T-XXX'; the bootstrap exemption honours that, but is guarded by has_bash_write_pattern, which classifies the WHOLE command line while the exemption covers ONE command in it. So redirecting the recommended command's own output voided the exemption and returned a byte-identical message, with nothing indicating the shape was the cause — an infinite retype loop for the agent. The behaviour was already known and pinned: test_check_active_task_bootstrap.bats case 9 is literally named 'write-pattern wins: bootstrap command with a redirect falls through to block', and passed throughout. Coverage of the RULE was mistaken for coverage of the INTERACTION. Test shape: assert both directions — the blocked form stays blocked (permissions unchanged) AND the message explains why the advertised remedy did not apply. Sibling to L-399/T-1890 (bypass-contract parity: advertised contract fails at the real call site) and L-547/T-2834 (fast-path exemption must classify the whole command)."
+  source: P-002
+  task: T-2987
+  date: 2026-08-14
+  context: Added via context agent

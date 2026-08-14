@@ -240,6 +240,65 @@ except:
     # so we go straight to the task-exists check.
 fi
 
+# --- T-2987: explain WHY the advertised remedy did not apply -----------------
+#
+# Every block below names a bootstrap command (`fw work-on` / `context focus`)
+# as the unblock path, and the exemption at :194 and :227 honours exactly that.
+# But the exemption is guarded by has_bash_write_pattern, which classifies the
+# WHOLE command line while the exemption is about ONE command in it. So a `>`
+# anywhere on the line — on an unrelated chained command, or merely capturing
+# the bootstrap command's own output — voids it:
+#
+#     fw work-on T-016                 -> allowed
+#     fw work-on T-016 && fw doctor    -> allowed
+#     fw work-on T-016 > out.txt 2>&1  -> BLOCKED, and the block re-advertises
+#                                         the very command that just failed
+#
+# That is a loop: identical message, no signal to change SHAPE rather than
+# target. Reported from a fresh consumer whose focus pointed at a completed
+# T-001 (T-2987), and hit in-session before that.
+#
+# The guard is NOT the bug and is not relaxed here — :213-222 argues for failing
+# toward blocking, and L-547 (T-2834) says a fast-path exemption must classify
+# the whole command. Widening it would admit `fw work-on X > .claude/settings.json`.
+# The bug is that six sites advertise a remedy without its precondition. This
+# emits the precondition; permissions are unchanged.
+_bootstrap_shape_hint() {
+    local cmd="${1:-}"
+    [ -n "$cmd" ] || return 0
+    [[ "$cmd" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception)([[:space:]]|$) ]] || return 0
+    type has_bash_write_pattern &>/dev/null || return 0
+    has_bash_write_pattern "$cmd" || return 0
+
+    echo "" >&2
+    echo "  ⚠ Your command already contains that bootstrap command — it was blocked" >&2
+    echo "    anyway because the line also has a redirect, 'rm', 'tee', a heredoc or" >&2
+    echo "    an in-place sed. The bootstrap exemption is refused for the whole line" >&2
+    echo "    when any of those is present, even when it belongs to a different" >&2
+    echo "    command on the line (or is just capturing output)." >&2
+    echo "" >&2
+    echo "    Run the bootstrap command BARE and alone first, then re-run the rest:" >&2
+    echo "      $(_fw_cmd) work-on T-XXX          <- nothing else on the line" >&2
+    echo "" >&2
+    echo "    (Chaining itself is fine — 'fw work-on T-X && fw doctor' is allowed." >&2
+    echo "     It is the write pattern that voids the exemption, not the ';' or '&&'.)" >&2
+    echo "" >&2
+    echo "    This is a message, not a permission: the redirected form stays blocked" >&2
+    echo "    by design (T-2987, L-547)." >&2
+}
+
+# Bash blocks show an empty "Attempting to modify:" — FILE_PATH is populated only
+# for Write/Edit. That blank was load-bearing in the T-2987 loop: the message never
+# showed WHICH command was blocked, which is the one datum that makes a stray
+# redirect visible. Show the command for Bash, the path otherwise.
+_blocked_subject() {
+    if [ -n "${BASH_CMD:-}" ]; then
+        printf 'Blocked command: %s' "$(printf '%s' "$BASH_CMD" | tr '\n' ' ' | head -c 160)"
+    else
+        printf 'Attempting to modify: %s' "${FILE_PATH:-}"
+    fi
+}
+
 # Extract file path from tool input (supports file_path and notebook_path for NotebookEdit)
 FILE_PATH=$(echo "$INPUT" | python3 -c "
 import sys, json
@@ -376,8 +435,9 @@ if [ -z "$CURRENT_TASK" ]; then
     echo "To unblock:" >&2
     echo "  1. Create a task:  $(_fw_cmd) task create --name '...' --type build --start" >&2
     echo "  2. Set focus:      $(_fw_cmd) context focus T-XXX" >&2
+    _bootstrap_shape_hint "${BASH_CMD:-}"
     echo "" >&2
-    echo "Attempting to modify: $FILE_PATH" >&2
+    echo "$(_blocked_subject)" >&2
     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
     exit 2
 fi
@@ -408,8 +468,9 @@ if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" !=
     echo "" >&2
     echo "  To start different work:" >&2
     echo "    $(_fw_cmd) work-on 'New task name' --type build" >&2
+    _bootstrap_shape_hint "${BASH_CMD:-}"
     echo "" >&2
-    echo "  Attempting to modify: $FILE_PATH" >&2
+    echo "  $(_blocked_subject)" >&2
     echo "  Policy: T-560 (Session-Stamped Focus Enforcement)" >&2
     echo "══════════════════════════════════════════════════════════" >&2
     echo "" >&2
@@ -553,8 +614,9 @@ if [ -z "$ACTIVE_FILE" ]; then
     echo "To unblock:" >&2
     echo "  $(_fw_cmd) work-on T-XXX   (resume an active task)" >&2
     echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
+    _bootstrap_shape_hint "${BASH_CMD:-}"
     echo "" >&2
-    echo "Attempting to modify: $FILE_PATH" >&2
+    echo "$(_blocked_subject)" >&2
     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
     exit 2
 fi
@@ -573,8 +635,9 @@ case "$TASK_STATUS" in
         echo "" >&2
         echo "To unblock:" >&2
         echo "  $(_fw_cmd) work-on $CURRENT_TASK   (sets status to started-work)" >&2
+        _bootstrap_shape_hint "${BASH_CMD:-}"
         echo "" >&2
-        echo "Attempting to modify: $FILE_PATH" >&2
+        echo "$(_blocked_subject)" >&2
         echo "Policy: P-002 (Task must be started before modifying files)" >&2
         exit 2
         ;;
@@ -585,8 +648,9 @@ case "$TASK_STATUS" in
         echo "To unblock:" >&2
         echo "  $(_fw_cmd) work-on T-XXX   (resume another task)" >&2
         echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
+        _bootstrap_shape_hint "${BASH_CMD:-}"
         echo "" >&2
-        echo "Attempting to modify: $FILE_PATH" >&2
+        echo "$(_blocked_subject)" >&2
         echo "Policy: P-002 (Cannot modify files under a completed task)" >&2
         exit 2
         ;;
@@ -661,8 +725,9 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
             echo "" >&2
             echo "To skip onboarding (not recommended):" >&2
             echo "  $(_fw_cmd) onboarding skip" >&2
+            _bootstrap_shape_hint "${BASH_CMD:-}"
             echo "" >&2
-            echo "Attempting to modify: $FILE_PATH" >&2
+            echo "$(_blocked_subject)" >&2
             echo "Policy: T-532 (Onboarding Enforcement Gate)" >&2
             exit 2
         fi
@@ -733,7 +798,7 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
                 echo "" >&2
                 echo "  3. Override (logged Tier 2):  FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 <command>" >&2
                 echo "" >&2
-                echo "Attempting to modify: $FILE_PATH" >&2
+                echo "$(_blocked_subject)" >&2
                 echo "Policy: T-2194 / G-067 (Inception Open Questions readiness gate)" >&2
                 echo "See: 050-Inceptions.md §Disposition Gate, CLAUDE.md §Inception Discipline" >&2
                 exit 2
@@ -785,8 +850,9 @@ if [ -n "$ACTIVE_FILE" ]; then
                 echo "  1. Edit the task file: replace [First criterion] with real ACs" >&2
                 echo "  2. Or change to inception:" >&2
                 echo "     $(_fw_cmd) task update $CURRENT_TASK --type inception" >&2
+                _bootstrap_shape_hint "${BASH_CMD:-}"
                 echo "" >&2
-                echo "Attempting to modify: $FILE_PATH" >&2
+                echo "$(_blocked_subject)" >&2
                 echo "Policy: G-020 (Pickup message governance bypass prevention)" >&2
                 exit 2
             fi
