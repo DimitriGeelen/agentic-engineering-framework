@@ -4,7 +4,7 @@ name: "Onboarding: the by-hand five-minute path is tested as its own persona"
 description: "T-2715 GO item 3. IW-11 reproduced end-to-end: fw init then fw work-on 'Add authentication'\
   \ then agent Write hits T-532 exit 2. Two personas, separate scenarios \u2014 the\
   \ by-hand failure is structurally invisible to the agent-assisted test."
-status: draft
+status: in-progress
 anchor_task: T-2719
 headline_mechanic: "A person with no agent assisting follows the README's five-minute walkthrough end\
   \ to end and reaches a working first task without hitting a block they cannot clear,\

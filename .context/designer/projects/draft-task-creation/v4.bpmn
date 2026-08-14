@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-task-creation"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_draft-task-creation">
+    <bpmn:participant id="Pool_draft_task_creation" name="draft-task-creation (DRAFT)" processRef="Process_draft-task-creation"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-task-creation" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-task-creation" uuid="9656db19-14d2-498a-b0ce-656764511c50" version="3" schemaVersion="2" title="AEF task creation (intent → template → ID → type gates → write → activation? → focus → estimator → G-020) — DRAFT" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fw" authority="authority" height="435"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fw_12_task</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_11_task</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_instantiate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_allocate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_inception</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_7_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_8_set</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_9_bvp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_10_020</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_1_existing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_workflow</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_6_activation</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="96"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_author</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="96"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_work" name="work intent — nothing gets done without a task">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_intent"/>
+        <aef:position x="120.0" y="527.0"/>
+        <aef:meta note="the Core Principle as entry condition: the task gate (check-active-task.sh) blocks Write/Edit without an active task, so intent MUST pass through this ceremony"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:startEvent id="hum_1_operator" name="operator files task via Watchtower form">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_form"/>
+        <aef:position x="280.0" y="623.0"/>
+        <aef:meta note="the human ACTION that earns this lane (832 lane rule). CAVEAT: the form carries a THIRD parallel workflow_type enumeration (concerns:1094) — a new type silently breaks the web form; the rail below cannot see this surface"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:endEvent id="fw_12_task" name="task active — work may begin">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_done_ready"/>
+        <aef:position x="1880.0" y="380.7"/>
+        <aef:meta terminalKind="success" state="started-work"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_22</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="fw_11_task" name="task captured — no focus (bare fw task create)">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_done_captured"/>
+        <aef:position x="1880.0" y="100.4"/>
+        <aef:meta terminalKind="partial" state="captured" note="the cross-article handoff 832 flagged (rail 316): their task-lifecycle article's startEvent (&quot;Task captured (filed)&quot;) is this map's missing second end. No callActivity link yet — F5 class gap both catalogs track"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_18</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="agt_2_fw" name="fw work-on &lt;name|T-XXX&gt;">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_workon"/>
+        <aef:position x="280.0" y="513.0"/>
+        <aef:meta note="the one-step gate: create + focus + started-work in a single verb. T-297 regression: --start once didn't set focus — the seam between create and activate is where it broke"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_2_instantiate" name="instantiate template + validate name">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_create"/>
+        <aef:position x="600.0" y="160.5"/>
+        <aef:meta note="zzz-default.md template; T-555 placeholder-name reject (create-task.sh:138-144); T-143/T-165 unquoted-name YAML break (2 regressions, same bug). Template ships placeholder AC block — OBS-041 class: agents insert a NEW ### Human heading above it instead of editing in place"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_3_allocate" name="allocate task ID — keylock + union scan">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_id"/>
+        <aef:position x="760.0" y="160.5"/>
+        <aef:meta note="THE hottest step in the baseline — 3 independent regressions: T-1279 TOCTOU (4 parallel work-on all minted T-1278), T-1345 (one pickup run minted SEVEN T-1345s — flock protected across invocations, not within), T-100202 (stale worktree re-opened the hole). Current: keylock + union scan over active/+completed/ anchored at the main checkout"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_5_inception" name="inception recommendation-completeness gate">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_recgate"/>
+        <aef:position x="1080.0" y="160.5"/>
+        <aef:meta note="T-2204 4-producer-leg gate: under $CLAUDECODE=1 the filing refuses without --recommendation GO|NO-GO|DEFER + --rationale. Bypass FW_ALLOW_EMPTY_RECOMMENDATION=1 (logged Tier-2); trusted-caller FW_INCEPTION_PRE_GATED=1 routes work-on→create without double-firing; hourly cron backstop injects DEFER stubs into anything that slips past"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_14</bpmn:incoming>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_7_write" name="write task file — frontmatter status:captured, horizon, owner">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_write"/>
+        <aef:position x="1267.3" y="280.9"/>
+        <aef:meta note="LIVE CONFORMANCE HOLE: owner is accepted unvalidated — is_valid_owner exists (lib/enums.sh:103) but create-task.sh never calls it; Watchtower whitelists {human, claude-code} so a free-form owner renders broken (concerns:1151). status has no creation-side predicate either (implicit captured). workflow_type IS validated (is_valid_type, create-task.sh:176). This round should decide: wire the predicates, or pin the hole"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:incoming>flow_13</bpmn:incoming>
+      <bpmn:incoming>flow_15</bpmn:incoming>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_8_set" name="set focus + status started-work">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_focus"/>
+        <aef:position x="1400.0" y="160.5"/>
+        <aef:meta note="work-on path: focus.yaml written, captured→started-work (T-1068 auto-sets horizon:now — the transition aef-task-lifecycle rails)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_17</bpmn:incoming>
+      <bpmn:outgoing>flow_19</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_9_bvp" name="BVP estimator worker proposes scores (async)">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_estimator"/>
+        <aef:position x="1560.0" y="160.5"/>
+        <aef:meta note="T-1922 heuristic estimator writes bvp_scores_proposed/cost_estimate_proposed into frontmatter MINUTES after creation — the re-add-before-commit gotcha; proposals persist on ≥2 delta (M3); confirmed scores are a sovereignty boundary (fw bvp confirm only)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_19</bpmn:incoming>
+      <bpmn:outgoing>flow_20</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_10_020" name="G-020 build-readiness gate armed">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_g020"/>
+        <aef:position x="1720.0" y="160.5"/>
+        <aef:meta note="check-active-task.sh:557-588 — build/refactor/test/decommission tasks with [First criterion] placeholders (or zero checkboxes) block Bash/Write/Edit until real ACs land. Origin T-471 (agent built pages on placeholder ACs, 3 human interventions). Fires conservatively — even read-only Bash"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_20</bpmn:incoming>
+      <bpmn:outgoing>flow_21</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_3_author" name="author real ACs — replace template placeholders">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_acs"/>
+        <aef:position x="1720.0" y="513.0"/>
+        <aef:meta note="progressive AC discipline (T-1831): tick as work lands, not at gate-fire. Edit the placeholder block IN PLACE — inserting a fresh ### Human heading above it is the OBS-041 duplicate-heading class (recurred across 5 tasks)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_21</bpmn:incoming>
+      <bpmn:outgoing>flow_22</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="fw_1_existing" name="existing task?">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_gw_exists"/>
+        <aef:position x="440.0" y="81.5"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="fw_4_workflow" name="workflow type?">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_gw_type"/>
+        <aef:position x="904.2" y="281.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="fw_6_activation" name="activation?">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_gw_activation"/>
+        <aef:position x="1190.5" y="81.5"/>
+        <aef:meta note="forked per 832 round-#3 verdict (Q2, rail 316): a bare `fw task create` (no --start) is a real divergent code path, not annotation — it earns its own edges rather than an aef:meta footnote"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_16</bpmn:incoming>
+      <bpmn:outgoing>flow_17</bpmn:outgoing>
+      <bpmn:outgoing>flow_18</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_work" targetRef="agt_2_fw">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e1"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_fw" targetRef="fw_1_existing">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e2"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" name="resume — T-XXX" sourceRef="fw_1_existing" targetRef="fw_8_set">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e3"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" name="new" sourceRef="fw_1_existing" targetRef="fw_2_instantiate">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e4"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" sourceRef="hum_1_operator" targetRef="fw_2_instantiate">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e5"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" sourceRef="fw_2_instantiate" targetRef="fw_3_allocate">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e6"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" sourceRef="fw_3_allocate" targetRef="fw_4_workflow">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e7"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" name="specification" sourceRef="fw_4_workflow" targetRef="fw_7_write">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e8"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" name="design" sourceRef="fw_4_workflow" targetRef="fw_7_write">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e9"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" name="build" sourceRef="fw_4_workflow" targetRef="fw_7_write">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e10"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_11" name="test" sourceRef="fw_4_workflow" targetRef="fw_7_write">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e11"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_12" name="refactor" sourceRef="fw_4_workflow" targetRef="fw_7_write">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e12"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_13" name="decommission" sourceRef="fw_4_workflow" targetRef="fw_7_write">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e13"/>
+        <aef:loopDetour y="363.4"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_14" name="inception" sourceRef="fw_4_workflow" targetRef="fw_5_inception">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e14"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_15" sourceRef="fw_5_inception" targetRef="fw_7_write">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e15"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_16" sourceRef="fw_7_write" targetRef="fw_6_activation">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e16"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_17" name="work-on / --start" sourceRef="fw_6_activation" targetRef="fw_8_set">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e21"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_18" name="bare create (no --start)" sourceRef="fw_6_activation" targetRef="fw_11_task">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e22"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_19" sourceRef="fw_8_set" targetRef="fw_9_bvp">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e17"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_20" sourceRef="fw_9_bvp" targetRef="fw_10_020">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e18"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_21" sourceRef="fw_10_020" targetRef="agt_3_author">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e19"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_22" sourceRef="agt_3_author" targetRef="fw_12_task">
+      <bpmn:extensionElements>
+        <aef:uid value="tc_e20"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
+</bpmn:definitions>

@@ -3326,3 +3326,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-243
+  text: "Watchtower triple-file is stale and 'fw watchtower url' hands out a dead URL. .context/working/watchtower.{port,pid} say 3001/1240191; pid 1240191 is dead and the LIVE server is python3 pid 1488562 listening on 3000 (localhost:3000/ -> 200, /arcs -> 200). So the documented source of truth (CLAUDE.md Watchtower Port, resolution order step 1) is the thing that is wrong, and every agent that follows the rule correctly gets a connection-refused URL. Hit while composing an arc-action handoff for T-2978 (arc-016 close URL) — the exact surface where a dead link costs the operator a round trip. Suspected cause: a Watchtower restart on a different port without rewriting the triple file, or a crash that left the file behind. fw doctor is supposed to surface triple-file state; check whether it detects pid-dead + port-mismatch or only reports the file contents."
+  captured: 2026-08-14T06:01:05Z
+  context_task: T-2978
+  tags: []
+  status: pending
+  promoted_to: null

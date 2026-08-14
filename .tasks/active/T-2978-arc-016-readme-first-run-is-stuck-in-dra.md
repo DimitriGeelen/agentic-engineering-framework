@@ -1,20 +1,16 @@
 ---
-id: T-2976
-name: "corpus lint: authored prose in a channel no reader reads is silent"
+id: T-2978
+name: "arc-016 readme-first-run is stuck in draft with all work done"
 description: >
-  Add a corpus lint rule for the T-2974 class — per-node prose written into an
-  extension CHILD ELEMENT (aef:description, aef:note) instead of the aef:meta
-  note ATTRIBUTE. Both readers are attribute-based, so the content is preserved
-  on disk, survives every round-trip, and renders nowhere. Nothing is red.
+  arc-016 readme-first-run is stuck in draft with all work done
 
-status: work-completed
+status: started-work
 workflow_type: build
 owner: agent
-horizon: null
-tags: [designer-corpus, lint]
-components: [tools/corpus_lint.py]
-related_tasks: [T-2974]
-arc_id: onboarding-curriculum
+horizon: now
+tags: []
+components: []
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -25,9 +21,9 @@ arc_id: onboarding-curriculum
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-13T23:55:45Z
-last_update: 2026-08-14T05:43:17Z
-date_finished: 2026-08-14T05:43:17Z
+created: 2026-08-14T05:52:44Z
+last_update: '2026-08-14T06:00:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,7 +35,7 @@ date_finished: 2026-08-14T05:43:17Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-14T00:00:06Z'
+  - ts: '2026-08-14T06:00:07Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -49,11 +45,11 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-14T00:00:12Z'
+  - ts: '2026-08-14T06:00:15Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 3
       D4: 2
       F-RECALL: 0
@@ -61,57 +57,54 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2976: corpus lint — authored prose in a channel no reader reads is silent
+# T-2978: arc-016 readme-first-run is stuck in draft with all work done
 
 ## Context
 
-T-2974's G-019 question: *why did the framework allow this?*
+`fw audit` has been emitting this WARN, and it names a genuine dead end rather than a
+grumble:
 
-An author put ~8KB of operator prose into `<aef:description>` child elements on
-`aef-greenfield-onboarding` v1. `corpus_spec._ext()` reads attributes only, so the content
-parsed to `{}` and rendered nowhere; the pinned designer's per-node vocabulary is attributes
-too. The map looked complete in the file, passed lint, round-tripped losslessly, and taught
-nobody anything. It took an operator complaint to find it, and the complaint read as an
-authoring critique rather than a defect report — the framework offered no signal that would
-have distinguished the two.
+> Arc 'readme-first-run' is draft with all 2 constituent task(s) work-completed —
+> draft arcs can't be closed directly (`fw arc close` requires in-progress), so this arc's
+> work is finished and there is no path out of draft.
 
-That is the gap: **the parser has a bucket for extension children it does not understand
-(`ext_raw`, added by T-2614 precisely so they are not silently dropped), and nothing ever
-looks in it.** T-2614 made the data survive; it did not make anyone notice. A text-bearing
-entry in `ext_raw` is authored prose that no reader will ever show.
+arc-016's two tasks (T-2719 keystone, T-2883 git-identity surfacing) are both closed. The
+arc never left `draft`, so it is invisible to the closure flow: `fw arc close` refuses
+non-`in-progress` arcs, and nothing else moves it. It would sit there indefinitely,
+carrying finished work that cannot be reported as finished.
 
-Corpus lint already carries rules of exactly this genre — `legacy-ref` (a ref form the
-editor cannot bind), `editor-unbindable` (content the pinned build cannot resolve). This is
-the same shape: content the pinned readers cannot display.
+**What this task is, and is not.** It is the state repair — `draft → in-progress` — which
+is mechanical and agent-safe. It is **not** the closure. arc-016's headline mechanic is *a
+person with no agent assisting follows the README's five-minute walkthrough end to end and
+reaches a working first task without hitting a block they cannot clear*. Per §Arc
+Completion Discipline that is an operator action with a captured demo, and per T-1671
+`fw arc close` refuses under `$CLAUDECODE=1` regardless. Moving it to `in-progress` makes
+the arc *reachable* by the operator's close flow; whether it should close is their call,
+and the `--demo` gate will ask them for the artefact.
 
-**Scope note:** the corpus is currently clean. A sweep of all 39 stored version files found
-the class only in `aef-greenfield-onboarding` v1, already superseded. This rule is
-preventive, not corrective — it exists so the next author gets told at lint time instead of
-via an operator's confusion three weeks later.
+Sibling note: arc-017 (`onboarding-curriculum`) is already `in-progress` and correctly open
+— its keystone T-2720 carries two unticked `[REVIEW]` ACs. Same arc family, different
+reason for being open, and this task changes nothing about it.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `corpus_lint` gains an `unread-node-prose` rule: a node extension child that is not in
-      `_KNOWN_EXT` and carries non-empty text is a finding, naming the node, the tag, and the
-      `aef:meta note` attribute it should have used
-- [x] Attribute-only unknown children (`<aef:contextReads paths="…"/>` and friends) do NOT
-      fire — they are a legitimate, in-use extension shape and the rule must not cry wolf
-- [x] The rule fires on `aef-greenfield-onboarding` v1 (the known instance, scanned via
-      `--all-versions`) and stays silent on every current `latest` map — default sweep holds
-      at its pre-change 4 findings
-- [x] Unit test covers both directions — text-bearing child fires, attribute-only child does not
-- [x] `aef:endpoint` is exempt: `corpus_spec` emits it as a text-bearing child and the designer
-      reads it back that way, so its text is on a channel that works
-- [x] The all-versions census pin is re-derived and its no-drop condition **asserted**, not
-      merely counted (see Evolution — the pin was already red before this task)
+- [x] `fw arc start readme-first-run` moves arc-016 `draft → in-progress`
+- [x] The audit WARN "is draft with all N constituent task(s) work-completed" no longer
+      names `readme-first-run`
+- [x] The arc is **not** closed — `status: in-progress`, `closed_at: null`, `decision: null`
+      — because closure is the operator's, gated on a captured demo of the headline mechanic
+- [x] The operator is handed the Watchtower close URL, not a CLI line (§Arc Action Handoffs)
+- [x] That URL was **verified live before being handed over**, not composed from
+      `fw watchtower url` — see Evolution; the triple file was stale and the resolver's
+      answer was a dead port (OBS-243)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,15 +139,14 @@ via an operator's confusion three weeks later.
 
 ## Verification
 
-python3 -m pytest tests/unit/test_corpus_lint.py -q > /tmp/.t2976a 2>&1 && grep -q passed /tmp/.t2976a
-python3 -m pytest tests/unit/test_corpus_explain.py tests/unit/t2974_greenfield_operator_prose.py -q > /tmp/.t2976b 2>&1 && grep -q passed /tmp/.t2976b
-# The rule finds its origin case under --all-versions...
-python3 tools/corpus_lint.py --all-versions > /tmp/.t2976c 2>&1 || true; grep -q 'unread-node-prose.*aef-greenfield-onboarding@v1' /tmp/.t2976c
-# ...and stays silent on the default (latest-only) sweep — no new noise in the
-# standing baseline, which is the difference between a usable rule and one that
-# gets ignored. Same `|| true` + trailing-grep shape as the sibling lint checks:
-# corpus lint legitimately exits 1 on pre-existing findings in other maps.
-bin/fw corpus lint > /tmp/.t2976d 2>&1 || true; ! grep -q 'unread-node-prose' /tmp/.t2976d
+python3 -c "import yaml;a=yaml.safe_load(open('.context/arcs/readme-first-run.yaml'));assert a['status']=='in-progress',a['status'];assert a['closed_at'] is None;assert a['decision'] is None"
+# The WARN this task exists to clear. `fw audit` exits 1 on unrelated warnings, so the
+# assertion is scoped to the line, not the exit code — same shape as the corpus-lint checks.
+bin/fw audit > /tmp/.t2978v 2>&1 || true; ! grep -q "readme-first-run.*draft with all" /tmp/.t2978v
+# The handoff URL must actually answer. Resolving it is NOT enough — the triple file was
+# stale here and named a dead port (OBS-243), so the port is re-derived from the live
+# listener and the page is fetched.
+P=$(ss -tlnp 2>/dev/null | grep -oE ':(30[0-9][0-9]) ' | tr -d ': ' | head -1); test -n "$P" && curl -sf --max-time 10 "http://localhost:$P/arcs/readme-first-run" -o /tmp/.t2978p
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -261,31 +253,30 @@ bin/fw corpus lint > /tmp/.t2976d 2>&1 || true; ! grep -q 'unread-node-prose' /t
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-08-14 — the rule's usefulness turns on what it does NOT fire on
+### 2026-08-14 — the handoff URL was dead, and the rule for finding it is what produced it
 
-- **What changed:** the obvious predicate — "an extension child the parser does not
-  recognise" — is unusable. `aef:contextReads`, `aef:artifactsWrites` and `aef:endpoint` all
-  sit outside `_KNOWN_EXT` and ride `ext_raw` exactly as `aef:description` did, so that rule
-  would fire on legitimate maps across the corpus and be ignored within a week. The signal is
-  not the unrecognised tag; it is **character data on one**. Attributes on an unknown child
-  are a working extension shape. Text on one is content with no reader.
-- **Plan impact:** `aef:endpoint` needed an explicit exemption rather than falling out of the
-  predicate — `corpus_spec` emits it as a text-bearing child *and* the designer reads it back
-  that way, so its text is on a channel that genuinely works. Kept in its own
-  `_TEXT_BEARING_EXT` set rather than folded into `_KNOWN_EXT`, which answers a different
-  question ("does the parser lift this into the spec?").
-- **Triggered:** the census pin. `test_live_corpus_all_versions_census` pinned 32 versions /
-  14 flagged and was **already red before this task** — at `a25497afe` the store held 37 with
-  15 flagged. Five versions had been added without re-deriving, so the pin's own instructions
-  ("re-derive all three values… if a version DROPS out, stop") had been written and then not
-  followed. Rather than bump the number and move on, the pre-change tree was extracted at
-  `a25497afe` (its store *and* its `corpus_lint`) and the census re-run against it — 15
-  names, all 15 still flagged now. The 16th is this rule finding its origin case. The no-drop
-  condition is now **asserted** in the test, not merely counted: a count cannot distinguish
-  "one added, none lost" from "one added, one lost", which is the exact failure the stop
-  condition exists for.
-
-## Recommendation
+- **What changed:** the state repair was two commands and went as expected. The surprise was
+  the last AC. `fw watchtower url` returned `http://192.168.10.107:3001`, which refuses
+  connections: `.context/working/watchtower.{port,pid}` name 3001 / pid 1240191, that pid is
+  dead, and the live server is a different python3 (pid 1488562) listening on **3000**.
+- **Plan impact:** the triple file is not a hint, it is CLAUDE.md §Watchtower Port's step-1
+  source of truth, and `fw watchtower url` is the sanctioned way to obtain exactly this URL.
+  So an agent following the rule *correctly* hands the operator a dead link — and the arc
+  handoff (§Arc Action Handoffs, T-2347) is precisely where that costs a round trip, because
+  the whole point of surfacing a URL instead of a CLI line is that the operator can just
+  click it. The rule is sound; its input had gone stale, and nothing said so. Note the shape:
+  this is the §Watchtower Port failure mode running in the *opposite* direction from the one
+  the section warns about — not a hard-coded 3000 where the real port differs, but a resolver
+  faithfully returning a port nothing is listening on.
+- **Triggered:** OBS-243. The open question is not "why is the file stale" (a restart or
+  crash that did not rewrite it) but whether `fw doctor` distinguishes *reporting the triple
+  file's contents* from *checking that its pid is alive and its port is listening*. If it
+  only echoes the file, the diagnostic designed to catch this class shares the class's blind
+  spot. Not investigated here — the session is at urgent budget and this is a separate task.
+- **What was done instead of trusting the resolver:** the port was re-derived from the live
+  listener and `/arcs/readme-first-run` fetched (200) before the URL went into the handoff.
+  The Verification block does the same, so the check is that the page *answers*, not that a
+  string can be composed.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -337,19 +328,16 @@ bin/fw corpus lint > /tmp/.t2976d 2>&1 || true; ! grep -q 'unread-node-prose' /t
 
 ## Updates
 
-### 2026-08-13T23:55:45Z — task-created [task-create-agent]
+### 2026-08-14T05:52:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2976-onboarding-curriculum-session-continuati.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2978-arc-016-readme-first-run-is-stuck-in-dra.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dd4c6359
-- **Timestamp:** 2026-08-14T05:43:22Z
+- **Scan ID:** R-f1457fed
+- **Timestamp:** 2026-08-14T06:02:23Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
-### 2026-08-14T05:43:17Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

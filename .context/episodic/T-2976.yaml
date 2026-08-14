@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2976: corpus lint: authored prose in a channel no reader reads is silent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T05:43:32Z
+# ============================================================================
+
+task_id: T-2976
+task_name: "corpus lint: authored prose in a channel no reader reads is silent"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-13T23:55:45Z
+completed: 2026-08-14T05:43:17Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-14T07:42:21+02:00
+last_commit: 2026-08-14T07:42:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus lint — authored prose in a channel no reader reads is silent
+
+# Key outcomes
+outcomes:
+  - '`corpus_lint` gains an `unread-node-prose` rule: a node extension child that is not in'
+  - 'Attribute-only unknown children (`<aef:contextReads paths="…"/>` and friends) do NOT'
+  - 'The rule fires on `aef-greenfield-onboarding` v1 (the known instance, scanned via'
+  - 'Unit test covers both directions — text-bearing child fires, attribute-only child does not'
+  - '`aef:endpoint` is exempt: `corpus_spec` emits it as a text-bearing child and the designer'
+  - 'The all-versions census pin is re-derived and its no-drop condition **asserted**, not'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-14.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.fabric/components/tests-unit-t2921_verification_comment_strip.yaml'
+  - '.fabric/components/tests-unit-t2945_default_template_recommendation.yaml'
+  - '.tasks/active/T-2971-rail-611--exclusion-vs-hole-applied-to-s.md'
+  - '.tasks/active/T-2976-onboarding-curriculum-session-continuati.md'
+  - 'tests/unit/t2969_draft_arc_complete_warning.bats'
+  - 'tests/unit/test_corpus_lint.py'
+  - 'tools/corpus_lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T07:42:21'
+    action: 'T-2976: corpus lint — authored prose in a channel no reader reads is silent'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 347 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer-corpus, lint]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 347
+  commits: 1
+  files_changed: 21
+  lines_added: 942
+  lines_removed: 335
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2976-onboarding-curriculum-session-continuati.md
+generated_by: context-agent-hybrid

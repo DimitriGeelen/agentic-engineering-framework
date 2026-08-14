@@ -16,9 +16,19 @@
       "v": 3,
       "note": "832 round #3 verdict (rail 316, VALID zero findings at seed): Q1 dual-start confirmed canonical (no change); Q2 forked 'activation?' gateway after write -- bare `fw task create` (no work-on) now earns its own endEvent fw_end_captured instead of an aef:meta footnote, +1 gw/+1 end/+2 flows exactly as estimated; Q3 owner/status hole stays pinned in the article, predicates to be wired as separate Level-C bug task(s)",
       "ts": 1785311800
+    },
+    {
+      "v": 4,
+      "note": "",
+      "ts": 1786687030
+    },
+    {
+      "v": 5,
+      "note": "",
+      "ts": 1786687056
     }
   ],
   "uuid": "88eb47bd-f40a-4592-bb26-649322eb530b",
-  "latest": 3,
-  "updated": 1785311800
+  "latest": 5,
+  "updated": 1786687056
 }

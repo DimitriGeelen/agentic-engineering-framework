@@ -1,20 +1,21 @@
 ---
-id: T-2976
-name: "corpus lint: authored prose in a channel no reader reads is silent"
+id: T-2977
+name: "designer inspector shows no per-node note — blocked on 832 release"
 description: >
-  Add a corpus lint rule for the T-2974 class — per-node prose written into an
-  extension CHILD ELEMENT (aef:description, aef:note) instead of the aef:meta
-  note ATTRIBUTE. Both readers are attribute-based, so the content is preserved
-  on disk, survives every round-trip, and renders nowhere. Nothing is red.
+  Track the two upstream designer defects reported in T-2974 (docs/reports/T-2974-designer-note-surface-gap.md,
+  rail agent-chat-arc offset 11815): AEF_FIELDS carries no note entry so /designer
+  displays no per-node prose for any map, and escAttr does not encode newlines so
+  a re-save collapses multi-line notes. Blocked on an 832 release; unblocks by re-pinning
+  via fw designer sync --from-tag and then verifying the corpus maps render their
+  notes.
 
-status: work-completed
+status: captured
 workflow_type: build
 owner: agent
-horizon: null
-tags: [designer-corpus, lint]
-components: [tools/corpus_lint.py]
-related_tasks: [T-2974]
-arc_id: onboarding-curriculum
+horizon: later
+tags: [designer-corpus, upstream-832, blocked]
+components: []
+related_tasks: [T-2974, T-2976]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -25,9 +26,9 @@ arc_id: onboarding-curriculum
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-13T23:55:45Z
-last_update: 2026-08-14T05:43:17Z
-date_finished: 2026-08-14T05:43:17Z
+created: 2026-08-14T05:43:56Z
+last_update: 2026-08-14T05:46:34Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,7 +40,7 @@ date_finished: 2026-08-14T05:43:17Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-14T00:00:06Z'
+  - ts: '2026-08-14T05:45:07Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -49,7 +50,7 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-14T00:00:12Z'
+  - ts: '2026-08-14T05:45:12Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -68,50 +69,48 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-2976: corpus lint — authored prose in a channel no reader reads is silent
+# T-2977: designer inspector shows no per-node note — blocked on 832 release
 
 ## Context
 
-T-2974's G-019 question: *why did the framework allow this?*
+**Blocked on an upstream release. Do not start this until 832 ships.**
 
-An author put ~8KB of operator prose into `<aef:description>` child elements on
-`aef-greenfield-onboarding` v1. `corpus_spec._ext()` reads attributes only, so the content
-parsed to `{}` and rendered nowhere; the pinned designer's per-node vocabulary is attributes
-too. The map looked complete in the file, passed lint, round-tripped losslessly, and taught
-nobody anything. It took an operator complaint to find it, and the complaint read as an
-authoring critique rather than a defect report — the framework offered no signal that would
-have distinguished the two.
+T-2974 moved `aef-greenfield-onboarding`'s operator prose onto the `aef:meta note`
+attribute channel, which made it visible to `fw corpus explain`. It is still invisible in
+`/designer`, for two reasons that are 832's to fix and ours only to consume:
 
-That is the gap: **the parser has a bucket for extension children it does not understand
-(`ext_raw`, added by T-2614 precisely so they are not silently dropped), and nothing ever
-looks in it.** T-2614 made the data survive; it did not make anyone notice. A text-bearing
-entry in `ext_raw` is authored prose that no reader will ever show.
+1. `AEF_FIELDS` (`aef-workflow-designer-0.8.0.html:1771`) has no `note` entry for any node
+   type, and the inspector's Extensions panel iterates exactly that list (`:5493`) with no
+   fallback for unlisted `aef` keys. The build round-trips `note` through `metaKeys`
+   (`:9026`) — it preserves a value it will not let anyone read or write. This is not
+   specific to our map: `aef-task-lifecycle` v3 uses `note` on nine nodes and
+   `aef-session-lifecycle` on several more, all equally blind today.
+2. `escAttr` (`:8969`) escapes `& < > "` and not a newline, while `metaAttrs` (`:9031`)
+   interpolates straight into an attribute value — so a re-save collapses a multi-line note
+   into one run-on line, successfully and well-formed.
 
-Corpus lint already carries rules of exactly this genre — `legacy-ref` (a ref form the
-editor cannot bind), `editor-unbindable` (content the pinned build cannot resolve). This is
-the same shape: content the pinned readers cannot display.
+Reported: `docs/reports/T-2974-designer-note-surface-gap.md`; posted to the rail
+(`agent-chat-arc` offset 11815, mentioning `workflow-designer`). Both were argued as
+zero-seam-surface by the pin file's own classification, so they are plausible for a routine
+release rather than needing a contract change.
 
-**Scope note:** the corpus is currently clean. A sweep of all 39 stored version files found
-the class only in `aef-greenfield-onboarding` v1, already superseded. This rule is
-preventive, not corrective — it exists so the next author gets told at lint time instead of
-via an operator's confusion three weeks later.
+**Why this is a task and not a line in a register:** whether "the corpus is readable" is
+true currently depends on which surface you happen to use. That divergence should have an
+owner and a close condition, not sit as folklore in a completed task's Evolution section.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `corpus_lint` gains an `unread-node-prose` rule: a node extension child that is not in
-      `_KNOWN_EXT` and carries non-empty text is a finding, naming the node, the tag, and the
-      `aef:meta note` attribute it should have used
-- [x] Attribute-only unknown children (`<aef:contextReads paths="…"/>` and friends) do NOT
-      fire — they are a legitimate, in-use extension shape and the rule must not cry wolf
-- [x] The rule fires on `aef-greenfield-onboarding` v1 (the known instance, scanned via
-      `--all-versions`) and stays silent on every current `latest` map — default sweep holds
-      at its pre-change 4 findings
-- [x] Unit test covers both directions — text-bearing child fires, attribute-only child does not
-- [x] `aef:endpoint` is exempt: `corpus_spec` emits it as a text-bearing child and the designer
-      reads it back that way, so its text is on a channel that works
-- [x] The all-versions census pin is re-derived and its no-drop condition **asserted**, not
-      merely counted (see Evolution — the pin was already red before this task)
+- [ ] A pinned designer build (> 0.8.0) is vendored and verified — `fw designer sync --from-tag`,
+      sha256 matching both the MANIFEST at the tag and `policy/designer-pin.yaml`
+- [ ] Its release notes, or a direct read of the build, confirm BOTH legs landed: `note` is in
+      the per-node field vocabulary, and the attribute writer encodes newlines as `&#10;`
+- [ ] Open-then-save round-trip of `aef-greenfield-onboarding` v2 through `/designer` preserves
+      the five-section structure — asserted by re-running
+      `tests/unit/t2974_greenfield_operator_prose.py::test_notes_survive_as_multiline`
+      against the saved bytes, not judged by eye
+- [ ] The `[REVIEW]` AC on T-2974 that had to be re-routed to the CLI is re-offered against
+      `/designer`, since that is where the operator originally looked
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,16 +144,6 @@ via an operator's confusion three weeks later.
 -->
 
 ## Verification
-
-python3 -m pytest tests/unit/test_corpus_lint.py -q > /tmp/.t2976a 2>&1 && grep -q passed /tmp/.t2976a
-python3 -m pytest tests/unit/test_corpus_explain.py tests/unit/t2974_greenfield_operator_prose.py -q > /tmp/.t2976b 2>&1 && grep -q passed /tmp/.t2976b
-# The rule finds its origin case under --all-versions...
-python3 tools/corpus_lint.py --all-versions > /tmp/.t2976c 2>&1 || true; grep -q 'unread-node-prose.*aef-greenfield-onboarding@v1' /tmp/.t2976c
-# ...and stays silent on the default (latest-only) sweep — no new noise in the
-# standing baseline, which is the difference between a usable rule and one that
-# gets ignored. Same `|| true` + trailing-grep shape as the sibling lint checks:
-# corpus lint legitimately exits 1 on pre-existing findings in other maps.
-bin/fw corpus lint > /tmp/.t2976d 2>&1 || true; ! grep -q 'unread-node-prose' /tmp/.t2976d
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -261,30 +250,6 @@ bin/fw corpus lint > /tmp/.t2976d 2>&1 || true; ! grep -q 'unread-node-prose' /t
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-08-14 — the rule's usefulness turns on what it does NOT fire on
-
-- **What changed:** the obvious predicate — "an extension child the parser does not
-  recognise" — is unusable. `aef:contextReads`, `aef:artifactsWrites` and `aef:endpoint` all
-  sit outside `_KNOWN_EXT` and ride `ext_raw` exactly as `aef:description` did, so that rule
-  would fire on legitimate maps across the corpus and be ignored within a week. The signal is
-  not the unrecognised tag; it is **character data on one**. Attributes on an unknown child
-  are a working extension shape. Text on one is content with no reader.
-- **Plan impact:** `aef:endpoint` needed an explicit exemption rather than falling out of the
-  predicate — `corpus_spec` emits it as a text-bearing child *and* the designer reads it back
-  that way, so its text is on a channel that genuinely works. Kept in its own
-  `_TEXT_BEARING_EXT` set rather than folded into `_KNOWN_EXT`, which answers a different
-  question ("does the parser lift this into the spec?").
-- **Triggered:** the census pin. `test_live_corpus_all_versions_census` pinned 32 versions /
-  14 flagged and was **already red before this task** — at `a25497afe` the store held 37 with
-  15 flagged. Five versions had been added without re-deriving, so the pin's own instructions
-  ("re-derive all three values… if a version DROPS out, stop") had been written and then not
-  followed. Rather than bump the number and move on, the pre-change tree was extracted at
-  `a25497afe` (its store *and* its `corpus_lint`) and the census re-run against it — 15
-  names, all 15 still flagged now. The 16th is this rule finding its origin case. The no-drop
-  condition is now **asserted** in the test, not merely counted: a count cannot distinguish
-  "one added, none lost" from "one added, one lost", which is the exact failure the stop
-  condition exists for.
-
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -337,19 +302,15 @@ bin/fw corpus lint > /tmp/.t2976d 2>&1 || true; ! grep -q 'unread-node-prose' /t
 
 ## Updates
 
-### 2026-08-13T23:55:45Z — task-created [task-create-agent]
+### 2026-08-14T05:43:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2976-onboarding-curriculum-session-continuati.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2977-designer-inspector-shows-no-per-node-not.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.5)
+### 2026-08-14T05:45:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
 
-- **Scan ID:** R-dd4c6359
-- **Timestamp:** 2026-08-14T05:43:22Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-08-14T05:43:17Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
+### 2026-08-14T05:46:34Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

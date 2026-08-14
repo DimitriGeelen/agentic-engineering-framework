@@ -46,6 +46,11 @@ __pycache__/
 deploy/onedev-pr-sync.sh
 .context/working/.onedev-pr-seen
 .context/working/.fw-secret-key
+# T-2978: the TermLink rail identity keypair. Per-machine, never shared. It was
+# untracked but NOT ignored, so every `git add -A .context/` staged it and only
+# the T-1844 secret-scan stood between it and a commit — a last line of defence
+# doing a first line's job. Caught exactly that way while staging this task.
+.context/rail-identity.key
 
 # TypeScript build artifacts
 lib/ts/node_modules/
