@@ -3012,3 +3012,10 @@ decisions:
     date: 2026-08-14
     task: T-2979
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-433
+    decision: "a dangling seed → corpus-map reference is a `fail` (audit exits 2, which the"
+    scope: project
+    date: 2026-08-14
+    task: T-2980
+    rationale: "Auto-captured from task file on completion"

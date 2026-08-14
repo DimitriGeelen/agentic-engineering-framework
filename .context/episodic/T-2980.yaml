@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2980: a seed routing to a corpus map that does not exist sends the operator to a dead end
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T07:57:35Z
+# ============================================================================
+
+task_id: T-2980
+task_name: "a seed routing to a corpus map that does not exist sends the operator to a dead end"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T07:38:18Z
+completed: 2026-08-14T07:53:19Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T09:53:13+02:00
+last_commit: 2026-08-14T09:53:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  nothing checked that the curriculum's routing targets still exist
+
+# Key outcomes
+outcomes:
+  - '`fw audit` gains a structure check that every `fw corpus explain <id>` reference under'
+  - 'A dangling reference is a **FAIL**, not a WARN, and the message names the seed file,'
+  - 'Green on the current tree: all twelve live references resolve, and the count in the'
+  - 'Both branches covered by a test with zero skips — resolves → PASS, dangling → FAIL —'
+  - 'The scan matches the syntax the seeds actually use, verified against all twelve'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-08-14 — FAIL tier, diverging from the nearest sibling'
+    chose: 'a dangling seed → corpus-map reference is a `fail` (audit exits 2, which the'
+    rationale: 'the nearest structural sibling — arc `anchor_task` resolution, ten lines above'
+    alternatives_rejected: ['(a) *WARN, matching the anchor_task sibling* — consistent, but a warning']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/tests-unit-audit_seed_corpus_refs.yaml'
+  - '.tasks/active/T-2980-a-seed-routing-to-a-corpus-map-that-does.md'
+  - 'tests/unit/audit_seed_corpus_refs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T09:53:13'
+    action: 'T-2980: nothing checked that the curriculum''s routing targets still exist'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:onboarding-curriculum, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 1
+  files_changed: 4
+  lines_added: 588
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2980-a-seed-routing-to-a-corpus-map-that-does.md
+generated_by: context-agent-hybrid

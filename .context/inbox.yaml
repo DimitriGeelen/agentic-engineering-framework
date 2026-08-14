@@ -3333,3 +3333,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-244
+  text: "Watchtower triple-file drift recurred (OBS-243 class): .context/working/watchtower.url says http://192.168.10.107:3001 while the live server answers on :3000. Hit again during T-2981 while probing designer routes — had to re-derive the port from ss(8) to get a non-000 response. Open question unchanged: does 'fw doctor' validate the triple file's pid-alive + port-listening, or does it echo the file? If it echoes, every agent that follows CLAUDE.md's 'read this file, do not guess' lands on a dead port and the guidance is worse than the hard-code it replaced."
+  captured: 2026-08-14T08:02:01Z
+  context_task: T-2981
+  tags: [watchtower]
+  status: pending
+  promoted_to: null

@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-14-0748
-timestamp: 2026-08-14T05:48:50Z
+# Audit Results - 2026-08-14-0953
+timestamp: 2026-08-14T07:53:20Z
 sections: "structure"
 summary:
   pass: 29
-  warn: 7
-  fail: 0
+  warn: 6
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -22,6 +22,8 @@ findings:
     check: "All 29 project YAML files parse correctly"
   - level: PASS
     check: "All 17 arc anchor_task references resolve to existing tasks"
+  - level: PASS
+    check: "All 12 onboarding-seed corpus references resolve to existing maps"
   - level: WARN
     check: "Arc 'capability-overlay' has no task commits in the last 30 days (15 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
@@ -31,9 +33,6 @@ findings:
   - level: WARN
     check: "Arc 'horizon-axis-hardening' has no task commits in the last 30 days (5 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
-  - level: WARN
-    check: "Arc 'readme-first-run' is draft with all 2 constituent task(s) work-completed"
-    mitigation: "Run 'fw arc start readme-first-run' to move it to in-progress, then close via Watchtower (/arcs/readme-first-run/close)"
   - level: INFO
     check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
   - level: INFO
@@ -51,15 +50,15 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 1028 registered card(s)"
+    check: "Fabric: 1030 registered card(s)"
   - level: WARN
-    check: "Fabric: 112/941 cards have no edges"
+    check: "Fabric: 114/943 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
-    check: "Fabric drift: 6 source file(s) have no fabric card"
+    check: "Fabric drift: 7 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 672 card(s) point at files no watch pattern covers"
+    check: "Fabric: 674 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
@@ -69,8 +68,9 @@ findings:
     check: "Secret scan: tracked tree clean"
   - level: PASS
     check: "Large-file gate: tracked tree clean"
-  - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 1 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
   - level: PASS
     check: "Invariant suite: 52 structural invariant(s) green (tests/lint/)"
   - level: PASS

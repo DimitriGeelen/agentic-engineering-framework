@@ -32944,3 +32944,93 @@ scan_id: R-f1457fed
 task_id: T-2978
 payload:
   task_file: .tasks/active/T-2978-arc-016-readme-first-run-is-stuck-in-dra.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T06:04:12Z'
+scan_id: R-700220e7
+task_id: T-2978
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T06:04:12Z'
+scan_id: R-700220e7
+task_id: T-2978
+payload:
+  task_file: .tasks/active/T-2978-arc-016-readme-first-run-is-stuck-in-dra.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T07:36:33Z'
+scan_id: R-1f6f5961
+task_id: T-2979
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T07:36:33Z'
+scan_id: R-1f6f5961
+task_id: T-2979
+payload:
+  task_file: .tasks/active/T-2979-existing-project-onboarding-has-no-corpu.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T07:37:40Z'
+scan_id: R-68f3d270
+task_id: T-2979
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T07:37:40Z'
+scan_id: R-68f3d270
+task_id: T-2979
+payload:
+  task_file: .tasks/active/T-2979-existing-project-onboarding-has-no-corpu.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T07:53:01Z'
+scan_id: R-a7e142ef
+task_id: T-2980
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T07:53:01Z'
+scan_id: R-a7e142ef
+task_id: T-2980
+payload:
+  task_file: .tasks/active/T-2980-a-seed-routing-to-a-corpus-map-that-does.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T07:57:24Z'
+scan_id: R-51653027
+task_id: T-2980
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T07:57:24Z'
+scan_id: R-51653027
+task_id: T-2980
+payload:
+  task_file: .tasks/active/T-2980-a-seed-routing-to-a-corpus-map-that-does.md
