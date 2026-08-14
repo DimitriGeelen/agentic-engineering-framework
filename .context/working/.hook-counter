@@ -1,14 +1,14 @@
 check-settings-edit=3
 
 check-dispatch=2
-audit-task-tools=37
-checkpoint=39
-check-tier0=33
-budget-gate=37
-check-project-boundary=37
-check-active-task=35
-loop-detect=38
-error-watchdog=29
+audit-task-tools=39
+checkpoint=41
+check-tier0=35
+budget-gate=39
+check-project-boundary=39
+check-active-task=37
+loop-detect=40
+error-watchdog=31
 check-human-ac-tick=4
 check-onboarding-gate=2
 check-heredoc-cmd-sub=2

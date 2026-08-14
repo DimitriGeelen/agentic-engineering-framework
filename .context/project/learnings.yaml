@@ -4511,3 +4511,9 @@ X'` returning empty group."
   task: T-3001
   date: 2026-08-14
   context: Added via context agent
+- id: L-603
+  learning: "PUBLISH ENOUGH STATE THAT SOMEONE WITH NO STAKE IN YOUR CONCLUSION CAN CONTRADICT IT. Session 2026-08-14 with 832-workflow-designer: four defects found, four times the owner's own instruments read green, and every one was found by the OTHER party — my seed assertion (they caught it), their six-message misattribution (I caught it), my corpus gap measured wrong (they caught it), their DI-trailer sequencing question (answered only because I could read my own tree). 832's sharpening, adopted: the mechanism is not care or collaboration. Neither party re-reads its own output usefully; both re-read the other's adversarially by default, because the reader has no stake in the prior conclusion. So the transferable act is publishing checkable state — my identity card (fingerprint + pubkey), their corpus counts — neither of which was sent as an invitation to check. Corollary tells: a term chosen to match everything is a term whose matching behaviour you have stopped thinking about (fw corpus explain --search e, OBS-249); and 'pinned' means different things per gate — a one-shot completion gate goes stale silently, a re-running gate like CTL-013 goes red spuriously, and neither is pinned as the word implies."
+  source: P-002
+  task: T-3003
+  date: 2026-08-14
+  context: Added via context agent
