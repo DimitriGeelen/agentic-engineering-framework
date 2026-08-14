@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2971: rail 611 — exclusion-vs-hole applied to stale-arc membership; three broken probes reported
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T08:32:21Z
+# ============================================================================
+
+task_id: T-2971
+task_name: "rail 611 — exclusion-vs-hole applied to stale-arc membership; three broken probes reported"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-13T12:12:16Z
+completed: 2026-08-14T08:32:08Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-14T01:12:07+02:00
+last_commit: 2026-08-14T01:12:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  onboarding improvements (T-2922 greenfield inception fix, T-2793 routing docs)
+
+# Key outcomes
+outcomes:
+  - 'Rail artefact written to `docs/reports/832-rail/611-aef-to-832.md`'
+  - 'Posted to the DM rail and read back byte-identical (post is not delivery)'
+  - 'Every claim about T-2968/T-2970 in it matches what those tasks actually shipped — no rounded-up numbers'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'onboarding improvements (T-2922 greenfield inception fix, T-2793 routing docs)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/generated/components/tests-demo-arc015_capture.md'
+  - 'docs/generated/components/tests-integration-t2922_greenfield_first_inception.md'
+  - 'docs/generated/components/tests-unit-audit_ctl012_missing_decide_grandfather.md'
+  - 'docs/generated/components/tests-unit-corpus_id_allocator.md'
+  - 'docs/generated/components/tests-unit-git_identity_check.md'
+  - 'docs/generated/components/tests-unit-git_worker_commits.md'
+  - 'docs/generated/components/tests-unit-hook_producer_site_parity.md'
+  - 'docs/generated/components/tests-unit-learning_application_birth.md'
+  - 'docs/generated/components/tests-unit-rail_identity_guard.md'
+  - 'docs/generated/components/tests-unit-rail_mcp_label_guard.md'
+  - 'docs/generated/components/tests-unit-secret_scan_span_rule.md'
+  - 'docs/generated/components/tests-unit-t2862_greenfield_first_inception_e2e.md'
+  - 'docs/generated/components/tests-unit-t2912_upgrade_hook_regen_convergence.md'
+  - 'docs/generated/components/tests-unit-t2915_resolver_inflight_expiry.md'
+  - 'docs/generated/components/tests-unit-t2916_stall_guard_coverage.md'
+  - 'docs/generated/components/tests-unit-t2919_budget_gate_command_classify.md'
+  - 'docs/generated/components/tests-unit-t2920_boundary_heredoc_strip_order.md'
+  - 'docs/generated/components/tests-unit-t2921_verification_comment_strip.md'
+  - 'docs/generated/components/tests-unit-t2923_cmd_classify_heredoc.md'
+  - 'docs/generated/components/tests-unit-t2924_update_task_owner_gate.md'
+  - 'docs/generated/components/tests-unit-t2927_observation_inbox_listing.md'
+  - 'docs/generated/components/tests-unit-t2928_note_dismiss_persists_reason.md'
+  - 'docs/generated/components/tests-unit-t2936_bootstrap_quoted_redirect.md'
+  - 'docs/generated/components/tests-unit-t2945_default_template_recommendation.md'
+  - 'docs/generated/components/tests-unit-t2948_review_human_ac_comment_aware.md'
+  - 'docs/generated/components/tests-unit-test_importer_fidelity.md'
+  - 'prompts/aef-fresh-install-onboarding.md'
+  - 'tests/unit/t2862_greenfield_first_inception_e2e.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T01:12:07'
+    action: 'T-2971: onboarding improvements (T-2922 greenfield inception fix, T-2793 routing docs)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1219 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1219
+  commits: 1
+  files_changed: 28
+  lines_added: 607
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2971-rail-611--exclusion-vs-hole-applied-to-s.md
+generated_by: context-agent-hybrid
