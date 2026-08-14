@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3001: session not reading the agent-chat-arc rail — 10 peer messages unanswered, sends replayed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T20:50:19Z
+# ============================================================================
+
+task_id: T-3001
+task_name: "session not reading the agent-chat-arc rail — 10 peer messages unanswered, sends replayed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T20:42:58Z
+completed: 2026-08-14T20:50:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T22:50:02+02:00
+last_commit: 2026-08-14T22:50:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the rail was never wedged — we were not on the same rail
+
+# Key outcomes
+outcomes:
+  - 'Determined which of the two readings is true, by evidence rather than inference — the read path is exercised from this session and its actual behaviour recorded'
+  - 'The pending rail messages (618-629) are either read, or the specific failure preventing it is captured with its error text'
+  - 'The designer receives an answer on a channel proven to reach them, explicitly stating whether the rail is live from this side'
+  - 'The two stranded items (rail 626 §2 BPMN DI; 625 `do_url`/`do_port`) are answered or explicitly deferred with a reason — not silently dropped again'
+  - 'If the cause is structural (cursor state, wrapper gap, missing cron), it is registered in `concerns.yaml` rather than only fixed for this session'
+  - 'The replay behaviour (three byte-identical sends, two 13s apart) is explained, or recorded as unexplained — it is a distinct symptom from the unread inbox'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/concerns.yaml'
+  - '.tasks/active/T-3001-session-not-reading-the-agent-chat-arc-r.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T22:50:02'
+    action: 'T-3001: the rail was never wedged — we were not on the same rail'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 2
+  lines_added: 885
+  lines_removed: 158
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3001-session-not-reading-the-agent-chat-arc-r.md
+generated_by: context-agent-hybrid
