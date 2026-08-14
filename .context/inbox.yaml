@@ -3348,3 +3348,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-246
+  text: "fw handover --commit blocks its own push. It stamps VERSION as part of its run (1.6.187 -> 1.6.196 today), which makes .agentic-framework/VERSION stale the instant it is written, and then attempts a push that the T-2240 pre-push self-vendor check refuses on exactly that staleness. Fired twice in one session and is the reason handovers keep ending in 'Some pushes failed. Run git push manually after resolving.' Fix direction: handover should re-run 'fw vendor self' and amend AFTER the VERSION stamp and BEFORE the push, or the self-vendor check should treat a VERSION-only delta written by the in-flight handover as not-yet-drift. Distinct from OBS-245 (untracked files) — this one is self-inflicted and deterministic."
+  captured: 2026-08-14T08:23:08Z
+  context_task: T-2983
+  tags: [handover]
+  status: pending
+  promoted_to: null
+  urgent: true

@@ -46,16 +46,16 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The drift is diagnosed before it is fixed — what `fw vendor self` wants to sync and
+- [x] The drift is diagnosed before it is fixed — what `fw vendor self` wants to sync and
       why, rather than re-running it and hoping. Two pushes already succeeded this session
       after the same files were unstaged, so "stale vendored copy" is not yet the explanation
-- [ ] The push is unblocked without bypassing the T-2240 check: no
+- [x] The push is unblocked without bypassing the T-2240 check: no
       `FW_SKIP_SELF_VENDOR_CHECK=1`, no `--no-verify`. The check is correct that consumers
       would inherit divergence silently; silencing it to end a session is the wrong trade
-- [ ] The other session's untracked source (`lib/antigravity_bridge.py`,
+- [x] The other session's untracked source (`lib/antigravity_bridge.py`,
       `agents/sessions/antigravity/list.sh`) is still NOT committed to the vendored tree.
       Unblocking must not mean shipping their in-flight work to consumers (OBS-245)
-- [ ] The handover commit reaches origin — the session does not end with unpushed work
+- [x] The handover commit reaches origin — the session does not end with unpushed work
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -154,6 +154,16 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# Vendored copies match their tracked sources (the drift that blocked the push)
+diff -q bin/fw .agentic-framework/bin/fw
+diff -q VERSION .agentic-framework/VERSION
+
+# The resync commit reached origin — the self-vendor check passed unbypassed
+git merge-base --is-ancestor 6d4547467 origin/t2539-staging
+
+# The other session's WIP is still not tracked in the vendored tree (OBS-245)
+! git ls-files --error-unmatch .agentic-framework/lib/antigravity_bridge.py 2>/dev/null
 
 ## RCA
 
