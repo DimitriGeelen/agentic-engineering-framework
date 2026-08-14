@@ -3356,3 +3356,10 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-247
+  text: "OneDev returned a bare 9-byte 403 'Forbidden' with no server header on ALL requests to the repo host — unauthenticated root included — while Traefik itself answered normally (404 on its own route) and GitHub was reachable. That shape is proxy-middleware, not OneDev and not credentials: the embedded push token had worked minutes earlier and read (git ls-remote) failed identically to write. It cleared on its own within ~4 minutes. Diagnostic order that settled it fast: (1) does an UNAUTHENTICATED request to the host root also 403? yes -> not auth; (2) does the proxy answer on another route? yes -> proxy up, route-specific; (3) is general egress fine? yes (GitHub ls-remote succeeded) -> not our connectivity. Distinct from OBS-246 (self-vendor staleness, which BLOCKS with a named message) and from T-1277 (client timeout where the server ACCEPTED). Second-order trap hit here: after the 403 cleared, the retry timed out at 45s and T-1277 says 'timeout is not failure' — but this one WAS a failure. T-1277 verification must be a git fetch + remote-ref compare, not a rev-list against the stale remote-tracking ref, which reports the same '1 0' either way."
+  captured: 2026-08-14T13:25:06Z
+  context_task: T-2720
+  tags: []
+  status: pending
+  promoted_to: null

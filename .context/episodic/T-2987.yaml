@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2987: task gate advertises an unblock command that the gate itself blocks when redirected
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T14:38:08Z
+# ============================================================================
+
+task_id: T-2987
+task_name: "task gate advertises an unblock command that the gate itself blocks when redirected"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T14:07:27Z
+completed: 2026-08-14T14:37:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T16:15:25+02:00
+last_commit: 2026-08-14T16:15:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the gate advertised an unblock command it then blocked when redirected
+
+# Key outcomes
+outcomes:
+  - 'A blocked Bash command that contains a bootstrap verb (`fw work-on` / `context focus` /'
+  - 'The hint fires at every block site that advertises a bootstrap command as the remedy —'
+  - 'For Bash tool calls the message shows the blocked command instead of the dangling'
+  - 'The exemption is **not** widened: `fw work-on T-016 > /tmp/x.txt 2>&1` still exits 2.'
+  - 'No regression on the shapes that already worked: bare bootstrap commands and'
+  - 'A bats file pins all of the above against a sandbox project whose focus points at a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-active-task.sh'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-2987-task-gate-advertises-an-unblock-command-.md'
+  - 'tests/unit/t2987_bootstrap_shape_hint.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T16:15:25'
+    action: 'T-2987: the gate advertised an unblock command it then blocked when redirected'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 30 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 30
+  commits: 1
+  files_changed: 4
+  lines_added: 593
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2987-task-gate-advertises-an-unblock-command-.md
+generated_by: context-agent-hybrid

@@ -6657,3 +6657,11 @@ FW_SWITCH_FOCUS=1 git add lib/arc.sh tests/unit/t2968_arc_status_comment_blind.b
   flag: '--skip-rca'
   caller: 'check_rca_for_bugfix'
   reason: ''
+- timestamp: '2026-08-14T12:37:34Z'
+  task: 'T-2720'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2986'
+  command: 'git add .agentic-framework/ VERSION && FW_SWITCH_FOCUS=1 git commit -q -m "T-2986: vendor the approvals blocked-arc change
+
+Exactly the two web/ files this task edited, plus the VERSION stamp. Checked'

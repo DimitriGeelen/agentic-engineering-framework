@@ -33106,3 +33106,93 @@ scan_id: R-99efd3e8
 task_id: T-2971
 payload:
   task_file: .tasks/active/T-2971-rail-611--exclusion-vs-hole-applied-to-s.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T11:49:32Z'
+scan_id: R-a118e777
+task_id: T-2984
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T11:49:32Z'
+scan_id: R-a118e777
+task_id: T-2984
+payload:
+  task_file: .tasks/active/T-2984-session-lifecycle-map-contradicts-its-ow.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T12:15:43Z'
+scan_id: R-3c37167f
+task_id: T-2985
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T12:15:43Z'
+scan_id: R-3c37167f
+task_id: T-2985
+payload:
+  task_file: .tasks/active/T-2985-corpus-lint-findings-have-no-route-into-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T12:36:08Z'
+scan_id: R-8588dcf2
+task_id: T-2986
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T12:36:08Z'
+scan_id: R-8588dcf2
+task_id: T-2986
+payload:
+  task_file: .tasks/active/T-2986-an-arc-that-meets-the-closure-threshold-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T14:37:29Z'
+scan_id: R-91208497
+task_id: T-2988
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T14:37:29Z'
+scan_id: R-91208497
+task_id: T-2988
+payload:
+  task_file: .tasks/active/T-2988-safe-command-classifier-fails-when-a-sub.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T14:37:57Z'
+scan_id: R-7f2a5168
+task_id: T-2987
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T14:37:57Z'
+scan_id: R-7f2a5168
+task_id: T-2987
+payload:
+  task_file: .tasks/active/T-2987-task-gate-advertises-an-unblock-command-.md

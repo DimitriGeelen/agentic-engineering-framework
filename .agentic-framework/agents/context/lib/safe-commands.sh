@@ -114,6 +114,58 @@ _fw_single_command_is_safe() {
     cmd="${cmd#"${cmd%%[![:space:]]*}"}"
     cmd="${cmd%"${cmd##*[![:space:]]}"}"
 
+    # T-2988: strip shell grouping punctuation from the segment's edges.
+    #
+    # Both readers below take a token positionally — `awk '{print $1}'` for the
+    # base and `awk '{print $2}'` for the sub-verb — so a grouping character
+    # touching either token corrupts it. Measured, all previously blocked:
+    #
+    #     (fw doctor)      base `(fw`     no case arm matches
+    #     ( fw doctor )    base `(`       the paren IS the first word
+    #     (bin/fw doctor)  base `fw` ✓, sub-verb `doctor)` ✗
+    #
+    # The third is why this hid for so long: `s|.*/||` in the base extraction
+    # eats a leading `(` as a side effect whenever a path follows it, so the
+    # path-ful spellings agents use in this repo (`bin/fw …`) classify correctly
+    # more often than the bare `fw …` a consumer's shim produces. Correctness
+    # there was an accident of the path, not of the parser.
+    #
+    # Iterate: `( fw doctor )` needs paren, then whitespace, then paren.
+    #
+    # This cannot widen the allowlist. Punctuation contributes nothing to the
+    # safety verdict — write patterns are judged separately by
+    # has_bash_write_pattern against the ORIGINAL, unstripped command line in
+    # check-active-task.sh, so `(fw doctor > /tmp/x)` stays blocked on the
+    # redirect. Stripping only ever exposes the real command to the same case
+    # arms: `(rm -rf /tmp/x)` becomes `rm -rf /tmp/x`, which no arm matches.
+    #
+    # Same family as the env-prefix stripper immediately below (T-1908) and
+    # L-547 / T-2834 — three incidents now of a positional token reader meeting
+    # a prefix it was not taught about.
+    # Stripped with `case`, not `${cmd%[)};]}`: a `}` inside a bracket expression
+    # closes the parameter expansion early, so that form silently APPENDS `;]}`
+    # to cmd on every pass and the loop never converges. (Found by hanging this
+    # function for five minutes — the same class of defect as the one being
+    # fixed, one layer down: a pattern reader meeting punctuation nobody taught
+    # it about.) `case` arms need no such escaping, and cmd can only shrink here,
+    # so termination is structural rather than hoped for.
+    local _prev=""
+    while [ "$cmd" != "$_prev" ]; do
+        _prev="$cmd"
+        case "$cmd" in
+            '('*|'{'*) cmd="${cmd#?}" ;;
+        esac
+        case "$cmd" in
+            *')'|*'}'|*';') cmd="${cmd%?}" ;;
+        esac
+        cmd="${cmd#"${cmd%%[![:space:]]*}"}"
+        cmd="${cmd%"${cmd##*[![:space:]]}"}"
+    done
+
+    # A segment that was nothing but grouping punctuation (`}` from `{ cmd; }`)
+    # carries no command, so there is nothing in it to judge unsafe.
+    [ -z "$cmd" ] && return 0
+
     # T-1908: strip leading env-var prefixes (`KEY=val [KEY2=val2 ...] cmd args`).
     # Without this, the L-399 / T-1890 bypass-mechanism contract that promises
     # `FW_SWITCH_FOCUS=1 fw work-on T-XXX` works actually fails — the awk
