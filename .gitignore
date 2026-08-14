@@ -74,16 +74,26 @@ datetime
 .context/working/ollama-pulls/
 
 # T-1845 — accidentally-tracked bloat from T-1834 incident investigation.
-# `os` was a 36MB ImageMagick PostScript export with literal filename "os"
-# committed by T-1716; *.db are runtime sqlite indexes (fw-vec-index.db = 78MB).
-# The pre-commit large-file gate (agents/git/lib/large-file-scan.sh) prevents
-# new instances; these entries cover the cleanup of existing tracked files.
-/os
-# 2nd instance (2026-05-23 session): `sys` = 14MB ImageMagick PostScript export
-# with literal filename "sys", created 2026-05-16. Same class as `/os` — some
-# `convert/magick` call writes a bare extensionless output name into repo root.
-# Gate blocks the COMMIT; CREATION is still un-prevented (root-cause task pending).
-/sys
+# *.db are runtime sqlite indexes (fw-vec-index.db = 78MB).
+#
+# The `/os` and `/sys` entries that used to sit here are DELIBERATELY GONE (T-2990).
+# They ignored two ImageMagick PostScript files (36MB + 14MB) written into the repo
+# root, on a recorded guess — "some convert/magick call writes a bare extensionless
+# output name" — that turned out to be wrong, and with the note "root-cause task
+# pending". No such task was ever filed, so the guess stood for three months while
+# the ignore rule removed the one signal that would have prompted anyone to check.
+#
+# Two more instances followed (`yaml,sys` 6.8MB on 2026-08-08, `yaml` on 2026-08-12).
+# They were NOT covered by these rules, showed up in `git status` as `??` for days,
+# and still nobody looked — but the first two were invisible even to that.
+#
+# The real cause was the framework's own P-011 gate: it runs each LINE of
+# `## Verification` as a separate shell command, so a `python3 -c "` block written
+# across several lines has its PYTHON BODY eval'd as bash, where `import yaml,sys`
+# reaches ImageMagick's screenshot tool and writes to the repo root. See T-2990's
+# RCA. Prevention is a preflight in lib/verification-port.sh; detection is a
+# `fw doctor` rail. Neither needs an ignore rule, and an ignore rule here would
+# blind the git-status surface again — which is why these two are not coming back.
 .context/working/*.db
 .context/working/*.db-shm
 .context/working/*.db-wal
