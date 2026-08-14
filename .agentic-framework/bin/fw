@@ -7334,8 +7334,8 @@ path = os.path.join(project_root, '.context', 'project', 'learnings.yaml')
 with open(path) as f:
     data = yaml.safe_load(f) or {}
 
-learnings = data.get('learnings', [])
-candidates = data.get('candidates', [])
+learnings = data.get('learnings') or []
+candidates = data.get('candidates') or []
 
 print(f'{BOLD}Learnings{NC} ({len(learnings)} confirmed, {len(candidates)} candidates)')
 print()
