@@ -4,13 +4,13 @@ name: "verify the new onboarding map is reachable from every surface the seeds n
 description: >
   verify the new onboarding map is reachable from every surface the seeds name
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:onboarding-curriculum, designer-corpus]
 arc_id: onboarding-curriculum
-components: []
+components: [tests/web/test_onboarding_maps_reachable.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T07:58:20Z
-last_update: '2026-08-14T08:00:14Z'
-date_finished:
+last_update: 2026-08-14T08:03:04Z
+date_finished: 2026-08-14T08:03:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -335,3 +335,15 @@ out=$(python3 -m pytest tests/unit/t2979_existing_project_onboarding_map.py -q 2
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2981-verify-the-new-onboarding-map-is-reachab.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f378c9ba
+- **Timestamp:** 2026-08-14T08:03:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-14T08:03:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

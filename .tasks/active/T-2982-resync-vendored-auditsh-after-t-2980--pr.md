@@ -40,7 +40,9 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2980 edited `agents/audit/audit.sh`; the vendored copy went stale and the T-2240 pre-push
+check blocked the push. Routine — except `fw vendor self` copied three files for a one-file
+edit, and the other two were another session's untracked work-in-progress. See OBS-245.
 
 ## Acceptance Criteria
 
@@ -49,7 +51,7 @@ date_finished: null
 - [x] `bin/fw vendor self` run and the resulting `.agentic-framework/` changes committed —
       T-2980 edited `agents/audit/audit.sh` and T-2979 edited a seed, so the vendored copies
       diverged from the framework originals
-- [ ] `git push` succeeds: the T-2240 pre-push self-vendor check passes rather than being
+- [x] `git push` succeeds: the T-2240 pre-push self-vendor check passes rather than being
       bypassed. No `FW_SKIP_SELF_VENDOR_CHECK=1`, no `--no-verify` — the check is blocking
       because consumers vendoring from origin would inherit the divergence silently, which
       is exactly the condition it exists to catch
@@ -159,6 +161,17 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# The vendored audit.sh matches its framework original (the drift that blocked the push)
+diff -q agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
+
+# Nothing is unpushed — the push landed without FW_SKIP_SELF_VENDOR_CHECK or --no-verify
+test "$(git rev-list --count origin/t2539-staging..HEAD)" -eq 0
+
+# The other session's WIP was NOT vendored into tracked state. Both must stay untracked:
+# committing them would ship unreviewed in-flight source to consumers (OBS-245).
+! git ls-files --error-unmatch .agentic-framework/lib/antigravity_bridge.py 2>/dev/null
+! git ls-files --error-unmatch .agentic-framework/agents/sessions/antigravity/list.sh 2>/dev/null
 
 ## RCA
 
