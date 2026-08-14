@@ -3005,3 +3005,10 @@ decisions:
     date: 2026-08-12
     task: T-2945
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-432
+    decision: "one `userTask` in the human lane with no incoming or outgoing sequence flows,"
+    scope: project
+    date: 2026-08-14
+    task: T-2979
+    rationale: "Auto-captured from task file on completion"

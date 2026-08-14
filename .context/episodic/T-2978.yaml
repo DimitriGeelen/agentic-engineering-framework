@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2978: arc-016 readme-first-run is stuck in draft with all work done
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T06:04:23Z
+# ============================================================================
+
+task_id: T-2978
+task_name: "arc-016 readme-first-run is stuck in draft with all work done"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T05:52:44Z
+completed: 2026-08-14T06:04:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T08:03:32+02:00
+last_commit: 2026-08-14T08:03:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-016 was finished and had no way to say so — draft is a one-way door
+
+# Key outcomes
+outcomes:
+  - '`fw arc start readme-first-run` moves arc-016 `draft → in-progress`'
+  - 'The audit WARN "is draft with all N constituent task(s) work-completed" no longer'
+  - 'The arc is **not** closed — `status: in-progress`, `closed_at: null`, `decision: null`'
+  - 'The operator is handed the Watchtower close URL, not a CLI line (§Arc Action Handoffs)'
+  - 'That URL was **verified live before being handed over**, not composed from'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/readme-first-run.yaml'
+  - '.context/audits/2026-08-14.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/designer/projects/draft-task-creation/meta.json'
+  - '.context/designer/projects/draft-task-creation/v4.bpmn'
+  - '.context/designer/projects/draft-task-creation/v5.bpmn'
+  - '.context/episodic/T-2976.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-2977-designer-inspector-shows-no-per-node-not.md'
+  - '.tasks/active/T-2978-arc-016-readme-first-run-is-stuck-in-dra.md'
+  - '.tasks/completed/T-2976-onboarding-curriculum-session-continuati.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T08:03:32'
+    action: 'T-2978: arc-016 was finished and had no way to say so — draft is a one-way door'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 23
+  lines_added: 1619
+  lines_removed: 115
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2978-arc-016-readme-first-run-is-stuck-in-dra.md
+generated_by: context-agent-hybrid
