@@ -4481,3 +4481,9 @@ X'` returning empty group."
   task: T-2987
   date: 2026-08-14
   context: Added via context agent
+- id: L-598
+  learning: "Positional token readers in command classifiers lose to an open-ended set of prefixes, and each loss is found in production by a blocked agent. Third incident of one class in agents/context/lib/safe-commands.sh, whose _fw_single_command_is_safe reads awk-$1 for the base command and awk-$2 for the sub-verb: T-1908 taught it about env-var prefixes (FW_X=1 fw ...), T-2834/L-547 taught it that a compound command is not its first token, T-2988 taught it about shell grouping punctuation ((fw doctor), { fw doctor; }, (bin/fw doctor) where the CLOSING paren fuses to the sub-verb). Structural tell for why it hid: sed 's|.*/||' in the base extraction eats a leading paren as a side effect whenever a path follows it, so bin/fw ... classified correctly by accident inside the framework repo while bare fw ... from a consumer shim did not — the defect was least visible from the repo where it would have been caught, and 129 assertions across 7 suites stayed green. When fixing this class, test the GROUPED/PREFIXED form of an already-covered safe command, and always pair it with negative controls proving the strip cannot launder an unsafe command (write patterns must keep being judged against the ORIGINAL unstripped line). Bash gotcha found while fixing it: never write ${cmd%[)};]} — a } inside a bracket expression closes the parameter expansion early and APPENDS the remainder to the value, growing the string every pass and hanging any convergence loop. Use case arms, which need no escaping and can only shrink."
+  source: P-002
+  task: T-2988
+  date: 2026-08-14
+  context: Added via context agent
