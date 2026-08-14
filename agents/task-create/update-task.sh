@@ -1133,6 +1133,18 @@ run_verification_commands() {
 
     [ -z "$verify_cmds" ] && return 0
 
+    # T-2991: refuse an unparseable block BEFORE the read loop below evals any
+    # line of it. Order is the whole point — a multi-line `python3 -c "` block's
+    # Python body is eval'd as bash by that loop, which is how 56MB of
+    # ImageMagick PostScript reached this repo's root (T-2990). Checking after
+    # the loop would report the same finding and prevent nothing.
+    if ! check_verification_parseable "$verify_cmds"; then
+        exit 1
+    fi
+    if [ "${FW_ALLOW_UNPARSEABLE_VERIFICATION:-0}" = "1" ]; then
+        log_gate_bypass "FW_ALLOW_UNPARSEABLE_VERIFICATION" "verification block has unparseable line(s)" 2>/dev/null || true
+    fi
+
     check_verification_port_literals "$verify_cmds"
     check_verification_unjudged_test_runs "$verify_cmds"
 

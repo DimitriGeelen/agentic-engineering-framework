@@ -37,6 +37,92 @@ find_port_literals() {
         || true
 }
 
+# T-2991 — print every line of $1 that bash cannot parse as a command.
+#
+# WHY THIS EXISTS. P-011 is line-oriented: the gate reads one line and evals it
+# (update-task.sh:1149,1169; verify_queue.py:127). A verification command written
+# across several lines is therefore not one command — and the lines below the
+# first are, by construction, NOT shell. They get eval'd anyway.
+#
+# That is not theoretical. It put 56MB of ImageMagick PostScript into this repo's
+# root across four incidents over three months (T-2990). The block
+#
+#     python3 -c "
+#     import yaml,sys
+#     d = yaml.safe_load(open('policy/value-drivers.yaml'))
+#     "
+#
+# runs `import yaml,sys` as a shell command, and `import` is a screenshot tool
+# whose last argument is its output filename. cwd is PROJECT_ROOT.
+#
+# WHY THE FIRST LINE IS THE RIGHT PLACE TO CATCH IT. `import yaml,sys` is
+# perfectly valid bash — no syntax check will ever object to it. What IS
+# catchable is line 1: `python3 -c "` has an unterminated quote, and every
+# instance of this class starts that way, because that is what wrapping a
+# quoted command across lines does. Catching the opener means the body is never
+# reached. Trying instead to recognise "lines that look like Python" would be a
+# detector written from the instances that already announced themselves (L-543),
+# and would still have to let `import yaml,sys` through.
+#
+# Prints offending lines, one per line; empty when clean. Always exits 0
+# (pipefail-safe, L-302) — callers decide what a non-empty result means.
+find_unparseable_verification_lines() {
+    local text="$1" line
+    while IFS= read -r line; do
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+        [ -z "$line" ] && continue
+        # `bash -n` parses without executing. This is the whole check: a line the
+        # parser rejects is a line the gate must not hand to `eval`.
+        bash -n -c "$line" 2>/dev/null || printf '%s\n' "$line"
+    done <<< "$text"
+    return 0
+}
+
+# Refuse a Verification block that contains an unparseable line, rather than
+# eval'ing it. Returns 0 when the block is safe to run, 1 when it must not be.
+# Diagnostic goes to stderr; the caller owns the exit path.
+#
+# Bypass: FW_ALLOW_UNPARSEABLE_VERIFICATION=1 (logged Tier-2 by the caller). A
+# legitimate block could in principle carry a line this parser rejects, and the
+# operator's judgement outranks the gate.
+check_verification_parseable() {
+    local text="$1" bad
+    bad=$(find_unparseable_verification_lines "$text")
+    [ -z "$bad" ] && return 0
+
+    if [ "${FW_ALLOW_UNPARSEABLE_VERIFICATION:-0}" = "1" ]; then
+        echo "  WARN: verification block has unparseable line(s) — running anyway" >&2
+        echo "        (FW_ALLOW_UNPARSEABLE_VERIFICATION=1)" >&2
+        return 0
+    fi
+
+    {
+        echo ""
+        echo "BLOCKED: the ## Verification block contains line(s) bash cannot parse."
+        echo ""
+        echo "$bad" | sed 's/^/    /'
+        echo ""
+        echo "  The gate runs ONE LINE AT A TIME. It does not join continuation"
+        echo "  lines, so a command written across several lines is not one"
+        echo "  command — line 1 is an unterminated quote, and the lines below it"
+        echo "  are executed as SHELL even though they are not shell."
+        echo ""
+        echo "  That is how 56MB of ImageMagick PostScript got written into this"
+        echo "  repo's root: a python body's 'import yaml,sys' ran as bash, and"
+        echo "  'import' is a screenshot tool (T-2990)."
+        echo ""
+        echo "  Rewrite the command so each line stands alone. Either collapse it:"
+        echo "      python3 -c \"import yaml,sys; d=yaml.safe_load(open('f.yaml')); sys.exit(0 if d else 1)\""
+        echo "  or put the body in a file and call that:"
+        echo "      python3 tests/check_f.py"
+        echo ""
+        echo "  Bypass (logged Tier-2): FW_ALLOW_UNPARSEABLE_VERIFICATION=1"
+        echo ""
+    } >&2
+    return 1
+}
+
 # Extract the ## Verification block of a task file, stripped of comments, blank
 # lines and fences — the same shape update-task.sh executes.
 #

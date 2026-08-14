@@ -92,6 +92,27 @@ def verification_lines(root: Path, path: Path) -> list[str]:
     return [ln for ln in r.stdout.splitlines() if ln.strip()]
 
 
+def _bad_syntax(line: str) -> bool:
+    """True when bash cannot parse the line as a command.
+
+    `bash -n` parses without executing — the same predicate
+    lib/verification-port.sh's find_unparseable_verification_lines uses. It is
+    re-expressed here rather than shelled out to per line because this rail runs
+    over the whole corpus and a subprocess per line is the difference between a
+    fast rail and a slow one; the expression is one flag and cannot drift
+    meaningfully. The shared lib remains the authority for the close gate.
+    """
+    if not line.strip():
+        return False
+    p = subprocess.run(["bash", "-n", "-c", line], capture_output=True,
+                       text=True, stdin=subprocess.DEVNULL, timeout=10)
+    return p.returncode != 0
+
+
+def _unparseable(root: Path, lines: list[str]) -> bool:
+    return any(_bad_syntax(ln) for ln in lines)
+
+
 def _unsafe(line: str) -> str | None:
     for pat, why in UNSAFE_PATTERNS:
         if pat.search(line):
@@ -111,6 +132,22 @@ def run_task(root: Path, task_id: str, timeout: int) -> dict:
            "timed_out": 0, "failures": []}
     if not lines:
         rec["status"] = "empty"
+        return rec
+    # T-2991: the second execution site of the same block. If the close gate
+    # refuses an unparseable block, this rail must refuse it too — otherwise the
+    # path without the gate is the one that runs it, which is the L-399
+    # producer/consumer split that let the `--switch-focus` contract be
+    # circumvented for three weeks. Refusing the WHOLE block (not just the bad
+    # line) is deliberate: the lines below an unterminated quote are the body of
+    # a wrapped command, and running them individually is precisely the failure
+    # (`import yaml,sys` as bash → ImageMagick screenshot in the repo root,
+    # T-2990).
+    if _unparseable(root, lines):
+        rec["status"] = "unparseable"
+        rec["skipped"] = len(lines)
+        rec["failures"] = [{"line": ln, "why": "block has unparseable line(s) — "
+                            "see T-2991; the gate is line-oriented"}
+                           for ln in lines if _bad_syntax(ln)]
         return rec
     for line in lines:
         why = _unsafe(line)
