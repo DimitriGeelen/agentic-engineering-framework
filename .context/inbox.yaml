@@ -3340,3 +3340,11 @@ observations:
   tags: [watchtower]
   status: pending
   promoted_to: null
+- id: OBS-245
+  text: "fw vendor self copies UNTRACKED working-tree files into .agentic-framework/. Hit during T-2982: the resync pulled lib/antigravity_bridge.py and agents/sessions/antigravity/list.sh — both untracked, both authored ~09:48 today by a parallel session — into the vendored tree, where a routine 'git add .agentic-framework/' would have committed them and shipped unreviewed in-flight source to every consumer that vendors from origin. Caught only because the file count looked wrong (3 files for a 1-file edit). The self-vendor pre-push check (T-2240) makes this likelier, not less: it blocks the push, the documented fix is 'fw vendor self && git add .agentic-framework/', and that fix stages whatever the vendor step copied. Suggested direction: vendor self should either skip untracked sources or name them and refuse."
+  captured: 2026-08-14T08:07:42Z
+  context_task: T-2982
+  tags: [vendor]
+  status: pending
+  promoted_to: null
+  urgent: true

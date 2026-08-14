@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2981: verify the new onboarding map is reachable from every surface the seeds name
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-14T08:03:19Z
+# ============================================================================
+
+task_id: T-2981
+task_name: "verify the new onboarding map is reachable from every surface the seeds name"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T07:58:20Z
+completed: 2026-08-14T08:03:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-14T10:02:57+02:00
+last_commit: 2026-08-14T10:02:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the seeds promise /designer shows every map — now something checks it
+
+# Key outcomes
+outcomes:
+  - 'Watchtower `/designer` — the surface `existing-project/T-006` tells the operator to'
+  - 'The map''s own detail/editor route resolves rather than 404ing, so "open it in the'
+  - 'Every surface checked is recorded with its actual response in the Verification block —'
+  - 'A regression pin so this cannot silently regress: the reachability assertion lives in'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-14.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-2980.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.fabric/components/tests-web-test_onboarding_maps_reachable.yaml'
+  - '.tasks/active/T-2981-verify-the-new-onboarding-map-is-reachab.md'
+  - '.tasks/completed/T-2980-a-seed-routing-to-a-corpus-map-that-does.md'
+  - 'tests/web/test_onboarding_maps_reachable.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T10:02:57'
+    action: 'T-2981: the seeds promise /designer shows every map — now something checks it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:onboarding-curriculum, designer-corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 24
+  lines_added: 777
+  lines_removed: 98
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2981-verify-the-new-onboarding-map-is-reachab.md
+generated_by: context-agent-hybrid

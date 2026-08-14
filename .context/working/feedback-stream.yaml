@@ -33034,3 +33034,21 @@ scan_id: R-51653027
 task_id: T-2980
 payload:
   task_file: .tasks/active/T-2980-a-seed-routing-to-a-corpus-map-that-does.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T08:03:08Z'
+scan_id: R-f378c9ba
+task_id: T-2981
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T08:03:08Z'
+scan_id: R-f378c9ba
+task_id: T-2981
+payload:
+  task_file: .tasks/active/T-2981-verify-the-new-onboarding-map-is-reachab.md
