@@ -4505,3 +4505,9 @@ X'` returning empty group."
   task: T-3000
   date: 2026-08-14
   context: Added via context agent
+- id: L-602
+  learning: "Sending is verified; ARRIVAL AT A SHARED SURFACE is not. A session can post to a peer rail, record every send as successful, and reach nobody — while the peer records its own sends and no replies. Both ledgers stay clean, so the failure defeats a coordination directive while appearing to satisfy it. Origin T-3001: 832-workflow-designer reported 10 unanswered messages on dm:0e7ee6cad65137fc:6a646ce8b1bc6560, a topic this session's fingerprint is not a party to; their offsets 612-630 did not exist in our coordinate space (~11838). Before treating a channel as coordination, measure membership: 'termlink agent identity' for your fingerprint, 'agent info' for the topic's Senders list, 'agent dms' for which pair-topics you are actually in. All one command away; nothing asks for them. Registered OBS-248."
+  source: P-002
+  task: T-3001
+  date: 2026-08-14
+  context: Added via context agent

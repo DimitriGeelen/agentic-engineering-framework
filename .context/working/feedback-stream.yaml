@@ -33250,3 +33250,181 @@ scan_id: R-d6f4425c
 task_id: T-2991
 payload:
   task_file: .tasks/active/T-2991-p-011-evaluates-unparseable-verification.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T18:26:31Z'
+scan_id: R-901cdc03
+task_id: T-2992
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T18:26:31Z'
+scan_id: R-901cdc03
+task_id: T-2992
+payload:
+  task_file: .tasks/active/T-2992-suppression-without-a-register--how-many.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-14T18:26:31Z'
+scan_id: RC-bb7910f7
+task_id: T-2992
+payload:
+  overall: CONFIRMED
+  claim_count: 6
+---
+kind: scan_emitted
+timestamp: '2026-08-14T19:05:26Z'
+scan_id: R-416383f9
+task_id: T-2993
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T19:05:26Z'
+scan_id: R-416383f9
+task_id: T-2993
+payload:
+  task_file: .tasks/active/T-2993-worktree-isolation-guard-blocks-the-hygi.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-14T19:05:26Z'
+scan_id: RC-cd7d1636
+task_id: T-2993
+payload:
+  overall: CONFIRMED
+  claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-08-14T19:20:23Z'
+scan_id: R-4e593fbd
+task_id: T-2994
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T19:20:23Z'
+scan_id: R-4e593fbd
+task_id: T-2994
+payload:
+  task_file: .tasks/active/T-2994-audit-rail-gitignore-rules-that-suppress.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T19:50:02Z'
+scan_id: R-3e5a268b
+task_id: T-2996
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T19:50:02Z'
+scan_id: R-3e5a268b
+task_id: T-2996
+payload:
+  task_file: .tasks/active/T-2996-seed-first-governed-commit-asserts-head-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T20:27:12Z'
+scan_id: R-16d2f330
+task_id: T-2999
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T20:27:12Z'
+scan_id: R-16d2f330
+task_id: T-2999
+payload:
+  task_file: .tasks/active/T-2999-seed-assertion-matches-the-commit-body-n.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T20:33:10Z'
+scan_id: R-2fd6a4cf
+task_id: T-3000
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T20:33:10Z'
+scan_id: R-2fd6a4cf
+task_id: T-3000
+payload:
+  task_file: .tasks/active/T-3000-task-template-teaches-the-unsafe-sigpipe.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T20:50:07Z'
+scan_id: R-c3233fa8
+task_id: T-3001
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T20:50:07Z'
+scan_id: R-c3233fa8
+task_id: T-3001
+payload:
+  task_file: .tasks/active/T-3001-session-not-reading-the-agent-chat-arc-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T20:56:14Z'
+scan_id: R-588fb9c5
+task_id: T-3002
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T20:56:14Z'
+scan_id: R-588fb9c5
+task_id: T-3002
+payload:
+  task_file: .tasks/active/T-3002-t-3001-finding-was-partly-wrong--shared-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-14T21:03:54Z'
+scan_id: R-d75a6cc1
+task_id: T-3003
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-14T21:03:54Z'
+scan_id: R-d75a6cc1
+task_id: T-3003
+payload:
+  task_file: .tasks/active/T-3003-answer-832s-corpus-population-question-w.md

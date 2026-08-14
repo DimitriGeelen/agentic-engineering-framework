@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-14-1851
-timestamp: 2026-08-14T16:51:04Z
+# Audit Results - 2026-08-14-2304
+timestamp: 2026-08-14T21:04:57Z
 sections: "structure"
 summary:
   pass: 31
@@ -52,15 +52,15 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 1037 registered card(s)"
+    check: "Fabric: 1044 registered card(s)"
   - level: WARN
-    check: "Fabric: 121/950 cards have no edges"
+    check: "Fabric: 128/957 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 7 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 681 card(s) point at files no watch pattern covers"
+    check: "Fabric: 686 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
@@ -73,7 +73,7 @@ findings:
   - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
   - level: PASS
-    check: "Invariant suite: 52 structural invariant(s) green (tests/lint/)"
+    check: "Invariant suite: 57 structural invariant(s) green (tests/lint/)"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS

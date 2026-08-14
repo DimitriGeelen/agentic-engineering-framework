@@ -6674,3 +6674,90 @@ Exactly the two web/ files this task edited, plus the VERSION stamp. Checked'
 FW_SWITCH_FOCUS=1 git commit -q -m "T-2989: fabric card for the seam-marker regression test
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>" && git log --oneline -1'
+- timestamp: '2026-08-14T17:49:05Z'
+  task: 'T-2992'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2990'
+  command: 'cp lib/root-pollution.sh .agentic-framework/lib/root-pollution.sh && git add lib/root-pollution.sh .agentic-framework/lib/root-pollution.sh && FW_SWITCH_FOCUS=1 timeout 280 git commit -q -m "T-2990: p'
+- timestamp: '2026-08-14T18:26:30Z'
+  task: 'T-2992'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-08-14T19:05:25Z'
+  task: 'T-2993'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-08-14T19:22:16Z'
+  task: 'T-2995'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2994'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add -A .tasks .context/episodic .fabric 2>/dev/null
+git restore --staged lib/antigravity_bridge.py 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2994:'
+- timestamp: '2026-08-14T19:22:22Z'
+  task: 'T-2995'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2994'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bin/fw work-on T-2995 >/dev/null 2>&1
+git add -A .tasks .context/episodic .fabric 2>/dev/null
+git restore --staged lib/antigravity_bridge.py 2>/dev/null
+FW_SW'
+- timestamp: '2026-08-14T19:22:37Z'
+  task: 'T-2995'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2994'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add -A .tasks .context/episodic .fabric 2>/dev/null
+git restore --staged lib/antigravity_bridge.py 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2994:'
+- timestamp: '2026-08-14T19:23:09Z'
+  task: 'T-2995'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2994'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add -A .tasks .context/episodic .fabric 2>/dev/null
+git restore --staged lib/antigravity_bridge.py 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2994:'
+- timestamp: '2026-08-14T19:23:42Z'
+  task: 'T-2995'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2994'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .agentic-framework VERSION 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2994: vendor resync — audit rail + config registry into .agentic-framew'
+- timestamp: '2026-08-14T19:50:28Z'
+  task: 'T-2995'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2996'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+timeout 400 bin/fw vendor self 2>&1 | tail -3
+git add .agentic-framework VERSION .tasks .context/episodic .fabric 2>/dev/null
+git restore --staged lib/antigra'
+- timestamp: '2026-08-14T20:28:53Z'
+  task: 'T-3000'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2999'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-2999: close — seed assertion fix, plus T-3000 filed
+
+Closes T-2999 (episodic generated, 7/7 ACs, 10/10 tests green) and files
+T-3000 for the template defect the'
+- timestamp: '2026-08-14T20:29:52Z'
+  task: 'T-3000'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2999'
+  command: 'git add -A .tasks/ .context/episodic/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-2999: close — seed assertion fix, plus T-3000 filed
+
+Closes T-2999 (episodic generated, 7/7 ACs, 10/10 tests green) and'

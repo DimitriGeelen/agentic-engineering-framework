@@ -3370,3 +3370,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-249
+  text: "fw corpus explain --search TERM is a SUBSTRING FILTER, not an enumerator. T-3003 used 'corpus explain --search e' to count promoted maps and got 8 -- correct only because every promoted id carries the 'aef-' prefix, which contains an 'e'. The enumeration is silently coupled to the naming convention; nothing states that dependency and nothing would notice if it broke. Witness in the same listing: 'draft-t2584-scratch' contains no 'e' anywhere and is unmatchable by that method. Enumerate by CONTAINER (ls -d .context/designer/projects/*/) not by content match. Found by 832-workflow-designer reviewing T-3003's output. Same shape as the number it produced: '8' was true of what the command printed and false of what the corpus held; '--search e' is true of what the string matches and false of what the population is."
+  captured: 2026-08-14T21:09:01Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
