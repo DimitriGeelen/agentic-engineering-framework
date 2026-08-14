@@ -16,6 +16,8 @@ setup() {
     GF="$FRAMEWORK_ROOT/lib/seeds/tasks/greenfield/T-003-first-governed-commit.md"
     EP="$FRAMEWORK_ROOT/lib/seeds/tasks/existing-project/T-002-first-governed-commit.md"
     [ -f "$GF" ] && [ -f "$EP" ] || skip "seed files not found"
+    SEED="T-003"
+    SEEDEP="T-002"
     SB="$(mktemp -d)"
 }
 
@@ -54,12 +56,66 @@ _verif() {
     done
 }
 
-@test "T-2996: both seeds use the pipe-free --grep form" {
+@test "T-2999: a body MENTION of the task does not satisfy the assertion" {
+    # THE CONTROL THAT WAS MISSING. Every earlier behavioural test built a repo
+    # where the seed commit either existed or nothing referenced the task at
+    # all. The case in between -- task mentioned, never committed -- is the only
+    # one that separates "a commit whose SUBJECT is this task" from "the string
+    # appears somewhere in history", and it is exactly where the shipped form
+    # returned a false green.
+    cd "$SB"
+    git init -q . && git config user.email t@t && git config user.name t
+    # UNQUOTED heredoc: $SEED must expand, or the body never contains the id
+    # and this control exercises nothing. (It did exactly that once — the id was
+    # replaced with prose to dodge the focus-drift gate, and the test then passed
+    # against the known-broken line.)
+    git commit -q --allow-empty -F - <<MSG
+TX-016: close gate
+
+also finishes work related to $SEED and TX-015
+MSG
+
+    local line
+    line=$(_verif "$GF" | tail -1)
+    run bash -c "set -eo pipefail; cd '$SB'; $line"
+    [ "$status" -ne 0 ] || {
+        echo "body mention satisfied the assertion -- false green" >&2; return 1; }
+}
+
+@test "T-2999: the assertion checks the subject it MATCHED, not any subject" {
+    # Second half of the same defect: --grep selects the commit, --format prints
+    # THAT commit's subject. A body match therefore surfaces an unrelated
+    # subject, and a bare -n test cannot notice. Here the real commit exists AND
+    # an earlier one mentions the task, so a correct assertion must pass while
+    # selecting the right commit.
+    cd "$SB"
+    git init -q . && git config user.email t@t && git config user.name t
+    git commit -q --allow-empty -F - <<MSG
+TX-020: unrelated work
+
+mentions $SEED in passing
+MSG
+    git commit -q --allow-empty -m "$SEED: Initial project structure"
+    git commit -q --allow-empty -m "TX-021: later work"
+
+    local line
+    line=$(_verif "$GF" | tail -1)
+    run bash -c "set -eo pipefail; cd '$SB'; $line"
+    [ "$status" -eq 0 ]
+
+    run bash -c "cd '$SB'; git log --grep=\"^$SEED:\" -1 --format=%s"
+    [ "$output" = "$SEED: Initial project structure" ] || {
+        echo "selected the wrong commit: $output" >&2; return 1; }
+}
+
+@test "T-2999: both seeds anchor the pattern and compare the subject" {
     # Not capture-then-grep. That repair still SIGPIPEs once the capture exceeds
     # the 65536-byte pipe buffer, and P-011 caught it doing exactly that against
     # this repo's 608KB log. git log --grep filters inside git: no pipe exists.
-    _verif "$GF" | grep -q 'git log --grep="T-003" -1'
-    _verif "$EP" | grep -q 'git log --grep="T-002" -1'
+    _verif "$GF" | grep -q "git log --grep='\^$SEED:' -1"
+    _verif "$EP" | grep -q "git log --grep='\^$SEEDEP:' -1"
+    _verif "$GF" | grep -q '\${s%%:\*}'
+    _verif "$EP" | grep -q '\${s%%:\*}'
 }
 
 @test "T-2996: neither seed executes ANY pipe in its assertion" {
