@@ -44,6 +44,7 @@ SETTINGS = [
     ("BRANCH_BEHIND_WARN", "50", "Commits-behind-origin/master threshold for the branch-hygiene WARN and handover merge-back nudge; T-100143/T-100144"),
     ("STALE_ARC_DAYS", "30", "Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale; T-1855"),
     ("RETIRE_WHEN_ADVISORY", "1", "Enable the audit retire_when advisory rail for free drivers; 0 silences the section; T-2169"),
+    ("GITIGNORE_REGISTER_ADVISORY", "1", "Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it; T-2994"),
 ]
 
 
