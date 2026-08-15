@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T06:05:44Z
-last_update: 2026-08-15T06:05:44Z
-date_finished: null
+last_update: '2026-08-15T06:15:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,13 +34,37 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-15T06:15:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-15T06:15:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3008: raise shared Ollama to MAX_LOADED_MODELS=2 and restart (operator-authorised)
-
-## Context
-
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Context
 
@@ -75,33 +99,6 @@ VRAM: 16.3 GB total, gemma4 alone 11 GB, embedding models 0.6–1.0 GB — fits.
       within focus.sh's 15s budget. This is the user-visible feature that stayed
       dark after T-3006.
 - [x] Fleet still served: the shared host answers requests after the restart.
-
-## Decisions
-
-### 2026-08-15 — embeddings stay on the loopback sidecar for now
-
-- **Chose:** leave `embed_host: http://127.0.0.1:11435` (the T-3006 sidecar) as
-  the embedding endpoint, even though the shared host now works.
-- **Why:** warm latency is indistinguishable — 208 ms shared vs 210 ms sidecar —
-  so routing to the GPU buys nothing measurable for *queries*, while the sidecar
-  is structurally immune to fleet contention. Two slots is better than one but is
-  not immunity: there are at least three models in play (gemma4, qwen3:14b, the
-  embedder), so a third request can still evict the embedder. Keeping the
-  isolated path means recall cannot silently return to 0% because another host
-  changed its behaviour.
-- **Rejected:** switching embeddings back to the shared host (no measured query
-  benefit, reintroduces the exact fragility just removed).
-- **Open, deliberately not done at urgent budget:** (a) bulk reindex — slices 3/5
-  re-embed ~9k docs, where GPU *would* matter, so the reindexer specifically
-  should target the shared host; (b) automatic failover — the typed classifier
-  makes "on `contention`, retry against the fallback host" a small change, and it
-  would make this choice unnecessary. Both filed as follow-ups.
-
-## Verification
-
-python3 -c "import subprocess,sys; sys.exit(0 if 'OLLAMA_MAX_LOADED_MODELS=2' in open('/etc/systemd/system/ollama.service.d/parallel.conf').read() else 1)"
-systemctl is-active ollama > /tmp/.t3008-act.out 2>&1 && grep -q '^active$' /tmp/.t3008-act.out
-python3 -m pytest tests/unit/test_embed_health.py -q > /tmp/.t3008-pt.out 2>&1 && grep -q "19 passed" /tmp/.t3008-pt.out
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -188,6 +185,19 @@ python3 -m pytest tests/unit/test_embed_health.py -q > /tmp/.t3008-pt.out 2>&1 &
 # P-011, from the same directory, the same second. To rehearse for real:
 #     bash -c 'set -eo pipefail; <your verification line>'
 #
+python3 -c "import sys; sys.exit(0 if 'OLLAMA_MAX_LOADED_MODELS=2' in open('/etc/systemd/system/ollama.service.d/parallel.conf').read() else 1)"
+systemctl is-active ollama > /tmp/.t3008-act.out 2>&1 && grep -q '^active$' /tmp/.t3008-act.out
+python3 -m pytest tests/unit/test_embed_health.py -q > /tmp/.t3008-pt.out 2>&1 && grep -q "19 passed" /tmp/.t3008-pt.out
+# The point of the change: the embed path must be green on the SHARED host.
+python3 -c "
+import sys; sys.path.insert(0,'.')
+from web import embeddings as E
+from web.config import Config
+Config.EMBED_HOST='http://localhost:11434'
+E._embed_client=None
+h=E.embed_health(); sys.exit(0 if h.status=='ok' else 1)
+"
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -265,6 +275,25 @@ python3 -m pytest tests/unit/test_embed_health.py -q > /tmp/.t3008-pt.out 2>&1 &
 -->
 
 ## Decisions
+
+### 2026-08-15 — embeddings stay on the loopback sidecar for now
+
+- **Chose:** leave `embed_host: http://127.0.0.1:11435` (the T-3006 sidecar) as
+  the embedding endpoint, even though the shared host now works.
+- **Why:** warm latency is indistinguishable — 208 ms shared vs 210 ms sidecar —
+  so routing to the GPU buys nothing measurable for *queries*, while the sidecar
+  is structurally immune to fleet contention. Two slots is better than one but is
+  not immunity: at least three models are in play (gemma4, qwen3:14b, the
+  embedder), so a third request can still evict the embedder. Keeping the
+  isolated path means recall cannot silently return to 0% because another host
+  changed its behaviour.
+- **Rejected:** switching embeddings back to the shared host (no measured query
+  benefit, and it reintroduces the exact fragility just removed).
+- **Open, deliberately not done at urgent budget:** (a) bulk reindex — slices 3/5
+  re-embed ~9k docs, where the GPU *would* matter, so the reindexer specifically
+  should target the shared host; (b) automatic failover — the typed classifier
+  makes "on `contention`, retry the fallback host" a small change and would make
+  this choice unnecessary. Captured as OBS-250.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
