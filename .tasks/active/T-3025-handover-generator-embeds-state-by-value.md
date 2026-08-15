@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T22:12:24Z
-last_update: 2026-08-15T22:55:13Z
+last_update: 2026-08-15T23:00:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -125,9 +125,22 @@ Registered as OBS-272. **Nothing here has been built.**
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these.
+     This is an inception: the deliverable is a decision-ready artifact, not code. -->
+- [x] The four options (embed all / reference all / digest+reference / delta-only) are stated
+      with the property each trades away, so the decision is between real alternatives rather
+      than yes/no on the first one proposed.
+- [x] Option (3) is **built and measured** rather than estimated — `docs/reports/T-3025-digest-spike.py`
+      runs against a real handover and reports its own reduction, and every count it emits is
+      cross-checked against an oracle it does not control (each section's self-reported figure).
+- [x] IW-2 is answered empirically, not by argument: a two-arm probe with the unmodified
+      handover as control, both arms committed at `docs/reports/T-3025-iw2-arm-{a,b}-*.md`.
+- [x] The probe's disagreement with my own prior conclusion (§11c) is recorded **as a
+      reversal**, naming what I got wrong and why, rather than quietly restating it.
+- [x] Defects surfaced that are independent of this decision are filed separately and not
+      absorbed into the byte-count story — OBS-275 (push-state), OBS-276 (`tasks_active:`).
+- [x] `## Recommendation` states GO/NO-GO with rationale and evidence, and names explicitly
+      what it does **not** settle (IW-1) rather than implying the decision is complete.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
