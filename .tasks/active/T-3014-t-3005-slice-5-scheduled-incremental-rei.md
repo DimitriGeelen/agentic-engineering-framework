@@ -1,15 +1,15 @@
 ---
-id: T-3013
-name: "T-3005 slice 4: doctor and audit rail consume corpus_health and index_freshness"
+id: T-3014
+name: "T-3005 slice 5: scheduled incremental reindex"
 description: >
-  T-3005 slice 4: doctor and audit rail consume corpus_health and index_freshness
+  T-3005 slice 5: scheduled incremental reindex
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
-components: [C-004, bin/fw, lib/config.sh, lib/index-health.sh, web/blueprints/config.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-15T08:59:19Z
-last_update: 2026-08-15T09:58:12Z
-date_finished: 2026-08-15T09:58:12Z
+created: 2026-08-15T10:06:37Z
+last_update: 2026-08-15T10:06:37Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,92 +34,47 @@ date_finished: 2026-08-15T09:58:12Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-15T09:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-15T09:15:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 3
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 1
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
-      (body/components:context-fabric-incidental); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3013: T-3005 slice 4: doctor and audit rail consume corpus_health and index_freshness
+# T-3014: T-3005 slice 5: scheduled incremental reindex
 
 ## Context
 
-Slice 4 of T-3005. T-3012 made the index's age *true*; nothing read it. This slice
-is the reader: `fw doctor` reports freshness, `fw audit --section corpus-health`
-verifies the T-3011 canaries end to end, and the audit section is on the 6-hourly
-cron so it is watched rather than merely available.
+Slice 5 of T-3005, and the one that makes slices 2–4 mean something. The index is
+157.6 days old; T-3012 made that visible and T-3013 made it watched, but nothing
+rebuilds it — so the canary has never been green on real data, only on fixtures.
 
-Split by cost, which is the whole design: freshness is a manifest read plus a
-`stat`, so it runs on doctor's hot path. The canary embeds two probes, so it runs
-on a slow cron and **never** in `--section structure` — the path pre-push runs,
-which already exceeds 180s and blocks every push (OBS-253).
+Design constraint carried in from T-3010: the corpus is 393,082 chunks, 13.7× the
+~21k the original research assumed. A full rebuild is an hours-long job, so this
+must be incremental or the schedule cannot hold.
+
+Ordering note to settle before building: T-3007 step B (choosing the target
+embedding model) changes `EMBEDDING_DIM` and the vec0 schema. If that lands first,
+the reindex here should be the *same operation* as the model switch rather than a
+second full pass.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw doctor` emits a vector-index freshness line from `index_freshness()` (T-3012):
-      PASS under the threshold, WARN over it, WARN when `source == "unknown"`. Today's
-      real index (157.6 days) must produce a WARN, not a PASS.
-- [x] The freshness line costs **zero** embedding calls — manifest read plus a `stat`.
-      Pinned by a test asserting no Ollama client is constructed while it runs. Doctor
-      is on the hot path; a health check that needs a live embedder to report is one
-      that goes quiet exactly when the subsystem it watches is down.
-- [x] `FW_INDEX_STALE_DAYS` is registered in `lib/config.sh` `FW_CONFIG_REGISTRY` with a
-      default and a description, so `fw config list` and Watchtower `/config` show it and
-      `tests/lint/config-registry-parity.bats` stays green.
-- [x] `fw audit` gains a corpus-health section consuming `corpus_health()` (T-3011):
-      FAIL on `fault`, WARN on `unknown`, PASS on `ok`, with the failing canary named.
-- [x] The canary check does **not** run in the pre-push `--section structure` path. It
-      costs two embed round-trips, and pre-push already exceeds 180s and blocks every
-      push (OBS-253). Pinned by a test that runs the structure section and asserts no
-      embed call is made.
-- [x] RED observed first for each verdict: stale→WARN, fresh→PASS, unknown→WARN,
-      fault→FAIL. Each assertion is exercised against a fixture that produces the
-      opposite verdict, so a check that cannot go red is caught here rather than in
-      production (this arc has shipped four such instruments already).
+- [ ] A reindex runs on a schedule and the canary goes from `unknown` to `ok` — the
+      first time the T-3011 canaries are seen green on real data rather than on a
+      fixture. Until this ships, slices 2-4 watch something nobody rebuilds.
+- [ ] The cron entry follows the L-364 chain (registry → generate → install) and
+      `## Verification` carries the in-sync + not-drifted assertion.
+- [ ] Reindex is incremental, not a full 393,082-chunk rebuild per run. A full build
+      is hours; a schedule that cannot finish between firings is not a schedule.
+- [ ] Concurrent runs cannot overlap (flock, as the other audit crons do), and a run
+      that dies mid-way leaves the previous index serving rather than a half-built one.
+      The manifest is written last, so a partial build reads as the *old* build's
+      manifest — never as a fresh one.
+- [ ] `fw doctor` shows the age dropping after a run, verified by observing the number
+      before and after — not by asserting the job exited 0.
+- [ ] RED observed first: exercised against a deliberately stale index to confirm the
+      age changes, and against a run killed mid-way to confirm the manifest did not
+      advance.
 
 ### Human
-
-- [ ] [REVIEW] `INDEX_STALE_DAYS` reads clearly on the Watchtower config page
-
-  Yours because it is a wording call on your surface, not a correctness one — the
-  key resolves correctly either way, and the tests prove that.
-
-  **Steps:**
-  1. `curl -s "$(bin/fw watchtower url)/config" -o /tmp/cfg.html && grep -o "INDEX_STALE_DAYS[^<]*" /tmp/cfg.html | head -3`
-  2. Or open `/config` in a browser and find the row.
-
-  **Expected:** the row shows `INDEX_STALE_DAYS`, default `7`, and a description
-  that makes it obvious what changing it affects.
-
-  **If not:** say whether the description is too long for the column, or whether
-  "vector index" needs naming as "semantic search" for it to be recognisable.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -151,15 +106,6 @@ which already exceeds 180s and blocks every push (OBS-253).
 -->
 
 ## Verification
-
-bats tests/unit/test_index_doctor_rail.bats > /tmp/.t3013v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3013v1.out && ! grep -q "^not ok" /tmp/.t3013v1.out
-bats tests/unit/test_fw_config_one_arg.bats > /tmp/.t3013v2.out 2>&1 && grep -q "^ok 1 " /tmp/.t3013v2.out && ! grep -q "^not ok" /tmp/.t3013v2.out
-# One doctor run, three assertions off it — doctor costs minutes here, so the
-# `;` is deliberate: doctor exits non-zero whenever it has warnings (and it has,
-# including ours), so the grep chain is the verdict, not doctor's status.
-bin/fw doctor > /tmp/.t3013v3.out 2>&1; grep -q "vector index" /tmp/.t3013v3.out && grep -q "Cron registry in sync" /tmp/.t3013v3.out && ! grep -q "Cron registry edited but not generated" /tmp/.t3013v3.out
-grep -q "INDEX_STALE_DAYS" lib/config.sh && grep -q "INDEX_STALE_DAYS" web/blueprints/config.py
-grep -q "observations,gaps,corpus-health" .context/cron/agentic-audit.crontab
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -222,35 +168,6 @@ grep -q "observations,gaps,corpus-health" .context/cron/agentic-audit.crontab
 
 ## RCA
 
-Slice 4 is not itself a bug fix, but writing it uncovered one, and the way it hid
-is the part worth keeping.
-
-**Symptom.** `fw doctor` stopped at line 31 of 113, exit 1, no error text. Not a
-crash message, not a failed check — output simply ended.
-
-**Root cause.** `lib/config.sh:58` had `local default="$2"`, unguarded. `bin/fw`
-runs `set -euo pipefail`, so calling `fw_config KEY` with one argument — the
-natural call, since `FW_CONFIG_REGISTRY` already states the default — triggered an
-unbound-variable exit.
-
-**Why structurally allowed.** An unbound-variable exit under `set -u` is **not** a
-command failure. It therefore slips both guards an author would reach for: `||
-fallback` does not catch it, and `2>/dev/null` on the call swallows the one message
-that would have named it. I had written both, for good reasons, and between them
-they converted a loud failure into a silent truncation. Every existing caller
-passed two arguments, so the hazard had never been exercised.
-
-**Prevention.** `tests/unit/test_fw_config_one_arg.bats` — 7 legs, 6 observed RED
-— including one that reproduces the exact `2>/dev/null || fallback` shape that hid
-it. `fw_config` now falls back to the registry when no default is passed, which is
-safe by construction: the previous one-arg behaviour was a hard exit, so nothing
-can depend on it. `fw_config_int` had the same hazard and got the same guard.
-
-**Second-order note.** `FW_CONFIG_REGISTRY` has a DEFAULT column that `fw_config`
-never consulted, so every call site duplicated a default the registry already
-stated. Half-fixed here (one-arg calls now read it); the wider cleanup of existing
-two-arg call sites is filed as OBS-255, not done.
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -290,35 +207,6 @@ two-arg call sites is filed as OBS-255, not done.
 -->
 
 ## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** The rail is wired and watched, not merely present. `fw doctor` now
-says `WARN vector index: 157.6 days old (threshold 7d, source: db_mtime)` — the
-first time this framework has been able to say that at all — and `fw audit
---section corpus-health` reports the tri-state honestly against the real index
-(`unknown`, because it predates T-3011). The cron chain is verified across all
-three transitions (registry → generated → deployed).
-
-Each verdict is pinned against a fixture producing the *opposite* verdict from the
-same code: stale at threshold 7, OK at 99999, stale again at 0, unknown with no
-index. That is the discipline this arc keeps failing to apply — a check verified
-only in the state it normally reports is not verified.
-
-The honest limits: the canary still reports `unknown` because no reindex has run
-(slice 5), so the end-to-end retrieval path is watched but has not yet been seen
-green on real data. And the audit section's FAIL branch has been exercised only in
-unit form, not against a genuinely faulted index.
-
-**Evidence:**
-- `fw doctor` → `WARN vector index: 157.6 days old (threshold 7d, source: db_mtime)`
-- `fw audit --section corpus-health` → `WARN Corpus canaries: index has no manifest`
-- `tests/unit/test_index_doctor_rail.bats` — 10/10, seconds not minutes
-- `tests/unit/test_fw_config_one_arg.bats` — 7/7, 6 observed RED first
-- Cron: `observations,gaps,corpus-health` in the generated crontab; doctor confirms in-sync
-- Config parity restored across `lib/config.sh` and `web/blueprints/config.py`
-  (the invariant suite caught the mismatch — 2 of 57 RED — before it shipped)
-- Filed: OBS-253 (pre-push audit >180s), OBS-255 (the `fw_config` hazard)
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -370,19 +258,7 @@ unit form, not against a genuinely faulted index.
 
 ## Updates
 
-### 2026-08-15T08:59:19Z — task-created [task-create-agent]
+### 2026-08-15T10:06:37Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3013-t-3005-slice-4-doctor-and-audit-rail-con.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3014-t-3005-slice-5-scheduled-incremental-rei.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-d7bf014f
-- **Timestamp:** 2026-08-15T10:05:58Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-08-15T09:58:12Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

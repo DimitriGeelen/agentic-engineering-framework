@@ -33622,3 +33622,39 @@ scan_id: R-7a55c406
 task_id: T-3011
 payload:
   task_file: .tasks/active/T-3011-t-3005-slice-2-index-canary-and-corpusma.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T08:58:42Z'
+scan_id: R-0d7b5e3b
+task_id: T-3012
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T08:58:42Z'
+scan_id: R-0d7b5e3b
+task_id: T-3012
+payload:
+  task_file: .tasks/active/T-3012-t-3005-slice-3-getdb-serves-a-stale-hand.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T10:05:58Z'
+scan_id: R-d7bf014f
+task_id: T-3013
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T10:05:58Z'
+scan_id: R-d7bf014f
+task_id: T-3013
+payload:
+  task_file: .tasks/active/T-3013-t-3005-slice-4-doctor-and-audit-rail-con.md
