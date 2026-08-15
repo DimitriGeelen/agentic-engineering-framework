@@ -467,6 +467,88 @@ directed to read should be reachable by the tool built to find things — and `f
 existing for designer maps is not a substitute, because it only helps an agent who already
 knows the map exists.
 
+### Spike 9 — "trending upward" is +62%/month, and 79% of it is one directory
+
+IW-7 asks whether 1s, trending upward, costs enough to justify the build. "Trending upward"
+was the vague half, and it is recoverable from git history without building anything:
+`git ls-tree -r -l` at monthly commits, filtered to the inclusion set from
+`web/search_utils.py:68` and the `.md/.yaml/.yml` suffix filter.
+
+**First result was wrong, and the way it was wrong is worth recording.** Run against `master`
+the series flattens: 77.4 → 86.3 → 86.4 MB over the last three months, which reads as a corpus
+that has stopped growing and would have killed the case for any build. `master` is 122 commits
+stale — the session runs on `t2539-staging`. The flat tail was the branch, not the corpus.
+A measurement whose subject is "how fast does this grow" silently answered "how fast does the
+branch I happened to pick grow", and the answer was plausible enough to act on.
+
+Re-run against the live branch:
+
+| Date | Files | Corpus MB |
+|------|-------|-----------|
+| 2026-02-15 | 191 | 0.5 |
+| 2026-03-15 | 1,617 | 6.4 |
+| 2026-04-15 | 3,754 | 20.7 |
+| 2026-05-15 | 5,554 | 35.5 |
+| 2026-06-15 | 7,267 | 73.8 |
+| 2026-07-15 | 7,679 | 82.3 |
+| 2026-08-15 | 9,139 | **133.6** |
+
+The last month is the steepest on record: **+51.3 MB, +62%.**
+
+**Reconciliation with spike 6 / A-1, which quotes 147.3 MB.** Both are right and they measure
+different things. At HEAD: all tracked files = 190.3 MB; all tracked `.md/.yaml/.yml` = 148.3 MB
+(spike 6's quantity, "tracked content"); the **indexed subset** — the seven `search_dirs` plus
+two globs — = 133.6 MB. The 14.7 MB gap is `.md/.yaml` outside the inclusion set, overwhelmingly
+`docs/generated/` (1,068 generated files), which is consistent with spike 8: of that gap only
+**0.54 MB is authored** content that arguably belongs in the index. Where the two spikes overlap
+they agree — spike 6 put handovers at 76% of recent growth, spike 9 at 79% over a different
+window.
+
+**A single steep month is not a trend**, and extrapolating from one delta is the error class
+this artifact has already been caught by twice. So the month was decomposed by directory before
+any projection:
+
+| Directory | Jul → Aug | Delta |
+|-----------|-----------|-------|
+| `.context/handovers` | 50.1 → 90.8 MB | **+40.7** |
+| `.tasks` | 18.7 → 26.8 MB | +8.1 |
+| `.context/episodic` | 6.9 → 8.4 MB | +1.5 |
+| `docs/reports` | 5.4 → 6.1 MB | +0.7 |
+| everything else | — | +0.4 |
+
+**79% of the growth is handovers alone.** Not a bulk import — handovers accrete one per
+session, so the mechanism is structural and continues by construction.
+
+The six-month series confirms it is sustained, and shows it is **two compounding factors**:
+
+| Date | Handover MB | Share of corpus | Count | Avg size |
+|------|-------------|-----------------|-------|----------|
+| 2026-02-15 | 0.1 | 27% | 32 | 4.5 KB |
+| 2026-03-15 | 2.2 | 35% | 341 | 6.6 KB |
+| 2026-04-15 | 10.1 | 49% | 593 | 17.5 KB |
+| 2026-05-15 | 17.7 | 50% | 871 | 20.8 KB |
+| 2026-06-15 | 44.2 | 60% | 1,312 | 34.5 KB |
+| 2026-07-15 | 50.1 | 61% | 1,379 | 37.2 KB |
+| 2026-08-15 | **90.8** | **68%** | 1,717 | **54.2 KB** |
+
+Count grew 54×; **average handover size grew 12×**, 4.5 KB → 54.2 KB. Bytes are count × size
+and both are climbing, which is why the share of corpus rises **monotonically, every month,
+with no reversal**: 27 → 35 → 49 → 50 → 60 → 61 → 68%.
+
+**What this does to the recommendation.** E′ was argued on redundancy (97% overlap, spike 6)
+and on reachability (spike 8). Neither was a performance argument. This is: handovers are
+**68% of current corpus volume and 79% of its growth rate**, they are the most redundant
+content in the index, and spike 7 established they have **zero executable readers** — semantic
+retrieval is their only consumer. Excluding them takes the indexed corpus from 133.6 MB to
+42.8 MB and removes four fifths of the growth.
+
+**What this does to IW-7.** The question was "is 1s worth the build?" The better-posed question
+is that the corpus is on a monotonic trajectory to spend an ever-larger majority of every scan
+on its least informative content. 1s is not the cost; the slope is. **Deliberately not
+projected to a specific future latency** — that would require assuming the vector-DB size
+tracks source bytes linearly and that query cost tracks index size linearly, and neither is
+measured here. The defensible claim is the slope and its composition, not a date.
+
 ## Candidates
 
 Updated after spike 4, which built candidate A for real. C is dissolved; A still leads B,

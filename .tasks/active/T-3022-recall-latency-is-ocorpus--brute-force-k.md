@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T21:14:00Z
+last_update: 2026-08-15T21:31:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -354,6 +354,19 @@ worth the build? That is a judgment about acceptable latency at projected growth
 measurement I can run settles it. Note that E′ is worth doing on reachability grounds even if
 your answer to IW-7 is "no" — they are separable decisions and I have kept them separate.
 
+**Spike 9 quantifies the "trending upward" half, and it strengthens E′ specifically.** Corpus
+growth over the last month is **+62% (82.3 → 133.6 MB)**, and **79% of that growth is
+`.context/handovers` alone** (+40.7 MB of +51.3 MB). Handovers are now **68% of the entire
+indexed corpus**, and their share has risen **monotonically every month with no reversal**
+(27 → 35 → 49 → 50 → 60 → 61 → 68%) because two factors compound: count 32 → 1,717 and
+*average size* 4.5 KB → 54.2 KB. So E′ is no longer only a redundancy-and-reachability
+argument — excluding handovers removes 68% of current volume and four fifths of the growth
+rate, from the content spike 7 showed has **zero executable readers**. I have deliberately
+*not* projected a future latency figure: that needs the vector-DB size to track source bytes
+linearly and query cost to track index size linearly, neither of which is measured. The
+defensible claim is the slope and its composition, not a date. **This does not decide IW-7
+for you** — it replaces "trending upward" with a number so that you can.
+
 **Evidence:**
 
 - **The cost is a fixed scan, not result assembly.** k-sweep on the live index: k=1 → 1028 ms, k=5 → 1048, k=50 → 1125, k=200 → 1221. A 200× change in k moves latency 19%.
@@ -375,6 +388,7 @@ your answer to IW-7 is "no" — they are separable decisions and I have kept the
 - **A measurement error, recorded.** The first truncation run used a near-neighbour-only pool and reported ρ=0.753 at 512d, non-monotonic against 256d. Near-tie ranks are unstable by construction; widening the pool moved it to 0.954. The first number looked like a finding and was an artifact of method.
 - **Spike 7: independently replicated by 832-Workflow-designer, and it sharpens candidate E's question.** 832 measured the same shape on their tree (arc offset 11936): handovers = 55% of `.context/` (16M of 29M), 470 files, 87% median consecutive overlap, 88% whole-corpus redundancy. Two projects sharing a framework and not a codebase → this is a property of the framework's handover discipline, not of either tree. Running their "who reads these" measurement here, restricted to executable surfaces: **24 files reference `.context/handovers/LATEST.md`; exactly 1 names a historical `S-*` handover — `tests/integration/fw_timeline.bats:33`, which writes its own fixture.** Zero executable readers of real historical handovers; the other 53 refs are provenance citations in `.context/episodic/` (48) and `.tasks/completed/` (4). **The consequence is the opposite in form and the same in substance as 832's:** semantic retrieval is the *only* consumer historical handovers have. So the operator's question is not "does anything read these" but "is retrieval over 1,708 near-duplicate handovers worth half of every scan, for 2.5% of the answers?" Limit stated and unchanged: a grep cannot see ad-hoc human/agent reads, so the honest claim is "no *tool* reads them", not "nobody reads them" — and git preserves all 1,708 regardless, making this a working-set question, not a preservation one.
 - **Spike 8: the inclusion set is wrong in both directions, which reframes candidate E.** `web/search_utils.py:68` defines the index by seven directories plus two globs. Invisible to `fw ask`/`recall`/RAG: **73 authored files, 0.54 MB** — `policy/` (19 files, incl. `policy/standards/aef-bpmn-mapping-v1-partI.md` and `policy/prompts/bvp-driver-session.md`, both of which CLAUDE.md explicitly directs agents to read), `docs/adr` (4), `docs/architecture`, `docs/design`, `docs/specs`, `docs/proposals`, `docs/articles` (25), `docs/upstream-patterns`, `docs/walkthrough`, `docs/dispatch-templates` — plus `.context/designer/` (42 `.bpmn` + registry, 988 KB). **One handover is 263 KB: the entire authored-excluded set weighs about two handovers, and we index 1,708 handovers and none of these.** Corrects OBS-252's fix direction — adding `.context/designer/` to `search_dirs` would index `registry.yaml` only, because the `aef:meta` prose lives inside `.bpmn` files (11 in `v1.bpmn`) and the suffix filter rejects them; the observation's remedy would have been a green change that fixed nothing. Also shows why a naive fix repeats the original error: `docs/generated/` is 1,068 generated files, so "index all of `docs/`" bulk-adds restated content exactly as handovers did. **Reframed E:** the inclusion set was never designed, it accreted by directory; define it by content class instead — authored-and-durable in, generated-or-restated out. Handovers are restated (97% overlap), ADRs are authored, and one rule cuts both ways, so the operator makes one decision rather than two. Not claimed: that 0.54 MB improves recall — it is 0.4% of the corpus and will not move latency. The argument is reachability, not volume.
+- **Spike 9: "trending upward" is +62%/month and 79% of it is one directory.** Corpus bytes at monthly commits, filtered to the `web/search_utils.py:68` inclusion set: 0.5 → 6.4 → 20.7 → 35.5 → 73.8 → 82.3 → **133.6 MB** (Feb–Aug), the last month being the steepest on record at **+51.3 MB / +62%**. Decomposed before projecting, because one steep delta is not a trend: `.context/handovers` **+40.7 MB of the +51.3** (79%), `.tasks` +8.1, `.context/episodic` +1.5, `docs/reports` +0.7, all else +0.4. Not a bulk import — handovers accrete one per session, so the mechanism is structural. Six-month series shows it sustained and **compounding on two axes**: count 32 → 1,717 *and* average size 4.5 KB → **54.2 KB** (12×), so handover share of corpus rises **monotonically with no reversal** — 27 → 35 → 49 → 50 → 60 → 61 → **68%**. **Consequence for E′:** excluding handovers takes the indexed corpus 133.6 → 42.8 MB, removing 68% of volume and ~79% of growth, from content spike 7 showed has zero executable readers. **Method error recorded:** the first run used `master`, which is 122 commits stale (session runs on `t2539-staging`), and reported a *flat* tail (77.4 → 86.3 → 86.4 MB) that would have killed the case for any build. A measurement whose subject was "how fast does the corpus grow" silently answered "how fast does the branch I picked grow", and the wrong answer was plausible enough to act on. **Not claimed:** any projected future latency — that needs vector-DB size to track source bytes linearly and query cost to track index size linearly, neither measured here. The claim is the slope and its composition, not a date.
 - Artifact: `docs/reports/T-3022-recall-latency-scaling.md`. Commits: `660fa0cf3` (characterisation), `9c62305cd` (spikes 1-3).
 
 ## Decisions
@@ -430,16 +444,16 @@ your answer to IW-7 is "no" — they are separable decisions and I have kept the
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a8792a1b
-- **Timestamp:** 2026-08-15T21:08:42Z
+- **Scan ID:** R-3c9ac46d
+- **Timestamp:** 2026-08-15T21:42:17Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-575a2984
-- **Timestamp:** 2026-08-15T21:08:42Z
+- **Scan ID:** RC-dc298808
+- **Timestamp:** 2026-08-15T21:42:18Z
 - **Overall:** CONFIRMED
 - **Claims:** 13
 

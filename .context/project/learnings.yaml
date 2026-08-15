@@ -4541,3 +4541,9 @@ X'` returning empty group."
   task: T-3022
   date: 2026-08-15
   context: Added via context agent
+- id: L-608
+  learning: "Time-series measurements over git history must pin the ref to the branch that actually carries the history. Measuring indexed-corpus growth via 'git rev-list --before=DATE master' reported a flat tail (77.4/86.3/86.4 MB over three months) implying growth had stopped; master was 122 commits stale because the session runs on a staging branch. Re-run against HEAD showed +62% in the final month. The failure is silent and directional: the question asked was 'how fast does the corpus grow', the question answered was 'how fast does the ref I picked grow', and a flat result is exactly the shape that terminates an investigation. Rule: for any historical series, assert the endpoint matches current reality (e.g. final datapoint == working-tree measurement) before interpreting the trend."
+  source: P-001
+  task: T-3022
+  date: 2026-08-15
+  context: Added via context agent
