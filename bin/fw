@@ -4933,6 +4933,56 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 ;;
         esac
         ;;
+    index)
+        # T-3014 (T-3005 slice 5): scheduled incremental reindex. Cron entry
+        # point — see .context/cron-registry.yaml id `index-reindex-hourly`.
+        idx_subcmd="${1:-}"
+        shift || true
+        case "$idx_subcmd" in
+            reindex)
+                if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+                    echo "Usage: fw index reindex"
+                    echo "Incrementally re-embeds changed/added/removed corpus files."
+                    echo "Run 'fw index --help' for the full description."
+                    exit 0
+                fi
+                cd "$PROJECT_ROOT" && python3 -c '
+import json, sys
+try:
+    from web.embeddings import reindex_incremental
+except Exception as exc:
+    print(json.dumps({"status": "unimportable",
+                       "detail": f"{type(exc).__name__}: {str(exc)[:200]}"}))
+    sys.exit(0)
+try:
+    stats = reindex_incremental()
+    stats["status"] = "ok"
+    print(json.dumps(stats))
+except Exception as exc:
+    print(json.dumps({"status": "error", "detail": str(exc)[:300]}))
+    sys.exit(1)
+'
+                ;;
+            ""|-h|--help)
+                echo "Usage: fw index reindex"
+                echo ""
+                echo "Incrementally re-embed changed/added/removed corpus files and replant"
+                echo "the freshness canaries (T-3014, T-3005 slice 5). Diffs collect_files()"
+                echo "against the file_state table by content hash — only the changed set is"
+                echo "re-embedded, not the whole 393k-chunk corpus. Bootstraps with one full"
+                echo "build the first time no index exists yet."
+                echo ""
+                echo "Atomic: builds on a copy of the database and only swaps it into place"
+                echo "(os.replace) once fully committed, then writes the manifest. A process"
+                echo "killed mid-run leaves the previous index (and its manifest) untouched."
+                ;;
+            *)
+                echo -e "${RED}Unknown index subcommand:${NC} $idx_subcmd"
+                echo "Run 'fw index reindex' or 'fw index --help'"
+                exit 1
+                ;;
+        esac
+        ;;
     docs)
         if [ "${1:-}" = "article" ]; then
             shift

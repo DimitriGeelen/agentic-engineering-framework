@@ -48,6 +48,21 @@ jobs:
     # runs, and which already exceeds 180s and blocks every push (OBS-253).
     description: "Reviews observation inbox and gaps register every 6 hours; verifies vector-index canaries end to end (T-3013)."
 
+  - id: index-reindex-hourly
+    name: "Vector index incremental reindex (hourly)"
+    schedule: "20 * * * *"
+    command: "flock -n /var/lock/agentic-cron-index-reindex-hourly.lock -c 'fw index reindex'"
+    source_file: agentic-audit.crontab
+    origin_task: T-3014
+    status: active
+    # T-3014 (T-3005 slice 5): the reader T-3013 wired (doctor/audit) had
+    # nothing that rebuilds. Diffs the corpus by content hash and only
+    # re-embeds the changed set — cheap on every run after the first, which
+    # bootstraps the file_state baseline against the (currently 157+ day
+    # stale) real corpus. Atomic swap: a run killed mid-way leaves the
+    # previous index and manifest untouched, never a half-built file.
+    description: "Incrementally re-embeds changed/added/removed corpus files and replants the freshness canaries every hour, so index_freshness() age actually drops between runs instead of only being watched (T-3005 slice 5)."
+
   - id: oe-fast-30m
     name: "OE fast checks (30 min)"
     schedule: "15,45 * * * *"

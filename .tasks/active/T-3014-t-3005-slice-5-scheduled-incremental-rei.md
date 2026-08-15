@@ -135,6 +135,13 @@ second full pass.
 
 ## Verification
 
+python3 -m pytest tests/unit/test_incremental_reindex.py -q > /tmp/.t3014-reindex.out 2>&1 && grep -q "passed" /tmp/.t3014-reindex.out && ! grep -q "failed" /tmp/.t3014-reindex.out
+python3 -m pytest tests/unit/test_index_freshness.py tests/unit/test_canary_manifest.py tests/unit/test_chunk_cap.py -q > /tmp/.t3014-siblings.out 2>&1 && grep -q "passed" /tmp/.t3014-siblings.out && ! grep -q "failed" /tmp/.t3014-siblings.out
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+python3 -c "import yaml; yaml.safe_load(open('.context/cron-registry.yaml'))"
+grep -q "index-reindex-hourly" .context/cron/agentic-audit.crontab
+bin/fw index --help > /tmp/.t3014-help.out 2>&1 && grep -q "reindex" /tmp/.t3014-help.out
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.

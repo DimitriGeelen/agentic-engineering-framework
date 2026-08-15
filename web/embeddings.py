@@ -10,9 +10,11 @@ T-263: Upgraded from all-MiniLM-L6-v2 (384-dim) to nomic-embed-text-v2-moe (768-
 from __future__ import annotations
 
 
+import hashlib
 import logging
 import os
 import re
+import shutil
 import sqlite3
 import struct
 import time
@@ -289,8 +291,24 @@ def _init_db() -> sqlite3.Connection:
         )
     """)
 
+    # T-3014 (slice 5): per-file content hash so a scheduled run can tell
+    # "unchanged" from "needs re-embedding" without re-chunking the whole
+    # corpus. Canary rows are never tracked here — they are always replanted.
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS file_state (
+            path TEXT PRIMARY KEY,
+            content_hash TEXT NOT NULL,
+            mtime REAL NOT NULL,
+            updated_at REAL NOT NULL
+        )
+    """)
+
     db.commit()
     return db
+
+
+def _content_hash(content: str) -> str:
+    return hashlib.sha256(content.encode("utf-8", errors="replace")).hexdigest()
 
 
 def index_freshness() -> dict:
@@ -437,6 +455,10 @@ def build_index() -> dict:
     # Collect all chunks with metadata
     all_chunks = []
     all_metadata = []
+    # T-3014: baseline for the next *incremental* run. A full build has to
+    # populate this too, or the first scheduled run after any full rebuild
+    # (including a T-3007 model switch) would treat every file as changed.
+    file_hashes: dict[str, tuple[str, float]] = {}
 
     for fpath in files:
         try:
@@ -464,6 +486,11 @@ def build_index() -> dict:
                     "chunk_index": i,
                     "chunk_text": chunk,
                 })
+            try:
+                mtime = fpath.stat().st_mtime
+            except OSError:
+                mtime = start
+            file_hashes[rel_path] = (_content_hash(content), mtime)
         except Exception:
             continue
 
@@ -511,6 +538,16 @@ def build_index() -> dict:
             (row_id, emb),
         )
 
+    now = time.time()
+    for rel_path, (content_hash, mtime) in file_hashes.items():
+        db.execute(
+            "INSERT INTO file_state (path, content_hash, mtime, updated_at) "
+            "VALUES (?, ?, ?, ?) ON CONFLICT(path) DO UPDATE SET "
+            "content_hash = excluded.content_hash, mtime = excluded.mtime, "
+            "updated_at = excluded.updated_at",
+            (rel_path, content_hash, mtime, now),
+        )
+
     db.commit()
 
     elapsed_ms = int((time.time() - start) * 1000)
@@ -543,6 +580,244 @@ def build_index() -> dict:
         "num_docs": num_docs,
         "num_chunks": len(all_chunks),
         "build_time_ms": elapsed_ms,
+        "canary_token": canary_token,
+        "manifest_written": manifest_written,
+    }
+
+
+def _delete_path_rows(db: sqlite3.Connection, path: str) -> None:
+    """Remove every chunk row for `path` from both tables, plus its file_state."""
+    ids = [r[0] for r in db.execute(
+        "SELECT id FROM documents WHERE path = ?", (path,)).fetchall()]
+    if ids:
+        db.executemany("DELETE FROM vec_documents WHERE id = ?",
+                       [(i,) for i in ids])
+        db.execute("DELETE FROM documents WHERE path = ?", (path,))
+    db.execute("DELETE FROM file_state WHERE path = ?", (path,))
+
+
+def reindex_incremental() -> dict:
+    """Re-embed only what changed, then swap the result into place atomically.
+
+    T-3014, slice 5 of T-3005. `build_index()` is a full rebuild of the whole
+    corpus — 393,082 chunks, hours — which cannot fit inside any schedule that
+    also needs to fire again before it finishes. This instead:
+
+      1. Bootstraps with one full `build_index()` if no index exists yet
+         (first run ever, or after `DB_PATH` was deleted). An index that
+         exists but predates the `file_state` table takes the path below
+         with an empty baseline — correct, but it re-embeds everything, so
+         it reports `mode: bootstrap-baseline` rather than `incremental`.
+      2. Otherwise diffs `collect_files()` against the `file_state` table by
+         content hash — sha256, not mtime, so a touch/checkout that doesn't
+         change content doesn't trigger a re-embed — and only chunks + embeds
+         the changed/added set. Removed files drop their rows. The canaries
+         are always replanted with a fresh token: that token, seen live by
+         `corpus_health()`, is the thing a scheduled run exists to prove
+         happened (T-3014 AC1).
+      3. Does all of that on a COPY of the database (`DB_PATH` + reindex.tmp),
+         inside one sqlite transaction, and only `os.replace()`s it over the
+         live file once the copy is fully committed. A process killed at any
+         point before that line leaves `DB_PATH` — and therefore the manifest,
+         which is written only *after* the swap — exactly as the previous run
+         left them. There is no window where a reader can see a half-built
+         index: it is either the old file or the new one, never a mixture.
+
+    Raises whatever the embedder / sqlite raise; the flock-guarded caller
+    (`fw index reindex`) is expected to catch and report, same as `build_index`.
+    """
+    global _db, _db_opened_at
+
+    start = time.time()
+
+    if not is_index_ready():
+        stats = build_index()
+        stats["mode"] = "bootstrap-full"
+        return stats
+
+    tmp_path = DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.tmp")
+    if tmp_path.exists():
+        tmp_path.unlink()
+    shutil.copy2(DB_PATH, tmp_path)
+
+    db = None
+    swapped = False
+    try:
+        db = sqlite3.connect(str(tmp_path), check_same_thread=False)
+        db.enable_load_extension(True)
+        sqlite_vec.load(db)
+        db.enable_load_extension(False)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS file_state (
+                path TEXT PRIMARY KEY,
+                content_hash TEXT NOT NULL,
+                mtime REAL NOT NULL,
+                updated_at REAL NOT NULL
+            )
+        """)
+
+        existing = dict(db.execute(
+            "SELECT path, content_hash FROM file_state").fetchall())
+
+        # The universe of what is actually indexed is `documents`, not
+        # `file_state`. They agree for any index this function built, and
+        # disagree for one built before slice 5 existed — which is precisely
+        # the index the first scheduled run will meet (the live one: 21,292
+        # chunks over 1,380 paths, no file_state table at all). Computing
+        # removals from the bookkeeping table would mean a legacy index never
+        # purges anything, because its bookkeeping is empty: 35 paths on the
+        # live index are tasks that moved active/ -> completed/, and the stale
+        # copy would sit in search results next to the fresh one forever.
+        indexed = {r[0] for r in db.execute(
+            "SELECT DISTINCT path FROM documents WHERE category != ?",
+            (CANARY_CATEGORY,)).fetchall()}
+        # Empty bookkeeping over a non-empty index means no baseline: every
+        # file below will read as changed and this run costs a full rebuild.
+        # Say so in the stats rather than letting it read as the cheap path.
+        baseline_missing = not existing and bool(indexed)
+
+        seen: set[str] = set()
+        changed: list[tuple[Path, str, str, str]] = []  # fpath, rel_path, content, hash
+        for fpath in collect_files():
+            try:
+                content = fpath.read_text(errors="replace")
+            except Exception:
+                continue
+            if not content.strip():
+                continue
+            rel_path = str(fpath.relative_to(PROJECT_ROOT))
+            seen.add(rel_path)
+            content_hash = _content_hash(content)
+            if existing.get(rel_path) != content_hash:
+                changed.append((fpath, rel_path, content, content_hash))
+
+        removed = sorted((set(existing) | indexed) - seen)
+        for path in removed:
+            _delete_path_rows(db, path)
+
+        all_chunks: list[str] = []
+        all_meta: list[dict] = []
+        for fpath, rel_path, content, content_hash in changed:
+            _delete_path_rows(db, rel_path)
+            title = extract_title(fpath, content)
+            category = categorize(rel_path)
+            task_id = extract_task_id(fpath, content)
+            try:
+                mtime = fpath.stat().st_mtime
+            except OSError:
+                mtime = start
+            for i, chunk in enumerate(_chunk_content(content, reserve=len(title) + 2)):
+                embed_text = f"{title}\n\n{chunk}" if i > 0 else chunk
+                all_chunks.append(embed_text)
+                all_meta.append({
+                    "path": rel_path, "title": title, "category": category,
+                    "task_id": task_id, "chunk_index": i, "chunk_text": chunk,
+                    "content_hash": content_hash, "mtime": mtime,
+                })
+
+        # Canaries are never diffed by hash — they are always replanted, and
+        # the token changes every run. That is what proves the run executed
+        # rather than merely exited 0 (AC1). Three small documents; cheap.
+        # Microsecond resolution: unlike build_index() (an hours-long full
+        # rebuild, where second-granularity collisions are not a concern),
+        # scheduled incremental runs can plausibly land in the same second.
+        canary_token = f"FWCANARY-{int(start * 1_000_000)}"
+        canary_ids = [r[0] for r in db.execute(
+            "SELECT id FROM documents WHERE category = ?",
+            (CANARY_CATEGORY,)).fetchall()]
+        if canary_ids:
+            db.executemany("DELETE FROM vec_documents WHERE id = ?",
+                           [(i,) for i in canary_ids])
+            db.execute("DELETE FROM documents WHERE category = ?",
+                      (CANARY_CATEGORY,))
+        for doc in all_canaries(canary_token):
+            for i, chunk in enumerate(_chunk_content(doc.text, reserve=len(doc.title) + 2)):
+                all_chunks.append(f"{doc.title}\n\n{chunk}" if i > 0 else chunk)
+                all_meta.append({
+                    "path": doc.path, "title": doc.title, "category": CANARY_CATEGORY,
+                    "task_id": "", "chunk_index": i, "chunk_text": chunk,
+                    "content_hash": None, "mtime": None,
+                })
+
+        BATCH_SIZE = 64
+        embeddings = []
+        for i in range(0, len(all_chunks), BATCH_SIZE):
+            embeddings.extend(_embed(all_chunks[i:i + BATCH_SIZE]))
+
+        now = time.time()
+        file_state_written: set[str] = set()
+        for meta, emb in zip(all_meta, embeddings):
+            cur = db.execute(
+                "INSERT INTO documents (path, title, category, task_id, "
+                "chunk_index, chunk_text) VALUES (?, ?, ?, ?, ?, ?)",
+                (meta["path"], meta["title"], meta["category"], meta["task_id"],
+                 meta["chunk_index"], meta["chunk_text"]),
+            )
+            new_id = cur.lastrowid
+            db.execute("INSERT INTO vec_documents (id, embedding) VALUES (?, ?)",
+                      (new_id, emb))
+            if meta["category"] != CANARY_CATEGORY and meta["path"] not in file_state_written:
+                file_state_written.add(meta["path"])
+                db.execute(
+                    "INSERT INTO file_state (path, content_hash, mtime, updated_at) "
+                    "VALUES (?, ?, ?, ?) ON CONFLICT(path) DO UPDATE SET "
+                    "content_hash = excluded.content_hash, mtime = excluded.mtime, "
+                    "updated_at = excluded.updated_at",
+                    (meta["path"], meta["content_hash"], meta["mtime"], now),
+                )
+
+        db.commit()
+        num_chunks = db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+        num_docs = db.execute(
+            "SELECT COUNT(DISTINCT path) FROM documents").fetchone()[0]
+        db.close()
+        db = None
+
+        # The only line that can make this run visible. Anything raised above
+        # this point leaves DB_PATH untouched — the tmp copy is discarded in
+        # `finally` and the previous index keeps serving.
+        os.replace(tmp_path, DB_PATH)
+        swapped = True
+    finally:
+        if db is not None:
+            db.close()
+        if not swapped and tmp_path.exists():
+            tmp_path.unlink()
+
+    # Manifest is written LAST, and only after the swap — so a reader who
+    # sees a fresh manifest is guaranteed to also see the matching database
+    # (T-3014 AC4). A manifest write failure here is best-effort, same as
+    # build_index(): the index itself is already live and correct.
+    manifest_written = False
+    try:
+        write_manifest(DB_PATH, build_manifest(
+            num_docs=num_docs,
+            num_chunks=num_chunks,
+            model=MODEL_NAME,
+            embedding_dim=EMBEDDING_DIM,
+            max_chunk_chars=MAX_CHUNK_CHARS,
+            embed_context_tokens=EMBED_CONTEXT_TOKENS,
+            canary_token=canary_token,
+            started_at=start,
+            project_root=PROJECT_ROOT,
+        ))
+        manifest_written = True
+    except Exception as exc:  # noqa: BLE001
+        log.warning("corpus manifest not written after incremental reindex: %s", exc)
+
+    # DB_PATH is now a different inode than whatever this process had open.
+    _db = None
+    _db_opened_at = 0.0
+
+    return {
+        # "bootstrap-baseline": the index existed but carried no file_state, so
+        # every file was re-embedded. Costs a full rebuild; happens once.
+        "mode": "bootstrap-baseline" if baseline_missing else "incremental",
+        "num_docs": num_docs,
+        "num_chunks": num_chunks,
+        "files_changed": len(changed),
+        "files_removed": len(removed),
+        "build_time_ms": int((time.time() - start) * 1000),
         "canary_token": canary_token,
         "manifest_written": manifest_written,
     }
