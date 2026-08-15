@@ -187,6 +187,49 @@ out=$(python3 -m pytest tests/unit/test_recall_telemetry.py -q 2>&1); echo "$out
 
 ## RCA
 
+**Symptom:** T-3021 shipped six regression tests for the miss classifier, all of which
+feed it hand-built result lists. Its three verification lines are a fixture suite, a
+static `grep`, and a JSONL reader. Nothing re-runs the live behaviour the fix depends on.
+
+**Root cause:** the tests pin the *rule* (`top_score == 0` → miss) but not its *premise*
+(the retriever returns rows at score 0 for a non-matching query). The premise is a fact
+about `_semantic_search`, and a fixture built from my belief about that function cannot
+detect the function changing. Demonstrated: a one-line distance cutoff in the retriever
+leaves all 32 fixture tests green.
+
+**Why structurally allowed — three layers, and the third is the useful one:**
+
+1. The P-010/P-011 gates count ticked ACs and run whatever commands are written. They
+   have no way to distinguish "test exercises the component" from "test exercises a
+   fixture shaped like the component" — that distinction is not expressible in a
+   checkbox or an exit code.
+2. The live behaviour *was* verified by hand during T-3021 and recorded in its Evidence
+   table. Manual verification that nothing re-runs is folklore. It reads as rigour in
+   the task file and provides zero ongoing protection, which is arguably worse than an
+   absent check because it discourages adding a real one.
+3. **The control that catches this already exists and I ran it too late.** `fw reviewer
+   T-3021` emitted `mock-only-integration` — accurately, on first run. But I ran it
+   *after* closing T-3021, so the finding could not gate anything and became a
+   follow-up task instead of a correction. The reviewer is available before close; my
+   sequence was close-then-review rather than review-then-close. Nothing forced that
+   order, and nothing flagged it.
+
+**Prevention:** `tests/integration/test_recall_miss_live.py` — no fixtures, real embed,
+real vector query, real telemetry row — plus a fail-closed verification line asserting
+the test *executed* (`2 passed`, rejecting `skipped`), so an unavailable index fails the
+gate rather than passing quietly. Mutation-proven to discriminate: the retriever cutoff
+that leaves the fixture suite 32/32 green turns this red.
+
+Distinct from the fix in the direction that matters: the fix is one test file; the
+prevention is that the premise is now read from the component on every close, so the
+next person to change `_semantic_search` finds out immediately rather than shipping a
+classifier whose justification quietly evaporated.
+
+**Process change (layer 3), not yet structural:** run `fw reviewer T-XXX` *before*
+`--status work-completed`, not after. Recorded here rather than added as a gate because
+whether the reviewer should block close is a policy call with false-positive cost, and
+that is the operator's decision, not mine to legislate mid-task.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
