@@ -4,16 +4,16 @@ name: "embedding model upgrade and domain adaptation from AEF's own corpus"
 description: >
   Inception: embedding model upgrade and domain adaptation from AEF's own corpus
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T05:55:24Z
-last_update: 2026-08-15T06:00:44Z
-date_finished: 2026-08-15T06:00:44Z
+last_update: 2026-08-15T05:57:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -38,16 +38,6 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-08-15T06:00:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 7
-    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
-      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -136,15 +126,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -201,11 +191,7 @@ Research supplied by the operator (external agent) argues for Qwen3-Embedding-0.
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Research supplied by the operator (external agent) argues for Qwen3-Embedding-0.6B over the current nomic-embed-text-v2-moe (+8-9 MTEB, 512->32K context, Apache-2.0, ~0.5GB more VRAM) and for domain adaptation via synthetic query generation plus a query-side adapter. Local claims verified in-tree: EMBEDDING_DIM=768 is hardcoded AND binds the vec0 schema, chunker targets 1500 chars (~375 tok) against the current model's 512-tok ceiling, and qa_feedback has no context_chunk_ids column. GO because the switch is close to free if it rides the reindex that T-3005 slices 3/5 already require, and expensive as a standalone migration later — the sequencing is the decision. Benchmark figures are attributed, not independently verified.
-
-**Date**: 2026-08-15T06:00:44Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -214,39 +200,3 @@ Research supplied by the operator (external agent) argues for Qwen3-Embedding-0.
 
 ### 2026-08-15T05:57:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-08-15T06:00:44Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Research supplied by the operator (external agent) argues for Qwen3-Embedding-0.6B over the current nomic-embed-text-v2-moe (+8-9 MTEB, 512->32K context, Apache-2.0, ~0.5GB more VRAM) and for domain adaptation via synthetic query generation plus a query-side adapter. Local claims verified in-tree: EMBEDDING_DIM=768 is hardcoded AND binds the vec0 schema, chunker targets 1500 chars (~375 tok) against the current model's 512-tok ceiling, and qa_feedback has no context_chunk_ids column. GO because the switch is close to free if it rides the reindex that T-3005 slices 3/5 already require, and expensive as a standalone migration later — the sequencing is the decision. Benchmark figures are attributed, not independently verified.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-721a0863
-- **Timestamp:** 2026-08-15T06:00:45Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 2
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
-     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
-     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-34421142
-- **Timestamp:** 2026-08-15T06:00:45Z
-- **Overall:** CONFIRMED
-- **Claims:** 1
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3005` | task | ✓ pass |
-
-### 2026-08-15T06:00:44Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

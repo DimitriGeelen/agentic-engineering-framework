@@ -4,12 +4,12 @@ name: "slice 1 — restore embed-path availability and verify semantic recall en
 description: >
   slice 1 — restore embed-path availability and verify semantic recall end-to-end
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_embed_health.py, web/embeddings.py, web/embed_health.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T05:43:08Z
-last_update: '2026-08-15T05:45:12Z'
-date_finished:
+last_update: 2026-08-15T06:05:51Z
+date_finished: 2026-08-15T06:05:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -133,6 +133,18 @@ Artefact: `docs/reports/T-3005-vector-substrate-controls.md`
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] Semantic search page still renders results cleanly after the
+      embed-path change (T-1766, P-013 — `web/embeddings.py` is a render-surface
+      file since it produces the snippets `/search` renders)
+      **Steps:**
+      1. Open `http://192.168.10.107:3001/search?q=task+lifecycle`
+      2. Confirm result rows show title, snippet, and score as before
+      3. Confirm no raw `<b>` tags or broken HTML leak into the visible text
+      **Expected:** Results render as normal search rows, highlighted terms
+      bolded (not shown as literal tag text), no layout break
+      **If not:** Note which row/element is broken and reopen T-3006 for a
+      follow-up fix
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -190,24 +202,9 @@ Artefact: `docs/reports/T-3005-vector-substrate-controls.md`
 python3 -m pytest tests/unit/test_embed_health.py -q > /tmp/.t3006-pt.out 2>&1 && grep -q "19 passed" /tmp/.t3006-pt.out
 python3 -c "import ast,sys; ast.parse(open('web/embed_health.py').read()); ast.parse(open('web/embeddings.py').read())"
 # The classifier must keep its classes distinct — collapsing them is the defect.
-python3 -c "
-import sys; sys.path.insert(0,'.')
-from web import embed_health as EH
-class R(Exception):
-    def __init__(s,m,c): super().__init__(m); s.status_code=c
-assert EH.classify(R('server busy',503))[0]=='contention'
-assert EH.classify(R('not found',404))[0]=='model-absent'
-assert EH.classify(ConnectionRefusedError('refused'))[0]=='ollama-down'
-assert EH.classify(Exception('wharrgarbl'))[0]=='error'
-assert not EH.EmbedHealth('ollama-down','x').is_fault and EH.EmbedHealth('contention','x').is_fault
-"
+python3 -c "import sys; sys.path.insert(0,'.'); from web import embed_health as EH; e1=Exception('server busy'); e1.status_code=503; e2=Exception('not found'); e2.status_code=404; assert EH.classify(e1)[0]=='contention'; assert EH.classify(e2)[0]=='model-absent'; assert EH.classify(ConnectionRefusedError('refused'))[0]=='ollama-down'; assert EH.classify(Exception('wharrgarbl'))[0]=='error'; assert not EH.EmbedHealth('ollama-down','x').is_fault and EH.EmbedHealth('contention','x').is_fault"
 # Default must stay backward-compatible: no embed_host set -> chat host is used.
-python3 -c "
-import os,sys; sys.path.insert(0,'.')
-os.environ.pop('FW_EMBED_HOST',None)
-import importlib, web.config as C; importlib.reload(C)
-assert C.Config.EMBED_HOST, 'EMBED_HOST must never resolve empty'
-"
+python3 -c "import os,sys; sys.path.insert(0,'.'); os.environ.pop('FW_EMBED_HOST',None); import importlib, web.config as C; importlib.reload(C); assert C.Config.EMBED_HOST, 'EMBED_HOST must never resolve empty'"
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -285,6 +282,24 @@ assert C.Config.EMBED_HOST, 'EMBED_HOST must never resolve empty'
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** All 6 Agent ACs are met with independently-reproduced evidence,
+not just code-read. The remaining item is a lightweight visual spot-check of
+the search page, added because `web/embeddings.py` sits on the render-surface
+pattern list — the actual diff is backend-only (client routing/retry), so the
+review is precautionary rather than expected to find anything.
+**Evidence:**
+- `pytest tests/unit/test_embed_health.py -q` → 19 passed (this session, live).
+- Probed a genuinely unreachable host (`127.0.0.1:1`) → `classify()` returned
+  `ollama-down` for real, not from a mock (this session, live).
+- Probed the live sidecar with a nonexistent model name → `model-absent` fired
+  for real (this session, live).
+- `ss -tlnp | grep 11435` → sidecar is up and listening loopback-only.
+- `embeddings.search('framework governance task lifecycle')` → 5 ranked
+  results, top two non-zero scores (0.023, 0.008) (this session, live).
+- No edits to the shared Ollama service's config, env, or lifetime — sidecar
+  is additive only.
+
 ## Decisions
 
 ### 2026-08-15 — how to restore the embed path
@@ -348,3 +363,20 @@ assert C.Config.EMBED_HOST, 'EMBED_HOST must never resolve empty'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3006-slice-1--restore-embed-path-availability.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d9f3494d
+- **Timestamp:** 2026-08-15T06:05:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_embed_health.py -q > /tmp/.t3006-pt.out 2>&1 && grep -q "19 passed" /tmp/.t3006-pt.out`
+
+### 2026-08-15T06:05:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
