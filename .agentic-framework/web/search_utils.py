@@ -65,30 +65,119 @@ def extract_task_id(path: Path, content: str) -> str:
     return ""
 
 
+# ── T-3024 (T-3022 slice E′): the inclusion set is defined by CONTENT CLASS ──
+#
+# Every path below belongs to exactly one of two classes. Adding a directory means
+# deciding which class it is, and that decision is the point — the previous list was
+# seven directories that accreted one at a time, each added because someone wanted a
+# specific thing findable, and nobody ever asked what the set as a whole should be.
+# The result was wrong in BOTH directions (T-3022 spike 8): 73 authored files were
+# unreachable — all of policy/, every ADR, the architecture/design/spec docs, including
+# the two documents CLAUDE.md explicitly tells agents to read — while 1,710 handovers
+# were indexed in full.
+#
+#   AUTHORED_AND_DURABLE — someone wrote it, deliberately, to be read later.
+#       Tasks, episodics, ADRs, standards, prompts, reports, specs, agent docs.
+#       These are what retrieval exists to find. IN.
+#
+#   GENERATED_OR_RESTATED — derived from other content, or a re-statement of live
+#       state that a query could answer directly. Rendered docs, generated indexes,
+#       session handovers (97% duplicated state — spike 10). OUT, with the single
+#       exception below, which is a switch rather than a silent omission.
+#
+# The rule cuts both ways on purpose: it is what stops "just index all of docs/"
+# from re-committing the original mistake by bulk-adding docs/generated's 1,068
+# generated files.
+
+INDEXED_SUFFIXES = (".md", ".yaml", ".yml")
+
+# Class: AUTHORED_AND_DURABLE.
+AUTHORED_DIRS = (
+    (".tasks",),
+    (".context", "episodic"),
+    (".context", "project"),
+    (".context", "qa"),
+    (".fabric", "components"),
+    ("docs", "reports"),
+    # T-3022 spike 8 — authored and previously unreachable.
+    ("policy",),
+    ("docs", "adr"),
+    ("docs", "architecture"),
+    ("docs", "design"),
+    ("docs", "specs"),
+    ("docs", "proposals"),
+    ("docs", "upstream-patterns"),
+    ("docs", "walkthrough"),
+    ("docs", "dispatch-templates"),
+    ("docs", "articles"),
+)
+
+# Class: GENERATED_OR_RESTATED. Named explicitly so the exclusion is auditable
+# rather than being an accident of what nobody added.
+EXCLUDED_DIRS = (
+    ("docs", "generated"),
+)
+
+# The one deliberate exception: handovers are GENERATED_OR_RESTATED by content, but
+# semantic retrieval is their only consumer (spike 7 — zero executable readers), so
+# excluding them removes the sole way anyone reaches them. That makes it a judgment
+# about what the corpus is for, not a cleanup, and therefore the operator's call.
+# Resolution order matches the framework's 4-tier contract: env > .framework.yaml >
+# default. Ships at ON, i.e. behaviour is unchanged until someone decides otherwise.
+HANDOVER_DIR = (".context", "handovers")
+
+
+def _index_handovers() -> bool:
+    """Resolve INDEX_HANDOVERS: env > .framework.yaml > default(1). See lib/config.sh."""
+    import os
+
+    env = os.environ.get("FW_INDEX_HANDOVERS")
+    if env is not None and env.strip() != "":
+        return env.strip() not in ("0", "false", "no")
+
+    cfg = PROJECT_ROOT / ".framework.yaml"
+    if cfg.is_file():
+        try:
+            for line in cfg.read_text(encoding="utf-8", errors="replace").splitlines():
+                m = re.match(r"^\s*INDEX_HANDOVERS\s*:\s*(\S+)", line)
+                if m:
+                    return m.group(1).strip().strip("\"'") not in ("0", "false", "no")
+        except OSError as exc:  # unreadable config must not silently drop the corpus
+            logger.warning("could not read %s for INDEX_HANDOVERS: %s", cfg, exc)
+
+    return True
+
+
 def collect_files() -> list[Path]:
-    """Collect all indexable files from the project."""
-    files = []
-    search_dirs = [
-        PROJECT_ROOT / ".tasks",
-        PROJECT_ROOT / ".context" / "episodic",
-        PROJECT_ROOT / ".context" / "project",
-        PROJECT_ROOT / ".context" / "handovers",
-        PROJECT_ROOT / ".fabric" / "components",
-        PROJECT_ROOT / ".context" / "qa",
-        PROJECT_ROOT / "docs" / "reports",
-    ]
+    """Collect all indexable files, selected by content class (T-3024).
 
-    for d in search_dirs:
-        if d.exists():
-            for f in d.rglob("*"):
-                if f.is_file() and f.suffix in (".md", ".yaml", ".yml"):
-                    files.append(f)
+    See the AUTHORED_AND_DURABLE / GENERATED_OR_RESTATED commentary above: this is a
+    rule, not a list, and a new directory has to declare which class it belongs to.
+    """
+    files: list[Path] = []
 
-    # Top-level specs
+    dirs = list(AUTHORED_DIRS)
+    if _index_handovers():
+        dirs.append(HANDOVER_DIR)
+
+    excluded = tuple(PROJECT_ROOT.joinpath(*parts) for parts in EXCLUDED_DIRS)
+
+    for parts in dirs:
+        d = PROJECT_ROOT.joinpath(*parts)
+        if not d.exists():
+            continue
+        for f in d.rglob("*"):
+            if not f.is_file() or f.suffix not in INDEXED_SUFFIXES:
+                continue
+            if any(f.is_relative_to(x) for x in excluded):
+                continue
+            files.append(f)
+
+    # Top-level specs (CLAUDE.md, FRAMEWORK.md, README.md …) — authored by definition.
     for f in PROJECT_ROOT.glob("*.md"):
         files.append(f)
 
-    # Agent docs
+    # Agent docs — the intelligence half of each agent, authored.
     for f in PROJECT_ROOT.glob("agents/*/AGENT.md"):
         files.append(f)
 

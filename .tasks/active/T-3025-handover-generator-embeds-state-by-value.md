@@ -5,10 +5,10 @@ name: "handover generator embeds state by value — reference it instead (candid
 description: >
   handover generator embeds state by value — reference it instead (candidate F)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 target_blast_radius: 3   # agents/handover/handover.sh + section builders; single subsystem
 voi_score: 0.7           # settles 79% of corpus growth and the G-018 quality question
 tags: []
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T22:12:24Z
-last_update: 2026-08-15T22:16:04Z
+last_update: 2026-08-15T22:16:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +63,22 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-15T22:16:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 4
+      F-RECALL: 4
+      F-AUTONOMY: 4
+      F3: 4
+      F1: 4
+      F2: 4
+    rationale: D1=4 (no-signal); D2=4 (no-signal); D3=4 (no-signal); D4=4 
+      (no-signal); F-RECALL=4 (no-signal); F-AUTONOMY=4 (no-signal); F3=4 
+      (no-signal); F1=4 (no-signal); F2=4 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -309,3 +325,7 @@ Registered as OBS-272. **Nothing here has been built.**
 ### 2026-08-15T22:16:04Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-08-15T22:16:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
