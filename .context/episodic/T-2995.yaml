@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2995: cross-project dispatch containment: the boundary hook routes agents to the ungated write path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T05:20:16Z
+# ============================================================================
+
+task_id: T-2995
+task_name: "cross-project dispatch containment: the boundary hook routes agents to the ungated write path"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-14T19:21:01Z
+completed: 2026-08-15T05:20:04Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-14T21:30:22+02:00
+last_commit: 2026-08-15T07:20:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the boundary guard blocks reads and advertises unvalidated writes. register G-007 and G-008 with the consumer's reproductions. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2995-cross-project-dispatch-containment.md'
+  - '.tasks/active/T-2995-cross-project-dispatch-containment-the-b.md'
+  - '.tasks/active/T-2997-fw-doctor-claude-fw-drift-compares-route.md'
+  - '.tasks/active/T-2998-ctl-008-counts-git-generated-merge-subje.md'
+  - '.tasks/completed/T-2995-cross-project-dispatch-containment-the-b.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-14T21:30:22'
+    action: 'T-2995: the boundary guard blocks reads and advertises unvalidated writes'
+  - time: '2026-08-14T21:56:52'
+    action: 'T-2995: register G-007 and G-008 with the consumer''s reproductions'
+  - time: '2026-08-15T07:20:10'
+    action: 'T-2995: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 599 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 599
+  commits: 3
+  files_changed: 5
+  lines_added: 953
+  lines_removed: 36
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2995-cross-project-dispatch-containment-the-b.md
+generated_by: context-agent-hybrid

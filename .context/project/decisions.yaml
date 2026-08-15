@@ -3019,3 +3019,24 @@ decisions:
     date: 2026-08-14
     task: T-2980
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-434
+    decision: "a CPU-only Ollama sidecar bound to `127.0.0.1:11435`, sharing the"
+    scope: project
+    date: 2026-08-15
+    task: T-3006
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-435
+    decision: "slice 1 restores *retrieval* only. The Task Briefing still does not"
+    scope: project
+    date: 2026-08-15
+    task: T-3006
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-436
+    decision: "leave `embed_host: http://127.0.0.1:11435` (the T-3006 sidecar) as"
+    scope: project
+    date: 2026-08-15
+    task: T-3008
+    rationale: "Auto-captured from task file on completion"

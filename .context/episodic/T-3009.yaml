@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3009: T-3007 step A: measure chunk-token distribution against the embedder's real context ceiling
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T07:05:54Z
+# ============================================================================
+
+task_id: T-3009
+task_name: "T-3007 step A: measure chunk-token distribution against the embedder's real context ceiling"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-15T06:49:49Z
+completed: 2026-08-15T07:05:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T09:05:24+02:00
+last_commit: 2026-08-15T09:05:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the 512-token ceiling is real, but the chunker is the bigger leak
+
+# Key outcomes
+outcomes:
+  - 'The embedder''s **real** input ceiling is measured empirically against the running'
+  - 'The chunk-token distribution is measured over the corpus `build_index()` would'
+  - 'The measurement is reproducible: a committed script re-runs it end-to-end, so the'
+  - '`docs/reports/T-3007-embedding-model-and-adaptation.md` is updated — the'
+  - 'If chunks do exceed the ceiling, the consequence is stated explicitly: which'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - 'docs/reports/T-3007-embedding-model-and-adaptation.md'
+  - '.fabric/components/tools-measure_chunk_tokens.yaml'
+  - '.tasks/active/T-3009-t-3007-step-a-measure-chunk-token-distri.md'
+  - '.tasks/completed/T-3008-raise-shared-ollama-to-maxloadedmodels2-.md'
+  - 'tools/measure_chunk_tokens.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T09:05:24'
+    action: 'T-3009: the 512-token ceiling is real, but the chunker is the bigger leak'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 1
+  files_changed: 6
+  lines_added: 695
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3009-t-3007-step-a-measure-chunk-token-distri.md
+generated_by: context-agent-hybrid

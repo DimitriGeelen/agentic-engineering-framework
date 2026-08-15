@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3008: raise shared Ollama to MAX_LOADED_MODELS=2 and restart (operator-authorised)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T06:49:07Z
+# ============================================================================
+
+task_id: T-3008
+task_name: "raise shared Ollama to MAX_LOADED_MODELS=2 and restart (operator-authorised)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-15T06:05:44Z
+completed: 2026-08-15T06:48:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T08:11:08+02:00
+last_commit: 2026-08-15T08:17:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shared Ollama raised to 2 model slots — briefing renders again. refresh vendored copies after embed-path work. repair task-file structure — my own edit split the AC section
+
+# Key outcomes
+outcomes:
+  - '`OLLAMA_MAX_LOADED_MODELS=2` is set in the systemd drop-in and survives a'
+  - 'Service restarted and `active (running)`.'
+  - '**Embedding works on the shared host** (`:11434`) — the thing that was'
+  - '**Generation works** (`qwen3:14b` on the shared host) — proves the second'
+  - 'Two models confirmed resident simultaneously via `/api/ps` — direct'
+  - 'The full briefing path renders: `lib/ask.py` returns non-empty output'
+  - 'Fleet still served: the shared host answers requests after the restart.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-15 — embeddings stay on the loopback sidecar for now'
+    chose: 'leave `embed_host: http://127.0.0.1:11435` (the T-3006 sidecar) as'
+    rationale: 'warm latency is indistinguishable — 208 ms shared vs 210 ms sidecar —'
+    alternatives_rejected: ['switching embeddings back to the shared host (no measured query']
+  - decision: '[date] — [topic]'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/config.py'
+  - '.agentic-framework/web/embeddings.py'
+  - '.agentic-framework/web/embed_health.py'
+  - '.tasks/active/T-3008-raise-shared-ollama-to-maxloadedmodels2-.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T08:11:08'
+    action: 'T-3008: shared Ollama raised to 2 model slots — briefing renders again'
+  - time: '2026-08-15T08:12:02'
+    action: 'T-3008: refresh vendored copies after embed-path work'
+  - time: '2026-08-15T08:17:17'
+    action: 'T-3008: repair task-file structure — my own edit split the AC section'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 3
+  files_changed: 6
+  lines_added: 641
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3008-raise-shared-ollama-to-maxloadedmodels2-.md
+generated_by: context-agent-hybrid

@@ -33428,3 +33428,161 @@ scan_id: R-d75a6cc1
 task_id: T-3003
 payload:
   task_file: .tasks/active/T-3003-answer-832s-corpus-population-question-w.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T05:20:05Z'
+scan_id: R-735cbec5
+task_id: T-2995
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T05:20:05Z'
+scan_id: R-735cbec5
+task_id: T-2995
+payload:
+  task_file: .tasks/active/T-2995-cross-project-dispatch-containment-the-b.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T05:20:05Z'
+scan_id: RC-594413bf
+task_id: T-2995
+payload:
+  overall: CONFIRMED
+  claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-08-15T05:29:44Z'
+scan_id: R-b4fb5547
+task_id: T-3004
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T05:29:44Z'
+scan_id: R-b4fb5547
+task_id: T-3004
+payload:
+  task_file: .tasks/active/T-3004-vector-memory-substrate--liveness-reliab.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T05:29:44Z'
+scan_id: RC-0687918a
+task_id: T-3004
+payload:
+  overall: CONTRADICTED
+  claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-08-15T05:42:48Z'
+scan_id: R-e8dcc71b
+task_id: T-3005
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T05:42:48Z'
+scan_id: R-e8dcc71b
+task_id: T-3005
+payload:
+  task_file: .tasks/active/T-3005-reliability-and-antifragility-controls-f.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T05:42:48Z'
+scan_id: RC-5d21d138
+task_id: T-3005
+payload:
+  overall: CONFIRMED
+  claim_count: 3
+---
+kind: scan_emitted
+timestamp: '2026-08-15T06:00:45Z'
+scan_id: R-721a0863
+task_id: T-3007
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T06:00:45Z'
+scan_id: R-721a0863
+task_id: T-3007
+payload:
+  task_file: .tasks/active/T-3007-embedding-model-upgrade-and-domain-adapt.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T06:00:45Z'
+scan_id: RC-34421142
+task_id: T-3007
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-08-15T06:05:54Z'
+scan_id: R-d9f3494d
+task_id: T-3006
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T06:05:54Z'
+scan_id: R-d9f3494d
+task_id: T-3006
+payload:
+  task_file: .tasks/active/T-3006-slice-1--restore-embed-path-availability.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T06:48:56Z'
+scan_id: R-55fdc2cb
+task_id: T-3008
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T06:48:56Z'
+scan_id: R-55fdc2cb
+task_id: T-3008
+payload:
+  task_file: .tasks/active/T-3008-raise-shared-ollama-to-maxloadedmodels2-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T07:05:43Z'
+scan_id: R-f9a5b0d2
+task_id: T-3009
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T07:05:43Z'
+scan_id: R-f9a5b0d2
+task_id: T-3009
+payload:
+  task_file: .tasks/active/T-3009-t-3007-step-a-measure-chunk-token-distri.md

@@ -4,10 +4,10 @@ name: "raise shared Ollama to MAX_LOADED_MODELS=2 and restart (operator-authoris
 description: >
   raise shared Ollama to MAX_LOADED_MODELS=2 and restart (operator-authorised)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T06:05:44Z
-last_update: '2026-08-15T06:15:12Z'
-date_finished:
+last_update: 2026-08-15T06:48:51Z
+date_finished: 2026-08-15T06:48:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -189,14 +189,7 @@ python3 -c "import sys; sys.exit(0 if 'OLLAMA_MAX_LOADED_MODELS=2' in open('/etc
 systemctl is-active ollama > /tmp/.t3008-act.out 2>&1 && grep -q '^active$' /tmp/.t3008-act.out
 python3 -m pytest tests/unit/test_embed_health.py -q > /tmp/.t3008-pt.out 2>&1 && grep -q "19 passed" /tmp/.t3008-pt.out
 # The point of the change: the embed path must be green on the SHARED host.
-python3 -c "
-import sys; sys.path.insert(0,'.')
-from web import embeddings as E
-from web.config import Config
-Config.EMBED_HOST='http://localhost:11434'
-E._embed_client=None
-h=E.embed_health(); sys.exit(0 if h.status=='ok' else 1)
-"
+python3 -c "import sys; sys.path.insert(0,'.'); from web import embeddings as E; from web.config import Config; Config.EMBED_HOST='http://localhost:11434'; E._embed_client=None; h=E.embed_health(); sys.exit(0 if h.status=='ok' else 1)"
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -320,3 +313,15 @@ h=E.embed_health(); sys.exit(0 if h.status=='ok' else 1)
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3008-raise-shared-ollama-to-maxloadedmodels2-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-55fdc2cb
+- **Timestamp:** 2026-08-15T06:48:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-15T06:48:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
