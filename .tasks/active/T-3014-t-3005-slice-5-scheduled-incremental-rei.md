@@ -133,6 +133,52 @@ second full pass.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+## Decisions
+
+### 2026-08-15 — where concurrency protection lives
+- **Chose:** own it inside `reindex_incremental()` — advisory flock, per-process
+  scratch name, inode identity check before the swap
+- **Why:** AC4 said "flock, as the other audit crons do", which put the guard on
+  the cron line. That serialises cron against cron and nothing else. The first
+  real run was destroyed inside 25 minutes by a non-cron actor, with
+  `/proc/<pid>/fd/3` reading `(deleted)` while the process kept embedding.
+- **Rejected:** leaving it to callers — a guarantee every caller must remember
+  to wrap is not a guarantee
+
+### 2026-08-15 — checkpoint granularity
+- **Chose:** flush every ~512 accumulated chunks, on file boundaries
+- **Why:** measured 1.9 chunks/s against the live embed host, 394,230 chunks in
+  the corpus — a ~29-58h bootstrap. Non-resumable, an hourly cron can never
+  finish it: every firing restarts from zero and the canary stays `unknown`
+  forever while each run looks correct. Committing per group makes progress
+  durable so successive firings chip away. Bounding by chunks rather than files
+  keeps the interval between durable points predictable (a 40-file group
+  measured ~15 min).
+- **Rejected:** checkpointing mid-file — file_state is what a resumed run trusts
+  to skip work, so a file marked done without its rows would be skipped forever
+  and the gap would be invisible
+
+## Status (2026-08-15)
+
+Mechanism complete and tested: 19 tests here, 58 across the vector-index suites,
+with the swap guard and the resume guarantee both mutation-tested (red when the
+guard is disabled, green when restored).
+
+AC1 (canary `unknown` -> `ok`) and AC5 (doctor age drops) are **not met** and
+cannot be met from this session:
+
+1. The bootstrap is ~29-58h of embedding at the measured rate. Resumability now
+   lets it proceed across cron firings rather than restarting, but it is still
+   ~29h of wall-clock before the first green canary.
+2. The embed sidecar on 127.0.0.1:11435 went down mid-run and nothing restarts
+   it — no systemd unit, no docker, no documented launch parameters anywhere in
+   the repo (OBS-259). Every embedding path is down until it is restarted by
+   hand.
+
+Partial work is parked at `.context/working/fw-vec-index.db.reindex.resume` and
+will be adopted by the next run. The live index is untouched throughout —
+verified by inode, still 21,292 docs at its March mtime.
+
 ## Verification
 
 python3 -m pytest tests/unit/test_incremental_reindex.py -q > /tmp/.t3014-reindex.out 2>&1 && grep -q "passed" /tmp/.t3014-reindex.out && ! grep -q "failed" /tmp/.t3014-reindex.out
