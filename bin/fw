@@ -1006,6 +1006,7 @@ show_help() {
     echo -e "  ${GREEN}designer${NC} <cmd>       Vendor + serve the pinned Workflow Designer build"
     echo -e "  ${GREEN}bpmn${NC} <cmd>           Compile a BPMN diagram into AEF task skeletons"
     echo -e "  ${GREEN}corpus${NC} <cmd>         Spec-driven corpus authoring (derive, generate, canon, diff, prove, lint, explain)"
+    echo -e "  ${GREEN}index${NC} <cmd>          Vector index maintenance (reindex — incremental, cron-driven)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"

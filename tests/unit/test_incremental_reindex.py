@@ -18,6 +18,8 @@ Every test below was observed RED against a pre-fix `reindex_incremental`
 landed — most directly the two ATOMIC tests (AC6).
 """
 
+import fcntl
+import os
 import sqlite3
 import struct
 import sys
@@ -290,3 +292,87 @@ def test_steady_state_still_reports_incremental(project):
     stats = E.reindex_incremental()
     assert stats["mode"] == "incremental"
     assert stats["files_changed"] == 1
+
+
+# --------------------------------------------------------------------------
+# Concurrency. The cron line wraps this in flock, which serialises cron
+# against cron and nothing else — a manual run, a second console, or any
+# other importer of this module races it on a shared, predictable scratch
+# path. Observed live during T-3014's first real bootstrap: the scratch file
+# was unlinked out from under a 25-minute run, which went on embedding into
+# an unlinked inode with no idea anything was wrong.
+# --------------------------------------------------------------------------
+
+def test_scratch_file_is_per_process(project):
+    """A shared scratch name is what makes two runs able to destroy each other."""
+    seen = {}
+    real_copy = E.shutil.copy2
+
+    def spy(src, dst):
+        seen["dst"] = str(dst)
+        return real_copy(src, dst)
+
+    E.reindex_incremental()  # bootstrap so the next run takes the copy path
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(E.shutil, "copy2", spy)
+        E.reindex_incremental()
+
+    assert str(os.getpid()) in seen["dst"], (
+        f"scratch path {seen['dst']} is not per-process — a second run picks "
+        "the same name and unlinks this one's working file"
+    )
+
+
+def test_a_second_run_is_refused_while_one_holds_the_lock(project):
+    """Concurrency is owned by the function, not by the caller's flock."""
+    E.reindex_incremental()
+
+    lock_path = E.DB_PATH.with_suffix(E.DB_PATH.suffix + ".reindex.lock")
+    fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
+    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    try:
+        stats = E.reindex_incremental()
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+
+    assert stats["mode"] == "skipped-locked", (
+        f"a second concurrent reindex was allowed to run: {stats}"
+    )
+
+
+def test_lock_is_released_so_the_next_run_can_proceed(project):
+    """Discriminating counterpart: 'always skipped' must not pass as success."""
+    E.reindex_incremental()
+    assert E.reindex_incremental()["mode"] != "skipped-locked"
+
+
+def test_swap_is_refused_if_the_scratch_file_was_replaced(project):
+    """The worst available outcome is publishing a stranger's database.
+
+    If our scratch file is unlinked and recreated by something else, os.replace
+    would install *that* file over the live index — silently, and with no way to
+    tell afterwards. The sabotage is staged inside the embedding phase because
+    that is where the real window is: the live incident had a 25-minute run
+    embedding into an inode that had already been unlinked.
+    """
+    E.reindex_incremental()
+    (project / "alpha.md").write_text("# Alpha\n\nEdited so there is work to do.\n")
+
+    live_before = E.DB_PATH.read_bytes()
+
+    def sabotage_then_embed(texts):
+        for scratch in E.DB_PATH.parent.glob(E.DB_PATH.name + ".reindex.*.tmp"):
+            os.unlink(scratch)
+            with open(scratch, "wb") as fh:
+                fh.write(b"not the database this run built")
+        return _fake_embed(texts)
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(E, "_embed", sabotage_then_embed)
+        with pytest.raises(RuntimeError, match="refusing to swap"):
+            E.reindex_incremental()
+
+    assert E.DB_PATH.read_bytes() == live_before, (
+        "the live index was modified by a run that should have refused to swap"
+    )

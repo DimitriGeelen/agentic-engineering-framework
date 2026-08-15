@@ -88,17 +88,17 @@ second full pass.
 - [ ] A reindex runs on a schedule and the canary goes from `unknown` to `ok` — the
       first time the T-3011 canaries are seen green on real data rather than on a
       fixture. Until this ships, slices 2-4 watch something nobody rebuilds.
-- [ ] The cron entry follows the L-364 chain (registry → generate → install) and
+- [x] The cron entry follows the L-364 chain (registry → generate → install) and
       `## Verification` carries the in-sync + not-drifted assertion.
-- [ ] Reindex is incremental, not a full 393,082-chunk rebuild per run. A full build
+- [x] Reindex is incremental, not a full 393,082-chunk rebuild per run. A full build
       is hours; a schedule that cannot finish between firings is not a schedule.
-- [ ] Concurrent runs cannot overlap (flock, as the other audit crons do), and a run
+- [x] Concurrent runs cannot overlap (flock, as the other audit crons do), and a run
       that dies mid-way leaves the previous index serving rather than a half-built one.
       The manifest is written last, so a partial build reads as the *old* build's
       manifest — never as a fresh one.
 - [ ] `fw doctor` shows the age dropping after a run, verified by observing the number
       before and after — not by asserting the job exited 0.
-- [ ] RED observed first: exercised against a deliberately stale index to confirm the
+- [x] RED observed first: exercised against a deliberately stale index to confirm the
       age changes, and against a run killed mid-way to confirm the manifest did not
       advance.
 

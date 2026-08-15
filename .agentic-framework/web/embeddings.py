@@ -10,6 +10,7 @@ T-263: Upgraded from all-MiniLM-L6-v2 (384-dim) to nomic-embed-text-v2-moe (768-
 from __future__ import annotations
 
 
+import fcntl
 import hashlib
 import logging
 import os
@@ -623,8 +624,17 @@ def reindex_incremental() -> dict:
          left them. There is no window where a reader can see a half-built
          index: it is either the old file or the new one, never a mixture.
 
-    Raises whatever the embedder / sqlite raise; the flock-guarded caller
-    (`fw index reindex`) is expected to catch and report, same as `build_index`.
+    Raises whatever the embedder / sqlite raise; the caller (`fw index reindex`)
+    is expected to catch and report, same as `build_index`.
+
+    Concurrency is owned HERE, not by the caller. The cron line wraps this in
+    flock, but that only serialises cron against cron — a manual run, a second
+    console, or anything else that imports this module races it. Observed live
+    on the first real bootstrap (T-3014): the scratch file was unlinked out from
+    under a 25-minute run, which kept embedding into an unlinked inode and would
+    have finished by swapping a path that no longer existed. So: a per-process
+    scratch name nobody else will pick, an advisory lock taken here, and an
+    identity check before the swap.
     """
     global _db, _db_opened_at
 
@@ -635,10 +645,32 @@ def reindex_incremental() -> dict:
         stats["mode"] = "bootstrap-full"
         return stats
 
-    tmp_path = DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.tmp")
-    if tmp_path.exists():
-        tmp_path.unlink()
+    lock_path = DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.lock")
+    lock_fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
+    try:
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        os.close(lock_fd)
+        # Another reindex owns the index. Returning beats queueing: the caller
+        # is an hourly cron, and a bootstrap run legitimately outlasts the gap
+        # between firings.
+        return {
+            "mode": "skipped-locked",
+            "detail": f"another reindex holds {lock_path.name}",
+            "build_time_ms": int((time.time() - start) * 1000),
+        }
+
+    # Per-process scratch name: two runs cannot collide on it, and a run that
+    # died without unlinking leaves a corpse attributable to a dead pid rather
+    # than a live run's working file. Sweep those before starting.
+    for stale in DB_PATH.parent.glob(DB_PATH.name + ".reindex.*.tmp*"):
+        try:
+            stale.unlink()
+        except OSError:
+            pass
+    tmp_path = DB_PATH.with_suffix(DB_PATH.suffix + f".reindex.{os.getpid()}.tmp")
     shutil.copy2(DB_PATH, tmp_path)
+    tmp_ino = tmp_path.stat().st_ino
 
     db = None
     swapped = False
@@ -773,6 +805,25 @@ def reindex_incremental() -> dict:
         db.close()
         db = None
 
+        # Refuse to publish a file that is not the one we just built. If our
+        # scratch file was unlinked and recreated by someone else, swapping it
+        # in would install a stranger's database over the live index — a silent
+        # wrong-data outcome, the worst class available here. Fail loudly and
+        # leave the previous index serving instead.
+        try:
+            live_ino = tmp_path.stat().st_ino
+        except FileNotFoundError:
+            raise RuntimeError(
+                f"reindex scratch file {tmp_path.name} vanished mid-run; "
+                "refusing to swap. The previous index is untouched."
+            ) from None
+        if live_ino != tmp_ino:
+            raise RuntimeError(
+                f"reindex scratch file {tmp_path.name} was replaced mid-run "
+                f"(inode {tmp_ino} -> {live_ino}); refusing to swap. "
+                "The previous index is untouched."
+            )
+
         # The only line that can make this run visible. Anything raised above
         # this point leaves DB_PATH untouched — the tmp copy is discarded in
         # `finally` and the previous index keeps serving.
@@ -783,6 +834,8 @@ def reindex_incremental() -> dict:
             db.close()
         if not swapped and tmp_path.exists():
             tmp_path.unlink()
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        os.close(lock_fd)
 
     # Manifest is written LAST, and only after the swap — so a reader who
     # sees a fresh manifest is guaranteed to also see the matching database
