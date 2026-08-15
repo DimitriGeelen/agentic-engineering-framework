@@ -58,19 +58,21 @@ def _get_ollama_client() -> ollama.Client:
     return _ollama_client
 
 
-# Embedding client is separate from the chat client (T-3006). They may address
-# different endpoints — see Config.EMBED_HOST for why.
-_embed_client = None
-_embed_client_host = None
+# Embedding clients are separate from the chat client (T-3006), and there is one
+# per endpoint rather than one global (T-3016): queries and bulk reindex address
+# different hosts on purpose. Keyed by host, so a runtime config change picks up
+# a fresh client instead of reusing one pointed somewhere else.
+_embed_clients: dict[str, ollama.Client] = {}
 
 
-def _get_embed_client() -> ollama.Client:
-    """Get or create the embedding client, respecting runtime config changes."""
-    global _embed_client, _embed_client_host
-    if _embed_client is None or _embed_client_host != Config.EMBED_HOST:
-        _embed_client = ollama.Client(host=Config.EMBED_HOST, timeout=Config.OLLAMA_TIMEOUT)
-        _embed_client_host = Config.EMBED_HOST
-    return _embed_client
+def _get_embed_client(host: str | None = None) -> ollama.Client:
+    """Get or create the embedding client for `host` (default Config.EMBED_HOST)."""
+    target = host or Config.EMBED_HOST
+    client = _embed_clients.get(target)
+    if client is None:
+        client = ollama.Client(host=target, timeout=Config.OLLAMA_TIMEOUT)
+        _embed_clients[target] = client
+    return client
 
 
 def embed_health() -> EmbedHealth:
@@ -129,8 +131,12 @@ _db_opened_at = 0.0
 # Embedding via Ollama (T-263: replaces sentence-transformers)
 # ---------------------------------------------------------------------------
 
-def _embed(texts: list[str]) -> list[bytes]:
+def _embed(texts: list[str], host: str | None = None) -> list[bytes]:
     """Embed a batch of texts, returning raw float32 bytes for sqlite-vec.
+
+    `host` selects the endpoint; None means the query host (Config.EMBED_HOST).
+    Bulk reindex passes Config.EMBED_BULK_HOST — see T-3016 for why the two
+    workloads belong on different hosts.
 
     T-3006: retries bounded transient failures and, on exhaustion, raises
     EmbedUnavailable carrying the behavioural class. Previously this re-raised
@@ -139,15 +145,16 @@ def _embed(texts: list[str]) -> list[bytes]:
     """
     attempts = max(1, Config.EMBED_RETRIES + 1)
     last: EmbedHealth | None = None
+    target = host or Config.EMBED_HOST
 
     for attempt in range(attempts):
         try:
-            resp = _get_embed_client().embed(model=MODEL_NAME, input=texts)
+            resp = _get_embed_client(target).embed(model=MODEL_NAME, input=texts)
             return [struct.pack(f"{len(emb)}f", *emb) for emb in resp.embeddings]
         except Exception as exc:  # noqa: BLE001 — classified immediately below
             status, detail = classify(exc)
             last = EmbedHealth(status=status, detail=detail,
-                               host=Config.EMBED_HOST, model=MODEL_NAME)
+                               host=target, model=MODEL_NAME)
             if status not in RETRYABLE or attempt == attempts - 1:
                 break
             # Linear backoff. Deliberately short: the permanent-starvation case
@@ -516,14 +523,16 @@ def build_index() -> dict:
         _db_opened_at = time.time()
         return {"num_docs": 0, "num_chunks": 0, "build_time_ms": 0}
 
-    # Batch embed all chunks (in groups to avoid Ollama timeout)
+    # Batch embed all chunks (in groups to avoid Ollama timeout), on the bulk
+    # host — this is throughput work, not query work (T-3016).
     BATCH_SIZE = 64
+    bulk_host = Config.EMBED_BULK_HOST
     embeddings = []
     for i in range(0, len(all_chunks), BATCH_SIZE):
         batch = all_chunks[i:i + BATCH_SIZE]
         log.info("Embedding batch %d/%d (%d chunks)", i // BATCH_SIZE + 1,
                  (len(all_chunks) + BATCH_SIZE - 1) // BATCH_SIZE, len(batch))
-        embeddings.extend(_embed(batch))
+        embeddings.extend(_embed(batch, host=bulk_host))
 
     # Insert into database
     for idx, (meta, emb) in enumerate(zip(all_metadata, embeddings)):
@@ -583,6 +592,7 @@ def build_index() -> dict:
         "build_time_ms": elapsed_ms,
         "canary_token": canary_token,
         "manifest_written": manifest_written,
+        "embed_host": bulk_host,
     }
 
 
@@ -778,13 +788,15 @@ def reindex_incremental() -> dict:
         # what makes the resume skip correct.
         CHUNK_CHECKPOINT = 512
         embedded_chunks = 0
+        # Throughput work goes to the bulk host, not the query host (T-3016).
+        bulk_host = Config.EMBED_BULK_HOST
 
         def _flush(meta_rows: list[dict], texts: list[str]) -> None:
             """Embed `texts`, insert their rows, and commit as one durable step."""
             nonlocal embedded_chunks
             vecs: list[bytes] = []
             for j in range(0, len(texts), BATCH_SIZE):
-                vecs.extend(_embed(texts[j:j + BATCH_SIZE]))
+                vecs.extend(_embed(texts[j:j + BATCH_SIZE], host=bulk_host))
             stamp = time.time()
             done: set[str] = set()
             for meta, emb in zip(meta_rows, vecs):
@@ -949,6 +961,9 @@ def reindex_incremental() -> dict:
         "build_time_ms": int((time.time() - start) * 1000),
         "canary_token": canary_token,
         "manifest_written": manifest_written,
+        # Named, not assumed: a run that quietly embedded against the slow host
+        # is 37x more expensive and otherwise indistinguishable from a fast one.
+        "embed_host": bulk_host,
     }
 
 

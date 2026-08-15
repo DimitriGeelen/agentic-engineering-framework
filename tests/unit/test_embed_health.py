@@ -142,7 +142,7 @@ def test_probe_never_raises():
 def _patch_embed_client(monkeypatch, client, retries=2, backoff=0.0):
     from web import embeddings as E
     from web.config import Config
-    monkeypatch.setattr(E, "_get_embed_client", lambda: client)
+    monkeypatch.setattr(E, "_get_embed_client", lambda host=None: client)
     monkeypatch.setattr(Config, "EMBED_RETRIES", retries, raising=False)
     monkeypatch.setattr(Config, "EMBED_RETRY_BACKOFF", backoff, raising=False)
     return E
@@ -201,7 +201,7 @@ def test_transient_failure_recovers_on_retry(monkeypatch):
             return type("R", (), {"embeddings": [[0.5] * 4]})()
 
     client = _Flaky()
-    monkeypatch.setattr(E, "_get_embed_client", lambda: client)
+    monkeypatch.setattr(E, "_get_embed_client", lambda host=None: client)
     monkeypatch.setattr(Config, "EMBED_RETRIES", 2, raising=False)
     monkeypatch.setattr(Config, "EMBED_RETRY_BACKOFF", 0.0, raising=False)
 

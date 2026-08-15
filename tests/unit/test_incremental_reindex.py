@@ -36,8 +36,13 @@ from web import search_utils as SU  # noqa: E402
 
 DAY = 86400.0
 
+# Captured before any fixture runs, because the `project` fixture replaces
+# E._embed with a fake. The host-routing test needs the real one — routing is
+# exactly what the fake elides.
+_REAL_EMBED = E._embed
 
-def _fake_embed(texts):
+
+def _fake_embed(texts, host=None):
     """Fixed-size fake vectors — no Ollama round-trip, only shape matters here."""
     return [struct.pack(f"{E.EMBEDDING_DIM}f", *([0.01] * E.EMBEDDING_DIM))
             for _ in texts]
@@ -80,7 +85,7 @@ def test_incremental_only_reembeds_changed_files(project, monkeypatch):
     calls = []
     real = E._embed
 
-    def counting_embed(texts):
+    def counting_embed(texts, host=None):
         calls.append(len(texts))
         return real(texts)
 
@@ -140,7 +145,7 @@ def test_a_run_killed_mid_way_does_not_advance_the_manifest(project, monkeypatch
     before_manifest = M.read_manifest(E.DB_PATH)
     before_bytes = E.DB_PATH.read_bytes()
 
-    def boom(texts):
+    def boom(texts, host=None):
         raise RuntimeError("simulated embedder death mid-run")
 
     monkeypatch.setattr(E, "_embed", boom)
@@ -165,7 +170,7 @@ def test_a_killed_run_leaves_the_previous_index_still_serving(project, monkeypat
     E._db = None
     old_stats = E.index_stats()
 
-    def boom(texts):
+    def boom(texts, host=None):
         raise RuntimeError("simulated embedder death mid-run")
 
     monkeypatch.setattr(E, "_embed", boom)
@@ -361,7 +366,7 @@ def test_swap_is_refused_if_the_scratch_file_was_replaced(project):
 
     live_before = E.DB_PATH.read_bytes()
 
-    def sabotage_on_canary(texts):
+    def sabotage_on_canary(texts, host=None):
         if any("FWCANARY-" in t for t in texts):
             for scratch in E.DB_PATH.parent.glob(E.DB_PATH.name + ".reindex.*.tmp"):
                 os.unlink(scratch)
@@ -390,7 +395,7 @@ def _fail_after(n_calls):
     """An embedder that dies partway, like a reboot or an OOM would."""
     state = {"n": 0}
 
-    def embed(texts):
+    def embed(texts, host=None):
         state["n"] += 1
         if state["n"] > n_calls:
             raise RuntimeError("embed host went away mid-bootstrap")
@@ -438,7 +443,7 @@ def test_the_next_run_resumes_and_does_not_redo_completed_files(project):
     calls = {"n": 0}
     real = _fake_embed
 
-    def counting(texts):
+    def counting(texts, host=None):
         calls["n"] += 1
         return real(texts)
 
@@ -490,4 +495,106 @@ def test_a_files_rows_and_its_file_state_land_together(project):
     assert not orphaned, (
         f"{len(orphaned)} file(s) marked done in file_state with no chunk rows: "
         f"{sorted(orphaned)[:3]} — a resumed run would skip them forever"
+    )
+
+
+# --------------------------------------------------------------------------
+# HOST ROUTING (T-3016) — bulk reindex and queries embed against different
+# endpoints on purpose. A query is one vector where latency decides; a reindex
+# is ~394k vectors where throughput decides, and the two hosts differ by 37x
+# (1.9 chunks/s CPU sidecar vs 69.9 chunks/s GPU). Pinning the split matters
+# because getting it wrong is invisible: both hosts return correct 768-dim
+# vectors, so a misrouted reindex is not wrong, only 37x more expensive.
+# --------------------------------------------------------------------------
+
+class _RecordingClient:
+    """Returns shape-correct vectors and remembers which host was asked."""
+
+    def __init__(self, host, log):
+        self.host = host
+        self._log = log
+
+    def embed(self, model, input):  # noqa: A002 — ollama's parameter name
+        self._log.append(self.host)
+
+        class _Resp:
+            embeddings = [[0.01] * E.EMBEDDING_DIM for _ in input]
+
+        return _Resp()
+
+
+def _route_hosts(monkeypatch, query_host, bulk_host):
+    """Point the two paths at distinguishable hosts and record every call."""
+    from web.config import Config
+    seen = []
+    monkeypatch.setattr(Config, "EMBED_HOST", query_host, raising=False)
+    monkeypatch.setattr(Config, "EMBED_BULK_HOST", bulk_host, raising=False)
+    monkeypatch.setattr(E, "_embed", _REAL_EMBED)
+    monkeypatch.setattr(E, "_get_embed_client",
+                        lambda host=None: _RecordingClient(host or Config.EMBED_HOST, seen))
+    E._embed_single_cached.cache_clear()
+    return seen
+
+
+def test_bootstrap_embeds_against_the_bulk_host(project, monkeypatch):
+    """The bootstrap path — reindex_incremental() delegating to build_index()."""
+    seen = _route_hosts(monkeypatch, "http://query-host:1", "http://bulk-host:2")
+
+    stats = E.reindex_incremental()
+
+    assert stats["mode"] == "bootstrap-full", (
+        f"expected the bootstrap path, got {stats['mode']!r} — this test would "
+        "otherwise assert routing on a branch it never enters"
+    )
+    assert seen, "reindex embedded nothing — the routing assertion would be vacuous"
+    assert set(seen) == {"http://bulk-host:2"}, (
+        f"bootstrap embedded against {sorted(set(seen))}; expected only the bulk "
+        "host. Routing bulk work to the query host costs 37x wall-clock and "
+        "produces an identical-looking index (T-3016)."
+    )
+
+
+def test_incremental_embeds_against_the_bulk_host(project, monkeypatch):
+    """The incremental path — a separate branch with its own embed call, so it
+    needs its own assertion. Covering only the bootstrap left this one free to
+    regress silently (found by mutation, not by review)."""
+    E.reindex_incremental()  # bootstrap with the fixture's fake embedder
+    (project / "alpha.md").write_text("# Alpha\n\nCHANGED, so there is work.\n")
+
+    seen = _route_hosts(monkeypatch, "http://query-host:1", "http://bulk-host:2")
+    stats = E.reindex_incremental()
+
+    assert stats["mode"] == "incremental", (
+        f"expected the incremental path, got {stats['mode']!r}"
+    )
+    assert seen, "incremental run embedded nothing — assertion would be vacuous"
+    assert set(seen) == {"http://bulk-host:2"}, (
+        f"incremental run embedded against {sorted(set(seen))}; expected only "
+        "the bulk host (T-3016)."
+    )
+
+
+def test_queries_still_embed_against_the_query_host(project, monkeypatch):
+    (project / "alpha.md").write_text("# Alpha\n\nSome content to embed.\n")
+    E.reindex_incremental()  # build an index with the fixture's fake embedder
+
+    seen = _route_hosts(monkeypatch, "http://query-host:1", "http://bulk-host:2")
+    E.search("alpha")
+
+    assert seen, "search embedded nothing — the routing assertion would be vacuous"
+    assert set(seen) == {"http://query-host:1"}, (
+        f"search embedded against {sorted(set(seen))}; expected only the query "
+        "host. Queries stay on the contention-immune sidecar (T-3008 D-436)."
+    )
+
+
+def test_the_reindex_result_names_the_host_it_embedded_against(project, monkeypatch):
+    (project / "alpha.md").write_text("# Alpha\n\nSome content to embed.\n")
+    _route_hosts(monkeypatch, "http://query-host:1", "http://bulk-host:2")
+
+    stats = E.reindex_incremental()
+
+    assert stats.get("embed_host") == "http://bulk-host:2", (
+        "the run does not report which host it used, so a run that silently "
+        "fell back to the slow host is indistinguishable from a fast one"
     )
