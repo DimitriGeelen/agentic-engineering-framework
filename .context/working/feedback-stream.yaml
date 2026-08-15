@@ -33658,3 +33658,21 @@ scan_id: R-d7bf014f
 task_id: T-3013
 payload:
   task_file: .tasks/active/T-3013-t-3005-slice-4-doctor-and-audit-rail-con.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T10:33:23Z'
+scan_id: R-30a853dd
+task_id: T-3015
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T10:33:23Z'
+scan_id: R-30a853dd
+task_id: T-3015
+payload:
+  task_file: .tasks/active/T-3015-episodic-decision-extraction-parses-a-bl.md

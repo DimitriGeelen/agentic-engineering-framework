@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3015: episodic decision extraction parses a block-structured document line by line
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T10:33:34Z
+# ============================================================================
+
+task_id: T-3015
+task_name: "episodic decision extraction parses a block-structured document line by line"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-15T10:17:39Z
+completed: 2026-08-15T10:32:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T12:25:21+02:00
+last_commit: 2026-08-15T12:32:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the episodic generator was never fed an unfilled template — the state 77% of tasks are in. verification that can actually run, and OBS-256 for 832's vendoring ask. the T-1871 shape guard follows the emitter it watches
+
+# Key outcomes
+outcomes:
+  - 'Extractor strips HTML comment **spans** (not just delimiter lines), so a'
+  - 'Multi-line `**Chose:** / **Why:** / **Rejected:**` values are captured whole'
+  - 'The silent `head -20` cap is gone; if any cap remains it is reported, not silent'
+  - 'Emitted YAML parses under `yaml.safe_load` with apostrophes, backticks and'
+  - 'Every verdict is pinned against a **discriminating fixture** — a fixture that'
+  - 'Proven on a live artifact, not only fixtures: old and new extraction paths run'
+  - 'Historical episodics are NOT bulk-rewritten (explicit non-goal — they are the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/episodic.sh'
+  - '.agentic-framework/agents/context/lib/extract_decisions.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/episodic.sh'
+  - 'agents/context/lib/extract_decisions.py'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/agents-context-lib-extract_decisions.yaml'
+  - '.tasks/active/T-3015-episodic-decision-extraction-parses-a-bl.md'
+  - 'tests/unit/episodic_yaml_decision_escape.bats'
+  - 'tests/unit/test_extract_decisions.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T12:25:21'
+    action: 'T-3015: the episodic generator was never fed an unfilled template — the state 77% of tasks are in'
+  - time: '2026-08-15T12:28:43'
+    action: 'T-3015: verification that can actually run, and OBS-256 for 832''s vendoring ask'
+  - time: '2026-08-15T12:32:46'
+    action: 'T-3015: the T-1871 shape guard follows the emitter it watches'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 3
+  files_changed: 11
+  lines_added: 958
+  lines_removed: 86
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3015-episodic-decision-extraction-parses-a-bl.md
+generated_by: context-agent-hybrid
