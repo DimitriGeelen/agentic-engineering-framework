@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T14:52:57Z
-last_update: 2026-08-15T14:52:57Z
-date_finished: null
+last_update: '2026-08-15T15:00:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-15T15:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-15T15:00:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3020: fw doctor takes 3m53s — find what dominates it
@@ -46,10 +74,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Per-check wall-clock for a full `fw doctor` run is measured and recorded, so the answer is a number per check rather than a guess about which one feels heavy.
-- [ ] The dominant cost is named with evidence, and it is stated plainly whether T-3019's new `recall usage` check contributed — the honest answer includes "the check I just added is the problem" if that is what the measurement says.
-- [ ] Whether this is a *regression* is answered, not assumed: doctor's runtime is measured against a checkout from before this session's vector work, so "it got slower" is a comparison rather than an impression.
-- [ ] Findings are written to `docs/reports/T-3020-doctor-latency.md` with the measurement table, so the next person to ask does not re-measure.
+- [x] Per-check wall-clock for a full `fw doctor` run is measured and recorded, so the answer is a number per check rather than a guess about which one feels heavy.
+- [x] The dominant cost is named with evidence, and it is stated plainly whether T-3019's new `recall usage` check contributed — the honest answer includes "the check I just added is the problem" if that is what the measurement says.
+- [x] Whether this is a *regression* is answered, not assumed: doctor's runtime is measured against a checkout from before this session's vector work, so "it got slower" is a comparison rather than an impression.
+- [x] Findings are written to `docs/reports/T-3020-doctor-latency.md` with the measurement table, so the next person to ask does not re-measure.
 
 Scope note: this task diagnoses and records. Any fix that changes doctor's
 behaviour is a separate task — a 4-minute doctor is worth understanding before
@@ -147,6 +175,20 @@ gets skipped.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# The report exists and carries the measurement table.
+test -f docs/reports/T-3020-doctor-latency.md && grep -q "1.94 ms/file" docs/reports/T-3020-doctor-latency.md
+
+# The fork-per-file loop this diagnosed is still the one described — if someone
+# batches it (the fix, a separate task), this line goes red and the report needs
+# rewriting rather than silently describing code that no longer exists.
+# -F, not a regex: this matches literal shell source. Without it, ugrep (the
+# grep on this host) reads the `$` as an anchor and the line silently never
+# matches — a verification line that can only fail is worse than none.
+grep -qF 'size=$(stat -c %s' agents/git/lib/large-file-scan.sh
+
+# The check added this session really is cheap — the claim the report rests on.
+bash -c 'source lib/config.sh; source lib/recall-usage.sh; s=$SECONDS; recall_usage_verdict 7 >/dev/null; [ $((SECONDS-s)) -lt 5 ]'
 
 ## RCA
 
