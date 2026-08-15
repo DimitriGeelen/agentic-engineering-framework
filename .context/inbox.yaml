@@ -3462,3 +3462,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-262
+  text: "T-3020 transitioned started-work -> work-completed at 15:21:11 without me running the close. All 4 Agent ACs were ticked and its verification passes, so the outcome is correct — but the actor is unidentified (Updates shows only 'task-update-agent'). Candidates: a CTL-029-style completable-but-not-completed sweep, or an auto-complete cron. Worth identifying: an agent that can close its own tasks without invoking the close is a governance surface, even when every instance so far has been right. Same session also saw T-3014's close succeed while my 5-min wrapper timed out (fw doctor is 222s, see T-3020), so timing-related races in the close path are plausible."
+  captured: 2026-08-15T15:24:58Z
+  context_task: T-3020
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-263
+  text: "Self-matching pgrep wait-loops leak forever. Earlier this session I ran 'until [ \"$(pgrep -cf '\\''audit.sh --section'\\'' )\" -eq 0 ]; do sleep 15; done' to wait out audit contention. The loop's OWN bash command line contains the literal string 'audit.sh --section', so pgrep -f matches the waiter itself, the count is never 0, and the loop spins until killed. Two such orphans observed still running (PIDs 1804361, 2078170) hours later. Fix for any future wait-loop: exclude self with 'pgrep -f pattern | grep -v $$' or match on the lock rather than the process (flock/fuser on .context/locks/audit.lock is the authoritative signal here — agents/audit/audit.sh:351 uses flock, not process matching). Cheap to hit, invisible when hit, and each orphan is a sleeping process nobody will ever reap."
+  captured: 2026-08-15T15:27:36Z
+  context_task: T-3020
+  tags: []
+  status: pending
+  promoted_to: null
