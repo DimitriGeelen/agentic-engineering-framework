@@ -6,16 +6,16 @@ description: >
   Inception: cross-project dispatch containment: the boundary hook routes agents to
   the ungated write path
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-14T19:21:01Z
-last_update: '2026-08-14T19:30:09Z'
-date_finished:
+last_update: 2026-08-15T05:20:04Z
+date_finished: 2026-08-15T05:20:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -166,15 +166,15 @@ not wait on a design debate):
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -272,7 +272,62 @@ source. T-2036 I *am* asserting — it reproduced here while writing this up.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — validate `--project` before spawn (Finding 1 only)
+
+Rationale:
+
+Re-filed from DEFER. The DEFER was honest — I had not read the source. Having
+read it, the report holds and understates the hazard.
+
+The report is correct. No existence check, no AEF-ness check, at any point
+between `--project` being parsed and the worker `cd`-ing into the target. The
+guard's promise — "each target project enforces its own governance in its own
+process" — is asserted, never verified.
+
+It understates it in one specific way. The reporter attributes the safe
+outcome to luck because the worker died. The luck is narrower: their path did
+not exist. The dangerous case is a path that exists and is not an AEF
+project — `cd` succeeds, `acceptEdits` runs, and with no `.claude/settings.json`
+no hooks load at all. The guarantee is not merely unverified there; it is
+false, and that is the case a precondition check must catch. Nothing today
+distinguishes the two before spawn.
+
+Why GO rather than more care at the call site. The reporter names their own
+error plainly (inferred the target from transcript directory names, proceeded
+after writing the concern down instead of stopping). That is exactly the
+failure agents make under an off-topic request, and it is what the boundary
+hook exists to catch — it caught every read and then handed over the write
+path. Asking agents to be more careful is the remedy that already failed here.
+
+Scoped to Finding 1 alone, deliberately. Finding 2 (`--task` resolving in
+the dispatching project) is a real tension but a modelling question, and
+bundling it would make a containment fix wait on a design debate. Same for
+whether `acceptEdits` should raise a tier — that may be moot once an ungoverned
+target is refused outright. Splitting is a judgement, not the reporter's
+request; they asked for one RCA on Findings 1 and 2 together.
+
+What I am not asserting. G-006/G-007/G-008 are recorded as plausible and
+first-read only. They were reported against v1.6.212 against our 1.6.227, and a
+careful, well-evidenced report is precisely the kind one is tempted to accept
+without checking. Each needs its own task and verification against current
+source. T-2036 I am asserting — it reproduced here while writing this up.
+
+Evidence:
+
+- `agents/context/check-project-boundary.sh:386` — the block message naming
+  dispatch as the remedy, and the "enforces its own governance" claim
+- `agents/termlink/termlink.sh` — `--project` parsed 514, defaulted 617,
+  embedded 717, handed to worker 923; `cd … || FATAL` at 742, post-spawn
+- `--permission-mode` passthrough (T-2282): 532-541, 676-679, 795-796 — no
+  tier interaction with an out-of-root target
+- T-2036 reproduced in this repo: five gates in sequence to commit T-2994's own
+  close artifacts (report §Finding 3)
+- Reporter's incident: `FATAL: cd /opt/2345-test-install failed`, zero writes
+- Research: `docs/reports/T-2995-cross-project-dispatch-containment.md`
+
+**Date**: 2026-08-15T05:20:04Z
 
 ## Updates
 
@@ -281,3 +336,94 @@ source. T-2036 I *am* asserting — it reproduced here while writing this up.
 
 ### 2026-08-14T19:22:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-15T05:20:04Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — validate `--project` before spawn (Finding 1 only)
+
+Rationale:
+
+Re-filed from DEFER. The DEFER was honest — I had not read the source. Having
+read it, the report holds and understates the hazard.
+
+The report is correct. No existence check, no AEF-ness check, at any point
+between `--project` being parsed and the worker `cd`-ing into the target. The
+guard's promise — "each target project enforces its own governance in its own
+process" — is asserted, never verified.
+
+It understates it in one specific way. The reporter attributes the safe
+outcome to luck because the worker died. The luck is narrower: their path did
+not exist. The dangerous case is a path that exists and is not an AEF
+project — `cd` succeeds, `acceptEdits` runs, and with no `.claude/settings.json`
+no hooks load at all. The guarantee is not merely unverified there; it is
+false, and that is the case a precondition check must catch. Nothing today
+distinguishes the two before spawn.
+
+Why GO rather than more care at the call site. The reporter names their own
+error plainly (inferred the target from transcript directory names, proceeded
+after writing the concern down instead of stopping). That is exactly the
+failure agents make under an off-topic request, and it is what the boundary
+hook exists to catch — it caught every read and then handed over the write
+path. Asking agents to be more careful is the remedy that already failed here.
+
+Scoped to Finding 1 alone, deliberately. Finding 2 (`--task` resolving in
+the dispatching project) is a real tension but a modelling question, and
+bundling it would make a containment fix wait on a design debate. Same for
+whether `acceptEdits` should raise a tier — that may be moot once an ungoverned
+target is refused outright. Splitting is a judgement, not the reporter's
+request; they asked for one RCA on Findings 1 and 2 together.
+
+What I am not asserting. G-006/G-007/G-008 are recorded as plausible and
+first-read only. They were reported against v1.6.212 against our 1.6.227, and a
+careful, well-evidenced report is precisely the kind one is tempted to accept
+without checking. Each needs its own task and verification against current
+source. T-2036 I am asserting — it reproduced here while writing this up.
+
+Evidence:
+
+- `agents/context/check-project-boundary.sh:386` — the block message naming
+  dispatch as the remedy, and the "enforces its own governance" claim
+- `agents/termlink/termlink.sh` — `--project` parsed 514, defaulted 617,
+  embedded 717, handed to worker 923; `cd … || FATAL` at 742, post-spawn
+- `--permission-mode` passthrough (T-2282): 532-541, 676-679, 795-796 — no
+  tier interaction with an out-of-root target
+- T-2036 reproduced in this repo: five gates in sequence to commit T-2994's own
+  close artifacts (report §Finding 3)
+- Reporter's incident: `FATAL: cd /opt/2345-test-install failed`, zero writes
+- Research: `docs/reports/T-2995-cross-project-dispatch-containment.md`
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-735cbec5
+- **Timestamp:** 2026-08-15T05:20:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-594413bf
+- **Timestamp:** 2026-08-15T05:20:05Z
+- **Overall:** CONFIRMED
+- **Claims:** 7
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `.claude/settings.json` | file | ✓ pass |
+| `agents/context/check-project-boundary.sh:386` | file_line | ✓ pass |
+| `agents/termlink/termlink.sh` | file | ✓ pass |
+| `docs/reports/T-2995-cross-project-dispatch-containment.md` | file | ✓ pass |
+| `T-2036` | task | ✓ pass |
+| `T-2282` | task | ✓ pass |
+| `T-2994` | task | ✓ pass |
+
+### 2026-08-15T05:20:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
