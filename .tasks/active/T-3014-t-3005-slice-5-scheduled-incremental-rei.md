@@ -242,6 +242,26 @@ Real recall confirmed working afterwards (`fw recall` returning hits, top scores
 anyone sets a low-score miss threshold — deliberately left unset in T-3019 for
 that reason rather than guessed at.
 
+**The incremental path, exercised against the now-populated index:**
+
+```json
+{"mode": "incremental", "num_docs": 9155, "num_chunks": 397459,
+ "files_changed": 9, "files_removed": 0, "build_time_ms": 28439, ...}
+```
+
+**28.4 seconds** for 9 changed files, against an hourly schedule. That is the
+whole point of the slice stated as a number: the bootstrap is 96 minutes and
+would never converge on an hourly cron, the steady state is half a minute and
+converges trivially. `mode` reads `incremental`, not `bootstrap-baseline`, so
+this is the delta path and not the full rebuild wearing its name.
+
+Both legs of the L-364 chain confirmed deployed, not merely wired:
+
+```
+✓ index-reindex-hourly   20 * * * *   [active]   (fw cron list)
+20 * * * * root cd ... flock -n ... 'fw index reindex'   (/etc/cron.d/…)
+```
+
 ## Verification
 
 python3 -m pytest tests/unit/test_incremental_reindex.py -q > /tmp/.t3014-reindex.out 2>&1 && grep -q "passed" /tmp/.t3014-reindex.out && ! grep -q "failed" /tmp/.t3014-reindex.out
