@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T19:57:21Z
+last_update: 2026-08-15T20:22:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -115,9 +115,9 @@ Full measurements and candidate analysis: `docs/reports/T-3022-recall-latency-sc
   rationale: DDL is `CREATE VIRTUAL TABLE vec_documents USING vec0(id INTEGER PRIMARY KEY, embedding FLOAT[768])` — no partition key, no ANN structure. 398,594 × 768 × 4B = 1.22 GB scanned per query.
 
 - **IW-4: Does binary quantization with full-vector rescoring preserve acceptable recall on THIS corpus?**
-  confidence: 2
+  confidence: 3
   disposition: answered
-  rationale: simulated on real corpus vectors (spike 2) — binary first stage then exact rescore recovers the full exact top-10 at N=50 (10.0/10; 9.5 at N=25, 6.5 at N=10), at 32× less data scanned. Confidence 2 not 3: this is a Python simulation over a ~540-doc pool, not a live sqlite-vec bit-vector table, and required N likely grows with corpus size — the *approach* is proven, the production N is not.
+  rationale: built for real in sqlite-vec against all 398,594 vectors (spike 4). Answer is a qualified yes with a measured tradeoff curve, not the lossless win spike 2's simulation reported. Stage 1 is 1011ms → 64ms (15.8×); end-to-end 10.2× at N=100. Recall against exhaustive-KNN ground truth (10 queries) — N=50: top-1 100%, recall@3 87%, recall@10 80%. N=100: 100%/90%/87%. N=200: 100%/93%/92%. **Exact top-1 at every N; recall@10 plateaus near 95-96% and never reaches 100%.** This falsifies spike 2's 10.0/10 at N=50 — the ~540-vector pool had too few distractors, exactly as that spike's own Limits note warned. Design constraint discovered: rescore floats must live in a plain INTEGER PRIMARY KEY table (66ms) not the vec0 table (340ms via `id IN`, 118ms via per-id lookups) — `EXPLAIN QUERY PLAN` shows vec0 serves `id IN (…)` by full scan. Confidence 3 on the mechanism and the curve; the storage end-state (replace vs duplicate `vec_documents`) remains unmeasured and is a build decision.
 
 - **IW-5: Does our embedding model support Matryoshka truncation (768→256), and at what recall cost?**
   confidence: 3
