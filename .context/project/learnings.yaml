@@ -4565,3 +4565,9 @@ X'` returning empty group."
   task: T-3024
   date: 2026-08-15
   context: Added via context agent
+- id: L-612
+  learning: "A single-arm evaluation cannot detect a confidently-wrong answer; it can only detect a missing one. In the T-3025 IW-2 probe the digest arm answered 'T-2977 is in progress' with high confidence and sound reasoning from the evidence it had. Nothing in that answer looks like an error. It became legible only against the full-document arm, which said the opposite. Design consequence: when evaluating a lossy transform, always run the unmodified input through the same instrument — the control is not a formality, it is the only thing that makes plausible errors visible. Same class as 832's polarity argument (errors survive by looking reasonable) and L-609 (a metric that agrees on 8 of 9 easy inputs)."
+  source: P-001
+  task: T-3025
+  date: 2026-08-15
+  context: Added via context agent

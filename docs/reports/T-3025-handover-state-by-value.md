@@ -184,6 +184,91 @@ like success.
 **Still not a recommendation.** IW-1 (cold reader or live session?) remains the operator's
 question, and nothing measured here touches it.
 
+## Spike 12 — the two-arm probe, which corrected me
+
+Two `claude -p` workers, identical prompts differing only in which document they received
+(arm A: the 275,199 B original; arm B: the 18,762 B digest). Both were forbidden to read any
+other file or run any command, told to answer `NOT IN DOCUMENT` plus the command they would
+run when the answer was absent, and asked to self-report what they could not determine.
+Zero parent context cost. Outputs: `T-3025-iw2-arm-a-full.md`, `T-3025-iw2-arm-b-digest.md`.
+
+### The result I designed for: no confabulation
+
+On the question whose answer the digest deliberately drops (T-2977's last recorded action),
+**both arms declined to invent one.** Arm B named the elision precisely — *"the digest states
+outright that 114 WIP entries were not embedded … any per-task detail for T-2977 was
+deliberately elided"* — and produced the right command. Arm A found the answer genuinely
+absent from the full document too, because the generator had written the placeholder
+`See git log`. **17 of 119 `Last action` values (14.3%) are that placeholder**, which shrinks
+the WIP dump's unique content further than §11b already had.
+
+### The result I did not design for, and which reverses §11c
+
+**The two arms disagree on Q5, and the digest arm is confidently wrong.**
+
+| | Arm A (full) | Arm B (digest) | Ground truth |
+|---|---|---|---|
+| Is T-2977 in progress? | **No** — `captured`, horizon `later` | **Yes** — "it appears in `tasks_active`" | **No** (`.tasks/active/T-2977…md`: `status: captured`, `horizon: later`) |
+| Stated confidence | high | high | — |
+
+Arm B's reasoning was sound given its evidence. The fault is upstream of the digest:
+**the handover's frontmatter field `tasks_active:` contains tasks that are not active.**
+T-2977 is in that list while being `captured`/`later`. Across the section, 82 of 119 are
+`captured` and only 37 are `started-work` (§11d) — so the field mis-describes 69% of its
+own contents.
+
+This inverts my §11c conclusion. I wrote that the digest "drops no task identity at all"
+because every WIP task survives in `tasks_active:`, and concluded the trade was cheaper than
+assumed. That was wrong in emphasis: **the surviving carrier asserts a status that is false
+for most entries, and the dropped dump was the thing that corrected it.** The `Status:` line
+I dismissed as "one bit in practice, 6.8% of the section" is precisely the bit that stops a
+recovering agent from treating 82 parked tasks as live work.
+
+The measurement was right and the inference from it was wrong — I had counted the bits and
+not asked what depended on them. A single arm would not have caught this; arm A's answer is
+what made arm B's confident answer legible as an error.
+
+### What this changes
+
+Option (3) digest-plus-reference is **not viable as built**. It is viable if either:
+- the digest carries per-task status (cheap — `Status` is 4,764 B for all 119, 6.8% of a
+  section that is 25% of the file), or
+- `tasks_active:` is corrected to mean what it says, in which case the digest inherits the fix.
+
+The second is better and is not really about handovers at all — a field named `tasks_active`
+that lists parked tasks is wrong in the full handover too. It is merely *survivable* there,
+because the dump immediately below contradicts it. Filed as OBS-276.
+
+### Independently surfaced by arm B: the handover measures the wrong push quantity
+
+Unprompted, arm B flagged as "the one gap that actually mattered" that
+`**Branch:** t2539-staging +131 / −0 vs origin/master` does not say whether the branch is
+*pushed*. Arm A flagged the same absence. Ahead-of-master and unpushed are different states,
+and the rule the handover exists to serve is *"do not end a session with unpushed commits"* —
+so the handover reports a different quantity from the one its own discipline turns on. This
+session lost hours to exactly that state. Filed as OBS-275; independent of by-value/by-reference
+and would survive all four options.
+
+### Standing of IW-2
+
+**Answered, with a condition.** A recovering session does reconstitute from a digest for
+everything narrative — arm B answered Q2, Q3 and Q6 with high confidence and correct quotes,
+including the session's self-correcting `pgrep`/audit story. It does **not** reconstitute
+enumerated live state, and arm B's own closing observation is the sharpest statement of the
+residual risk:
+
+> The residual risk is that a section which *looks* answered by five samples reads as
+> complete — Q4 is the case in point: I got the numbers right and still cannot act on them.
+
+So: counts-plus-samples is honest about bytes and dishonest about sufficiency. If (3) is
+pursued, enumerations should carry a count and a command and **no samples at all**, or the
+complete actionable subset (all 12 urgent observations, not 5 arbitrary ones). Five samples
+is the worst of both — it costs bytes and buys an illusion.
+
+IW-1 remains untouched and remains the operator's.
+
 ## Registered
 
 OBS-272 (the finding). OBS-273 (an unrelated gate catch-22 hit while filing this task).
+OBS-275 (handover reports vs-master, not push state — surfaced by both probe arms).
+OBS-276 (`tasks_active:` frontmatter lists non-active tasks — the §12 reversal).

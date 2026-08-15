@@ -3549,3 +3549,24 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-274
+  text: "OBS: the pre-push audit-failure message is indistinguishable from the lock message at a glance, and both end with the same '--no-verify' bypass line. The failure case says 'ERROR: Push blocked - audit has FAILURES / Fix the issues above before pushing' — but 'above' is ~200 lines of audit output scrolled past, and the FAIL line itself is not repeated near the refusal. Consider echoing the failing check name(s) adjacent to the refusal, the way the lock message helpfully names .context/locks/audit.lock. Cost of the current shape: an agent that pipes to tail sees a refusal with no cause and reads it as transient. Origin: T-3024 session, 2026-08-16."
+  captured: 2026-08-15T22:42:01Z
+  context_task: T-3025
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-275
+  text: "OBS: the handover's 'Where We Are' reports branch position as '+N / -M vs origin/master' — which does not answer whether the branch is PUSHED to its own remote. Ahead-of-master and unpushed are different states: a fully-pushed branch can be +131 vs master (intentional, unlanded by decision), and a fully-merged branch can have unpushed commits. The framework rule the handover exists to support is 'do not end a session with unpushed commits', so the handover currently measures a different quantity from the one its own discipline turns on. Surfaced independently by a cold-reading agent in the T-3025 IW-2 probe (arm B, Q1) which flagged it unprompted as the one gap that mattered. Suggested: add 'origin/<branch>: in sync | N unpushed | no remote branch' alongside the vs-master figure. Origin: T-3025 IW-2, 2026-08-16."
+  captured: 2026-08-15T22:53:33Z
+  context_task: T-3025
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-276
+  text: "OBS: the handover frontmatter field 'tasks_active:' lists tasks that are not active. T-2977 appears in it while being status=captured, horizon=later. Across S-2026-0816-0019's Work in Progress section, 82 of 119 entries are 'captured' and only 37 are 'started-work' — the field mis-describes 69% of its own contents. Survivable in the full handover because the WIP dump immediately below carries per-task Status and contradicts it; NOT survivable if that dump is ever summarised or dropped. Demonstrated live: in the T-3025 IW-2 two-arm probe, the arm given only a digest answered 'T-2977 is in progress' with high confidence, citing tasks_active; the arm given the full handover correctly answered 'no, captured/later'. Fix the field name or the field contents. Origin: T-3025 spike 12, 2026-08-16."
+  captured: 2026-08-15T22:54:51Z
+  context_task: T-3025
+  tags: []
+  status: pending
+  promoted_to: null
