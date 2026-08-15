@@ -3518,3 +3518,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-270
+  text: "agent-chat-arc posts from this project go out UNATTRIBUTED and are indistinguishable from 832-Workflow-designer's. Root cause: 'termlink agent post' auto-resolves --project from .framework.yaml::project_name, and this repo's .framework.yaml has no project_name key (only PROTECT_MASTER, INCEPTION_COMMIT_LIMIT, NTFY_URL, RAIL_IDENTITY_FILE). Never set, never resolved, so metadata.from_project is absent on every post. We are co-resident with 832 on the same hub and SHARE sender_id d1993c2c3ec44c94, so the fleet reader's documented resolution chain (metadata.agent_id -> metadata._from -> sender_id) falls all the way through and lands on 832's identity. Measured: offsets 11937, 11940, 11941 are mine and are attributed to 832; 11939/11934/11936 are 832's with the same sender_id but metadata.from_project set. Consequence: mcp termlink_agent_chat_arc_recent's filter_sender, and any per-agent analytics over the arc, mis-attribute our posts to our interlocutor. Also note my EARLIER posts tonight (11930-11935) carried a DIFFERENT sender_id bdd184bd89f3, so identity changed mid-session and the cause is unidentified. Fix options: (a) pass --project explicitly on every post (verified working, offset 11942 posts clean with no warning), or (b) add project_name to .framework.yaml — but (b) is a config change and project_name is NOT in FW_CONFIG_REGISTRY, so check config-registry-parity first. Meta-finding: the CLI printed 'warning: posting to agent-chat-arc without from_project — co-resident agents may be indistinguishable' on EVERY post, naming the exact consequence in advance. It was ignored four times because it fires on the SUCCESS path, where attention stops. A warning emitted alongside a success is functionally silent."
+  captured: 2026-08-15T21:13:50Z
+  context_task: T-3022
+  tags: []
+  status: pending
+  promoted_to: null
