@@ -172,6 +172,90 @@ def test_a_hit_row_carries_only_the_hash(_isolated_log):
     assert row["query_hash"] == T.query_hash("well indexed topic")
 
 
+# --------------------------------------------------------------------------
+# T-3021 — a recall that returns rows but retrieved nothing is a MISS.
+#
+# These assert a SHAPE, not a value: "rows returned at top_score 0 is not a
+# hit" is true at any corpus size, with no threshold to tune and nothing to
+# grow stale. The rule they replace (`n_hits > 0`) was a value assertion that
+# happened to hold only while the index was sparse.
+# --------------------------------------------------------------------------
+
+def test_rows_returned_at_zero_score_are_a_miss_not_a_hit(_isolated_log):
+    """The defect, pinned. Unthresholded KNN returns neighbours for gibberish.
+
+    Live shape from the populated index: `zqxjv wombat photosynthesis quarterly`
+    → 9 rows, every score clamped to 0. Under the old `n_hits > 0` rule this was
+    recorded as a 9-hit success.
+    """
+    with T.record(T.SURFACE_SEMANTIC, "zqxjv wombat photosynthesis quarterly") as r:
+        r.observe([{"path": f"noise{i}.md", "score": 0} for i in range(9)])
+
+    row = _rows(_isolated_log)[0]
+    assert row["outcome"] == T.MISS, (
+        "9 rows at similarity 0 is the retriever saying nothing was within "
+        "rankable range — not nine successes"
+    )
+    assert row["n_hits"] == 9, "the row count is still reported; only its meaning changed"
+
+
+def test_the_miss_that_now_fires_retains_its_query_text(_isolated_log):
+    """Why this defect mattered beyond the metric.
+
+    Query text is kept on misses only. While misses could not fire, no query
+    text was ever retained, so T-3005 slice 6b (miss-driven reindex priority)
+    had no corpus to rank. This is the join that unblocks it.
+    """
+    with T.record(T.SURFACE_SEMANTIC, "postgres vacuum autovacuum tuning") as r:
+        r.observe([{"path": "x.md", "score": 0}, {"path": "y.md", "score": 0}])
+
+    row = _rows(_isolated_log)[0]
+    assert row["outcome"] == T.MISS
+    assert row["query"] == "postgres vacuum autovacuum tuning"
+
+
+def test_a_barely_positive_score_is_still_a_hit(_isolated_log):
+    """The floor sits at the clamp boundary and nowhere above it.
+
+    0.016 was the weakest genuine known-good query measured on the live index.
+    If someone later 'tightens' this into a tuned relevance threshold, this
+    goes red — which is the point.
+    """
+    with T.record(T.SURFACE_SEMANTIC, "large file scan pre-push") as r:
+        r.observe([{"path": "a.md", "score": 0.016}])
+
+    assert _rows(_isolated_log)[0]["outcome"] == T.HIT
+
+
+def test_unscored_rows_are_trusted_rather_than_reclassified(_isolated_log):
+    """A surface that returns no numeric score is not thereby a miss."""
+    with T.record(T.SURFACE_RAG, "some query") as r:
+        r.observe([{"path": "a.md"}, {"path": "b.md"}])
+
+    assert _rows(_isolated_log)[0]["outcome"] == T.HIT
+
+
+def test_zero_rows_remains_a_miss(_isolated_log):
+    """The old rule's true positives are still true positives."""
+    with T.record(T.SURFACE_SEMANTIC, "nothing at all") as r:
+        r.observe([])
+
+    assert _rows(_isolated_log)[0]["outcome"] == T.MISS
+
+
+def test_miss_rate_is_non_zero_once_miss_class_queries_are_present(_isolated_log):
+    """The summary field an operator actually reads."""
+    with T.record(T.SURFACE_SEMANTIC, "good") as r:
+        r.observe([{"path": "a.md", "score": 0.4}])
+    with T.record(T.SURFACE_SEMANTIC, "gibberish") as r:
+        r.observe([{"path": "b.md", "score": 0}])
+
+    s = T.usage_summary(window_days=1.0)
+    assert s["rows"] == 2
+    assert s["misses"] == 1
+    assert s["miss_rate"] == 0.5
+
+
 def test_an_unavailable_row_carries_the_query_text(_isolated_log):
     """Same reasoning as a miss: you cannot re-run what you did not record."""
     with pytest.raises(EmbedUnavailable):

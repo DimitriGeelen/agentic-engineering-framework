@@ -75,6 +75,39 @@ HIT = "hit"
 MISS = "miss"
 UNAVAILABLE = "unavailable"
 
+
+def _found_something(n_hits, top_score) -> bool:
+    """Did this recall actually retrieve anything, as opposed to merely return rows?
+
+    Read `top_score`, not `n_hits`. `_semantic_search` is an unthresholded KNN —
+    `k = limit * 3`, no distance filter (web/embeddings.py:1134) — so it returns the
+    nearest rows for *any* query vector. `n_hits == 0` therefore only holds when the
+    index is empty, which the Fresh/Online/Correct signals already cover. Classifying
+    on it made the miss dimension incapable of firing: 35 rows, `miss_rate 0.0`, with
+    `zqxjv wombat photosynthesis quarterly` recorded as a 9-hit success (T-3021).
+
+    The threshold is not a tuned constant. `similarity = max(0, 1.0 - distance)`
+    (web/embeddings.py:1147) clamps everything at or past L2 distance 1.0 to exactly
+    zero, so `top_score == 0` is the retriever's own declaration that nothing came
+    within its rankable range. Measured separation on the live index: every known-good
+    query > 0 (min 0.016, median 0.106), every nonsense and plausible-but-absent query
+    exactly 0.
+
+    This is a floor, not a relevance threshold — it catches "found nothing at all",
+    not "found something poor". A genuine query scoring 0.016 is barely clear of it.
+    Deliberately not raised beyond the clamp boundary: any higher number would be
+    invented rather than measured, and inventing one is how the previous rule got its
+    apparent authority.
+    """
+    if n_hits <= 0:
+        return False
+    if top_score is None:
+        # Rows came back carrying no numeric score at all — an unscored surface, not
+        # a miss. Trust the row count rather than silently reclassifying it.
+        return True
+    return top_score > 0
+
+
 # Surfaces. Named so a reader can tell which entry point was used without
 # guessing from the shape of the row.
 SURFACE_SEMANTIC = "semantic"
@@ -188,6 +221,11 @@ class record:
         self._outermost = False
         self._token = None
 
+    @staticmethod
+    def _classify(n_hits, top_score):
+        """Exposed for tests; see module-level `_found_something`."""
+        return HIT if _found_something(n_hits, top_score) else MISS
+
     def observe(self, results) -> None:
         """Record what came back. Accepts a result list or a search() dict."""
         if isinstance(results, dict):
@@ -222,7 +260,7 @@ class record:
             outcome = UNAVAILABLE
         else:
             status = None
-            outcome = HIT if self.n_hits > 0 else MISS
+            outcome = HIT if _found_something(self.n_hits, self.top_score) else MISS
 
         row = {
             "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
