@@ -16,16 +16,32 @@ load ../test_helper
 
 # ---- Source-level invariant ----
 
-@test "episodic.sh emits decision fields as single-quoted YAML scalars (T-1871)" {
-    grep -q "T-1871" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
-    # decision topic line: - decision: '$topic'
-    grep -qE "decision: '\\\$topic'" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
-    # chose / rationale / alternatives_rejected all single-quoted
-    grep -qE "chose: '\\\$chose'" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
-    grep -qE "rationale: '\\\$why'" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
-    grep -qE "alternatives_rejected: \[''?\\\$rej''?\]" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
-    # escape sed must be '→'' not "→\"
-    grep -qE "sed \"s/'/''/g\"" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
+# T-3015 moved decision emission out of episodic.sh into extract_decisions.py,
+# because the shell writer parsed a block-structured section line by line. The
+# T-1871 invariant did not move — single-quoted scalars, ' doubled — so this
+# guard follows the emitter rather than being deleted with the code it watched.
+# The behavioural legs below (backticks / quotes / backslash, end-to-end through
+# the real generator) are what prove the invariant holds; this one pins the shape
+# so a future rewrite cannot quietly switch to double quotes and stay green.
+@test "the decision emitter uses single-quoted YAML scalars (T-1871, moved T-3015)" {
+    local emitter="$FRAMEWORK_ROOT/agents/context/lib/extract_decisions.py"
+    grep -q "L-392" "$emitter"
+    # _q() is the single chokepoint: wraps in ' and doubles any interior '
+    grep -qE "return \"'\" \+ .*\.replace\(\"'\", \"''\"\) \+ \"'\"" "$emitter"
+    # every emitted field routes through _q()
+    grep -qE "decision: \{_q\(topic\)\}" "$emitter"
+    grep -qE "\{key\}: \{_q\(entry\[key\]\)\}" "$emitter"
+    grep -qE "alternatives_rejected: \[\{_q\(" "$emitter"
+    # and episodic.sh must no longer hand-roll its own emission
+    ! grep -qE "chose: '\\\$chose'" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
+}
+
+@test "guard control: the shape guard fails if the emitter switches to double quotes" {
+    local tmp="$BATS_TEST_TMPDIR/emitter.py"
+    sed 's/return "'"'"'" + /return chr(34) + /' \
+        "$FRAMEWORK_ROOT/agents/context/lib/extract_decisions.py" > "$tmp"
+    run grep -qE "return \"'\" \+ .*\.replace\(\"'\", \"''\"\) \+ \"'\"" "$tmp"
+    [ "$status" -ne 0 ]
 }
 
 @test "bash -n clean on agents/context/lib/episodic.sh (T-1871)" {
