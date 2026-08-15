@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3018: BPMN seam fixture-pair contract with 832-Workflow-designer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T22:20:21Z
+# ============================================================================
+
+task_id: T-3018
+task_name: "BPMN seam fixture-pair contract with 832-Workflow-designer"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-15T14:03:00Z
+completed: 2026-08-15T22:20:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T16:06:55+02:00
+last_commit: 2026-08-15T23:04:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the seam has one confirmed silent defect and no oracle on either side. persist observation inbox — OBS-262 and OBS-263 (both filed against T-3020, which is closed). evidence — 832 built and measured the third arm; the urgent question is banked. the independent-path argument, which is stronger than the failure-rate one. fill Problem Statement, Assumptions, Scope Fence; cite IW evidence
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-15.yaml'
+  - '.context/inbox.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.obs-highwater'
+  - 'docs/reports/T-3018-bpmn-seam-fixture-pair-contract.md'
+  - '.tasks/active/T-3018-bpmn-seam-fixture-pair-contract-with-832.md'
+  - '.tasks/active/T-3022-recall-latency-is-ocorpus--brute-force-k.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T16:06:55'
+    action: 'T-3018: the seam has one confirmed silent defect and no oracle on either side'
+  - time: '2026-08-15T17:28:12'
+    action: 'T-3018: persist observation inbox — OBS-262 and OBS-263 (both filed against T-3020, which is closed)'
+  - time: '2026-08-15T23:02:11'
+    action: 'T-3018: evidence — 832 built and measured the third arm; the urgent question is banked'
+  - time: '2026-08-15T23:03:27'
+    action: 'T-3018: the independent-path argument, which is stronger than the failure-rate one'
+  - time: '2026-08-15T23:04:48'
+    action: 'T-3018: fill Problem Statement, Assumptions, Scope Fence; cite IW evidence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 497 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 497
+  commits: 5
+  files_changed: 11
+  lines_added: 591
+  lines_removed: 88
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3018-bpmn-seam-fixture-pair-contract-with-832.md
+generated_by: context-agent-hybrid
