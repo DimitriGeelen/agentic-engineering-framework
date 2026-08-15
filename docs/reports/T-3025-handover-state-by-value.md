@@ -96,6 +96,94 @@ otherwise absorb it.
   rationale: it is independent of F by construction (neither fix implies the other), which
   argues yes under "one task = one deliverable"; deferred to avoid pre-empting the operator.
 
+## Spike 11 — building option (3) and measuring what it actually costs
+
+IW-2 asked whether a digest-plus-reference handover preserves enough for recovery. I built
+one (`scratchpad/digest.py`, exploration only — not a generator) and measured before running
+any behavioural test. The measurement turned out to answer more than the byte question.
+
+**Rule applied.** Narrative sections pass through verbatim; each of the three dumps becomes
+(count, first 5 entries, the live command that regenerates the rest). N=5 deliberately — a
+generous N would answer an easier question.
+
+**Result on `S-2026-0816-0019`: 273,761 B → 18,762 B (6.9%, a 14.6× reduction).** All 14
+non-dump sections byte-identical to the original, verified by per-section md5. After the
+transform the largest remaining section is `## Gotchas` — judgement rather than dump, which
+is the shape you would want.
+
+### 11a. A digest is not a generic transformation
+
+The entry unit is **section-specific**, and getting it wrong produces a plausible wrong
+number rather than an error. Two instances, both mine, in the same hour:
+
+| Version | Section | Reported | Actual | Cause |
+|---------|---------|----------|--------|-------|
+| v1 | Work in Progress | **720 active tasks** | 119 | counted each task's 4 bullet *fields* as tasks |
+| v2 | Awaiting Your Action | **440 items** | 220 | pattern allowed leading whitespace → counted indented sub-bullets |
+
+Neither is detectable by inspection — 720 and 440 both look like numbers this project could
+plausibly produce. Both were caught by an **independent oracle**: most dump sections state
+their own count in a bold lead-in (`**153 pending observations…**`), a figure produced by the
+handover generator rather than by my script, so agreement is corroboration and not tautology.
+That check is now in the script and prints per section.
+
+This is the same class as the −11.3% similarity metric in T-3022 §Spike 10 and 832's polarity
+argument: **the error that survives is the one whose shape looks reasonable, so the check that
+catches it has to come from a path that doesn't share the author's prior.** A digest generator
+that self-reports counts without such an oracle would ship confident wrong numbers into the
+one artifact a recovering session trusts.
+
+### 11b. The Work in Progress dump is mostly a constant, repeated 119 times
+
+Composition of the 69,970-byte section (119 entries):
+
+| Component | Bytes | % | Distinct values |
+|-----------|-------|---|-----------------|
+| `### T-XXXX: "name"` headings | 10,333 | 14.8% | 119 |
+| `Last action:` lines | 14,370 | 20.5% | **84** |
+| `Status:` lines | 4,764 | 6.8% | **2** |
+| `Next step:` + `Blockers:` | 6,188 | 8.8% | **1 each** |
+| structural whitespace | ~35,000 | ~49% | — |
+
+**All 119 entries say `Next step: See task file`. All 119 say `Blockers: None`.** Those two
+fields are constant across the entire section — 6,188 bytes carrying zero bits, and they are
+the two fields a recovering session would most want to read. `Status` carries one bit in
+practice (82 `captured`, 37 `started-work`). Only `Last action` genuinely varies, and it is
+the most recent commit subject touching each task, i.e. recoverable from git.
+
+### 11c. The digest drops no task identity at all
+
+I expected to find in-progress tasks that fall off the end of a top-5 truncation, and built
+the behavioural probe around exactly that. There are none:
+
+```
+WIP tasks: 119        absent from digest entirely: 0
+```
+
+Every one of the 119 already appears in the handover's **YAML frontmatter** `tasks_active:`
+list, which the digest preserves for free. So truncating the dump costs per-task *detail*
+(84 distinct last-actions), not per-task *existence* — a materially cheaper trade than the
+option analysis above assumed when it framed (3) as buying bytes with offline readability.
+
+### 11d. Secondary: 69% of "Work in Progress" is not in progress
+
+82 of the 119 entries have `Status: captured` — filed, not started. A section titled *Work in
+Progress* is more than two-thirds backlog. This is independent of the by-value question and
+would survive any of the four options; it is a selection defect, not an encoding one. Noted
+rather than pursued.
+
+### What this does and does not settle
+
+Settled: the byte case for (3) is stronger than assumed, and the specific thing lost is
+narrower than assumed. Not settled: whether a recovering session *behaves* correctly against
+a digest — specifically whether it recognises the boundary and runs the named command, or
+confabulates across it. That is the two-arm probe (arms A/B, `docs/reports/T-3025-iw2-arm-*`),
+and confabulation is the failure mode that matters, because per 11a it is the one that looks
+like success.
+
+**Still not a recommendation.** IW-1 (cold reader or live session?) remains the operator's
+question, and nothing measured here touches it.
+
 ## Registered
 
 OBS-272 (the finding). OBS-273 (an unrelated gate catch-22 hit while filing this task).
