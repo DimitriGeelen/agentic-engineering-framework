@@ -4547,3 +4547,9 @@ X'` returning empty group."
   task: T-3022
   date: 2026-08-15
   context: Added via context agent
+- id: L-609
+  learning: "A broken measure agrees with a correct one on well-behaved inputs and diverges only on the interesting case, which is how it earns trust. Scored section similarity as 100 - 100*difflines/seclines; diff emits both < and > lines when content is REPLACED, so the count exceeds section length and the metric returns negative values. It matched the correct metric (unchanged-lines over max(len_a,len_b)) to within one point on 8 of 9 sampled pairs and only misbehaved on the single pair that actually churned — the one pair whose value carried information. Generalisation: validating an instrument against typical inputs selects for instruments that are wrong precisely where measurement matters. Validate against the extreme case, and treat any similarity metric that can leave [0,100] as disproven rather than noisy."
+  source: P-001
+  task: T-3022
+  date: 2026-08-15
+  context: Added via context agent

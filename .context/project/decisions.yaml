@@ -3096,3 +3096,17 @@ decisions:
     date: 2026-08-15
     task: T-3021
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-445
+    decision: "Build candidate A for real in sqlite-vec at full corpus scale while the"
+    scope: project
+    date: 2026-08-15
+    task: T-3022
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-446
+    decision: "Rewrite the recommendation around \"~10× at exact top-1 and ~90% recall@3\","
+    scope: project
+    date: 2026-08-15
+    task: T-3022
+    rationale: "Auto-captured from task file on completion"

@@ -586,7 +586,41 @@ empty templates.
 
 At corpus scale across all 1,710 handovers (90.6 MB): Work in Progress 43.6 MB, Awaiting Your
 Action 30.5 MB, Observation Inbox 6.8 MB, Gaps 1.6 MB — **82% of all handover bytes are these
-dumps.** (The Observation Inbox is small historically and huge now: the backlog reached 150
+dumps.**
+
+**Is the duplication archive-wide, or only recent?** The pairs above are all from one evening,
+which would make "82% of the archive is dumps" true without implying the archive is redundant.
+Sampled consecutive pairs at deciles across all 1,710 handovers, `## Work in Progress`:
+
+| Pair | lines A | lines B | identical |
+|------|---------|---------|-----------|
+| 2026-03-16 | 135 | 135 | 100.0% |
+| 2026-04-06 | 419 | 419 | 99.5% |
+| 2026-04-26 | 681 | 327 | **47.2%** |
+| 2026-05-15 | 344 | 352 | 97.1% |
+| 2026-05-28 | 406 | 406 | 100.0% |
+| 2026-06-09 | 479 | 479 | 100.0% |
+| 2026-07-06 | 702 | 694 | 98.7% |
+| 2026-08-03 | 903 | 933 | 96.3% |
+| 2026-08-08 | 1,014 | 1,007 | 99.2% |
+
+**8 of 9 are ≥96.3%, sustained from March to August** — the duplication is a property of the
+archive, not of tonight. The 47.2% outlier is a genuine event, not noise: that section *halved*
+(681 → 327 lines), which is what a real task cleanup looks like. Its presence is the useful
+part — it shows the metric can detect change, which is the control the measurement needs to be
+worth anything.
+
+Note also the left column: 135 → 419 → 406 → 479 → 702 → 1,014 lines. **The state being copied
+is itself growing**, which is the second term in the compounding and is visible directly here.
+
+**Method note.** The first version of this measurement scored similarity as
+`100 − 100 × difflines / seclines` and returned **−11.3%** for the outlier pair, because a
+`diff` emits both `<` and `>` lines when content is *replaced*, so the count can exceed the
+section length. A similarity metric that can go negative is not a similarity metric. Replaced
+with unchanged-line count over `max(len_a, len_b)`. Recorded because the bad metric would have
+inflated every duplication figure in this section, and it announced itself only on the single
+pair that happened to churn — on the eight well-behaved pairs it agreed with the correct metric
+to within a point, which is exactly how a broken instrument earns trust. (The Observation Inbox is small historically and huge now: the backlog reached 150
 pending items only recently, which is why it dominates the *current* file but not the archive.)
 
 **The cause.** The handover embeds current state **by value rather than by reference**. Each
