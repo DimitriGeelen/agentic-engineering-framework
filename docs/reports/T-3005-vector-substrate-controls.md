@@ -267,6 +267,28 @@ Slice 1 is the only one that changes anything a user can feel today. Slices 1+2
 together are the minimum honest stopping point: recall works, and a control exists
 that will go red when it stops working.
 
+### Amendment — the embedding model decision must precede slice 2 (T-3007)
+
+Research supplied by the operator after this design was written argues for
+replacing `nomic-embed-text-v2-moe`. Captured and critiqued in
+`docs/reports/T-3007-embedding-model-and-adaptation.md`. One consequence lands
+directly on this sequencing and is recorded here rather than there:
+
+`web/embeddings.py:211` binds the vec0 virtual table to `EMBEDDING_DIM` (`:76`),
+so **any model with a different output dimension forces a schema migration and a
+full re-embed** — which slices 3 and 5 already owe. Two facts follow:
+
+1. **Do the switch with the reindex, not after it.** Together they cost one
+   reindex; apart they cost two.
+2. **Slice 2's thresholds must be calibrated against the model we intend to
+   keep.** The canary threshold and the coverage/score rails encode assumptions
+   about what a good similarity score looks like. Calibrate on the old model,
+   swap, and every threshold needs revisiting — with the controls themselves now
+   suspect, which is the failure mode this whole arc exists to prevent.
+
+So the model decision (T-3007 steps A and B) is a **prerequisite of slice 2**, not
+a parallel track. Slice 1 is unaffected and stands as landed.
+
 ---
 
 ## Recommendation
