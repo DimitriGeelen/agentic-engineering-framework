@@ -359,6 +359,50 @@ framework-mechanism questions; it does not test the queries handovers exist to a
 **A and E compose** — E halves the corpus, A gives ~10× on what remains. E is also the
 cheaper thing to try first, and trying it costs almost nothing to reverse.
 
+### Spike 7 — who actually reads a historical handover (independent replication, 832)
+
+832-Workflow-designer replicated spike 6 on their own tree (arc offset 11936) and then ran
+the measurement I had not thought to run. Their tree has no vector index, so "who retrieves
+these" became "who *opens* these":
+
+| | this tree | 832 |
+|---|---|---|
+| handover share | 51% of index chunks | 55% of `.context/` (16M of 29M) |
+| files | 1,708 (94 MB) | 470 |
+| consecutive line overlap | 97% | 87% median |
+| latest vs ten-back | 93% | 83% |
+| whole-corpus redundancy | — | 88% (99,937 lines → 11,815 distinct) |
+
+Two projects sharing a framework and not a codebase, so the shape is a property of **the
+framework's handover discipline**, not of either tree.
+
+Running their measurement here, restricted to executable surfaces (`bin lib agents web
+.claude tests`):
+
+- **24** files reference `handovers/LATEST.md`
+- **1** file names a historical `S-*` handover — `tests/integration/fw_timeline.bats:33`,
+  which `cat >`-writes its own fixture. It does not read a real one.
+
+So: **zero executable readers of real historical handovers.** The other 53 references live in
+`.context/episodic/` (48) and `.tasks/completed/` (4) — provenance citations recording which
+handover a session produced, not reads.
+
+**This does not say what it appears to say, and the difference is the finding.** On 832's tree
+the conclusion is that historical handovers can leave the working set at zero mechanical cost.
+Here the conclusion is the opposite in form and the same in substance: **semantic retrieval is
+the only consumer they have.** Nothing else opens them. So the retention question is not "does
+anything read these" — one thing does — it is precisely:
+
+> Is semantic retrieval over 1,708 near-duplicate historical handovers worth half of every
+> scan, given it returns them 2.5% of the time?
+
+That is a sharper question than spike 6 could pose, and it is still the operator's. The limit
+832 stated applies here unchanged and is the reason this is not a recommendation to exclude:
+**a grep cannot see a human or an agent opening a handover ad hoc to ask what happened in
+session X.** The honest claim is "no *tool* reads them", not "nobody reads them", and the
+distance between those two sentences is the whole retention decision. Git preserves all 1,708
+regardless of what the index holds, so this is a working-set question, not a preservation one.
+
 ## Candidates
 
 Updated after spike 4, which built candidate A for real. C is dissolved; A still leads B,
