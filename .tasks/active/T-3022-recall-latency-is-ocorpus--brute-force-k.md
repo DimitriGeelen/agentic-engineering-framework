@@ -127,7 +127,7 @@ Full measurements and candidate analysis: `docs/reports/T-3022-recall-latency-sc
 - **IW-6: Is a partition key useful here, given recall is global rather than scoped?**
   confidence: 3
   disposition: dissolved
-  rationale: `_rag_retrieve` (web/embeddings.py:1274-1277) selects `d.category` for output but never filters on it, and flattens BM25's per-category groups (`:1286`). No query path anywhere carries a scoping predicate, so a partition key would prune nothing. Candidate C is dead.
+  rationale: `_rag_retrieve` (web/embeddings.py:1274-1277) selects `d.category` for output but never filters on it, and flattens BM25's per-category groups (`web/embeddings.py:1286`). No query path anywhere carries a scoping predicate, so a partition key would prune nothing. Candidate C is dead.
 
 - **IW-7: What latency actually matters — is 1s a problem today, or only at projected growth?**
   confidence: 1
@@ -273,7 +273,7 @@ measurement I can run settles it.
 - **Stage decomposition.** vector query 1019 ms; novel-query embed 201 ms; cached embed 0 ms (`web/embeddings.py:228`, `@lru_cache(maxsize=256)`). Repeat recalls are ~100% scan.
 - **Binary quantization + exact rescore recovers exact results.** N=10 → 6.5/10, N=25 → 9.5/10, **N=50 → 10.0/10**, N=100/200 → 10.0/10. First stage scans 96 B/vec vs 3072 B — 32× less.
 - **Dimension truncation measured, not assumed.** `nomic-embed-text-v2-moe`: 8.8/10 top-10 at 512d (ρ=0.954), 8.2/10 at 256d (ρ=0.874), 6.0/10 at 128d. 3× for ~18% of the top-10, with no rescore stage to recover it.
-- **Partitioning dissolved.** `_rag_retrieve` selects `d.category` but never filters on it (`web/embeddings.py:1274-1277`); BM25 per-category groups are flattened (`:1286`). Nothing to prune.
+- **Partitioning dissolved.** `_rag_retrieve` selects `d.category` but never filters on it (`web/embeddings.py:1274`); BM25 per-category groups are flattened (`web/embeddings.py:1286`). Nothing to prune.
 - **A hypothesis that failed, recorded.** The dead embed sidecar (OBS-259) costs ~30 ms, ≈3% — `ECONNREFUSED` returns immediately. Incidental field evidence that T-3017 failover works; downgrades OBS-259 to hygiene.
 - **A measurement error, recorded.** The first truncation run used a near-neighbour-only pool and reported ρ=0.753 at 512d, non-monotonic against 256d. Near-tie ranks are unstable by construction; widening the pool moved it to 0.954. The first number looked like a finding and was an artifact of method.
 - Artifact: `docs/reports/T-3022-recall-latency-scaling.md`. Commits: `660fa0cf3` (characterisation), `9c62305cd` (spikes 1-3).
@@ -300,3 +300,38 @@ measurement I can run settles it.
 
 ### 2026-08-15T19:39:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-77520ab7
+- **Timestamp:** 2026-08-15T19:51:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-421cf2ef
+- **Timestamp:** 2026-08-15T19:51:50Z
+- **Overall:** CONTRADICTED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `web/embeddings.py:228` | file_line | ✓ pass |
+| `d.category` | module | ✓ pass |
+| `web/embeddings.py:1274` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `docs/reports/T-3022-recall-latency-scaling.md` | file | ✓ pass |
+| `T-3017` | task | ✓ pass |
