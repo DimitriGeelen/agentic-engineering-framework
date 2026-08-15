@@ -3389,6 +3389,13 @@ observations:
   captured: 2026-08-15T07:03:36Z
   context_task: T-3009
   tags: [embeddings]
+  status: promoted
+  promoted_to: task
+  urgent: true
+- id: OBS-252
+  text: "Designer corpus maps (.context/designer/projects/) are NOT in web/search_utils.py:collect_files search_dirs, so no designer map prose is semantically indexed at all — fw ask / recall cannot see any of it. Sibling blind spots in the same list: lib/, web/, bin/, policy/, tools/ source and all of docs/ except docs/reports. Found while measuring T-3010 chunker scope. Relevant to the 832 workflow-designer integration: we author aef:meta note prose specifically so it is discoverable, and it currently is not."
+  captured: 2026-08-15T07:23:07Z
+  context_task: T-3010
+  tags: [embeddings]
   status: pending
   promoted_to: null
-  urgent: true

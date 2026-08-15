@@ -144,9 +144,29 @@ def collect_chunk_texts() -> list[str]:
         if not content.strip():
             continue
         title = E.extract_title(fpath, content)
-        for i, chunk in enumerate(E._chunk_content(content)):
+        chunks = E._chunk_content(content, reserve=len(title) + 2)
+        for i, chunk in enumerate(chunks):
             out.append(f"{title}\n\n{chunk}" if i > 0 else chunk)
     return out
+
+
+def assert_cap(cap: int) -> int:
+    """Walk the corpus and report any chunk over `cap` chars. No embed calls.
+
+    This is the cheap standing check (T-3010): it is a pure local computation,
+    so it can sit in a Verification block without depending on the embedder
+    being up. It catches the chunker regressing; the token measurement above
+    catches the *ceiling* moving.
+    """
+    texts = collect_chunk_texts()
+    over = [len(t) for t in texts if len(t) > cap]
+    print(f"chunks={len(texts):,}  cap={cap}  over={len(over):,}")
+    if over:
+        over.sort(reverse=True)
+        print(f"  largest offenders: {over[:10]}")
+        return 1
+    print(f"  max chunk = {max(len(t) for t in texts):,} chars — cap holds")
+    return 0
 
 
 def pct(sorted_vals, q):
@@ -234,9 +254,17 @@ def main() -> int:
     ap.add_argument("--sample", type=int, default=300, help="ratio-calibration sample")
     ap.add_argument("--ambiguous-limit", type=int, default=400)
     ap.add_argument("--check", action="store_true", help="ceiling only, for CI/gates")
+    ap.add_argument("--assert-cap", type=int, metavar="CHARS", default=None,
+                    help="walk the corpus, exit non-zero if any chunk exceeds "
+                         "CHARS. No embed calls; safe when the embedder is down.")
     ap.add_argument("--expect-ceiling", type=int, default=512)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
+
+    if args.assert_cap is not None:
+        # Deliberately before the host resolution below: this mode never talks
+        # to the embedder, so it must not fail when the embedder is unreachable.
+        return assert_cap(args.assert_cap)
 
     host = args.host
     if host is None:

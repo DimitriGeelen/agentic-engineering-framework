@@ -75,6 +75,28 @@ def embed_health() -> EmbedHealth:
 MODEL_NAME = Config.EMBEDDING_MODEL
 EMBEDDING_DIM = 768
 CHUNK_OVERLAP = 150  # chars of overlap between adjacent chunks (T-263)
+
+# ── Chunk budget (T-3010, measured in T-3009) ──────────────────────────────
+# The embedder truncates at a hard token ceiling and reports nothing when it
+# does: the row still looks indexed while its tail is unreachable by search.
+# So the chunk cap is not a tuning knob, it is a correctness bound, and it is
+# derived from the ceiling rather than written down as a literal.
+#
+# EMBED_CONTEXT_TOKENS — measured, not from the model card. `prompt_eval_count`
+#   saturates at exactly 512, and the truncation is real: two texts sharing a
+#   >512-token prefix and differing only in suffix embed to cosine 1.000000000
+#   (control pair: 0.502). Re-measure with `tools/measure_chunk_tokens.py`.
+# CHARS_PER_TOKEN_FLOOR — the *minimum* observed ratio over the real corpus
+#   (2.01 across 247 sampled chunks). The floor is what makes the cap a proof:
+#   at the median ratio (3.19) a 1500-char chunk fits, but dense chunks at the
+#   floor would be ~746 tokens and silently lose their tail. Using the floor
+#   costs chunk count and buys "no chunk can truncate".
+#
+# Changing the embedding model (T-3007 step B) means re-running the measurement
+# and updating EMBED_CONTEXT_TOKENS — the cap follows on its own.
+EMBED_CONTEXT_TOKENS = 512
+CHARS_PER_TOKEN_FLOOR = 2.0
+MAX_CHUNK_CHARS = int(EMBED_CONTEXT_TOKENS * CHARS_PER_TOKEN_FLOOR)
 RERANKER_MODEL = Config.RERANKER_MODEL
 DB_PATH = Config.VECTOR_DB_PATH
 STALE_SECONDS = 3600  # rebuild if older than 1 hour (T-395: was 120s, caused search hangs)
@@ -134,13 +156,63 @@ def _embed_single(text: str) -> bytes:
 # File collection & chunking
 # ---------------------------------------------------------------------------
 
-def _chunk_content(content: str, max_chars: int = 1500) -> list[str]:
+def _split_to_budget(text: str, budget: int) -> list[str]:
+    """Split `text` into pieces of at most `budget` chars, losing nothing.
+
+    Walks separators coarse-to-fine so cuts land on natural boundaries when the
+    text has any, and ends at a hard character cut so the bound holds even for
+    input with no whitespace at all — minified JS, base64, a long hash.
+
+    T-3010: the previous code stopped at "\\n\\n" and appended whatever it was
+    holding, so a paragraph bigger than the cap went in whole. That produced a
+    170,873-char chunk in the real corpus, of which the embedder read ~1,600.
+    The bound has to hold for *every* input shape or it is not a bound.
+    """
+    if len(text) <= budget:
+        return [text] if text else []
+
+    for sep in ("\n\n", "\n", ". ", " "):
+        if sep not in text:
+            continue
+        pieces, cur = [], ""
+        for part in text.split(sep):
+            candidate = part if not cur else cur + sep + part
+            if len(candidate) <= budget:
+                cur = candidate
+            else:
+                if cur:
+                    pieces.append(cur)
+                cur = part
+        if cur:
+            pieces.append(cur)
+        # A single part can still be over budget (one enormous line, one
+        # enormous sentence); recurse so the finer separators get their turn.
+        out = []
+        for p in pieces:
+            out.extend(_split_to_budget(p, budget) if len(p) > budget else [p])
+        return out
+
+    # No separator anywhere. Hard cut is the only way to keep the bound, and
+    # keeping the bound matters more than a tidy boundary: the alternative is
+    # silently handing the embedder text it will throw away.
+    return [text[i:i + budget] for i in range(0, len(text), budget)]
+
+
+def _chunk_content(content: str, max_chars: int | None = None,
+                   reserve: int = 0) -> list[str]:
     """Split content into chunks suitable for embedding.
 
     Each chunk is roughly max_chars. Splits on section headings (## or ###)
     first, then on double newlines if still too long. Adjacent chunks get
     CHUNK_OVERLAP chars of overlap to preserve boundary context (T-263).
     """
+    if max_chars is None:
+        max_chars = MAX_CHUNK_CHARS
+    # The budget governs the text that is EMBEDDED, and build_index prepends the
+    # title while the overlap pass below prepends CHUNK_OVERLAP chars. Reserve
+    # both here, or the cap is right in this function and wrong where it counts.
+    budget = max(200, max_chars - reserve - CHUNK_OVERLAP - 4)
+
     # Split on markdown headings
     sections = re.split(r'\n(?=#{1,3}\s)', content)
     raw_chunks = []
@@ -149,23 +221,12 @@ def _chunk_content(content: str, max_chars: int = 1500) -> list[str]:
         section = section.strip()
         if not section:
             continue
-        if len(section) <= max_chars:
-            raw_chunks.append(section)
-        else:
-            # Split long sections on paragraph boundaries
-            paragraphs = section.split("\n\n")
-            current = ""
-            for para in paragraphs:
-                if len(current) + len(para) + 2 > max_chars and current:
-                    raw_chunks.append(current.strip())
-                    current = para
-                else:
-                    current = current + "\n\n" + para if current else para
-            if current.strip():
-                raw_chunks.append(current.strip())
+        raw_chunks.extend(_split_to_budget(section, budget))
 
     if not raw_chunks:
-        return [content[:max_chars]]
+        # Whitespace-only input. Previously `content[:budget]`, which would have
+        # silently dropped the tail had anything non-trivial ever reached here.
+        return _split_to_budget(content.strip(), budget)
 
     # Add overlap: prepend tail of previous chunk to each subsequent chunk
     chunks = [raw_chunks[0]]
@@ -291,7 +352,9 @@ def build_index() -> dict:
             title = extract_title(fpath, content)
             category = categorize(rel_path)
             task_id = extract_task_id(fpath, content)
-            chunks = _chunk_content(content)
+            # Reserve the title: it is prepended below, so it is part of what
+            # the embedder actually sees and therefore part of the budget.
+            chunks = _chunk_content(content, reserve=len(title) + 2)
 
             for i, chunk in enumerate(chunks):
                 # Prepend title for better embedding context

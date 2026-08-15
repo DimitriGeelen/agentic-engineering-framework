@@ -15,3 +15,4 @@
 PROTECT_MASTER: 1
 INCEPTION_COMMIT_LIMIT: 15
 NTFY_URL: https://ntfy-ring20.docker.ring20.geelenandcompany.com
+RAIL_IDENTITY_FILE: .context/rail-identity.key
