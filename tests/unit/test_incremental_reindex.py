@@ -460,3 +460,34 @@ def test_a_completed_run_leaves_no_resume_file_behind(project):
     E.reindex_incremental()
     resume_path = E.DB_PATH.with_suffix(E.DB_PATH.suffix + ".reindex.resume")
     assert not resume_path.exists()
+
+
+def test_a_files_rows_and_its_file_state_land_together(project):
+    """The resume skip is only correct if these two are never out of step.
+
+    file_state says "this file is done". If it could commit while the file's
+    chunk rows had not, a resumed run would skip a file it never actually
+    embedded — and the gap would be invisible, because the bookkeeping says
+    complete. Checkpoints therefore fall on file boundaries, never inside one.
+    """
+    E.reindex_incremental()
+    for i in range(60):
+        (project / f"g{i}.md").write_text(f"# G{i}\n\n" + ("body text. " * 200))
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(E, "_embed", _fail_after(3))
+        with pytest.raises(RuntimeError):
+            E.reindex_incremental()
+
+    resume_path = E.DB_PATH.with_suffix(E.DB_PATH.suffix + ".reindex.resume")
+    db = sqlite3.connect(str(resume_path))
+    claimed = {r[0] for r in db.execute("SELECT path FROM file_state").fetchall()}
+    have_rows = {r[0] for r in db.execute(
+        "SELECT DISTINCT path FROM documents").fetchall()}
+    db.close()
+
+    orphaned = claimed - have_rows
+    assert not orphaned, (
+        f"{len(orphaned)} file(s) marked done in file_state with no chunk rows: "
+        f"{sorted(orphaned)[:3]} — a resumed run would skip them forever"
+    )

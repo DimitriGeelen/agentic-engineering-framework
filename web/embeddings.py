@@ -767,7 +767,16 @@ def reindex_incremental() -> dict:
         #    chunk text they were built from. Observed RSS: 1,206 MiB and still
         #    climbing when the run was stopped.
         BATCH_SIZE = 64
-        FILE_GROUP = 40
+        # Checkpoint on accumulated CHUNKS, not on a file count. File sizes vary
+        # by orders of magnitude here (mean ~43 chunks, but a long report is
+        # hundreds), so "every N files" makes the interval between durable
+        # points unpredictable — measured at ~15 min for N=40, which is 15 min
+        # of work a kill can still take. Bounding by chunks makes each
+        # checkpoint cost about the same wall-clock regardless of what is in it.
+        # Files stay atomic: a group is only flushed on a file boundary, so a
+        # file's rows and its file_state entry always land together — which is
+        # what makes the resume skip correct.
+        CHUNK_CHECKPOINT = 512
         embedded_chunks = 0
 
         def _flush(meta_rows: list[dict], texts: list[str]) -> None:
@@ -799,29 +808,31 @@ def reindex_incremental() -> dict:
             db.commit()
             embedded_chunks += len(vecs)
 
-        for group_start in range(0, len(changed), FILE_GROUP):
-            group_meta: list[dict] = []
-            group_texts: list[str] = []
-            for fpath, rel_path, content, content_hash in changed[group_start:group_start + FILE_GROUP]:
-                _delete_path_rows(db, rel_path)
-                title = extract_title(fpath, content)
-                category = categorize(rel_path)
-                task_id = extract_task_id(fpath, content)
-                try:
-                    mtime = fpath.stat().st_mtime
-                except OSError:
-                    mtime = start
-                for i, chunk in enumerate(_chunk_content(content, reserve=len(title) + 2)):
-                    group_texts.append(f"{title}\n\n{chunk}" if i > 0 else chunk)
-                    group_meta.append({
-                        "path": rel_path, "title": title, "category": category,
-                        "task_id": task_id, "chunk_index": i, "chunk_text": chunk,
-                        "content_hash": content_hash, "mtime": mtime,
-                    })
+        group_meta: list[dict] = []
+        group_texts: list[str] = []
+        for done_files, (fpath, rel_path, content, content_hash) in enumerate(changed, 1):
+            _delete_path_rows(db, rel_path)
+            title = extract_title(fpath, content)
+            category = categorize(rel_path)
+            task_id = extract_task_id(fpath, content)
+            try:
+                mtime = fpath.stat().st_mtime
+            except OSError:
+                mtime = start
+            for i, chunk in enumerate(_chunk_content(content, reserve=len(title) + 2)):
+                group_texts.append(f"{title}\n\n{chunk}" if i > 0 else chunk)
+                group_meta.append({
+                    "path": rel_path, "title": title, "category": category,
+                    "task_id": task_id, "chunk_index": i, "chunk_text": chunk,
+                    "content_hash": content_hash, "mtime": mtime,
+                })
+            if len(group_texts) >= CHUNK_CHECKPOINT:
+                _flush(group_meta, group_texts)
+                group_meta, group_texts = [], []
+                log.info("reindex progress: %d/%d files, %d chunks embedded",
+                         done_files, len(changed), embedded_chunks)
+        if group_texts:
             _flush(group_meta, group_texts)
-            log.info("reindex progress: %d/%d files, %d chunks embedded",
-                     min(group_start + FILE_GROUP, len(changed)), len(changed),
-                     embedded_chunks)
 
         all_chunks: list[str] = []
         all_meta: list[dict] = []
