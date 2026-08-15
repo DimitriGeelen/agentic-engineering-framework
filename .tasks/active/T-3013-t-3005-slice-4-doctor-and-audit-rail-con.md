@@ -1,15 +1,15 @@
 ---
-id: T-3012
-name: "T-3005 slice 3: _get_db() serves a stale handle — index freshness"
+id: T-3013
+name: "T-3005 slice 4: doctor and audit rail consume corpus_health and index_freshness"
 description: >
-  T-3005 slice 3: _get_db() serves a stale handle — index freshness
+  T-3005 slice 4: doctor and audit rail consume corpus_health and index_freshness
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
-components: [tests/unit/test_index_freshness.py, web/app.py, web/embeddings.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-15T08:37:57Z
-last_update: 2026-08-15T08:58:34Z
-date_finished: 2026-08-15T08:58:34Z
+created: 2026-08-15T08:59:19Z
+last_update: 2026-08-15T08:59:19Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,101 +34,40 @@ date_finished: 2026-08-15T08:58:34Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-15T08:45:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-15T08:45:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3012: T-3005 slice 3: _get_db() serves a stale handle — index freshness
+# T-3013: T-3005 slice 4: doctor and audit rail consume corpus_health and index_freshness
 
 ## Context
 
-Slice 3 of T-3005. `_db_built_at` records when the sqlite handle was *opened*, not
-when the index was *built* — and `_get_db()` re-stamps it every time it reuses the
-existing file (`web/embeddings.py:341`). The stamp therefore renews itself forever
-and the staleness TTL can never fire while a non-empty DB exists. That is the
-mechanism behind T-3004: a five-month-old index reporting itself seconds old.
-
-T-3011 wrote a corpus manifest with a real `finished_at`. This slice makes freshness
-*true* by deriving it from that manifest. It deliberately does **not** change rebuild
-behaviour — surfacing staleness is slice 4, fixing it is slice 5. Making the number
-honest first is what lets those two slices be checkable at all.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `index_freshness()` returns `{built_at, age_seconds, source}` with `source` one of
-      `manifest` / `db_mtime` / `unknown`, derived from the T-3011 corpus manifest —
-      never from when the sqlite handle was opened.
-- [x] `_get_db()` no longer assigns a build-time stamp when it merely reuses an existing
-      DB file; the handle-cache TTL is named and documented as a *connection* TTL, not an
-      index-freshness clock.
-- [x] The status/health dict reports `index_built_at`, `index_age_seconds` and
-      `freshness_source` distinctly from the handle-open time, so a stale index cannot
-      report itself fresh.
-- [x] RED observed first: a test builds a synthetic index whose manifest `finished_at` is
-      200 days old and asserts the reported age is ≈200 days. Against the pre-fix code it
-      reports ≈0s.
-- [x] RED observed first: a test calls `_get_db()` repeatedly across the TTL boundary and
-      asserts the reported index build time does not advance.
-- [x] `source == "unknown"` when there is neither manifest nor readable DB — absence is a
-      reported state, not a zero that looks like freshness (tri-state, same rule as
-      `corpus_health()` in T-3011).
-- [x] Existing vector-substrate suites (`test_canary_manifest.py`, `test_chunk_cap.py`)
-      stay green.
+- [ ] `fw doctor` emits a vector-index freshness line from `index_freshness()` (T-3012):
+      PASS under the threshold, WARN over it, WARN when `source == "unknown"`. Today's
+      real index (157.6 days) must produce a WARN, not a PASS.
+- [ ] The freshness line costs **zero** embedding calls — manifest read plus a `stat`.
+      Pinned by a test asserting no Ollama client is constructed while it runs. Doctor
+      is on the hot path; a health check that needs a live embedder to report is one
+      that goes quiet exactly when the subsystem it watches is down.
+- [ ] `FW_INDEX_STALE_DAYS` is registered in `lib/config.sh` `FW_CONFIG_REGISTRY` with a
+      default and a description, so `fw config list` and Watchtower `/config` show it and
+      `tests/lint/config-registry-parity.bats` stays green.
+- [ ] `fw audit` gains a corpus-health section consuming `corpus_health()` (T-3011):
+      FAIL on `fault`, WARN on `unknown`, PASS on `ok`, with the failing canary named.
+- [ ] The canary check does **not** run in the pre-push `--section structure` path. It
+      costs two embed round-trips, and pre-push already exceeds 180s and blocks every
+      push (OBS-253). Pinned by a test that runs the structure section and asserts no
+      embed call is made.
+- [ ] RED observed first for each verdict: stale→WARN, fresh→PASS, unknown→WARN,
+      fault→FAIL. Each assertion is exercised against a fixture that produces the
+      opposite verdict, so a check that cannot go red is caught here rather than in
+      production (this arc has shipped four such instruments already).
 
 ### Human
-
-- [ ] [REVIEW] The `/health` payload tells you the index is stale without you having to know how to read it
-
-  This one is genuinely yours: `/health` is your monitoring surface, and the question
-  is whether the number lands. The agent can prove the value is *correct* (157.6 days,
-  and the tests pin it) but not whether it is *legible* to the person checking on the
-  system at 2am. Note the endpoint still reports `status: "stale"` alongside a
-  157-day age — deciding whether that pairing reads as "mildly out of date" when it
-  means "five months dead" is exactly the judgment call being handed over.
-
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart && sleep 5 && curl -s "$(bin/fw watchtower url)/health" | python3 -m json.tool`
-  2. Read the `embeddings` block.
-
-  **Expected:** it carries `index_age_seconds` (~13,600,000 — about 157 days) and
-  `freshness_source: "db_mtime"`, and you can tell at a glance that the index is
-  badly out of date.
-
-  **If not:** say which part misleads — the units (raw seconds vs a human string),
-  the `status` wording, or the absence of an explicit threshold — and it becomes
-  slice 4's input, where the doctor/audit rail decides what counts as too old.
-
-  Note: a restart is needed because the running server predates this change; that
-  restart should also clear the `status: "unavailable"` you'd otherwise see (OBS-254).
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -160,12 +99,6 @@ honest first is what lets those two slices be checkable at all.
 -->
 
 ## Verification
-
-python3 -m pytest tests/unit/test_index_freshness.py -q > /tmp/.t3012v1.out 2>&1 && grep -q passed /tmp/.t3012v1.out
-python3 -m pytest tests/unit/test_canary_manifest.py tests/unit/test_chunk_cap.py -q > /tmp/.t3012v2.out 2>&1 && grep -q passed /tmp/.t3012v2.out
-python3 -c "import web.embeddings as e; f=e.index_freshness(); assert set(f)=={'built_at','age_seconds','source'}, f; assert f['source'] in ('manifest','db_mtime','unknown'), f"
-! grep -qE "^_db_built_at" web/embeddings.py
-! grep -q "_db_built_at" web/app.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -228,48 +161,6 @@ python3 -c "import web.embeddings as e; f=e.index_freshness(); assert set(f)=={'
 
 ## RCA
 
-**Symptom.** A vector index untouched for five months reported itself seconds old.
-`index_stats()["built_at"]` returned a timestamp within milliseconds of `now` on every
-call, and `STALE_SECONDS` never fired. Measured on the real index during this task:
-157.6 days old, previously reported as age 0.
-
-**Root cause.** `_db_built_at` was assigned `time.time()` inside `_get_db()`'s *reuse*
-branch (`web/embeddings.py:355`, pre-fix) — the branch taken precisely when nothing is
-built. The variable recorded when the sqlite handle was opened while its name, and every
-reader, claimed it recorded when the index was built. Because the stamp was rewritten on
-each reopen, the TTL comparison `time.time() - _db_built_at < STALE_SECONDS` measured the
-age of the *connection*, which is reset by the very code path the TTL was supposed to
-trigger. The clock reset itself every time it was consulted.
-
-**Why structurally allowed.** Three things had to line up:
-
-1. *The name asserted the semantics.* `_db_built_at` reads as build time, so no reviewer
-   had cause to check. The one place the two meanings diverge — the reuse branch — is the
-   common path, not the exceptional one.
-2. *Nothing else knew when the index was built.* Until T-3011 wrote a corpus manifest,
-   there was no independent record to disagree with the stamp. A wrong answer with no
-   second source is indistinguishable from a right one.
-3. *The failure direction was toward "healthy".* A clock that resets always reports
-   *fresher*, never staler. Under-reporting age produces silence; over-reporting would
-   have produced a false alarm someone would have chased. Only the noisy direction gets
-   investigated, so this could sit for five months (same asymmetry as the port-3000 class
-   in CLAUDE.md: a green line that asserts nothing is never the thing that prompts a look).
-
-**Prevention** (distinct from the fix):
-
-- `test_reopening_the_handle_does_not_advance_the_reported_build_time` and
-  `test_the_ttl_governs_the_connection_not_the_index` fail if the restamp returns —
-  they assert the *invariant* (a rebuild-free reopen changes nothing) rather than the
-  implementation.
-- `test_the_handle_clock_is_not_named_a_build_clock` is a rename tripwire: the misnomer
-  was the bug in one word, so its return is an assertion failure rather than a silent
-  regression. Mirrored at source level by two grep lines in `## Verification`.
-- `source: "unknown"` makes absence a reported state. The prior design had no way to say
-  "I don't know", and defaulted to a number — which is how "no answer" became "fresh".
-- Slice 4 consumes `index_freshness()` in the doctor/audit rail, so the number is watched
-  rather than merely available. **This slice makes the number true; it does not yet make
-  anything act on it.** The index is still 157 days old at close.
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -309,31 +200,6 @@ trigger. The clock reset itself every time it was consulted.
 -->
 
 ## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** The defect was reproduced before the fix, not inferred: a 200-day-old
-database reported `built_at = now`, age `0.0s`, and the stamp advanced on every reopen.
-After the fix the same probe reports the true age, and the real production index — asked
-this question for the first time — answers 157.6 days. Eleven tests were observed RED
-first and are green now, including two that fail for the original reason rather than for
-a renamed symbol. The remaining Human AC is a legibility judgment on the `/health`
-payload, which is yours to make and does not gate correctness.
-
-The honest limit: this slice makes the staleness *visible*, not *fixed*. Nothing yet
-reads the number and complains, and no reindex has run. That is deliberate — slice 4
-watches it, slice 5 rebuilds it — but it means the index is still 157 days stale at close.
-If that ordering is wrong, this is the moment to say so.
-
-**Evidence:**
-- Pre-fix probe: 200-day-old DB → `built_at` = now, age `0.0s`, advanced on reopen (`True`).
-- Post-fix on the real index: `age_seconds = 13,614,849` (157.6 d), `source = db_mtime`.
-- `tests/unit/test_index_freshness.py` — 11 tests, 10 observed RED pre-fix, all green now.
-- `test_canary_manifest.py` + `test_chunk_cap.py` (T-3010/T-3011) unaffected: 39 green total.
-- `/health` exercised via Flask test client: `status: stale`, `index_age_seconds`,
-  `freshness_source` present, HTTP 200.
-- Two findings filed rather than folded in: OBS-253 (pre-push audit >180s blocks every
-  push), OBS-254 (`/health` swallows the embeddings exception class).
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -385,19 +251,7 @@ If that ordering is wrong, this is the moment to say so.
 
 ## Updates
 
-### 2026-08-15T08:37:57Z — task-created [task-create-agent]
+### 2026-08-15T08:59:19Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3012-t-3005-slice-3-getdb-serves-a-stale-hand.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3013-t-3005-slice-4-doctor-and-audit-rail-con.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-0d7b5e3b
-- **Timestamp:** 2026-08-15T08:58:42Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-08-15T08:58:34Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
