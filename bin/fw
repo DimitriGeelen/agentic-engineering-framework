@@ -1929,6 +1929,36 @@ else:
             ;;
     esac
 
+    # Check: recall usage — the "Used" signal (T-3019, T-3005 slice 6a)
+    #
+    # The check above says the index is fresh. This one says whether anyone is
+    # querying it. They are different failures with different remedies, and a
+    # substrate that is fresh, online and correct while nothing calls it passes
+    # every other control in this file — the G-064 zero-consumer shape.
+    #
+    # Reads .context/working/recall-telemetry.jsonl. Embed-free for the same
+    # reason as its sibling: a usage check that needed the embedder would go
+    # quiet exactly when usage stopped.
+    source "$FRAMEWORK_ROOT/lib/recall-usage.sh"
+    _use_line=$(recall_usage_verdict)
+    _use_verdict="${_use_line%%|*}"
+    _use_rest="${_use_line#*|}"
+    _use_msg="${_use_rest%%|*}"
+    _use_hint="${_use_rest#*|}"
+    case "$_use_verdict" in
+        OK)
+            echo -e "  ${GREEN}OK${NC}  $_use_msg"
+            ;;
+        WARN)
+            echo -e "  ${YELLOW}WARN${NC}  $_use_msg"
+            [ -n "$_use_hint" ] && echo -e "         $_use_hint"
+            warnings=$((warnings + 1))
+            ;;
+        *)
+            echo -e "  ${CYAN}SKIP${NC}  $_use_msg"
+            ;;
+    esac
+
 
     # Check: designer pin ↔ vendored build drift (T-2524, T-2521 integration hardening)
     # Sibling of the MCP manifest + cron registry→generated drift classes. Content-compares

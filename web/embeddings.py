@@ -28,6 +28,7 @@ import sqlite_vec
 from web.canary import CANARY_CATEGORY, all_canaries, verify_canaries
 from web.config import Config
 from web.corpus_manifest import build_manifest, read_manifest, write_manifest
+from web import recall_telemetry
 from web.embed_health import (
     FAILOVER,
     RETRYABLE,
@@ -1114,6 +1115,19 @@ def search(query: str, limit: int = 20) -> dict:
             ]
         }
     """
+    with recall_telemetry.record(recall_telemetry.SURFACE_SEMANTIC, query) as _t:
+        result = _semantic_search(query, limit)
+        _t.observe(result)
+        return result
+
+
+def _semantic_search(query: str, limit: int) -> dict:
+    """The semantic path itself, without telemetry.
+
+    Split out so `hybrid_search` can use it without emitting a second row for
+    what is one user query — see `web/recall_telemetry` on outermost-only
+    counting. Callers wanting the "used" signal recorded should call `search`.
+    """
     db = _get_db()
     query_vec = _embed_single(query)
 
@@ -1161,6 +1175,22 @@ def hybrid_search(query: str, limit: int = 20) -> dict:
     k=60 is the standard constant.
 
     Returns same format as search().
+    """
+    with recall_telemetry.record(recall_telemetry.SURFACE_HYBRID, query) as _t:
+        result = _hybrid_search(query, limit)
+        _t.observe(result)
+        return result
+
+
+def _hybrid_search(query: str, limit: int) -> dict:
+    """The fusion itself. Telemetry lives on the public `hybrid_search`.
+
+    Note this calls the *public* `search`, not a private semantic helper: the
+    nested row is suppressed by the re-entrancy guard in `recall_telemetry`,
+    which makes that guard load-bearing rather than belt-and-braces. Routing
+    around it structurally here would leave the guard untestable — a mutation
+    that removed it would break nothing, and the test asserting one-row-per-
+    query would pass for the wrong reason.
     """
     from web.search import search as bm25_search
 
@@ -1221,6 +1251,20 @@ def rag_retrieve(query: str, limit: int = 10) -> list[dict]:
     Deduplicates by path (best chunk per file).
 
     Returns list of dicts: path, title, category, task_id, score, chunk_text.
+    """
+    with recall_telemetry.record(recall_telemetry.SURFACE_RAG, query) as _t:
+        result = _rag_retrieve(query, limit)
+        _t.observe(result)
+        return result
+
+
+def _rag_retrieve(query: str, limit: int) -> list[dict]:
+    """The RAG path itself. Telemetry lives on the public `rag_retrieve`.
+
+    Note this does *not* go through `hybrid_search` despite what the public
+    docstring above has long claimed — it runs its own vector query and its own
+    RRF fusion. That makes it a third independent recall surface, not a wrapper,
+    which is why it earns its own row rather than inheriting one.
     """
     db = _get_db()
     query_vec = _embed_single(query)
