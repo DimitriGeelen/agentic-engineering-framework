@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3023: recall miss regression test is fixture-only — nothing pins the real retriever's zero-score behaviour
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T19:57:26Z
+# ============================================================================
+
+task_id: T-3023
+task_name: "recall miss regression test is fixture-only — nothing pins the real retriever's zero-score behaviour"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-15T19:51:51Z
+completed: 2026-08-15T19:57:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T21:55:54+02:00
+last_commit: 2026-08-15T21:57:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pin the miss classifier against the real retriever, not against my model of it. RCA — the control that catches this existed, I ran it after close instead of before
+
+# Key outcomes
+outcomes:
+  - 'An integration test runs a real gibberish query through the live `E.search` path and asserts the recorded outcome is `miss` — no hand-built result lists'
+  - 'The same test asserts a real known-good query records `hit`, so it fails if the retriever stops returning anything at all (not just if it stops returning zeros)'
+  - 'The test is fail-closed at the gate: if the index or embed path is unavailable the verification line **fails** rather than passing on a skip'
+  - 'Skip reason is explicit when it does skip, so "did not run" is never silently indistinguishable from "passed"'
+  - 'Mutation check: adding a distance cutoff to `_semantic_search` (so gibberish returns zero rows) leaves the T-3021 fixture tests green and turns this integration test red — proving it reads the retriever, not the model'
+  - '`## Verification` includes the integration test with an assertion that it actually executed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-integration-test_recall_miss_live.yaml'
+  - '.tasks/active/T-3022-recall-latency-is-ocorpus--brute-force-k.md'
+  - '.tasks/active/T-3023-recall-miss-regression-test-is-fixture-o.md'
+  - 'tests/integration/test_recall_miss_live.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T21:55:54'
+    action: 'T-3023: pin the miss classifier against the real retriever, not against my model of it'
+  - time: '2026-08-15T21:57:06'
+    action: 'T-3023: RCA — the control that catches this existed, I ran it after close instead of before'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 513
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3023-recall-miss-regression-test-is-fixture-o.md
+generated_by: context-agent-hybrid

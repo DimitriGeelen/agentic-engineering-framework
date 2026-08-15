@@ -400,8 +400,8 @@ did not have when it was filed.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-fd516aef
-- **Timestamp:** 2026-08-15T19:33:02Z
+- **Scan ID:** R-1fed51e8
+- **Timestamp:** 2026-08-15T19:51:30Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -411,6 +411,5 @@ did not have when it was filed.
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `out=$(python3 -m pytest tests/unit/test_recall_telemetry.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed`
-
 ### 2026-08-15T19:32:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

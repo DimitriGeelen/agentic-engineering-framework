@@ -33748,3 +33748,101 @@ scan_id: R-d9054cbc
 task_id: T-3020
 payload:
   task_file: .tasks/active/T-3020-fw-doctor-takes-3m53s--find-what-dominat.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T15:23:50Z'
+scan_id: R-0c49c503
+task_id: T-3019
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T15:23:50Z'
+scan_id: R-0c49c503
+task_id: T-3019
+payload:
+  task_file: .tasks/active/T-3019-t-3005-slice-6a-recall-telemetry--the-us.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T19:33:02Z'
+scan_id: R-fd516aef
+task_id: T-3021
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T19:33:02Z'
+scan_id: R-fd516aef
+task_id: T-3021
+payload:
+  task_file: .tasks/active/T-3021-recall-miss-signal-cannot-fire--nhits-co.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T19:51:30Z'
+scan_id: R-1fed51e8
+task_id: T-3021
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T19:51:30Z'
+scan_id: R-1fed51e8
+task_id: T-3021
+payload:
+  task_file: .tasks/completed/T-3021-recall-miss-signal-cannot-fire--nhits-co.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T19:51:50Z'
+scan_id: R-77520ab7
+task_id: T-3022
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T19:51:50Z'
+scan_id: R-77520ab7
+task_id: T-3022
+payload:
+  task_file: .tasks/active/T-3022-recall-latency-is-ocorpus--brute-force-k.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T19:51:50Z'
+scan_id: RC-421cf2ef
+task_id: T-3022
+payload:
+  overall: CONTRADICTED
+  claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-08-15T19:57:14Z'
+scan_id: R-ebd1227d
+task_id: T-3023
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T19:57:14Z'
+scan_id: R-ebd1227d
+task_id: T-3023
+payload:
+  task_file: .tasks/active/T-3023-recall-miss-regression-test-is-fixture-o.md

@@ -3476,3 +3476,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-264
+  text: "A retry loop around a governed command converts a deterministic gate refusal into an apparent flake. Today's push 'hangs' were not slow — the pre-push self-vendor gate (T-2240) was refusing, correctly and with the fix in its message. My 'for i in 1..5; timeout N git push' loop never showed it because (a) piping to tail returns tail's exit code, so a killed attempt read as success, and (b) each retry re-ran the gate and re-hid the same message. I spent three diagnostic rounds on process/lock forensics for a refusal that printed its own remedy on the first attempt. Rule: when a governed command fails repeatedly, read its output once in full BEFORE wrapping it in retry. Retry is for transient faults; a gate is not transient."
+  captured: 2026-08-15T19:56:24Z
+  context_task: T-3023
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-265
+  text: "This host's 'grep' is ugrep, which parses '**' and a bare '$' mid-pattern as regex operators where GNU grep would not. Hit twice today: grep -n '**Evidence:**' errored with 'empty (sub)expression', and (earlier session) grep -q 'size=$(stat -c %s' returned rc=1 while grep -cF returned 2. Both would have silently produced a wrong verdict inside a Verification line — the second literally did. Rule: use grep -F for any literal containing * $ ( ) [ ] when writing verification commands. A verification line that can only fail is worse than none, and one that can only pass is worse still."
+  captured: 2026-08-15T19:56:27Z
+  context_task: T-3023
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-266
+  text: "OBS-263 recurred within hours of my filing it: I wrote a wait-loop with pgrep -f 'audit.sh --section', whose own command line contains that pattern, so pgrep matched itself and the loop never fired a push. Filing the observation did not prevent the repeat because the observation is prose in an inbox nobody re-reads mid-task. The structural fix is a self-match-safe idiom at the point of use: pgrep -f 'audi[t]\\.sh' — the bracket makes the pattern not match its own literal. Consider a snippet/alias rather than another note. Recurrence-within-a-day is evidence that inbox notes do not change behaviour; only a callable thing does."
+  captured: 2026-08-15T20:00:23Z
+  context_task: T-3022
+  tags: []
+  status: pending
+  promoted_to: null

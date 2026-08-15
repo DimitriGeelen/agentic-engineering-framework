@@ -3089,3 +3089,10 @@ decisions:
     date: 2026-08-15
     task: T-3014
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-444
+    decision: "`top_score > 0` — the clamp boundary the retriever already computes."
+    scope: project
+    date: 2026-08-15
+    task: T-3021
+    rationale: "Auto-captured from task file on completion"

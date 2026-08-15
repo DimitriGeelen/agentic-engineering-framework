@@ -9,7 +9,7 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/config.sh, lib/recall-usage.sh, web/blueprints/config.py, web/embeddings.py, web/recall_telemetry.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
