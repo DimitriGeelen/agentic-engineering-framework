@@ -33950,3 +33950,55 @@ task_id: T-3022
 payload:
   overall: CONFIRMED
   claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-08-15T21:04:04Z'
+scan_id: R-8b9c417a
+task_id: T-3018
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T21:04:04Z'
+scan_id: R-8b9c417a
+task_id: T-3018
+payload:
+  task_file: .tasks/active/T-3018-bpmn-seam-fixture-pair-contract-with-832.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T21:04:04Z'
+scan_id: RC-d0e68330
+task_id: T-3018
+payload:
+  overall: CONFIRMED
+  claim_count: 3
+---
+kind: scan_emitted
+timestamp: '2026-08-15T21:04:40Z'
+scan_id: R-6b30e936
+task_id: T-3018
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T21:04:40Z'
+scan_id: R-6b30e936
+task_id: T-3018
+payload:
+  task_file: .tasks/active/T-3018-bpmn-seam-fixture-pair-contract-with-832.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T21:04:40Z'
+scan_id: RC-233d5d6d
+task_id: T-3018
+payload:
+  overall: CONFIRMED
+  claim_count: 3
