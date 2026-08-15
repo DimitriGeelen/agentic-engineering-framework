@@ -33846,3 +33846,55 @@ scan_id: R-ebd1227d
 task_id: T-3023
 payload:
   task_file: .tasks/active/T-3023-recall-miss-regression-test-is-fixture-o.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T20:23:37Z'
+scan_id: R-9c1fb97d
+task_id: T-3022
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T20:23:37Z'
+scan_id: R-9c1fb97d
+task_id: T-3022
+payload:
+  task_file: .tasks/active/T-3022-recall-latency-is-ocorpus--brute-force-k.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T20:23:37Z'
+scan_id: RC-42560b50
+task_id: T-3022
+payload:
+  overall: CONFIRMED
+  claim_count: 6
+---
+kind: scan_emitted
+timestamp: '2026-08-15T20:24:10Z'
+scan_id: R-8de20088
+task_id: T-3022
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T20:24:10Z'
+scan_id: R-8de20088
+task_id: T-3022
+payload:
+  task_file: .tasks/active/T-3022-recall-latency-is-ocorpus--brute-force-k.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-15T20:24:10Z'
+scan_id: RC-041f03f4
+task_id: T-3022
+payload:
+  overall: CONFIRMED
+  claim_count: 6

@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T20:22:26Z
+last_update: 2026-08-15T20:23:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,7 +102,7 @@ Full measurements and candidate analysis: `docs/reports/T-3022-recall-latency-sc
 - **IW-1: Is the ~1s recall latency a fixed brute-force scan, or does it scale with the result count?**
   confidence: 3
   disposition: answered
-  rationale: measured on the live index — k=1 → 1028ms, k=200 → 1221ms. A 200× change in k moves latency 19%, so the cost is the scan, not result assembly.
+  rationale: measured on the live index — k=1 → 1028ms, k=200 → 1221ms. A 200× change in k moves latency 19%, so the cost is the scan, not result assembly. Full k-sweep table in `docs/reports/T-3022-recall-latency-scaling.md` §Measurements; commit `660fa0cf3`.
 
 - **IW-2: Is the latency in the embedding call or the vector query?**
   confidence: 3
@@ -112,17 +112,17 @@ Full measurements and candidate analysis: `docs/reports/T-3022-recall-latency-sc
 - **IW-3: Does sqlite-vec build an ANN index for `vec0`, or is the scan exhaustive by construction?**
   confidence: 3
   disposition: answered
-  rationale: DDL is `CREATE VIRTUAL TABLE vec_documents USING vec0(id INTEGER PRIMARY KEY, embedding FLOAT[768])` — no partition key, no ANN structure. 398,594 × 768 × 4B = 1.22 GB scanned per query.
+  rationale: DDL at `web/embeddings.py:354` is `CREATE VIRTUAL TABLE vec_documents USING vec0(id INTEGER PRIMARY KEY, embedding FLOAT[768])` — no partition key, no ANN structure. 398,594 × 768 × 4B = 1.22 GB scanned per query. Confirmed empirically by spike 4, which built the bit-vector alternative alongside it: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 4.
 
 - **IW-4: Does binary quantization with full-vector rescoring preserve acceptable recall on THIS corpus?**
   confidence: 3
   disposition: answered
-  rationale: built for real in sqlite-vec against all 398,594 vectors (spike 4). Answer is a qualified yes with a measured tradeoff curve, not the lossless win spike 2's simulation reported. Stage 1 is 1011ms → 64ms (15.8×); end-to-end 10.2× at N=100. Recall against exhaustive-KNN ground truth (10 queries) — N=50: top-1 100%, recall@3 87%, recall@10 80%. N=100: 100%/90%/87%. N=200: 100%/93%/92%. **Exact top-1 at every N; recall@10 plateaus near 95-96% and never reaches 100%.** This falsifies spike 2's 10.0/10 at N=50 — the ~540-vector pool had too few distractors, exactly as that spike's own Limits note warned. Design constraint discovered: rescore floats must live in a plain INTEGER PRIMARY KEY table (66ms) not the vec0 table (340ms via `id IN`, 118ms via per-id lookups) — `EXPLAIN QUERY PLAN` shows vec0 serves `id IN (…)` by full scan. Confidence 3 on the mechanism and the curve; the storage end-state (replace vs duplicate `vec_documents`) remains unmeasured and is a build decision.
+  rationale: built for real in sqlite-vec against all 398,594 vectors (spike 4). Answer is a qualified yes with a measured tradeoff curve, not the lossless win spike 2's simulation reported. Stage 1 is 1011ms → 64ms (15.8×); end-to-end 10.2× at N=100. Recall against exhaustive-KNN ground truth (10 queries) — N=50: top-1 100%, recall@3 87%, recall@10 80%. N=100: 100%/90%/87%. N=200: 100%/93%/92%. **Exact top-1 at every N; recall@10 plateaus near 95-96% and never reaches 100%.** This falsifies spike 2's 10.0/10 at N=50 — the ~540-vector pool had too few distractors, exactly as that spike's own Limits note warned. Design constraint discovered: rescore floats must live in a plain INTEGER PRIMARY KEY table (66ms) not the vec0 table (340ms via `id IN`, 118ms via per-id lookups) — `EXPLAIN QUERY PLAN` shows vec0 serves `id IN (…)` by full scan. Confidence 3 on the mechanism and the curve; the storage end-state (replace vs duplicate `vec_documents`) remains unmeasured and is a build decision. Full tables, method and the falsified spike-2 claim: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 4.
 
 - **IW-5: Does our embedding model support Matryoshka truncation (768→256), and at what recall cost?**
   confidence: 3
   disposition: answered
-  rationale: model is `nomic-embed-text-v2-moe`; measured empirically rather than from docs — top-10 retention 8.8/10 at 512d (ρ=0.954), 8.2/10 at 256d (ρ=0.874), 6.0/10 at 128d. Graceful degradation but not strongly Matryoshka. Loses ~18% of top-10 for 3×, and has no rescore stage to recover it — dominated by IW-4's candidate on both axes.
+  rationale: model is `nomic-embed-text-v2-moe`; measured empirically rather than from docs — top-10 retention 8.8/10 at 512d (ρ=0.954), 8.2/10 at 256d (ρ=0.874), 6.0/10 at 128d. Graceful degradation but not strongly Matryoshka. Loses ~18% of top-10 for 3×, and has no rescore stage to recover it — dominated by IW-4's candidate on both axes. Full table plus the recorded method error (near-neighbour-only pool gave a spurious ρ=0.753): `docs/reports/T-3022-recall-latency-scaling.md` §Spike 1; commit `9c62305cd`.
 
 - **IW-6: Is a partition key useful here, given recall is global rather than scoped?**
   confidence: 3
@@ -353,35 +353,24 @@ measurement I can run settles it.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-77520ab7
-- **Timestamp:** 2026-08-15T19:51:50Z
+- **Scan ID:** R-8de20088
+- **Timestamp:** 2026-08-15T20:24:10Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 4
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
-     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
-     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
-     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
-     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
+- **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-421cf2ef
-- **Timestamp:** 2026-08-15T19:51:50Z
-- **Overall:** CONTRADICTED
-- **Claims:** 5
+- **Scan ID:** RC-041f03f4
+- **Timestamp:** 2026-08-15T20:24:10Z
+- **Overall:** CONFIRMED
+- **Claims:** 6
 
 | Claim | Type | Status |
 |-------|------|--------|
 | `web/embeddings.py:228` | file_line | ✓ pass |
 | `d.category` | module | ✓ pass |
-| `web/embeddings.py:1274` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `web/embeddings.py:1274` | file_line | ✓ pass |
+| `web/embeddings.py:1286` | file_line | ✓ pass |
 | `docs/reports/T-3022-recall-latency-scaling.md` | file | ✓ pass |
 | `T-3017` | task | ✓ pass |
