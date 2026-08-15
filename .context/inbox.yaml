@@ -3541,3 +3541,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-273
+  text: "Gate catch-22 under agent control: T-2188 check-inception-schema validates the file ON DISK, not the proposed edit. It ALLOWED the workflow_type build->inception transition that created the invalid state, then blocked every subsequent Write/Edit — including the edit that adds the target_blast_radius/voi_score fields it demands. Its documented bypass FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an env prefix, which the Write/Edit tool surface cannot carry (T-1890/L-399 producer-consumer parity: bypass exists for Bash only). Compounded by G-020 blocking 'fw task update T-XXX --type inception' — the exact command G-020's own block message recommends as the unblock. Hit live in T-3025 filing; escaped only by work-on + a shell-side python rewrite with the env prefix. Two independent gates each recommending a remedy they themselves refuse."
+  captured: 2026-08-15T22:15:59Z
+  context_task: T-3025
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

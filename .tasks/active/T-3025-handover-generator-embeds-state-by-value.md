@@ -1,15 +1,18 @@
 ---
-id: T-3024
-name: "define the semantic index inclusion set by content class (E-prime)"
+id: T-3025
+name: "handover generator embeds state by value — reference it instead (candidate
+  F)"
 description: >
-  define the semantic index inclusion set by content class (E-prime)
+  handover generator embeds state by value — reference it instead (candidate F)
 
-status: work-completed
-workflow_type: build
+status: captured
+workflow_type: inception
 owner: human
-horizon: now
+horizon: next
+target_blast_radius: 3   # agents/handover/handover.sh + section builders; single subsystem
+voi_score: 0.7           # settles 79% of corpus growth and the G-018 quality question
 tags: []
-components: [lib/config.sh, web/search_utils.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +24,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-15T21:56:03Z
-last_update: 2026-08-15T22:11:22Z
-date_finished: 2026-08-15T22:11:22Z
+created: 2026-08-15T22:12:24Z
+last_update: 2026-08-15T22:16:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,68 +38,80 @@ date_finished: 2026-08-15T22:11:22Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-15T22:00:08Z'
+  - ts: '2026-08-15T22:15:07Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
-      tier: 2
+      tier: 4
       effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-15T22:00:15Z'
+  - ts: '2026-08-15T22:15:13Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 4
-      D2: 0
-      D3: 3
+      D1: 2
+      D2: 2
+      D3: 2
       D4: 2
-      F-RECALL: 3
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 1
-      F2: 1
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
-      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
-      (body/components:component-fabric-incidental)
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3024: define the semantic index inclusion set by content class (E-prime)
+# T-3025: handover generator embeds state by value — reference it instead (candidate F)
 
 ## Context
 
-Build slice from T-3022 (inception, GO 2026-08-15). `web/search_utils.py:68` `collect_files()`
-defines the entire semantic index as seven directories plus two globs, filtered to
-`.md/.yaml/.yml`. Spike 8 established that set is wrong in **both** directions: 73 authored
-files / 0.54 MB are unreachable (all of `policy/`, every ADR, architecture/design/spec docs),
-while 1,710 handovers — 68% of corpus volume, 79% of its growth, ~97% redundant, with zero
-executable readers (spike 7) — are indexed in full. The set was never designed; it accreted by
-directory. E′ replaces the directory list with a **content-class** rule: authored-and-durable
-in, generated-or-restated out.
+Candidate F from T-3022 (inception, GO 2026-08-15). Filed as **inception, not build**: the
+measurement is settled, but the remedy trades away a real property, so it needs a design
+decision before anyone writes code.
 
-**Scope note / open with operator:** the T-3022 GO rationale names candidate **A** (binary
-quantization + exact rescore) as the structural winner and does not mention E′ or F — those
-spikes landed minutes before the decision. This task builds E′ only, on the grounds that the
-GO'd recommendation sequenced "E′ first because it is free and needs no design agreement".
-Candidate A and candidate F remain unstarted and unauthorised by any explicit rationale;
-neither should be built under this task id.
+**What is measured (T-3022 spike 10, `docs/reports/T-3022-recall-latency-scaling.md`):** the
+handover embeds global state **by value rather than by reference**. A representative handover
+is 265,888 bytes of which **97.3% is state dumps** — Observation Inbox 137,505 B, Work in
+Progress 69,568 B, Awaiting Your Action 48,355 B. Those sections are **byte-identical between
+consecutive handovers** (0 differing lines) and 99.7% / 100% identical across a three-hour gap
+with real work in between. Archive-wide, 8 of 9 sampled consecutive pairs are ≥96.3% identical,
+sustained March → August. At corpus scale the dumps are **82% of all 90.6 MB** of handovers.
 
-Evidence: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 8, §Spike 9, §Spike 10.
+Total bytes ≈ *number of handovers × size of state*, with **both terms growing** — which is why
+handovers are 68% of the indexed corpus and 79% of its growth, and why their share has climbed
+monotonically every month (27 → 68%) with no reversal.
+
+**The open question is not whether this is real. It is what a handover is for.** Referencing
+instead of embedding cuts ~74 MB and ~79% of corpus growth at source, and makes handovers
+readable — currently 342 bytes of "Where We Are" sit buried in a quarter-megabyte. But it
+trades away the ability to read a handover without a live system, which is worth something
+during exactly the recovery scenarios handovers exist for. That tradeoff is the operator's,
+which is why this is an inception.
+
+**Why nothing reported it:** every individual handover is correct, and the state it embeds is
+real and current. There is no defective file to find and no event to notice — the defect exists
+only as a property of the *sequence*, and nothing measures sequences.
+
+**Secondary finding, arguably the more serious one:** in that same 265,888-byte file,
+`## Decisions Made This Session` is 38 B, `## Things Tried That Failed` 35 B,
+`## Open Questions / Blockers` 36 B and `## Gotchas` 66 B — **175 bytes total, all empty**, in a
+session that produced all four. The mechanical dumps grow without bound while the sections
+carrying antifragile content go unfilled. This is G-018 (handover quality decay) with a
+measurement attached, and it may deserve a task of its own rather than riding on this one.
+
+Registered as OBS-272. **Nothing here has been built.**
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `collect_files()` selects by an explicit, documented content-class rule rather than an ad-hoc directory list, with the rule stated in a module-level comment naming the two classes (authored-and-durable / generated-or-restated)
-- [x] The authored set spike 8 found unreachable is indexed: at minimum `policy/`, `docs/adr/`, `docs/architecture/`, `docs/design/`, `docs/specs/` contribute files to `collect_files()`
-- [x] `docs/generated/` remains excluded (1,068 generated files) — the guard against "fix it by bulk-adding docs/", which would repeat the original accretion
-- [x] Handover inclusion is a single explicit, named switch rather than an implicit consequence of a directory being listed — so the operator can flip it without editing selection logic
-- [x] A unit test pins the rule: asserts a known authored path is included and a known generated path is excluded, so the next directory added has to state its class
-- [x] `bin/fw reviewer T-3024` returns PASS
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,38 +143,6 @@ Evidence: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 8, §Spike 9, 
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-- [ ] [REVIEW] Decide whether to flip the handover switch to excluded
-
-  This task deliberately ships the switch in its **current** state (handovers still
-  indexed). Flipping it removes 1,710 documents / 90.8 MB from everything `fw ask`,
-  `fw recall`, `/search` and the RAG path can reach. That is a blast-radius call and a
-  judgment about what the corpus is *for*, not a deterministic check — which is why it
-  is yours and why the build does not presume it.
-
-  **Steps:**
-  1. See the effect before deciding — this prints both corpus sizes without changing
-     anything (note: `fw config get` reports only explicitly-set keys, so it is empty
-     while the switch sits at its default of ON):
-     `cd /opt/999-Agentic-Engineering-Framework && python3 -c "import sys,os; sys.path.insert(0,'.'); from web.search_utils import collect_files; print('handovers ON :', len(collect_files())); os.environ['FW_INDEX_HANDOVERS']='0'; print('handovers OFF:', len(collect_files()))"`
-  2. Read the tradeoff: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 7 (zero
-     executable readers), §Spike 10 (97% of each handover is duplicated state).
-  3. **The switch does not change query results until the index is rebuilt.**
-     `collect_files()` feeds the index *builders* (`web/embeddings.py:515`,
-     `web/search.py:57`), not the query path — so `fw ask` keeps answering from the
-     existing 398k-chunk DB until a reindex runs. Setting it and immediately querying
-     would show no difference and mean nothing. The incremental reindex diffs
-     `collect_files()` against the `file_state` table and drops removed files' rows,
-     so no full rebuild is needed — one normal incremental cycle applies it.
-  4. To make it permanent if you want it (takes effect at the next reindex):
-     `cd /opt/999-Agentic-Engineering-Framework && bin/fw config set INDEX_HANDOVERS 0`
-
-  **Expected:** With handovers excluded, answers cite tasks, episodics, ADRs and reports
-  rather than session narratives — and you judge whether anything you actually wanted
-  became unfindable.
-
-  **If not:** `bin/fw config set INDEX_HANDOVERS 1` restores it immediately; the switch
-  is reversible by design and no data is deleted in either state.
 
 ## Verification
 
@@ -221,11 +204,6 @@ Evidence: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 8, §Spike 9, 
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-python3 -c "import ast,sys; ast.parse(open('web/search_utils.py').read())"
-python3 -m pytest tests/unit/test_search_inclusion_set.py -q > /tmp/.t3024-test.out 2>&1 && grep -qE "passed" /tmp/.t3024-test.out
-python3 -c "import sys; sys.path.insert(0,'.'); from web.search_utils import collect_files; f=[str(p) for p in collect_files()]; assert any('policy/' in x for x in f), 'policy/ not indexed'; assert any('docs/adr' in x for x in f), 'docs/adr not indexed'; assert not any('docs/generated' in x for x in f), 'docs/generated leaked in'; print('inclusion-set rule OK:', len(f), 'files')"
-bin/fw reviewer T-3024 > /tmp/.t3024-rev.out 2>&1 && grep -q "Overall:.*PASS" /tmp/.t3024-rev.out
 
 ## RCA
 
@@ -296,52 +274,6 @@ bin/fw reviewer T-3024 > /tmp/.t3024-rev.out 2>&1 && grep -q "Overall:.*PASS" /t
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO — ship the content-class rule as landed, and **leave the handover
-switch ON** for now.
-
-**Rationale:** The rule shipped is strictly additive in its current state: 53 previously
-unreachable authored files became findable, `docs/generated/`'s 1,068 files stayed out, and
-nothing left the index. That half needs no judgment from you — it fixes a defect where the
-documents CLAUDE.md *instructs agents to read* were the ones semantic search could not reach.
-
-The handover exclusion is the half that does need judgment, and I am recommending you **not**
-flip it yet, which is a change from my own sequencing advice in T-3022. Two reasons. First, the
-evidence for excluding handovers is strong on cost (68% of corpus, 79% of growth, ~97%
-duplicated, zero executable readers) but thin on consequence: I measured that no *tool* reads
-them, not that no *one* does, and semantic retrieval is their only access path — so excluding
-them is the one action in this task that could remove something you actually use, and it is
-irreversible in effect until a reindex restores it. Second, spike 10 found the duplication has
-a fixable cause (candidate F, the generator embedding state by value). If F lands, ~82% of the
-handover corpus disappears at source and the exclusion question mostly dissolves. Excluding
-first would relieve the symptom and remove the pressure to fix the cause — and this artifact
-has already caught one remedy that would have closed a problem while changing nothing.
-
-So: take the free half now, and decide the exclusion after you have seen whether F is on the
-table. The switch exists precisely so that decision does not require another code change.
-
-**Note on scope:** your GO rationale on T-3022 names candidate **A** (binary quantization +
-exact rescore) as the structural winner and does not mention E′ or F — those spikes landed
-minutes before you decided. I built E′ only, because it was the cheap, reversible half of the
-GO'd recommendation. **A is unstarted and I have not treated your GO as authorising it**; it is
-a substantially larger build (new bit-vector tables, incremental maintenance, the candidate-D
-drift audit as a precondition) and deserves its own task and its own yes.
-
-**Evidence:**
-- `web/search_utils.py` — selection is now a documented two-class rule (`AUTHORED_DIRS` /
-  `EXCLUDED_DIRS`), not a directory list; adding a directory forces a class decision.
-- Measured effect: 9,247 files indexed with handovers, 7,530 without. Newly reachable —
-  `policy/` 19, `docs/articles` 25, `docs/adr` 4, `docs/architecture` 2, `docs/design` 2,
-  `docs/specs` 1. `docs/generated` leaked: **0**.
-- `tests/unit/test_search_inclusion_set.py` — 10 tests, all passing; pins class membership
-  rather than file counts, so it keeps meaning as the corpus grows.
-- Regression: 314 tests passing across every module the fabric lists as depending on
-  `search_utils` (`web/search.py`, `web/embeddings.py`, app, discovery, learnings-route).
-- `INDEX_HANDOVERS` registered in `lib/config.sh` (default 1). Resolution env >
-  `.framework.yaml` > default, matching the framework's 4-tier contract.
-- Correction made during the build: the Human AC originally told you to flip the switch and
-  re-run `fw ask`. That would have shown **no difference** — `collect_files()` feeds the index
-  *builders*, not the query path, so nothing changes until a reindex. The AC now says so.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -365,19 +297,15 @@ drift audit as a precondition) and deserves its own task and its own yes.
 
 ## Updates
 
-### 2026-08-15T21:56:03Z — task-created [task-create-agent]
+### 2026-08-15T22:12:24Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3024-define-the-semantic-index-inclusion-set-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3025-handover-generator-embeds-state-by-value.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.5)
+### 2026-08-15T22:15:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
 
-- **Scan ID:** R-b5bbebbb
-- **Timestamp:** 2026-08-15T22:11:37Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-08-15T22:11:22Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
+### 2026-08-15T22:16:04Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
