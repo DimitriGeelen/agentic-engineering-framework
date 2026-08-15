@@ -33604,3 +33604,21 @@ scan_id: R-eb9a39f3
 task_id: T-3010
 payload:
   task_file: .tasks/active/T-3010-chunkcontents-1500-char-cap-does-not-hol.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T08:10:59Z'
+scan_id: R-7a55c406
+task_id: T-3011
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T08:10:59Z'
+scan_id: R-7a55c406
+task_id: T-3011
+payload:
+  task_file: .tasks/active/T-3011-t-3005-slice-2-index-canary-and-corpusma.md
