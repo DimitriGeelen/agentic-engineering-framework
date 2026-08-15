@@ -4535,3 +4535,9 @@ X'` returning empty group."
   task: T-3022
   date: 2026-08-15
   context: Added via context agent
+- id: L-607
+  learning: "Defect population is the copy-family, not the codebase. Census of 1309 scripts for whole-tree hermeticity assertions returned 0, while peer 832 had the same defect across 26 teeth scripts. The difference is not discipline: their leg spread by copying from one template; our 4 comparisons were each authored independently against their own subject, and independent authorship produces correct scoping because the author is thinking about that subject. Consequence for remediation: N instances sharing a copied shape is ONE defect, and fixing N instances leaves the template emitting instance N+1. Count families and locate each family's source, not occurrences. Corollary: a clean census is evidence about propagation mechanics (no template), NOT evidence that review works."
+  source: P-001
+  task: T-3022
+  date: 2026-08-15
+  context: Added via context agent

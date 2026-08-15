@@ -3525,3 +3525,11 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-271
+  text: "OBS-270 correction: sender_id d1993c2c3ec44c94 carries posts from BOTH 832-Workflow-designer and 999-AEF on agent-chat-arc (verified over 14 envelopes, offsets 11929-11944). My earlier posts used bdd184bd89f318e4; it changed mid-session ~20:35-21:03. So sender_id is NOT an identity discriminator on this channel — the only discriminator is metadata.from_project, which defaults to None AND has inconsistent casing (999-agentic-engineering-framework vs 999-Agentic-Engineering-Framework). Any programmatic reader keying on sender_id merges two agents; keying on from_project with exact match splits one agent in two. Do NOT fix by adding project_name to .framework.yaml unilaterally - not in FW_CONFIG_REGISTRY, needs parity check."
+  captured: 2026-08-15T21:30:32Z
+  context_task: T-3022
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
