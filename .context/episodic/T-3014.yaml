@@ -1,0 +1,110 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3014: T-3005 slice 5: scheduled incremental reindex
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T14:52:17Z
+# ============================================================================
+
+task_id: T-3014
+task_name: "T-3005 slice 5: scheduled incremental reindex"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-15T10:06:37Z
+completed: 2026-08-15T14:48:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T13:08:31+02:00
+last_commit: 2026-08-15T16:43:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  incremental reindex, and the two defects only the real index exposes. vendored resync + fabric card for the reindex test. the reindex owns its own concurrency, because the first real run proved it did not. make the bootstrap resumable, because 29-58h does not fit in an hour. checkpoint on chunks, not on a file count. record the two decisions and why AC1/AC5 cannot close from here. T-3016 and T-3017 to partial-complete — one ranking review each. the run finished at 1.60h — the prediction held to within 1.4%. incremental steady state is 28s against an hourly schedule
+
+# Key outcomes
+outcomes:
+  - 'A reindex runs on a schedule and the canary goes from `unknown` to `ok` — the'
+  - 'The cron entry follows the L-364 chain (registry → generate → install) and'
+  - 'Reindex is incremental, not a full 393,082-chunk rebuild per run. A full build'
+  - 'Concurrent runs cannot overlap (flock, as the other audit crons do), and a run'
+  - '`fw doctor` shows the age dropping after a run, verified by observing the number'
+  - 'RED observed first: exercised against a deliberately stale index to confirm the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-15 — where concurrency protection lives'
+    chose: 'own it inside `reindex_incremental()` — advisory flock, per-process scratch name, inode identity check before the swap'
+    rationale: 'AC4 said "flock, as the other audit crons do", which put the guard on the cron line. That serialises cron against cron and nothing else. The first real run was destroyed inside 25 minutes by a non-cron actor, with `/proc/<pid>/fd/3` reading `(deleted)` while the process kept embedding.'
+    alternatives_rejected: ['leaving it to callers — a guarantee every caller must remember to wrap is not a guarantee']
+  - decision: '2026-08-15 — checkpoint granularity'
+    chose: 'flush every ~512 accumulated chunks, on file boundaries'
+    rationale: 'measured 1.9 chunks/s against the live embed host, 394,230 chunks in the corpus — a ~29-58h bootstrap. Non-resumable, an hourly cron can never finish it: every firing restarts from zero and the canary stays `unknown` forever while each run looks correct. Committing per group makes progress durable so successive firings chip away. Bounding by chunks rather than files keeps the interval between durable points predictable (a 40-file group measured ~15 min).'
+    alternatives_rejected: ['checkpointing mid-file — file_state is what a resumed run trusts to skip work, so a file marked done without its rows would be skipped forever and the gap would be invisible']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/embeddings.py'
+  - 'bin/fw'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.context/project/decisions.yaml'
+  - '.fabric/components/tests-unit-test_incremental_reindex.yaml'
+  - '.tasks/active/T-3014-t-3005-slice-5-scheduled-incremental-rei.md'
+  - '.tasks/active/T-3016-bulk-reindex-targets-the-shared-gpu-host.md'
+  - '.tasks/active/T-3017-embed-path-fails-over-to-the-other-host-.md'
+  - 'tests/unit/test_incremental_reindex.py'
+  - 'web/embeddings.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T13:08:31'
+    action: 'T-3014: incremental reindex, and the two defects only the real index exposes'
+  - time: '2026-08-15T13:09:03'
+    action: 'T-3014: vendored resync + fabric card for the reindex test'
+  - time: '2026-08-15T13:31:48'
+    action: 'T-3014: the reindex owns its own concurrency, because the first real run proved it did not'
+  - time: '2026-08-15T13:53:41'
+    action: 'T-3014: make the bootstrap resumable, because 29-58h does not fit in an hour'
+  - time: '2026-08-15T13:57:13'
+    action: 'T-3014: checkpoint on chunks, not on a file count'
+  - time: '2026-08-15T14:00:04'
+    action: 'T-3014: record the two decisions and why AC1/AC5 cannot close from here'
+  - time: '2026-08-15T14:42:43'
+    action: 'T-3014: T-3016 and T-3017 to partial-complete — one ranking review each'
+  - time: '2026-08-15T16:41:46'
+    action: 'T-3014: the run finished at 1.60h — the prediction held to within 1.4%'
+  - time: '2026-08-15T16:43:01'
+    action: 'T-3014: incremental steady state is 28s against an hourly schedule'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 281 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 281
+  commits: 10
+  files_changed: 31
+  lines_added: 3250
+  lines_removed: 392
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3014-t-3005-slice-5-scheduled-incremental-rei.md
+generated_by: context-agent-hybrid

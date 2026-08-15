@@ -32,6 +32,8 @@ __pycache__/
 .context/dispatches-*.jsonl
 .context/dispatch-blobs/
 .context/dispatch-outcomes.jsonl
+# Recall-usage runtime telemetry (T-3019 slice 6a) — same class as dispatches.jsonl.
+.context/working/recall-telemetry.jsonl
 .context/secrets/
 .context/settings.yaml
 
@@ -97,6 +99,9 @@ datetime
 .context/working/*.db
 .context/working/*.db-shm
 .context/working/*.db-wal
+.context/working/*.db.manifest.json
+.context/working/*.db.reindex.lock
+.context/working/*.db.reindex.resume
 .context/working/.agent-dispatch-counter
 
 # Child-2 write-out staging proposals (T-2539) — generated, not tasks; regenerable via `fw bpmn compile --write`

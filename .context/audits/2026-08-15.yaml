@@ -1,11 +1,10 @@
-# Audit Results - 2026-08-15-1141
-timestamp: 2026-08-15T09:41:23Z
+# Audit Results - 2026-08-15-1627
+timestamp: 2026-08-15T14:27:27Z
 sections: "corpus-health"
 summary:
-  pass: 0
-  warn: 1
+  pass: 1
+  warn: 0
   fail: 0
 findings:
-  - level: WARN
-    check: "Corpus canaries: index has no manifest — cannot verify"
-    mitigation: "Index predates T-3011. Rebuild to plant canaries and write a manifest."
+  - level: PASS
+    check: "Corpus canaries: retrieval verified end to end"

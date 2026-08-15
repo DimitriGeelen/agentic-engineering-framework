@@ -2929,3 +2929,57 @@ concerns:
     this reached, and bulk-rewriting stored memory is an operator decision.
 
     '
+- id: G-082
+  type: gap
+  title: fw cron generate prints a stale install hint ("fw audit schedule install") that clobbers the registry-driven crontab it just wrote
+  description: 'fw cron generate correctly writes .context/cron/agentic-audit.crontab from
+    cron-registry.yaml, then prints "Install with: fw audit schedule install" (bin/fw
+    line ~4649/4699). That command is the pre-T-1114 legacy path
+    (agents/audit/audit.sh:80-131, _cron_generate_source): it unconditionally overwrites
+    the same file with its own hardcoded 10-job template, discarding every job the
+    registry produced that legacy template does not know about — 14 of 24 active jobs on
+    this project (reviewer-audit-daily, corpus-health, the new T-3014 reindex job, mirror
+    sync, liveness, BVP sweeps, escalation scans, pickup, release tagging, and the
+    inception-retrofit sweep all vanish).
+
+    T-1114 already built the fix — fw cron install (bin/fw ~4836) — which regenerates
+    from the registry, diffs against what is deployed, and installs only the current
+    registry content. The bug is that the OLDER command still exists, still runs
+    unprompted whenever anyone follows the printed hint or CLAUDE.md''s literal
+    "registry -> generate -> install" phrasing without knowing fw cron install is the
+    correct third step, and fw doctor''s own drift check (T-1942/T-1943 content-compare)
+    correctly flags the resulting state as WARN — so the mechanism to detect this exists,
+    but nothing stops a reader from causing it by following the tool''s own suggestion.
+
+    Hit live during T-3014: ran fw cron generate (correct, 24 jobs) then, per the printed
+    hint, fw audit schedule install — which silently reverted the crontab to the legacy
+    10-job list, and fw doctor immediately WARNed "Cron registry edited but not
+    generated". Root cause was the install step, not a missed generate.
+
+    '
+  spec_reference: 'bin/fw: cron generate print hint (~line 4699 "Install with: fw audit
+    schedule install"); agents/audit/audit.sh:80-131 (_cron_generate_source, the
+    clobbering legacy template); bin/fw: cron install (~line 4836, T-1114, the correct
+    path)'
+  severity: medium
+  evidence:
+  - 'T-3014 session: fw cron generate -> 24 active jobs written; fw audit schedule
+    install -> file reverted to legacy 10-job template; fw doctor WARN "Cron registry
+    edited but not generated" fired immediately after'
+  - 'diff of .context/cron/agentic-audit.crontab before/after fw audit schedule install
+    shows the legacy _cron_generate_source() header ("Scheduled Audits (T-184 + T-196 +
+    T-602 + T-604)") replacing the registry-driven header ("managed by cron-registry.yaml")'
+  - 'bin/fw cron generate python heredoc still prints the pre-T-1114 hint text'
+  trigger: 'Any operator or agent follows the printed hint, or CLAUDE.md''s literal
+    "registry -> generate -> install" wording, without independently knowing fw cron
+    install (not fw audit schedule install) is the T-1114 fix.'
+  status: open
+  created: 2026-08-15
+  related_task: T-3014
+  what_remains: 'Two small, independent fixes, neither of which is in T-3014''s scope
+    (one bug = one task): (1) change the printed hint in fw cron generate from "fw audit
+    schedule install" to "fw cron install"; (2) either delete agents/audit/audit.sh''s
+    schedule install subcommand (fully superseded by fw cron install) or make
+    _cron_generate_source() defer to the registry-driven fw cron generate when
+    cron-registry.yaml has jobs, so the legacy path cannot silently regress a project
+    that has already migrated. Filing a build task is the next step, not done here.'

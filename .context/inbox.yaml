@@ -3420,3 +3420,45 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-256
+  text: "832 (T-517) reports fw upgrade's vendoring demotes exec bits and drops files in consumers — 8 of 28 diverged paths in their tree are mode-only, invisible to a content diff. Their T-276 follow-up commit ('restore exec bits demoted by old do_vendor copy, 5 files') is direct evidence. NOT reproduced here: fw vendor self preserves modes (775->775). But that is the wrong path — the claim is about fw upgrade into a consumer, which is different code. Mechanism silently destroys legitimate G-008 in-tree fixes at every re-vendor, in every consumer. Belongs as a mode-preservation leg in tests/unit/upgrade_fresh_machine_simulation.bats. Ref chat-arc 11893, our reply 11895."
+  captured: 2026-08-15T10:28:15Z
+  context_task: T-3015
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-257
+  text: "Push and fetch to origin (OneDev) began returning 403 mid-session at ~12:40, after a successful push ~25 min earlier. Diagnosis: server healthy (HTTP 200 anonymous on / and /agentic-engineering-framework), so not an outage; git-over-HTTP rejects the token embedded in the origin remote URL. ~/.git-credentials mtime 12:34 today — a rotation at that time is the leading hypothesis. Read AND write both 403, so it is credential-level not push-permission. 3 commits (7edc42d5b, 86831ae6c, 5e2a6525b) are local-only; nothing lost. Needs operator: re-issue the OneDev access token. Separately: the token is stored in plaintext in the remote URL, visible in git config and any 'git remote -v' output."
+  captured: 2026-08-15T10:35:55Z
+  context_task: T-3014
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-258
+  text: "T-3014 bootstrap-baseline is not resumable, and an hourly schedule cannot converge on a non-resumable multi-hour job. The first real run re-embeds the whole corpus (~393k chunks, hours) because a pre-slice-5 index has no file_state baseline. All progress lives in a scratch file that the finally-block unlinks on any failure, so a kill at hour 2.9 loses everything and the next firing starts from zero. flock makes the hourly firings skip while it runs (correct), but nothing makes progress durable. If the host reboots, OOMs, or the still-unidentified T-3014 unlinker fires once per multi-hour window, the index never becomes fresh and the canary stays unknown forever — while every individual run looks like it behaved correctly. Steady-state incremental runs are unaffected; this is purely the once-ever bootstrap. Options: checkpoint file_state into the scratch and reuse a matching scratch on the next run, or run the bootstrap once out-of-band and let cron take over after."
+  captured: 2026-08-15T11:42:46Z
+  context_task: T-3014
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-259
+  text: "The embed sidecar on 127.0.0.1:11435 is a single point of failure with no supervisor and no runbook. D-436 (T-3008) deliberately kept embed_host pointed at the T-3006 sidecar, separate from chat on 11434, because OLLAMA_MAX_LOADED_MODELS=1 lets a resident chat model starve the embed path. But the sidecar is not a systemd unit (only ollama.service exists, serving 11434), is not in docker, and no doc, script, cron entry or report in this repo records how it is started — grep for 11435 across docs/, bin/, agents/ and cron returns nothing outside decisions.yaml and one episodic. It died during the T-3014 bootstrap on 2026-08-15 and nothing brought it back; every embedding path in the framework (fw ask, fw recall, search, reindex) is down until someone who knows the launch parameters restarts it by hand. T-3006 made the failure loud rather than silent, which is why this was caught in seconds instead of days -- but loud is not survivable. Options: a systemd unit for the sidecar, or documented launch parameters, or an embed_host fallback to 11434 accepting the T-3006 starvation risk."
+  captured: 2026-08-15T11:59:20Z
+  context_task: T-3014
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-260
+  text: "2,185 stale lock files accumulate in .context/locks/, oldest 2026-04-04. Per-task locks (T-XXX.lock) are created and never removed — the directory entry is now 48KB and listing it produced 117KB of output. Not obviously harmful yet, but it is unbounded growth in a hot path: every lock acquisition walks this directory, and it is adjacent to OBS-253 (audit exceeds 180s and blocks every push). Worth a sweep on task close, or a periodic prune of locks older than N days, or both."
+  captured: 2026-08-15T12:00:58Z
+  context_task: T-3014
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-261
+  text: "T-3016 landed: bulk reindex now embeds on the GPU host (EMBED_BULK_HOST, defaults to OLLAMA_HOST) while queries stay on the sidecar per T-3008 D-436. Measured 1.9 chunks/s CPU sidecar vs 69.9 chunks/s GPU on a synthetic 64x1000-char batch, and 77.3 chunks/s live against the real corpus. The T-3014 bootstrap drops from ~29 h to ~1.6 h, which is what makes the hourly cron converge: two firings with resume, instead of never."
+  captured: 2026-08-15T12:26:17Z
+  context_task: T-3016
+  tags: []
+  status: pending
+  promoted_to: null

@@ -1,8 +1,8 @@
 ---
-id: T-3019
-name: "T-3005 slice 6a: recall telemetry — the Used signal"
+id: T-3020
+name: "fw doctor takes 3m53s — find what dominates it"
 description: >
-  T-3005 slice 6a: recall telemetry — the Used signal
+  fw doctor takes 3m53s — find what dominates it
 
 status: started-work
 workflow_type: build
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-15T14:08:57Z
-last_update: 2026-08-15T14:53:03Z
-date_finished:
+created: 2026-08-15T14:52:57Z
+last_update: 2026-08-15T14:52:57Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,38 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-15T14:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-15T14:15:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 2
-      D3: 3
-      D4: 2
-      F-RECALL: 3
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 1
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=2 
-      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
-      D4=2 (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link);
-      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
-      (body/components:context-fabric-incidental); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3019: T-3005 slice 6a: recall telemetry — the Used signal
+# T-3020: fw doctor takes 3m53s — find what dominates it
 
 ## Context
 
@@ -75,13 +46,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] One row is written per *outermost* recall — `hybrid_search` calling the semantic path internally emits one row, not two. Mutation-verified: removing the re-entrancy guard must turn a test red.
-- [x] A recall that raises `EmbedUnavailable` still writes a row, carrying `outcome=unavailable` and the embed class. The diagnostic row is the one a naive implementation loses; a test asserts it survives.
-- [x] Miss and unavailable rows carry the query text; hit rows carry only `query_hash`. Both directions asserted (text present on miss, absent on hit).
-- [x] A telemetry write failure never propagates to the caller's search, and is counted in `recall_telemetry_state()` rather than swallowed silently (L-331). Test forces a write failure and asserts search still returns while the counter increments.
-- [x] `fw doctor` emits a "recall usage" line: OK when rows exist in the window, WARN at zero rows (the G-064 zero-consumer signal).
-- [x] The WARN is observed firing against an empty log, not inferred from reading the code — a positive control nobody has watched fail is a hypothesis (T-3005 constraint 3).
-- [x] Malformed lines in the log are skipped rather than fatal, so one torn write cannot destroy the whole usage signal.
+- [ ] Per-check wall-clock for a full `fw doctor` run is measured and recorded, so the answer is a number per check rather than a guess about which one feels heavy.
+- [ ] The dominant cost is named with evidence, and it is stated plainly whether T-3019's new `recall usage` check contributed — the honest answer includes "the check I just added is the problem" if that is what the measurement says.
+- [ ] Whether this is a *regression* is answered, not assumed: doctor's runtime is measured against a checkout from before this session's vector work, so "it got slower" is a comparison rather than an impression.
+- [ ] Findings are written to `docs/reports/T-3020-doctor-latency.md` with the measurement table, so the next person to ask does not re-measure.
+
+Scope note: this task diagnoses and records. Any fix that changes doctor's
+behaviour is a separate task — a 4-minute doctor is worth understanding before
+it is worth optimising, and optimising the wrong check is how the measurement
+gets skipped.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,35 +86,6 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-- [ ] [REVIEW] Approve recording raw query text on miss rows
-
-  This is a data-retention decision, not a technical one, which is why the agent
-  filed it rather than deciding it. The design writes the *actual query string*
-  into `.context/working/recall-telemetry.jsonl` for rows where recall missed —
-  because slice 6b (miss-driven reindex priority) needs to know what agents kept
-  asking about and getting nothing, and a hash cannot tell you that. Hit rows
-  store only a hash.
-
-  The tradeoff: queries are written by agents and by you, they are about this
-  project's own corpus, and the file is committed-adjacent (`.context/working/`
-  is gitignored, but the host retains it and it is readable by anything that can
-  read the repo). If any query might carry something you would not want durably
-  logged, the answer is no and the agent will hash misses too — at the cost of
-  making slice 6b substantially weaker.
-
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw recall "something obscure that will miss" ; tail -3 .context/working/recall-telemetry.jsonl`
-  2. Look at what the miss row actually contains — the `query` field is the thing under review.
-  3. Decide whether that content, retained indefinitely on this host, is acceptable.
-
-  **Expected:** You are comfortable with raw query text on miss rows, OR you say
-  no and the agent switches misses to hash-only.
-
-  **If not:** Say so on the task and the agent removes the `query` field from
-  `_write_row`, replaces slice 6b's input with hash-frequency only, and records
-  the capability loss in the slice 6b task so the weakening is visible rather
-  than silently absorbed.
 
 ## Verification
 
@@ -203,26 +147,6 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-# The unit suite. No pinned pass-count: a whole-suite total is invalidated by any
-# sibling task adding a test, and pytest already exits non-zero on real failure
-# (T-3016 shipped with such a count and it broke at the next close).
-python3 -m pytest tests/unit/test_recall_telemetry.py -q > /tmp/.t3019-tests.out 2>&1
-
-# Doctor emits the Used signal at all. Separate from the two below, which pin the
-# verdicts — this one only asserts the check has not silently dropped out of the
-# doctor run, which is how a control stops firing without anyone noticing.
-bin/fw doctor > /tmp/.t3019-doctor.out 2>&1 && grep -q "recall usage:" /tmp/.t3019-doctor.out
-
-# The WARN fires against a log with no rows. This is the positive control: a
-# zero-consumer alarm nobody has watched go red is a hypothesis, not a control
-# (T-3005 constraint 3). Asserted on a path that does not exist, so the check
-# cannot pass by accident on a populated log.
-rm -f /tmp/.t3019-empty.jsonl && FW_RECALL_TELEMETRY_PATH=/tmp/.t3019-empty.jsonl bash -c 'source lib/config.sh; source lib/recall-usage.sh; recall_usage_verdict 7' > /tmp/.t3019-warn.out 2>&1 && grep -q "^WARN|recall usage: 0 queries" /tmp/.t3019-warn.out
-
-# And the OK verdict on a log that has rows — the other direction. Without this,
-# a check hard-wired to WARN would pass the line above and be useless.
-printf '{"ts":"%s","surface":"semantic","query_hash":"x","n_hits":1,"top_score":0.5,"latency_ms":5,"outcome":"hit"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /tmp/.t3019-rows.jsonl && FW_RECALL_TELEMETRY_PATH=/tmp/.t3019-rows.jsonl bash -c 'source lib/config.sh; source lib/recall-usage.sh; recall_usage_verdict 7' > /tmp/.t3019-ok.out 2>&1 && grep -q "^OK|recall usage: 1 query" /tmp/.t3019-ok.out
 
 ## RCA
 
@@ -316,7 +240,7 @@ printf '{"ts":"%s","surface":"semantic","query_hash":"x","n_hits":1,"top_score":
 
 ## Updates
 
-### 2026-08-15T14:08:57Z — task-created [task-create-agent]
+### 2026-08-15T14:52:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3019-t-3005-slice-6a-recall-telemetry--the-us.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3020-fw-doctor-takes-3m53s--find-what-dominat.md
 - **Context:** Initial task creation

@@ -3075,3 +3075,17 @@ decisions:
     date: 2026-08-15
     task: T-3017
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-442
+    decision: "own it inside `reindex_incremental()` — advisory flock, per-process"
+    scope: project
+    date: 2026-08-15
+    task: T-3014
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-443
+    decision: "flush every ~512 accumulated chunks, on file boundaries"
+    scope: project
+    date: 2026-08-15
+    task: T-3014
+    rationale: "Auto-captured from task file on completion"

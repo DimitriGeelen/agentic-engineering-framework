@@ -4517,3 +4517,9 @@ X'` returning empty group."
   task: T-3003
   date: 2026-08-14
   context: Added via context agent
+- id: L-604
+  learning: "A concurrency guarantee that lives in the caller is not a guarantee. T-3014's AC4 specified 'flock, as the other audit crons do' — so the protection was written into the cron line, which serialises cron against cron and nothing else. The first real run was destroyed by a non-cron actor within 25 minutes. When an AC names the mechanism (flock) rather than the property (two runs cannot corrupt each other), it licenses putting the mechanism where it does not hold. Write the property; let the implementation own it internally."
+  source: P-001
+  task: T-3014
+  date: 2026-08-15
+  context: Added via context agent

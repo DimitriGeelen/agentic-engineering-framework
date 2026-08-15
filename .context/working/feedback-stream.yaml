@@ -33676,3 +33676,57 @@ scan_id: R-30a853dd
 task_id: T-3015
 payload:
   task_file: .tasks/active/T-3015-episodic-decision-extraction-parses-a-bl.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T12:40:57Z'
+scan_id: R-ed8f2ca1
+task_id: T-3016
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T12:40:57Z'
+scan_id: R-ed8f2ca1
+task_id: T-3016
+payload:
+  task_file: .tasks/active/T-3016-bulk-reindex-targets-the-shared-gpu-host.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T12:41:57Z'
+scan_id: R-83db05a1
+task_id: T-3017
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T12:41:57Z'
+scan_id: R-83db05a1
+task_id: T-3017
+payload:
+  task_file: .tasks/active/T-3017-embed-path-fails-over-to-the-other-host-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T14:52:06Z'
+scan_id: R-b8ff7d77
+task_id: T-3014
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T14:52:06Z'
+scan_id: R-b8ff7d77
+task_id: T-3014
+payload:
+  task_file: .tasks/active/T-3014-t-3005-slice-5-scheduled-incremental-rei.md
