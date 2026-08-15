@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3005: reliability and antifragility controls for the vector memory substrate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T05:42:58Z
+# ============================================================================
+
+task_id: T-3005
+task_name: "reliability and antifragility controls for the vector memory substrate"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-15T05:33:05Z
+completed: 2026-08-15T05:42:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-15T07:41:10+02:00
+last_commit: 2026-08-15T07:41:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the T-3004 RCA was wrong about what is broken
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3004.yaml'
+  - 'docs/reports/T-3005-vector-substrate-controls.md'
+  - '.tasks/active/T-3005-reliability-and-antifragility-controls-f.md'
+  - '.tasks/completed/T-3004-vector-memory-substrate--liveness-reliab.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T07:41:10'
+    action: 'T-3005: the T-3004 RCA was wrong about what is broken'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 4
+  lines_added: 582
+  lines_removed: 134
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3005-reliability-and-antifragility-controls-f.md
+generated_by: context-agent-hybrid
