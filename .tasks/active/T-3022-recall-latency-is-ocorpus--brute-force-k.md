@@ -105,19 +105,19 @@ Full measurements and candidate analysis: `docs/reports/T-3022-recall-latency-sc
   rationale: DDL is `CREATE VIRTUAL TABLE vec_documents USING vec0(id INTEGER PRIMARY KEY, embedding FLOAT[768])` — no partition key, no ANN structure. 398,594 × 768 × 4B = 1.22 GB scanned per query.
 
 - **IW-4: Does binary quantization with full-vector rescoring preserve acceptable recall on THIS corpus?**
-  confidence: 1
-  disposition: deferred
-  rationale: sqlite-vec supports bit vectors natively (~32× less data scanned), and two-stage rescoring is the standard bound on recall loss — but the loss is corpus-specific and our known-good scores are already low (median 0.106, min 0.016), so headroom above the zero-clamp is thin. Needs a measured spike, not an assumption.
+  confidence: 2
+  disposition: answered
+  rationale: simulated on real corpus vectors (spike 2) — binary first stage then exact rescore recovers the full exact top-10 at N=50 (10.0/10; 9.5 at N=25, 6.5 at N=10), at 32× less data scanned. Confidence 2 not 3: this is a Python simulation over a ~540-doc pool, not a live sqlite-vec bit-vector table, and required N likely grows with corpus size — the *approach* is proven, the production N is not.
 
 - **IW-5: Does our embedding model support Matryoshka truncation (768→256), and at what recall cost?**
-  confidence: 0
-  disposition: deferred
-  rationale: not yet checked which model `EMBEDDING_MODEL` resolves to nor whether its training supports prefix truncation. Cheap to answer; would give ~3× with no format change to the search path.
+  confidence: 3
+  disposition: answered
+  rationale: model is `nomic-embed-text-v2-moe`; measured empirically rather than from docs — top-10 retention 8.8/10 at 512d (ρ=0.954), 8.2/10 at 256d (ρ=0.874), 6.0/10 at 128d. Graceful degradation but not strongly Matryoshka. Loses ~18% of top-10 for 3×, and has no rescore stage to recover it — dominated by IW-4's candidate on both axes.
 
 - **IW-6: Is a partition key useful here, given recall is global rather than scoped?**
-  confidence: 2
-  disposition: deferred
-  rationale: partitions only prune when queries carry the partition predicate; `fw recall` and `/search` query the whole corpus, so the expected pruning is ~0. Likely dissolves, but worth confirming against the RAG path, which may be scopeable by category.
+  confidence: 3
+  disposition: dissolved
+  rationale: `_rag_retrieve` (web/embeddings.py:1274-1277) selects `d.category` for output but never filters on it, and flattens BM25's per-category groups (`:1286`). No query path anywhere carries a scoping predicate, so a partition key would prune nothing. Candidate C is dead.
 
 - **IW-7: What latency actually matters — is 1s a problem today, or only at projected growth?**
   confidence: 1

@@ -102,16 +102,83 @@ Framing owed to 832-Workflow-designer, agent-chat-arc offset 11924: *values are
 supposed to move, which is exactly why value-based instruments cannot see this class;
 shapes are not supposed to move.*
 
+## Spike results (2026-08-15, same session)
+
+Three of the four deferred questions are now answered. Measured on real corpus vectors.
+
+### Spike 1 — the model is `nomic-embed-text-v2-moe`, and truncation is mediocre
+
+Tested empirically rather than taken from documentation: truncate the stored vectors to
+d dims, re-rank, and compare against the full-dimension ordering.
+
+| dims | top-10 retained | Spearman ρ | speedup |
+|------|-----------------|-----------|---------|
+| 512 | 8.8/10 | 0.954 | 1.5× |
+| 384 | 7.8/10 | 0.922 | 2× |
+| 256 | 8.2/10 | 0.874 | 3× |
+| 128 | 6.0/10 | 0.772 | 6× |
+| 64 | 5.4/10 | 0.674 | 12× |
+
+Graceful degradation — the dimensions do carry decreasing information, so the model is
+Matryoshka-*ish*. But a strongly Matryoshka-trained model holds ρ > 0.99 at 512d, and
+this one loses ~12% of the top-10 there. **256d costs ~18% of the top-10 for 3×**, with
+no second stage to recover it.
+
+*Method note:* the first run of this measurement used a candidate pool of only the 60
+nearest neighbours and reported ρ=0.753 at 512d, non-monotonic against 256d. That was an
+artifact — ranks among near-ties are unstable by construction, so the tight pool measured
+noise rather than truncation loss. Widening the pool to 40 near + 300 random moved ρ at
+512d from 0.753 → 0.954. Recorded because the first number looked like a finding and was
+a measurement error.
+
+### Spike 2 — binary quantization + exact rescore is the strong candidate
+
+Simulated the two-stage retrieval: rank the pool by Hamming distance over sign-bit
+vectors (96 B/vec vs 3072 B — **32× less data**), take the top N, then rescore those N
+with exact float cosine.
+
+| rescore N | exact top-10 recovered |
+|-----------|------------------------|
+| 10 | 6.5/10 |
+| 25 | 9.5/10 |
+| **50** | **10.0/10** |
+| 100 | 10.0/10 |
+| 200 | 10.0/10 |
+
+At N=50 the two-stage result is **identical to exhaustive search** on this sample, while
+scanning 32× less data in the first stage.
+
+This is the structural reason it beats truncation: the final ranking is computed from
+*exact* vectors, so the approximation only has to be good enough to get the right
+candidates into the shortlist — it never has to be good enough to order them. Truncation
+has no such stage, so its error lands directly in the output.
+
+**Limits, which matter more than the headline:**
+- A Python simulation over a ~540-vector pool, not a live sqlite-vec bit-vector table.
+  The *recall* result should transfer (it is arithmetic); the *speed* claim is inferred
+  from data volume and has not been measured on sqlite-vec's bit-vector path.
+- Required N almost certainly grows with corpus size — a 540-doc pool has far fewer
+  distractors than 398,594. **N=50 is not a production parameter**, it is evidence that
+  a modest N suffices in principle.
+- 6 queries.
+
+### Spike 3 — partitioning is dead (IW-6 dissolved)
+
+`_rag_retrieve` selects `d.category` for display but never filters on it
+(`web/embeddings.py:1274-1277`), and flattens BM25's per-category grouping (`:1286`).
+No query path in the system carries a scoping predicate, so a partition key has nothing
+to prune. Candidate C removed.
+
 ## Candidates
 
-Not yet costed. Listed with what each would need to prove.
+Updated with spike results. C is dissolved; A now dominates B on both axes.
 
-| # | Candidate | Expected effect | Needs proving |
-|---|-----------|-----------------|---------------|
-| A | Binary quantization + full-vector rescore of top-N | ~32× less data scanned; two-stage bounds recall loss | Recall loss **on this corpus**. Our known-good scores are already low (median 0.106, min 0.016) so headroom above the zero-clamp is thin — the T-3021 miss floor could start swallowing real hits. |
-| B | Matryoshka truncation 768→256 | ~3×, no search-path change | Whether `EMBEDDING_MODEL` was trained to support prefix truncation. Cheap to check, unknown today. |
-| C | Partition key | Prunes only when the query carries the predicate | Probably ~0 for `fw recall` / `/search`, which are global. May apply to the RAG path if it is scopeable by category. Expected to dissolve. |
-| D | Accept, and assert the shape | 0 | That 1 s is acceptable at projected growth — an operator judgment, not a measurement. |
+| # | Candidate | Measured effect | Status |
+|---|-----------|-----------------|--------|
+| **A** | **Binary quantization + exact rescore of top-N** | **32× less data scanned; 10.0/10 exact top-10 at N=50** | **Leading.** Recall proven on a sample; production N and real sqlite-vec bit-vector speed still unmeasured. |
+| B | Matryoshka truncation 768→256 | 3×; 8.2/10 top-10 (ρ=0.874) | Dominated by A on both axes. Keep only as a fallback if A's bit-vector path proves unworkable in sqlite-vec. |
+| C | Partition key | ~0 — no query path carries a scoping predicate | **Dissolved** (spike 3). |
+| D | Accept, and assert the shape | 0 latency change | Still live, and not exclusive with A. |
 
 A and D are not exclusive: the shape assertion is worth having regardless of which
 optimisation lands, because it is what stops the next regression from being invisible.
@@ -119,16 +186,30 @@ optimisation lands, because it is what stops the next regression from being invi
 ## What is NOT claimed
 
 - That 1 s is unacceptable. It is fine interactively today. The concern is the slope.
-- That binary quantization will work here. It is the leading candidate on general
-  grounds and is unproven against this corpus.
+- That binary quantization is *fast* here. 32× less data is a volume argument; sqlite-vec's
+  actual bit-vector scan throughput has not been measured, and constant factors could eat
+  a good part of it.
+- That N=50 is the production rescore depth. It is what sufficed on a 540-vector pool.
+  Required N grows with distractor count and must be re-measured at full corpus scale.
 - That the corpus will keep growing at the observed rate. One bulk reindex is not a
   growth curve. IW-7 depends on data that started accumulating this week.
 
 ## Open items
 
-Tracked as IW-1..IW-7 in the task. IW-1/2/3 are answered at confidence 3 (measured
-above). IW-4/5/6/7 are deferred pending spikes — and IW-7, "does this matter yet",
-is the go/no-go hinge and belongs to the operator.
+IW-1/2/3 answered at confidence 3, IW-5 at 3, IW-6 dissolved, IW-4 at confidence 2
+(approach proven, parameters not). **IW-7 — "does this matter yet" — is the go/no-go
+hinge and is the operator's, not mine.** It is a judgment about acceptable latency at
+projected growth, and no measurement I can run will settle it.
+
+The recommendation is GO on the basis that the characterisation is complete and the
+leading candidate is now evidence-backed rather than speculative — not on the basis that
+the latency is currently unacceptable, which I do not claim.
+
+If GO, the build work splits cleanly:
+1. Measure sqlite-vec bit-vector scan throughput at full corpus scale (settles the speed
+   claim and the production N in one spike).
+2. Two-stage retrieval behind a config flag, both paths available for A/B.
+3. The shape assertion (candidate D) — independent of 1 and 2, and worth having either way.
 
 ## Dialogue Log
 
