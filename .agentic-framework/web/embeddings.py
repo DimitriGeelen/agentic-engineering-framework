@@ -105,7 +105,21 @@ STALE_SECONDS = 3600  # rebuild if older than 1 hour (T-395: was 120s, caused se
 
 # Singleton state
 _db = None
-_db_built_at = 0.0
+
+# When THIS PROCESS opened the sqlite handle. A connection-cache clock, and
+# nothing more (T-3012).
+#
+# It was called `_db_built_at` and was read as the index's build time, which it
+# never was: `_get_db()` restamps it every time it reuses the existing file, so
+# it renewed itself on every process start and every TTL expiry. A five-month-old
+# index therefore reported itself seconds old, and STALE_SECONDS could not fire
+# while a non-empty database existed — the mechanism behind T-3004.
+#
+# The index's real age comes from the T-3011 corpus manifest; see
+# `index_freshness()`. Do not reintroduce the old name: it asserts something
+# false, and `test_the_handle_clock_is_not_named_a_build_clock` fails if it
+# comes back.
+_db_opened_at = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -279,6 +293,45 @@ def _init_db() -> sqlite3.Connection:
     return db
 
 
+def index_freshness() -> dict:
+    """How old the index on disk actually is.
+
+    Returns `{built_at, age_seconds, source}` where `source` is one of:
+
+      manifest  — the T-3011 corpus manifest's `finished_at`. Authoritative: it
+                  is written once, at the end of a build, by the build itself.
+      db_mtime  — no usable manifest, so the database file's mtime. A real answer
+                  but a weaker one: any write moves it, so it can only ever be an
+                  upper bound on freshness. Every index built before T-3011 lands
+                  here, which is why the fallback exists rather than reporting
+                  unknown and losing the signal entirely.
+      unknown   — no manifest and no readable database. Deliberately not zero, and
+                  deliberately not `now`.
+
+    That last distinction is the whole point. A missing answer rendered as a
+    number is indistinguishable from a fresh index, and that is exactly how a
+    five-month-old index passed for current (T-3004). Callers get `None` and have
+    to decide what to do about it. Same tri-state rule as `corpus_health()`.
+
+    Never raises: this is a health primitive, and one that throws reports nothing.
+    """
+    manifest = read_manifest(DB_PATH)
+    if manifest is not None:
+        finished = manifest.get("finished_at")
+        if isinstance(finished, (int, float)) and not isinstance(finished, bool):
+            return {"built_at": float(finished),
+                    "age_seconds": time.time() - float(finished),
+                    "source": "manifest"}
+
+    try:
+        mtime = DB_PATH.stat().st_mtime
+    except Exception:  # noqa: BLE001 — missing/unreadable both mean "no answer"
+        return {"built_at": None, "age_seconds": None, "source": "unknown"}
+
+    return {"built_at": mtime, "age_seconds": time.time() - mtime,
+            "source": "db_mtime"}
+
+
 def corpus_health() -> dict:
     """Manifest + canary verdict for the live index. Never raises.
 
@@ -309,7 +362,7 @@ def corpus_health() -> dict:
 
 def is_index_ready() -> bool:
     """Check if the vector index exists and has data (T-395: avoids triggering rebuild)."""
-    if _db is not None and _db_built_at > 0:
+    if _db is not None and _db_opened_at > 0:
         return True
     if not DB_PATH.exists() or DB_PATH.stat().st_size < 4096:
         return False
@@ -326,10 +379,17 @@ def is_index_ready() -> bool:
 
 
 def _get_db() -> sqlite3.Connection:
-    """Get the database connection, reusing existing index if available."""
-    global _db, _db_built_at
+    """Get the database connection, reusing the existing index if available.
 
-    if _db is not None and (time.time() - _db_built_at) < STALE_SECONDS:
+    STALE_SECONDS is a *connection* TTL: it decides how long this process holds
+    one sqlite handle before reopening the file. It says nothing about whether
+    the index is current, and reaching it does not cause a rebuild — reopening
+    the same file is all that happens. For the index's actual age, call
+    `index_freshness()` (T-3012).
+    """
+    global _db, _db_opened_at
+
+    if _db is not None and (time.time() - _db_opened_at) < STALE_SECONDS:
         return _db
 
     # Reuse existing DB file if it has data (T-395: avoid expensive full rebuild on every search)
@@ -338,7 +398,9 @@ def _get_db() -> sqlite3.Connection:
             _db = _init_db()
             count = _db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
             if count > 0:
-                _db_built_at = time.time()
+                # Stamps when the handle opened. Nothing here rebuilt anything,
+                # so no freshness claim is being made or renewed.
+                _db_opened_at = time.time()
                 log.info("Reusing existing vector index with %d documents", count)
                 return _db
         except Exception:
@@ -357,7 +419,7 @@ def build_index() -> dict:
 
     Returns stats dict with num_docs, num_chunks, build_time_ms.
     """
-    global _db, _db_built_at
+    global _db, _db_opened_at
 
     start = time.time()
 
@@ -423,7 +485,7 @@ def build_index() -> dict:
 
     if not all_chunks:
         _db = db
-        _db_built_at = time.time()
+        _db_opened_at = time.time()
         return {"num_docs": 0, "num_chunks": 0, "build_time_ms": 0}
 
     # Batch embed all chunks (in groups to avoid Ollama timeout)
@@ -455,7 +517,7 @@ def build_index() -> dict:
     num_docs = len(set(m["path"] for m in all_metadata))
 
     _db = db
-    _db_built_at = time.time()
+    _db_opened_at = time.time()
 
     # T-3011: record what was built, from which commit, with which model and cap.
     # Best-effort — a manifest write failure must not fail an otherwise good
@@ -790,14 +852,29 @@ def _make_snippet(chunk_text: str, query: str, max_len: int = 200) -> str:
 
 
 def index_stats() -> dict:
-    """Return stats about the current vector index."""
+    """Return stats about the current vector index.
+
+    `built_at` used to be the handle-open time (T-3012). It is kept — callers and
+    templates read it — but it now reports what the name always claimed, so the
+    two numbers are separated rather than conflated:
+
+      index_built_at / index_age_seconds / freshness_source — the index on disk
+      handle_opened_at — when this process opened its connection
+
+    Both are legitimate. Only one of them is the index's age.
+    """
     db = _get_db()
     num_chunks = db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
     num_docs = db.execute("SELECT COUNT(DISTINCT path) FROM documents").fetchone()[0]
+    fresh = index_freshness()
     return {
         "num_docs": num_docs,
         "num_chunks": num_chunks,
-        "built_at": _db_built_at,
+        "built_at": fresh["built_at"],
+        "index_built_at": fresh["built_at"],
+        "index_age_seconds": fresh["age_seconds"],
+        "freshness_source": fresh["source"],
+        "handle_opened_at": _db_opened_at,
         "db_path": str(DB_PATH),
         "model": MODEL_NAME,
         "embedding_dim": EMBEDDING_DIM,

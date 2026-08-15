@@ -311,8 +311,15 @@ def create_app() -> Flask:
             result["ollama"] = "unreachable"
 
         # Check embedding index (lightweight — never trigger rebuild)
+        #
+        # T-3012: "a handle is open" was the entire basis for reporting `ok`, so
+        # this said ok for a five-month-old index (T-3004). Age now comes from
+        # index_freshness(), which reads the T-3011 corpus manifest — and is
+        # reported alongside the status rather than folded into it, so a caller
+        # that only understands `status` is unaffected while one that wants the
+        # age can have it.
         try:
-            from web.embeddings import DB_PATH, _db, _db_built_at
+            from web.embeddings import DB_PATH, _db, index_freshness
             if _db is not None:
                 num = _db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
                 result["embeddings"] = {"status": "ok", "chunks": num}
@@ -320,6 +327,9 @@ def create_app() -> Flask:
                 result["embeddings"] = {"status": "stale"}
             else:
                 result["embeddings"] = {"status": "no_index"}
+            fresh = index_freshness()
+            result["embeddings"]["index_age_seconds"] = fresh["age_seconds"]
+            result["embeddings"]["freshness_source"] = fresh["source"]
         except Exception:
             result["embeddings"] = {"status": "unavailable"}
 

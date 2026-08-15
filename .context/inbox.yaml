@@ -3399,3 +3399,17 @@ observations:
   tags: [embeddings]
   status: pending
   promoted_to: null
+- id: OBS-253
+  text: "Pre-push hook's 'fast' audit subset (audit.sh --section structure, T-862) exceeds 180s on this repo — every git push in session S-2026-0815 timed out at 60s and 120s. Network is fine (git ls-remote origin = 0.57s), so the hook is the whole cost. T-862 sized this subset when the repo had ~100 tasks; it now has 3000+. Consequence is governance erosion: the only agent-visible workaround is --no-verify, which is Tier 0 and skips the audit entirely, so the gate's own slowness pushes operators toward bypassing it. Session End Protocol ('never end a session with unpushed commits') becomes structurally unsatisfiable inside normal tool timeouts. Fix direction: profile which structure checks dominate, cache the expensive ones, or move the full structure sweep to the daily cron and keep only diff-scoped checks in pre-push."
+  captured: 2026-08-15T08:46:40Z
+  context_task: T-3012
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-254
+  text: "Watchtower /health reports embeddings.status='unavailable' on the live server while a fresh interpreter reports 'stale' — the route's blanket 'except Exception: {status: unavailable}' (web/app.py) discards which error occurred, so a swallowed import/runtime fault is indistinguishable from a genuinely absent subsystem. Found while verifying T-3012: same false-signal family as T-3004 (a health surface that cannot say what is wrong reports something that reads as benign). Fix direction: capture the exception class/message into the payload (e.g. {status: unavailable, error: 'ModuleNotFoundError: ...'}) so the failure names itself, and log it at WARN rather than silently. Likely proximate cause here is a long-running server process holding a stale module state; a restart clears the symptom but not the blindness."
+  captured: 2026-08-15T08:52:26Z
+  context_task: T-3012
+  tags: []
+  status: pending
+  promoted_to: null

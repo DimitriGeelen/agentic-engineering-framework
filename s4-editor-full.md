@@ -1,0 +1,238 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - generic [ref=f1e5]: AEF · BPMN
+      - generic [ref=f1e6]: Workflow Designer
+      - generic [ref=f1e7]: ·
+      - button "📂 Open project…" [ref=f1e8] [cursor=pointer]
+      - button "+" [ref=f1e9] [cursor=pointer]
+      - generic "Currently-loaded saved version (snapshot). Click 🕘 Versions to browse." [ref=f1e363]: 🕘 v1
+    - generic [ref=f1e10]:
+      - button "+ Add Lane" [ref=f1e11] [cursor=pointer]
+      - button "Reset" [ref=f1e12] [cursor=pointer]
+      - button "✨ Clean layout" [ref=f1e13] [cursor=pointer]
+      - button "View XML" [ref=f1e14] [cursor=pointer]
+      - button "⚙ Settings" [ref=f1e15] [cursor=pointer]
+      - button "Load…" [ref=f1e16] [cursor=pointer]
+      - button "🕘 Versions" [ref=f1e17] [cursor=pointer]
+      - button "⤓ Save to project" [ref=f1e365] [cursor=pointer]
+      - button "Save" [ref=f1e19] [cursor=pointer]
+  - main [ref=f1e20]:
+    - complementary [ref=f1e21]:
+      - generic [ref=f1e22]:
+        - generic [ref=f1e23]: Tool
+        - generic [ref=f1e24] [cursor=pointer]: Select / Move
+        - generic [ref=f1e25] [cursor=pointer]: Connect →
+      - generic [ref=f1e26]:
+        - generic [ref=f1e27]: Events
+        - generic [ref=f1e32] [cursor=pointer]:
+          - generic [ref=f1e33]: Start
+          - generic [ref=f1e34]: startEvent
+        - generic [ref=f1e39] [cursor=pointer]:
+          - generic [ref=f1e40]: End
+          - generic [ref=f1e41]: endEvent
+      - generic [ref=f1e42]:
+        - generic [ref=f1e43]: Tasks
+        - generic [ref=f1e49] [cursor=pointer]:
+          - generic [ref=f1e50]: Service Task
+          - generic [ref=f1e51]: agent · Initiative
+        - generic [ref=f1e58] [cursor=pointer]:
+          - generic [ref=f1e59]: User Task
+          - generic [ref=f1e60]: human · Sovereignty
+        - generic [ref=f1e66] [cursor=pointer]:
+          - generic [ref=f1e67]: Script Task
+          - generic [ref=f1e68]: fw · Authority
+        - generic [ref=f1e75] [cursor=pointer]:
+          - generic [ref=f1e76]: Sub-process
+          - generic [ref=f1e77]: collapsed composite
+      - generic [ref=f1e78]:
+        - generic [ref=f1e79]: Gateways
+        - generic [ref=f1e85] [cursor=pointer]:
+          - generic [ref=f1e86]: Exclusive (XOR)
+          - generic [ref=f1e87]: decision
+        - generic [ref=f1e93] [cursor=pointer]:
+          - generic [ref=f1e94]: Parallel (AND)
+          - generic [ref=f1e95]: fork / join
+      - generic [ref=f1e96]:
+        - generic [ref=f1e97]: Handoffs
+        - generic [ref=f1e103] [cursor=pointer]:
+          - generic [ref=f1e104]: Handoff →
+          - generic [ref=f1e105]: to another workflow
+        - generic [ref=f1e111] [cursor=pointer]:
+          - generic [ref=f1e112]: ← Handoff
+          - generic [ref=f1e113]: from another workflow
+      - generic [ref=f1e114]:
+        - generic [ref=f1e115]: Typed events
+        - generic [ref=f1e121] [cursor=pointer]:
+          - generic [ref=f1e122]: Error
+          - generic [ref=f1e123]: on status:issues
+        - generic [ref=f1e130] [cursor=pointer]:
+          - generic [ref=f1e131]: Timer
+          - generic [ref=f1e132]: cron / horizon
+        - generic [ref=f1e139] [cursor=pointer]:
+          - generic [ref=f1e140]: Message
+          - generic [ref=f1e141]: on bus topic
+      - generic [ref=f1e142]:
+        - generic [ref=f1e143]: Lanes
+        - generic [ref=f1e144] [cursor=pointer]:
+          - img [ref=f1e146]:
+            - generic [ref=f1e148]: +
+          - generic [ref=f1e149]:
+            - generic [ref=f1e150]: Add Lane
+            - generic [ref=f1e151]: swimlane · authority
+      - generic [ref=f1e152]: Click a palette item then click the canvas to place — or drag it straight onto the canvas. To connect, switch to Connect, click source, then click target. + Add Lane appends a new swimlane to the pool.
+    - generic [ref=f1e154]:
+      - img [ref=f1e155]:
+        - generic [ref=f1e156]:
+          - generic [ref=f1e158]: task-lifecycle · workflow:task-lifecycle
+          - generic [ref=f1e160] [cursor=pointer]: Human · Sovereignty
+          - generic [ref=f1e166] [cursor=pointer]: Framework · Authority
+          - generic [ref=f1e172] [cursor=pointer]: Agent · Initiative
+          - generic [ref=f1e178] [cursor=pointer]: + Add another lane
+        - generic [ref=f1e180]:
+          - generic [ref=f1e181]: placeholder ACs
+          - generic [ref=f1e185]: build-ready
+          - generic [ref=f1e187]: re-check
+          - generic [ref=f1e197]: blocked / failing
+          - generic [ref=f1e201]: work done
+          - generic [ref=f1e205]: resume after healing (issues -> started-work)
+          - generic [ref=f1e212]: gate failed — rework
+          - generic [ref=f1e216]: gates pass
+          - generic [ref=f1e218]: human-owned, Human ACs open
+          - generic [ref=f1e222]: fully complete
+          - generic [ref=f1e227]: Human ACs checked
+        - generic [ref=f1e229]:
+          - generic [ref=f1e230] [cursor=pointer]:
+            - generic: Task captured (filed)
+            - generic: frw_1_task
+          - generic [ref=f1e233] [cursor=pointer]:
+            - generic: Task completed (in completed/)
+            - generic: frw_11_task
+          - generic [ref=f1e236] [cursor=pointer]:
+            - generic: Write real
+            - generic: acceptance
+            - generic: criteria
+            - generic: agt_1_write
+          - generic [ref=f1e240] [cursor=pointer]:
+            - generic: Perform the
+            - generic: work
+            - generic: agt_2_perform
+          - generic [ref=f1e244] [cursor=pointer]:
+            - generic: Human checks
+            - generic: hum_1_human
+          - generic [ref=f1e249] [cursor=pointer]:
+            - generic: Start work
+            - generic: (captured ->
+            - generic: started-work)
+            - generic: 1→0
+            - generic: frw_3_start
+          - generic [ref=f1e254] [cursor=pointer]:
+            - generic: Enter issues
+            - generic: (auto →
+            - generic: healing
+            - generic: diagnose)
+            - generic: frw_4_enter
+          - generic [ref=f1e258] [cursor=pointer]:
+            - generic: Request
+            - generic: completion (fw
+            - generic: done)
+            - generic: agt_3_request
+          - generic [ref=f1e262] [cursor=pointer]:
+            - generic: Run completion
+            - generic: gate battery
+            - generic: frw_6_run
+            - generic: ▣5
+          - generic [ref=f1e267] [cursor=pointer]:
+            - generic: Partial-complete
+            - generic: (stays active,
+            - generic: owner→human,
+            - generic: emit review)
+            - generic: frw_8_partial
+          - generic "Finalize (date_finished, move to completed/, episodic, clear focus)" [ref=f1e271] [cursor=pointer]:
+            - generic: frw_10_finalize
+            - generic: Finalize
+            - generic: (date_finished,
+            - generic: move to
+            - generic: completed/, episodic,…
+          - generic [ref=f1e275] [cursor=pointer]:
+            - generic: Build-ready? (G-020 entry guard)
+            - generic: frw_2_build
+          - generic [ref=f1e279] [cursor=pointer]:
+            - generic: Outcome?
+            - generic: frw_5_outcome
+          - generic [ref=f1e283] [cursor=pointer]:
+            - generic: All gates pass?
+            - generic: frw_7_all
+          - generic [ref=f1e287] [cursor=pointer]:
+            - generic: Human-owned with unchecked Human ACs?
+            - generic: frw_9_human
+      - generic: "Mode: select"
+    - complementary [ref=f1e291]:
+      - generic [ref=f1e297]:
+        - generic [ref=f1e298]: workflow
+        - generic [ref=f1e299]: task-lifecycle
+      - generic [ref=f1e300]:
+        - generic [ref=f1e301]: Workflow
+        - generic [ref=f1e302]:
+          - generic [ref=f1e303]:
+            - text: ID
+            - generic [ref=f1e304]: · identifier · lowercase, no spaces · unique in library
+          - textbox [ref=f1e305]: task-lifecycle
+        - generic [ref=f1e306]:
+          - generic [ref=f1e307]:
+            - text: Title
+            - generic [ref=f1e308]: · human-readable name shown in picker
+          - textbox [ref=f1e309]: task-lifecycle
+        - generic [ref=f1e310]:
+          - generic [ref=f1e311]:
+            - text: Workflow version
+            - generic [ref=f1e312]: · bump manually when contract changes
+          - textbox [ref=f1e313]: "1"
+        - generic [ref=f1e314]:
+          - generic [ref=f1e315]:
+            - text: Description
+            - generic [ref=f1e316]: · free text · what this workflow does
+          - textbox [ref=f1e317]
+        - generic [ref=f1e318]:
+          - generic [ref=f1e319]:
+            - text: Source
+            - generic [ref=f1e320]: · optional · path to originating doc
+          - textbox [ref=f1e321]
+        - generic [ref=f1e322]:
+          - generic [ref=f1e323]:
+            - text: Default tier
+            - generic [ref=f1e324]: · 0–3 · applies to nodes without explicit tier
+          - textbox [ref=f1e325]: "2"
+      - generic [ref=f1e326]:
+        - generic [ref=f1e327]: Recently opened
+        - generic [ref=f1e328]:
+          - generic [ref=f1e329] [cursor=pointer]:
+            - generic [ref=f1e330]: Investigate
+            - generic [ref=f1e331]: investigate v1
+          - generic [ref=f1e332]:
+            - generic [ref=f1e333]: task-lifecycle
+            - generic [ref=f1e334]: task-lifecycle v1
+      - generic [ref=f1e335]:
+        - generic [ref=f1e336]:
+          - text: Tips
+          - generic [ref=f1e337]: "aef:"
+        - generic [ref=f1e338]:
+          - text: Click a node or edge to inspect.
+          - generic [ref=f1e339]: Connect
+          - text: mode → click source, then target.Drag selected nodes to reposition.
+          - generic [ref=f1e340]: Delete
+          - text: removes selection ·
+          - generic [ref=f1e341]: Esc
+          - text: clears it.
+  - generic [ref=f1e342]:
+    - generic [ref=f1e343]:
+      - generic [ref=f1e344]:
+        - text: Canonical BPMN 2.0 XML —
+        - strong [ref=f1e345]: investigate.bpmn
+        - text: (with
+        - strong [ref=f1e346]: "aef:"
+        - text: extensions)
+      - generic [ref=f1e347]:
+        - button "Copy" [ref=f1e348] [cursor=pointer]
+        - button "Close" [ref=f1e349] [cursor=pointer]
+    - generic [ref=f1e350]: "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <bpmn:definitions xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:aef=\"http://anchorpoint.framework/aef/extensions\" id=\"Definitions_task-lifecycle\" targetNamespace=\"https://aef.anchorpoint.dev/workflows\"> <bpmn:collaboration id=\"Collaboration_task-lifecycle\"> <bpmn:participant id=\"Pool_task_lifecycle\" name=\"task-lifecycle\" processRef=\"Process_task-lifecycle\"/> </bpmn:collaboration> <bpmn:process id=\"Process_task-lifecycle\" isExecutable=\"true\"> <bpmn:extensionElements> <aef:workflowMeta id=\"task-lifecycle\" uuid=\"df0b8c59-f44d-4f74-84fe-4a2ac52859f2\" version=\"1\" schemaVersion=\"2\" title=\"task-lifecycle\" tier_default=\"2\"/> </bpmn:extensionElements> <bpmn:laneSet id=\"LaneSet_1\"> <bpmn:lane id=\"human\" name=\"Human · Sovereignty\"> <bpmn:extensionElements> <aef:laneMeta abbr=\"hum\" authority=\"sovereignty\" height=\"160\"/> </bpmn:extensionElements> <bpmn:flowNodeRef>hum_1_human</bpmn:flowNodeRef> </bpmn:lane> <bpmn:lane id=\"framework\" name=\"Framework · Authority\"> <bpmn:extensionElements> <aef:laneMeta abbr=\"frw\" authority=\"authority\" height=\"260\"/> </bpmn:extensionElements> <bpmn:flowNodeRef>frw_1_task</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_11_task</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_3_start</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_4_enter</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_6_run</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_8_partial</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_10_finalize</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_2_build</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_5_outcome</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_7_all</bpmn:flowNodeRef> <bpmn:flowNodeRef>frw_9_human</bpmn:flowNodeRef> </bpmn:lane> <bpmn:lane id=\"agent\" name=\"Agent · Initiative\"> <bpmn:extensionElements> <aef:laneMeta abbr=\"agt\" authority=\"initiative\" height=\"200\"/> </bpmn:extensionElements> <bpmn:flowNodeRef>agt_1_write</bpmn:flowNodeRef> <bpmn:flowNodeRef>agt_2_perform</bpmn:flowNodeRef> <bpmn:flowNodeRef>agt_3_request</bpmn:flowNodeRef> </bpmn:lane> </bpmn:laneSet> <bpmn:startEvent id=\"frw_1_task\" name=\"Task captured (filed)\"> <bpmn:extensionElements> <aef:uid value=\"n_file\"/> <aef:position x=\"120.0\" y=\"334.0\"/> <aef:meta triggeredBy=\"fw task create --type &lt;type&gt; --owner &lt;agent|human&gt;\" state=\"captured\"/> <aef:endpoint>agents/task-create/create-task.sh</aef:endpoint> <aef:io> <aef:output name=\"task_id\" type=\"task_id\"/> <aef:output name=\"owner\" type=\"string\"/> </aef:io> </bpmn:extensionElements> <bpmn:outgoing>flow_1</bpmn:outgoing> </bpmn:startEvent> <bpmn:endEvent id=\"frw_11_task\" name=\"Task completed (in completed/)\"> <bpmn:extensionElements> <aef:uid value=\"n_end\"/> <aef:position x=\"2120.0\" y=\"334.0\"/> </bpmn:extensionElements> <bpmn:incoming>flow_18</bpmn:incoming> </bpmn:endEvent> <bpmn:serviceTask id=\"agt_1_write\" name=\"Write real acceptance criteria\"> <bpmn:extensionElements> <aef:uid value=\"n_authoring\"/> <aef:position x=\"320.0\" y=\"600.0\"/> <aef:meta tier=\"1\" agentType=\"primary\"/> </bpmn:extensionElements> <bpmn:incoming>flow_2</bpmn:incoming> <bpmn:outgoing>flow_4</bpmn:outgoing> </bpmn:serviceTask> <bpmn:serviceTask id=\"agt_2_perform\" name=\"Perform the work\"> <bpmn:extensionElements> <aef:uid value=\"n_work\"/> <aef:position x=\"720.0\" y=\"600.0\"/> <aef:meta tier=\"2\" agentType=\"primary\" state=\"started-work\"/> <aef:contextReads paths=\".tasks/active/${task_id}.md\"/> </bpmn:extensionElements> <bpmn:incoming>flow_5</bpmn:incoming> <bpmn:incoming>flow_9</bpmn:incoming> <bpmn:incoming>flow_12</bpmn:incoming> <bpmn:outgoing>flow_6</bpmn:outgoing> </bpmn:serviceTask> <bpmn:userTask id=\"hum_1_human\" name=\"Human checks\"> <bpmn:extensionElements> <aef:uid value=\"n_human_finalize\"/> <aef:position x=\"1920.0\" y=\"70.0\"/> <aef:meta tier=\"0\" note=\"human-only by R-033 + convention (agent must never check Human ACs)\"/> </bpmn:extensionElements> <bpmn:incoming>flow_16</bpmn:incoming> <bpmn:outgoing>flow_17</bpmn:outgoing> </bpmn:userTask> <bpmn:scriptTask id=\"frw_3_start\" name=\"Start work (captured -&gt; started-work)\"> <bpmn:extensionElements> <aef:uid value=\"n_start\"/> <aef:position x=\"520.0\" y=\"320.0\"/> <aef:meta tier=\"1\" state=\"started-work\"/> <aef:endpoint>fw work-on ${task_id}</aef:endpoint> <aef:io> <aef:input name=\"task_id\" type=\"task_id\" required=\"true\"/> </aef:io> </bpmn:extensionElements> <bpmn:incoming>flow_3</bpmn:incoming> <bpmn:outgoing>flow_5</bpmn:outgoing> </bpmn:scriptTask> <bpmn:scriptTask id=\"frw_4_enter\" name=\"Enter issues (auto → healing diagnose)\"> <bpmn:extensionElements> <aef:uid value=\"n_issues\"/> <aef:position x=\"920.0\" y=\"233.3\"/> <aef:meta tier=\"1\" state=\"issues\" autoTrigger=\"agents/healing/healing.sh diagnose ${task_id}\"/> <aef:endpoint>fw task update ${task_id} --status issues</aef:endpoint> </bpmn:extensionElements> <bpmn:incoming>flow_7</bpmn:incoming> <bpmn:outgoing>flow_9</bpmn:outgoing> </bpmn:scriptTask> <bpmn:scriptTask id=\"agt_3_request\" name=\"Request completion (fw done)\"> <bpmn:extensionElements> <aef:uid value=\"n_complete_req\"/> <aef:position x=\"1120.0\" y=\"600.0\"/> <aef:meta tier=\"1\"/> <aef:endpoint>fw task update ${task_id} --status work-completed</aef:endpoint> </bpmn:extensionElements> <bpmn:incoming>flow_8</bpmn:incoming> <bpmn:outgoing>flow_10</bpmn:outgoing> </bpmn:scriptTask> <bpmn:scriptTask id=\"frw_6_run\" name=\"Run completion gate battery\"> <bpmn:extensionElements> <aef:uid value=\"n_gates\"/> <aef:position x=\"1320.0\" y=\"320.0\"/> <aef:meta tier=\"1\"/> <aef:constituents> <aef:constituent id=\"c_sovereignty\" name=\"owner=human blocks completion\" ref=\"R-033 [--skip-sovereignty]\"/> <aef:constituent id=\"c_acceptance\" name=\"agent ACs all checked, no placeholders\" ref=\"P-010 [--skip-acceptance-criteria]\"/> <aef:constituent id=\"c_verify\" name=\"## Verification commands all exit 0\" ref=\"P-011 [--skip-verification]\"/> <aef:constituent id=\"c_rca\" name=\"bug-class tasks need substantive RCA\" ref=\"G-019 [--skip-rca]\"/> <aef:constituent id=\"c_evolution\" name=\"arc build tasks fill ## Evolution\" ref=\"T-1718 [--skip-evolution]\"/> </aef:constituents> </bpmn:extensionElements> <bpmn:incoming>flow_10</bpmn:incoming> <bpmn:outgoing>flow_11</bpmn:outgoing> </bpmn:scriptTask> <bpmn:scriptTask id=\"frw_8_partial\" name=\"Partial-complete (stays active, owner→human, emit review)\"> <bpmn:extensionElements> <aef:uid value=\"n_partial\"/> <aef:position x=\"1720.0\" y=\"233.3\"/> <aef:meta tier=\"1\" state=\"work-completed\" note=\"file stays in active/; episodic deliberately deferred (T-634/T-679)\"/> </bpmn:extensionElements> <bpmn:incoming>flow_14</bpmn:incoming> <bpmn:outgoing>flow_16</bpmn:outgoing> </bpmn:scriptTask> <bpmn:scriptTask id=\"frw_10_finalize\" name=\"Finalize (date_finished, move to completed/, episodic, clear focus)\"> <bpmn:extensionElements> <aef:uid value=\"n_finalize\"/> <aef:position x=\"1920.0\" y=\"320.0\"/> <aef:meta tier=\"1\" state=\"work-completed\" autoTrigger=\"episodic generation (context.sh generate-episodic)\"/> </bpmn:extensionElements> <bpmn:incoming>flow_15</bpmn:incoming> <bpmn:incoming>flow_17</bpmn:incoming> <bpmn:outgoing>flow_18</bpmn:outgoing> </bpmn:scriptTask> <bpmn:exclusiveGateway id=\"frw_2_build\" name=\"Build-ready? (G-020 entry guard)\"> <bpmn:extensionElements> <aef:uid value=\"n_ready\"/> <aef:position x=\"320.0\" y=\"328.0\"/> <aef:meta gate=\"G-020\"/> </bpmn:extensionElements> <bpmn:incoming>flow_1</bpmn:incoming> <bpmn:incoming>flow_4</bpmn:incoming> <bpmn:outgoing>flow_2</bpmn:outgoing> <bpmn:outgoing>flow_3</bpmn:outgoing> </bpmn:exclusiveGateway> <bpmn:exclusiveGateway id=\"frw_5_outcome\" name=\"Outcome?\"> <bpmn:extensionElements> <aef:uid value=\"n_progress\"/> <aef:position x=\"920.0\" y=\"328.0\"/> <aef:meta decisionOwner=\"agent\"/> <aef:decisionInput>${outcome}</aef:decisionInput> </bpmn:extensionElements> <bpmn:incoming>flow_6</bpmn:incoming> <bpmn:outgoing>flow_7</bpmn:outgoing> <bpmn:outgoing>flow_8</bpmn:outgoing> </bpmn:exclusiveGateway> <bpmn:exclusiveGateway id=\"frw_7_all\" name=\"All gates pass?\"> <bpmn:extensionElements> <aef:uid value=\"n_gate_result\"/> <aef:position x=\"1520.0\" y=\"328.0\"/> <aef:meta decisionOwner=\"framework\"/> <aef:decisionInput>${gates}</aef:decisionInput> </bpmn:extensionElements> <bpmn:incoming>flow_11</bpmn:incoming> <bpmn:outgoing>flow_12</bpmn:outgoing> <bpmn:outgoing>flow_13</bpmn:outgoing> </bpmn:exclusiveGateway> <bpmn:exclusiveGateway id=\"frw_9_human\" name=\"Human-owned with unchecked Human ACs?\"> <bpmn:extensionElements> <aef:uid value=\"n_partial_check\"/> <aef:position x=\"1720.0\" y=\"328.0\"/> <aef:meta decisionOwner=\"framework\"/> <aef:decisionInput>${owner == 'human' &amp;&amp; human_acs_unchecked}</aef:decisionInput> </bpmn:extensionElements> <bpmn:incoming>flow_13</bpmn:incoming> <bpmn:outgoing>flow_14</bpmn:outgoing> <bpmn:outgoing>flow_15</bpmn:outgoing> </bpmn:exclusiveGateway> <bpmn:sequenceFlow id=\"flow_1\" sourceRef=\"frw_1_task\" targetRef=\"frw_2_build\"> <bpmn:extensionElements> <aef:uid value=\"e_01\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_2\" name=\"placeholder ACs\" sourceRef=\"frw_2_build\" targetRef=\"agt_1_write\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${acs_real == false}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_02\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_3\" name=\"build-ready\" sourceRef=\"frw_2_build\" targetRef=\"frw_3_start\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${acs_real == true}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_03\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_4\" name=\"re-check\" sourceRef=\"agt_1_write\" targetRef=\"frw_2_build\"> <bpmn:extensionElements> <aef:uid value=\"e_04\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_5\" sourceRef=\"frw_3_start\" targetRef=\"agt_2_perform\"> <bpmn:extensionElements> <aef:uid value=\"e_05\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_6\" sourceRef=\"agt_2_perform\" targetRef=\"frw_5_outcome\"> <bpmn:extensionElements> <aef:uid value=\"e_06\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_7\" name=\"blocked / failing\" sourceRef=\"frw_5_outcome\" targetRef=\"frw_4_enter\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${outcome == 'issues'}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_07\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_8\" name=\"work done\" sourceRef=\"frw_5_outcome\" targetRef=\"agt_3_request\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${outcome == 'done'}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_08\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_9\" name=\"resume after healing (issues -&gt; started-work)\" sourceRef=\"frw_4_enter\" targetRef=\"agt_2_perform\"> <bpmn:extensionElements> <aef:uid value=\"e_09\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_10\" sourceRef=\"agt_3_request\" targetRef=\"frw_6_run\"> <bpmn:extensionElements> <aef:uid value=\"e_10\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_11\" sourceRef=\"frw_6_run\" targetRef=\"frw_7_all\"> <bpmn:extensionElements> <aef:uid value=\"e_11\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_12\" name=\"gate failed — rework\" sourceRef=\"frw_7_all\" targetRef=\"agt_2_perform\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${gates == 'fail'}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_12\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_13\" name=\"gates pass\" sourceRef=\"frw_7_all\" targetRef=\"frw_9_human\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${gates == 'pass'}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_13\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_14\" name=\"human-owned, Human ACs open\" sourceRef=\"frw_9_human\" targetRef=\"frw_8_partial\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${partial == true}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_14\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_15\" name=\"fully complete\" sourceRef=\"frw_9_human\" targetRef=\"frw_10_finalize\"> <bpmn:conditionExpression xsi:type=\"bpmn:tFormalExpression\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">${partial == false}</bpmn:conditionExpression> <bpmn:extensionElements> <aef:uid value=\"e_15\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_16\" sourceRef=\"frw_8_partial\" targetRef=\"hum_1_human\"> <bpmn:extensionElements> <aef:uid value=\"e_16\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_17\" name=\"Human ACs checked\" sourceRef=\"hum_1_human\" targetRef=\"frw_10_finalize\"> <bpmn:extensionElements> <aef:uid value=\"e_17\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> <bpmn:sequenceFlow id=\"flow_18\" sourceRef=\"frw_10_finalize\" targetRef=\"frw_11_task\"> <bpmn:extensionElements> <aef:uid value=\"e_18\"/> </bpmn:extensionElements> </bpmn:sequenceFlow> </bpmn:process> <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates --> </bpmn:definitions>"

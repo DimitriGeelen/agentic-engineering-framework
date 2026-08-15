@@ -1,15 +1,15 @@
 ---
-id: T-3011
-name: "T-3005 slice 2: index canary and corpus_manifest — the keystone control"
+id: T-3012
+name: "T-3005 slice 3: _get_db() serves a stale handle — index freshness"
 description: >
-  T-3005 slice 2: index canary and corpus_manifest — the keystone control
+  T-3005 slice 3: _get_db() serves a stale handle — index freshness
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
-components: [tests/unit/test_canary_manifest.py, web/canary.py, web/corpus_manifest.py, web/embeddings.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-15T07:35:22Z
-last_update: 2026-08-15T08:10:51Z
-date_finished: 2026-08-15T08:10:51Z
+created: 2026-08-15T08:37:57Z
+last_update: '2026-08-15T08:45:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,7 +35,7 @@ date_finished: 2026-08-15T08:10:51Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-15T07:45:07Z'
+  - ts: '2026-08-15T08:45:07Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -45,143 +45,90 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-15T07:45:12Z'
+  - ts: '2026-08-15T08:45:14Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
       D3: 3
       D4: 2
-      F-RECALL: 2
+      F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
-      F1: 1
+      F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
-      (no-signal)
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3011: T-3005 slice 2: index canary and corpus_manifest — the keystone control
+# T-3012: T-3005 slice 3: _get_db() serves a stale handle — index freshness
 
 ## Context
 
-Slice 2 of the T-3005 GO (`docs/reports/T-3005-vector-substrate-controls.md`,
-§Sequencing): *"Canary + `corpus_manifest` — the keystone control; makes 3–6 verifiable."*
+Slice 3 of T-3005. `_db_built_at` records when the sqlite handle was *opened*, not
+when the index was *built* — and `_get_db()` re-stamps it every time it reuses the
+existing file (`web/embeddings.py:341`). The stamp therefore renews itself forever
+and the staleness TTL can never fire while a non-empty DB exists. That is the
+mechanism behind T-3004: a five-month-old index reporting itself seconds old.
 
-**Specified, not started.** Written at 225K context so the next session inherits a scoped
-task rather than a half-built one.
-
-The problem this closes: T-3004 found four instruments all green during a total recall
-outage. `is_index_ready()` counts rows; `built_at` reports when the DB was *opened*, not
-when it was *built*. Nothing in the stack exercises embed → store → retrieve, so nothing
-could go red. The canary is a positive control that can.
-
-**Two design constraints learned after T-3005 was written** — both change the design, so
-read them before implementing:
-
-1. **Rank-based, not score-based.** T-3007 will switch the embedding model (step B), and
-   T-3007's own analysis warns that thresholds calibrated against
-   `nomic-embed-text-v2-moe`'s score distribution are invalidated by the switch. A canary
-   asserting "top hit for its own unique token" survives a model change; one asserting
-   "similarity > 0.8" does not. Do not introduce a score threshold here.
-2. **The canary must be provably under the chunk cap** (`MAX_CHUNK_CHARS`, T-3010).
-   A canary that is itself truncated is green for the wrong reason — worse than none.
-
-**The second canary is the interesting one.** T-3009/T-3010 found a defect where content
-past ~1,600 chars was silently discarded while the row still looked indexed. A *tail*
-canary — an oversized synthetic document whose unique token sits deliberately far into it
-— is retrievable only if chunking and embedding covered the whole document. That makes it
-a standing detector for OBS-251 regressing, which no unit test can be (unit tests pin the
-chunker; this pins the whole pipeline).
-
-**Scope fence.** This slice builds the control and proves it on a small synthetic index.
-It does **not** rebuild the real index (393,082 chunks — that is the shared reindex owned
-by slices 3/5) and does **not** add the doctor/audit rail (slice 4 consumes what this
-slice emits).
+T-3011 wrote a corpus manifest with a real `finished_at`. This slice makes freshness
+*true* by deriving it from that manifest. It deliberately does **not** change rebuild
+behaviour — surfacing staleness is slice 4, fixing it is slice 5. Making the number
+honest first is what lets those two slices be checkable at all.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `build_index()` writes a **content canary**: a synthetic document containing a
-      unique token (`FWCANARY-<epoch>`), whose text is provably shorter than
-      `MAX_CHUNK_CHARS` so it cannot itself be truncated.
-- [x] `build_index()` also writes a **tail canary**: an oversized synthetic document whose
-      unique token sits past the byte offset where the pre-T-3010 chunker would have
-      truncated. Retrievable only if the whole document was chunked and embedded.
-- [x] `verify_canaries()` retrieves both by semantic search and asserts each is the **top
-      hit for its own token** — a rank assertion, with **no score threshold anywhere**, so
-      it survives the T-3007 model switch without recalibration.
-- [x] A `corpus_manifest` is persisted at build time and readable **without** rebuilding:
-      file count, chunk count, model name, `EMBEDDING_DIM`, `MAX_CHUNK_CHARS`,
-      `EMBED_CONTEXT_TOKENS`, build start/end timestamps, and the git HEAD it was built
-      from. This is what slice 4's rail reads and what makes "the index is stale" a
-      checkable claim rather than an inference from `built_at`.
-- [x] **Both canaries are observed failing.** A test deliberately regresses the pipeline
-      (a chunker stub that truncates, and an index missing the canary) and asserts the
-      canary goes red. Per T-3005 constraint 3: a positive control nobody has watched fail
-      is a hypothesis, and this arc has now shipped three instruments that were green
-      because they asserted nothing.
-- [x] Canary verification runs against a **small synthetic corpus** in the test, not the
-      393k-chunk real one — so the test is seconds, not hours, and does not depend on the
-      shared reindex having happened.
-- [x] The manifest round-trips (write → read → compare) and tolerates a missing/corrupt
-      manifest by reporting absence, not by raising.
+- [x] `index_freshness()` returns `{built_at, age_seconds, source}` with `source` one of
+      `manifest` / `db_mtime` / `unknown`, derived from the T-3011 corpus manifest —
+      never from when the sqlite handle was opened.
+- [x] `_get_db()` no longer assigns a build-time stamp when it merely reuses an existing
+      DB file; the handle-cache TTL is named and documented as a *connection* TTL, not an
+      index-freshness clock.
+- [x] The status/health dict reports `index_built_at`, `index_age_seconds` and
+      `freshness_source` distinctly from the handle-open time, so a stale index cannot
+      report itself fresh.
+- [x] RED observed first: a test builds a synthetic index whose manifest `finished_at` is
+      200 days old and asserts the reported age is ≈200 days. Against the pre-fix code it
+      reports ≈0s.
+- [x] RED observed first: a test calls `_get_db()` repeatedly across the TTL boundary and
+      asserts the reported index build time does not advance.
+- [x] `source == "unknown"` when there is neither manifest nor readable DB — absence is a
+      reported state, not a zero that looks like freshness (tri-state, same rule as
+      `corpus_health()` in T-3011).
+- [x] Existing vector-substrate suites (`test_canary_manifest.py`, `test_chunk_cap.py`)
+      stay green.
 
 ### Human
 
-- [ ] [REVIEW] Canary documents do not intrude on real search results
-  **Why this is a human call:** three synthetic documents are now planted in the index
-  and they are indistinguishable from real content to anything except their
-  `category: canary`. Whether they surface as noise in ordinary searches — and whether
-  their titles read as obviously-synthetic rather than as a real framework document
-  someone might act on — is a judgment about how the results *read*, not a check any
-  grep settles.
-  **Depends on:** a reindex, so the canaries exist in the live index (T-3005 slice 3/5).
+- [ ] [REVIEW] The `/health` payload tells you the index is stale without you having to know how to read it
+
+  This one is genuinely yours: `/health` is your monitoring surface, and the question
+  is whether the number lands. The agent can prove the value is *correct* (157.6 days,
+  and the tests pin it) but not whether it is *legible* to the person checking on the
+  system at 2am. Note the endpoint still reports `status: "stale"` alongside a
+  157-day age — deciding whether that pairing reads as "mildly out of date" when it
+  means "five months dead" is exactly the judgment call being handed over.
+
   **Steps:**
-  1. `bin/fw watchtower url` then browse `/search`
-  2. Search several ordinary queries — e.g. `arc closure`, `context budget`, `handover`
-  3. Confirm no `__fwcanary__/*` result appears in the top hits for any of them
-  **Expected:** canaries never surface for real queries; if one does appear, its title
-  reads unmistakably as an index self-test, not as project content.
-  **If not:** the canary topics are less distinctive than intended — re-coin the phrases
-  in `web/canary.py` (guarded by `test_canary_topics_are_absent_from_the_real_corpus`),
-  or filter `category == "canary"` out of user-facing search in `web/embeddings.py`.
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart && sleep 5 && curl -s "$(bin/fw watchtower url)/health" | python3 -m json.tool`
+  2. Read the `embeddings` block.
 
-### What the ACs did not say, and had to be added
+  **Expected:** it carries `index_age_seconds` (~13,600,000 — about 157 days) and
+  `freshness_source: "db_mtime"`, and you can tell at a glance that the index is
+  badly out of date.
 
-A third document — a **decoy** — is planted and deliberately never verified.
+  **If not:** say which part misleads — the units (raw seconds vs a human string),
+  the `status` wording, or the absence of an explicit threshold — and it becomes
+  slice 4's input, where the doctor/audit rail decides what counts as too old.
 
-The tail canary was built, unit-tested green, and then **observed passing on a real
-index under a deliberately truncating chunker**. Twice. Two separate causes, both
-false greens in the control itself:
+  Note: a restart is needed because the running server predates this change; that
+  restart should also clear the `status: "unavailable"` you'd otherwise see (OBS-254).
 
-1. **The canary was never actually truncated.** `TAIL_OFFSET_CHARS` was first set to
-   1,600 from the *median* 3.19 chars/token. The canary's own filler is plain English
-   at ~4.5 chars/token, so the document came to ~460 tokens — under the 512 ceiling.
-   Sized against the *maximum* observed ratio instead (now 6,000 chars).
-2. **"Top hit" was satisfied by having no rival.** Even once genuinely truncated, the
-   canary still ranked first, because on a 5-document index nothing else was closer to
-   the probe. A rank assertion with no competitor asserts nothing. The decoy is
-   topically adjacent to the tail probe and wins when the tail chunk is absent.
-
-Measured on a real index after both fixes:
-
-| pipeline | ranking for the tail probe | `corpus_health()` |
-|---|---|---|
-| healthy | `tail.md` **0.1560**, decoy 0.0210 | `ok` |
-| truncating | **decoy 0.0170**, `tail.md` **0.0000** | `fault` |
-
-Recording this because it is the whole point of T-3005 constraint 3. Had I trusted the
-fake-`search_fn` unit tests — all green throughout — this slice would have shipped a
-control that could not fail, into an arc whose founding finding was four instruments
-that could not fail.
-
-### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -213,6 +160,12 @@ that could not fail.
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_index_freshness.py -q > /tmp/.t3012v1.out 2>&1 && grep -q passed /tmp/.t3012v1.out
+python3 -m pytest tests/unit/test_canary_manifest.py tests/unit/test_chunk_cap.py -q > /tmp/.t3012v2.out 2>&1 && grep -q passed /tmp/.t3012v2.out
+python3 -c "import web.embeddings as e; f=e.index_freshness(); assert set(f)=={'built_at','age_seconds','source'}, f; assert f['source'] in ('manifest','db_mtime','unknown'), f"
+! grep -qE "^_db_built_at" web/embeddings.py
+! grep -q "_db_built_at" web/app.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -272,15 +225,50 @@ that could not fail.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# Canary verification runs against an injected search_fn, so it is seconds and
-# needs no index rebuild. The live end-to-end proof is recorded in the AC notes.
-python3 -m pytest tests/unit/test_canary_manifest.py -q > /tmp/.t3011-a.out 2>&1 && grep -q "passed" /tmp/.t3011-a.out
-python3 -m pytest tests/unit/test_chunk_cap.py tests/unit/test_embed_health.py -q > /tmp/.t3011-b.out 2>&1 && grep -q "passed" /tmp/.t3011-b.out
-python3 -c "import ast; ast.parse(open('web/canary.py').read()); ast.parse(open('web/corpus_manifest.py').read())"
-python3 -c "import sys; sys.path.insert(0,'.'); from web import embeddings as E; assert callable(E.corpus_health)"
 
 ## RCA
+
+**Symptom.** A vector index untouched for five months reported itself seconds old.
+`index_stats()["built_at"]` returned a timestamp within milliseconds of `now` on every
+call, and `STALE_SECONDS` never fired. Measured on the real index during this task:
+157.6 days old, previously reported as age 0.
+
+**Root cause.** `_db_built_at` was assigned `time.time()` inside `_get_db()`'s *reuse*
+branch (`web/embeddings.py:355`, pre-fix) — the branch taken precisely when nothing is
+built. The variable recorded when the sqlite handle was opened while its name, and every
+reader, claimed it recorded when the index was built. Because the stamp was rewritten on
+each reopen, the TTL comparison `time.time() - _db_built_at < STALE_SECONDS` measured the
+age of the *connection*, which is reset by the very code path the TTL was supposed to
+trigger. The clock reset itself every time it was consulted.
+
+**Why structurally allowed.** Three things had to line up:
+
+1. *The name asserted the semantics.* `_db_built_at` reads as build time, so no reviewer
+   had cause to check. The one place the two meanings diverge — the reuse branch — is the
+   common path, not the exceptional one.
+2. *Nothing else knew when the index was built.* Until T-3011 wrote a corpus manifest,
+   there was no independent record to disagree with the stamp. A wrong answer with no
+   second source is indistinguishable from a right one.
+3. *The failure direction was toward "healthy".* A clock that resets always reports
+   *fresher*, never staler. Under-reporting age produces silence; over-reporting would
+   have produced a false alarm someone would have chased. Only the noisy direction gets
+   investigated, so this could sit for five months (same asymmetry as the port-3000 class
+   in CLAUDE.md: a green line that asserts nothing is never the thing that prompts a look).
+
+**Prevention** (distinct from the fix):
+
+- `test_reopening_the_handle_does_not_advance_the_reported_build_time` and
+  `test_the_ttl_governs_the_connection_not_the_index` fail if the restamp returns —
+  they assert the *invariant* (a rebuild-free reopen changes nothing) rather than the
+  implementation.
+- `test_the_handle_clock_is_not_named_a_build_clock` is a rename tripwire: the misnomer
+  was the bug in one word, so its return is an assertion failure rather than a silent
+  regression. Mirrored at source level by two grep lines in `## Verification`.
+- `source: "unknown"` makes absence a reported state. The prior design had no way to say
+  "I don't know", and defaulted to a number — which is how "no answer" became "fresh".
+- Slice 4 consumes `index_freshness()` in the doctor/audit rail, so the number is watched
+  rather than merely available. **This slice makes the number true; it does not yet make
+  anything act on it.** The index is still 157 days old at close.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -322,6 +310,31 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web import embeddings as E;
 
 ## Recommendation
 
+**Recommendation:** GO
+
+**Rationale:** The defect was reproduced before the fix, not inferred: a 200-day-old
+database reported `built_at = now`, age `0.0s`, and the stamp advanced on every reopen.
+After the fix the same probe reports the true age, and the real production index — asked
+this question for the first time — answers 157.6 days. Eleven tests were observed RED
+first and are green now, including two that fail for the original reason rather than for
+a renamed symbol. The remaining Human AC is a legibility judgment on the `/health`
+payload, which is yours to make and does not gate correctness.
+
+The honest limit: this slice makes the staleness *visible*, not *fixed*. Nothing yet
+reads the number and complains, and no reindex has run. That is deliberate — slice 4
+watches it, slice 5 rebuilds it — but it means the index is still 157 days stale at close.
+If that ordering is wrong, this is the moment to say so.
+
+**Evidence:**
+- Pre-fix probe: 200-day-old DB → `built_at` = now, age `0.0s`, advanced on reopen (`True`).
+- Post-fix on the real index: `age_seconds = 13,614,849` (157.6 d), `source = db_mtime`.
+- `tests/unit/test_index_freshness.py` — 11 tests, 10 observed RED pre-fix, all green now.
+- `test_canary_manifest.py` + `test_chunk_cap.py` (T-3010/T-3011) unaffected: 39 green total.
+- `/health` exercised via Flask test client: `status: stale`, `index_age_seconds`,
+  `freshness_source` present, HTTP 200.
+- Two findings filed rather than folded in: OBS-253 (pre-push audit >180s blocks every
+  push), OBS-254 (`/health` swallows the embeddings exception class).
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -349,41 +362,6 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web import embeddings as E;
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO
-
-**Rationale:** The control works and, more importantly, has been watched failing on a
-real index — twice for reasons I did not anticipate. Healthy pipeline: `tail.md` ranks
-first at 0.1560 and `corpus_health()` returns `ok`. Truncating pipeline: the decoy wins
-at 0.0170, `tail.md` collapses to 0.0000, and `corpus_health()` returns `fault`. That is
-the first signal in this substrate that can actually go red, which is the whole premise
-of T-3005.
-
-The honest part of this recommendation is that both false greens were invisible to the
-unit tests. All 47 passed throughout. Only building a real index and deliberately
-regressing the chunker exposed (a) that the canary was never truncated at all, because
-I sized it off the median chars-per-token instead of the maximum, and (b) that "top hit"
-asserts nothing on a small index with no competitor. Had I stopped at green unit tests,
-this slice would have added a fifth instrument that cannot fail to an arc whose founding
-finding was four instruments that cannot fail.
-
-What remains is presentation, not correctness: three synthetic documents now live in the
-index and I cannot show you how they read among real results until a reindex runs.
-
-**Evidence:**
-- `web/canary.py` — content / tail / decoy documents; probe by paraphrase, assert rank
-- `web/corpus_manifest.py` — atomic write; missing or corrupt reads as `None`, never raises
-- `web/embeddings.py:corpus_health()` — three states (`ok` / `fault` / `unknown`); an
-  index with no manifest is *unknown*, deliberately not *ok*
-- Live index, healthy: `tail.md 0.1560` → `ok`
-- Live index, chunker regressed to pre-T-3010 behaviour: `decoy 0.0170`, `tail.md 0.0000` → `fault`
-- `tests/unit/test_canary_manifest.py` — 18 tests; 47 across the embeddings set
-- Manifest records `max_chunk_chars` and `embed_context_tokens`, so slice 4 can tell an
-  index built under the old uncapped chunker from one built after T-3010
-
-**Not in this slice:** the doctor/audit rail (slice 4 consumes `corpus_health()`), and the
-reindex itself (slices 3/5). No score threshold was introduced anywhere, so T-3007's model
-switch needs no recalibration here.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -407,27 +385,7 @@ switch needs no recalibration here.
 
 ## Updates
 
-### 2026-08-15T07:35:22Z — task-created [task-create-agent]
+### 2026-08-15T08:37:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3011-t-3005-slice-2-index-canary-and-corpusma.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3012-t-3005-slice-3-getdb-serves-a-stale-hand.md
 - **Context:** Initial task creation
-
-### 2026-08-15T07:38:04Z — status-update [task-update-agent]
-- **Change:** horizon: now → next
-- **Change:** status: started-work → captured (auto-sync)
-
-### 2026-08-15T07:57:04Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-7a55c406
-- **Timestamp:** 2026-08-15T08:10:59Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-08-15T08:10:51Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
