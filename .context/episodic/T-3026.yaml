@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3026: handover reports vs-master but not push state (OBS-275)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T23:06:43Z
+# ============================================================================
+
+task_id: T-3026
+task_name: "handover reports vs-master but not push state (OBS-275)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-15T23:01:46Z
+completed: 2026-08-15T23:06:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T01:06:20+02:00
+last_commit: 2026-08-16T01:06:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the handover now reports push state, not just distance from master
+
+# Key outcomes
+outcomes:
+  - 'The handover''s `**Branch:**` line reports push state alongside the vs-master delta,'
+  - 'All three states are distinguished and named: no remote branch ("never pushed"),'
+  - 'No network call is added. The check reads the local remote-tracking ref, so'
+  - 'Degrades silently rather than breaking the handover: a repo with no origin, a'
+  - 'A regression test pins all three states, so the distinction cannot quietly'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/handover/handover.sh'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3026-handover-reports-vs-master-but-not-push-.md'
+  - 'tests/unit/handover_push_state.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T01:06:20'
+    action: 'T-3026: the handover now reports push state, not just distance from master'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 13
+  lines_added: 514
+  lines_removed: 75
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3026-handover-reports-vs-master-but-not-push-.md
+generated_by: context-agent-hybrid
