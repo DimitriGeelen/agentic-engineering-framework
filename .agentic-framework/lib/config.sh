@@ -53,9 +53,39 @@ PYVAL
 
 # fw_config KEY DEFAULT [EXPLICIT_VALUE]
 # Returns: EXPLICIT_VALUE if non-empty, else FW_KEY env var, else .framework.yaml, else DEFAULT
+# _fw_registry_default KEY — the default this key declares in FW_CONFIG_REGISTRY.
+# Empty when the key is not registered. Defined above fw_config because fw_config
+# calls it (T-3013).
+_fw_registry_default() {
+    local want="$1" entry
+    for entry in "${FW_CONFIG_REGISTRY[@]}"; do
+        if [ "${entry%%|*}" = "$want" ]; then
+            local rest="${entry#*|}"
+            printf '%s' "${rest%%|*}"
+            return 0
+        fi
+    done
+    return 0
+}
+
 fw_config() {
     local key="$1"
-    local default="$2"
+    # T-3013 / OBS-255: `$2` was unguarded, so `fw_config KEY` — the natural call
+    # when the registry already states the default — was FATAL under `set -u`,
+    # which bin/fw sets globally. Fatal in the quietest possible way: an
+    # unbound-variable exit is not a command failure, so `|| fallback` does not
+    # catch it, and a `2>/dev/null` on the call hides the message. It surfaced as
+    # `fw doctor` stopping at line 31 of 113 with exit 1 and no error text.
+    #
+    # With no default argument we now fall back to FW_CONFIG_REGISTRY, which is
+    # where the default is written down anyway. Safe by construction: the previous
+    # one-arg behaviour was a hard exit, so no caller can be relying on it.
+    local default
+    if [ $# -ge 2 ]; then
+        default="$2"
+    else
+        default="$(_fw_registry_default "$key")"
+    fi
     local explicit="${3:-}"
 
     # Tier 1: Explicit argument wins
@@ -88,7 +118,13 @@ fw_config() {
 # Falls back to DEFAULT on invalid input.
 fw_config_int() {
     local key="$1"
-    local default="$2"
+    # Same unguarded-$2 hazard as fw_config (T-3013 / OBS-255).
+    local default
+    if [ $# -ge 2 ]; then
+        default="$2"
+    else
+        default="$(_fw_registry_default "$key")"
+    fi
     local val
     val=$(fw_config "$@")
     if ! [[ "$val" =~ ^[0-9]+$ ]]; then
@@ -179,6 +215,12 @@ FW_CONFIG_REGISTRY=(
     "STALE_ARC_DAYS|30|Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale (agents/audit/audit.sh). T-1855."
     "RETIRE_WHEN_ADVISORY|1|Enable the audit retire_when advisory rail for free drivers; 0 silences the section entirely (agents/audit/audit.sh). T-2169."
     "GITIGNORE_REGISTER_ADVISORY|1|Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it (agents/audit/audit.sh, lib/gitignore-register.sh). T-2994."
+    # T-3013 (T-3005 slice 4). The vector index had no doctor coverage at all
+    # before this — which is why T-3004 sat for five months. 7 days is chosen
+    # against the corpus's own churn: tasks, handovers and episodics change
+    # daily, so a week-old index is already answering from a different project
+    # than the one you are working in.
+    "INDEX_STALE_DAYS|7|Days before fw doctor WARNs that the vector index is stale, measured from the corpus manifest's build time (web/embeddings.py:index_freshness). T-3013."
 )
 
 # fw_config_registry — Print all known settings with current values
