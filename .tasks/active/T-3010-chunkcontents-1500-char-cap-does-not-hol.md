@@ -7,12 +7,12 @@ description: >
   sections that contain no blank-line paragraph breaks — they are emitted whole and
   uncapped, then silently truncated at the embedder's hard 512-token ceiling.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_chunk_cap.py, tools/measure_chunk_tokens.py, web/embeddings.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T07:19:19Z
-last_update: '2026-08-15T07:30:07Z'
-date_finished:
+last_update: 2026-08-15T07:34:27Z
+date_finished: 2026-08-15T07:34:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -146,6 +146,30 @@ cap derive from whatever ceiling is in force, so the switch changes one number.
       on the shared reindex; T-3005 slice 5's scheduling and T-3007 step C's cost estimate
       should both use 393k, not 288k. Note this is 18.7× the "~21k" the T-3007 source
       reasoned from.
+
+### Human
+
+- [ ] [REVIEW] Search-result snippets still read well at the smaller chunk size
+  **Why this is a human call:** chunk text *is* the snippet text on Watchtower's search
+  page. The cap dropped 1500 → 1024 chars, so every result excerpt gets ~30% shorter and
+  cuts at a different boundary. Whether that still reads as a useful excerpt — or as a
+  sentence sliced mid-thought — is a judgment about how it looks, which is exactly what a
+  grep cannot settle. Nothing about layout or CSS changed.
+  **Depends on:** a reindex. The live index is still the stale one, so this cannot be
+  checked until `build_index()` runs (T-3005 slice 3/5, or a manual rebuild). Expected to
+  sit unchecked until then — that is the correct state, not a stall.
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && python3 -c "import sys; sys.path.insert(0,'.'); from web import embeddings as E; print(E.build_index())"`
+  2. Open the search page: `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and browse to `/search`
+  3. Search something with long prose behind it, e.g. `context budget` or `arc closure discipline`
+  **Expected:** Excerpts read as coherent fragments — they start and end near a sentence
+  or line boundary rather than mid-word, and carry enough context to tell why the hit
+  matched.
+  **If not:** Note which result and what it cut through. The knob is
+  `CHARS_PER_TOKEN_FLOOR` in `web/embeddings.py` — but raising it trades away the
+  no-truncation proof, so the better fix is likely a boundary-preference tweak in
+  `_split_to_budget` (prefer `. ` cuts over ` ` cuts more aggressively) rather than a
+  bigger cap.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -367,6 +391,43 @@ fix removes one instance; it does not close the class.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The fix is proved rather than argued. Before it, 4,255 chunks were
+*provably* over the embedder's ceiling and ~7,691 estimated; after it, provably-over is 0
+**and the ambiguous band is empty** — meaning every one of 393,082 chunks is provably
+under, so the verdict rests on a bound rather than on a sample. The bound itself is now
+derived from the measured ceiling rather than written down, which is what stops the same
+drift recurring when T-3007 step B switches models. Nine of ten tests were watched failing
+against the old chunker before the fix landed, so the suite is a control and not a
+formality.
+
+The one thing I cannot show you yet is the only thing the Human AC asks about: the live
+index is still the stale one, so snippet quality at the smaller chunk size is unobservable
+until a reindex runs. That is a genuine evidence gap about *presentation* — and it is why
+there is a Human AC rather than a claim. It is not a gap about correctness.
+
+The cost is real and should be read before the next reindex is scheduled: chunk count
+rises 287,812 → 393,082 (**+36.6%**), and that lands on the single reindex shared by
+T-3005 slices 3/5 and T-3007 step C. The figure those plans were sized against (~21k, from
+the T-3007 source) is off by **18.7×**.
+
+**Evidence:**
+- `web/embeddings.py` — `MAX_CHUNK_CHARS = EMBED_CONTEXT_TOKENS × CHARS_PER_TOKEN_FLOOR`
+  (512 × 2.0 = 1024); `_split_to_budget()` walks `\n\n` → `\n` → `. ` → ` ` → hard cut
+- `tools/measure_chunk_tokens.py --assert-cap 1024` → **393,082 chunks, over=0, max 1,022**
+- Full token re-measure → **provably over 0, ambiguous band 0** (was 4,255 / 16,361)
+- `tests/unit/test_chunk_cap.py` — 10 passed; **9 observed RED pre-fix**, largest offender
+  caught was a 60,000-char chunk against a 1,024 cap
+- Ceiling independently re-confirmed this run: cosine **1.000000000** past 512 tokens,
+  control 0.502
+- Real-corpus worst case before the fix: **170,873 chars**, of which the embedder read
+  ~1,600 — filed as OBS-251, RCA in this task
+
+**Not in this task, deliberately:** the reindex itself, and the model choice (T-3007 step
+B). This makes the cap correct for whatever ceiling is in force; it does not pick the next
+ceiling.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -397,3 +458,15 @@ fix removes one instance; it does not close the class.
 
 ### 2026-08-15T07:20:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-eb9a39f3
+- **Timestamp:** 2026-08-15T07:34:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-15T07:34:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
