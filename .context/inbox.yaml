@@ -3413,3 +3413,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-255
+  text: "lib/config.sh:58 'local default=$2' is unguarded, so fw_config KEY (one arg) is FATAL under set -u — and bin/fw runs 'set -euo pipefail'. The failure mode is maximally quiet: an unbound-variable exit is not a command failure, so the idiomatic guard '|| echo <fallback>' does NOT catch it, and any '2>/dev/null' on the call swallows the message. Symptom when hit: fw doctor stopped mid-output at 31 of 113 lines with exit 1 and no error text at all; bash -x showed the trace simply ending. Found writing T-3013's doctor check. Second, related gap: FW_CONFIG_REGISTRY carries a DEFAULT column but fw_config's Tier 4 echoes the caller's $2 and never consults the registry, so every call site duplicates the default the registry already states — the registry is display-only for resolution purposes. Fixing the first (guard $2, fall back to registry when absent) is safe by construction because the current one-arg behaviour is fatal, so no caller can depend on it. fw_config_int has the same unguarded $2."
+  captured: 2026-08-15T09:17:52Z
+  context_task: T-3013
+  tags: []
+  status: pending
+  promoted_to: null
