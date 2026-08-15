@@ -33730,3 +33730,21 @@ scan_id: R-b8ff7d77
 task_id: T-3014
 payload:
   task_file: .tasks/active/T-3014-t-3005-slice-5-scheduled-incremental-rei.md
+---
+kind: scan_emitted
+timestamp: '2026-08-15T15:21:13Z'
+scan_id: R-d9054cbc
+task_id: T-3020
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T15:21:13Z'
+scan_id: R-d9054cbc
+task_id: T-3020
+payload:
+  task_file: .tasks/active/T-3020-fw-doctor-takes-3m53s--find-what-dominat.md

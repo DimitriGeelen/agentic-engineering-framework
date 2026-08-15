@@ -232,56 +232,6 @@ entries:
   traceability_pct: 100
   episodic_quality_pct: 10
   open_gaps: 6
-- timestamp: '2026-08-08T14:54:38Z'
-  pass: 29
-  warn: 5
-  fail: 0
-  active_tasks: 326
-  completed_tasks: 2533
-  velocity: 58
-  traceability_pct: 100
-  episodic_quality_pct: 10
-  open_gaps: 6
-- timestamp: '2026-08-08T14:59:15Z'
-  pass: 29
-  warn: 5
-  fail: 0
-  active_tasks: 326
-  completed_tasks: 2533
-  velocity: 59
-  traceability_pct: 100
-  episodic_quality_pct: 10
-  open_gaps: 6
-- timestamp: '2026-08-08T15:02:49Z'
-  pass: 36
-  warn: 56
-  fail: 22
-  active_tasks: 326
-  completed_tasks: 2533
-  velocity: 59
-  traceability_pct: 100
-  episodic_quality_pct: 10
-  open_gaps: 6
-- timestamp: '2026-08-08T15:08:22Z'
-  pass: 29
-  warn: 5
-  fail: 0
-  active_tasks: 327
-  completed_tasks: 2533
-  velocity: 60
-  traceability_pct: 100
-  episodic_quality_pct: 10
-  open_gaps: 6
-- timestamp: '2026-08-08T15:11:52Z'
-  pass: 29
-  warn: 5
-  fail: 0
-  active_tasks: 326
-  completed_tasks: 2534
-  velocity: 61
-  traceability_pct: 100
-  episodic_quality_pct: 10
-  open_gaps: 6
 - timestamp: '2026-08-08T15:15:57Z'
   pass: 29
   warn: 5
@@ -8889,6 +8839,46 @@ entries:
   active_tasks: 357
   completed_tasks: 2649
   velocity: 87
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 11
+- timestamp: '2026-08-15T14:59:54Z'
+  pass: 30
+  warn: 6
+  fail: 1
+  active_tasks: 357
+  completed_tasks: 2650
+  velocity: 89
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 11
+- timestamp: '2026-08-15T15:03:23Z'
+  pass: 13
+  warn: 3
+  fail: 0
+  active_tasks: 357
+  completed_tasks: 2650
+  velocity: 91
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 11
+- timestamp: '2026-08-15T15:13:06Z'
+  pass: 31
+  warn: 6
+  fail: 0
+  active_tasks: 357
+  completed_tasks: 2650
+  velocity: 92
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 11
+- timestamp: '2026-08-15T15:15:07Z'
+  pass: 8
+  warn: 3
+  fail: 0
+  active_tasks: 357
+  completed_tasks: 2650
+  velocity: 92
   traceability_pct: 100
   episodic_quality_pct: 9
   open_gaps: 11

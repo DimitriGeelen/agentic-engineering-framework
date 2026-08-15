@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3020: fw doctor takes 3m53s — find what dominates it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T15:21:24Z
+# ============================================================================
+
+task_id: T-3020
+task_name: "fw doctor takes 3m53s — find what dominates it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-15T14:52:57Z
+completed: 2026-08-15T15:21:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T17:09:24+02:00
+last_commit: 2026-08-15T17:09:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor's four minutes are 89% three checks, and none of them are new
+
+# Key outcomes
+outcomes:
+  - 'Per-check wall-clock for a full `fw doctor` run is measured and recorded, so the answer is a number per check rather than a guess about which one feels heavy.'
+  - 'The dominant cost is named with evidence, and it is stated plainly whether T-3019''s new `recall usage` check contributed — the honest answer includes "the check I just added is the problem" if that is what the measurement says.'
+  - 'Whether this is a *regression* is answered, not assumed: doctor''s runtime is measured against a checkout from before this session''s vector work, so "it got slower" is a comparison rather than an impression.'
+  - 'Findings are written to `docs/reports/T-3020-doctor-latency.md` with the measurement table, so the next person to ask does not re-measure.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3020-doctor-latency.md'
+  - '.tasks/active/T-3020-fw-doctor-takes-3m53s--find-what-dominat.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T17:09:24'
+    action: 'T-3020: doctor''s four minutes are 89% three checks, and none of them are new'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28
+  commits: 1
+  files_changed: 2
+  lines_added: 148
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3020-fw-doctor-takes-3m53s--find-what-dominat.md
+generated_by: context-agent-hybrid
