@@ -34,6 +34,18 @@ class Config:
     OLLAMA_HOST = os.environ.get(
         "OLLAMA_HOST", _saved.get("ollama_host", "http://localhost:11434")
     )
+    # T-3006: embeddings may need a *different* endpoint from chat. On a host
+    # where OLLAMA_MAX_LOADED_MODELS=1, a resident chat model starves every
+    # other model — the embed path 503s instantly while chat answers 200. When
+    # unset this is OLLAMA_HOST, so existing installs are unaffected.
+    EMBED_HOST = os.environ.get(
+        "FW_EMBED_HOST", _saved.get("embed_host", "")
+    ) or OLLAMA_HOST
+    # Bounded retry for transient embed failures (contention / degraded only).
+    # Bounded because the T-3006 instance was *permanent*: retrying a starved
+    # slot forever would turn a fast failure into a hang on every task start.
+    EMBED_RETRIES = int(os.environ.get("FW_EMBED_RETRIES", "2"))
+    EMBED_RETRY_BACKOFF = float(os.environ.get("FW_EMBED_RETRY_BACKOFF", "0.25"))
     PRIMARY_MODEL = os.environ.get("FW_PRIMARY_MODEL", "qwen3:14b")
     FALLBACK_MODEL = os.environ.get("FW_FALLBACK_MODEL", "dolphin-llama3:8b")
     EMBEDDING_MODEL = os.environ.get("FW_EMBEDDING_MODEL", "nomic-embed-text-v2-moe")
