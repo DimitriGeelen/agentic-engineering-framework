@@ -4,10 +4,10 @@ name: "T-3005 slice 2: index canary and corpus_manifest — the keystone control
 description: >
   T-3005 slice 2: index canary and corpus_manifest — the keystone control
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T07:35:22Z
-last_update: 2026-08-15T07:38:04Z
-date_finished: null
+last_update: 2026-08-15T07:57:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-15T07:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-15T07:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3011: T-3005 slice 2: index canary and corpus_manifest — the keystone control
@@ -78,30 +107,59 @@ slice emits).
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `build_index()` writes a **content canary**: a synthetic document containing a
+- [x] `build_index()` writes a **content canary**: a synthetic document containing a
       unique token (`FWCANARY-<epoch>`), whose text is provably shorter than
       `MAX_CHUNK_CHARS` so it cannot itself be truncated.
-- [ ] `build_index()` also writes a **tail canary**: an oversized synthetic document whose
+- [x] `build_index()` also writes a **tail canary**: an oversized synthetic document whose
       unique token sits past the byte offset where the pre-T-3010 chunker would have
       truncated. Retrievable only if the whole document was chunked and embedded.
-- [ ] `verify_canary()` retrieves both by semantic search and asserts each is the **top
+- [x] `verify_canaries()` retrieves both by semantic search and asserts each is the **top
       hit for its own token** — a rank assertion, with **no score threshold anywhere**, so
       it survives the T-3007 model switch without recalibration.
-- [ ] A `corpus_manifest` is persisted at build time and readable **without** rebuilding:
+- [x] A `corpus_manifest` is persisted at build time and readable **without** rebuilding:
       file count, chunk count, model name, `EMBEDDING_DIM`, `MAX_CHUNK_CHARS`,
       `EMBED_CONTEXT_TOKENS`, build start/end timestamps, and the git HEAD it was built
       from. This is what slice 4's rail reads and what makes "the index is stale" a
       checkable claim rather than an inference from `built_at`.
-- [ ] **Both canaries are observed failing.** A test deliberately regresses the pipeline
+- [x] **Both canaries are observed failing.** A test deliberately regresses the pipeline
       (a chunker stub that truncates, and an index missing the canary) and asserts the
       canary goes red. Per T-3005 constraint 3: a positive control nobody has watched fail
       is a hypothesis, and this arc has now shipped three instruments that were green
       because they asserted nothing.
-- [ ] Canary verification runs against a **small synthetic corpus** in the test, not the
+- [x] Canary verification runs against a **small synthetic corpus** in the test, not the
       393k-chunk real one — so the test is seconds, not hours, and does not depend on the
       shared reindex having happened.
-- [ ] The manifest round-trips (write → read → compare) and tolerates a missing/corrupt
+- [x] The manifest round-trips (write → read → compare) and tolerates a missing/corrupt
       manifest by reporting absence, not by raising.
+
+### What the ACs did not say, and had to be added
+
+A third document — a **decoy** — is planted and deliberately never verified.
+
+The tail canary was built, unit-tested green, and then **observed passing on a real
+index under a deliberately truncating chunker**. Twice. Two separate causes, both
+false greens in the control itself:
+
+1. **The canary was never actually truncated.** `TAIL_OFFSET_CHARS` was first set to
+   1,600 from the *median* 3.19 chars/token. The canary's own filler is plain English
+   at ~4.5 chars/token, so the document came to ~460 tokens — under the 512 ceiling.
+   Sized against the *maximum* observed ratio instead (now 6,000 chars).
+2. **"Top hit" was satisfied by having no rival.** Even once genuinely truncated, the
+   canary still ranked first, because on a 5-document index nothing else was closer to
+   the probe. A rank assertion with no competitor asserts nothing. The decoy is
+   topically adjacent to the tail probe and wins when the tail chunk is absent.
+
+Measured on a real index after both fixes:
+
+| pipeline | ranking for the tail probe | `corpus_health()` |
+|---|---|---|
+| healthy | `tail.md` **0.1560**, decoy 0.0210 | `ok` |
+| truncating | **decoy 0.0170**, `tail.md` **0.0000** | `fault` |
+
+Recording this because it is the whole point of T-3005 constraint 3. Had I trusted the
+fake-`search_fn` unit tests — all green throughout — this slice would have shipped a
+control that could not fail, into an arc whose founding finding was four instruments
+that could not fail.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -194,6 +252,13 @@ slice emits).
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# Canary verification runs against an injected search_fn, so it is seconds and
+# needs no index rebuild. The live end-to-end proof is recorded in the AC notes.
+python3 -m pytest tests/unit/test_canary_manifest.py -q > /tmp/.t3011-a.out 2>&1 && grep -q "passed" /tmp/.t3011-a.out
+python3 -m pytest tests/unit/test_chunk_cap.py tests/unit/test_embed_health.py -q > /tmp/.t3011-b.out 2>&1 && grep -q "passed" /tmp/.t3011-b.out
+python3 -c "import ast; ast.parse(open('web/canary.py').read()); ast.parse(open('web/corpus_manifest.py').read())"
+python3 -c "import sys; sys.path.insert(0,'.'); from web import embeddings as E; assert callable(E.corpus_health)"
 
 ## RCA
 
@@ -295,3 +360,7 @@ slice emits).
 ### 2026-08-15T07:38:04Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-08-15T07:57:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

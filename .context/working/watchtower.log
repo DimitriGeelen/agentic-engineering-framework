@@ -21,3 +21,11 @@ Press CTRL+C to quit
 192.168.10.107 - - [15/Aug/2026 09:34:44] "GET /api/_identity HTTP/1.1" 200 -
 127.0.0.1 - - [15/Aug/2026 09:37:54] "GET /api/_identity HTTP/1.1" 200 -
 192.168.10.107 - - [15/Aug/2026 09:37:54] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 09:41:42] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 09:45:26] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 09:45:46] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 09:50:56] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 09:55:00] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 09:57:28] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 09:57:45] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 10:02:42] "GET /api/_identity HTTP/1.1" 200 -

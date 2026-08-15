@@ -22,7 +22,9 @@ from pathlib import Path
 import ollama
 import sqlite_vec
 
+from web.canary import CANARY_CATEGORY, all_canaries, verify_canaries
 from web.config import Config
+from web.corpus_manifest import build_manifest, read_manifest, write_manifest
 from web.embed_health import (
     RETRYABLE,
     EmbedHealth,
@@ -277,6 +279,34 @@ def _init_db() -> sqlite3.Connection:
     return db
 
 
+def corpus_health() -> dict:
+    """Manifest + canary verdict for the live index. Never raises.
+
+    This is what slice 4's doctor/audit rail reads. It deliberately returns three
+    states rather than a boolean, because the reason a rail stays silent matters:
+    an index with no manifest predates this control and is *unknown*, which is not
+    the same as *healthy* and not the same as *broken*. Collapsing those was how
+    T-3004's outage stayed green for five months.
+    """
+    manifest = read_manifest(DB_PATH)
+    if manifest is None:
+        return {"status": "unknown", "manifest": None, "canaries": [],
+                "detail": "no corpus manifest — index predates T-3011 or was "
+                          "built by an older framework version"}
+
+    results = verify_canaries(search, manifest.get("canary_token", ""))
+    failed = [r for r in results if not r.ok]
+    return {
+        "status": "fault" if failed else "ok",
+        "manifest": manifest,
+        "canaries": [
+            {"name": r.name, "ok": r.ok, "detail": r.detail, "top_hit": r.top_hit}
+            for r in results
+        ],
+        "detail": "; ".join(f"{r.name}: {r.detail}" for r in failed) or "canaries green",
+    }
+
+
 def is_index_ready() -> bool:
     """Check if the vector index exists and has data (T-395: avoids triggering rebuild)."""
     if _db is not None and _db_built_at > 0:
@@ -338,6 +368,10 @@ def build_index() -> dict:
     db = _init_db()
     files = collect_files()
 
+    # T-3011: the canary token identifies this build. Stored in the manifest so
+    # the checker can tell "canary missing" from "canary from an older build".
+    canary_token = f"FWCANARY-{int(start)}"
+
     # Collect all chunks with metadata
     all_chunks = []
     all_metadata = []
@@ -370,6 +404,22 @@ def build_index() -> dict:
                 })
         except Exception:
             continue
+
+    # T-3011: plant the canaries through the SAME chunk/embed path as real
+    # content. Anything that special-cases them would make them green by
+    # construction, which is the failure this control exists to detect.
+    for doc in all_canaries(canary_token):
+        for i, chunk in enumerate(_chunk_content(doc.text,
+                                                 reserve=len(doc.title) + 2)):
+            all_chunks.append(f"{doc.title}\n\n{chunk}" if i > 0 else chunk)
+            all_metadata.append({
+                "path": doc.path,
+                "title": doc.title,
+                "category": CANARY_CATEGORY,
+                "task_id": "",
+                "chunk_index": i,
+                "chunk_text": chunk,
+            })
 
     if not all_chunks:
         _db = db
@@ -407,10 +457,32 @@ def build_index() -> dict:
     _db = db
     _db_built_at = time.time()
 
+    # T-3011: record what was built, from which commit, with which model and cap.
+    # Best-effort — a manifest write failure must not fail an otherwise good
+    # index, but it must be visible rather than swallowed.
+    manifest_written = False
+    try:
+        write_manifest(DB_PATH, build_manifest(
+            num_docs=num_docs,
+            num_chunks=len(all_chunks),
+            model=MODEL_NAME,
+            embedding_dim=EMBEDDING_DIM,
+            max_chunk_chars=MAX_CHUNK_CHARS,
+            embed_context_tokens=EMBED_CONTEXT_TOKENS,
+            canary_token=canary_token,
+            started_at=start,
+            project_root=PROJECT_ROOT,
+        ))
+        manifest_written = True
+    except Exception as exc:  # noqa: BLE001
+        log.warning("corpus manifest not written: %s", exc)
+
     return {
         "num_docs": num_docs,
         "num_chunks": len(all_chunks),
         "build_time_ms": elapsed_ms,
+        "canary_token": canary_token,
+        "manifest_written": manifest_written,
     }
 
 
