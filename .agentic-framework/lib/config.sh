@@ -221,6 +221,7 @@ FW_CONFIG_REGISTRY=(
     # daily, so a week-old index is already answering from a different project
     # than the one you are working in.
     "INDEX_STALE_DAYS|7|Days before fw doctor WARNs that the vector index is stale, measured from the corpus manifest's build time (web/embeddings.py:index_freshness). T-3013."
+    "RECALL_USAGE_DAYS|7|Window fw doctor looks back over for semantic-recall queries. Zero rows in the window WARNs — the G-064 zero-consumer signal, distinct from the index being stale (web/recall_telemetry.py:usage_summary). T-3019."
 )
 
 # fw_config_registry — Print all known settings with current values

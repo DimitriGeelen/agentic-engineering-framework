@@ -1,13 +1,13 @@
-audit-task-tools=25
+audit-task-tools=31
 check-settings-edit=2
 
-checkpoint=18
-budget-gate=20
-check-project-boundary=20
-check-tier0=17
-check-active-task=17
-loop-detect=17
-error-watchdog=15
+checkpoint=24
+budget-gate=26
+check-project-boundary=26
+check-tier0=23
+check-active-task=23
+loop-detect=23
+error-watchdog=21
 check-human-ac-tick=3
 check-arc-id=3
 check-active-completed-dup=3
