@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T21:31:55Z
+last_update: 2026-08-15T21:42:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -367,6 +367,25 @@ linearly and query cost to track index size linearly, neither of which is measur
 defensible claim is the slope and its composition, not a date. **This does not decide IW-7
 for you** — it replaces "trending upward" with a number so that you can.
 
+**Spike 10 found the cause, and it adds a candidate F that I think is the real answer.** Spike
+9 left the 12× per-handover size growth unexplained. Section accounting of a 265,888-byte
+handover: **state dumps are 97.3%** of it — Observation Inbox 137,505 B, Work in Progress
+69,568 B, Awaiting Your Action 48,355 B. The session narrative is ~2 KB, and the four sections
+carrying the handover's actual purpose (decisions made, things tried that failed, open
+questions, gotchas) total **175 bytes** — effectively empty. The dumps are not merely similar,
+they are **byte-identical between consecutive handovers** (measured, 0 differing lines), and
+99.7% / 100% identical across a three-hour gap with real work in between. At corpus scale these
+sections are **82% of all 90.6 MB of handovers**. The cause is nameable: **the handover embeds
+global state by value rather than by reference**, so bytes ≈ handovers × state-size with both
+terms growing — which is the compounding spike 9 measured, and which explains spike 6's 97%
+overlap exactly rather than by analogy. Nothing reported it because every individual handover
+is correct; the defect is a property of the sequence, and nothing measures sequences.
+**Candidate F** (fix the generator to reference rather than embed) removes ~74 MB and ~79% of
+growth *at the source*, and makes handovers better to read rather than merely absent from the
+index. **My sequencing advice: E′ first because it is free and needs no design agreement, F
+next because it is the one that stops this recurring.** F is not free — it trades away offline
+readability, and that tradeoff is yours, not mine. **I have not built either.**
+
 **Evidence:**
 
 - **The cost is a fixed scan, not result assembly.** k-sweep on the live index: k=1 → 1028 ms, k=5 → 1048, k=50 → 1125, k=200 → 1221. A 200× change in k moves latency 19%.
@@ -389,6 +408,7 @@ for you** — it replaces "trending upward" with a number so that you can.
 - **Spike 7: independently replicated by 832-Workflow-designer, and it sharpens candidate E's question.** 832 measured the same shape on their tree (arc offset 11936): handovers = 55% of `.context/` (16M of 29M), 470 files, 87% median consecutive overlap, 88% whole-corpus redundancy. Two projects sharing a framework and not a codebase → this is a property of the framework's handover discipline, not of either tree. Running their "who reads these" measurement here, restricted to executable surfaces: **24 files reference `.context/handovers/LATEST.md`; exactly 1 names a historical `S-*` handover — `tests/integration/fw_timeline.bats:33`, which writes its own fixture.** Zero executable readers of real historical handovers; the other 53 refs are provenance citations in `.context/episodic/` (48) and `.tasks/completed/` (4). **The consequence is the opposite in form and the same in substance as 832's:** semantic retrieval is the *only* consumer historical handovers have. So the operator's question is not "does anything read these" but "is retrieval over 1,708 near-duplicate handovers worth half of every scan, for 2.5% of the answers?" Limit stated and unchanged: a grep cannot see ad-hoc human/agent reads, so the honest claim is "no *tool* reads them", not "nobody reads them" — and git preserves all 1,708 regardless, making this a working-set question, not a preservation one.
 - **Spike 8: the inclusion set is wrong in both directions, which reframes candidate E.** `web/search_utils.py:68` defines the index by seven directories plus two globs. Invisible to `fw ask`/`recall`/RAG: **73 authored files, 0.54 MB** — `policy/` (19 files, incl. `policy/standards/aef-bpmn-mapping-v1-partI.md` and `policy/prompts/bvp-driver-session.md`, both of which CLAUDE.md explicitly directs agents to read), `docs/adr` (4), `docs/architecture`, `docs/design`, `docs/specs`, `docs/proposals`, `docs/articles` (25), `docs/upstream-patterns`, `docs/walkthrough`, `docs/dispatch-templates` — plus `.context/designer/` (42 `.bpmn` + registry, 988 KB). **One handover is 263 KB: the entire authored-excluded set weighs about two handovers, and we index 1,708 handovers and none of these.** Corrects OBS-252's fix direction — adding `.context/designer/` to `search_dirs` would index `registry.yaml` only, because the `aef:meta` prose lives inside `.bpmn` files (11 in `v1.bpmn`) and the suffix filter rejects them; the observation's remedy would have been a green change that fixed nothing. Also shows why a naive fix repeats the original error: `docs/generated/` is 1,068 generated files, so "index all of `docs/`" bulk-adds restated content exactly as handovers did. **Reframed E:** the inclusion set was never designed, it accreted by directory; define it by content class instead — authored-and-durable in, generated-or-restated out. Handovers are restated (97% overlap), ADRs are authored, and one rule cuts both ways, so the operator makes one decision rather than two. Not claimed: that 0.54 MB improves recall — it is 0.4% of the corpus and will not move latency. The argument is reachability, not volume.
 - **Spike 9: "trending upward" is +62%/month and 79% of it is one directory.** Corpus bytes at monthly commits, filtered to the `web/search_utils.py:68` inclusion set: 0.5 → 6.4 → 20.7 → 35.5 → 73.8 → 82.3 → **133.6 MB** (Feb–Aug), the last month being the steepest on record at **+51.3 MB / +62%**. Decomposed before projecting, because one steep delta is not a trend: `.context/handovers` **+40.7 MB of the +51.3** (79%), `.tasks` +8.1, `.context/episodic` +1.5, `docs/reports` +0.7, all else +0.4. Not a bulk import — handovers accrete one per session, so the mechanism is structural. Six-month series shows it sustained and **compounding on two axes**: count 32 → 1,717 *and* average size 4.5 KB → **54.2 KB** (12×), so handover share of corpus rises **monotonically with no reversal** — 27 → 35 → 49 → 50 → 60 → 61 → **68%**. **Consequence for E′:** excluding handovers takes the indexed corpus 133.6 → 42.8 MB, removing 68% of volume and ~79% of growth, from content spike 7 showed has zero executable readers. **Method error recorded:** the first run used `master`, which is 122 commits stale (session runs on `t2539-staging`), and reported a *flat* tail (77.4 → 86.3 → 86.4 MB) that would have killed the case for any build. A measurement whose subject was "how fast does the corpus grow" silently answered "how fast does the branch I picked grow", and the wrong answer was plausible enough to act on. **Not claimed:** any projected future latency — that needs vector-DB size to track source bytes linearly and query cost to track index size linearly, neither measured here. The claim is the slope and its composition, not a date.
+- **Spike 10: the redundancy has a named cause — the handover embeds state by value, not by reference.** Section accounting of `S-2026-0815-2318.md` (265,888 B): Observation Inbox 137,505 / Work in Progress 69,568 / Awaiting Your Action 48,355 / Gaps 1,617 / Deferred 1,584 = **97.3% state dumps**; the session narrative is ~2 KB, and `## Decisions Made This Session` (38 B) + `## Things Tried That Failed` (35 B) + `## Open Questions / Blockers` (36 B) + `## Gotchas` (66 B) = **175 bytes**, empty in a session that produced all four. Duplication measured directly, not inferred: consecutive handovers are **byte-identical** in Observation Inbox (137,876 B, 0 diff lines), Work in Progress (70,110 B) and Awaiting Your Action (48,686 B); across a **3-hour gap with real work between**, Work in Progress is 1,112 lines with 4 changed (**99.7%**) and Awaiting Your Action is **100%** identical. Corpus-scale: Work in Progress 43.6 MB + Awaiting Your Action 30.5 + Observation Inbox 6.8 + Gaps 1.6 = **82% of all 90.6 MB**. So bytes ≈ handovers × state-size with **both terms growing** — the compounding of spike 9, and the exact mechanism behind spike 6's 97% overlap. **Why invisible:** every individual handover is correct and its state real; the defect exists only as a property of the sequence, and nothing measures sequences. **New candidate F** — fix the generator to reference rather than embed: ~74 MB and ~79% of growth removed at source, and handovers become *better* to read (currently 342 B of "Where We Are" buried in 266 KB). **Not free:** it trades offline readability, which is a design call for the operator. Sequencing advice: **E′ first (free, no design agreement needed), F next (stops recurrence)**. Neither built.
 - Artifact: `docs/reports/T-3022-recall-latency-scaling.md`. Commits: `660fa0cf3` (characterisation), `9c62305cd` (spikes 1-3).
 
 ## Decisions
@@ -444,16 +464,16 @@ for you** — it replaces "trending upward" with a number so that you can.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3c9ac46d
-- **Timestamp:** 2026-08-15T21:42:17Z
+- **Scan ID:** R-79ed07f2
+- **Timestamp:** 2026-08-15T21:48:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-dc298808
-- **Timestamp:** 2026-08-15T21:42:18Z
+- **Scan ID:** RC-d0b3344d
+- **Timestamp:** 2026-08-15T21:48:58Z
 - **Overall:** CONFIRMED
 - **Claims:** 13
 

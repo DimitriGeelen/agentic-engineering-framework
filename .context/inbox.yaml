@@ -3533,3 +3533,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-272
+  text: "Handover generator embeds global state by value, not reference: 97.3% of a 265,888-byte handover is state dumps (Observation Inbox 137505 B, Work in Progress 69568, Awaiting Your Action 48355), byte-identical between consecutive handovers and 99.7-100% identical across a 3h gap. Corpus-scale these are 82% of all 90.6 MB of handovers, so bytes = handovers x state-size with both terms growing. Secondary and arguably worse: the sections carrying antifragile content are empty templates — Decisions Made This Session 38 B, Things Tried That Failed 35 B, Open Questions 36 B, Gotchas 66 B = 175 bytes total, in a session that produced all four. This is G-018 (handover quality decay) with a measurement attached: the mechanical dumps grow without bound while the learning sections go unfilled. Evidence: T-3022 spike 10, docs/reports/T-3022-recall-latency-scaling.md."
+  captured: 2026-08-15T21:48:52Z
+  context_task: T-3022
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

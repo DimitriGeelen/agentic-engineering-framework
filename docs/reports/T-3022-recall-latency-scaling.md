@@ -549,6 +549,79 @@ projected to a specific future latency** — that would require assuming the vec
 tracks source bytes linearly and that query cost tracks index size linearly, and neither is
 measured here. The defensible claim is the slope and its composition, not a date.
 
+### Spike 10 — the redundancy has a named cause, and it is a generator defect
+
+Spike 9 left one thing unexplained: mean handover size grew 12× (4.5 KB → 54.2 KB). "The
+handover agent writes fatter files" is a restatement, not a cause. Section-level accounting
+of a representative recent handover (`S-2026-0815-2318.md`, 265,888 bytes):
+
+| Section | Bytes | |
+|---------|-------|--|
+| `## Observation Inbox` | 137,505 | state dump |
+| `## Work in Progress` | 69,568 | state dump |
+| `## Awaiting Your Action (Human)` | 48,355 | state dump |
+| `## Gaps Register` | 1,617 | state dump |
+| `## Deferred With No Revisit Date` | 1,584 | state dump |
+| `## Recent Commits` | 472 | session |
+| `## Files Changed This Session` | 367 | session |
+| `## Where We Are` | **342** | session |
+| `## Suggested First Action` | 129 | session |
+| `## Gotchas / Warnings for Next Session` | 66 | session |
+| `## Decisions Made This Session` | **38** | session |
+| `## Open Questions / Blockers` | **36** | session |
+| `## Things Tried That Failed` | **35** | session |
+
+**State dumps are 97.3% of the file.** The session narrative — everything that describes what
+actually happened — is about 2 KB, and the four sections carrying the handover's stated purpose
+(decisions, failures, open questions, gotchas) total **175 bytes**, i.e. they are effectively
+empty templates.
+
+**Are the dumps redundant between handovers?** Measured directly, not inferred:
+
+- Consecutive handovers (`…2318` vs `…2321`): `## Observation Inbox` **byte-identical**,
+  137,876 bytes, 0 differing lines. `## Work in Progress` byte-identical, 70,110 bytes.
+  `## Awaiting Your Action` byte-identical, 48,686 bytes.
+- Across a **3-hour gap with real work in between** (`…2201` vs `…2321`): Work in Progress
+  1,112 lines with **4 changed (99.7% identical)**; Awaiting Your Action **100% identical**.
+
+At corpus scale across all 1,710 handovers (90.6 MB): Work in Progress 43.6 MB, Awaiting Your
+Action 30.5 MB, Observation Inbox 6.8 MB, Gaps 1.6 MB — **82% of all handover bytes are these
+dumps.** (The Observation Inbox is small historically and huge now: the backlog reached 150
+pending items only recently, which is why it dominates the *current* file but not the archive.)
+
+**The cause.** The handover embeds current state **by value rather than by reference**. Each
+handover is a full snapshot of slow-moving global state — active tasks, pending human actions,
+the observation backlog — so total bytes ≈ *number of handovers × size of state*, and **both
+terms grow independently**. That is the compounding spike 9 measured, and it explains spike 6's
+97% consecutive-overlap figure exactly rather than by analogy: consecutive handovers are 97%
+identical because 97% of each one is the same snapshot.
+
+**Why nothing reported it.** Every individual handover is correct. The state it embeds is real,
+current, and was legitimately worth writing down once. There is no defective handover to find,
+and no event to notice — the defect is only visible as a property of the *sequence*, which
+nothing measures.
+
+**This is a better lever than E′, and it is a different kind of fix.** E′ removes handovers
+from the index — treating the symptom, and losing the 2 KB of real narrative along with the
+258 KB of duplication. Fixing the generator to reference rather than embed would cut ~74 MB
+(82%) from the handover corpus and ~79% from total corpus growth, while making handovers
+*better* to read: a human opening a 266 KB file to learn what happened this session is
+currently reading 342 bytes of answer buried in a quarter-megabyte of unchanged state.
+
+**Not claimed:** that this is trivial to implement, or that the referenced state should
+disappear from the handover entirely — a handover that a reader can consume without a live
+system has value, and "reference not embed" trades that away. That tradeoff is a design
+question, and it is the operator's. What is measured here is only the cost of the current
+choice and the fact that it was never a choice — the sections accreted one at a time, exactly
+as the inclusion set did in spike 8.
+
+**Secondary finding, filed not chased:** `## Decisions Made This Session` (38 B),
+`## Things Tried That Failed` (35 B) and `## Open Questions / Blockers` (36 B) are empty in a
+session that made decisions, had failures, and left open questions — several of them recorded
+in this very artifact. The handover's own quality-decay concern (G-018) is about exactly this,
+and the sections that would carry the antifragile content are the ones going unfilled while
+the mechanical dumps grow without bound.
+
 ## Candidates
 
 Updated after spike 4, which built candidate A for real. C is dissolved; A still leads B,
@@ -562,8 +635,19 @@ but on a measured tradeoff curve rather than the lossless win spike 2 suggested.
 | D | Accept, and assert the shape | 0 latency change | Live, and now shown to be A's **precondition** rather than its alternative (spike 5). |
 | **E** | **Stop indexing (most) handovers** | **~2× — 51% of the index (203,694 chunks) is handovers, supplying ~2.5% of results. Exact recall preserved; storage halved.** | **New (spike 6). Try first.** Subtraction, not construction: nothing to build, keep in lockstep, or silently degrade. Composes with A. |
 
+| **F** | **Fix the handover generator: reference state instead of embedding it** | **~74 MB of 90.6 MB handover corpus (82%), and ~79% of total corpus growth. Measured: consecutive handovers byte-identical across all three dump sections; 99.7%/100% identical across a 3-hour gap.** | **New (spike 10). Addresses the cause that E′ treats as a symptom.** Not subtraction — this is a generator change with a real design tradeoff (offline readability), so it is not free the way E is. |
+
 A and D are not exclusive: the shape assertion is worth having regardless of which
 optimisation lands, because it is what stops the next regression from being invisible.
+
+**E′ and F are the same problem at two removes, and the order matters.** F removes the
+duplication at the source, which shrinks the index, git, and every human read of a handover.
+E′ removes handovers from the index, which shrinks only the index — but it works today, costs
+nothing to build, and does not depend on agreeing a design for what a handover should contain.
+They compose: doing F does not make E′ wrong, because even a deduplicated handover corpus is
+still 1,710 session narratives with 97% consecutive overlap in the parts that remain. The
+honest sequencing advice is **E′ first because it is free, F next because it is right**, and
+F is the one that stops this recurring.
 
 ## What is NOT claimed
 
