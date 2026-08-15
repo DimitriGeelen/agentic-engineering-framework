@@ -3511,3 +3511,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-269
+  text: "OBS-252 fix direction is INSUFFICIENT — verified during T-3022 spike 8. OBS-252 proposed adding .context/designer/ to web/search_utils.py collect_files search_dirs so designer map prose becomes semantically indexed. That change would index registry.yaml and NOTHING ELSE: the aef:meta prose lives inside the .bpmn files (11 occurrences in aef-task-lifecycle/v1.bpmn alone), and collect_files filters on suffix in (.md,.yaml,.yml), which rejects .bpmn. Anyone actioning OBS-252 as written ships a green diff that fixes nothing and closes the observation. Correct fix needs BOTH a search_dirs entry AND either a .bpmn suffix allowance with an XML-aware text extractor, or a generated .md sidecar per map. Wider finding in the same measurement: the inclusion set excludes 73 authored files / 0.54 MB total — all of policy/ (incl. policy/standards/aef-bpmn-mapping-v1-partI.md and policy/prompts/bvp-driver-session.md, both of which CLAUDE.md instructs agents to read), docs/adr, docs/architecture, docs/design, docs/specs, docs/proposals, docs/articles. One handover is 263 KB, so the entire authored-excluded set weighs about two handovers while we index 1,708 handovers. Do NOT fix by adding all of docs/ — docs/generated/ is 1,068 generated files and that repeats the handover mistake. Full analysis: docs/reports/T-3022-recall-latency-scaling.md Spike 8."
+  captured: 2026-08-15T21:09:09Z
+  context_task: T-3022
+  tags: []
+  status: pending
+  promoted_to: null

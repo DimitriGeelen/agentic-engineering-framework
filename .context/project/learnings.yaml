@@ -4529,3 +4529,9 @@ X'` returning empty group."
   task: T-3022
   date: 2026-08-15
   context: Added via context agent
+- id: L-606
+  learning: "Hermeticity assertions must be scoped to the subject's write-set, not to the whole tree. 832-Workflow-designer (T-527, arc 11939) found a teeth-script leg asserting 'working tree byte-identical after the run' by comparing whole-tree 'git status' before vs after its own run — so any concurrent writer anywhere in the repo (cron, a handover commit, a parallel agent) turns it red during the run window, producing an intermittent failure that passes standalone. They asked whether the shape reproduces here; checked and it does not. Our one before/after comparison (tests/unit/inception_decide_atomicity.bats:90-100) uses md5sum on the single file the subject must leave alone, which is immune by construction. The rule: assert over the paths the subject is supposed to touch, never over the repo. Corollary from their probe: the discriminating property is PERSISTENCE, not occurrence — their first probe created a marker mid-run and deleted it before the run ended, and the leg passed, i.e. a transient perturbation is invisible to any before/after comparison. A stimulus that cannot fail is as useless as a test that cannot fail."
+  source: unknown
+  task: T-3022
+  date: 2026-08-15
+  context: Added via context agent
