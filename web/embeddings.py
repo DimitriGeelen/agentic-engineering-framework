@@ -668,8 +668,33 @@ def reindex_incremental() -> dict:
             stale.unlink()
         except OSError:
             pass
+
     tmp_path = DB_PATH.with_suffix(DB_PATH.suffix + f".reindex.{os.getpid()}.tmp")
-    shutil.copy2(DB_PATH, tmp_path)
+
+    # A partial run parks its work here instead of throwing it away. The diff
+    # below is driven by file_state, so resuming needs no bookkeeping of its
+    # own: files this scratch already embedded are recorded, read as unchanged,
+    # and skipped. That is what lets an hourly cron finish a ~29-58h bootstrap
+    # across many firings rather than restarting it forever (OBS-258).
+    resume_path = DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.resume")
+    resumed = False
+    if resume_path.exists():
+        try:
+            probe = sqlite3.connect(str(resume_path))
+            has_state = probe.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+                "AND name='file_state'").fetchone()[0]
+            probe.close()
+            if has_state:
+                shutil.move(str(resume_path), str(tmp_path))
+                resumed = True
+        except sqlite3.Error:
+            pass
+        if not resumed:
+            # Unreadable or schema-less: not worth trusting as a baseline.
+            resume_path.unlink(missing_ok=True)
+    if not resumed:
+        shutil.copy2(DB_PATH, tmp_path)
     tmp_ino = tmp_path.stat().st_ino
 
     db = None
@@ -727,25 +752,79 @@ def reindex_incremental() -> dict:
         for path in removed:
             _delete_path_rows(db, path)
 
+        db.commit()  # removals are durable before any embedding starts
+
+        # Embed and commit in file-sized groups rather than accumulating the
+        # whole corpus first. Two reasons, both measured on the real index:
+        #
+        #  - Durability. At 1.9 chunks/s (measured against the live embed host,
+        #    contended) a 394,230-chunk bootstrap is ~29-58h. Accumulating it
+        #    all before the first write meant a kill at hour 28 lost everything
+        #    and the next cron firing started from zero — an hourly schedule can
+        #    never converge on that. Committing per group makes progress
+        #    survive, so successive firings chip away at the backlog instead.
+        #  - Memory. 394,230 x 768 x 4B is ~1.2GiB of vectors alone, before the
+        #    chunk text they were built from. Observed RSS: 1,206 MiB and still
+        #    climbing when the run was stopped.
+        BATCH_SIZE = 64
+        FILE_GROUP = 40
+        embedded_chunks = 0
+
+        def _flush(meta_rows: list[dict], texts: list[str]) -> None:
+            """Embed `texts`, insert their rows, and commit as one durable step."""
+            nonlocal embedded_chunks
+            vecs: list[bytes] = []
+            for j in range(0, len(texts), BATCH_SIZE):
+                vecs.extend(_embed(texts[j:j + BATCH_SIZE]))
+            stamp = time.time()
+            done: set[str] = set()
+            for meta, emb in zip(meta_rows, vecs):
+                cur = db.execute(
+                    "INSERT INTO documents (path, title, category, task_id, "
+                    "chunk_index, chunk_text) VALUES (?, ?, ?, ?, ?, ?)",
+                    (meta["path"], meta["title"], meta["category"],
+                     meta["task_id"], meta["chunk_index"], meta["chunk_text"]),
+                )
+                db.execute("INSERT INTO vec_documents (id, embedding) VALUES (?, ?)",
+                           (cur.lastrowid, emb))
+                if meta["category"] != CANARY_CATEGORY and meta["path"] not in done:
+                    done.add(meta["path"])
+                    db.execute(
+                        "INSERT INTO file_state (path, content_hash, mtime, updated_at) "
+                        "VALUES (?, ?, ?, ?) ON CONFLICT(path) DO UPDATE SET "
+                        "content_hash = excluded.content_hash, mtime = excluded.mtime, "
+                        "updated_at = excluded.updated_at",
+                        (meta["path"], meta["content_hash"], meta["mtime"], stamp),
+                    )
+            db.commit()
+            embedded_chunks += len(vecs)
+
+        for group_start in range(0, len(changed), FILE_GROUP):
+            group_meta: list[dict] = []
+            group_texts: list[str] = []
+            for fpath, rel_path, content, content_hash in changed[group_start:group_start + FILE_GROUP]:
+                _delete_path_rows(db, rel_path)
+                title = extract_title(fpath, content)
+                category = categorize(rel_path)
+                task_id = extract_task_id(fpath, content)
+                try:
+                    mtime = fpath.stat().st_mtime
+                except OSError:
+                    mtime = start
+                for i, chunk in enumerate(_chunk_content(content, reserve=len(title) + 2)):
+                    group_texts.append(f"{title}\n\n{chunk}" if i > 0 else chunk)
+                    group_meta.append({
+                        "path": rel_path, "title": title, "category": category,
+                        "task_id": task_id, "chunk_index": i, "chunk_text": chunk,
+                        "content_hash": content_hash, "mtime": mtime,
+                    })
+            _flush(group_meta, group_texts)
+            log.info("reindex progress: %d/%d files, %d chunks embedded",
+                     min(group_start + FILE_GROUP, len(changed)), len(changed),
+                     embedded_chunks)
+
         all_chunks: list[str] = []
         all_meta: list[dict] = []
-        for fpath, rel_path, content, content_hash in changed:
-            _delete_path_rows(db, rel_path)
-            title = extract_title(fpath, content)
-            category = categorize(rel_path)
-            task_id = extract_task_id(fpath, content)
-            try:
-                mtime = fpath.stat().st_mtime
-            except OSError:
-                mtime = start
-            for i, chunk in enumerate(_chunk_content(content, reserve=len(title) + 2)):
-                embed_text = f"{title}\n\n{chunk}" if i > 0 else chunk
-                all_chunks.append(embed_text)
-                all_meta.append({
-                    "path": rel_path, "title": title, "category": category,
-                    "task_id": task_id, "chunk_index": i, "chunk_text": chunk,
-                    "content_hash": content_hash, "mtime": mtime,
-                })
 
         # Canaries are never diffed by hash — they are always replanted, and
         # the token changes every run. That is what proves the run executed
@@ -771,34 +850,10 @@ def reindex_incremental() -> dict:
                     "content_hash": None, "mtime": None,
                 })
 
-        BATCH_SIZE = 64
-        embeddings = []
-        for i in range(0, len(all_chunks), BATCH_SIZE):
-            embeddings.extend(_embed(all_chunks[i:i + BATCH_SIZE]))
+        # Canaries last, in their own flush: they are the freshness signal, so
+        # they must not land before the corpus they claim to vouch for.
+        _flush(all_meta, all_chunks)
 
-        now = time.time()
-        file_state_written: set[str] = set()
-        for meta, emb in zip(all_meta, embeddings):
-            cur = db.execute(
-                "INSERT INTO documents (path, title, category, task_id, "
-                "chunk_index, chunk_text) VALUES (?, ?, ?, ?, ?, ?)",
-                (meta["path"], meta["title"], meta["category"], meta["task_id"],
-                 meta["chunk_index"], meta["chunk_text"]),
-            )
-            new_id = cur.lastrowid
-            db.execute("INSERT INTO vec_documents (id, embedding) VALUES (?, ?)",
-                      (new_id, emb))
-            if meta["category"] != CANARY_CATEGORY and meta["path"] not in file_state_written:
-                file_state_written.add(meta["path"])
-                db.execute(
-                    "INSERT INTO file_state (path, content_hash, mtime, updated_at) "
-                    "VALUES (?, ?, ?, ?) ON CONFLICT(path) DO UPDATE SET "
-                    "content_hash = excluded.content_hash, mtime = excluded.mtime, "
-                    "updated_at = excluded.updated_at",
-                    (meta["path"], meta["content_hash"], meta["mtime"], now),
-                )
-
-        db.commit()
         num_chunks = db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
         num_docs = db.execute(
             "SELECT COUNT(DISTINCT path) FROM documents").fetchone()[0]
@@ -833,7 +888,17 @@ def reindex_incremental() -> dict:
         if db is not None:
             db.close()
         if not swapped and tmp_path.exists():
-            tmp_path.unlink()
+            # Park the partial work rather than discarding it. Everything in
+            # here is committed and consistent — the run simply did not reach
+            # the end of the file list. The next run resumes from it.
+            try:
+                shutil.move(str(tmp_path), str(resume_path))
+            except OSError:
+                tmp_path.unlink(missing_ok=True)
+        for leftover in DB_PATH.parent.glob(DB_PATH.name + f".reindex.{os.getpid()}.tmp*"):
+            leftover.unlink(missing_ok=True)
+        if swapped:
+            resume_path.unlink(missing_ok=True)
         fcntl.flock(lock_fd, fcntl.LOCK_UN)
         os.close(lock_fd)
 

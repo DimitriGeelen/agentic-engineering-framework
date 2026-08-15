@@ -352,27 +352,111 @@ def test_swap_is_refused_if_the_scratch_file_was_replaced(project):
 
     If our scratch file is unlinked and recreated by something else, os.replace
     would install *that* file over the live index — silently, and with no way to
-    tell afterwards. The sabotage is staged inside the embedding phase because
-    that is where the real window is: the live incident had a 25-minute run
-    embedding into an inode that had already been unlinked.
+    tell afterwards. Staged on the canary flush, which is the last embed of the
+    run: everything after it is reads and a close, so this isolates the identity
+    guard instead of tripping sqlite mid-write.
     """
     E.reindex_incremental()
     (project / "alpha.md").write_text("# Alpha\n\nEdited so there is work to do.\n")
 
     live_before = E.DB_PATH.read_bytes()
 
-    def sabotage_then_embed(texts):
-        for scratch in E.DB_PATH.parent.glob(E.DB_PATH.name + ".reindex.*.tmp"):
-            os.unlink(scratch)
-            with open(scratch, "wb") as fh:
-                fh.write(b"not the database this run built")
+    def sabotage_on_canary(texts):
+        if any("FWCANARY-" in t for t in texts):
+            for scratch in E.DB_PATH.parent.glob(E.DB_PATH.name + ".reindex.*.tmp"):
+                os.unlink(scratch)
+                with open(scratch, "wb") as fh:
+                    fh.write(b"not the database this run built")
         return _fake_embed(texts)
 
     with pytest.MonkeyPatch.context() as mp:
-        mp.setattr(E, "_embed", sabotage_then_embed)
+        mp.setattr(E, "_embed", sabotage_on_canary)
         with pytest.raises(RuntimeError, match="refusing to swap"):
             E.reindex_incremental()
 
     assert E.DB_PATH.read_bytes() == live_before, (
         "the live index was modified by a run that should have refused to swap"
     )
+
+
+# --------------------------------------------------------------------------
+# Resumability. At 1.9 chunks/s (measured against the live embed host) the
+# 394,230-chunk bootstrap is ~29-58h. Non-resumable, that never completes on
+# an hourly cron: every firing restarts from zero and the canary stays unknown
+# forever, while each individual run looks like it behaved correctly.
+# --------------------------------------------------------------------------
+
+def _fail_after(n_calls):
+    """An embedder that dies partway, like a reboot or an OOM would."""
+    state = {"n": 0}
+
+    def embed(texts):
+        state["n"] += 1
+        if state["n"] > n_calls:
+            raise RuntimeError("embed host went away mid-bootstrap")
+        return _fake_embed(texts)
+
+    return embed
+
+
+def test_a_partial_run_parks_its_work_instead_of_discarding_it(project):
+    E.reindex_incremental()
+    for i in range(120):
+        (project / f"f{i}.md").write_text(f"# File {i}\n\nBody {i}.\n")
+
+    resume_path = E.DB_PATH.with_suffix(E.DB_PATH.suffix + ".reindex.resume")
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(E, "_embed", _fail_after(1))
+        with pytest.raises(RuntimeError):
+            E.reindex_incremental()
+
+    assert resume_path.exists(), (
+        "a partial bootstrap threw its committed work away — the next cron "
+        "firing restarts from zero and the schedule can never converge"
+    )
+    db = sqlite3.connect(str(resume_path))
+    done = db.execute("SELECT COUNT(*) FROM file_state").fetchone()[0]
+    db.close()
+    assert done > 0, "resume file carries no completed files"
+
+
+def test_the_next_run_resumes_and_does_not_redo_completed_files(project):
+    E.reindex_incremental()
+    for i in range(120):
+        (project / f"f{i}.md").write_text(f"# File {i}\n\nBody {i}.\n")
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(E, "_embed", _fail_after(1))
+        with pytest.raises(RuntimeError):
+            E.reindex_incremental()
+
+    resume_path = E.DB_PATH.with_suffix(E.DB_PATH.suffix + ".reindex.resume")
+    db = sqlite3.connect(str(resume_path))
+    done_first = db.execute("SELECT COUNT(*) FROM file_state").fetchone()[0]
+    db.close()
+
+    calls = {"n": 0}
+    real = _fake_embed
+
+    def counting(texts):
+        calls["n"] += 1
+        return real(texts)
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(E, "_embed", counting)
+        stats = E.reindex_incremental()
+
+    assert stats["files_changed"] < 121, (
+        f"resumed run re-embedded everything ({stats['files_changed']} files) — "
+        f"{done_first} were already done"
+    )
+    assert not resume_path.exists(), "resume file survived a completed run"
+
+
+def test_a_completed_run_leaves_no_resume_file_behind(project):
+    """Discriminating counterpart: parking must not become the normal exit."""
+    E.reindex_incremental()
+    (project / "alpha.md").write_text("# Alpha\n\nEdited.\n")
+    E.reindex_incremental()
+    resume_path = E.DB_PATH.with_suffix(E.DB_PATH.suffix + ".reindex.resume")
+    assert not resume_path.exists()
