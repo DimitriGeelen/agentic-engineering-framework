@@ -37,11 +37,16 @@ jobs:
   - id: observations-6h
     name: "Observations + gaps (6 hourly)"
     schedule: "0 */6 * * *"
-    command: "flock -n /var/lock/agentic-cron-observations-6h.lock -c 'fw audit --section observations,gaps --cron'"
+    command: "flock -n /var/lock/agentic-cron-observations-6h.lock -c 'fw audit --section observations,gaps,corpus-health --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
-    description: "Reviews observation inbox and gaps register every 6 hours."
+    # T-3013: corpus-health joins this line rather than getting its own. It is
+    # the only vector-index check that actually retrieves anything (two embed
+    # round-trips against planted canaries), so it belongs on a slow cadence and
+    # explicitly NOT in the 30-minute `structure` line — which is what pre-push
+    # runs, and which already exceeds 180s and blocks every push (OBS-253).
+    description: "Reviews observation inbox and gaps register every 6 hours; verifies vector-index canaries end to end (T-3013)."
 
   - id: oe-fast-30m
     name: "OE fast checks (30 min)"

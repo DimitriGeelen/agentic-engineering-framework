@@ -15,7 +15,7 @@ PATH=/usr/local/bin:/usr/bin:/bin
 0 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-traceability-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron' 2>&1 | logger -t agentic-cron
 
 # Observations + gaps (6 hourly)
-0 */6 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-observations-6h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps --cron' 2>&1 | logger -t agentic-cron
+0 */6 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-observations-6h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps,corpus-health --cron' 2>&1 | logger -t agentic-cron
 
 # OE fast checks (30 min)
 15,45 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-fast-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-fast,oe-research --cron' 2>&1 | logger -t agentic-cron

@@ -68,34 +68,58 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 4 of T-3005. T-3012 made the index's age *true*; nothing read it. This slice
+is the reader: `fw doctor` reports freshness, `fw audit --section corpus-health`
+verifies the T-3011 canaries end to end, and the audit section is on the 6-hourly
+cron so it is watched rather than merely available.
+
+Split by cost, which is the whole design: freshness is a manifest read plus a
+`stat`, so it runs on doctor's hot path. The canary embeds two probes, so it runs
+on a slow cron and **never** in `--section structure` — the path pre-push runs,
+which already exceeds 180s and blocks every push (OBS-253).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw doctor` emits a vector-index freshness line from `index_freshness()` (T-3012):
+- [x] `fw doctor` emits a vector-index freshness line from `index_freshness()` (T-3012):
       PASS under the threshold, WARN over it, WARN when `source == "unknown"`. Today's
       real index (157.6 days) must produce a WARN, not a PASS.
-- [ ] The freshness line costs **zero** embedding calls — manifest read plus a `stat`.
+- [x] The freshness line costs **zero** embedding calls — manifest read plus a `stat`.
       Pinned by a test asserting no Ollama client is constructed while it runs. Doctor
       is on the hot path; a health check that needs a live embedder to report is one
       that goes quiet exactly when the subsystem it watches is down.
-- [ ] `FW_INDEX_STALE_DAYS` is registered in `lib/config.sh` `FW_CONFIG_REGISTRY` with a
+- [x] `FW_INDEX_STALE_DAYS` is registered in `lib/config.sh` `FW_CONFIG_REGISTRY` with a
       default and a description, so `fw config list` and Watchtower `/config` show it and
       `tests/lint/config-registry-parity.bats` stays green.
-- [ ] `fw audit` gains a corpus-health section consuming `corpus_health()` (T-3011):
+- [x] `fw audit` gains a corpus-health section consuming `corpus_health()` (T-3011):
       FAIL on `fault`, WARN on `unknown`, PASS on `ok`, with the failing canary named.
-- [ ] The canary check does **not** run in the pre-push `--section structure` path. It
+- [x] The canary check does **not** run in the pre-push `--section structure` path. It
       costs two embed round-trips, and pre-push already exceeds 180s and blocks every
       push (OBS-253). Pinned by a test that runs the structure section and asserts no
       embed call is made.
-- [ ] RED observed first for each verdict: stale→WARN, fresh→PASS, unknown→WARN,
+- [x] RED observed first for each verdict: stale→WARN, fresh→PASS, unknown→WARN,
       fault→FAIL. Each assertion is exercised against a fixture that produces the
       opposite verdict, so a check that cannot go red is caught here rather than in
       production (this arc has shipped four such instruments already).
 
 ### Human
+
+- [ ] [REVIEW] `INDEX_STALE_DAYS` reads clearly on the Watchtower config page
+
+  Yours because it is a wording call on your surface, not a correctness one — the
+  key resolves correctly either way, and the tests prove that.
+
+  **Steps:**
+  1. `curl -s "$(bin/fw watchtower url)/config" -o /tmp/cfg.html && grep -o "INDEX_STALE_DAYS[^<]*" /tmp/cfg.html | head -3`
+  2. Or open `/config` in a browser and find the row.
+
+  **Expected:** the row shows `INDEX_STALE_DAYS`, default `7`, and a description
+  that makes it obvious what changing it affects.
+
+  **If not:** say whether the description is too long for the column, or whether
+  "vector index" needs naming as "semantic search" for it to be recognisable.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -127,6 +151,15 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/test_index_doctor_rail.bats > /tmp/.t3013v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3013v1.out && ! grep -q "^not ok" /tmp/.t3013v1.out
+bats tests/unit/test_fw_config_one_arg.bats > /tmp/.t3013v2.out 2>&1 && grep -q "^ok 1 " /tmp/.t3013v2.out && ! grep -q "^not ok" /tmp/.t3013v2.out
+# One doctor run, three assertions off it — doctor costs minutes here, so the
+# `;` is deliberate: doctor exits non-zero whenever it has warnings (and it has,
+# including ours), so the grep chain is the verdict, not doctor's status.
+bin/fw doctor > /tmp/.t3013v3.out 2>&1; grep -q "vector index" /tmp/.t3013v3.out && grep -q "Cron registry in sync" /tmp/.t3013v3.out && ! grep -q "Cron registry edited but not generated" /tmp/.t3013v3.out
+grep -q "INDEX_STALE_DAYS" lib/config.sh && grep -q "INDEX_STALE_DAYS" web/blueprints/config.py
+grep -q "observations,gaps,corpus-health" .context/cron/agentic-audit.crontab
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -189,6 +222,35 @@ bvp_scores_proposed:
 
 ## RCA
 
+Slice 4 is not itself a bug fix, but writing it uncovered one, and the way it hid
+is the part worth keeping.
+
+**Symptom.** `fw doctor` stopped at line 31 of 113, exit 1, no error text. Not a
+crash message, not a failed check — output simply ended.
+
+**Root cause.** `lib/config.sh:58` had `local default="$2"`, unguarded. `bin/fw`
+runs `set -euo pipefail`, so calling `fw_config KEY` with one argument — the
+natural call, since `FW_CONFIG_REGISTRY` already states the default — triggered an
+unbound-variable exit.
+
+**Why structurally allowed.** An unbound-variable exit under `set -u` is **not** a
+command failure. It therefore slips both guards an author would reach for: `||
+fallback` does not catch it, and `2>/dev/null` on the call swallows the one message
+that would have named it. I had written both, for good reasons, and between them
+they converted a loud failure into a silent truncation. Every existing caller
+passed two arguments, so the hazard had never been exercised.
+
+**Prevention.** `tests/unit/test_fw_config_one_arg.bats` — 7 legs, 6 observed RED
+— including one that reproduces the exact `2>/dev/null || fallback` shape that hid
+it. `fw_config` now falls back to the registry when no default is passed, which is
+safe by construction: the previous one-arg behaviour was a hard exit, so nothing
+can depend on it. `fw_config_int` had the same hazard and got the same guard.
+
+**Second-order note.** `FW_CONFIG_REGISTRY` has a DEFAULT column that `fw_config`
+never consulted, so every call site duplicated a default the registry already
+stated. Half-fixed here (one-arg calls now read it); the wider cleanup of existing
+two-arg call sites is filed as OBS-255, not done.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -228,6 +290,35 @@ bvp_scores_proposed:
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The rail is wired and watched, not merely present. `fw doctor` now
+says `WARN vector index: 157.6 days old (threshold 7d, source: db_mtime)` — the
+first time this framework has been able to say that at all — and `fw audit
+--section corpus-health` reports the tri-state honestly against the real index
+(`unknown`, because it predates T-3011). The cron chain is verified across all
+three transitions (registry → generated → deployed).
+
+Each verdict is pinned against a fixture producing the *opposite* verdict from the
+same code: stale at threshold 7, OK at 99999, stale again at 0, unknown with no
+index. That is the discipline this arc keeps failing to apply — a check verified
+only in the state it normally reports is not verified.
+
+The honest limits: the canary still reports `unknown` because no reindex has run
+(slice 5), so the end-to-end retrieval path is watched but has not yet been seen
+green on real data. And the audit section's FAIL branch has been exercised only in
+unit form, not against a genuinely faulted index.
+
+**Evidence:**
+- `fw doctor` → `WARN vector index: 157.6 days old (threshold 7d, source: db_mtime)`
+- `fw audit --section corpus-health` → `WARN Corpus canaries: index has no manifest`
+- `tests/unit/test_index_doctor_rail.bats` — 10/10, seconds not minutes
+- `tests/unit/test_fw_config_one_arg.bats` — 7/7, 6 observed RED first
+- Cron: `observations,gaps,corpus-health` in the generated crontab; doctor confirms in-sync
+- Config parity restored across `lib/config.sh` and `web/blueprints/config.py`
+  (the invariant suite caught the mismatch — 2 of 57 RED — before it shipped)
+- Filed: OBS-253 (pre-push audit >180s), OBS-255 (the `fw_config` hazard)
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the

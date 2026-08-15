@@ -1899,66 +1899,35 @@ else:
 
     # Check: vector index freshness (T-3013, T-3005 slice 4)
     #
-    # Before this the vector substrate had NO doctor coverage — which is the
-    # reason T-3004 ran for five months. `is_index_ready()` counts rows and
+    # Before this the vector substrate had NO doctor coverage at all — which is
+    # the reason T-3004 ran for five months. `is_index_ready()` counts rows and
     # `built_at` recorded when the handle opened, so nothing anywhere could
     # report an index as old.
     #
-    # Deliberately embed-free: manifest read plus a stat, no Ollama round-trip.
-    # A health check that needs the embedder to answer goes quiet exactly when
-    # the subsystem it watches is down, which is the failure mode being fixed
-    # rather than a new one to add. The canary (which does embed) runs in the
-    # daily audit instead — never here and never in pre-push, where the audit
-    # already exceeds 180s and blocks every push (OBS-253).
-    local _idx_stale_days
-    _idx_stale_days=$(fw_config INDEX_STALE_DAYS 2>/dev/null || echo 7)
-    local _idx_json
-    _idx_json=$(cd "$PROJECT_ROOT" && python3 -c '
-import json, sys
-try:
-    from web.embeddings import index_freshness
-except Exception as exc:
-    print(json.dumps({"source": "unimportable", "detail": type(exc).__name__}))
-    sys.exit(0)
-try:
-    print(json.dumps(index_freshness()))
-except Exception as exc:
-    print(json.dumps({"source": "error", "detail": str(exc)[:120]}))
-' 2>/dev/null)
-    if [ -z "$_idx_json" ]; then
-        echo -e "  ${CYAN}SKIP${NC}  vector index: freshness not determinable here"
-    else
-        local _idx_src _idx_age_days
-        _idx_src=$(echo "$_idx_json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("source",""))' 2>/dev/null)
-        _idx_age_days=$(echo "$_idx_json" | python3 -c '
-import json, sys
-a = json.load(sys.stdin).get("age_seconds")
-print("" if a is None else f"{a/86400:.1f}")' 2>/dev/null)
-        case "$_idx_src" in
-            unimportable)
-                # Consumer project without the embedding extras, most likely.
-                echo -e "  ${CYAN}SKIP${NC}  vector index: web.embeddings not importable here"
-                ;;
-            unknown|error)
-                # Not a number. Absence is reported as absence — a default of 0
-                # would read as "built this instant", which is how a dead index
-                # passed for healthy in the first place.
-                echo -e "  ${YELLOW}WARN${NC}  vector index: age unknown (no manifest, no readable index)"
-                echo -e "         Build one: fw serve  then visit /search — or wait for the scheduled reindex"
-                warnings=$((warnings + 1))
-                ;;
-            *)
-                if [ -n "$_idx_age_days" ] && python3 -c "import sys; sys.exit(0 if float('$_idx_age_days') > float('$_idx_stale_days') else 1)"; then
-                    echo -e "  ${YELLOW}WARN${NC}  vector index: ${_idx_age_days} days old (threshold ${_idx_stale_days}d, source: ${_idx_src})"
-                    echo -e "         Search answers from a corpus this old are stale, not wrong — they omit everything since."
-                    echo -e "         Raise the threshold: fw config set INDEX_STALE_DAYS <n>"
-                    warnings=$((warnings + 1))
-                else
-                    echo -e "  ${GREEN}OK${NC}  vector index: ${_idx_age_days} days old (source: ${_idx_src})"
-                fi
-                ;;
-        esac
-    fi
+    # Logic lives in lib/index-health.sh so its three verdicts can be pinned
+    # without five full doctor runs per test suite. Embed-free: manifest read
+    # plus a stat. The canary (which does embed) runs in
+    # `fw audit --section corpus-health`, never here and never in pre-push.
+    source "$FRAMEWORK_ROOT/lib/index-health.sh"
+    _idx_line=$(index_freshness_verdict)
+    _idx_verdict="${_idx_line%%|*}"
+    _idx_rest="${_idx_line#*|}"
+    _idx_msg="${_idx_rest%%|*}"
+    _idx_hint="${_idx_rest#*|}"
+    case "$_idx_verdict" in
+        OK)
+            echo -e "  ${GREEN}OK${NC}  $_idx_msg"
+            ;;
+        WARN)
+            echo -e "  ${YELLOW}WARN${NC}  $_idx_msg"
+            [ -n "$_idx_hint" ] && echo -e "         $_idx_hint"
+            warnings=$((warnings + 1))
+            ;;
+        *)
+            echo -e "  ${CYAN}SKIP${NC}  $_idx_msg"
+            ;;
+    esac
+
 
     # Check: designer pin ↔ vendored build drift (T-2524, T-2521 integration hardening)
     # Sibling of the MCP manifest + cron registry→generated drift classes. Content-compares

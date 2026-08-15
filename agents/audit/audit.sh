@@ -2538,6 +2538,68 @@ echo ""
 fi # end traceability
 
 # ============================================
+# SECTION: CORPUS HEALTH (T-3013, T-3005 slice 4)
+# ============================================
+#
+# The one check in this file that actually retrieves something. Every other
+# signal over the vector index counts rows or reads timestamps, which is why
+# T-3004 ran five months green: nothing anywhere exercised embed → chunk →
+# store → retrieve end to end.
+#
+# Its own section, deliberately NOT part of `structure`. `structure` is what
+# pre-push runs, and pre-push already exceeds 180s and blocks every push
+# (OBS-253); two embed round-trips would make a bad situation worse and would
+# couple every push to Ollama being up. This runs on the 6-hourly cron instead.
+if should_run_section "corpus-health"; then
+echo "=== CORPUS HEALTH ==="
+
+_ch_json=$(cd "$PROJECT_ROOT" && timeout 90 python3 -c '
+import json, sys
+try:
+    from web.embeddings import corpus_health
+except Exception as exc:
+    print(json.dumps({"status": "unimportable", "detail": type(exc).__name__}))
+    sys.exit(0)
+try:
+    h = corpus_health()
+    print(json.dumps({"status": h.get("status"), "detail": h.get("detail", "")}))
+except Exception as exc:
+    print(json.dumps({"status": "error", "detail": str(exc)[:200]}))
+' 2>/dev/null || echo '{"status":"timeout","detail":"corpus_health did not return within 90s"}')
+
+_ch_status=$(echo "$_ch_json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status",""))' 2>/dev/null || echo "")
+_ch_detail=$(echo "$_ch_json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("detail",""))' 2>/dev/null || echo "")
+
+case "$_ch_status" in
+    ok)
+        pass "Corpus canaries: retrieval verified end to end"
+        ;;
+    fault)
+        # A planted document did not come back for its own paraphrase. Either
+        # the index is stale, embedding is dead, or chunks are being truncated —
+        # the canary cannot tell you which, only that retrieval is broken.
+        fail "Corpus canaries: FAULT — $_ch_detail" \
+             "A canary document is not the top hit for its own probe" \
+             "Rebuild the index (fw serve, then /search), then re-run: fw audit --section corpus-health"
+        ;;
+    unknown)
+        warn "Corpus canaries: index has no manifest — cannot verify" \
+             "$_ch_detail" \
+             "Index predates T-3011. Rebuild to plant canaries and write a manifest."
+        ;;
+    unimportable)
+        info "Corpus canaries: web.embeddings not importable here — skipped"
+        ;;
+    timeout|error|"")
+        warn "Corpus canaries: check did not complete" \
+             "${_ch_detail:-no output from corpus_health}" \
+             "Check the embedder: fw doctor, and Config.EMBED_HOST"
+        ;;
+esac
+
+fi
+
+# ============================================
 # SECTION 4: ENFORCEMENT CHECKS
 # ============================================
 if should_run_section "enforcement"; then
