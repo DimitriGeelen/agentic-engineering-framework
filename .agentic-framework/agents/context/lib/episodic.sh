@@ -133,22 +133,20 @@ do_generate_episodic() {
     # =========================================================================
     # Parse Decisions section from task file
     # =========================================================================
+    # T-3015: delegate to extract_decisions.py. The previous parse read this
+    # block-structured section one line at a time, which produced three defects
+    # from that one assumption: it filtered the comment DELIMITERS but not the
+    # comment INTERIOR (so the template's own `[what was decided]` placeholders
+    # were emitted as real decisions — 77% of episodics in this tree), it cut
+    # multi-line values at the first newline, and it capped at 20 silently.
+    # Reported by 050-email-archive, reproduced independently by 832 at 81%.
+    # The extractor emits the YAML body whole; do not reintroduce a line filter
+    # here — `tests/unit/test_extract_decisions.py` pins all three.
     local decisions_raw=""
     local has_decisions=false
-    local decisions_section=$(sed -n '/^## Decisions/,/^## /p' "$task_file" 2>/dev/null | head -n -1)
-    if [ -n "$decisions_section" ]; then
-        # Check for actual content (not just comments/empty)
-        # T-1631 / G-082 fix: use '^## ' (with trailing space) so we strip the
-        # H2 section delimiter `## Decisions` but preserve `### date — topic`
-        # H3 headings that label each decision. The prior regex `^##` greedily
-        # consumed H3 headings, leaving the `^### ` handler below with nothing
-        # to fire on and producing decisions blocks whose Chose/Why/Rejected
-        # fields merged into a single flat mapping (silent data corruption).
-        local decision_content=$(echo "$decisions_section" | grep -v '^## ' | grep -v '^<!--' | grep -v '^-->' | grep -v '^\s*$' | head -20)
-        if [ -n "$decision_content" ]; then
-            decisions_raw="$decision_content"
-            has_decisions=true
-        fi
+    decisions_raw=$(python3 "$(dirname "${BASH_SOURCE[0]}")/extract_decisions.py" "$task_file" 2>/dev/null)
+    if [ -n "$decisions_raw" ]; then
+        has_decisions=true
     fi
 
     # =========================================================================
@@ -333,26 +331,11 @@ HEREDOC
     echo "# Decisions (from task file Decisions section)" >> "$episodic_file"
     echo "decisions:" >> "$episodic_file"
     if [ "$has_decisions" = true ]; then
-        # Parse decision entries from markdown format
-        # Expected format: ### date — topic / - **Chose:** / - **Why:** / - **Rejected:**
-        # T-1871: Single-quoted YAML scalars — only escape is '→''. Avoids
-        # the L-392 class where backticks/backslashes inside double-quoted
-        # scalars trigger yaml.scanner.ScannerError ("unknown escape character").
-        echo "$decisions_raw" | while read -r line; do
-            if echo "$line" | grep -q '^### '; then
-                local topic=$(echo "$line" | sed 's/^### //' | sed "s/'/''/g")
-                echo "  - decision: '$topic'" >> "$episodic_file"
-            elif echo "$line" | grep -q '^\*\*Chose:\*\*\|^- \*\*Chose:\*\*'; then
-                local chose=$(echo "$line" | sed 's/.*\*\*Chose:\*\* *//' | sed "s/'/''/g")
-                echo "    chose: '$chose'" >> "$episodic_file"
-            elif echo "$line" | grep -q '^\*\*Why:\*\*\|^- \*\*Why:\*\*'; then
-                local why=$(echo "$line" | sed 's/.*\*\*Why:\*\* *//' | sed "s/'/''/g")
-                echo "    rationale: '$why'" >> "$episodic_file"
-            elif echo "$line" | grep -q '^\*\*Rejected:\*\*\|^- \*\*Rejected:\*\*'; then
-                local rej=$(echo "$line" | sed 's/.*\*\*Rejected:\*\* *//' | sed "s/'/''/g")
-                echo "    alternatives_rejected: ['$rej']" >> "$episodic_file"
-            fi
-        done
+        # T-3015: already YAML, already escaped. extract_decisions.py emits
+        # single-quoted scalars with ' doubled (T-1871 / L-392 / L-385) — the
+        # same escape strategy the line-by-line version used, kept because
+        # double-quoted scalars break on backticks and backslashes in prose.
+        printf '%s\n' "$decisions_raw" >> "$episodic_file"
     else
         echo "  # No decisions recorded (mechanical task or old template)" >> "$episodic_file"
     fi

@@ -2873,3 +2873,59 @@ concerns:
     Class sibling: L-506 / L-570 / T-2902, but a NEW leg. Those are all read
     failures — a scan that cannot see. This is a write failure: the system saw
     correctly, reported correctly, and was then instructed to forget.
+
+- id: G-081
+  type: gap
+  title: The episodic generator was never tested against an unfilled task template — the state 77% of tasks are actually in
+  description: 'Episodic decision extraction reads a block-structured document line by line.
+    `agents/context/lib/episodic.sh:147` filters the comment DELIMITERS `^<!--` and `^-->`
+    but not the comment INTERIOR, and the task template''s `## Decisions` block is exactly
+    such a multi-line comment. Its `### [date] — [topic]` and `- **Chose:** [what was
+    decided]` lines survive and reach the handlers at `:342-353`, which cannot tell them
+    from real content. Measured here: 2039 of 2649 episodics (77%), 19 of the last 20 by
+    mtime. It fires on every task close, so the rate climbs rather than being stable cruft.
+
+    One root cause, three symptoms — and the two unnamed ones are the dangerous half.
+    `:346` runs `sed` on a single `$line`, so a decision value wrapping onto continuation
+    lines is cut at the first newline. `:147`''s `head -20` drops the tail of a longer
+    section with no note. A phantom entry is visibly junk; a truncated rationale reads as
+    complete. Nothing downstream can tell it was clipped.
+
+    Discovery path is the finding. Opened by 050-email-archive 2026-06-09, re-pinged three
+    times over two months to framework silence, and independently reproduced by
+    832-Workflow-designer at 81% including three tasks they closed that morning. Two
+    consumer projects read our episodic output more carefully than we did, because we
+    generate it and they consume it. This tree''s own 77% was never looked at.
+
+    '
+  spec_reference: agents/context/lib/episodic.sh:147, :342-353; .tasks/templates/default.md §Decisions
+  severity: high
+  decision_trigger: 'A framework-generated artifact is found to be defective in the state it
+    is MOST COMMONLY generated in, by someone outside this project.'
+  trigger_check:
+    type: manual
+    hint: 'For each artifact the framework auto-generates (episodic, handover, component
+      doc), identify the modal input state — usually "template section left unfilled" — and
+      check whether any test feeds it that state. Absence of such a test is the next instance.'
+  status: watching
+  created: 2026-08-15
+  related_task: T-3015
+  what_remains: 'The T-3015 fix closes the three symptoms and pins them with discriminating
+    fixtures. It does NOT close this gap, which is about the class: no framework generator
+    is tested against its modal input. Closure condition, stated because the obvious move
+    does not satisfy it: FIXING THE DECISIONS EXTRACTOR DOES NOT CLOSE THIS. Neither does
+    adding a placeholder-regex filter — 832 identified that as strictly worse than the leak,
+    because it removes the tell from symptom 1 while symptoms 2 and 3 keep running, and the
+    output then LOOKS clean. That is the false-green class (sibling to T-3004/T-3012, where
+    a freshness clock reset itself and reported 0.0s for a five-month-dead index).
+
+    Closes when every auto-generated artifact has at least one test whose fixture is the
+    unfilled template, and the assertion is on ABSENCE of template text rather than presence
+    of expected text. Note the failure direction: a generator fed an unfilled template
+    produces plausible-looking output, never an error, so this class can only ever be found
+    by looking — which is why it took two external consumers and two months.
+
+    Historical episodics are deliberately NOT rewritten. They are the evidence of how far
+    this reached, and bulk-rewriting stored memory is an operator decision.
+
+    '
