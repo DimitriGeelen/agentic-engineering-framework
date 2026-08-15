@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T20:23:29Z
+last_update: 2026-08-15T20:24:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -117,7 +117,7 @@ Full measurements and candidate analysis: `docs/reports/T-3022-recall-latency-sc
 - **IW-4: Does binary quantization with full-vector rescoring preserve acceptable recall on THIS corpus?**
   confidence: 3
   disposition: answered
-  rationale: built for real in sqlite-vec against all 398,594 vectors (spike 4). Answer is a qualified yes with a measured tradeoff curve, not the lossless win spike 2's simulation reported. Stage 1 is 1011ms → 64ms (15.8×); end-to-end 10.2× at N=100. Recall against exhaustive-KNN ground truth (10 queries) — N=50: top-1 100%, recall@3 87%, recall@10 80%. N=100: 100%/90%/87%. N=200: 100%/93%/92%. **Exact top-1 at every N; recall@10 plateaus near 95-96% and never reaches 100%.** This falsifies spike 2's 10.0/10 at N=50 — the ~540-vector pool had too few distractors, exactly as that spike's own Limits note warned. Design constraint discovered: rescore floats must live in a plain INTEGER PRIMARY KEY table (66ms) not the vec0 table (340ms via `id IN`, 118ms via per-id lookups) — `EXPLAIN QUERY PLAN` shows vec0 serves `id IN (…)` by full scan. Confidence 3 on the mechanism and the curve; the storage end-state (replace vs duplicate `vec_documents`) remains unmeasured and is a build decision. Full tables, method and the falsified spike-2 claim: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 4.
+  rationale: built for real in sqlite-vec against all 398,594 vectors (spike 4). Answer is a qualified yes with a measured tradeoff curve, not the lossless win spike 2's simulation reported. Stage 1 is 1011ms → 64ms (15.8×); end-to-end 10.2× at N=100. Recall against exhaustive-KNN ground truth (10 queries) — N=50: top-1 100%, recall@3 87%, recall@10 80%. N=100: 100%/90%/87%. N=200: 100%/93%/92%. **Exact top-1 at every N; recall@10 plateaus near 95-96% and never reaches 100%.** This falsifies spike 2's 10.0/10 at N=50 — the ~540-vector pool had too few distractors, exactly as that spike's own Limits note warned. Design constraint discovered: rescore floats must live in a plain INTEGER PRIMARY KEY table (66ms) not the vec0 table (340ms via `id IN`, 118ms via per-id lookups) — `EXPLAIN QUERY PLAN` shows vec0 serves `id IN (…)` by full scan. Confidence 3 on the mechanism and the curve. The storage end-state was the last gap and spike 5 closed it: replacing `vec_documents` costs +28% (1.316GB → 1.682GB), duplicating +128%, and exhaustive exact KNN survives the replacement at 1743ms — so candidate D's drift audit stays implementable, which is what makes A safe to ship. Remaining unmeasured item is incremental bit-index maintenance, which is build work rather than a question. Full tables, method and the falsified spike-2 claim: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 4 and §Spike 5.
 
 - **IW-5: Does our embedding model support Matryoshka truncation (768→256), and at what recall cost?**
   confidence: 3
@@ -269,10 +269,19 @@ must live in a plain `INTEGER PRIMARY KEY` table. A vec0 virtual table does not 
 the obvious implementation re-reads the 1.22GB it just avoided and yields 3x instead of
 15x. Same algorithm, 5x apart, decided entirely by where the floats are stored.
 
+**Spike 5 settled the last open item, and it is the one that makes the recommendation
+coherent rather than merely fast.** Replacing `vec_documents` costs **+28% storage**
+(1.316GB -> 1.682GB), not less -- vec0 packs vectors into contiguous chunks, a B-tree pays
+per-row overhead. Duplicating would cost +128%. But the question that mattered was whether
+an exact reference survives the replacement, because a drifting bit index would degrade
+recall with no failure event -- the T-3021 shape exactly. It does: exhaustive exact KNN
+over the plain table is 1743ms vs vec0's 1085ms, 1.6x slower and off the hot path.
+**Candidate A is only safe to ship because candidate D remains implementable after it.**
+
 What I am NOT claiming: that recall@10 can be made lossless (it cannot, at any N I
-measured), that the storage end-state is settled (the plain float table carries ~34% page
-overhead, and replace-vs-duplicate is unmeasured), or that the current latency is
-unacceptable. The GO is on the strength of the characterisation and the candidate, not
+measured), that incremental bit-index maintenance is free (unbuilt, unmeasured, and the
+one place A could reintroduce a silent-degradation surface), or that the current latency
+is unacceptable. The GO is on the strength of the characterisation and the candidate, not
 on urgency.
 
 **If your standard is "the top result must not change", A meets it at every N tested. If
@@ -293,6 +302,8 @@ measurement I can run settles it.
 - **Spike 4: candidate A built in sqlite-vec against all 398,594 vectors.** Bit index = **48 MB** vs the float index's 1.58 GB; quantizing the corpus took 183 s. Stage 1: **1011 ms → 64 ms (15.8×)**, median over 5 queries.
 - **Spike 4 recall curve (10 queries, ground truth = exhaustive float KNN).** N=50: top-1 100%, recall@3 87%, recall@10 80%, 66 ms (15.3×). N=100: 100% / 90% / 87%, 100 ms (10.2×). N=200: 100% / 93% / 92%, 177 ms (5.7×). N=400: 100% / 93% / 96%, 381 ms (2.7×). **Exact top-1 at every N; recall@10 never reaches 100%.**
 - **Spike 4 falsified my own spike-2 headline.** "Identical to exhaustive search at N=50" was a 540-vector-pool artifact — the real corpus gives 8.0/10, not 10.0/10. Recorded as a correction rather than quietly restated, because the caveat I wrote at the time is what turned out to be true.
+- **Spike 5: storage end-state, measured per-table via `dbstat`.** Today `vec_documents` = 1.316 GB. After replacement: `floatvec` 1.637 GB + `bitvec` 0.045 GB = **1.682 GB (+28%)**. Duplicating instead = 3.0 GB (+128%). The plain table is *less* space-efficient than vec0 — the same chunked-layout fact that makes vec0 fast to scan and slow to point-look-up.
+- **Spike 5: the exact reference survives the replacement.** Exhaustive exact KNN over the plain float table = **1743 ms** vs vec0's 1085 ms. 1.6× slower, off the hot path, and sufficient as ground truth for a periodic recall audit — so candidate D stays implementable after candidate A ships. Proposed end state: `bitvec` (45 MB) stage 1, `floatvec` (1.64 GB) stage 2 + exact reference, `vec_documents` dropped.
 - **Spike 4 design constraint — where the floats live decides the win.** Rescore at N=50: `id IN (…)` against the vec0 float table = 340 ms; per-id point lookups = 118 ms; `id IN (…)` against a plain `INTEGER PRIMARY KEY` BLOB table = **66 ms**. `EXPLAIN QUERY PLAN` → `SCAN prod.vec_documents VIRTUAL TABLE INDEX 0:1`. The naive implementation re-reads the 1.22 GB it just avoided.
 - **Dimension truncation measured, not assumed.** `nomic-embed-text-v2-moe`: 8.8/10 top-10 at 512d (ρ=0.954), 8.2/10 at 256d (ρ=0.874), 6.0/10 at 128d. 3× for ~18% of the top-10, with no rescore stage to recover it.
 - **Partitioning dissolved.** `_rag_retrieve` selects `d.category` but never filters on it (`web/embeddings.py:1274`); BM25 per-category groups are flattened (`web/embeddings.py:1286`). Nothing to prune.
@@ -353,18 +364,18 @@ measurement I can run settles it.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8de20088
-- **Timestamp:** 2026-08-15T20:24:10Z
+- **Scan ID:** R-32bc427c
+- **Timestamp:** 2026-08-15T20:26:38Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-041f03f4
-- **Timestamp:** 2026-08-15T20:24:10Z
+- **Scan ID:** RC-213f1c74
+- **Timestamp:** 2026-08-15T20:26:38Z
 - **Overall:** CONFIRMED
-- **Claims:** 6
+- **Claims:** 7
 
 | Claim | Type | Status |
 |-------|------|--------|
@@ -373,4 +384,5 @@ measurement I can run settles it.
 | `web/embeddings.py:1274` | file_line | ✓ pass |
 | `web/embeddings.py:1286` | file_line | ✓ pass |
 | `docs/reports/T-3022-recall-latency-scaling.md` | file | ✓ pass |
+| `T-3021` | task | ✓ pass |
 | `T-3017` | task | ✓ pass |

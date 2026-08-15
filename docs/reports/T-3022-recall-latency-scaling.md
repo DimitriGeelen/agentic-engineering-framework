@@ -239,15 +239,57 @@ would still recommend it — but it is a tradeoff to be chosen, not a free win t
 and the operator should see the curve rather than a headline.
 
 **Not settled by this spike:**
-- **Storage.** The plain float table cost 1.63 GB where the raw vectors are 1.22 GB (~34%
-  page overhead). Whether the two-stage design *replaces* `vec_documents` (roughly storage
-  neutral) or sits *alongside* it (roughly doubles) is a build decision I have not made and
-  did not measure the end state of.
 - **Index maintenance.** The bit index must be rebuilt or incrementally updated in lockstep
   with the float index. A stale bit index degrades recall silently — precisely the T-3021
   failure shape — so candidate D's shape assertion becomes *more* necessary if A ships, not
   less.
 - 10 queries, one host, warm page cache.
+
+### Spike 5 — the storage end-state, and whether an exact reference survives
+
+Spike 4 left "replace vs duplicate `vec_documents`" open. Per-table page accounting
+(`dbstat`) settles it, and the result runs against the intuition that a plain table must be
+the cheaper representation:
+
+| | today | after replacement |
+|---|---|---|
+| `vec_documents` (vec0 chunks + rowids) | **1.316 GB** | — |
+| `floatvec` (plain `INTEGER PRIMARY KEY` BLOB) | — | 1.637 GB |
+| `bitvec` (vec0 bit chunks + rowids) | — | 0.045 GB |
+| **total** | **1.316 GB** | **1.682 GB** |
+
+**Replacing costs +28% storage, not less.** The raw vectors are 1.22 GB either way; vec0
+packs them into contiguous chunk blobs, while a B-tree pays per-row overhead. That is the
+same structural fact as the spike-4 rescore result seen from the other side: **vec0's
+chunked layout is exactly what makes it fast to scan and slow to point-look-up, and the
+plain table inverts both properties.** One layout, two consequences, and the design has to
+pick which one it wants at each stage. Duplicating instead of replacing would cost
+1.316 + 1.682 = **3.0 GB (+128%)**.
+
+**The question that actually mattered was not storage.** If `vec_documents` is dropped,
+is there still a way to compute exact exhaustive KNN — the ground truth any recall-drift
+assertion has to compare against?
+
+| exhaustive exact KNN, k=10 | |
+|---|---|
+| over `vec_documents` (vec0) | 1085 ms |
+| over `floatvec` (plain table) | **1743 ms** |
+
+Yes — 1.6× slower, and entirely acceptable because the exact path would no longer run per
+query. It runs when something wants to *audit* the approximation.
+
+This is the finding that makes the recommendation coherent rather than merely fast. The
+risk I flagged in spike 4 was that shipping candidate A would introduce a silent-degradation
+surface (a drifting bit index) of exactly the T-3021 shape. That risk is only manageable if
+an exact reference remains computable, and spike 5 shows it does. **Candidate A and
+candidate D are not just compatible — A is only safe to ship *because* D remains
+implementable after it.**
+
+Proposed end state, for the operator's information rather than as a decision I have made:
+`bitvec` (45 MB) serves stage 1 per query; `floatvec` (1.64 GB) serves stage 2 rescore per
+query and doubles as the exact reference for a periodic recall audit; `vec_documents` is
+dropped. Net: **+28% storage, ~10× query latency, exact ground truth retained at 1.7 s
+off the hot path.**
 
 ## Candidates
 
@@ -274,8 +316,12 @@ optimisation lands, because it is what stops the next regression from being invi
   simulation reported. There is a tradeoff curve and a point must be chosen on it.**
 - That recall@10 can be made lossless. It cannot, at any N I measured — it plateaus near
   95-96%. Exact top-1 survives; the tail does not.
-- That the storage end-state is settled. The plain float table carries ~34% page overhead,
-  and whether it replaces or duplicates `vec_documents` is unmeasured.
+- ~~That the storage end-state is settled.~~ **Settled by spike 5: replacing costs
+  +28% (1.316 GB → 1.682 GB), duplicating costs +128%, and the exact reference survives
+  the replacement at 1743 ms.**
+- That the bit index can be kept in lockstep for free. Incremental maintenance is
+  unbuilt and unmeasured, and it is the one place candidate A could reintroduce a
+  silent-degradation surface.
 - That the corpus will keep growing at the observed rate. One bulk reindex is not a
   growth curve. IW-7 depends on data that started accumulating this week.
 
@@ -295,7 +341,9 @@ any N, and candidate D (accept and assert the shape) is the honest answer instea
 
 If GO, the build work splits cleanly:
 1. ~~Measure sqlite-vec bit-vector scan throughput at full corpus scale.~~ **Done — spike 4.**
-   Remaining sub-question: the storage end-state (replace vs duplicate `vec_documents`).
+   ~~Remaining sub-question: the storage end-state.~~ **Done — spike 5.** Nothing left to
+   measure before building; what remains is incremental bit-index maintenance, which is
+   build work rather than a question.
 2. Two-stage retrieval behind a config flag, both paths available for A/B. **Design
    constraint from spike 4: the rescore floats must live in a plain `INTEGER PRIMARY KEY`
    table. Reading them from the vec0 table costs 5× and silently converts the win into a

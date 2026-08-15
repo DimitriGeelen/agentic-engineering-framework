@@ -4523,3 +4523,9 @@ X'` returning empty group."
   task: T-3014
   date: 2026-08-15
   context: Added via context agent
+- id: L-605
+  learning: "A limitation you write down and do not test is an untested hypothesis wearing a hedge's clothes. Three instances in one session, all pre-documented: T-3021 (miss rule verified against a sparse index — true when written, silently false once the corpus filled), T-3023 (regression tests that build their own fixtures through their own assumptions), T-3022 spike 2 (a simulation whose stated 'too few distractors' limit was the actual finding — spike 4 measured 8.0/10 where the simulation reported 10.0/10). In every case the caveat was recorded at the time and read as risk management rather than as a prediction to test. Writing the limitation down discharges the discomfort that would otherwise have driven the test. Counter-practice: treat every caveat you write as a scheduled experiment — either test it in the same task, or state explicitly what would make it false and what you would observe."
+  source: P-001
+  task: T-3022
+  date: 2026-08-15
+  context: Added via context agent
