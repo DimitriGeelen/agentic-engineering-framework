@@ -379,7 +379,7 @@ framework's handover discipline**, not of either tree.
 Running their measurement here, restricted to executable surfaces (`bin lib agents web
 .claude tests`):
 
-- **24** files reference `handovers/LATEST.md`
+- **24** files reference `.context/handovers/LATEST.md`
 - **1** file names a historical `S-*` handover — `tests/integration/fw_timeline.bats:33`,
   which `cat >`-writes its own fixture. It does not read a real one.
 
@@ -402,6 +402,70 @@ That is a sharper question than spike 6 could pose, and it is still the operator
 session X.** The honest claim is "no *tool* reads them", not "nobody reads them", and the
 distance between those two sentences is the whole retention decision. Git preserves all 1,708
 regardless of what the index holds, so this is a working-set question, not a preservation one.
+
+### Spike 8 — the inclusion set is wrong in *both* directions, and that reframes E
+
+Spikes 6 and 7 asked what the index holds too much of. This asks what it holds too little of,
+because OBS-252 (filed during T-3010, unactioned) claimed the designer corpus is not indexed at
+all. Verified still true, and the verification corrected the observation's own fix direction.
+
+`web/search_utils.py:68` — the complete inclusion set, seven directories plus two globs:
+
+```
+.tasks/            .context/episodic/    .context/project/     .context/handovers/
+.fabric/components/  .context/qa/        docs/reports/
++ PROJECT_ROOT/*.md   + agents/*/AGENT.md
+```
+
+Filtered to `.md`, `.yaml`, `.yml`.
+
+**What that leaves invisible to `fw ask` / `fw recall` / RAG:**
+
+| Excluded | Files | Size |
+|---|---|---|
+| `policy/` — incl. `policy/standards/aef-bpmn-mapping-v1-partI.md`, `policy/prompts/bvp-driver-session.md`, `value-drivers.yaml`, `anti-patterns.yaml` | 19 | 187 KB |
+| `docs/articles` | 25 | 156 KB |
+| `docs/architecture`, `docs/design`, `docs/specs`, `docs/adr`, `docs/proposals` | 13 | 128 KB |
+| `docs/upstream-patterns`, `docs/walkthrough`, `docs/dispatch-templates` | 16 | 83 KB |
+| **total authored-and-excluded** | **73** | **0.54 MB** |
+| `.context/designer/` — 42 `.bpmn` + `registry.yaml` | 43 | 988 KB |
+
+**The number that makes the case: one handover is 263 KB.** The entire authored-and-excluded
+set — every ADR, the architecture and design docs, the BPMN mapping standard, the whole BVP
+prompt bundle — weighs about **two handovers**. We index 1,708 of those and none of these.
+
+Two of the excluded files are ones CLAUDE.md explicitly instructs agents to go and read:
+`policy/prompts/bvp-driver-session.md` ("**Always start here.** Keystone") and
+`policy/standards/aef-bpmn-mapping-v1-partI.md` — the mapping standard governing the very seam
+T-3018 exists to protect. An agent that asks `fw ask` how the BPMN seam works gets handovers.
+
+**OBS-252's fix direction is insufficient, and this is why verifying before filing matters.**
+It proposed adding `.context/designer/` to `search_dirs`. That would index `registry.yaml` and
+nothing else: the `aef:meta` prose lives *inside* the `.bpmn` files (11 occurrences in `v1.bpmn`
+alone), and the suffix filter rejects `.bpmn`. The observation's diagnosis was right and its
+remedy would have produced a green change that fixed nothing — the same shape as everything
+else in this artifact.
+
+**Why a naive fix repeats the handover mistake.** `docs/` also contains `docs/generated/`
+(1,068 files), which is generated and belongs out. "Index all of `docs/`" would bulk-add
+restated content — precisely the error that made handovers 51% of the corpus.
+
+**This reframes candidate E rather than adding to it.** E was "stop indexing most handovers."
+The better statement of the same decision is:
+
+> **The inclusion set is defined by directory and was never designed — it accreted. It should
+> be defined by content class: authored-and-durable in, generated-or-restated out.**
+
+Under that rule handovers are *restated* (97% consecutive overlap) and ADRs are *authored*, so
+one rule cuts both ways and the operator makes one decision instead of two. It also explains
+the accretion without blaming anyone: every directory in that list was added because someone
+wanted a specific thing findable, and nobody ever asked what the set as a whole should be.
+
+**Not claimed:** that indexing 0.54 MB measurably improves recall. It is 0.4% of the corpus and
+will not move latency at all. The argument is not volume, it is that the content agents are
+directed to read should be reachable by the tool built to find things — and `fw corpus explain`
+existing for designer maps is not a substitute, because it only helps an agent who already
+knows the map exists.
 
 ## Candidates
 

@@ -315,9 +315,44 @@ framework-mechanism questions, not the "what was I doing last Tuesday" queries h
 exist to answer. The retention design (recent N, unique sections only, or chunk-level dedup)
 is a judgment call, and it is yours.
 
+**Spike 8 reframes E, and I think this is the version you should actually rule on.** I went
+looking for what the index holds too *little* of, and the inclusion set turns out to be wrong
+in both directions. `web/search_utils.py:68` defines the corpus as seven directories plus
+two globs. Invisible to `fw ask`, `fw recall` and the RAG path: **73 authored files totalling
+0.54 MB** — every ADR, the architecture and design docs, the specs, the proposals, and all of
+`policy/`, which includes `policy/standards/aef-bpmn-mapping-v1-partI.md` and
+`policy/prompts/bvp-driver-session.md`. CLAUDE.md explicitly instructs agents to go and read both.
+
+**One handover is 263 KB.** The entire authored-and-excluded set weighs about two handovers,
+and we index 1,708 handovers and none of it. An agent asking `fw ask` how the BPMN seam works
+gets handovers, not the standard that governs it.
+
+So the sharper statement of E is not "stop indexing handovers":
+
+> **The inclusion set is defined by directory and was never designed — it accreted. Define it
+> by content class instead: authored-and-durable in, generated-or-restated out.**
+
+Handovers are restated (97% overlap); ADRs are authored. One rule cuts both ways, and you make
+one decision instead of two. It also explains the accretion without anyone being at fault —
+each directory was added because someone wanted a specific thing findable, and nobody ever
+asked what the set as a whole should be. The same rule keeps `docs/generated/` (1,068 files)
+out, which is what stops the fix from repeating the original error.
+
+**Advice, final form: rule on the inclusion set first (E′), then decide A on the remaining
+corpus.** E′ is subtraction plus a small addition, trivially reversible, and needs no new
+machinery. A is still the right answer if E′ is not enough.
+
+**Two things I am not claiming.** That the 0.54 MB improves recall — it is 0.4% of the corpus
+and will not move latency; the argument is reachability, not volume. And that handovers should
+be excluded wholesale — 2.5% is small but not zero, my probe used framework-mechanism queries
+rather than the "what was I doing last Tuesday" questions handovers exist to answer, and 832's
+independent replication (arc 11936) reached the same limit from the other side: a tool census
+shows no *tool* reads them, not that nobody does.
+
 **The hinge is IW-7 and it is yours:** does 1s now, trending upward, cost enough to be
 worth the build? That is a judgment about acceptable latency at projected growth, and no
-measurement I can run settles it.
+measurement I can run settles it. Note that E′ is worth doing on reachability grounds even if
+your answer to IW-7 is "no" — they are separable decisions and I have kept them separate.
 
 **Evidence:**
 
@@ -338,7 +373,8 @@ measurement I can run settles it.
 - **Partitioning dissolved.** `_rag_retrieve` selects `d.category` but never filters on it (`web/embeddings.py:1274`); BM25 per-category groups are flattened (`web/embeddings.py:1286`). Nothing to prune.
 - **A hypothesis that failed, recorded.** The dead embed sidecar (OBS-259) costs ~30 ms, ≈3% — `ECONNREFUSED` returns immediately. Incidental field evidence that T-3017 failover works; downgrades OBS-259 to hygiene.
 - **A measurement error, recorded.** The first truncation run used a near-neighbour-only pool and reported ρ=0.753 at 512d, non-monotonic against 256d. Near-tie ranks are unstable by construction; widening the pool moved it to 0.954. The first number looked like a finding and was an artifact of method.
-- **Spike 7: independently replicated by 832-Workflow-designer, and it sharpens candidate E's question.** 832 measured the same shape on their tree (arc offset 11936): handovers = 55% of `.context/` (16M of 29M), 470 files, 87% median consecutive overlap, 88% whole-corpus redundancy. Two projects sharing a framework and not a codebase → this is a property of the framework's handover discipline, not of either tree. Running their "who reads these" measurement here, restricted to executable surfaces: **24 files reference `handovers/LATEST.md`; exactly 1 names a historical `S-*` handover — `tests/integration/fw_timeline.bats:33`, which writes its own fixture.** Zero executable readers of real historical handovers; the other 53 refs are provenance citations in `.context/episodic/` (48) and `.tasks/completed/` (4). **The consequence is the opposite in form and the same in substance as 832's:** semantic retrieval is the *only* consumer historical handovers have. So the operator's question is not "does anything read these" but "is retrieval over 1,708 near-duplicate handovers worth half of every scan, for 2.5% of the answers?" Limit stated and unchanged: a grep cannot see ad-hoc human/agent reads, so the honest claim is "no *tool* reads them", not "nobody reads them" — and git preserves all 1,708 regardless, making this a working-set question, not a preservation one.
+- **Spike 7: independently replicated by 832-Workflow-designer, and it sharpens candidate E's question.** 832 measured the same shape on their tree (arc offset 11936): handovers = 55% of `.context/` (16M of 29M), 470 files, 87% median consecutive overlap, 88% whole-corpus redundancy. Two projects sharing a framework and not a codebase → this is a property of the framework's handover discipline, not of either tree. Running their "who reads these" measurement here, restricted to executable surfaces: **24 files reference `.context/handovers/LATEST.md`; exactly 1 names a historical `S-*` handover — `tests/integration/fw_timeline.bats:33`, which writes its own fixture.** Zero executable readers of real historical handovers; the other 53 refs are provenance citations in `.context/episodic/` (48) and `.tasks/completed/` (4). **The consequence is the opposite in form and the same in substance as 832's:** semantic retrieval is the *only* consumer historical handovers have. So the operator's question is not "does anything read these" but "is retrieval over 1,708 near-duplicate handovers worth half of every scan, for 2.5% of the answers?" Limit stated and unchanged: a grep cannot see ad-hoc human/agent reads, so the honest claim is "no *tool* reads them", not "nobody reads them" — and git preserves all 1,708 regardless, making this a working-set question, not a preservation one.
+- **Spike 8: the inclusion set is wrong in both directions, which reframes candidate E.** `web/search_utils.py:68` defines the index by seven directories plus two globs. Invisible to `fw ask`/`recall`/RAG: **73 authored files, 0.54 MB** — `policy/` (19 files, incl. `policy/standards/aef-bpmn-mapping-v1-partI.md` and `policy/prompts/bvp-driver-session.md`, both of which CLAUDE.md explicitly directs agents to read), `docs/adr` (4), `docs/architecture`, `docs/design`, `docs/specs`, `docs/proposals`, `docs/articles` (25), `docs/upstream-patterns`, `docs/walkthrough`, `docs/dispatch-templates` — plus `.context/designer/` (42 `.bpmn` + registry, 988 KB). **One handover is 263 KB: the entire authored-excluded set weighs about two handovers, and we index 1,708 handovers and none of these.** Corrects OBS-252's fix direction — adding `.context/designer/` to `search_dirs` would index `registry.yaml` only, because the `aef:meta` prose lives inside `.bpmn` files (11 in `v1.bpmn`) and the suffix filter rejects them; the observation's remedy would have been a green change that fixed nothing. Also shows why a naive fix repeats the original error: `docs/generated/` is 1,068 generated files, so "index all of `docs/`" bulk-adds restated content exactly as handovers did. **Reframed E:** the inclusion set was never designed, it accreted by directory; define it by content class instead — authored-and-durable in, generated-or-restated out. Handovers are restated (97% overlap), ADRs are authored, and one rule cuts both ways, so the operator makes one decision rather than two. Not claimed: that 0.54 MB improves recall — it is 0.4% of the corpus and will not move latency. The argument is reachability, not volume.
 - Artifact: `docs/reports/T-3022-recall-latency-scaling.md`. Commits: `660fa0cf3` (characterisation), `9c62305cd` (spikes 1-3).
 
 ## Decisions
@@ -394,25 +430,31 @@ measurement I can run settles it.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e4df34a1
-- **Timestamp:** 2026-08-15T20:34:19Z
+- **Scan ID:** R-a8792a1b
+- **Timestamp:** 2026-08-15T21:08:42Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-e0266ad2
-- **Timestamp:** 2026-08-15T20:34:19Z
+- **Scan ID:** RC-575a2984
+- **Timestamp:** 2026-08-15T21:08:42Z
 - **Overall:** CONFIRMED
-- **Claims:** 7
+- **Claims:** 13
 
 | Claim | Type | Status |
 |-------|------|--------|
+| `web/search_utils.py:68` | file_line | ✓ pass |
+| `policy/standards/aef-bpmn-mapping-v1-partI.md` | file | ✓ pass |
+| `policy/prompts/bvp-driver-session.md` | file | ✓ pass |
 | `web/embeddings.py:228` | file_line | ✓ pass |
 | `d.category` | module | ✓ pass |
 | `web/embeddings.py:1274` | file_line | ✓ pass |
 | `web/embeddings.py:1286` | file_line | ✓ pass |
+| `.context/handovers/LATEST.md` | file | ✓ pass |
+| `tests/integration/fw_timeline.bats:33` | file_line | ✓ pass |
+| `v1.bpmn` | module | ✓ pass |
 | `docs/reports/T-3022-recall-latency-scaling.md` | file | ✓ pass |
 | `T-3021` | task | ✓ pass |
 | `T-3017` | task | ✓ pass |
