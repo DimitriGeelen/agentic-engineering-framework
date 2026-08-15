@@ -3377,3 +3377,18 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-250
+  text: "T-3008 follow-ups: (a) reindex should target the GPU host — slices 3/5 re-embed ~9k docs where the CPU sidecar's identical warm latency stops mattering; (b) automatic embed failover — the T-3006 typed classifier makes 'on contention, retry the fallback host' a small change and would remove the shared-vs-sidecar choice entirely"
+  captured: 2026-08-15T06:11:15Z
+  context_task: T-3008
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-251
+  text: "_chunk_content's 1500-char cap does not hold: sections without paragraph breaks are emitted whole and uncapped. Corpus p99 = 3299 chars, largest chunk = 170,873 chars (114x target), which loses ~99.7% of its content at the embedder's hard 512-token ceiling. 4,255 chunks provably truncate today (exact lower bound; ~7,691 = 2.7% estimated). Distinct defect from the model ceiling — fixing the chunker removes most of the loss with no model change. Repro: python3 tools/measure_chunk_tokens.py"
+  captured: 2026-08-15T07:03:36Z
+  context_task: T-3009
+  tags: [embeddings]
+  status: pending
+  promoted_to: null
+  urgent: true
