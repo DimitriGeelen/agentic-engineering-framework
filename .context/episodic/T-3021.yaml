@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3021: recall miss signal cannot fire — n_hits counts returned rows, not relevant ones
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T19:33:15Z
+# ============================================================================
+
+task_id: T-3021
+task_name: "recall miss signal cannot fire — n_hits counts returned rows, not relevant ones"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-15T19:26:26Z
+completed: 2026-08-15T19:32:59Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T21:32:50+02:00
+last_commit: 2026-08-15T21:32:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the miss signal could not fire — n_hits counted rows, not retrieval
+
+# Key outcomes
+outcomes:
+  - '`recall_telemetry` classifies outcome from `top_score`, not `n_hits`: a recall whose best result scored `0` records `outcome: miss` even when rows were returned'
+  - 'A recall with `top_score > 0` still records `outcome: hit`; `unavailable` (exception path) is unchanged'
+  - 'Query text is retained on the newly-firing misses, so slice 6b has a corpus to rank'
+  - '`usage_summary` reports a non-zero `miss_rate` when miss-class queries are present in the window'
+  - 'Regression test pins the defect: a gibberish query against a populated index records `miss` (and fails against the old `n_hits == 0` rule)'
+  - 'Mutation check: reverting the classifier to `n_hits == 0` turns that test red — proving the new rule is the single load-bearing mechanism, not belt-and-braces'
+  - '`fw doctor` recall-usage verdict still emits all three branches (OK / WARN-empty / WARN-unavailable) and is not broken by the outcome change'
+  - '`## RCA` filled: symptom, root cause, why structurally allowed, prevention'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-15 — where to put the miss boundary'
+    chose: '`top_score > 0` — the clamp boundary the retriever already computes.'
+    rationale: 'it is measured, not invented. `max(0, 1.0 - distance)` makes `0` the point where the code itself declares a result unrankable. Every known-good query on the live index cleared it; every nonsense and plausible-but-absent query sat exactly on it. Nothing to tune, and it stays true as the corpus grows.'
+    alternatives_rejected: ['removing the `max(0, ...)` clamp so distance survives below the floor. Defensible, and probably needed for *ranking* misses by severity in slice 6b, but it is a change to the retrieval contract with its own blast radius. One bug, one task.']
+  - decision: '2026-08-15 — miss *rate* still does not WARN, deliberately'
+  - decision: '2026-08-15 — this makes T-3019''s open operator question load-bearing'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3021-recall-miss-signal-cannot-fire--nhits-co.md'
+  - 'tests/unit/test_recall_telemetry.py'
+  - 'web/recall_telemetry.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T21:32:50'
+    action: 'T-3021: the miss signal could not fire — n_hits counted rows, not retrieval'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 3
+  lines_added: 522
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3021-recall-miss-signal-cannot-fire--nhits-co.md
+generated_by: context-agent-hybrid
