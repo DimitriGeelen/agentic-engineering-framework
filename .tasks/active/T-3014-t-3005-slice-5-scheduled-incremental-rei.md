@@ -85,7 +85,7 @@ second full pass.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A reindex runs on a schedule and the canary goes from `unknown` to `ok` — the
+- [x] A reindex runs on a schedule and the canary goes from `unknown` to `ok` — the
       first time the T-3011 canaries are seen green on real data rather than on a
       fixture. Until this ships, slices 2-4 watch something nobody rebuilds.
 - [x] The cron entry follows the L-364 chain (registry → generate → install) and
@@ -96,7 +96,7 @@ second full pass.
       that dies mid-way leaves the previous index serving rather than a half-built one.
       The manifest is written last, so a partial build reads as the *old* build's
       manifest — never as a fresh one.
-- [ ] `fw doctor` shows the age dropping after a run, verified by observing the number
+- [x] `fw doctor` shows the age dropping after a run, verified by observing the number
       before and after — not by asserting the job exited 0.
 - [x] RED observed first: exercised against a deliberately stale index to confirm the
       age changes, and against a run killed mid-way to confirm the manifest did not
@@ -178,6 +178,69 @@ cannot be met from this session:
 Partial work is parked at `.context/working/fw-vec-index.db.reindex.resume` and
 will be adopted by the next run. The live index is untouched throughout —
 verified by inode, still 21,292 docs at its March mtime.
+
+## Status (2026-08-15, later) — both blockers cleared, real run in flight
+
+T-3016 (GPU-host routing, 1.9 -> 69.9 chunks/s) and T-3017 (embed failover) both
+landed this session. Found the hourly cron's 14:20 firing (pid 3061167) already
+mid-bootstrap on the *old* code — it had imported `web.embeddings` before
+T-3016's 14:23:40 commit, so it was still walking the CPU sidecar at the slow
+rate with no way to pick up the new routing short of a fresh process. Killed
+the process tree (SIGTERM; no handler on that path, so no clean resume file —
+accepted the ~14 min of embedded-but-unflushed-to-resume work as a rounding
+error against a 37x speedup) and launched a fresh `bin/fw index reindex` in the
+background. Confirmed via `ss` it opened a connection to the GPU host
+(192.168.10.107:11434), not the dead sidecar. `corpus_health()` read `unknown`
+immediately before the restart — the actual AC1 baseline.
+
+## Status (2026-08-15, 16:20) — the run finished, and it finished where predicted
+
+```json
+{"mode": "bootstrap-baseline", "num_docs": 9149, "num_chunks": 396797,
+ "files_changed": 9146, "files_removed": 35, "build_time_ms": 5755324,
+ "canary_token": "FWCANARY-1786797882186696", "manifest_written": true,
+ "embed_host": "http://192.168.10.107:11434", "status": "ok"}
+```
+
+**95.9 minutes** (5,755,324 ms) for 396,797 chunks — **68.9 chunks/s** sustained
+end to end. T-3016 measured 69.9 chunks/s synthetically and predicted ~1.6 h;
+the real run came in at 1.60 h and within 1.4% on throughput. On the CPU sidecar
+the same corpus was a 29-hour job, which is not a schedule at all — an hourly
+cron that cannot finish between firings never converges, it just restarts.
+
+`embed_host` in the result names the GPU host explicitly. That field exists
+precisely so a run that quietly embedded against the slow host is distinguishable
+after the fact from one that did not; here it is doing its job on the first real
+run rather than on a test.
+
+**AC1 — canary `unknown` → `ok`:**
+
+```
+[PASS] Corpus canaries: retrieval verified end to end
+```
+
+First time the T-3011 canaries have been green on real data rather than a
+fixture. The baseline `unknown` was read immediately before the restart, so this
+is a genuine transition rather than a value that was already green.
+
+**AC5 — doctor age dropping, observed before and after:**
+
+| When | Doctor line |
+|------|-------------|
+| Session start (T-3012) | `157.6 days old` |
+| Mid-rebuild | `0.1 days old (source: db_mtime)` |
+| After completion | `0.0 days old (source: manifest)` |
+
+The `source` change is the part worth noticing: before the run there was no
+manifest, so freshness fell back to stat'ing the database file — a number that
+reports when the file was *touched*, not when it was *built*. Now it comes from
+the manifest the reindex writes last. Same-looking number, different and much
+stronger claim, and the one T-3012 built the manifest for.
+
+Real recall confirmed working afterwards (`fw recall` returning hits, top scores
+0.16-0.22). Those scores are low enough to be worth measuring properly before
+anyone sets a low-score miss threshold — deliberately left unset in T-3019 for
+that reason rather than guessed at.
 
 ## Verification
 
