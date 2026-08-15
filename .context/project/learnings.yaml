@@ -4553,3 +4553,15 @@ X'` returning empty group."
   task: T-3022
   date: 2026-08-15
   context: Added via context agent
+- id: L-610
+  learning: "A retry loop around a failing command converts a loud red signal into a silent hang. My push 'kept timing out' for an entire session; it was never a lock — the pre-push audit was FAILING (config-registry parity RED, my own change) and saying so in plain text on every attempt. The loop discarded stdout and slept. Rule: before wrapping any command in retry, read one full failure output. Retry is only correct for a contended resource, and only after the error text has been shown to name contention."
+  source: P-001
+  task: T-3024
+  date: 2026-08-15
+  context: Added via context agent
+- id: L-611
+  learning: "pgrep -f 'audit.sh' is a host-wide guard, not a project-scoped one. On a multi-project host it matches other projects' vendored cron audits (/opt/002-Claude-Partner-Network was spawning them continuously), so the guard never clears and a wait-loop built on it never runs. The framework already publishes the correct guard and the pre-push hook names it: the lock file .context/locks/audit.lock, which is per-project by construction. Prefer a published lock file over a process-name match whenever one exists."
+  source: P-001
+  task: T-3024
+  date: 2026-08-15
+  context: Added via context agent
