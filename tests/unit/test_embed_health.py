@@ -18,6 +18,7 @@ return a string" but:
      tri-state alarm design (T-3005 constraint 4) rests on that distinction.
 """
 
+import logging
 import sys
 from pathlib import Path
 
@@ -139,12 +140,19 @@ def test_probe_never_raises():
 # _embed retry — bounded, and only for retryable classes
 # --------------------------------------------------------------------------
 
-def _patch_embed_client(monkeypatch, client, retries=2, backoff=0.0):
+def _patch_embed_client(monkeypatch, client, retries=2, backoff=0.0,
+                        bulk_host=None):
+    """Single-host by default: both settings resolve to the same endpoint, so
+    there is nothing to fail over to and these tests measure the retry bound
+    alone (T-3017). Pass `bulk_host` to make a second host available."""
     from web import embeddings as E
     from web.config import Config
     monkeypatch.setattr(E, "_get_embed_client", lambda host=None: client)
     monkeypatch.setattr(Config, "EMBED_RETRIES", retries, raising=False)
     monkeypatch.setattr(Config, "EMBED_RETRY_BACKOFF", backoff, raising=False)
+    monkeypatch.setattr(Config, "EMBED_HOST", "http://only-host:1", raising=False)
+    monkeypatch.setattr(Config, "EMBED_BULK_HOST",
+                        bulk_host or "http://only-host:1", raising=False)
     return E
 
 
@@ -214,3 +222,125 @@ def test_error_message_names_the_class_not_just_the_provider_string():
     """The old failure surfaced a bare Ollama string that named no subsystem."""
     err = EH.EmbedUnavailable(EH.EmbedHealth(EH.CONTENTION, "server busy"))
     assert "contention" in str(err)
+
+
+# --------------------------------------------------------------------------
+# FAILOVER (T-3017) — one host dying must not take the subsystem with it.
+#
+# On 2026-08-15 the CPU sidecar exited and every embedding path in the framework
+# went dark, while a second host holding the same model stayed healthy and idle
+# the whole time (OBS-259). These pin the four properties that turn that outage
+# into a logged degradation.
+# --------------------------------------------------------------------------
+
+class _PerHostClient:
+    """Distinguishes hosts: `down` hosts raise, everything else answers."""
+
+    def __init__(self, host, down, log):
+        self.host = host
+        self._down = down
+        self._log = log
+
+    def embed(self, model, input):  # noqa: A002 — ollama's parameter name
+        self._log.append(self.host)
+        exc = self._down.get(self.host)
+        if exc is not None:
+            raise exc
+        return type("R", (), {"embeddings": [[0.01] * 768 for _ in input]})()
+
+
+def _two_hosts(monkeypatch, down, retries=0):
+    """Primary at query-host, fallback at bulk-host, with `down` hosts failing."""
+    from web import embeddings as E
+    from web.config import Config
+    seen = []
+    monkeypatch.setattr(Config, "EMBED_HOST", "http://query-host:1", raising=False)
+    monkeypatch.setattr(Config, "EMBED_BULK_HOST", "http://bulk-host:2", raising=False)
+    monkeypatch.setattr(Config, "EMBED_RETRIES", retries, raising=False)
+    monkeypatch.setattr(Config, "EMBED_RETRY_BACKOFF", 0.0, raising=False)
+    monkeypatch.setattr(E, "_get_embed_client",
+                        lambda host=None: _PerHostClient(host or Config.EMBED_HOST,
+                                                         down, seen))
+    monkeypatch.setattr(E, "_failovers", {"count": 0, "last": None}, raising=False)
+    return E, seen
+
+
+def test_a_dead_primary_falls_over_to_the_other_host(monkeypatch):
+    E, seen = _two_hosts(monkeypatch, {"http://query-host:1": ConnectionError("refused")})
+
+    vecs = E._embed(["text"])
+
+    assert len(vecs) == 1, "failover produced no vectors"
+    assert seen == ["http://query-host:1", "http://bulk-host:2"], (
+        f"expected primary then fallback, got {seen} — the sidecar dying should "
+        "route to the healthy host, not take the subsystem down (OBS-259)"
+    )
+
+
+def test_failover_is_recorded_not_silent(monkeypatch, caplog):
+    E, _ = _two_hosts(monkeypatch, {"http://query-host:1": ConnectionError("refused")})
+
+    with caplog.at_level(logging.WARNING):
+        E._embed(["text"])
+
+    state = E.embed_failover_state()
+    assert state["count"] == 1, "failover left no observable trace"
+    assert state["last"]["from"] == "http://query-host:1"
+    assert state["last"]["to"] == "http://bulk-host:2"
+    warned = " ".join(r.getMessage() for r in caplog.records)
+    assert "query-host" in warned and "bulk-host" in warned, (
+        f"failover warning names neither host: {warned!r} — a silent failover "
+        "converts an outage into a mystery and makes the survivor the next SPOF"
+    )
+
+
+def test_an_unclassifiable_error_does_not_fail_over(monkeypatch):
+    """`error` is most likely the request, and it will fail on any host."""
+    E, seen = _two_hosts(monkeypatch, {"http://query-host:1": ValueError("malformed input")})
+
+    with pytest.raises(EH.EmbedUnavailable):
+        E._embed(["text"])
+
+    assert seen == ["http://query-host:1"], (
+        f"tried {seen}; an unclassifiable failure must not be replayed on the "
+        "fallback — that just fails twice and doubles the wait"
+    )
+
+
+def test_when_both_hosts_fail_the_primary_is_the_one_reported(monkeypatch):
+    E, seen = _two_hosts(monkeypatch, {
+        "http://query-host:1": ConnectionError("refused"),
+        "http://bulk-host:2": _Resp("model not found", 404),
+    })
+
+    with pytest.raises(EH.EmbedUnavailable) as excinfo:
+        E._embed(["text"])
+
+    assert len(seen) == 2, "the fallback was never tried"
+    assert excinfo.value.status == EH.OLLAMA_DOWN, (
+        f"reported {excinfo.value.status}, the fallback's class — the operator's "
+        "remedy is on the primary, so reporting the stopgap's failure sends them "
+        "to fix the wrong host"
+    )
+
+
+def test_a_single_host_install_does_not_double_its_retries(monkeypatch):
+    """Both settings resolving to one host means there is nothing to fail over
+    to; retrying the same endpoint twice would just double the wait on the
+    permanent-starvation case T-3006 made fail fast."""
+    from web import embeddings as E
+    from web.config import Config
+    seen = []
+    monkeypatch.setattr(Config, "EMBED_HOST", "http://only:1", raising=False)
+    monkeypatch.setattr(Config, "EMBED_BULK_HOST", "http://only:1", raising=False)
+    monkeypatch.setattr(Config, "EMBED_RETRIES", 0, raising=False)
+    monkeypatch.setattr(Config, "EMBED_RETRY_BACKOFF", 0.0, raising=False)
+    down = {"http://only:1": ConnectionError("refused")}
+    monkeypatch.setattr(E, "_get_embed_client",
+                        lambda host=None: _PerHostClient(host or Config.EMBED_HOST,
+                                                         down, seen))
+
+    with pytest.raises(EH.EmbedUnavailable):
+        E._embed(["text"])
+
+    assert seen == ["http://only:1"], f"single-host install tried {seen}"

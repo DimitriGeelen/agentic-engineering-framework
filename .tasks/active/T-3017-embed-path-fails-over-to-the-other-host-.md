@@ -1,8 +1,10 @@
 ---
-id: T-3016
-name: "bulk reindex targets the shared GPU host (T-3008 open item a)"
+id: T-3017
+name: "embed path fails over to the other host instead of going dark (T-3008 open
+  item b)"
 description: >
-  bulk reindex targets the shared GPU host (T-3008 open item a)
+  embed path fails over to the other host instead of going dark (T-3008 open item
+  b)
 
 status: started-work
 workflow_type: build
@@ -21,7 +23,7 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-15T12:15:38Z
+created: 2026-08-15T12:26:54Z
 last_update: '2026-08-15T12:30:15Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
@@ -49,57 +51,63 @@ bvp_scores_proposed:
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 2
       D3: 3
       D4: 2
-      F-RECALL: 0
+      F-RECALL: 3
       F-AUTONOMY: 0
       F3: 0
-      F1: 0
+      F1: 1
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link);
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3016: bulk reindex targets the shared GPU host (T-3008 open item a)
+# T-3017: embed path fails over to the other host instead of going dark (T-3008 open item b)
 
 ## Context
 
-T-3008 kept `embed_host` pointed at the CPU sidecar (`127.0.0.1:11435`) for
-*queries* — warm latency is indistinguishable (208 ms shared vs 210 ms sidecar)
-and the sidecar is immune to fleet contention. In the same decision it recorded
-an open item it did not have budget for:
+T-3008's second open item:
 
-> (a) bulk reindex — slices 3/5 re-embed ~9k docs, where the GPU *would* matter,
-> so the reindexer specifically should target the shared host
+> (b) automatic failover — the typed classifier makes "on `contention`, retry the
+> fallback host" a small change and would make this choice unnecessary.
 
-T-3014 then measured the bootstrap against the sidecar: 1.9 chunks/s, 394,230
-chunks, ~29 h solo. That number is a property of the CPU path, not of the corpus.
-This task ships open item (a): the reindexer embeds against the shared host while
-queries keep the isolated sidecar. One knob, two paths, each on the host T-3008
-already reasoned it belonged on.
+It stopped being hypothetical on 2026-08-15. The CPU sidecar on `127.0.0.1:11435`
+died mid-run and nothing restarted it; because `EMBED_HOST` is pinned to it, every
+embedding path in the framework — `fw ask`, `fw recall`, search, reindex — went
+dark at once, while a second host holding the same model sat idle and healthy the
+whole time (OBS-259). One process exiting took out a subsystem that had a working
+alternative one config line away.
+
+T-3016 gave the framework a second configured embed host for throughput reasons.
+That incidentally means a fallback now *exists* to fail over to. This task uses
+it: on a host-level failure the embed path tries the other host before giving up,
+and says loudly when it does — a silent failover would trade an outage for a
+mystery, which is the same false-green this arc exists to remove.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `Config.EMBED_BULK_HOST` resolves `FW_EMBED_BULK_HOST` env → saved
-      `embed_bulk_host` → `OLLAMA_HOST`, independently of `EMBED_HOST`
-- [x] `reindex()` embeds via the bulk host; `search()` and the health probe still
-      embed via `EMBED_HOST` — pinned by a test that sets the two to *different*
-      hosts and asserts which client each path actually called
-- [x] The reindex result dict names the host it embedded against, so a silent
-      host switch cannot hide in a green run
-- [x] Discriminating fixture (PL-206): the host-separation test goes red when
-      `reindex()` is reverted to `EMBED_HOST`, green when restored — mutation
-      shown in Decisions, not asserted
-- [x] Bulk-host throughput measured with the same 64×1000-char method that
-      produced the 1.9 chunks/s sidecar baseline, recorded in Decisions
+- [x] `_embed()` retries on the alternate host when the primary fails with a
+      host-level class (`ollama-down`, `model-absent`, `contention`), and does
+      **not** fail over on `error` (a malformed request fails everywhere)
+- [x] Failover emits a WARNING naming both hosts and the triggering class, and
+      increments observable state — a failover that leaves no trace is an outage
+      converted into a mystery
+- [x] When both hosts fail, the raised `EmbedUnavailable` reports the *primary's*
+      class, not the fallback's — the operator's remedy is on the primary
+- [x] No failover when both settings resolve to the same host (the single-host
+      install must not double its retry budget)
+- [x] Discriminating fixtures (PL-206): each guarantee shown red with the
+      failover disabled and green with it restored — mutation recorded in
+      Decisions
 - [x] `tests/unit/test_incremental_reindex.py` and `tests/unit/test_embed_health.py`
-      both green
+      green, plus new failover tests
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -193,10 +201,10 @@ already reasoned it belonged on.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/test_incremental_reindex.py tests/unit/test_embed_health.py -q > /tmp/.t3016-tests 2>&1 && grep -q "42 passed" /tmp/.t3016-tests
-python3 -c "import sys; sys.path.insert(0,'.'); from web.config import Config; assert Config.EMBED_BULK_HOST, 'EMBED_BULK_HOST unset'"
-grep -q "EMBED_BULK_HOST" web/config.py
-grep -q "host=bulk_host" web/embeddings.py
+python3 -m pytest tests/unit/test_embed_health.py tests/unit/test_incremental_reindex.py -q > /tmp/.t3017 2>&1 && grep -q "47 passed" /tmp/.t3017
+grep -q "^FAILOVER = frozenset" web/embed_health.py
+python3 -c "import sys; sys.path.insert(0,'.'); from web.embed_health import FAILOVER, ERROR, DEGRADED; assert ERROR not in FAILOVER and DEGRADED not in FAILOVER, 'error/degraded must not fail over'"
+python3 -c "import sys; sys.path.insert(0,'.'); from web.embeddings import embed_failover_state; assert 'count' in embed_failover_state()"
 
 ## RCA
 
@@ -269,46 +277,57 @@ grep -q "host=bulk_host" web/embeddings.py
 
 ## Decisions
 
-### 2026-08-15 — one knob per workload, not one host per install
+### 2026-08-15 — which failure classes earn a second host
 
-- **Chose:** a second setting, `EMBED_BULK_HOST`, defaulting to `OLLAMA_HOST`,
-  read only by the two reindex paths. `EMBED_HOST` keeps serving queries.
-- **Why:** the two workloads have opposite cost functions. A query is one vector
-  where warm latency decides and the hosts are indistinguishable (208 vs 210 ms,
-  T-3008); a reindex is 394,230 vectors where throughput decides and the hosts
-  are 37× apart. Measured this session with the same 64×1000-char method that
-  produced the sidecar baseline:
+- **Chose:** fail over on `ollama-down`, `model-absent` and `contention`; not on
+  `error` or `degraded`.
+- **Why:** the first three are properties of the *endpoint* — unreachable, does
+  not hold the model, slots taken — and a second endpoint may have none of them.
+  `error` is the classifier saying it does not recognise the failure, which most
+  often means the request itself; replaying it elsewhere fails twice and doubles
+  the wait. `degraded` means the host is slow but answering, and racing a second
+  host would add load to fix a condition that clears itself.
+- **Rejected:** failing over on everything (turns every malformed request into
+  two, and makes the `error` class meaningless); failing over on nothing but
+  `contention`, as T-3008 originally sketched — the class that actually took the
+  subsystem down on 2026-08-15 was `ollama-down`, which that set would have missed.
 
-  | host | chunks/s | 394,230 chunks |
-  |------|----------|----------------|
-  | CPU sidecar `127.0.0.1:11435` | 1.9 | ~29 h |
-  | GPU shared `192.168.10.107:11434` | 69.9 (69.1 / 69.9 / 69.8 over 3 trials) | **1.6 h** |
+### 2026-08-15 — the failover must be loud, and must not shift the blame
 
-  Same model, same 768 dimensions, so the vectors are interchangeable. Defaulting
-  to `OLLAMA_HOST` means installs without a sidecar already have
-  `EMBED_HOST == OLLAMA_HOST` and see no behaviour change at all.
-- **Rejected:** moving `EMBED_HOST` itself to the GPU — that reintroduces exactly
-  the contention fragility T-3006 removed, for no measured query benefit.
-  Rejected: leaving both on the sidecar — a 29-hour job in front of an hourly
-  cron is the T-3014 convergence problem, and this removes it rather than
-  tolerating it.
+- **Chose:** a WARNING naming both hosts and the triggering class, a counter in
+  `embed_failover_state()`, and — when both hosts fail — an `EmbedUnavailable`
+  carrying the *primary's* class rather than the fallback's.
+- **Why:** a silent failover is worse than the outage it hides. The subsystem
+  keeps working, nobody learns a host died, and the survivor quietly becomes the
+  next single point of failure — the same shape as every other defect in this
+  arc, where the instrument was healthy-looking and the state was not. The
+  blame direction matters for the same reason: the operator's remedy is on the
+  primary, and reporting the stopgap's `model-absent` would send them to fix the
+  host that was only ever standing in.
+- **Rejected:** logging at INFO (invisible in practice); reporting whichever
+  host failed last (points at the wrong machine).
 
-### 2026-08-15 — the routing test had to be shown failing, twice
+### 2026-08-15 — verified against the real outage, not a fixture
 
-- **Chose:** a discriminating fixture per reindex path, mutation-verified
-  separately rather than once for "the routing".
-- **Why:** the first version of this test passed against a mutated
-  `reindex_incremental`. It was asserting on the bootstrap path — a fresh
-  fixture has no index, so `reindex_incremental()` delegates to `build_index()`
-  and never enters the incremental branch. One test, two branches, and the
-  mutation landed in the branch the test did not reach. Splitting it produced
-  the honest result: mutating the bootstrap line reddens
-  `test_bootstrap_embeds_against_the_bulk_host`, mutating the incremental line
-  reddens `test_incremental_embeds_against_the_bulk_host`, and each is green on
-  restore.
-- **Rejected:** trusting the single green test. It was green for a reason that
-  had nothing to do with the guarantee — the same shape as the AC4 flock defect
-  in T-3014, found one layer down.
+- **Chose:** demonstrate on the live dead sidecar before closing.
+- **Why:** the failing tests in this repo have twice been green for reasons
+  unrelated to their guarantee (T-3014 AC4, T-3016 routing). The sidecar was
+  still down while this was written, which made the real thing available:
+  `search("framework governance task lifecycle")` returned 33 results with one
+  WARNING and `count: 1`, `from: 127.0.0.1:11435`, `to: 192.168.10.107:11434`,
+  `status: ollama-down`. Before this change the same call raised.
+- **Rejected:** closing on unit tests alone, given that record.
+
+### 2026-08-15 — mutation results
+
+Each guarantee shown red with the mechanism broken, green with it restored:
+
+| mutation | red |
+|----------|-----|
+| `_fallback_host` returns None (failover off) | dead-primary, recorded-not-silent, primary-is-reported |
+| `FAILOVER` widened to include `error`/`degraded` | unclassifiable-does-not-fail-over |
+| report `alt_last` instead of `last` | primary-is-the-one-reported |
+| drop the `alt != target` guard | single-host-does-not-double-retries (+2 retry-bound tests) |
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -331,7 +350,7 @@ grep -q "host=bulk_host" web/embeddings.py
 
 ## Updates
 
-### 2026-08-15T12:15:38Z — task-created [task-create-agent]
+### 2026-08-15T12:26:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3016-bulk-reindex-targets-the-shared-gpu-host.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3017-embed-path-fails-over-to-the-other-host-.md
 - **Context:** Initial task creation

@@ -52,6 +52,15 @@ ERROR = "error"
 # out. Retry is bounded precisely because the permanent case exists.
 RETRYABLE = frozenset({CONTENTION, DEGRADED})
 
+# Classes worth retrying on a *different* host (T-3017). All three are properties
+# of the endpoint, not of the request: the host is unreachable, the host does not
+# hold the model, or the host's slots are taken. A second host may have none of
+# those problems. `error` is deliberately absent — an unclassifiable failure is
+# most likely the request itself, and retrying it elsewhere just fails twice.
+# `degraded` is absent too: a slow host is still answering, and racing it against
+# a second host would double the load for a condition that resolves itself.
+FAILOVER = frozenset({OLLAMA_DOWN, MODEL_ABSENT, CONTENTION})
+
 # Classes a caller should treat as "expected on this host" rather than a fault:
 # a machine with no Ollama at all is a normal consumer, not a broken install.
 # Keeping this distinct is what stops the tri-state alarm design (T-3005
