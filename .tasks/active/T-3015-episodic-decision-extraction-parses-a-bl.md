@@ -66,7 +66,10 @@ That is the false-green class — strictly worse than the visible leak.
       double quotes present in values (L-392 / L-385 / T-1871 regression guard)
 - [x] Every verdict is pinned against a **discriminating fixture** — a fixture that
       produces the opposite verdict — so no leg can pass by never firing (PL-206)
-- [ ] A freshly generated episodic for a real task contains no placeholder text
+- [x] Proven on a live artifact, not only fixtures: old and new extraction paths run
+      side by side on the same real unfilled task file — old emits the placeholder
+      lines, new emits nothing; and a real *filled* task still yields its decisions
+      with `'` correctly doubled
 - [x] Historical episodics are NOT bulk-rewritten (explicit non-goal — they are the
       evidence of reach, and rewriting stored memory is an operator decision)
 
@@ -162,9 +165,16 @@ That is the false-green class — strictly worse than the visible leak.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 out=$(python3 -m pytest tests/unit/test_extract_decisions.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-python3 -c "import yaml,sys; d=yaml.safe_load(open('.context/episodic/T-3015.yaml')); sys.exit(0 if isinstance(d,dict) else 1)"
-! grep -q "what was decided" .context/episodic/T-3015.yaml
-test $(ls -t .context/episodic/T-*.yaml | head -5 | xargs grep -l "what was decided" 2>/dev/null | wc -l) -lt 5
+# Corpus-wide: the extractor over every real task file emits no placeholder text.
+# NOT this task's own episodic — that is written after the gate runs, so a line
+# asserting on it can only ever pass by being absent. Same shape as the clock
+# that measured itself (T-3012).
+python3 agents/context/lib/extract_decisions.py .tasks/templates/default.md > /tmp/.t3015-tmpl 2>&1 && ! grep -q "what was decided" /tmp/.t3015-tmpl
+for f in .tasks/active/T-*.md; do python3 agents/context/lib/extract_decisions.py "$f"; done > /tmp/.t3015-all 2>&1 && ! grep -qE "\[what was decided\]|\[date\] . \[topic\]|\[rationale\]" /tmp/.t3015-all
+python3 -c "import yaml,sys; yaml.safe_load('decisions:\n' + open('/tmp/.t3015-all').read()); print('parses')" > /tmp/.t3015-yaml && grep -q parses /tmp/.t3015-yaml
+# Discriminating control: a genuinely filled section must still yield a decision.
+python3 agents/context/lib/extract_decisions.py .tasks/completed/T-554-single-started-work-gate--enforce-one-ac.md > /tmp/.t3015-ctl 2>&1 && grep -q "Advisory vs blocking gate" /tmp/.t3015-ctl
+out=$(bats tests/unit/episodic_yaml_decision_escape.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 
 ## RCA
 
