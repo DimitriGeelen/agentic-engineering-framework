@@ -293,6 +293,46 @@ printf '{"ts":"%s","surface":"semantic","query_hash":"x","n_hits":1,"top_score":
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The mechanism is done and both of its verdicts were watched
+firing rather than reasoned about — WARN against an empty log, OK once real
+queries landed. The one open item is not a technical gap, it is a data-retention
+decision that is yours: miss rows record the raw query string, because slice 6b
+(miss-driven reindex priority) needs to know *what* agents kept asking about and
+a hash cannot tell you that. Hit rows carry only the hash.
+
+I recommend GO on keeping the query text. The queries are agent- and
+operator-written, about this project's own corpus, in a gitignored working file.
+The alternative — hashing misses too — does not make slice 6b impossible, it
+makes it substantially weaker: you would learn that *something* was asked 30
+times and never learn what, which is close to useless for deciding what to
+reindex. But this is a retention call about content neither of us has audited,
+so it is yours to make and the fallback is one edit if you say no.
+
+**Evidence:**
+
+- 26 unit tests, `tests/unit/test_recall_telemetry.py`. Both verification
+  directions asserted per guarantee, not just the happy path.
+- Re-entrancy guard mutation-verified: deleting it makes one `hybrid_search`
+  call write two rows (`semantic` + `hybrid`), and three tests go red.
+  `_hybrid_search` deliberately reaches the semantic path through the *public*
+  `search`, so the guard is load-bearing rather than decorative.
+- The UTC timestamp test was wrong twice and the second version is the
+  interesting one: pinning an absolute epoch does *not* catch a local-time
+  misread, because under `TZ=UTC` `mktime` and `timegm` are the same function
+  and there is no defect to detect. Verified by mutating and watching it stay
+  green under `TZ=UTC`. The test now supplies its own non-UTC offset and is red
+  under mutation on both CEST and UTC.
+- `fw doctor` verdicts observed live: `WARN recall usage: 0 queries in 7d` on an
+  empty log, `OK recall usage: 2 queries in 7d` after real `fw recall` calls.
+- Write failures are guarded but counted (L-331) — `recall_telemetry_state()`
+  keeps "no rows" and "rows we could not write" separable.
+- Deliberately *not* shipped: a low-score miss threshold. Live top scores are
+  0.16–0.22, which is low enough that any threshold I picked today would be a
+  guess. Miss is defined as zero hits only, and the score-based definition waits
+  for measurement against the now-populated index.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
