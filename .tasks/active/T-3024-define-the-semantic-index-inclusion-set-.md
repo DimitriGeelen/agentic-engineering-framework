@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T21:56:03Z
-last_update: '2026-08-15T22:00:08Z'
+last_update: '2026-08-15T22:00:15Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +43,25 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-15T22:00:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
@@ -72,12 +91,12 @@ Evidence: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 8, §Spike 9, 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `collect_files()` selects by an explicit, documented content-class rule rather than an ad-hoc directory list, with the rule stated in a module-level comment naming the two classes (authored-and-durable / generated-or-restated)
-- [ ] The authored set spike 8 found unreachable is indexed: at minimum `policy/`, `docs/adr/`, `docs/architecture/`, `docs/design/`, `docs/specs/` contribute files to `collect_files()`
-- [ ] `docs/generated/` remains excluded (1,068 generated files) — the guard against "fix it by bulk-adding docs/", which would repeat the original accretion
-- [ ] Handover inclusion is a single explicit, named switch rather than an implicit consequence of a directory being listed — so the operator can flip it without editing selection logic
-- [ ] A unit test pins the rule: asserts a known authored path is included and a known generated path is excluded, so the next directory added has to state its class
-- [ ] `bin/fw reviewer T-3024` returns PASS
+- [x] `collect_files()` selects by an explicit, documented content-class rule rather than an ad-hoc directory list, with the rule stated in a module-level comment naming the two classes (authored-and-durable / generated-or-restated)
+- [x] The authored set spike 8 found unreachable is indexed: at minimum `policy/`, `docs/adr/`, `docs/architecture/`, `docs/design/`, `docs/specs/` contribute files to `collect_files()`
+- [x] `docs/generated/` remains excluded (1,068 generated files) — the guard against "fix it by bulk-adding docs/", which would repeat the original accretion
+- [x] Handover inclusion is a single explicit, named switch rather than an implicit consequence of a directory being listed — so the operator can flip it without editing selection logic
+- [x] A unit test pins the rule: asserts a known authored path is included and a known generated path is excluded, so the next directory added has to state its class
+- [x] `bin/fw reviewer T-3024` returns PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -119,11 +138,21 @@ Evidence: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 8, §Spike 9, 
   is yours and why the build does not presume it.
 
   **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw config get INDEX_HANDOVERS`
+  1. See the effect before deciding — this prints both corpus sizes without changing
+     anything (note: `fw config get` reports only explicitly-set keys, so it is empty
+     while the switch sits at its default of ON):
+     `cd /opt/999-Agentic-Engineering-Framework && python3 -c "import sys,os; sys.path.insert(0,'.'); from web.search_utils import collect_files; print('handovers ON :', len(collect_files())); os.environ['FW_INDEX_HANDOVERS']='0'; print('handovers OFF:', len(collect_files()))"`
   2. Read the tradeoff: `docs/reports/T-3022-recall-latency-scaling.md` §Spike 7 (zero
      executable readers), §Spike 10 (97% of each handover is duplicated state).
-  3. To exclude: `cd /opt/999-Agentic-Engineering-Framework && bin/fw config set INDEX_HANDOVERS 0 && bin/fw ask "what did we decide about dispatch safety" | head -20`
-  4. Compare the sources that answer returns against the same query with the switch on.
+  3. **The switch does not change query results until the index is rebuilt.**
+     `collect_files()` feeds the index *builders* (`web/embeddings.py:515`,
+     `web/search.py:57`), not the query path — so `fw ask` keeps answering from the
+     existing 398k-chunk DB until a reindex runs. Setting it and immediately querying
+     would show no difference and mean nothing. The incremental reindex diffs
+     `collect_files()` against the `file_state` table and drops removed files' rows,
+     so no full rebuild is needed — one normal incremental cycle applies it.
+  4. To make it permanent if you want it (takes effect at the next reindex):
+     `cd /opt/999-Agentic-Engineering-Framework && bin/fw config set INDEX_HANDOVERS 0`
 
   **Expected:** With handovers excluded, answers cite tasks, episodics, ADRs and reports
   rather than session narratives — and you judge whether anything you actually wanted
@@ -294,3 +323,12 @@ bin/fw reviewer T-3024 > /tmp/.t3024-rev.out 2>&1 && grep -q "Overall:.*PASS" /t
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3024-define-the-semantic-index-inclusion-set-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5211fae7
+- **Timestamp:** 2026-08-15T22:03:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

@@ -215,6 +215,13 @@ FW_CONFIG_REGISTRY=(
     "STALE_ARC_DAYS|30|Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale (agents/audit/audit.sh). T-1855."
     "RETIRE_WHEN_ADVISORY|1|Enable the audit retire_when advisory rail for free drivers; 0 silences the section entirely (agents/audit/audit.sh). T-2169."
     "GITIGNORE_REGISTER_ADVISORY|1|Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it (agents/audit/audit.sh, lib/gitignore-register.sh). T-2994."
+    # T-3024 (T-3022 slice E'). Handovers are 68% of indexed corpus volume and 79%
+    # of its growth, ~97% redundant between consecutive files, with zero executable
+    # readers (T-3022 spikes 7/9/10) — but semantic retrieval is their ONLY consumer,
+    # so excluding them is a judgment about what the corpus is for, not a cleanup.
+    # Ships at 1 (current behaviour); flipping it is the operator's call. Nothing is
+    # deleted in either state — git retains every handover regardless.
+    "INDEX_HANDOVERS|1|Include .context/handovers/ in the semantic index (web/search_utils.py:collect_files). 0 excludes them: ~90MB / 1,710 files leave fw ask, fw recall, /search and the RAG path. Reversible; deletes nothing. T-3024."
     # T-3013 (T-3005 slice 4). The vector index had no doctor coverage at all
     # before this — which is why T-3004 sat for five months. 7 days is chosen
     # against the corpus's own churn: tasks, handovers and episodics change
