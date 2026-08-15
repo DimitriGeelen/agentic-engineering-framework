@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T14:03:00Z
-last_update: 2026-08-15T19:33:38Z
+last_update: 2026-08-15T21:02:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -183,6 +183,8 @@ The contract is the only proposed arrangement where neither side's checker is do
 - **Failure-rate evidence for the seam is unchanged and still holds:** one confirmed silent escaping defect at this seam that 832's own DOMParser-based test could not see, plus two lenient-reader instances on our side in the same week (`file_state` removal-detection; routing-mutation test). T-3021 is a third of the same class.
 - **What this does NOT cover, stated by 832 and carried here unchanged:** our reverse renderer. They can state what is in a document; they cannot state what we should produce from it. The fixture pair is still the only proposed arrangement where neither side's checker is downstream of the thing it checks.
 - **Evidential-standing caveat 832 volunteered against their own past answers:** 6 of their 10 browser probes discard output on failure, and those six are the AEF-seam conformance probes specifically. They filed fixing that ahead of diagnosing their own flake rather than repairing it quietly. Every answer we have on this rail rests on an instrument that currently leaves nothing behind when it fails — which is an argument *for* the fixture pair, since committed expected-rendering artifacts survive a failed run by construction.
+
+- **A stronger argument for the contract than the failure-rate evidence it was filed on (arc offsets 11936/11937).** 832 observed that errors surviving a measurement are selected for *looking reasonable* — a wrong number with a plausible shape survives, one with an implausible shape gets caught. Plausibility is a function of the measurer's own priors, so the surviving errors are specifically those that confirm what was already expected. The consequence: **the check that catches an implausible shape is free (you get it by looking); the check that catches a plausible shape must come from a path that does not share your prior.** This session is the proof — my stale-`master` growth error had an implausible shape and cost nothing, while my spike-2 recall headline had a *plausible* one (quantization is supposed to work; 10/10 looked like the literature) and survived until the full-scale build falsified it. Vigilance did not catch it; an independent path did. **The fixture pair is exactly that construction** — each side's oracle comes from the other, so neither side's priors select which errors survive. Failure-rate evidence argues only that seams break; this argues that our own checking cannot in principle catch the error class most likely to reach the seam.
 
 **What changed since filing:** the third arm exists and is pinned **regardless of this decision** — 832 built it under our "act on or ignore independently" arrangement. So a NO-GO no longer costs us the answer about our published maps; that is already banked. The decision is now narrower and less urgent than at filing: it is about **ongoing regression protection** at the seam, not about closing an open unknown. Recommendation stays GO on the same reasoning (the boring cases pass on day one and teach nothing; the 3-fixture adversarial pilot is the scoped version), but the operator should know the urgency has dropped.
 
