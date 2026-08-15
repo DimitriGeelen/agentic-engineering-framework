@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T19:39:19Z
+last_update: '2026-08-15T19:45:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -38,6 +38,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-15T19:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -192,12 +202,19 @@ sample; producing a costed recommendation.
 
 <!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- The cost is characterised well enough to name what would change it — **met.** k-sweep,
+  stage decomposition and the `vec0` DDL together show a fixed exhaustive scan.
+- At least one candidate is evidence-backed rather than speculative — **met.** Binary
+  quantization + exact rescore recovers the full exact top-10 at N=50, 32× less data.
+- The build work is bounded and reversible — **met.** Two-stage retrieval sits behind a
+  config flag with both paths live; no destructive migration, and the existing float
+  vectors stay the source of truth for rescoring.
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- The latency is acceptable at projected growth and the build cost is not worth it —
+  **this is the live question**, and it is IW-7. I cannot settle it; it depends on how
+  fast the corpus actually grows and how much 1 s (→ 2 s → 3 s) costs the operator.
+- Every candidate requires an irreversible format migration — **not met.** A is additive.
 
 ## Verification
 
@@ -216,13 +233,50 @@ sample; producing a costed recommendation.
 
 **Rationale:**
 
-Measured on the live index: k=1 costs 1028ms and k=200 costs 1221ms, so a 200x change in result count moves latency 19% — the cost is a fixed brute-force scan of all 398,594 vectors (768 dims, 1.22GB), not result assembly. Embedding adds 201ms on a novel query (lru_cache hides it on repeats). Recall is therefore O(corpus) in a corpus designed to grow: one reindex took it from empty to 398k chunks, and hourly incrementals keep adding. This is a shape fault, not a slow value - no threshold to tune, and it degrades continuously with no event to notice. sqlite-vec vec0 has no ANN index, but does natively support binary quantization; two-stage retrieval (bit-vector scan then full-vector rescore of top-N) is the leading candidate at ~32x less data scanned with bounded recall loss. Alternatives worth costing before committing: matryoshka dimension truncation 768->256, and partition keys (weak here, since recall is global rather than scoped). Worth an inception rather than a build because the alternatives change the storage format and have different recall/latency tradeoffs that need measuring, not guessing.
+The characterisation is complete and the leading candidate is now measured rather than
+assumed. Recall costs ~1.0-1.2s and it is a fixed exhaustive scan: k=1 -> 1028ms,
+k=200 -> 1221ms, so a 200x change in result count moves latency 19%. sqlite-vec `vec0`
+has no ANN index by construction, so 1.22GB (398,594 x 768 x 4B) is compared per query.
+Novel-query embedding adds 201ms; `@lru_cache` hides it on repeats, making repeat
+recalls ~100% scan.
+
+The important part is the shape, not the number. 1s is fine interactively. But the cost
+depends only on corpus size, and the corpus is designed to grow -- hourly incrementals,
+and one reindex this week took it from effectively empty to 398k chunks. There is no
+moment at which this fails: every document added is legitimate, so nothing goes red, and
+a latency budget would be met by raising the budget. That is why it is worth deciding
+now rather than when someone notices.
+
+Spikes ran in the same session and changed the candidate ranking. Binary quantization
+with exact rescoring recovers the FULL exact top-10 at N=50 while scanning 32x less
+data -- and it wins structurally rather than by tuning, because the final ranking is
+computed from exact vectors, so the approximation only has to shortlist correctly, never
+to order correctly. Dimension truncation (nomic-embed-text-v2-moe measured empirically:
+8.2/10 top-10 at 256d) is dominated on both axes and drops to a fallback. Partition keys
+are dissolved outright -- no query path in the system carries a scoping predicate.
+
+What I am NOT claiming, because the operator should weigh the recommendation knowing its
+limits: bit-vectors have not been measured for actual speed in sqlite-vec (32x is a data
+volume argument), N=50 is not a production parameter (measured on a ~540-vector pool,
+and required N grows with distractors), and I have not shown the current latency is
+unacceptable. The GO is on the strength of the characterisation and the candidate, not
+on urgency.
+
+**The hinge is IW-7 and it is yours:** does 1s now, trending upward, cost enough to be
+worth the build? That is a judgment about acceptable latency at projected growth, and no
+measurement I can run settles it.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- **The cost is a fixed scan, not result assembly.** k-sweep on the live index: k=1 → 1028 ms, k=5 → 1048, k=50 → 1125, k=200 → 1221. A 200× change in k moves latency 19%.
+- **Exhaustive by construction.** `CREATE VIRTUAL TABLE vec_documents USING vec0(id INTEGER PRIMARY KEY, embedding FLOAT[768])` — no partition key, no ANN index. 398,594 × 768 × 4 B = **1.22 GB compared per query**.
+- **Stage decomposition.** vector query 1019 ms; novel-query embed 201 ms; cached embed 0 ms (`web/embeddings.py:228`, `@lru_cache(maxsize=256)`). Repeat recalls are ~100% scan.
+- **Binary quantization + exact rescore recovers exact results.** N=10 → 6.5/10, N=25 → 9.5/10, **N=50 → 10.0/10**, N=100/200 → 10.0/10. First stage scans 96 B/vec vs 3072 B — 32× less.
+- **Dimension truncation measured, not assumed.** `nomic-embed-text-v2-moe`: 8.8/10 top-10 at 512d (ρ=0.954), 8.2/10 at 256d (ρ=0.874), 6.0/10 at 128d. 3× for ~18% of the top-10, with no rescore stage to recover it.
+- **Partitioning dissolved.** `_rag_retrieve` selects `d.category` but never filters on it (`web/embeddings.py:1274-1277`); BM25 per-category groups are flattened (`:1286`). Nothing to prune.
+- **A hypothesis that failed, recorded.** The dead embed sidecar (OBS-259) costs ~30 ms, ≈3% — `ECONNREFUSED` returns immediately. Incidental field evidence that T-3017 failover works; downgrades OBS-259 to hygiene.
+- **A measurement error, recorded.** The first truncation run used a near-neighbour-only pool and reported ρ=0.753 at 512d, non-monotonic against 256d. Near-tie ranks are unstable by construction; widening the pool moved it to 0.954. The first number looked like a finding and was an artifact of method.
+- Artifact: `docs/reports/T-3022-recall-latency-scaling.md`. Commits: `660fa0cf3` (characterisation), `9c62305cd` (spikes 1-3).
 
 ## Decisions
 
