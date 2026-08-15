@@ -4,16 +4,16 @@ name: "recall latency is O(corpus) — brute-force KNN scans 1.22GB per query"
 description: >
   Inception: recall latency is O(corpus) — brute-force KNN scans 1.22GB per query
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/integration/test_recall_miss_live.py]
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T21:42:58Z
-date_finished:
+last_update: 2026-08-15T21:53:01Z
+date_finished: 2026-08-15T21:53:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -184,15 +184,15 @@ sample; producing a costed recommendation.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -386,6 +386,18 @@ index. **My sequencing advice: E′ first because it is free and needs no design
 next because it is the one that stops this recurring.** F is not free — it trades away offline
 readability, and that tradeoff is yours, not mine. **I have not built either.**
 
+**Checked archive-wide before standing behind it.** The byte-identical pairs are all from one
+evening, which would leave "82% of the archive is dumps" true without implying the archive is
+*redundant*. Sampled consecutive pairs at deciles across all 1,710 handovers: **8 of 9 are
+≥96.3% identical** (100.0, 99.5, 97.1, 100.0, 100.0, 98.7, 96.3, 99.2), sustained March →
+August. The single outlier is 47.2% and is a real event — that section halved, 681 → 327 lines
+— which is the control the measurement needs to be worth anything. The same table shows the
+state itself growing (135 → 1,014 lines), i.e. the second compounding term visible directly.
+**Method error recorded:** my first similarity metric could return **negative** values (it
+scored the outlier −11.3%), because `diff` emits both `<` and `>` lines on replacement; it
+agreed with the correct metric to within a point on the eight well-behaved pairs and announced
+itself only on the one that churned. Replaced with unchanged-lines over `max(len)`.
+
 **Evidence:**
 
 - **The cost is a fixed scan, not result assembly.** k-sweep on the live index: k=1 → 1028 ms, k=5 → 1048, k=50 → 1125, k=200 → 1221. A 200× change in k moves latency 19%.
@@ -452,7 +464,30 @@ readability, and that tradeoff is yours, not mine. **I have not built either.**
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The characterisation is complete and the leading candidate is now measured rather than
+assumed. Recall costs ~1.0-1.2s and it is a fixed exhaustive scan: k=1 -> 1028ms,
+k=200 -> 1221ms, so a 200x change in result count moves latency 19%. sqlite-vec `vec0`
+has no ANN index by construction, so 1.22GB (398,594 x 768 x 4B) is compared per query.
+Novel-query embedding adds 201ms; `@lru_cache` hides it on repeats, making repeat
+recalls ~100% scan.
+
+The important part is the shape, not the number. 1s is fine interactively. But the cost
+depends only on corpus size, and the corpus is designed to grow -- hourly incrementals,
+and one reindex this week took it from effectively empty to 398k chunks. There is no
+moment at which this fails: every document added is legitimate, so nothing goes red, and
+a latency budget would be met by raising the budget. That is why it is worth deciding
+now rather than when someone notices.
+
+Spikes ran in the same session and changed the candidate ranking. Binary quantization
+with exact rescoring wins structurally rather than by tuning, because the final ranking is
+computed from exact vectors, so the approximation only has to shortlist correctly, never
+to order correctly. Dimension truncation (nomic-embed-text-v2-moe measured empirically:
+8.2/10 top-10 at 256d) is dominated on both axes and drops to a fallback. Partition keys
+are dissolved outright -- no query path in the system carries a scoping predicate.
+
+**Date**: 2026-08-15T21:53:00Z
 
 ## Updates
 
@@ -464,16 +499,16 @@ readability, and that tradeoff is yours, not mine. **I have not built either.**
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-79ed07f2
-- **Timestamp:** 2026-08-15T21:48:58Z
+- **Scan ID:** R-1a8ec693
+- **Timestamp:** 2026-08-15T21:53:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-d0b3344d
-- **Timestamp:** 2026-08-15T21:48:58Z
+- **Scan ID:** RC-a938fc02
+- **Timestamp:** 2026-08-15T21:53:02Z
 - **Overall:** CONFIRMED
 - **Claims:** 13
 
@@ -492,3 +527,30 @@ readability, and that tradeoff is yours, not mine. **I have not built either.**
 | `docs/reports/T-3022-recall-latency-scaling.md` | file | ✓ pass |
 | `T-3021` | task | ✓ pass |
 | `T-3017` | task | ✓ pass |
+### 2026-08-15T21:53:00Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The characterisation is complete and the leading candidate is now measured rather than
+assumed. Recall costs ~1.0-1.2s and it is a fixed exhaustive scan: k=1 -> 1028ms,
+k=200 -> 1221ms, so a 200x change in result count moves latency 19%. sqlite-vec `vec0`
+has no ANN index by construction, so 1.22GB (398,594 x 768 x 4B) is compared per query.
+Novel-query embedding adds 201ms; `@lru_cache` hides it on repeats, making repeat
+recalls ~100% scan.
+
+The important part is the shape, not the number. 1s is fine interactively. But the cost
+depends only on corpus size, and the corpus is designed to grow -- hourly incrementals,
+and one reindex this week took it from effectively empty to 398k chunks. There is no
+moment at which this fails: every document added is legitimate, so nothing goes red, and
+a latency budget would be met by raising the budget. That is why it is worth deciding
+now rather than when someone notices.
+
+Spikes ran in the same session and changed the candidate ranking. Binary quantization
+with exact rescoring wins structurally rather than by tuning, because the final ranking is
+computed from exact vectors, so the approximation only has to shortlist correctly, never
+to order correctly. Dimension truncation (nomic-embed-text-v2-moe measured empirically:
+8.2/10 top-10 at 256d) is dominated on both axes and drops to a fallback. Partition keys
+are dissolved outright -- no query path in the system carries a scoping predicate.
+
+### 2026-08-15T21:53:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

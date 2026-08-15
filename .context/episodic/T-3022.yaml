@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3022: recall latency is O(corpus) — brute-force KNN scans 1.22GB per query
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-15T21:53:14Z
+# ============================================================================
+
+task_id: T-3022
+task_name: "recall latency is O(corpus) — brute-force KNN scans 1.22GB per query"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-15T19:36:54Z
+completed: 2026-08-15T21:53:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-15T21:40:52+02:00
+last_commit: 2026-08-15T23:49:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  recall is O(corpus) — 1.22GB scanned per query, and the slope is the finding. spikes 1-3 — binary quantization recovers exact top-10 at 32x less data. recommendation updated with spike evidence — GO, hinge is IW-7 (operator). vendor sync — carries T-3021's recall_telemetry classifier into .agentic-framework/. spike 4 — candidate A built at full scale; my N=50 claim was wrong. raise IW-4 to confidence 3 with the spike-4 curve, not the simulation. cite where each IW rationale's evidence actually lives. spike 5 — replacing vec_documents costs MORE storage, and that is fine. spike 6 — half the index is handovers, and they are 2.5% of the answers. spike 7 — semantic retrieval is the only consumer historical handovers have. spike 8 — the inclusion set is wrong in both directions, reframing E. L-606 — hermeticity assertions scope to the write-set, not the tree. OBS-270 — arc posts were attributed to 832, warned about every time. hermeticity census over 1309 scripts (0 whole-tree asserts); L-607 copy-family propagation; OBS-271 arc sender_id collision. spike 9 — corpus +62%/month, 79% of growth is handovers (68% of corpus, monotonic); L-608 stale-ref series error. spike 10 — handover embeds state by value; 97.3% dumps, byte-identical between handovers; candidate F; OBS-272
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'spike 9 — corpus +62%/month, 79% of growth is handovers (68% of corpus, monotonic); L-608 stale-ref series error'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-15 — run spike 4 before the operator decides, rather than after GO'
+    chose: 'Build candidate A for real in sqlite-vec at full corpus scale while the inception is still open, instead of deferring it to build slice 1 as the artifact originally planned.'
+    rationale: 'The GO''s strength rested on a claim I had explicitly flagged as unmeasured ("32× is a data-volume argument"). If the bit-vector path had been slow, the recommendation would have been wrong, and the operator would have discovered that after approving it. A measurement that can change a recommendation belongs before the decision, not in the work the decision authorises. It is exploration, which is what an inception is for — no build artifact was written.'
+    alternatives_rejected: ['Waiting for GO. That would have shipped a recommendation resting on a simulation whose headline number (10.0/10 at N=50) spike 4 then falsified — the operator would have approved a lossless win and received a tradeoff curve.']
+  - decision: '2026-08-15 — report the narrowed claim rather than the stronger one'
+    chose: 'Rewrite the recommendation around "~10× at exact top-1 and ~90% recall@3", and state plainly that recall@10 cannot be made lossless at any N measured.'
+    rationale: 'Spike 4 improved the *speed* evidence (15.8× measured, not inferred) while degrading the *recall* evidence. Reporting only the improvement would have made the GO look stronger than it is. The operator''s decision differs depending on whether their standard is "top result stable" or "top-10 set stable", so that fork is now surfaced explicitly instead of being absorbed into an average.'
+    alternatives_rejected: ['Restating spike 2''s 10.0/10 alongside spike 4''s 8.0/10 without saying which supersedes which. Two numbers for the same quantity, unranked, is how a falsified claim survives.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/recall_telemetry.py'
+  - '.context/audits/2026-08-15.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/episodic/T-3021.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/T-3022-recall-latency-scaling.md'
+  - '.tasks/active/T-3018-bpmn-seam-fixture-pair-contract-with-832.md'
+  - '.tasks/active/T-3022-recall-latency-is-ocorpus--brute-force-k.md'
+  - '.tasks/completed/T-3021-recall-miss-signal-cannot-fire--nhits-co.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-15T21:40:52'
+    action: 'T-3022: recall is O(corpus) — 1.22GB scanned per query, and the slope is the finding'
+  - time: '2026-08-15T21:44:32'
+    action: 'T-3022: spikes 1-3 — binary quantization recovers exact top-10 at 32x less data'
+  - time: '2026-08-15T21:45:31'
+    action: 'T-3022: recommendation updated with spike evidence — GO, hinge is IW-7 (operator)'
+  - time: '2026-08-15T21:46:26'
+    action: 'T-3022: vendor sync — carries T-3021''s recall_telemetry classifier into .agentic-framework/'
+  - time: '2026-08-15T22:22:23'
+    action: 'T-3022: spike 4 — candidate A built at full scale; my N=50 claim was wrong'
+  - time: '2026-08-15T22:23:28'
+    action: 'T-3022: raise IW-4 to confidence 3 with the spike-4 curve, not the simulation'
+  - time: '2026-08-15T22:24:20'
+    action: 'T-3022: cite where each IW rationale''s evidence actually lives'
+  - time: '2026-08-15T22:26:57'
+    action: 'T-3022: spike 5 — replacing vec_documents costs MORE storage, and that is fine'
+  - time: '2026-08-15T22:34:41'
+    action: 'T-3022: spike 6 — half the index is handovers, and they are 2.5% of the answers'
+  - time: '2026-08-15T23:00:58'
+    action: 'T-3022: spike 7 — semantic retrieval is the only consumer historical handovers have'
+  - time: '2026-08-15T23:08:55'
+    action: 'T-3022: spike 8 — the inclusion set is wrong in both directions, reframing E'
+  - time: '2026-08-15T23:11:33'
+    action: 'T-3022: L-606 — hermeticity assertions scope to the write-set, not the tree'
+  - time: '2026-08-15T23:13:59'
+    action: 'T-3022: OBS-270 — arc posts were attributed to 832, warned about every time'
+  - time: '2026-08-15T23:31:52'
+    action: 'T-3022: hermeticity census over 1309 scripts (0 whole-tree asserts); L-607 copy-family propagation; OBS-271 arc sender_id collision'
+  - time: '2026-08-15T23:42:55'
+    action: 'T-3022: spike 9 — corpus +62%/month, 79% of growth is handovers (68% of corpus, monotonic); L-608 stale-ref series error'
+  - time: '2026-08-15T23:49:09'
+    action: 'T-3022: spike 10 — handover embeds state by value; 97.3% dumps, byte-identical between handovers; candidate F; OBS-272'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 16 commit(s), 136 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 136
+  commits: 16
+  files_changed: 23
+  lines_added: 2152
+  lines_removed: 500
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3022-recall-latency-is-ocorpus--brute-force-k.md
+generated_by: context-agent-hybrid
