@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T19:36:54Z
-last_update: 2026-08-15T20:24:20Z
+last_update: 2026-08-15T20:27:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,9 +72,11 @@ Full measurements and candidate analysis: `docs/reports/T-3022-recall-latency-sc
 
 ## Assumptions
 
-- **A-1:** The corpus continues to grow. Weakly held — one bulk reindex is not a growth
-  curve, and the hourly incremental steady state (28 s, 9 files changed) has only a few
-  cycles of history. IW-7 depends on this.
+- **A-1:** The corpus continues to grow. **Upgraded from weakly-held to supported by spike 6**
+  — tracked content measured from git: 17.0 MB (2026-04-01) → 59.8 (06-01) → 108.9 (08-01) →
+  147.3 MB (08-16). 8.7× in 4.5 months, and the last 15 days added 38.4 MB (≈2× the prior
+  monthly rate). 76% of that recent growth is `.context/handovers`, which is what candidate E
+  turns on. IW-7 depends on this and now has a measured slope rather than an assumption.
 - **A-2:** Recall quality currently has thin headroom above the zero-clamp (known-good
   median 0.106, min 0.016), so any approximation that costs recall is riskier here than
   the general literature suggests. Measured, not assumed — see T-3021.
@@ -289,6 +291,30 @@ your standard is "the top-10 set must not change", A does not meet it at any N**
 candidate D (accept the latency, assert the shape) is then the honest answer instead. That
 choice is yours and it is a different question from IW-7.
 
+**Spike 6 found something that changes what I would do first, and I want it in front of you
+before you rule.** Everything above optimises *how* the corpus is scanned; spike 6 asked what
+is in it. **51% of the index (203,694 of 399,921 chunks) is `.context/handovers`** — 1,706
+files, 89.6MB, and near-copies of each other by construction: 97% line overlap between
+consecutive handovers, 93% between the latest and ten-back. They are also 76% of the last 15
+days' growth, which is what makes the slope steep.
+
+I expected that to be crowding out real results. It is not — 1 of 40 returned results across
+4 real queries was a handover. Which makes the case stronger: **handovers cost 51% of every
+scan and supply ~2.5% of the answers.**
+
+So there is a **candidate E — stop indexing most handovers.** ~2× faster, exact recall
+preserved on everything else, storage roughly halved, and it is subtraction rather than
+construction: nothing to build, nothing to keep in lockstep, nothing that can silently
+degrade. Smaller than candidate A's 10×, but far cheaper and trivially reversible, and the
+two compose.
+
+**My advice, revised by spike 6: try E first.** A remains the right answer if E is not
+enough. What I am *not* claiming is that handovers should be excluded wholesale — they are
+the session record and 2.5% is small but not zero, and my 4-query probe tested
+framework-mechanism questions, not the "what was I doing last Tuesday" queries handovers
+exist to answer. The retention design (recent N, unique sections only, or chunk-level dedup)
+is a judgment call, and it is yours.
+
 **The hinge is IW-7 and it is yours:** does 1s now, trending upward, cost enough to be
 worth the build? That is a judgment about acceptable latency at projected growth, and no
 measurement I can run settles it.
@@ -302,6 +328,9 @@ measurement I can run settles it.
 - **Spike 4: candidate A built in sqlite-vec against all 398,594 vectors.** Bit index = **48 MB** vs the float index's 1.58 GB; quantizing the corpus took 183 s. Stage 1: **1011 ms → 64 ms (15.8×)**, median over 5 queries.
 - **Spike 4 recall curve (10 queries, ground truth = exhaustive float KNN).** N=50: top-1 100%, recall@3 87%, recall@10 80%, 66 ms (15.3×). N=100: 100% / 90% / 87%, 100 ms (10.2×). N=200: 100% / 93% / 92%, 177 ms (5.7×). N=400: 100% / 93% / 96%, 381 ms (2.7×). **Exact top-1 at every N; recall@10 never reaches 100%.**
 - **Spike 4 falsified my own spike-2 headline.** "Identical to exhaustive search at N=50" was a 540-vector-pool artifact — the real corpus gives 8.0/10, not 10.0/10. Recorded as a correction rather than quietly restated, because the caveat I wrote at the time is what turned out to be true.
+- **Spike 6: corpus growth quantified, and A-1 upgraded from weakly-held to supported.** Tracked `.md`/`.yaml`/`.txt` content: 17.0 MB (2026-04-01) → 59.8 (06-01) → 108.9 (08-01) → **147.3 MB (08-16)**. 8.7× in 4.5 months; the last 15 days added 38.4 MB, roughly double the prior monthly rate. *Method error recorded:* the first run walked `master`, 4 weeks stale (tip 2026-07-18, HEAD +1,432 commits), and showed growth flattening to zero — an artifact that was the exact opposite of the truth.
+- **Spike 6: half the index is one document class.** `.context/handovers` = **203,694 of 399,921 chunks (51%)**; `.tasks/*` 124,652 (31%); `.context/episodic` 52,100 (13%); `docs/*` 15,481 (4%). Handovers are also 76% of growth since 2026-08-01. 1,706 files, 89.6 MB, median 40 KB, and near-duplicate by construction — **97% line overlap between consecutive handovers, 93% latest-vs-ten-back.**
+- **Spike 6: a hypothesis of mine, disproved.** I expected 51% near-duplicate content to crowd real results out of the top-10. Measured on 4 real queries: **1 of 40 results was a handover.** No crowding. This strengthens rather than weakens candidate E — handovers cost 51% of the scan and supply ~2.5% of the answers.
 - **Spike 5: storage end-state, measured per-table via `dbstat`.** Today `vec_documents` = 1.316 GB. After replacement: `floatvec` 1.637 GB + `bitvec` 0.045 GB = **1.682 GB (+28%)**. Duplicating instead = 3.0 GB (+128%). The plain table is *less* space-efficient than vec0 — the same chunked-layout fact that makes vec0 fast to scan and slow to point-look-up.
 - **Spike 5: the exact reference survives the replacement.** Exhaustive exact KNN over the plain float table = **1743 ms** vs vec0's 1085 ms. 1.6× slower, off the hot path, and sufficient as ground truth for a periodic recall audit — so candidate D stays implementable after candidate A ships. Proposed end state: `bitvec` (45 MB) stage 1, `floatvec` (1.64 GB) stage 2 + exact reference, `vec_documents` dropped.
 - **Spike 4 design constraint — where the floats live decides the win.** Rescore at N=50: `id IN (…)` against the vec0 float table = 340 ms; per-id point lookups = 118 ms; `id IN (…)` against a plain `INTEGER PRIMARY KEY` BLOB table = **66 ms**. `EXPLAIN QUERY PLAN` → `SCAN prod.vec_documents VIRTUAL TABLE INDEX 0:1`. The naive implementation re-reads the 1.22 GB it just avoided.
@@ -364,16 +393,16 @@ measurement I can run settles it.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-32bc427c
-- **Timestamp:** 2026-08-15T20:26:38Z
+- **Scan ID:** R-e4df34a1
+- **Timestamp:** 2026-08-15T20:34:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-213f1c74
-- **Timestamp:** 2026-08-15T20:26:38Z
+- **Scan ID:** RC-e0266ad2
+- **Timestamp:** 2026-08-15T20:34:19Z
 - **Overall:** CONFIRMED
 - **Claims:** 7
 

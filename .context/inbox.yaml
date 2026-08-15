@@ -3497,3 +3497,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-267
+  text: "DISSOLVED, not a defect: '2,185 stale lock files in .context/locks/' has been carried in handover debt lists for months and reads like a leak. Measured: they are per-task keylock files (T-XXXX.lock, one per task ever touched, plus audit.lock and task-id-allocation.lock), every one 0 bytes — 'du -sh .context/locks/' reports 0 total. Count is bounded by task count, not unbounded. lib/keylock.sh and agents/audit/audit.sh:351 use flock(2), which is kernel-managed: the lock releases when the holder dies, so an orphaned file cannot wedge anything and carries no PID by design. I initially hypothesised the opposite (empty lock file = undiagnosable staleness, blocking pushes forever) and it was wrong; one grep for the implementation disproved it. Recommend striking the item from the debt list rather than opening a cleanup task — carrying a dissolved concern costs attention at every handover and trains the reader to skim the list."
+  captured: 2026-08-15T20:28:58Z
+  context_task: T-3022
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-268
+  text: "recall-telemetry.jsonl spans a classifier change with no version field, and the stale rows are wrong in the optimistic direction. T-3021 changed 'outcome' from n_hits-based to top_score-based at 2026-08-15T19:32Z (commit e8ad5ec9a). Rows written before that keep the old verdict: 7 rows at 19:25Z carry outcome='hit' with top_score=0 — the exact measurement run that discovered the bug. Row schema is [latency_ms, n_hits, outcome, query_hash, surface, top_score, ts]; there is no classifier/schema version field, so nothing marks the boundary. Any consumer computing miss_rate over a window spanning the fix under-reports misses, which is the same direction as the original defect. T-3005 slice 6b (miss-driven reindex priority) consumes precisely this. SEVERITY LOWER THAN IT FIRST LOOKS, and I initially read it as worse: 'outcome' is a DERIVED column and both raw inputs (n_hits, top_score) are preserved on every row, so history is fully recomputable. Guidance for slice 6b: recompute outcome from top_score rather than reading the stored 'outcome' field, or backfill once. Recommend NOT opening a fix task — the durable fix is one line in the not-yet-built consumer, and adding a version field now would be a schema change with no reader. Revisit if a second classifier change lands."
+  captured: 2026-08-15T20:30:33Z
+  context_task: T-3022
+  tags: []
+  status: pending
+  promoted_to: null

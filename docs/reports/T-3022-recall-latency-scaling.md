@@ -291,6 +291,74 @@ query and doubles as the exact reference for a periodic recall audit; `vec_docum
 dropped. Net: **+28% storage, ~10× query latency, exact ground truth retained at 1.7 s
 off the hot path.**
 
+### Spike 6 — half the scan is one document class, and it is 2.5% of the answers
+
+Everything above optimises *how* the corpus is scanned. This asks what is in it.
+
+Corpus source growth, measured from git (`.md`/`.yaml`/`.txt`, tracked content):
+
+| date | files | content |
+|------|-------|---------|
+| 2026-04-01 | 4,018 | 17.0 MB |
+| 2026-06-01 | 8,878 | 59.8 MB |
+| 2026-08-01 | 11,210 | 108.9 MB |
+| 2026-08-16 | 12,700 | **147.3 MB** |
+
+**A-1 is now strongly supported rather than weakly held:** 8.7× in 4.5 months, and the last
+15 days added 38.4 MB — roughly double the prior monthly rate.
+
+*Method note, recorded because it nearly shipped:* the first run of this measurement walked
+`master`, which is 4 weeks stale (tip 2026-07-18; HEAD carries 1,432 commits it does not).
+It showed growth flattening to zero after August 1 — an artifact of the branch, not a
+property of the corpus, and the opposite of the truth. Same class as the spike-1 pool error.
+
+**Where the growth is:**
+
+| directory | added since 2026-08-01 | share |
+|-----------|------------------------|-------|
+| `.context/handovers` | 29.0 MB | **76%** |
+| `.tasks/completed` | 4.3 MB | 11% |
+| everything else | 5.1 MB | 13% |
+
+**And where the index is:**
+
+| source | chunks | share |
+|--------|--------|-------|
+| `.context/handovers` | **203,694** | **51%** |
+| `.tasks/*` | 124,652 | 31% |
+| `.context/episodic` | 52,100 | 13% |
+| `docs/*` | 15,481 | 4% |
+
+**Half the 1.22 GB scanned on every query is session handovers.** There are 1,706 of them,
+median 40 KB, 89.6 MB total — and they are near-copies of each other by construction, since
+each one restates current state: **97% line overlap between consecutive handovers, 93%
+between the latest and ten-back.** Indexing all 1,706 is close to indexing one document
+1,706 times.
+
+**A hypothesis I had, and disproved.** If 51% of the index is near-duplicate, real documents
+should be crowded out of results. Measured on 4 real queries: **1 of 40 returned results was
+a handover.** The crowding effect is not there.
+
+That makes the case *stronger*, not weaker. Handovers cost **51% of the scan** and supply
+**~2.5% of the answers**. The most expensive half of the index is the half nobody retrieves.
+
+**Candidate E: stop indexing (most) handovers.** Dropping them entirely takes the index from
+399,921 to 196,227 chunks — **~2× faster, exact recall preserved on everything else, storage
+roughly halved, no approximation and no drift surface.** Less headline speedup than
+candidate A, but it is subtraction rather than construction: nothing to build, nothing to
+keep in lockstep, nothing that can silently degrade.
+
+**Not claimed:** that handovers should be deleted, or excluded wholesale. They are the
+session memory record and must persist on disk regardless. The design question — index the
+most recent N, index only each handover's unique sections, or deduplicate at chunk level —
+is a retention judgment I have not made, and 2.5% is small but not zero. **Also not claimed:
+that the 4-query probe settles retrieval value.** It shows handovers rarely surface for
+framework-mechanism questions; it does not test the queries handovers exist to answer
+("what was I doing last Tuesday"), and those may be exactly where they earn their place.
+
+**A and E compose** — E halves the corpus, A gives ~10× on what remains. E is also the
+cheaper thing to try first, and trying it costs almost nothing to reverse.
+
 ## Candidates
 
 Updated after spike 4, which built candidate A for real. C is dissolved; A still leads B,
@@ -301,7 +369,8 @@ but on a measured tradeoff curve rather than the lossless win spike 2 suggested.
 | **A** | **Binary quantization + exact rescore of top-N** | **Built at full scale (spike 4): 10.2× at N=100 — exact top-1, 90% recall@3, 87% recall@10. Stage 1 alone is 15.8×.** | **Leading, and now measured rather than simulated.** Requires floats in a plain PK table, not the vec0 table — otherwise 3× instead of 15×. |
 | B | Matryoshka truncation 768→256 | 3×; 8.2/10 top-10 (ρ=0.874) | Dominated by A on both axes. Keep only as a fallback if A's bit-vector path proves unworkable in sqlite-vec. |
 | C | Partition key | ~0 — no query path carries a scoping predicate | **Dissolved** (spike 3). |
-| D | Accept, and assert the shape | 0 latency change | Still live, and not exclusive with A. |
+| D | Accept, and assert the shape | 0 latency change | Live, and now shown to be A's **precondition** rather than its alternative (spike 5). |
+| **E** | **Stop indexing (most) handovers** | **~2× — 51% of the index (203,694 chunks) is handovers, supplying ~2.5% of results. Exact recall preserved; storage halved.** | **New (spike 6). Try first.** Subtraction, not construction: nothing to build, keep in lockstep, or silently degrade. Composes with A. |
 
 A and D are not exclusive: the shape assertion is worth having regardless of which
 optimisation lands, because it is what stops the next regression from being invisible.
