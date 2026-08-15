@@ -248,19 +248,37 @@ a latency budget would be met by raising the budget. That is why it is worth dec
 now rather than when someone notices.
 
 Spikes ran in the same session and changed the candidate ranking. Binary quantization
-with exact rescoring recovers the FULL exact top-10 at N=50 while scanning 32x less
-data -- and it wins structurally rather than by tuning, because the final ranking is
+with exact rescoring wins structurally rather than by tuning, because the final ranking is
 computed from exact vectors, so the approximation only has to shortlist correctly, never
 to order correctly. Dimension truncation (nomic-embed-text-v2-moe measured empirically:
 8.2/10 top-10 at 256d) is dominated on both axes and drops to a fallback. Partition keys
 are dissolved outright -- no query path in the system carries a scoping predicate.
 
-What I am NOT claiming, because the operator should weigh the recommendation knowing its
-limits: bit-vectors have not been measured for actual speed in sqlite-vec (32x is a data
-volume argument), N=50 is not a production parameter (measured on a ~540-vector pool,
-and required N grows with distractors), and I have not shown the current latency is
+**Spike 4 then built candidate A for real, at full corpus scale, and corrected two of my
+own claims.** The speed holds: stage 1 is 1011ms -> 64ms (15.8x), end-to-end 10.2x at
+N=100. The recall does not: N=50 gives 80% recall@10 on the real corpus, not the 100% the
+540-vector simulation reported, and recall@10 plateaus near 95-96% at every N tested. The
+simulation's own "required N grows with distractors" caveat turned out to be the finding.
+What rescues it is that **exact top-1 survives at every N** -- the losses are entirely in
+the tail. So candidate A is a ~10x speedup at exact top-1 and ~90% recall@3, not the
+lossless win I described before.
+
+Spike 4 also turned up a design constraint no simulation could have: the rescore floats
+must live in a plain `INTEGER PRIMARY KEY` table. A vec0 virtual table does not serve
+`id IN (...)` from an index -- `EXPLAIN QUERY PLAN` shows `SCAN ... VIRTUAL TABLE` -- so
+the obvious implementation re-reads the 1.22GB it just avoided and yields 3x instead of
+15x. Same algorithm, 5x apart, decided entirely by where the floats are stored.
+
+What I am NOT claiming: that recall@10 can be made lossless (it cannot, at any N I
+measured), that the storage end-state is settled (the plain float table carries ~34% page
+overhead, and replace-vs-duplicate is unmeasured), or that the current latency is
 unacceptable. The GO is on the strength of the characterisation and the candidate, not
 on urgency.
+
+**If your standard is "the top result must not change", A meets it at every N tested. If
+your standard is "the top-10 set must not change", A does not meet it at any N** -- and
+candidate D (accept the latency, assert the shape) is then the honest answer instead. That
+choice is yours and it is a different question from IW-7.
 
 **The hinge is IW-7 and it is yours:** does 1s now, trending upward, cost enough to be
 worth the build? That is a judgment about acceptable latency at projected growth, and no
@@ -271,7 +289,11 @@ measurement I can run settles it.
 - **The cost is a fixed scan, not result assembly.** k-sweep on the live index: k=1 → 1028 ms, k=5 → 1048, k=50 → 1125, k=200 → 1221. A 200× change in k moves latency 19%.
 - **Exhaustive by construction.** `CREATE VIRTUAL TABLE vec_documents USING vec0(id INTEGER PRIMARY KEY, embedding FLOAT[768])` — no partition key, no ANN index. 398,594 × 768 × 4 B = **1.22 GB compared per query**.
 - **Stage decomposition.** vector query 1019 ms; novel-query embed 201 ms; cached embed 0 ms (`web/embeddings.py:228`, `@lru_cache(maxsize=256)`). Repeat recalls are ~100% scan.
-- **Binary quantization + exact rescore recovers exact results.** N=10 → 6.5/10, N=25 → 9.5/10, **N=50 → 10.0/10**, N=100/200 → 10.0/10. First stage scans 96 B/vec vs 3072 B — 32× less.
+- **Binary quantization + exact rescore, simulated (spike 2, ~540-vector pool).** N=10 → 6.5/10, N=25 → 9.5/10, N=50 → 10.0/10. First stage scans 96 B/vec vs 3072 B — 32× less. **Superseded at scale by spike 4 — see below.**
+- **Spike 4: candidate A built in sqlite-vec against all 398,594 vectors.** Bit index = **48 MB** vs the float index's 1.58 GB; quantizing the corpus took 183 s. Stage 1: **1011 ms → 64 ms (15.8×)**, median over 5 queries.
+- **Spike 4 recall curve (10 queries, ground truth = exhaustive float KNN).** N=50: top-1 100%, recall@3 87%, recall@10 80%, 66 ms (15.3×). N=100: 100% / 90% / 87%, 100 ms (10.2×). N=200: 100% / 93% / 92%, 177 ms (5.7×). N=400: 100% / 93% / 96%, 381 ms (2.7×). **Exact top-1 at every N; recall@10 never reaches 100%.**
+- **Spike 4 falsified my own spike-2 headline.** "Identical to exhaustive search at N=50" was a 540-vector-pool artifact — the real corpus gives 8.0/10, not 10.0/10. Recorded as a correction rather than quietly restated, because the caveat I wrote at the time is what turned out to be true.
+- **Spike 4 design constraint — where the floats live decides the win.** Rescore at N=50: `id IN (…)` against the vec0 float table = 340 ms; per-id point lookups = 118 ms; `id IN (…)` against a plain `INTEGER PRIMARY KEY` BLOB table = **66 ms**. `EXPLAIN QUERY PLAN` → `SCAN prod.vec_documents VIRTUAL TABLE INDEX 0:1`. The naive implementation re-reads the 1.22 GB it just avoided.
 - **Dimension truncation measured, not assumed.** `nomic-embed-text-v2-moe`: 8.8/10 top-10 at 512d (ρ=0.954), 8.2/10 at 256d (ρ=0.874), 6.0/10 at 128d. 3× for ~18% of the top-10, with no rescore stage to recover it.
 - **Partitioning dissolved.** `_rag_retrieve` selects `d.category` but never filters on it (`web/embeddings.py:1274`); BM25 per-category groups are flattened (`web/embeddings.py:1286`). Nothing to prune.
 - **A hypothesis that failed, recorded.** The dead embed sidecar (OBS-259) costs ~30 ms, ≈3% — `ECONNREFUSED` returns immediately. Incidental field evidence that T-3017 failover works; downgrades OBS-259 to hygiene.
@@ -288,6 +310,34 @@ measurement I can run settles it.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-08-15 — run spike 4 before the operator decides, rather than after GO
+
+- **Chose:** Build candidate A for real in sqlite-vec at full corpus scale while the
+  inception is still open, instead of deferring it to build slice 1 as the artifact
+  originally planned.
+- **Why:** The GO's strength rested on a claim I had explicitly flagged as unmeasured
+  ("32× is a data-volume argument"). If the bit-vector path had been slow, the
+  recommendation would have been wrong, and the operator would have discovered that
+  after approving it. A measurement that can change a recommendation belongs before the
+  decision, not in the work the decision authorises. It is exploration, which is what an
+  inception is for — no build artifact was written.
+- **Rejected:** Waiting for GO. That would have shipped a recommendation resting on a
+  simulation whose headline number (10.0/10 at N=50) spike 4 then falsified — the
+  operator would have approved a lossless win and received a tradeoff curve.
+
+### 2026-08-15 — report the narrowed claim rather than the stronger one
+
+- **Chose:** Rewrite the recommendation around "~10× at exact top-1 and ~90% recall@3",
+  and state plainly that recall@10 cannot be made lossless at any N measured.
+- **Why:** Spike 4 improved the *speed* evidence (15.8× measured, not inferred) while
+  degrading the *recall* evidence. Reporting only the improvement would have made the GO
+  look stronger than it is. The operator's decision differs depending on whether their
+  standard is "top result stable" or "top-10 set stable", so that fork is now surfaced
+  explicitly instead of being absorbed into an average.
+- **Rejected:** Restating spike 2's 10.0/10 alongside spike 4's 8.0/10 without saying
+  which supersedes which. Two numbers for the same quantity, unranked, is how a
+  falsified claim survives.
 
 ## Decision
 

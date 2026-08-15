@@ -16,3 +16,4 @@ Press CTRL+C to quit
 192.168.10.134 - - [15/Aug/2026 21:37:37] "GET /review/T-251/acs HTTP/1.1" 200 -
 192.168.10.107 - - [15/Aug/2026 21:45:38] "GET /api/_identity HTTP/1.1" 200 -
 192.168.10.107 - - [15/Aug/2026 21:45:38] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Aug/2026 22:14:00] "GET / HTTP/1.1" 200 -

@@ -169,13 +169,94 @@ has no such stage, so its error lands directly in the output.
 No query path in the system carries a scoping predicate, so a partition key has nothing
 to prune. Candidate C removed.
 
+### Spike 4 — candidate A built for real, at full corpus scale (IW-4)
+
+Spike 2 was a Python simulation over a ~540-vector pool. This is the same design built in
+sqlite-vec against all 398,594 vectors on this host. It confirms the speed claim, **falsifies
+the recall claim**, and turns up a design constraint the simulation could not have seen.
+
+sqlite-vec v0.1.6 has `bit[N]` vec0 columns, `vec_quantize_binary()` and
+`vec_distance_hamming()`. Quantizing the whole corpus took 183 s and produced a **48 MB**
+index against the float index's 1.58 GB.
+
+**Stage 1 is as fast as hoped:**
+
+| | float L2, k=45 | bit Hamming, k=45 |
+|---|---|---|
+| median over 5 queries | 1011 ms | **64 ms** |
+
+**15.8×.** 32× less data buys 16× less time — constant factors eat half, which is roughly
+what a memory-bandwidth argument predicts and is the first direct evidence that the "32×"
+figure in spike 2 was a data-volume claim rather than a latency one.
+
+**Stage 2 is where the design is decided.** Rescoring the shortlist against exact floats
+has to fetch N vectors by id, and *how* you fetch them dominates everything:
+
+| rescore method | N=50 two-stage total |
+|---|---|
+| `WHERE id IN (…)` against the `vec0` float table | 340 ms |
+| per-id point lookups against the `vec0` float table | 118 ms |
+| `WHERE id IN (…)` against a plain `INTEGER PRIMARY KEY` BLOB table | **66 ms** |
+
+`EXPLAIN QUERY PLAN` gives the reason: `SCAN prod.vec_documents VIRTUAL TABLE INDEX 0:1`.
+A vec0 virtual table does not serve `id IN (…)` from an index — it scans, so the naive
+two-stage re-reads the 1.22 GB it just avoided. Single-id lookup is optimised (2 ms), which
+is why the loop form recovers most of it, and a plain B-tree table recovers the rest.
+
+**This is the load-bearing finding of the spike.** The simulation could not surface it,
+because in Python every candidate fetch is a dict lookup. Written the obvious way in SQL,
+candidate A is a 3× win; written with the floats in a plain table, it is 15×. Same
+algorithm, same recall, 5× apart — decided entirely by where the float vectors live.
+
+**Recall, measured against exhaustive float KNN as ground truth (10 queries):**
+
+| rescore N | top-1 exact | recall@3 | recall@10 | two-stage latency | speedup |
+|---|---|---|---|---|---|
+| 50 | **100%** | 87% | 80% | 66 ms | 15.3× |
+| 100 | **100%** | 90% | 87% | 100 ms | 10.2× |
+| 200 | **100%** | 93% | 92% | 177 ms | 5.7× |
+| 400 | **100%** | 93% | 96% | 381 ms | 2.7× |
+| 800 | — | — | 95% | 940 ms | 1.1× |
+
+**Two corrections to spike 2, both against my own earlier claim:**
+
+1. **"Identical to exhaustive search" is false at production scale.** Spike 2 reported
+   10.0/10 at N=50; the real corpus gives **8.0/10**. Recall@10 never reaches 100% at any
+   N I measured — it plateaus around 95-96%. The 540-vector pool had too few distractors,
+   exactly the limitation flagged in spike 2's own "Limits" note. That caveat turned out to
+   be the finding.
+2. **N=50 is not a free lunch, and there is a real tradeoff curve.** Higher N buys recall
+   and gives back speed roughly linearly. There is no knee — you pick a point on it.
+
+**The result that makes candidate A viable anyway:** *top-1 is exact at every N tested,
+including N=50.* The losses are entirely in the tail — ranks 4-10 reshuffle, the best match
+never moves. For a retrieval path feeding RAG context this is the number that matters, and
+it is the one place the approximation does not degrade at all.
+
+**Honest reading:** candidate A is a **10× speedup at ~90% recall@3 and exact top-1**
+(N=100), not the lossless 32× the simulation suggested. That is still a strong result and I
+would still recommend it — but it is a tradeoff to be chosen, not a free win to be taken,
+and the operator should see the curve rather than a headline.
+
+**Not settled by this spike:**
+- **Storage.** The plain float table cost 1.63 GB where the raw vectors are 1.22 GB (~34%
+  page overhead). Whether the two-stage design *replaces* `vec_documents` (roughly storage
+  neutral) or sits *alongside* it (roughly doubles) is a build decision I have not made and
+  did not measure the end state of.
+- **Index maintenance.** The bit index must be rebuilt or incrementally updated in lockstep
+  with the float index. A stale bit index degrades recall silently — precisely the T-3021
+  failure shape — so candidate D's shape assertion becomes *more* necessary if A ships, not
+  less.
+- 10 queries, one host, warm page cache.
+
 ## Candidates
 
-Updated with spike results. C is dissolved; A now dominates B on both axes.
+Updated after spike 4, which built candidate A for real. C is dissolved; A still leads B,
+but on a measured tradeoff curve rather than the lossless win spike 2 suggested.
 
 | # | Candidate | Measured effect | Status |
 |---|-----------|-----------------|--------|
-| **A** | **Binary quantization + exact rescore of top-N** | **32× less data scanned; 10.0/10 exact top-10 at N=50** | **Leading.** Recall proven on a sample; production N and real sqlite-vec bit-vector speed still unmeasured. |
+| **A** | **Binary quantization + exact rescore of top-N** | **Built at full scale (spike 4): 10.2× at N=100 — exact top-1, 90% recall@3, 87% recall@10. Stage 1 alone is 15.8×.** | **Leading, and now measured rather than simulated.** Requires floats in a plain PK table, not the vec0 table — otherwise 3× instead of 15×. |
 | B | Matryoshka truncation 768→256 | 3×; 8.2/10 top-10 (ρ=0.874) | Dominated by A on both axes. Keep only as a fallback if A's bit-vector path proves unworkable in sqlite-vec. |
 | C | Partition key | ~0 — no query path carries a scoping predicate | **Dissolved** (spike 3). |
 | D | Accept, and assert the shape | 0 latency change | Still live, and not exclusive with A. |
@@ -186,30 +267,42 @@ optimisation lands, because it is what stops the next regression from being invi
 ## What is NOT claimed
 
 - That 1 s is unacceptable. It is fine interactively today. The concern is the slope.
-- That binary quantization is *fast* here. 32× less data is a volume argument; sqlite-vec's
-  actual bit-vector scan throughput has not been measured, and constant factors could eat
-  a good part of it.
-- That N=50 is the production rescore depth. It is what sufficed on a 540-vector pool.
-  Required N grows with distractor count and must be re-measured at full corpus scale.
+- ~~That binary quantization is *fast* here.~~ **Settled by spike 4: 15.8× on stage 1,
+  10.2× end-to-end at N=100, measured on the full corpus.**
+- ~~That N=50 is the production rescore depth.~~ **Settled by spike 4, against my own
+  earlier claim: N=50 gives 80% recall@10 at full scale, not the 100% the 540-vector
+  simulation reported. There is a tradeoff curve and a point must be chosen on it.**
+- That recall@10 can be made lossless. It cannot, at any N I measured — it plateaus near
+  95-96%. Exact top-1 survives; the tail does not.
+- That the storage end-state is settled. The plain float table carries ~34% page overhead,
+  and whether it replaces or duplicates `vec_documents` is unmeasured.
 - That the corpus will keep growing at the observed rate. One bulk reindex is not a
   growth curve. IW-7 depends on data that started accumulating this week.
 
 ## Open items
 
-IW-1/2/3 answered at confidence 3, IW-5 at 3, IW-6 dissolved, IW-4 at confidence 2
-(approach proven, parameters not). **IW-7 — "does this matter yet" — is the go/no-go
-hinge and is the operator's, not mine.** It is a judgment about acceptable latency at
-projected growth, and no measurement I can run will settle it.
+IW-1/2/3 answered at confidence 3, IW-5 at 3, IW-6 dissolved, **IW-4 raised to confidence 3
+by spike 4** — the approach is built, the speedup measured, and the recall curve mapped on
+the real corpus. **IW-7 — "does this matter yet" — is the go/no-go hinge and is the
+operator's, not mine.** It is a judgment about acceptable latency at projected growth, and
+no measurement I can run will settle it.
 
-The recommendation is GO on the basis that the characterisation is complete and the
-leading candidate is now evidence-backed rather than speculative — not on the basis that
-the latency is currently unacceptable, which I do not claim.
+The recommendation remains GO, and spike 4 strengthens the evidence while *narrowing the
+claim*: the win is ~10× at exact top-1 and ~90% recall@3, not the lossless 32× spike 2
+implied. If the operator's standard is "the top result must not change", A meets it at
+every N tested. If the standard is "the top-10 set must not change", A does not meet it at
+any N, and candidate D (accept and assert the shape) is the honest answer instead.
 
 If GO, the build work splits cleanly:
-1. Measure sqlite-vec bit-vector scan throughput at full corpus scale (settles the speed
-   claim and the production N in one spike).
-2. Two-stage retrieval behind a config flag, both paths available for A/B.
+1. ~~Measure sqlite-vec bit-vector scan throughput at full corpus scale.~~ **Done — spike 4.**
+   Remaining sub-question: the storage end-state (replace vs duplicate `vec_documents`).
+2. Two-stage retrieval behind a config flag, both paths available for A/B. **Design
+   constraint from spike 4: the rescore floats must live in a plain `INTEGER PRIMARY KEY`
+   table. Reading them from the vec0 table costs 5× and silently converts the win into a
+   rounding error.**
 3. The shape assertion (candidate D) — independent of 1 and 2, and worth having either way.
+   **Spike 4 raises its priority: a bit index that drifts out of lockstep with the float
+   index degrades recall with no failure event, which is the T-3021 shape exactly.**
 
 ## Dialogue Log
 
@@ -223,3 +316,35 @@ cost depend on?") produced the actual finding in one measurement.
 
 Recorded because the reframing, not the measurement, is what found it. The measurement
 was three lines of Python either way.
+
+### 2026-08-15 — round 2, no interlocutor: spike 4 against my own claim
+
+No dialogue partner here; recorded because the reasoning changed direction and the trail
+is the point.
+
+The artifact listed "measure sqlite-vec bit-vector throughput at full corpus scale" as
+build step 1 — work the operator's GO would authorise. Running it *before* the decision
+inverted that, on the ground that a measurement capable of changing a recommendation
+belongs before the decision it would change. Had the bit-vector path been slow, the GO
+would have been wrong and the operator would have found out only after approving it.
+
+It did not come out the way I expected in either direction. The speed claim I was least
+sure of held (15.8×, better than the memory-bandwidth argument suggested for a 32× data
+reduction). The recall claim I had been confident enough to headline — 10.0/10 at N=50,
+"identical to exhaustive search" — was wrong at scale by two full documents, and the
+reason was written in my own "Limits" note at the time: too few distractors in a
+540-vector pool.
+
+The pattern is worth naming, because it is the third instance this session and the same
+one 832 and I have been circling. T-3021: a rule verified against a sparse index, true
+when written, silently false once the corpus filled. T-3023: tests that construct their
+own input through their own assumptions. Spike 2: a simulation whose stated limitation
+was the finding. In all three the flaw was **recorded at the time and read as a caveat
+rather than as a prediction.** A limitation you write down and do not test is not a
+hedge — it is an untested hypothesis wearing a hedge's clothes.
+
+Also worth recording: the largest single effect in spike 4 was not the algorithm at all.
+Whether the rescore floats sit in a vec0 table or a plain B-tree table moves the
+end-to-end result 5× — more than the difference between candidates A and B. A simulation
+in Python cannot see that, because there every fetch is a dict lookup. The thing that
+decided the design was the storage layer the simulation had abstracted away.
