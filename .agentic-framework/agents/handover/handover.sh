@@ -293,6 +293,33 @@ if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
         _bd_ahead=$(echo "$_bd_line" | awk '{print $3}' | cut -d= -f2)
         _bd_behind=$(echo "$_bd_line" | awk '{print $4}' | cut -d= -f2)
         BRANCH_DIVERGENCE="**Branch:** \`$_bd_branch\` +${_bd_ahead} / −${_bd_behind} vs origin/master"
+
+        # T-3026 (OBS-275): ahead-of-master is NOT push state, and the rule this
+        # handover exists to serve is "do not end a session with unpushed commits".
+        # A fully-pushed branch can be +131 vs master (unlanded by decision); a
+        # fully-merged one can still hold unpushed commits. Reporting only the
+        # vs-master delta answers a different question from the one that matters,
+        # and reads as though it answered both. Surfaced unprompted by BOTH arms of
+        # the T-3025 IW-2 probe, in a session that had just lost hours to exactly
+        # this blind spot. Read from the local remote-tracking ref — no fetch, so
+        # handover generation stays offline and cannot hang on an unreachable
+        # remote; that ref is updated by our own pushes, which is precisely what
+        # "did I push?" asks.
+        _ps_ref="refs/remotes/origin/${_bd_branch}"
+        if ! git -C "$PROJECT_ROOT" rev-parse --verify --quiet "$_ps_ref" >/dev/null 2>&1; then
+            BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE — **⚠ never pushed:** no \`origin/${_bd_branch}\` exists"
+        else
+            _ps_unpushed=$(git -C "$PROJECT_ROOT" rev-list --count \
+                "origin/${_bd_branch}..HEAD" 2>/dev/null || true)
+            case "$_ps_unpushed" in
+                ""|*[!0-9]*)
+                    BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE — push state unknown" ;;
+                0)
+                    BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE — in sync with \`origin/${_bd_branch}\`" ;;
+                *)
+                    BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE — **⚠ ${_ps_unpushed} commit(s) NOT pushed** to \`origin/${_bd_branch}\`" ;;
+            esac
+        fi
         if printf '%s\n' "$_bd_out" | grep -q '^fork '; then
             # T-100195: bidirectional fork — a bare `git merge origin/master`
             # conflicts (T-100194 origin: 100+ conflicts). Reconcile while small,

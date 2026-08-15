@@ -34230,3 +34230,21 @@ task_id: T-3018
 payload:
   overall: CONFIRMED
   claim_count: 3
+---
+kind: scan_emitted
+timestamp: '2026-08-15T23:06:33Z'
+scan_id: R-403e6ac5
+task_id: T-3026
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-15T23:06:33Z'
+scan_id: R-403e6ac5
+task_id: T-3026
+payload:
+  task_file: .tasks/active/T-3026-handover-reports-vs-master-but-not-push-.md
