@@ -6,12 +6,12 @@ description: >
   embed path fails over to the other host instead of going dark (T-3008 open item
   b)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_embed_health.py, web/embeddings.py, web/embed_health.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T12:26:54Z
-last_update: '2026-08-15T12:30:15Z'
-date_finished:
+last_update: 2026-08-15T12:41:35Z
+date_finished: 2026-08-15T12:41:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -140,6 +140,30 @@ mystery, which is the same false-green this arc exists to remove.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] Search results still look right now that index and query vectors come from different hosts
+
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/search` (or run `bin/fw recall "framework governance task lifecycle"`)
+  2. Try 2-3 queries you know the answer to — a task name, a concept, a file you remember
+  3. Check the top few results are the ones you would have picked
+
+  **Expected:** Results are relevant and ordered sensibly. This is a judgement call, not a
+  threshold: the change routes *document* embedding to the GPU host while *queries* are
+  embedded on the sidecar, so the two sides of every comparison are now produced by
+  different backends. Same model and same 768 dimensions, so they are interchangeable in
+  principle — but float precision differs between CPU and GPU, and the only honest test of
+  whether that matters for ranking is a human looking at rankings. I could not verify this
+  mechanically: the sidecar was down for the whole session, so no CPU-vs-GPU vector
+  comparison was possible.
+
+  **If not:** If results look scrambled rather than merely different, say so and I will
+  measure cosine similarity between the two hosts' embeddings of identical text once the
+  sidecar is back. The fix, if needed, is one line — point `embed_host` at the same host as
+  `embed_bulk_host` so both sides are produced identically.
+
+  **Note:** worth doing *after* the index rebuild finishes (~1.6 h from 14:20). Before then
+  the index is partial and poor results mean incomplete coverage, not bad vectors.
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -248,6 +272,34 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web.embeddings import embed
 
 ## Recommendation
 
+**Recommendation:** GO
+
+**Rationale:** Six Agent ACs met, four mutations each shown red then green, and —
+the part I would weigh most — it was verified against the real outage rather than
+a fixture. The sidecar was still down while this was written, so the failing case
+was available for free: `search()` raised before the change and returned 33
+results after it, with one WARNING and the failover counter at 1. The Human AC is
+the same ranking judgement as T-3016 and is not blocking.
+
+**Evidence:**
+- Live, against the actually-dead sidecar: one WARNING naming both hosts, and
+  `embed_failover_state()` -> `{count: 1, last: {from: 127.0.0.1:11435,
+  to: 192.168.10.107:11434, status: ollama-down}}`. 33 results returned.
+- `pytest tests/unit/test_embed_health.py tests/unit/test_incremental_reindex.py`
+  -> 47 passed.
+- Mutations: failover disabled -> 3 red; `FAILOVER` widened to include
+  `error`/`degraded` -> unclassifiable-does-not-fail-over red; reporting the
+  fallback's class -> primary-is-reported red; dropping the `alt != target`
+  guard -> single-host-does-not-double-retries red (plus 2 retry-bound tests).
+  All green on restore.
+- T-3008 sketched this as contention-only. The class that actually took the
+  subsystem down was `ollama-down`, which that set would have missed — worth
+  noting because it is the second time this week a control was scoped to the
+  failure someone expected rather than the one that happened.
+- Does *not* fix OBS-259's other half: the sidecar still has no supervisor and no
+  recorded launch parameters. This lowers the severity of its death from
+  "every embedding path down" to "logged degradation"; it does not restart it.
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -354,3 +406,15 @@ Each guarantee shown red with the mechanism broken, green with it restored:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3017-embed-path-fails-over-to-the-other-host-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-83db05a1
+- **Timestamp:** 2026-08-15T12:41:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-15T12:41:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

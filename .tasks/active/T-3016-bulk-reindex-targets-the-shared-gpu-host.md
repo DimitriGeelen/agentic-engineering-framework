@@ -4,12 +4,12 @@ name: "bulk reindex targets the shared GPU host (T-3008 open item a)"
 description: >
   bulk reindex targets the shared GPU host (T-3008 open item a)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_embed_health.py, tests/unit/test_incremental_reindex.py, web/embeddings.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T12:15:38Z
-last_update: '2026-08-15T12:30:15Z'
-date_finished:
+last_update: 2026-08-15T12:40:49Z
+date_finished: 2026-08-15T12:40:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -132,6 +132,30 @@ already reasoned it belonged on.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] Search results still look right now that index and query vectors come from different hosts
+
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/search` (or run `bin/fw recall "framework governance task lifecycle"`)
+  2. Try 2-3 queries you know the answer to — a task name, a concept, a file you remember
+  3. Check the top few results are the ones you would have picked
+
+  **Expected:** Results are relevant and ordered sensibly. This is a judgement call, not a
+  threshold: the change routes *document* embedding to the GPU host while *queries* are
+  embedded on the sidecar, so the two sides of every comparison are now produced by
+  different backends. Same model and same 768 dimensions, so they are interchangeable in
+  principle — but float precision differs between CPU and GPU, and the only honest test of
+  whether that matters for ranking is a human looking at rankings. I could not verify this
+  mechanically: the sidecar was down for the whole session, so no CPU-vs-GPU vector
+  comparison was possible.
+
+  **If not:** If results look scrambled rather than merely different, say so and I will
+  measure cosine similarity between the two hosts' embeddings of identical text once the
+  sidecar is back. The fix, if needed, is one line — point `embed_host` at the same host as
+  `embed_bulk_host` so both sides are produced identically.
+
+  **Note:** worth doing *after* the index rebuild finishes (~1.6 h from 14:20). Before then
+  the index is partial and poor results mean incomplete coverage, not bad vectors.
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -193,7 +217,11 @@ already reasoned it belonged on.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/test_incremental_reindex.py tests/unit/test_embed_health.py -q > /tmp/.t3016-tests 2>&1 && grep -q "42 passed" /tmp/.t3016-tests
+python3 -m pytest tests/unit/test_incremental_reindex.py tests/unit/test_embed_health.py -q > /tmp/.t3016-tests 2>&1
+# Pin this task's own guarantee by name, not the whole-suite count: a total
+# is invalidated by any sibling task adding a test (T-3017 did exactly that,
+# 42 -> 47), and pytest already fails non-zero on a real failure.
+python3 -m pytest tests/unit/test_incremental_reindex.py -q -k host > /tmp/.t3016-host 2>&1 && grep -q "4 passed" /tmp/.t3016-host
 python3 -c "import sys; sys.path.insert(0,'.'); from web.config import Config; assert Config.EMBED_BULK_HOST, 'EMBED_BULK_HOST unset'"
 grep -q "EMBED_BULK_HOST" web/config.py
 grep -q "host=bulk_host" web/embeddings.py
@@ -239,6 +267,33 @@ grep -q "host=bulk_host" web/embeddings.py
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All six Agent ACs are met with measured, reproduced evidence, and
+the change is already proving itself in production — the reindex running right
+now picked it up and is embedding at 77.3 chunks/s against the real corpus,
+against a 1.9 chunks/s baseline on the path it replaced. The single Human AC is a
+judgement call I genuinely cannot make mechanically: index vectors are now
+produced on a different backend from query vectors, and whether that float-precision
+difference matters for *ranking* is a question about what results look right to
+you. It is not blocking anything — worth doing after the rebuild finishes.
+
+**Evidence:**
+- Synthetic 64x1000-char batch, 3 trials: 69.1 / 69.9 / 69.8 chunks/s on the GPU
+  host vs 1.9 chunks/s on the CPU sidecar. Same model, same 768 dimensions.
+- Live corpus measurement on the running reindex: 45,526 -> 49,008 chunks in 45s
+  = 77.3 chunks/s. 394,230 chunks projects to ~1.6 h against ~29 h.
+- `pytest tests/unit/test_incremental_reindex.py -k host` -> 4 passed.
+- Mutation, per path: reverting the bootstrap line reddens
+  `test_bootstrap_embeds_against_the_bulk_host`; reverting the incremental line
+  reddens `test_incremental_embeds_against_the_bulk_host`. Both green on restore.
+- The first version of the routing test passed against a mutated
+  `reindex_incremental` — it asserted on the bootstrap branch while the mutation
+  landed in the incremental one. That is recorded in Decisions rather than quietly
+  fixed, because it is the same false-green shape this arc exists to remove.
+- `EMBED_BULK_HOST` defaults to `OLLAMA_HOST`; single-host installs have
+  `EMBED_HOST == OLLAMA_HOST` already and see no behaviour change.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -335,3 +390,15 @@ grep -q "host=bulk_host" web/embeddings.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3016-bulk-reindex-targets-the-shared-gpu-host.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ed8f2ca1
+- **Timestamp:** 2026-08-15T12:40:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-15T12:40:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

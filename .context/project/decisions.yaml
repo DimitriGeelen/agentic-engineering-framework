@@ -3040,3 +3040,38 @@ decisions:
     date: 2026-08-15
     task: T-3008
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-437
+    decision: "a second setting, `EMBED_BULK_HOST`, defaulting to `OLLAMA_HOST`,"
+    scope: project
+    date: 2026-08-15
+    task: T-3016
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-438
+    decision: "a discriminating fixture per reindex path, mutation-verified"
+    scope: project
+    date: 2026-08-15
+    task: T-3016
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-439
+    decision: "fail over on `ollama-down`, `model-absent` and `contention`; not on"
+    scope: project
+    date: 2026-08-15
+    task: T-3017
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-440
+    decision: "a WARNING naming both hosts and the triggering class, a counter in"
+    scope: project
+    date: 2026-08-15
+    task: T-3017
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-441
+    decision: "demonstrate on the live dead sidecar before closing."
+    scope: project
+    date: 2026-08-15
+    task: T-3017
+    rationale: "Auto-captured from task file on completion"
