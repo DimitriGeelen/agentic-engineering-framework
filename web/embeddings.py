@@ -23,6 +23,13 @@ import ollama
 import sqlite_vec
 
 from web.config import Config
+from web.embed_health import (
+    RETRYABLE,
+    EmbedHealth,
+    EmbedUnavailable,
+    classify,
+    probe,
+)
 from web.search_utils import categorize, collect_files, extract_task_id, extract_title
 from web.shared import PROJECT_ROOT
 
@@ -45,6 +52,26 @@ def _get_ollama_client() -> ollama.Client:
         _ollama_client_host = Config.OLLAMA_HOST
     return _ollama_client
 
+
+# Embedding client is separate from the chat client (T-3006). They may address
+# different endpoints — see Config.EMBED_HOST for why.
+_embed_client = None
+_embed_client_host = None
+
+
+def _get_embed_client() -> ollama.Client:
+    """Get or create the embedding client, respecting runtime config changes."""
+    global _embed_client, _embed_client_host
+    if _embed_client is None or _embed_client_host != Config.EMBED_HOST:
+        _embed_client = ollama.Client(host=Config.EMBED_HOST, timeout=Config.OLLAMA_TIMEOUT)
+        _embed_client_host = Config.EMBED_HOST
+    return _embed_client
+
+
+def embed_health() -> EmbedHealth:
+    """Classify the embedding path right now. Never raises."""
+    return probe(_get_embed_client(), MODEL_NAME, host=Config.EMBED_HOST)
+
 MODEL_NAME = Config.EMBEDDING_MODEL
 EMBEDDING_DIM = 768
 CHUNK_OVERLAP = 150  # chars of overlap between adjacent chunks (T-263)
@@ -62,16 +89,33 @@ _db_built_at = 0.0
 # ---------------------------------------------------------------------------
 
 def _embed(texts: list[str]) -> list[bytes]:
-    """Embed a batch of texts via Ollama, returning raw float32 bytes for sqlite-vec."""
-    try:
-        resp = _get_ollama_client().embed(model=MODEL_NAME, input=texts)
-    except Exception as e:
-        log.error("Ollama embed error: %s", e)
-        raise
-    result = []
-    for emb in resp.embeddings:
-        result.append(struct.pack(f"{len(emb)}f", *emb))
-    return result
+    """Embed a batch of texts, returning raw float32 bytes for sqlite-vec.
+
+    T-3006: retries bounded transient failures and, on exhaustion, raises
+    EmbedUnavailable carrying the behavioural class. Previously this re-raised
+    the bare Ollama exception, which named neither the subsystem nor the remedy
+    and was then discarded by the caller's `2>/dev/null`.
+    """
+    attempts = max(1, Config.EMBED_RETRIES + 1)
+    last: EmbedHealth | None = None
+
+    for attempt in range(attempts):
+        try:
+            resp = _get_embed_client().embed(model=MODEL_NAME, input=texts)
+            return [struct.pack(f"{len(emb)}f", *emb) for emb in resp.embeddings]
+        except Exception as exc:  # noqa: BLE001 — classified immediately below
+            status, detail = classify(exc)
+            last = EmbedHealth(status=status, detail=detail,
+                               host=Config.EMBED_HOST, model=MODEL_NAME)
+            if status not in RETRYABLE or attempt == attempts - 1:
+                break
+            # Linear backoff. Deliberately short: the permanent-starvation case
+            # (T-3006) must fail fast rather than stall every task start.
+            time.sleep(Config.EMBED_RETRY_BACKOFF * (attempt + 1))
+
+    log.error("embedding unavailable [%s] host=%s model=%s: %s",
+              last.status, last.host, last.model, last.detail)
+    raise EmbedUnavailable(last)
 
 
 # Query embedding cache — LRU avoids re-embedding repeated queries (T-263)

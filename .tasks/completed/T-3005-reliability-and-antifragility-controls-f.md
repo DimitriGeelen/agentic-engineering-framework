@@ -4,16 +4,16 @@ name: "reliability and antifragility controls for the vector memory substrate"
 description: >
   Inception: reliability and antifragility controls for the vector memory substrate
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-15T05:33:05Z
-last_update: 2026-08-15T05:42:47Z
-date_finished: 2026-08-15T05:42:47Z
+last_update: 2026-08-15T05:34:26Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -156,15 +156,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -234,11 +234,7 @@ Full critique, control architecture, and sequencing: `docs/reports/T-3005-vector
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: The critique found five defects in the T-3004 RCA, three of which change the conclusion. The decisive one: T-3004's headline fix would have shipped a repair with no observable effect. Rebuilding the index while every embedding request returns 503 changes nothing a user can feel, and the completion gate would have passed it green — the same false-green class the fix exists to end. Semantic recall is not degraded to 15%; it is at **0%**, because the embedding provider rejects every request. The cause is not ours alone: Ollama is an unauthenticated fleet-shared singleton with one model slot, and three other hosts keep the chat model's lease renewed. So slice 1 is availability of the embed path, and it must be verified working before slices 2-7 assume retrieval functions at all. GO is on the sequence, not on the list as a batch.
-
-**Date**: 2026-08-15T05:42:46Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -247,45 +243,3 @@ Full critique, control architecture, and sequencing: `docs/reports/T-3005-vector
 
 ### 2026-08-15T05:34:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-08-15T05:42:46Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** The critique found five defects in the T-3004 RCA, three of which change the conclusion. The decisive one: T-3004's headline fix would have shipped a repair with no observable effect. Rebuilding the index while every embedding request returns 503 changes nothing a user can feel, and the completion gate would have passed it green — the same false-green class the fix exists to end. Semantic recall is not degraded to 15%; it is at **0%**, because the embedding provider rejects every request. The cause is not ours alone: Ollama is an unauthenticated fleet-shared singleton with one model slot, and three other hosts keep the chat model's lease renewed. So slice 1 is availability of the embed path, and it must be verified working before slices 2-7 assume retrieval functions at all. GO is on the sequence, not on the list as a batch.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-e8dcc71b
-- **Timestamp:** 2026-08-15T05:42:48Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 4
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
-     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
-     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-6
-     - evidence: `IW-6 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-7
-     - evidence: `IW-7 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-5d21d138
-- **Timestamp:** 2026-08-15T05:42:48Z
-- **Overall:** CONFIRMED
-- **Claims:** 3
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `docs/reports/T-3005-vector-substrate-controls.md` | file | ✓ pass |
-| `T-3004` | task | ✓ pass |
-| `T-395` | task | ✓ pass |
-
-### 2026-08-15T05:42:47Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO
