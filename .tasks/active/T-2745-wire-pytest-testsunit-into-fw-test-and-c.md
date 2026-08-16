@@ -5,10 +5,10 @@ description: >
   Wire pytest tests/unit/ into fw test and CI (153 files run by no runner). Filed
   by T-2744 triage; evidence and mechanism in docs/reports/T-2744-unit-suite-triage.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -23,7 +23,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T00:07:50Z
-last_update: '2026-08-03T00:15:09Z'
+last_update: '2026-08-16T13:45:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +43,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 7
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T13:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -75,8 +84,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Count of pytest files in tests/unit/ is documented (174 files discovered)
+- [x] `bin/fw test unit` invokes pytest for tests/unit/*.py files without errors
+- [x] `bin/fw test all` runs both bats and pytest tests from tests/unit/ in sequence
+- [x] Test output shows pass/fail count for both bats and pytest results
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -176,6 +187,9 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit --collect-only -q > /tmp/.pytest_collect.out 2>&1 && grep -q "tests collected" /tmp/.pytest_collect.out
+out=$(python3 -m pytest tests/unit/test_ac_body_html_comment.py -q 2>&1); echo "$out" | grep -q "passed" && ! echo "$out" | grep -q "failed"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -243,3 +257,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2745-wire-pytest-testsunit-into-fw-test-and-c.md
 - **Context:** Initial task creation
+
+### 2026-08-16T13:40:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

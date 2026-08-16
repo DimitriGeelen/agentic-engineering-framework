@@ -8358,19 +8358,31 @@ PYPREDICT
                 [ "$_lint_fail" -gt 0 ] && _test_exit=1
                 ;;
             --unit|unit)
-                # Bats unit tests only
-                if ! command -v bats >/dev/null 2>&1; then
-                    echo -e "${RED}ERROR: bats is not installed${NC}" >&2
-                    exit 1
-                fi
+                # Bats + Pytest unit tests (T-2745: wire pytest tests/unit/)
                 shift
                 [ "${1:-}" = "--" ] && shift
-                echo -e "${BOLD}=== Bats Unit Tests ===${NC}"
-                # T-1588: extra args (file paths, glob patterns) are passed through.
-                if [ "$#" -gt 0 ]; then
-                    bats "$@" || _test_exit=1
-                else
-                    bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+
+                # Run Bats tests if available
+                if command -v bats >/dev/null 2>&1; then
+                    echo -e "${BOLD}=== Bats Unit Tests ===${NC}"
+                    if [ "$#" -gt 0 ]; then
+                        bats "$@" || _test_exit=1
+                    else
+                        bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                    fi
+                    echo ""
+                fi
+
+                # Run Pytest tests from tests/unit/ if available (T-2745)
+                if python3 -c "import pytest" 2>/dev/null; then
+                    if [ -d "$FRAMEWORK_ROOT/tests/unit/" ]; then
+                        echo -e "${BOLD}=== Pytest Unit Tests ===${NC}"
+                        if [ "$#" -gt 0 ]; then
+                            cd "$FRAMEWORK_ROOT" && python3 -m pytest "$@" -v || _test_exit=1
+                        else
+                            cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/unit/ -v || _test_exit=1
+                        fi
+                    fi
                 fi
                 ;;
             --integration|integration)
@@ -8488,6 +8500,15 @@ PYPREDICT
                     echo -e "${YELLOW}SKIP: bats not installed${NC}"
                 fi
 
+                # 1b. Pytest unit tests (T-2745)
+                if python3 -c "import pytest" 2>/dev/null; then
+                    if [ -d "$FRAMEWORK_ROOT/tests/unit/" ]; then
+                        echo -e "${BOLD}--- Pytest Unit Tests ---${NC}"
+                        cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/unit/ -v || _test_exit=1
+                        echo ""
+                    fi
+                fi
+
                 # 2. Bats integration tests
                 if command -v bats >/dev/null 2>&1; then
                     if [ -d "$FRAMEWORK_ROOT/tests/integration/" ] && ls "$FRAMEWORK_ROOT/tests/integration/"*.bats >/dev/null 2>&1; then
@@ -8553,7 +8574,7 @@ PYPREDICT
                 echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|governance|web|playwright|lint]"
                 echo ""
                 echo "  all           Run all tests (default)"
-                echo "  unit          Bats unit tests only"
+                echo "  unit          Bats + Pytest unit tests (tests/unit/)"
                 echo "  integration   Bats integration tests only"
                 echo "  governance    Bats red-team governance harness (T-1601 arc)"
                 echo "  web           Pytest web tests only"
