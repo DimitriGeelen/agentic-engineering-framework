@@ -665,6 +665,121 @@ def _delete_path_rows(db: sqlite3.Connection, path: str) -> None:
     db.execute("DELETE FROM file_state WHERE path = ?", (path,))
 
 
+def index_one(path: str | Path) -> dict:
+    """Embed one document and upsert its chunks into the LIVE index.
+
+    T-1719 A1, arc-002. This is the post-write path: a learning is added or an
+    arc-tagged task closes, and the thing just written must be retrievable
+    within seconds rather than at the next scheduled reindex. The latency
+    budget is <5s for a typical entry, which rules out every existing entry
+    point — `build_index()` is a full corpus rebuild (hours) and
+    `reindex_incremental()` copies the whole database and swaps it, so both are
+    orders of magnitude past the budget for a single short document.
+
+    Writes to the live DB in one transaction, reusing `_delete_path_rows` so a
+    re-index of the same path replaces rather than duplicates its chunks.
+
+    CONCURRENCY — this is the part that matters. `reindex_incremental()` builds
+    on a copy and `os.replace()`s it over `DB_PATH`. Anything written to the
+    live file while that copy is in flight is on the OLD inode and is silently
+    discarded by the swap. So this takes the SAME advisory lock, non-blocking,
+    and when a reindex owns it returns `{"skipped": "reindex-in-progress"}`
+    rather than writing into a file that is about to be replaced. Skipping is
+    correct: the running reindex will pick the file up from disk anyway, so the
+    chunk lands either way — just at reindex latency instead of post-write
+    latency. Blocking would be wrong; it would stall a task close behind a
+    25-minute rebuild.
+
+    Returns a dict with `indexed_chunks`, `elapsed_ms`, and `path`; or
+    `{"skipped": <reason>}` when nothing was written. Never raises on a missing
+    or unreadable file — a post-write hook must not be able to fail a task
+    close. Embedder/sqlite errors DO propagate; the caller decides.
+    """
+    start = time.time()
+    fpath = Path(path)
+    if not fpath.is_absolute():
+        fpath = Path(PROJECT_ROOT) / fpath
+    try:
+        rel_path = str(fpath.relative_to(PROJECT_ROOT))
+    except ValueError:
+        return {"skipped": "outside-project-root", "path": str(fpath)}
+
+    if not fpath.is_file():
+        return {"skipped": "not-a-file", "path": rel_path}
+
+    # An index that was never built has no baseline to upsert into; the
+    # bootstrap is reindex_incremental()'s job, not this hot path's.
+    if not is_index_ready():
+        return {"skipped": "index-not-ready", "path": rel_path}
+
+    try:
+        content = fpath.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return {"skipped": f"unreadable: {exc}", "path": rel_path}
+    if not content.strip():
+        return {"skipped": "empty", "path": rel_path}
+
+    lock_path = DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.lock")
+    lock_fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
+    try:
+        try:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return {"skipped": "reindex-in-progress", "path": rel_path}
+
+        title = extract_title(fpath, content)
+        category = categorize(rel_path)
+        task_id = extract_task_id(fpath, content)
+        content_hash = _content_hash(content)
+        try:
+            mtime = fpath.stat().st_mtime
+        except OSError:
+            mtime = start
+
+        chunks = _chunk_content(content, reserve=len(title) + 2)
+        if not chunks:
+            return {"skipped": "no-chunks", "path": rel_path}
+
+        # Same convention as the corpus builder: every chunk after the first is
+        # prefixed with the title so an isolated chunk still carries its subject.
+        texts = [c if i == 0 else f"{title}\n\n{c}" for i, c in enumerate(chunks)]
+        # build_index() keeps its own BATCH_SIZE as a function-local; mirroring
+        # the value here rather than importing it keeps this path independent of
+        # a constant that is tuned for whole-corpus throughput.
+        batch_size = 64
+        vecs: list[bytes] = []
+        for j in range(0, len(texts), batch_size):
+            vecs.extend(_embed(texts[j:j + batch_size]))
+
+        db = _get_db()
+        _delete_path_rows(db, rel_path)
+        stamp = time.time()
+        for i, (chunk, emb) in enumerate(zip(chunks, vecs)):
+            cur = db.execute(
+                "INSERT INTO documents (path, title, category, task_id, "
+                "chunk_index, chunk_text) VALUES (?, ?, ?, ?, ?, ?)",
+                (rel_path, title, category, task_id, i, chunk),
+            )
+            db.execute("INSERT INTO vec_documents (id, embedding) VALUES (?, ?)",
+                       (cur.lastrowid, emb))
+        db.execute(
+            "INSERT INTO file_state (path, content_hash, mtime, updated_at) "
+            "VALUES (?, ?, ?, ?) ON CONFLICT(path) DO UPDATE SET "
+            "content_hash = excluded.content_hash, mtime = excluded.mtime, "
+            "updated_at = excluded.updated_at",
+            (rel_path, content_hash, mtime, stamp),
+        )
+        db.commit()
+    finally:
+        os.close(lock_fd)
+
+    return {
+        "path": rel_path,
+        "indexed_chunks": len(chunks),
+        "elapsed_ms": int((time.time() - start) * 1000),
+    }
+
+
 def reindex_incremental() -> dict:
     """Re-embed only what changed, then swap the result into place atomically.
 
