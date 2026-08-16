@@ -3778,3 +3778,19 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-305
+  text: "PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT PILEUP, WITH NO TIER-2 ESCAPE. The gate (T-2930/OBS-221, agents/git/lib/hooks.sh:915) correctly BLOCKS on exit 75 (lock contention) rather than false-passing — that reasoning is sound and should stay. What has gone stale is its premise: the block message says 'usually the daily cron audit — it finishes within a minute or two'. Observed 2026-08-16: THREE concurrent 999-framework audits (PIDs 250439, 251163, 365610) all running 'audit.sh --section structure,compliance,quality,discovery --cron', ages 3:45/3:45/2:47, plus 2 more from 050-email-archive — 5-7 audit.sh across the host. structural-30m fires every 30 min; if a run exceeds that, runs stack and the lock is effectively never free. The pre-push gate runs '--section structure', the SAME section the cron holds, so it contends every time. Net effect: 5 commits could not be pushed for 15+ min, and the ONLY documented escape is Tier 0 'git push --no-verify'. A gate whose wait-it-out advice no longer holds and whose only bypass is Tier 0 pushes agents toward Tier 0 for a routine push. Sibling to OBS-304 (full audit >10 min, no partial output) — same root (audit runtime), different consequence (there: unusable as an AC; here: push path unreliable). Candidate fixes: cron overlap guard (skip if lock held), a Tier-2 env bypass for contention-only exit 75 distinct from the Tier-0 --no-verify, or bounded lock wait in the gate itself."
+  captured: 2026-08-16T20:04:44Z
+  context_task: T-3046
+  tags: [push-gate]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-306
+  text: "CORRECTION TO OBS-305 AND OBS-304 — THE AUDIT IS NOT SLOW, IT IS BLOCKED. Both prior entries attributed the pileup to audit RUNTIME. Measured 2026-08-16: PID 250439 had 4:59 elapsed against 00:00:02 of CPU time, its child 251163 had 00:00:00, both in state S. A process consuming 2 CPU-seconds in 5 minutes is not computing, it is waiting. pstree shows the mechanism: audit.sh(250439) forks audit.sh(251163)---sleep(251165), i.e. a lock-acquisition backoff loop, alongside audit.sh(801408)---timeout---bash doing the actual work. 250439 sits in wchan pipe_read; 251163 in do_wait on its sleep child. So the audits are queued on each other's lock in a sleep/retry loop while still holding the lock file open (fuser lists them), which is why the pre-push gate's exit-75 contention branch fires every time. This inverts the fix direction: making the audit FASTER would not help, because it is not spending time computing. The candidate fixes in OBS-305 that remain valid are the cron overlap guard (skip the run entirely when the lock is held, rather than queueing behind it) and a bounded lock wait; 'optimise audit runtime' is the wrong lead and should not be pursued on this evidence. Also revisit whether audit.sh re-invoking itself as a child with identical --section args is intended — a parent that both holds the lock and spawns a child waiting for it is a self-deadlock shape."
+  captured: 2026-08-16T20:05:37Z
+  context_task: T-3046
+  tags: [correction]
+  status: pending
+  promoted_to: null
+  urgent: true
