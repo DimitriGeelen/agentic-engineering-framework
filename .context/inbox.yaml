@@ -3754,3 +3754,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-302
+  text: "TermLink client renders a failed hub RPC as a legitimate empty result. Measured on T-3043: as uid 1000, 'termlink topics' printed 'No event topics found.' and exit 0, while producing ZERO lines in /var/lib/termlink/rpc-audit.jsonl — the RPC never reached the hub. Root's equivalent call does produce an audit line (control confirmed: channel.list -> {method:channel.list, peer_pid:3996231}). So 'no topics' is indistinguishable from 'could not ask'. Worse than channel list's honest 'Connection reset by peer', because an empty answer looks like an answer. Compounding effect: hub status / list / doctor / whoami all read the FILESYSTEM rather than the hub, so a non-root agent sees a fully working TermLink (hub running, sessions listed, doctor green) while zero hub communication is possible. That is exactly how the peer concluded 'permissions are now correct, the remaining fault is inside channel RPC handling' — its whole evidence base was filesystem reads. Same false-green class as the port-3000 verification lines. Upstream (TermLink repo) per gap-homing T-1333."
+  captured: 2026-08-16T17:38:09Z
+  context_task: T-3043
+  tags: [false-green]
+  status: pending
+  promoted_to: null
+  urgent: true
