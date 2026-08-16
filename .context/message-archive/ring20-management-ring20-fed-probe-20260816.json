@@ -1,0 +1,12 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "FED-ISO-TEST fed-iso-test-1781199590",
+    "sender_id": "9219671e28054458",
+    "ts_ms": 1781199590009
+  }
+]

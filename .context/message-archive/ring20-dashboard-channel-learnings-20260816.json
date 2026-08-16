@@ -1,0 +1,222 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-070\",\"learning\":\"Code that calls LAN services via raw urllib silently fails on swarm overlay (no LAN reachability). Always check is_swarm and route via lan-proxy http_forward when running in production swarm context. Required surface: lan-proxy KNOWN_HTTP_TARGETS allowlist must match real port (port-scan before encoding, dont trust comments). Detection requires per-breaker visibility (T-803 pattern) since swarm-LAN gap can hide for months.\",\"task\":\"T-804\",\"source\":\"P-001\",\"date\":\"2026-05-03\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777837983943
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 1,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-071\",\"learning\":\"Module-level circuit-breaker singletons in production code accumulate state across pytest runs (RemoteCircuitBreaker stores _consecutive_failures + _opened_at on the instance). Test files that exercise these breakers need an @pytest.fixture(autouse=True) that calls breaker.record_success() before+after each test, otherwise URLError tests open the breaker and downstream tests short-circuit before mocked urlopen fires (IndexError on m.call_args_list). Pattern applies to any of the 17 breakers in this project — future breaker test files should follow the same shape. Surfaced by T-804 P-011 first-unit-run; pre-existed silently because subset runs (-k filter) never tripped the threshold.\",\"task\":\"T-805\",\"source\":\"P-001\",\"date\":\"2026-05-03\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777845379279
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 2,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-072\",\"learning\":\"Playwright page.goto waits for load event by default. Fire-and-forget fetches initiated synchronously during page load (e.g. .then().catch() pattern) still block the load event because the browser tracks the in-flight XHR. If the slow fetch is cosmetic enrichment (health badges, secondary data), wrap initiation in setTimeout-deferred window.addEventListener(load) with once:true to decouple Playwright wait semantics from server-side latency. Symptom: Playwright timeout despite fast direct curl. Diagnostic: time each fetch the destination page initiates client-side; check for sync fire-and-forget patterns.\",\"task\":\"T-817\",\"source\":\"PL-031\",\"date\":\"2026-05-04\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777897674845
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 3,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-073\",\"learning\":\"When a Playwright test reports element-not-populated within N seconds, FIRST verify the element exists at all. page.query_selector returning None is indistinguishable from element-exists-but-empty in the failure log. Stale selector vs. backend outage are completely different bugs that fail-alias into the same symptom. Diagnostic order: (1) does the selector match anything on the live page, (2) if yes, is it being populated, (3) only then suspect the data source.\",\"task\":\"T-772\",\"source\":\"PL-073\",\"date\":\"2026-05-04\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777906059642
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 4,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-074\",\"learning\":\"When building diagnostic surfaces (test output, dashboard cards, Drift Watch rows), distinguish failure modes from each other so the operator can act without re-investigating. A single boolean working/broken collapses (a) selector-doesn-not-match, (b) selector-matches-but-empty, (c) selector-matches-but-loading, (d) selector-matches-real-outage into the same signal — invisibly aliasing four different bug classes. Each class has a different fix path. The cost of adding distinguishing fields is low (one bool + one print branch); the cost of debugging an aliased failure is high (T-772 stale selector hid behind SSE-outage signature for unknown duration).\",\"task\":\"T-818\",\"source\":\"PL-074\",\"date\":\"2026-05-04\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777906554298
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 5,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-075\",\"learning\":\"When a probe emits a user-facing URL, verification must include 'does the URL render' (HTTP 200/3xx) not just 'is the URL emitted'. T-822 shipped a /projects/<name>/builds/<n> click-through that 500ed because OneDev 13.1.5 parses that segment as numeric project ID; canonical form is /<name>/~builds/<n>. Schema-level checks passed; semantic check (URL renders) was missing.\",\"task\":\"T-823\",\"source\":\"\",\"date\":\"2026-05-04\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777921805428
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 6,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-076\",\"learning\":\"Diagnose CI deploy errors at endpoint level before assuming config drift — silenced stderr in aws-cli (2>/dev/null) hid garage-1 connection failure on build #882; downstream grep on empty input misled toward 'token missing in S3' when the real cause was single-endpoint hardcoding to a dead node. When error message format conflates 'fetch returned empty' and 'fetch returned content but key missing', operator hypothesis is misdirected. Use distinct messages and dont silence stderr on infrastructure-touching shell calls.\",\"task\":\"T-826\",\"source\":\"\",\"date\":\"2026-05-04\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777923829219
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 7,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-077\",\"learning\":\"verify command pattern curl piped to grep -q falsely fails under fw set -euo pipefail when response exceeds pipe buffer because grep -q SIGPIPEs curl. Use grep PATTERN redirected to /dev/null instead\",\"task\":\"T-834\",\"source\":\"G-VERIFY-CURL-GREPQ-SIGPIPE-FALSE-FAIL\",\"date\":\"2026-05-05\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1777979297300
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 8,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-078\",\"learning\":\"Probe before changing infrastructure config — DNS authoritatively names the right IP even when the host is stopped; circuit-open on a closed breaker is the system working, not a bug. Probed 2 IPs and DNS before any edit. Memorized IPs in /memory/ are point-in-time; always re-verify via probe.\",\"task\":\"T-838\",\"source\":\"P-001\",\"date\":\"2026-05-05\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778004051033
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 9,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-079\",\"learning\":\"Cross-template anchor links from helper code must be regression-tested by parsing all link strings and validating against id attributes plus tab/route enum sources. Hand-typed anchor names drift silently because browser fall-through is not a 404.\",\"task\":\"T-849\",\"source\":\"PD-066\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778065070538
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 10,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-080\",\"learning\":\"Silent-latent drift signals (state.json sets bool flag without detail fields) can be surfaced helper-side by reading the latest observation YAML at request time. No watchdog producer change needed; the YAML pattern is the durable contract.\",\"task\":\"T-850\",\"source\":\"PD-067\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778066135218
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 11,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-081\",\"learning\":\"verification-rot scanner heuristics need URL-prefix awareness — Flask/FastAPI mount /static/ + /templates/ to project subdirs; treating leading slash as absolute filesystem path produces false positives that look like real rot for days.\",\"task\":\"T-851\",\"source\":\"PD-068\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778066501003
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 12,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-082\",\"learning\":\"Action Required deep-links must resolve. Both anchor-targets (T-849) and page-targets (T-853) need regression tests — parametrized test_main_pages_return_200 catches the page-target class\",\"task\":\"T-853\",\"source\":\"\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778073035868
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 13,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-083\",\"learning\":\"Anchor-map governance — Action Required link source + /agent-status SIGNAL_LABELS link must point at the same destination; test_action_required_links_do_not_404 walks all Action Required paths and probes them, catches /cicd-class 404s before ship\",\"task\":\"T-854\",\"source\":\"\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778073532029
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 14,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-084\",\"learning\":\"Anchor-pair completeness: when wiring an Action Required link to a route that does not yet exist, ALWAYS file a follow-up build task for the missing surface in the same session — do not let the workaround link harden into a long-lived broken target. The fix loop is: (1) link emit, (2) workaround to nearest existing surface, (3) follow-up task created, (4) follow-up ships, (5) link reverts to canonical. T-854 -> T-855 closed this loop end-to-end; the lesson is to never stop at step 2.\",\"task\":\"T-855\",\"source\":\"PL\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778078025467
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 15,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-085\",\"learning\":\"anchor-pair regressions are multi-axis: T-854 covered the path component but fragments slipped through. When wiring deep-link tests, write coverage for every URL component (path + fragment + querystring if used) — single-axis tests give false confidence\",\"task\":\"T-859\",\"source\":\"PL-084\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778088228666
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 16,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-086\",\"learning\":\"operator surfaces should refresh themselves when they exist to monitor live state. T-860 turned /cicd from snapshot-with-F5 to passive-monitor in 3 small additions (setInterval, last-refreshed caption, stale-age row class) — pattern: live-refresh with visible freshness indicator + amber-tint for stale state\",\"task\":\"T-860\",\"source\":\"\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778088228772
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 17,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-087\",\"learning\":\"Live-monitor freshness caption pattern — when adding the  ticker to a page, track success on the 30s-tier critical fetches only (the ones operators stare at). Hooking 60s/5m fetches muddies the ago-reading because the slowest fetch dominates. Three sites now share .last-refreshed CSS class: /cicd T-860, /docker T-862, / T-863. The JS regression test should assert >= N success-mark sites (count.count >= 4) so unhooking is structurally caught.\",\"task\":\"T-863\",\"source\":\"\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778091645844
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 18,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-088\",\"learning\":\"Action Required side-file enrichment pattern: when watchdog drift Action Required entries show vague counts (N stopped, N degraded, N rotting), enrich them by reading the existing .context/watchdog/SIDE.json side-file already populated by the probe. Pure helper _load_X(project_root) returns names list; _drift_actions_from_watchdog calls helper, falls back to legacy count when side-file missing. Test pattern: 5-case synthetic fixture unit + skip-aware live integration. Applied 3x: T-864 cluster_health, T-865 verification_rot, T-866 no_dns. Avoids watchdog schema bumps.\",\"task\":\"T-866\",\"source\":\"PL-087\",\"date\":\"2026-05-06\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778094503511
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 19,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-089\",\"learning\":\"Action Required signal-exposure pattern (T-867 circuit-breaker open-duration; T-868 FritzBox WAN connection state) — distinct from PL-088 enrichment. Use when a critical signal exists in /api/* or in-process state but has zero presence in Action Required. Pattern: pure mapper helper from state-dict to action-dict (testable with synthetic data); sync state-loader with optional 30s TTL cache for high-poll surfaces; wire into api_action_required (await asyncio.to_thread for sync sources); skip-aware live integration test. Different from PL-088 (which polishes existing entries with vague counts). Cap: 2-4 applications before considering a registry/factory. Triggered when an outage exists for which the operator would have NO Action Required entry today.\",\"task\":\"T-868\",\"source\":\"PL-088\",\"date\":\"2026-05-09\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778324349965
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 20,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-090\",\"learning\":\"prod deploy pipeline is silently broken — OneDev tag-trigger for v3.2.x scheme does not exist; storefront frozen at v3.2.207-alpha while master has 80+ commits ahead. Always verify Step 5 of /promote actually triggered a build before declaring success. Last v1.6.x tag-triggered Deploy Production to LXC also FAILED so the whole deploy job is dead\",\"task\":\"T-883\",\"source\":\"PL-061\",\"date\":\"2026-05-11\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778522256948
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 21,
+    "payload": "{\"origin_project\":\"ring20-dashboard\",\"origin_hub_fingerprint\":\"sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46\",\"learning_id\":\"PL-092\",\"learning\":\"Template v-prefix duplication: env_info.format_version already returns v-prefixed string; templates that add another literal v cause double-prefix. Audit templates for v{{ badge.version }} pattern.\",\"task\":\"T-895\",\"source\":\"P-001\",\"date\":\"2026-05-12\"}",
+    "sender_id": "33df8954b2a9b70d",
+    "ts_ms": 1778623398785
+  }
+]

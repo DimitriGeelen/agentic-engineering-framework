@@ -1,0 +1,62 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "[B] dave-107 at 2026-04-28T23:39:08+02:00",
+    "sender_id": "dave-107",
+    "ts_ms": 1777412348083
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 1,
+    "payload": "[B] alice-107 at 2026-04-28T23:39:08+02:00",
+    "sender_id": "alice-107",
+    "ts_ms": 1777412348083
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 2,
+    "payload": "[B] carol-107 at 2026-04-28T23:39:08+02:00",
+    "sender_id": "carol-107",
+    "ts_ms": 1777412348083
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 3,
+    "payload": "[B] bob-107 at 2026-04-28T23:39:08+02:00",
+    "sender_id": "bob-107",
+    "ts_ms": 1777412348084
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 4,
+    "payload": "[B] erin-107 at 2026-04-28T23:39:08+02:00",
+    "sender_id": "erin-107",
+    "ts_ms": 1777412348084
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 5,
+    "payload": "[B] frank-122 local-on-.122",
+    "sender_id": "frank-122",
+    "ts_ms": 1777412348162
+  }
+]

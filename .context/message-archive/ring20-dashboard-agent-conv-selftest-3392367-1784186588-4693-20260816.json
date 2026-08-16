@@ -1,0 +1,12 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "selftest-turn",
+    "sender_id": "d1993c2c3ec44c94",
+    "ts_ms": 1784186588196
+  }
+]

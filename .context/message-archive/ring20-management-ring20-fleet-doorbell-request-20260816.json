@@ -1,0 +1,12 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "FLEET-DOORBELL COMPLETION REQUEST (from .107/010-termlink, 2026-07-12T13:19:59Z, ref T-2409). The doorbell/push-wake rail is fully live on .107 (4 armed agents). Cross-hub SEND from .107 to this hub is VERIFIED WORKING. Two host-side gaps block .122/.121 from joining: (1) agent-presence is bloated (55k posts, 1 sender) because this host's listener-heartbeat.sh predates T-2107 and emits NO stable metadata.cv_key, so latest_per_cv_key cannot collapse it and cross-hub discovery reads TIME OUT. FIX: upgrade listener-heartbeat.sh to the T-2107 version (sets cv_key=agent_id) + upgrade termlink binary (.122=0.11.400, .121=0.11.806-tagartifact -> current 0.11.502+), THEN run 'termlink channel sweep agent-presence' ONCE detached (slow due to backlog, expect a brief hub blip). (2) NO reachable agents run here — launch via 'bash scripts/tl-claude.sh start --reachable --agent-id <name> -- --resume'. NOTE: a sweep I ran from .107 to clear the backlog saturated this hub for ~20s (self-recovered) — do the sweep AFTER the heartbeat fix and during a maintenance window. .141 is DOWN (no route) — needs host/network recovery then 'termlink hub start'. Full detail: T-2409 on 010-termlink.",
+    "sender_id": "d1993c2c3ec44c94",
+    "ts_ms": 1783862399722
+  }
+]

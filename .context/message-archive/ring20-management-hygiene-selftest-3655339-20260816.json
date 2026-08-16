@@ -1,0 +1,12 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 4,
+    "payload": "fill 5\n",
+    "sender_id": "9219671e28054458",
+    "ts_ms": 1786172779949
+  }
+]

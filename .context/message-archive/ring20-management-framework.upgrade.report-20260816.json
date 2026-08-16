@@ -1,0 +1,22 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "DISPATCH REPORT — root-claude-dimitrimintdev (/opt/termlink)\nTask: T-1869 (framework upgrade dispatch, second repro of T-1699)\nCommit: 41f108b1 on /opt/termlink main\n\nproject_shape:       consumer-initialized\nfw_version_before:   v1.6.160\nfw_version_after:    v1.6.160  (upgrade blocked)\nconfigured_upstream: https://github.com/DimitriGeelen/agentic-engineering-framework.git\nstep_that_failed:    step 3 / lib/upgrade.sh:310 (bare-from-consumer handoff)\nseverity:            SEV-1 (already T-1699; this is 2nd repro)\n\nstderr_excerpt: |\n  Bare-from-consumer detected — auto-cloning upstream\n    Cloning... ok\n    Handing off to upstream's bin/fw: upgrade /opt/termlink\n  [repeats; child PIDs target /opt/003-Vailliant-diagnosis (wrong) ;\n   ~85 nested procs in 60s before SIGTERM]\n\nnew_datum: recursion target shifted between runs\n  - 2026-05-18 run: child target = /opt/termlink (correct)\n  - 2026-05-29 run: child target = /opt/003-Vailliant-diagnosis (peer leak)\n  Suggests cloned-upstream's find_project_root walks into a global\n  registry or peer .framework.yaml. T-559 blocks consumer-side\n  investigation; needs upstream-side inspection.\n\nfix_recipe (from T-1699, unchanged):\n  lib/upgrade.sh:310 — env FRAMEWORK_ROOT=\"$_tmpd/fw\" PROJECT_ROOT=\"$target_dir\" \"$_tmpd/fw/bin/fw\" \"${_replay_args[@]}\"\n  bin/fw:498        — respect caller-supplied FRAMEWORK_ROOT instead of unconditional resolve\n\nfw doctor: 4 warnings / 0 failures (all pre-existing)\n\ntest_suite:\n  bats_unit:    BLOCKED — tests/unit not vendored (PL-123)\n  web_pytest:   136 PASS / 1 FAIL / 8 SKIP  (TestPatterns is env-dep, not framework)\n  playwright:   0 / 3 FAIL / 444 ERROR  — ALL same root cause:\n                ModuleNotFoundError 'web' (PL-125 confirmed — was logged as\n                5/7, ACTUAL is 447/447 web tests blocked in consumer ctx)\n  fix:          conftest.py:71 — set cwd=FRAMEWORK_ROOT or PYTHONPATH-augment\n\nno_source_edits to .agentic-framework/ per dispatch rule.\nall evidence on T-1699 (already SEV-1, started-work) + T-1869 (status=issues).\n",
+    "sender_id": "d1993c2c3ec44c94",
+    "ts_ms": 1780061375932
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 1,
+    "payload": "DISPATCH RE-EXECUTION — root-claude-dimitrimintdev (/opt/termlink)\nFollow-up to prior post on this topic (T-1869 / commit 41f108b1).\nUser explicitly requested re-execution to verify reproducibility.\n\nRESULT: byte-identical reproduction.\n- STEP 3 fw upgrade: fork-bombed (T-1699 repro #3)\n- STEP 4 fw doctor: 4 warnings / 0 failures (same)\n- STEP 5 fw test all:\n    bats_unit:   ERROR (tests/unit not vendored)\n    web_pytest:  136 PASS / 1 FAIL / 8 SKIP   (TestPatterns env-dep, unchanged)\n    playwright:  0 / 3 FAIL / 444 ERROR       (ModuleNotFoundError 'web', unchanged)\n\nONE NEW DATUM: wrong-target intermittency.\n  2026-05-29 12:30Z run: child target = /opt/003-Vailliant-diagnosis (wrong)\n  2026-05-29 12:58Z run: child target = /opt/termlink                 (correct)\n  Same .framework.yaml, same vendored tree, ~28 min apart.\n  Implies time/state-dependent path resolution in cloned-upstream's\n  find_project_root walk. Worth upstream-side investigation as a\n  separate question from the SEV-1 fix (lib/upgrade.sh:310 + bin/fw:498\n  per T-1699's fix recipe).\n\nNo further commit on /opt/termlink — T-1869 Updates section appended\nlocally. No source edits to .agentic-framework/.\n\nAwaiting upstream fix on T-1699 before a third dispatch can succeed.\n",
+    "sender_id": "d1993c2c3ec44c94",
+    "ts_ms": 1780062375200
+  }
+]

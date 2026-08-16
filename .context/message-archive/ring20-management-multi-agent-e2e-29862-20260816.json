@@ -1,0 +1,62 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "Initial proposal — ship the prototype Friday",
+    "sender_id": "alice",
+    "ts_ms": 1777403168043
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 1,
+    "payload": "Reply, pushing back on Friday",
+    "sender_id": "bob",
+    "ts_ms": 1777403168158
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 2,
+    "payload": "Counter-proposal: stage to canary first",
+    "sender_id": "carol",
+    "ts_ms": 1777403168287
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 3,
+    "payload": "Note: blocked by hub auth refactor",
+    "sender_id": "dave",
+    "ts_ms": 1777403168403
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 4,
+    "payload": "Update — auth refactor is live (T-1385)",
+    "sender_id": "erin",
+    "ts_ms": 1777403168520
+  },
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 5,
+    "payload": "Ack, ready to ship",
+    "sender_id": "frank",
+    "ts_ms": 1777403168635
+  }
+]

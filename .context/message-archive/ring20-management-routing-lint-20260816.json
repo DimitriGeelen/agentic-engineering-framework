@@ -1,0 +1,12 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "{\"actual_roles\":[],\"expected_roles\":[\"framework\",\"pickup\"],\"from\":\"tl-yz557gnw\",\"method\":\"event.broadcast\",\"rule_prefix\":\"framework\",\"topic\":\"framework:lint-test-from-122\",\"type\":\"routing.lint.warning\"}",
+    "sender_id": "hub:topic_lint",
+    "ts_ms": 1777409253503
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 1,
+    "payload": "T-1438 same-host smoke from ring20-management caller-shell to peer-122-b: chat-arc test on 0.9.1659 binary. Both identity_fingerprints will be live (caller loads/creates ~/.termlink identity, callee was registered fresh post-swap with metadata.identity_fingerprint=9219671e). Verifying dm:<a>:<b> topic emission with metadata._thread=T-1438.",
+    "sender_id": "9219671e28054458",
+    "ts_ms": 1777643004184
+  }
+]
