@@ -1,0 +1,77 @@
+task_type: ask
+# T-1719 A3: fw ask's provider-routing decision.
+#
+# Unlike every other workflow in this directory, `ask` never spawns a worker —
+# lib/ask.py answers synchronously in the calling process. That is why
+# worker_kind is `ollama-direct`, a kind registered specifically for this
+# (lib/resolver.py + lib/workflow_lint.py; parity witness
+# lib/worker_kinds_parity.py, surfaced by `fw doctor` per T-1734/T-1735).
+# Reusing `ollama-thin-loop` would have made every dispatch row claim a tool
+# loop ran when none did, and the entire point of routing ask through the
+# Resolver is that the telemetry is true.
+#
+# The dispatch is captured through the same resolver.capture_dispatch() every
+# spawned workflow uses, so the routing decision lands in dispatches.jsonl (and
+# from there the /embeddings routing panel, A4), and the outcome lands in
+# dispatch-outcomes.jsonl the same way a real dispatch's does.
+worker_kind: ollama-direct
+# `_` means "ask the provider": web/ask.py:get_model() probes what Ollama has
+# actually loaded and falls back PRIMARY -> FALLBACK -> first-available.
+# Pinning a model here would let the workflow claim one the host does not have;
+# the dispatch row records what was ACTUALLY used, resolved at call time.
+model: _
+effort: low
+# `fw ask` assembles its own prompt from RAG chunks (web/ask.py:SYSTEM_PROMPT +
+# format_rag_context), so there is no template file to render. `static` is the
+# honest strategy — nothing is assembled from task frontmatter.
+prompt_template: ""
+prompt_strategy: static
+allowed_tools: []
+cost_cap_usd: 0.0
+cwd: $PROJECT_ROOT
+
+# Routing key (hardcoded per the AC — not a scored decision; that is Slice 2+
+# territory). lib/ask.py:select_route() picks default_route and only falls
+# through to fallback_route on a CONNECTION error.
+#
+# The trigger is deliberately narrow. A connection error means "the local
+# provider is not there", so retrying elsewhere is right. A model error, a
+# mid-generation timeout, or a malformed response means Ollama IS there and
+# something else is wrong — silently re-asking a paid cloud model would turn a
+# visible local fault into an invisible bill. Widen this only with evidence.
+#
+# KNOWN LIMITATION (found by tests/unit/t1719_ask_routing.bats, not by design).
+# This fallback covers the GENERATION provider only. rag_retrieve() embeds the
+# query through ollama BEFORE any routing happens, so a total ollama outage —
+# the very case a cloud fallback sounds like it should cover — fails at
+# retrieval and never reaches this decision. What the fallback actually buys is
+# the narrower, real case: embeddings resolve but the chat model does not (they
+# live on different hosts, or the chat model was unloaded). Lifting the
+# limitation needs a cloud EMBEDDING path, which is Slice 2+ — not a wider
+# trigger here. Pinned by the "total ollama outage fails at RETRIEVAL" test so
+# it cannot quietly become a surprise later.
+default_route: ollama-local
+fallback_route: claude-via-litellm
+fallback_trigger: connection_error
+
+routes:
+  ollama-local:
+    # Direct python `ollama` package call (the pre-existing ask() behavior).
+    # The model actually invoked is still get_model()'s PRIMARY/FALLBACK pair;
+    # this entry exists for dispatch-row provenance (A4's routing panel), not
+    # to override which local model answers.
+    provider: ollama
+    host_env: OLLAMA_HOST
+    host_default: http://localhost:11434
+    cost_cap_usd: 0.0
+  claude-via-litellm:
+    # Routed through the litellm proxy (.context/litellm-config.yaml) rather
+    # than a direct API call, so the eventual swap from today's ollama_chat
+    # backend to a real cloud provider is a config edit there, not a code
+    # change here. cost_cap_usd is non-zero because once that swap happens this
+    # path spends real money per query — capped defensively now, so the cap is
+    # already in place before it needs to bite.
+    provider: litellm
+    base_url: http://localhost:4000
+    model: claude-3-5-sonnet-hermes3
+    cost_cap_usd: 0.05

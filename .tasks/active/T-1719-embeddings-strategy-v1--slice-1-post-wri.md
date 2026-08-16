@@ -241,11 +241,36 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
   [-5..-1, +1..+5], appends to `.context/working/happiness.jsonl`.
   Schema: `{task_id, ts, source: human|agent, value, optional_reason}`.
   Bats test covers valid range, invalid rejection, append-only.
-- [ ] **A3** `fw ask` queries flow through `fw resolver dispatch` with
+- [x] **A3** `fw ask` queries flow through `fw resolver dispatch` with
   task_type=ask. Resolver picks ollama-local OR claude-via-litellm
   based on a routing key (start: hardcoded ollama-default with cloud
   fallback on connection error). Outcome recorded in
   `dispatch-outcomes.jsonl`. Bats test covers both branches.
+  — `.context/project/workflows/ask.yaml` (`default_route`/`fallback_route`/
+  `routes:`), `lib/ask.py:select_route()` + `_is_connection_error()` +
+  `_cloud_fallback()`, `lib/outcome.py:append_outcomes()` (split out of
+  `backprop_outcome` — one ask produces one dispatch, so its outcome must not
+  fan out across the task's other dispatches). New `worker_kind: ollama-direct`
+  registered in **both** parity tables (`lib/resolver.py`,
+  `lib/workflow_lint.py`) — it is the only kind that spawns nothing, and
+  reusing `ollama-thin-loop` would have made every row claim a tool loop ran.
+  Live-verified: `bin/fw ask --concise "what is P-011"` wrote a dispatch row
+  with `workflow_id=ask, task_type=ask` and an outcome row naming the route.
+  `tests/unit/t1719_ask_routing.bats` 11/11.
+
+  **The fallback covers less than the AC wording implies (OBS-298).** Writing
+  the both-branches test exposed it: `rag_retrieve()` embeds the query through
+  ollama *before* the routing decision, so a total ollama outage — the case a
+  "cloud fallback" sounds like it covers — dies at retrieval and never reaches
+  the branch. What the fallback actually buys is the narrower real case:
+  embeddings resolve but the chat model does not. That is the right behaviour
+  (answering from zero retrieved chunks is a silently worse product), so the
+  fix was to pin and document the boundary, not to widen the trigger. Lifting
+  it needs a cloud *embedding* path — Slice 2+.
+
+  The trigger is deliberately connection-error-only, and the test asserting it
+  returns **false** for model errors is load-bearing: a wider trigger would
+  convert every local model fault into invisible recurring cloud spend.
 - [x] **A4** Watchtower panel `/embeddings` shows: index mtime,
   miss-rate (rolling 24h), recent happiness ratings, last 10 routing
   decisions. Playwright test pins visibility (per T-1575 rule —
@@ -307,6 +332,28 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
 ## Evolution
+
+### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
+- **What changed:** `fw ask` now routes through the Resolver
+  (`.context/project/workflows/ask.yaml`, `lib/ask.py:select_route()`), with a
+  connection-error-only fallback to claude-via-litellm and per-call outcome
+  rows. New `worker_kind: ollama-direct` — the only kind that spawns nothing.
+- **Plan impact:** A3's stated coverage was optimistic and the build proved it.
+  Writing the both-branches test showed `rag_retrieve()` embeds through ollama
+  *before* routing, so a total ollama outage dies at retrieval and never
+  reaches the fallback (OBS-298). Boundary pinned by test and documented in the
+  workflow rather than papered over by widening the trigger — widening it would
+  have turned every local model fault into invisible cloud spend, which is the
+  same invisible-failure class this slice exists to remove.
+- **Triggered:** OBS-298 (sequential provider-dependent stages: a fallback on
+  the second stage buys nothing against an outage of the shared provider, while
+  *reading* as coverage). Cloud embedding path deferred to Slice 2+.
+- **Process note:** an auto-dispatcher (`origin: systemd:unlabeled-unit`)
+  spawned a second worker onto this same AC mid-edit and rewrote `ask.yaml`
+  underneath this session — a live converging-write-set collision. Resolved by
+  stopping the duplicate and merging its `routes:` structure (better than the
+  original `routing:` shape) into a lint-valid file. Worth a rail: the
+  auto-dispatcher has no view of an in-flight human session's write set.
 
 ### 2026-05-04 — Filed (blocked on T-1717 GO)
 - **What changed:** Recognized that T-1717's Recommendation references

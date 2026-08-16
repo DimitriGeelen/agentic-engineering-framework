@@ -186,6 +186,26 @@ def backprop_outcome(task_id: str, outcome: Dict[str, Any]) -> int:
     dispatch_ids = find_dispatch_ids(task_id)
     if not dispatch_ids:
         return 0
+    return append_outcomes(dispatch_ids, task_id, outcome)
+
+
+def append_outcomes(dispatch_ids: List[str], task_id: str, outcome: Dict[str, Any]) -> int:
+    """Append one outcome row per dispatch_id. Returns rows written.
+
+    Split out of backprop_outcome (T-1719 A3) because back-prop and direct
+    append want the same row shape but different targeting. back-prop fans a
+    task-close verdict out to EVERY dispatch of that task, which is right when
+    the verdict is "did the task end up correct". `fw ask` needs the opposite:
+    one call produced one dispatch, and the outcome belongs to that dispatch
+    alone — fanning it across the task's other dispatches would attribute this
+    query's routing result to unrelated earlier work.
+
+    Same best-effort contract as the caller: a write failure is reported on
+    stderr and returns 0, never raises. Telemetry must not break the thing it
+    is measuring.
+    """
+    if not dispatch_ids:
+        return 0
 
     ts = datetime.now(timezone.utc).isoformat()
     rows = [
