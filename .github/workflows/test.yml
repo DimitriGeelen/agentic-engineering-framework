@@ -45,6 +45,38 @@ jobs:
       - name: Run tests
         run: bats tests/integration/ tests/unit/
 
+  pytest-unit:
+    name: Pytest Unit Tests (tests/unit/*.py)
+    runs-on: ubuntu-latest
+    # T-2745: tests/unit/ also holds 174 pytest files (2306 tests) that no
+    # runner ever collected. Wired here for visibility. Non-blocking
+    # (continue-on-error) because ~30 of the 2306 are pre-existing failures
+    # under active triage (T-2746 through T-2754, see
+    # docs/reports/T-2744-unit-suite-triage.md) — same rationale as the
+    # FW_TEST_PYTEST opt-in gate on `fw test all` (OBS-293): a red required
+    # check trains people to ignore it, which defeats the point of wiring it.
+    # Remove continue-on-error once the triaged failures are fixed.
+    continue-on-error: true
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: |
+          pip install pytest flask markupsafe pyyaml
+          if [ -f web/requirements.txt ]; then
+            pip install -r web/requirements.txt
+          fi
+
+      - name: Run pytest tests/unit/
+        run: python3 -m pytest tests/unit/ -v
+
   e2e:
     name: E2E Tests (Tier A)
     runs-on: ubuntu-latest

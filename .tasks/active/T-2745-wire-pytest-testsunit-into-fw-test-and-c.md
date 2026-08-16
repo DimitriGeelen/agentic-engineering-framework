@@ -78,7 +78,14 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`bin/fw test unit` / `fw test all` wiring landed in 6d6854ef3, then gated behind
+`FW_TEST_PYTEST=1` on the `all` leg by cc809d927 (OBS-293 fix — the unconditional
+wiring turned `fw test all` red and ~27min slower on ~30 pre-existing failures
+still under triage in T-2746 through T-2754). This session closed the remaining
+CI gap named in the title: `.github/workflows/test.yml` never ran pytest on
+`tests/unit/*.py` at all (only bats). Added a `pytest-unit` job, `continue-on-error:
+true` for the same OBS-293 reason — a required check that's red for reasons
+unrelated to the PR trains people to ignore it.
 
 ## Acceptance Criteria
 
