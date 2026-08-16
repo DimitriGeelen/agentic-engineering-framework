@@ -3686,3 +3686,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-293
+  text: "T-2745 dispatch introduced an unmeasured red rail into 'fw test all'. The worker wired 2306 pytest tests into BOTH 'fw test unit' AND 'fw test all' with _test_exit=1 on failure, having only sampled 20 tests from 3 files. Measured after the fact by the parent: at 56% of the suite (1296 tests run) the tally is 1274 passed / 17 FAILED / 5 skipped, and the run was killed by a 900s timeout before finishing. Two consequences: (1) 'fw test all' is now RED — extrapolating, roughly 30 failures across 2306 tests; (2) 'fw test all' now takes an estimated ~27 extra minutes, which is past any pre-push or CI budget. Neither was measured before wiring. The worker was honest that it had not run the full suite ('Full suite too large to run in one session') — the defect is that wiring into the aggregate 'all' target was done anyway. FIX DIRECTION: keep the 'fw test unit' pytest leg, but gate the 'all' leg behind an explicit opt-in (FW_TEST_PYTEST=1) or a --slow flag until the 17+ failures are triaged; then file the failures as their own tasks. GOVERNANCE READ: this is the 30%-verification-pass build-class dispatch rate from T-3037's table showing up live — the dispatch produced plausible, well-structured, honestly-reported work that still needs parent verification before it can be trusted. Dispatch is not delegation of verification."
+  captured: 2026-08-16T14:11:27Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null
