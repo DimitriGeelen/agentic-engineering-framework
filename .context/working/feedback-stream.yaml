@@ -34472,3 +34472,39 @@ scan_id: R-a73c52ec
 task_id: T-3036
 payload:
   task_file: .tasks/active/T-3036-832-rail-round-2-test-the-per-envelope-m.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T13:35:09Z'
+scan_id: R-2fb9a493
+task_id: T-3037
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T13:35:09Z'
+scan_id: R-2fb9a493
+task_id: T-3037
+payload:
+  task_file: .tasks/active/T-3037-prior-art-gate-aef-has-no-control-that-a.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T15:11:00Z'
+scan_id: R-92138a28
+task_id: T-3038
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T15:11:00Z'
+scan_id: R-92138a28
+task_id: T-3038
+payload:
+  task_file: .tasks/active/T-3038-session-scoped-focus-for-dispatched-work.md

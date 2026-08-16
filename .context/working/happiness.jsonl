@@ -1,0 +1,6 @@
+{"reason": "recall surfaced T-1717 grill artefact on first query", "source": "agent", "task_id": "T-1719", "ts": "2026-08-16T13:42:08.295255Z", "value": 4}
+{"reason": "bats probe", "source": "agent", "task_id": "T-1719", "ts": "2026-08-16T13:43:07.913473Z", "value": 3}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T13:43:08.400191Z", "value": -2}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T13:43:08.892504Z", "value": 1}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T13:43:09.237838Z", "value": 5}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T13:43:09.697691Z", "value": 2}

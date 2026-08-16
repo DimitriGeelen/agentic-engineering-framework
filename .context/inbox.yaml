@@ -3700,3 +3700,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-295
+  text: "GATE-REMEDIATION-DOESNT-RESOLVE class: a gate's block message named a command that does not exist. 150-skills-manager's credential gate emits 'Approve: fw-approve <request-id> --otp <code>' but the real tool is bin/fw-authority; 'fw-approve' is on no PATH. The operator followed it verbatim, got command-not-found, and concluded they had a missing-OTP problem — the wrong command name disguised a solvable situation as a setup gap, for months (a 2026-05-17 pickup already reported the surrounding flow was broken, '50+ sessions hit this'). GENERALISES TO US: every fw gate that prints a remediation command is exposed to the same defect, and it is invisible because block messages are only read when someone is already blocked and inclined to blame themselves. Worse for cross-host readers — a bare command name in a message read by agents on other hosts cannot resolve even when spelled right. CANDIDATE RAIL: a test that extracts every command string emitted by hook/gate block messages and asserts the referenced binary resolves (command -v / file exists + executable). Note a literal-string grep test would NOT have caught this — the string was consistent, it was just wrong. Origin: T-3040, operator-directed fix dispatched to 150-skills-manager 2026-08-16."
+  captured: 2026-08-16T15:51:04Z
+  context_task: T-3040
+  tags: []
+  status: pending
+  promoted_to: null
