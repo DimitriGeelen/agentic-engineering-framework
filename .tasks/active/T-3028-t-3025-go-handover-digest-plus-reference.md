@@ -4,12 +4,12 @@ name: "T-3025 GO: handover digest-plus-reference for the three dump sections"
 description: >
   T-3025 GO: handover digest-plus-reference for the three dump sections
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: now
+owner: human
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, lib/config.sh, tests/unit/handover_digest.bats, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T07:56:57Z
-last_update: '2026-08-16T08:00:16Z'
-date_finished:
+last_update: 2026-08-16T08:40:36Z
+date_finished: 2026-08-16T08:38:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -113,28 +113,6 @@ sections.
 - [x] A real generated handover is ≥5× smaller than the same handover undigested, measured on this repo's live corpus
 - [x] `tests/unit/handover_digest.bats` pins: digest on/off parity for narrative, count-vs-listed honesty, top-N respected, and that an empty section digests to nothing rather than to a "0 items" stub
 
-## Measured Result
-
-Generated both ways against this repo's live corpus, same session, minutes apart:
-
-| | full (`FW_HANDOVER_DIGEST=0`) | digested | ratio |
-|---|---|---|---|
-| **whole file** | 270,039 B | 17,643 B | **15.3×** |
-| `## Observation Inbox` | 141,774 B | 1,504 B | 94× |
-| `## Work in Progress` | 69,198 B | 5,279 B | 13× |
-| `## Awaiting Your Action (Human)` | 48,566 B | 1,635 B | 30× |
-| 14 narrative sections | — | — | **byte-identical (md5)** |
-
-Close to the prototype's prediction (273,761 → 18,762 B, 14.6×), which is the
-useful part: the spike measured a post-processed handover, this is the generator
-producing it directly, and they agree.
-
-**Reversibility proven against the pre-change script, not against the code.**
-Generated a handover with `git show HEAD:agents/handover/handover.sh` and compared
-section-by-section with `FW_HANDOVER_DIGEST=0` output: **16 of 17 sections
-md5-identical, section sets equal.** The one difference is `## Token Usage`, which
-carries live session metrics (turn counts moved 5827 → 5823 between the two runs) —
-not a structural difference.
 
 ### Human
 
@@ -193,6 +171,29 @@ not a structural difference.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## Measured Result
+
+Generated both ways against this repo's live corpus, same session, minutes apart:
+
+| | full (`FW_HANDOVER_DIGEST=0`) | digested | ratio |
+|---|---|---|---|
+| **whole file** | 270,039 B | 17,643 B | **15.3×** |
+| `## Observation Inbox` | 141,774 B | 1,504 B | 94× |
+| `## Work in Progress` | 69,198 B | 5,279 B | 13× |
+| `## Awaiting Your Action (Human)` | 48,566 B | 1,635 B | 30× |
+| 14 narrative sections | — | — | **byte-identical (md5)** |
+
+Close to the prototype's prediction (273,761 → 18,762 B, 14.6×), which is the
+useful part: the spike measured a post-processed handover, this is the generator
+producing it directly, and they agree.
+
+**Reversibility proven against the pre-change script, not against the code.**
+Generated a handover with `git show HEAD:agents/handover/handover.sh` and compared
+section-by-section with `FW_HANDOVER_DIGEST=0` output: **16 of 17 sections
+md5-identical, section sets equal.** The one difference is `## Token Usage`, which
+carries live session metrics (turn counts moved 5827 → 5823 between the two runs) —
+not a structural difference.
 
 ## Verification
 
@@ -337,6 +338,47 @@ bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO — keep the digest on, at `HANDOVER_DIGEST_TOP_N=5`.
+
+**Rationale:**
+
+Your GO on T-3025 authorised this shape and this scope, and the build came in where
+the spike said it would: 15.3× on the whole file, all 14 narrative sections
+byte-identical. The spike measured a post-processed handover; this is the generator
+emitting it directly, and the two agree — which is the part worth trusting, not the
+ratio itself.
+
+The reason I am comfortable recommending GO rather than asking you to pilot it is
+that the failure mode has a proven exit. `HANDOVER_DIGEST=0` was tested against the
+*pre-change script*, not against my reading of the code: 16 of 17 sections
+md5-identical, section sets equal, the one difference being live session metrics that
+moved between two runs seconds apart. If the digest turns out to be wrong for how you
+work, one `bin/fw config set` puts the old handover back exactly.
+
+The one thing I cannot settle is IW-1, and it is genuinely yours: whether the
+handover's primary consumer is a cold reader (narrative — in which case this trade is
+right) or a live session (the enumerations — in which case it is wrong and the growth
+should be attacked elsewhere). The cold-reader probe supports the first reading, but
+it probed an agent, not you. That is what the Human AC asks.
+
+**What I am not claiming:** that this closes the corpus-growth problem. It removes the
+largest term — handovers were 68% of the indexed corpus and 79% of its growth — but
+candidate A (binary quantization, ~10× on recall latency) remains unstarted and
+unauthorised, and E′'s inclusion-set work is T-3024, still with you for review.
+
+**Evidence:**
+
+- Whole file 270,039 → 17,643 B (15.3×); per-section 141,774 → 1,504, 69,198 → 5,279,
+  48,566 → 1,635. Generated both ways against this repo's live corpus, minutes apart.
+- 14/14 narrative sections byte-identical by md5; section sets equal.
+- Reversibility proven against `git show HEAD:agents/handover/handover.sh`, not
+  asserted from the diff.
+- 10 bats tests in `tests/unit/handover_digest.bats` run the real generator against a
+  synthetic corpus; totals are derived from disk so they stay independent oracles.
+- T-3027 landed first and is the precondition: `tasks_active:` now means active, so
+  eliding the WIP dump no longer leaves a false status as the sole carrier.
+- Both config keys registered on both sides; `fw_config` resolves 1 and 5.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -364,3 +406,22 @@ bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0ed71de8
+- **Timestamp:** 2026-08-16T08:39:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] The digested handover still gives you what you open a handover for
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='names the\n  c' in Expected: the digested one answers "where am I, what must I not do, what next"   without your needing the full dumps; where it truncates, it says so a`
+### 2026-08-16T08:22:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-08-16T08:38:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

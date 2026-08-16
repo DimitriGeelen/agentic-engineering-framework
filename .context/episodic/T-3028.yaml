@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3028: T-3025 GO: handover digest-plus-reference for the three dump sections
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T08:26:38Z
+# ============================================================================
+
+task_id: T-3028
+task_name: "T-3025 GO: handover digest-plus-reference for the three dump sections"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T07:56:57Z
+completed: 2026-08-16T08:22:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T10:22:37+02:00
+last_commit: 2026-08-16T10:22:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the three state dumps become count + command + top-N — 270,039 B to 17,643 B
+
+# Key outcomes
+outcomes:
+  - 'All three dump sections digest to `count + regenerating command + top-N entries`: Observation Inbox (`fw note triage`), Work in Progress (`fw task list --status started-work`), Awaiting Your Action (`fw review-queue`)'
+  - 'The partial-complete footer inside Work in Progress — which re-lists the same set as Awaiting Your Action — is digested too, since leaving it whole would keep ~40% of the savings on the table'
+  - 'Every digested section states its own total, so a reader can tell a truncated list from a complete one; a section listing fewer than it claims says so (preserving the T-2927 mismatch line, which is the control that made the last silent-truncation bug visible)'
+  - '`FW_HANDOVER_DIGEST=0` restores byte-identical full dumps — verified by generating both ways and diffing, not by reading the code'
+  - '`FW_HANDOVER_DIGEST` and `FW_HANDOVER_DIGEST_TOP_N` are registered in **both** `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` (the two are pinned equal by `config registry key count matches across sources`; a one-sided registration fails the pre-push audit — T-3024 origin)'
+  - 'All 14 narrative sections are byte-identical between digested and undigested output, checked by md5 per section rather than by eyeball'
+  - 'A real generated handover is ≥5× smaller than the same handover undigested, measured on this repo''s live corpus'
+  - '`tests/unit/handover_digest.bats` pins: digest on/off parity for narrative, count-vs-listed honesty, top-N respected, and that an empty section digests to nothing rather than to a "0 items" stub'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/lib/config.sh'
+  - 'agents/handover/handover.sh'
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - 'lib/config.sh'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - 'tests/unit/handover_digest.bats'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T10:22:37'
+    action: 'T-3028: the three state dumps become count + command + top-N — 270,039 B to 17,643 B'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 9
+  lines_added: 859
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3028-t-3025-go-handover-digest-plus-reference.md
+generated_by: context-agent-hybrid

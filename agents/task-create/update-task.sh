@@ -127,6 +127,40 @@ check_acceptance_criteria() {
     has_agent_header=$(echo "$ac_section" | grep -c '^### Agent' || true)
     has_human_header=$(echo "$ac_section" | grep -c '^### Human' || true)
 
+    # T-3029 (origin: T-2417/T-2418/T-2420): the ac_section extraction above
+    # closes at the FIRST `## ` heading following `## Acceptance Criteria`. A
+    # `### Human` block placed after an intervening `## ` heading (e.g.
+    # `## Measured Result`) is invisible to has_human_header, and the code
+    # below would silently treat HUMAN_AC_TOTAL as 0 — the exact defect that
+    # let T-3028 archive to completed/ with an unticked [REVIEW] AC still in
+    # the body. T-2420's PreToolUse hook prevents this at write-time, but
+    # only once wired into .claude/settings.json, and only for agent-driven
+    # writes — this is the close-time backstop for every other path (manual
+    # edits, pre-existing offenders, the bypass window). Detect a `### Human`
+    # heading anywhere in the file that fell outside the extracted section
+    # and refuse rather than silently reporting zero.
+    #
+    # The raw-file grep this originally used had a ~10% false-positive rate: a
+    # `### Human` line quoted inside an HTML comment (the AC-routing guidance in
+    # the default template does exactly that) tripped it on 6 of 60 task files
+    # that have no misplaced heading at all. Strip comments the same way
+    # ac_section is stripped above, so both sides of the comparison see the same
+    # document. Measured before and after — 60 raw hits, 54 real.
+    _acs_body=$(sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' "$TASK_FILE" 2>/dev/null | sed '/<!--/,/-->/d')
+    if [ "$has_human_header" -eq 0 ] && echo "$_acs_body" | grep -qE '^### Human\b'; then
+        if [ "${FW_ALLOW_AC_STRUCTURE_DRIFT:-0}" = "1" ]; then
+            echo -e "${YELLOW}WARNING: \`### Human\` heading found outside \`## Acceptance Criteria\` — Human ACs reported as 0 (FW_ALLOW_AC_STRUCTURE_DRIFT=1 bypass)${NC}"
+            log_gate_bypass "FW_ALLOW_AC_STRUCTURE_DRIFT=1" "check_acceptance_criteria"
+        else
+            echo -e "${RED}ERROR: \`### Human\` heading found but positioned outside \`## Acceptance Criteria\` — an intervening \`## \` heading (e.g. \`## Measured Result\`) closed the block before reaching it.${NC}" >&2
+            echo "Human ACs would silently be reported as 0/0 and this task would archive as fully complete." >&2
+            echo "" >&2
+            echo "Fix: move the ### Human section so it directly follows ### Agent, with no ## heading in between." >&2
+            echo "Bypass: FW_ALLOW_AC_STRUCTURE_DRIFT=1 (logged Tier-2, same override as the T-2420 PreToolUse hook)." >&2
+            exit 1
+        fi
+    fi
+
     if [ "$has_agent_header" -gt 0 ]; then
         agent_acs=$(echo "$ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
         ac_total=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)

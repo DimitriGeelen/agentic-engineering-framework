@@ -120,6 +120,8 @@ bvp_scores_proposed:
 
 Implements T-2418 GO. T-2417's close cascade lost a Human AC because `## Build summary` was inserted between `### Agent` and `### Human`, closing the `## Acceptance Criteria` block before the parser reached the Human AC (`sed -n '/^## Acceptance Criteria/,/^## /p'` in `update-task.sh`). PreToolUse hook prevents the structural error at write-time across all 1900+ tasks.
 
+**Second live occurrence (T-3029, 2026-08-16):** the class recurred on T-3028, which put `## Measured Result` between `### Agent` and `### Human`. `HUMAN_AC_TOTAL` computed 0, `PARTIAL_COMPLETE` stayed false, and `--status work-completed` archived T-3028 to `completed/` with `owner: agent` while an unticked `[REVIEW]` AC sat in the body — the exact symptom this hook exists to prevent, and it fired on a file this hook's Human AC (the settings.json wiring below) had not yet reached, because the hook was still sitting unwired. T-3029 fixed the instance and added a close-time backstop directly in `check_acceptance_criteria` (`agents/task-create/update-task.sh`, `FW_ALLOW_AC_STRUCTURE_DRIFT=1` bypass, pinned by `tests/unit/ac_structure_close_gate.bats`) that refuses the close rather than silently reporting zero Human ACs — narrower than this hook's write-time prevention, and no substitute for wiring it in: the backstop only catches the close, not the 1900+ other edit sites this hook covers. This is the second instance of the class going undetected while the fix sat unwired; it is evidence for prioritising the remaining Human AC below, not a reason to defer it further.
+
 ## Acceptance Criteria
 
 ### Agent

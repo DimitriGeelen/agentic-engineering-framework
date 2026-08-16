@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3029: T-3028 closed as full-complete with an unchecked Human AC — ### Human sat outside ## Acceptance Criteria
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T08:49:39Z
+# ============================================================================
+
+task_id: T-3029
+task_name: "T-3028 closed as full-complete with an unchecked Human AC — ### Human sat outside ## Acceptance Criteria"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T08:27:57Z
+completed: 2026-08-16T08:49:16Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-3028 closed as full-complete with an unchecked Human AC — ### Human sat outside ## Acceptance Criteria
+
+# Key outcomes
+outcomes:
+  - 'T-3028''s `### Human` section sits inside `## Acceptance Criteria` — no `##`-level heading between the two — and `## Measured Result` moves below the AC block'
+  - 'T-3028 is back in `.tasks/active/` with `owner: human` and `status: work-completed` — i.e. genuinely partial-complete, the state it should have reached the first time'
+  - 'Re-running the close on T-3028 reports a non-zero pending Human AC count rather than archiving it'
+  - 'T-2420 carries this instance as evidence, so the hook that prevents recurrence is filed against a real occurrence rather than a hypothetical'
+  - 'A regression test asserts the framework''s half: a task whose `### Human` block is separated from `## Acceptance Criteria` by a `##` heading must not silently report zero Human ACs'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3029-t-3028-closed-as-full-complete-with-an-u.md
+generated_by: context-agent-hybrid
