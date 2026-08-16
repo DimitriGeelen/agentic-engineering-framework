@@ -1277,6 +1277,10 @@ SKIP_INCEPTION_SCOPE_TRACE=false
 SKIP_RENDER_REVIEW=false
 SKIP_RENDER_REVIEW_REASON=""
 SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
+# T-1719 A2: retrieval-happiness signal. Feeds the embeddings routing loop —
+# the rating is the outcome half of "recall returned chunks → was that useful?".
+HAPPINESS=""
+HAPPINESS_REASON=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -1287,6 +1291,8 @@ while [[ $# -gt 0 ]]; do
         --horizon) NEW_HORIZON="$2"; shift 2 ;;
         --type|-t) NEW_TYPE="$2"; shift 2 ;;
         --reason|-r) REASON="$2"; shift 2 ;;
+        --happiness) HAPPINESS="$2"; shift 2 ;;
+        --happiness-reason) HAPPINESS_REASON="$2"; shift 2 ;;
         --skip-sovereignty) SKIP_SOVEREIGNTY=true; shift ;;
         --skip-acceptance-criteria) SKIP_AC=true; shift ;;
         --skip-verification) SKIP_VERIFICATION=true; shift ;;
@@ -1346,6 +1352,10 @@ while [[ $# -gt 0 ]]; do
             echo "  --add-tag     Add tag(s) to existing (comma-separated)"
             echo "  --horizon     Priority horizon: now, next, later"
             echo "  --reason, -r  Reason for status change (logged in Updates)"
+            echo "  --happiness N Retrieval-happiness signal, -5..-1 or +1..+5 (T-1719 A2)"
+            echo "                Appends to .context/working/happiness.jsonl. 0 is rejected —"
+            echo "                the scale has no neutral, so a 0 is a mis-typed rating."
+            echo "  --happiness-reason \"...\"  Optional free-text alongside --happiness"
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)"
             echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)"
             echo "  --skip-verification          Bypass verification gate (P-011)"
@@ -1386,6 +1396,51 @@ fi
 if [ -z "$TASK_FILE" ] || [ ! -f "$TASK_FILE" ]; then
     echo -e "${RED}ERROR: Task $TASK_ID not found${NC}" >&2
     exit 1
+fi
+
+# ── T-1719 A2: retrieval-happiness signal ────────────────────────────────────
+# Validated BEFORE any mutation (L-286: body-mutation gates must validate before
+# mutating). A rejected rating must not leave a half-updated task behind.
+if [ -n "$HAPPINESS" ]; then
+    if ! [[ "$HAPPINESS" =~ ^[+-]?[0-9]+$ ]]; then
+        echo -e "${RED}ERROR: --happiness must be an integer, got '$HAPPINESS'${NC}" >&2
+        exit 1
+    fi
+    _hv=$((HAPPINESS))
+    # Range is -5..-1 and +1..+5. Zero is deliberately excluded: the scale has no
+    # neutral, so a 0 is a mis-typed rating rather than an opinion.
+    if [ "$_hv" -eq 0 ] || [ "$_hv" -lt -5 ] || [ "$_hv" -gt 5 ]; then
+        echo -e "${RED}ERROR: --happiness must be in -5..-1 or +1..+5 (got $_hv)${NC}" >&2
+        echo "  The scale has no neutral — 0 is rejected as a mis-typed rating." >&2
+        exit 1
+    fi
+
+    _happiness_file="$PROJECT_ROOT/.context/working/happiness.jsonl"
+    mkdir -p "$(dirname "$_happiness_file")"
+    # source: agent when running under an agent harness, else human.
+    _hsource="human"
+    if [ "${CLAUDECODE:-0}" = "1" ] || [ -n "${FW_AGENT_SOURCE:-}" ]; then
+        _hsource="agent"
+    fi
+    HAPPINESS_JSON_LINE=$(TASK_ID="$TASK_ID" HV="$_hv" HSRC="$_hsource" \
+        HREASON="$HAPPINESS_REASON" python3 -c '
+import json, os, datetime
+row = {
+    "task_id": os.environ["TASK_ID"],
+    "ts": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+    "source": os.environ["HSRC"],
+    "value": int(os.environ["HV"]),
+}
+reason = os.environ.get("HREASON", "").strip()
+if reason:
+    row["reason"] = reason
+print(json.dumps(row, sort_keys=True))
+') || {
+        echo -e "${RED}ERROR: failed to build happiness record${NC}" >&2
+        exit 1
+    }
+    printf '%s\n' "$HAPPINESS_JSON_LINE" >> "$_happiness_file"
+    echo -e "${GREEN}Happiness recorded:${NC} $_hv → .context/working/happiness.jsonl"
 fi
 
 # Acquire per-task lock to prevent concurrent modifications (T-587)
