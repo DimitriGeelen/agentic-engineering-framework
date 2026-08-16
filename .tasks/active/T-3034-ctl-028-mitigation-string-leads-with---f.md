@@ -1,8 +1,8 @@
 ---
-id: T-3033
-name: "832 rail: delivery works, the extract_recent_posts read family is blind — correct OBS-281"
+id: T-3034
+name: "CTL-028 mitigation string leads with --force — steer agents to the clean close instead"
 description: >
-  832 rail: delivery works, the extract_recent_posts read family is blind — correct OBS-281
+  CTL-028 mitigation string leads with --force — steer agents to the clean close instead
 
 status: started-work
 workflow_type: build
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T11:59:50Z
-last_update: 2026-08-16T11:59:50Z
+created: 2026-08-16T12:21:12Z
+last_update: 2026-08-16T12:21:12Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,40 +36,53 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3033: 832 rail: delivery works, the extract_recent_posts read family is blind — correct OBS-281
+# T-3034: CTL-028 mitigation string leads with --force — steer agents to the clean close instead
 
 ## Context
 
-OBS-281 concluded that posts to `agent-chat-arc` were of unverifiable delivery: the
-write returned an offset, and `chat_arc_recent` returned 0 posts over 2h and 36h
-windows. That conclusion was wrong. The writes landed, the peer (832) read them in
-full, and 832 had replied four times (11973, 11975, 11978, 11979) into a topic this
-session was reading with a blind instrument.
+`agents/audit/audit.sh:3958` — CTL-028's status-drift mitigation reads:
 
-The real defect is a read-path split: verbs built on TermLink's `extract_recent_posts`
-helper return 0 unconditionally, while verbs on other code paths (`digest`,
-`state-since`, `quote`, `snippet`, `info`, `channel unread`) return the same topic's
-data correctly. The fix site is TermLink's, not ours (Gap Homing, T-1333); what is
-ours is the corrected observation, the workaround, and the reasoning error that let a
-blind instrument stand as evidence of an empty rail.
+> `Fix: bin/fw task update $task_id --status work-completed --force, or hand-edit
+> frontmatter to status: work-completed + set date_finished`
+
+Both remedies it names are bypasses. `--force` skips the AC and verification gates and
+logs a Tier-2 entry; hand-editing frontmatter skips the state machine entirely, which
+is the very `git mv` bypass class (L-390) that CTL-028 exists to detect. The control
+names, as its only two suggested fixes, two instances of the thing it is warning about.
+
+Reported by peer 832-Workflow-designer (chat-arc 11973, filed as OBS-282). They hit
+this on four real drifted tasks and **measured that three of the four closed cleanly
+through the normal gate two weeks after the fact** — so the bypass the string
+recommends was unnecessary in 75% of the observed population.
+
+The cost is concrete: an agent under an autonomous directive reads a mitigation as
+instruction, not as a menu. Leading with `--force` steers it into a logged Tier-2
+bypass it does not need, and the framework's own audit output is what did the
+steering.
+
+Scope is one line. A sweep of `agents/audit/audit.sh` and `lib/*.sh` found only one
+other `--force` in a mitigation string (`audit.sh:2790`, `fw init --force`) — that is
+an idempotency flag for rewriting a practices file, not a governance-gate bypass, so
+it is deliberately left alone.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] OBS-281 is corrected in `.context/inbox.yaml` — its text states that delivery
-      succeeded, names the four peer replies received, and identifies the read path
-      rather than the write path as the defect
-- [x] The working read path is recorded so the next session does not repeat the
-      error: a `## Findings` section in this task naming which verbs are blind and
-      which work, with the single-hub measurement that eliminates hub selection
-- [x] A reply is posted to 832 on `agent-chat-arc` confirming receipt, naming the
-      call that worked, and carrying the single-hub evidence (verifiable by reading
-      the returned offset back with `termlink agent quote <offset>`) — offset 11980,
-      read back and confirmed on the topic
-- [x] The three findings 832 raised (CTL-028 routing, duplicate CTL-029, gauge
-      exit-code trap) are each filed as observations in this repo so they survive
-      this session — OBS-282, OBS-283, OBS-284 (plus OBS-285, arc retention)
+- [x] `audit.sh:3958`'s mitigation leads with the plain `bin/fw task update <id>
+      --status work-completed` (no `--force`), so the first remedy an agent reads is
+      the one that runs the gates
+- [x] `--force` still appears, but explicitly demoted: named as a last resort, marked
+      as gate-bypassing and Tier-2 logged, and conditioned on a gate legitimately
+      failing rather than offered unconditionally
+- [x] Hand-editing frontmatter is no longer offered as a co-equal remedy — it is the
+      L-390 bypass class CTL-028 detects
+- [x] No other governance-gate `--force` remains in an audit mitigation string:
+      `grep -n -- "--force" agents/audit/audit.sh` returns only line 2790 (`fw init
+      --force`, an idempotency flag) and the demoted CTL-028 mention
+- [x] `audit.sh` still parses and the CTL-028 control still runs: a compliance-section
+      audit emits either the CTL-028 PASS line or a CTL-028 WARN — verified live,
+      15 WARN lines rendering the new mitigation text
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -104,9 +117,11 @@ blind instrument stand as evidence of an empty rail.
 
 ## Verification
 
-python3 -c "import yaml; yaml.safe_load(open('.context/inbox.yaml'))"
-out=$(python3 -c "import yaml;d=yaml.safe_load(open('.context/inbox.yaml'));print([o['text'] for o in d['observations'] if o['id']=='OBS-281'][0])" 2>&1); echo "$out" | grep -q "CORRECTED"
-out=$(timeout 60 termlink agent info 2>&1); echo "$out" | grep -q "agent-chat-arc"
+bash -n agents/audit/audit.sh
+grep -q "last resort: add --force" agents/audit/audit.sh
+grep -q "Do not hand-edit frontmatter" agents/audit/audit.sh
+grep -n -- "--force" agents/audit/audit.sh > /tmp/.t3034-force 2>&1; test "$(wc -l < /tmp/.t3034-force)" -eq 2
+timeout 280 bin/fw audit --section compliance > /tmp/.t3034-audit 2>&1; grep -q "CTL-028" /tmp/.t3034-audit
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -167,103 +182,41 @@ out=$(timeout 60 termlink agent info 2>&1); echo "$out" | grep -q "agent-chat-ar
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-## Findings
-
-### The read-path split (measured 2026-08-16, local hub, same minute)
-
-| blind — returns 0 | working — returns the data |
-|---|---|
-| `agent timeline` | `agent digest` |
-| `agent stats` | `agent state-since --since <ms>` |
-| `agent presence` | `agent quote` / `agent snippet` |
-| `agent recent` / `who` / `on-thread` | `agent info` / `channel unread` |
-| MCP `termlink_agent_chat_arc_recent` | |
-
-Every verb on the left is documented as a wrapper over TermLink's
-`extract_recent_posts`. Every verb on the right is on a different code path.
-`agent info` reports `Posts: 2003, Senders: 4` on the same hub, in the same minute,
-where `agent stats --window-secs 86400` reports `total=0`.
-
-### Hub selection is eliminated as a cause
-
-`chat_arc_recent(hub="127.0.0.1:9100", all_msg_types=true, since_hours=24,
-timeout_secs=90)` → `hubs_scanned: 1, hubs_failed: 0, fallback_hubs: [],
-total_posts: 0`.
-
-Single hub, no merge, no fallback, msg_type filter disabled — on the same local hub
-from which `agent quote 11979` returns the post in full. So it is not the fleet walk,
-not fallback, not hub selection, and not the merge. This is stronger than the peer's
-own diagnosis, which inferred a hub-merge source mismatch from a multi-hub result.
-
-### The msg_type default is real but not sufficient
-
-The MCP verb defaults to `filter_msg_type: 'chat'` while substantive posts are typed
-`note` — so the default does drop real traffic. But it is not what produces the zero:
-offset **11977 is `chat`-typed** (verified with `agent quote`) and ~2h old, inside
-`agent stats --window-secs 86400`, which returns `total=0`; `agent digest` over 60
-minutes returns that same 11977. Fixing the default alone leaves the rail blind while
-looking fixed, because `all_msg_types: true` is the obvious next attempt and also
-returns zero.
-
-### Hypothesis offered to TermLink, not asserted here
-
-Every call on the `extract_recent_posts` family returned exactly 0 — never a partial —
-at windows of 3600 s, 86400 s, 604800 s, and 24 h / 72 h. A window-size bug degrades;
-this does not. That fits a cutoff that always exceeds every timestamp (a seconds vs
-milliseconds mismatch in the comparison; storage is ms, since `state-since --since
-<ms>` works precisely). The peer's 5 rows from ring20-dashboard are the datum that
-complicates it. Discriminating test: `channel digest` vs `agent timeline` over the
-same window on any hub.
-
-Two hypotheses were tested and refuted first: hub routing (refuted — `hubs.toml`
-includes the local hub as `workstation-107-public` and `local-test`, and the pinned
-single-hub call still returns 0) and a naive `now_ms - window_secs` cutoff (refuted —
-post 11979 was 5–10 min old, inside a mis-scaled 604.8 s lookback, and still absent).
-
-### Fix homing
-
-The fix site is TermLink's `extract_recent_posts`, so per T-1333 (Gap Homing) it
-belongs in TermLink's register, not ours. Our side keeps the workaround: read the arc
-with `agent quote` / `snippet` / `state-since`, or `channel unread` + `channel
-snippet`. The peer was given offsets 11970, 11973, 11974, 11975, 11978, 11979 as
-fixtures — they are on-topic, timestamped, and provably invisible to that path.
-
 ## RCA
 
-**Symptom:** OBS-281 reported that posts to `agent-chat-arc` were of unverifiable
-delivery — the write returned an offset, `chat_arc_recent` returned `total_posts: 0`
-over 2 h and 36 h windows, and the session reported to the operator that it had no
-evidence the peer received anything.
+**Symptom:** CTL-028's mitigation string offered `--force` as its lead remedy and
+hand-editing frontmatter as its only alternative — two gate bypasses, one of which is
+the exact bypass class the control detects.
 
-**Root cause of the reported symptom:** a blind read verb. TermLink's
-`extract_recent_posts` family returns 0 unconditionally on this hub; the write path,
-the topic, and the peer were all healthy throughout. The peer had read offsets 11968
-and 11974 in full and replied four times (11973, 11975, 11978, 11979) into the same
-topic while it was being reported silent.
+**Root cause:** the string was written from the perspective of *clearing the warning*
+rather than *resolving the drift*. Clearing a status-drift warning is trivially done
+by forcing the status; resolving it means running the gates the `git mv` skipped. The
+author optimised for making the audit line go green.
 
-**Root cause of the reasoning error — the durable part:** a single-arm measurement was
-treated as evidence about the world. The instrument returned `ok: true` with a
-plausible zero, which is indistinguishable from a genuinely quiet rail. Two working
-read paths (`agent quote`, `channel unread`) were available on the same host the whole
-time and neither was used as a cross-check. The specific trap is that a zero is a
-*plausible* reading — a red result gets investigated, a confident empty result gets
-believed.
+**Why structurally allowed:** mitigation strings are free text with no review surface.
+Nothing checks that a control's suggested remedy is consistent with the invariant the
+control defends, and there is no lint for "governance-gate bypass recommended in
+advisory output". The string had been live since T-1870 and was read by every agent
+that hit the warning; it took an external peer running our audit against their own
+tree to notice.
 
-**Why structurally allowed:** nothing required a negative observability claim to be
-corroborated on a second path before being filed or reported. OBS-281 was written
-carefully — it named its measurement, its window, and its fleet state — and was still
-wrong, because care about *how* the number was obtained does not test whether the
-instrument can see anything at all. This is the same class the peer reported three
-times in two days (`a stated property standing in for a checked one`) and matches
-L-539 (*a rail can be correct, cheap, and blind — check the SET it runs over*),
-applied here to our own tooling rather than a framework control.
+**Blast radius:** amplified by autonomy. An agent operating under a broad directive
+reads a mitigation as an instruction, not a menu — and CLAUDE.md §Autonomous Mode
+Boundaries explicitly does *not* delegate authority to bypass gates. So the framework's
+own output was steering agents toward an action their operating rules forbid them to
+take unprompted.
 
-**Prevention:** the rule adopted and recorded in OBS-281's correction — never report a
-rail as quiet on a single read path. Concretely: before filing or reporting a negative
-observability finding, run a second read path with a different code path and show it
-returning *something*, so the instrument is proven sighted before its silence is
-treated as data. The cheap generalisation is a positive control: a measurement that
-can only ever return zero is not evidence of absence.
+**Prevention:** the immediate fix inverts the ordering and labels the bypass. The
+durable prevention is not in this task and is registered as OBS-282's second leg —
+832's proposed invariant that a control's declared gate set be checked against the
+sections its callers actually run, and, adjacent to it, a lint over advisory strings
+that recommends no Tier-2 bypass as a first remedy. Both are cheap and neither is
+scoped here (one bug, one task).
+
+**Note on evidence provenance:** the "3 of 4 closed clean" figure in the new string is
+explicitly attributed to 832's measurement on their tree, not claimed as ours. Our own
+tree currently shows 15 CTL-028 WARNs; whether those close cleanly is untested here
+and is filed separately rather than asserted.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -355,7 +308,7 @@ can only ever return zero is not evidence of absence.
 
 ## Updates
 
-### 2026-08-16T11:59:50Z — task-created [task-create-agent]
+### 2026-08-16T12:21:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3033-832-rail-delivery-works-the-extractrecen.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3034-ctl-028-mitigation-string-leads-with---f.md
 - **Context:** Initial task creation

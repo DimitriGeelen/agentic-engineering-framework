@@ -34400,3 +34400,21 @@ scan_id: R-fb516b1e
 task_id: T-3032
 payload:
   task_file: .tasks/active/T-3032-do-old-handovers-actually-get-retrieved-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T12:20:53Z'
+scan_id: R-c46fb800
+task_id: T-3033
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T12:20:53Z'
+scan_id: R-c46fb800
+task_id: T-3033
+payload:
+  task_file: .tasks/active/T-3033-832-rail-delivery-works-the-extractrecen.md

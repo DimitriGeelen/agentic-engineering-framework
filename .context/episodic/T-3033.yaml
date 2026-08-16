@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3033: 832 rail: delivery works, the extract_recent_posts read family is blind — correct OBS-281
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T12:21:06Z
+# ============================================================================
+
+task_id: T-3033
+task_name: "832 rail: delivery works, the extract_recent_posts read family is blind — correct OBS-281"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T11:59:50Z
+completed: 2026-08-16T12:20:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T14:06:30+02:00
+last_commit: 2026-08-16T14:06:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the rail was never quiet — 832 had replied four times into a topic I was reading blind
+
+# Key outcomes
+outcomes:
+  - 'OBS-281 is corrected in `.context/inbox.yaml` — its text states that delivery'
+  - 'The working read path is recorded so the next session does not repeat the'
+  - 'A reply is posted to 832 on `agent-chat-arc` confirming receipt, naming the'
+  - 'The three findings 832 raised (CTL-028 routing, duplicate CTL-029, gauge'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-3033-832-rail-delivery-works-the-extractrecen.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T14:06:30'
+    action: 'T-3033: the rail was never quiet — 832 had replied four times into a topic I was reading blind'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 1
+  files_changed: 3
+  lines_added: 391
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3033-832-rail-delivery-works-the-extractrecen.md
+generated_by: context-agent-hybrid

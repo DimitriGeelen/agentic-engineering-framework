@@ -3637,3 +3637,10 @@ observations:
   tags: [improvement]
   status: pending
   promoted_to: null
+- id: OBS-286
+  text: "CTL-028 is firing on 15 drifted tasks right now and nobody is acting on it. Measured 2026-08-16 under T-3034: 'bin/fw audit --section compliance' emits 15 WARN lines of the form 'T-XXX is in .tasks/completed/ but frontmatter status=started-work'. Named so far: T-2411, T-100194, T-100195. This is the population 832's CTL-028 report (OBS-282) was about, on our own tree. Two things follow. (1) The control works; the response loop does not — 15 standing WARNs means the audit's compliance section is either not being read or is being read past. Sibling to OBS-279 (fw gaps hides status: open) and to 832's finding that CTL-028's cron output lands in .context/audits/cron/ where no trend detector looks. (2) 832 measured 3 of 4 drifted tasks on THEIR tree closing cleanly through the normal gate two weeks stale; that number is theirs, not ours, and the equivalent measurement here is untested. Worth a task that attempts a clean close on each of the 15, records how many pass the AC+verification gates unmodified, and only then decides whether any need --force. Do NOT batch --force them — several may be human-owned with unticked Human ACs, which is a sovereignty boundary. Source: T-3034."
+  captured: 2026-08-16T12:24:50Z
+  context_task: T-3034
+  tags: [bug]
+  status: pending
+  promoted_to: null

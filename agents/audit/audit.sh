@@ -3955,7 +3955,7 @@ if should_run_section "compliance" || should_run_section "oe-daily"; then
             [ -z "$task_id" ] && continue
             warn "CTL-028: $task_id is in .tasks/completed/ but frontmatter status='$observed_status' (expected: work-completed)" \
                  "Likely cause: git mv bypassed the state machine (L-390)" \
-                 "Fix: bin/fw task update $task_id --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
+                 "Fix: bin/fw task update $task_id --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects."
             status_desync_fail=$((status_desync_fail + 1))
         done < <(echo "$COMPLETED_SCAN" | python3 -c "
 import sys, json
