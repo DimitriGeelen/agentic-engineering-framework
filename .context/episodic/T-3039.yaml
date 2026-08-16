@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3039: fw write-set check blind to undeclared framework-state writes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T19:20:55Z
+# ============================================================================
+
+task_id: T-3039
+task_name: "fw write-set check blind to undeclared framework-state writes"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T15:08:36Z
+completed: 2026-08-16T19:20:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-16T21:18:08+02:00
+last_commit: 2026-08-16T21:20:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write-set check said disjoint about tasks guaranteed to collide. A6 — say what the tool answers, and update the tests that encoded the false green
+
+# Key outcomes
+outcomes:
+  - '**A1** The implicit framework write-set is defined in one place as data (not scattered'
+  - '**A2** `compare()` unions the implicit set into **both** sides before intersecting, so'
+  - '**A3** The verdict distinguishes *why*: an overlap caused solely by implicit framework'
+  - '**A4** Regression test proves the false green is closed: two synthetic tasks with'
+  - '**A5** `undecidable` is preserved for genuinely missing declarations and still exits 2.'
+  - '**A6** Adoption has a path: either the field is emitted at task-create time, or'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - '.context/project/decisions.yaml'
+  - '.fabric/components/tests-unit-t3039_write_set_implicit.yaml'
+  - 'lib/write_set.py'
+  - '.tasks/active/T-3039-fw-write-set-check-blind-to-undeclared-f.md'
+  - 'tests/unit/t3039_write_set_implicit.bats'
+  - 'tests/unit/test_write_set.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T21:18:08'
+    action: 'T-3039: write-set check said disjoint about tasks guaranteed to collide'
+  - time: '2026-08-16T21:20:11'
+    action: 'T-3039: A6 — say what the tool answers, and update the tests that encoded the false green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 252 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 252
+  commits: 2
+  files_changed: 8
+  lines_added: 645
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3039-fw-write-set-check-blind-to-undeclared-f.md
+generated_by: context-agent-hybrid

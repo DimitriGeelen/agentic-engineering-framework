@@ -11,12 +11,12 @@ description: >
   dispatch of two tasks that both touch governance state reports overlap. Origin:
   T-3038 RCA / OBS-291.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/write_set.py, tests/unit/t3039_write_set_implicit.bats, tests/unit/test_write_set.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T15:08:36Z
-last_update: 2026-08-16T19:13:58Z
-date_finished:
+last_update: 2026-08-16T19:20:37Z
+date_finished: 2026-08-16T19:20:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -202,7 +202,11 @@ bats tests/unit/t3039_write_set_implicit.bats
 # asserted the false green and now assert 'converging' + a --declared-only pair)
 bats tests/unit/test_write_set.bats
 # A3 + CLI: flags reach the script (they were being swallowed) and JSON carries the detail
-bin/fw write-set check T-3042 T-3043 --json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['verdict']=='undecidable'; assert d['converging'], 'convergence not reported'; print('ok')"
+# Capture first: the producer exits 2 on purpose (undecidable), and under
+# pipefail that non-zero propagates through the pipeline even when the parse
+# succeeds. Piping from a command whose non-zero exit is MEANINGFUL is the
+# same trap as `cmd | grep -q` SIGPIPE-ing its producer (see T-3045).
+out=$(bin/fw write-set check T-3042 T-3043 --json 2>/dev/null || true); printf '%s' "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['verdict']=='undecidable'; assert d['converging'], 'convergence not reported'; print('ok')"
 # A5: undecidable still exits 2 on a real pair
 bash -c 'bin/fw write-set check T-3042 T-3043 >/dev/null 2>&1; [ $? -eq 2 ]'
 # A6: CLAUDE.md states what the tool actually answers today
@@ -365,3 +369,15 @@ bash -n bin/fw
 ### 2026-08-16T19:13:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-418f1b7f
+- **Timestamp:** 2026-08-16T19:20:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-16T19:20:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4578,3 +4578,9 @@ X'` returning empty group."
   date: 2026-08-16
   context: fleet-doctor auto-registered
   application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-613
+  learning: "Verification-block commands run under pipefail, so a pipeline is only safe when the producer's exit code is meaningless. Two shapes bit in one session: (1) 'bin/fw doctor | grep -q X' exits 141 — grep -q closes the pipe on first match and SIGPIPEs the producer, so it fails precisely when the check SUCCEEDS early (T-3045 A5); (2) 'bin/fw write-set check A B --json | python3 -c ...' exits 2 because the producer exits 2 on purpose (undecidable) and pipefail propagates it even though the parse printed ok (T-3039). Both look correct when run by hand in an interactive shell without pipefail, which is why they reach the gate rather than being caught while writing. Rule: in ## Verification, capture then parse — out=$(cmd 2>&1 || true); printf '%s' \"$out\" | parser — the same shape CLAUDE.md already prescribes for the cron drift check. Use a bare pipeline only when the producer cannot exit non-zero for a reason you care about."
+  source: P-011
+  task: T-3039
+  date: 2026-08-16
+  context: Added via context agent

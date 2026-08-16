@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-16T18:29:57Z
+last_update: 2026-08-16T19:05:38Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -281,7 +281,7 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
   `tests/playwright/test_embeddings_panel.py` 13/13 green — asserts visibility
   and rendered text, including a tri-state test that a `None` never renders as
   a number (the T-3004 failure mode).
-- [ ] **A5** Eat-our-dogfood: this task carries a populated
+- [x] **A5** Eat-our-dogfood: this task carries a populated
   `## Evolution` log at completion (Evolution-gate from T-1718 Slice 1
   fires on this task — the gate's first real consumer).
 - [ ] **A6** Bats test suite passes; `fw audit` clean; new components
@@ -332,6 +332,33 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
 ## Evolution
+
+### 2026-08-16 — A6's own test suite found the substrate defect (→ T-3045)
+- **What changed:** Nothing in this slice's code. Running the four `t1719_*.bats`
+  files together for A6 produced one intermittent failure — the A1 headline test,
+  *"indexing a document makes it retrievable and stays under the 5s budget"*.
+  It passed in isolation and passed on re-run, which is the shape that normally
+  gets shrugged off as flake.
+- **What it actually was:** the failing run's stderr carried
+  `embed failover: http://127.0.0.1:11435 unusable [ollama-down] — retrying on
+  http://192.168.10.107:11434`. `.context/settings.yaml` pinned `embed_host` at a
+  loopback sidecar with **no listener at all**. Every embed in the framework had
+  been connecting, failing, and falling over to `ollama_host` — the same machine
+  by LAN IP — since 2026-08-15. T-3017's failover worked exactly as designed,
+  which is precisely why nothing reported it.
+- **Plan impact:** none to Slice 1's scope; filed as **T-3045** (one bug = one
+  task) rather than absorbed here. After the fix the four files ran **37/37 three
+  consecutive times** with `failover count 0`, `index_one` 0.88 s and query
+  1.32 s. The flake has not recurred.
+- **Why it is recorded here:** the latency budget in A1's test is not decoration.
+  It was the only surface in the framework that noticed a dead primary embed
+  endpoint, and it noticed by going intermittently red rather than by reporting
+  anything. That is a weak signal one step from being tuned away — the honest
+  reading is that this slice got lucky, not that it had coverage.
+- **Triggered:** T-3045 (retire the sidecar, D-451 supersedes D-436), plus the
+  `fw doctor` embed-reachability check that gives the condition a real surface.
+  Duplicate of the already-filed `.context/inbox.yaml:3697` observation — which
+  had sat unread, and is itself a datapoint for T-3044.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver

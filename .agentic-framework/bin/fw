@@ -4439,33 +4439,61 @@ case "$cmd" in
     write-set)
         # T-2337 (arc-011 M1 §3): disjoint write-set validator.
         # Verbs: check <T-A> <T-B> — compare two tasks' declared write_set: frontmatter
-        # Exit codes: 0=disjoint, 1=overlap, 2=undecidable
+        # Exit codes: 0=disjoint, 1=overlap|converging, 2=undecidable (T-3039)
         ws_subcmd="${1:-}"
         shift || true
         case "$ws_subcmd" in
             check)
                 if [ $# -lt 2 ]; then
-                    echo "usage: fw write-set check <T-A> <T-B>" >&2
+                    echo "usage: fw write-set check <T-A> <T-B> [--json] [--declared-only]" >&2
                     exit 64
                 fi
-                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/write_set.py" check "$1" "$2"
+                # Forward ALL remaining args, not just the two ids — otherwise
+                # --json / --declared-only are silently swallowed here and the
+                # flags appear broken rather than unsupported (T-3039).
+                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/write_set.py" check "$@"
                 ;;
             ""|--help|-h|help)
                 cat <<'EOF'
-fw write-set check <T-A> <T-B>
+fw write-set check <T-A> <T-B> [--json] [--declared-only]
 
-Compare two tasks' declared `write_set:` frontmatter and report whether
-they are disjoint, overlap, or undecidable. Used by the arc-011 orchestrator
-before emitting parallel dispatch (T-2337, arc-011 M1 §3).
+Report whether two tasks can safely run in parallel. Used by the arc-011
+orchestrator before emitting parallel dispatch (T-2337, arc-011 M1 §3).
+
+Compares each task's declared `write_set:` frontmatter AND the implicit
+framework write-set — the state every task writes without declaring it
+(inbox.yaml, learnings.yaml, concerns.yaml, focus.yaml, session.yaml),
+because the framework writes those on the task's behalf (T-3039).
+
+Verdicts:
+  disjoint     no overlap of any kind
+  converging   declared paths are disjoint, but shared framework state
+               forces a serial write leg — fan out on reads, fan in
+               serially on writes (CLAUDE.md §Execution Model)
+  overlap      the tasks declare a path in common; do not run concurrently
+  undecidable  at least one task lacks write_set: frontmatter, so declared
+               overlap is unknown. Convergence is still reported — it
+               follows from both being framework tasks.
 
 Exit codes:
-  0  disjoint    — both write-sets declared, no path overlap
-  1  overlap     — both declared, at least one shared path
-  2  undecidable — at least one task lacks write_set: frontmatter
+  0  disjoint
+  1  overlap OR converging   (both mean: do not naively parallelise)
+  2  undecidable
+
+`converging` shares exit 1 with `overlap` on purpose — the 0/1/2 contract
+is what callers branch on, and a fourth code would break every existing
+consumer. The verdict string carries the distinction.
+
+Flags:
+  --json            full detail: verdict, declared_overlap, converging
+  --declared-only   pre-T-3039 behaviour (declared paths only). This can
+                    return `disjoint` for tasks that DO collide on
+                    framework state — that false green is why T-3039 exists.
 
 Examples:
-  fw write-set check T-PAR-A T-PAR-B    # Two disjoint tasks → exit 0
-  fw write-set check T-COL-A T-COL-B    # Two overlapping tasks → exit 1
+  fw write-set check T-PAR-A T-PAR-B           # → converging, exit 1
+  fw write-set check T-COL-A T-COL-B           # → overlap, exit 1
+  fw write-set check T-A T-B --json            # which paths, and why
 EOF
                 exit 0
                 ;;
