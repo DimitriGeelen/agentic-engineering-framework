@@ -3693,3 +3693,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-294
+  text: "Primary embed endpoint http://127.0.0.1:11435 is DOWN (ollama-down: failed to connect); every embed silently fails over to http://192.168.10.107:11434 and succeeds, so no surface reports degradation. Observed during T-1719 A1 live testing 2026-08-16. The failover message is emitted to stderr by the embed path and says 'The primary is still the one to fix' — but nothing aggregates it: fw doctor does not check embed-endpoint reachability, and /embeddings (T-1719 A4) shows index freshness + miss-rate but not which endpoint served the embeds. Consequence: the framework is running on its backup indefinitely with the only signal being transient stderr nobody reads. Fix directions: (1) doctor check for primary embed endpoint reachability, (2) surface last-used endpoint + failover count on /embeddings, (3) count failovers in recall_telemetry so the rate is visible."
+  captured: 2026-08-16T15:21:20Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null

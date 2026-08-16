@@ -219,11 +219,24 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 <!-- ACs locked at filing per T-1717 Recommendation. Do not modify
      without an Evolution log entry explaining what changed. -->
 
-- [~] **A1** (index_one() shipped + tested at 1.6s/42 chunks; hook wiring into
-  the two call sites remains) Post-write hook in `lib/learnings.sh add` + `update-task.sh
-  --status work-completed` for arc-tagged tasks: triggers single-chunk
-  embed + sqlite-vec insert. Latency <5s on the typical learning entry
-  size. Bats test pins behavior + latency budget.
+- [x] **A1** Post-write hook triggering single-document embed + sqlite-vec
+  insert, latency <5s. Bats test pins behavior + latency budget.
+  — `index_one()` (1.6s/42 chunks) + `lib/post-write-index.sh` wrapper, wired at
+  `episodic.sh` (after YAML validation — never index what failed to parse) and
+  `pattern.sh` (after the mv). Measured 2.0–2.3s live, idempotent (chunk count
+  stable on re-index). `tests/unit/t1719_post_write_index.bats` 10/10.
+
+  **AC premise corrected (see `## Evolution`).** The AC named `lib/learnings.sh`,
+  which does not exist, and assumed two call sites. Investigation (OBS-292,
+  dispatched worker, both claims independently verified) found **six** write
+  sites and — decisively — that `index-reindex-hourly` (T-3014) *already*
+  reindexes all of them within the hour. So this hook is **latency reduction,
+  not coverage**, and only 2 of the 6 sites are wired. `learnings.yaml` (~386
+  chunks) and `decisions.yaml` (~112, written in a per-decision loop at task
+  close) are deliberately left to the cron: hooking them would spend N full
+  re-embeds to add N single entries. That boundary is pinned by a test, because
+  wiring them later would break nothing visibly — it would just make every task
+  close progressively slower.
 - [x] **A2** `--happiness N` flag accepted on `fw task update`, range
   [-5..-1, +1..+5], appends to `.context/working/happiness.jsonl`.
   Schema: `{task_id, ts, source: human|agent, value, optional_reason}`.
@@ -306,6 +319,40 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 - **Triggered:** None new. T-1718 Slice 1 (Evolution-gate prerequisite)
   shipped (commit `b85a127c0`); this task will be its first real
   consumer at work-completed.
+
+### 2026-08-16 — A1's premise did not survive contact with the code
+- **What changed:** The AC named `lib/learnings.sh add` as one of "the two call
+  sites". That file does not exist and never did. A dispatched worker
+  (`obs292-locate`) mapped the real surface: **six** write sites, in
+  `agents/context/lib/{learning,pattern,decision,episodic}.sh` and two branches
+  of `update-task.sh`. Both of its load-bearing claims were re-verified here
+  independently before being acted on — `index_one` had zero callers, and
+  `add-decision` is genuinely invoked inside a per-decision `while read` loop
+  (`update-task.sh:2251`).
+- **The finding that actually changed the design:** `index-reindex-hourly`
+  (T-3014, `20 * * * *`) already reindexes every one of those six sites within
+  the hour. Coverage was never missing. Confirmed empirically mid-session: the
+  worker's own report, written at 17:13, was already in the index by 17:35 —
+  the 17:20 cron had picked it up before I looked. So A1 is **latency
+  reduction, not coverage**, and its value case is much narrower than filed.
+- **Plan impact:** Wire 2 of 6 sites, not all of them. `episodic` (single small
+  document — the function's ideal case) and `patterns.yaml` (aggregate, but only
+  ~8 chunks). `learnings.yaml` (~386 chunks) and `decisions.yaml` (~112, in a
+  loop) are deliberately NOT wired: hooking them spends N full re-embeds to add
+  N single entries, and the marginal entry is ~1/400th of the document. A ≤1h
+  delay is proportionate. The non-wiring is pinned by a test because that
+  regression is invisible at runtime — it breaks nothing, it just makes every
+  task close slower.
+- **Triggered:** OBS-292 (write-site map), OBS-294 (primary embed endpoint
+  `127.0.0.1:11435` is down; every embed silently fails over to the LAN host and
+  succeeds, so nothing reports the degradation — found only because the failover
+  notice happened to print during a live test).
+- **Method note:** this is the fourth time in this session that work assumed to
+  be missing was already built (T-1722 artefact linking, the 1339-record
+  dispatch telemetry, T-100186 inception reviewer, and now indexing coverage).
+  Same class as T-3037: the framework's gates verify HOW work is done and none
+  of them asks WHETHER it needs doing. Dispatching a read-only localiser BEFORE
+  building is currently the cheapest counter available.
 
 ## RCA
 

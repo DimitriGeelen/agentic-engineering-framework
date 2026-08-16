@@ -448,6 +448,17 @@ HEREDOC
         rm -f /tmp/episodic-yaml-err.$$
     fi
 
+    # T-1719 A1: make the episodic retrievable now rather than at the next hourly
+    # reindex. Deliberately placed AFTER the YAML validation above — indexing a
+    # file that failed to parse would put malformed content into recall and the
+    # validation block right above exists precisely to stop that propagating.
+    # Best-effort: never fails the close (see lib/post-write-index.sh).
+    if [ -f "$FRAMEWORK_ROOT/lib/post-write-index.sh" ]; then
+        # shellcheck source=/dev/null
+        . "$FRAMEWORK_ROOT/lib/post-write-index.sh"
+        fw_post_write_index "$episodic_file"
+    fi
+
     echo -e "${GREEN}Episodic generated: $episodic_file${NC}"
     echo ""
     echo "  Status: $status_icon $enrichment_status ($status_label)"
