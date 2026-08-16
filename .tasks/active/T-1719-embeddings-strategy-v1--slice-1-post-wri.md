@@ -330,6 +330,22 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# A6 — this block was EMPTY until close, so P-011 would have passed trivially on
+# a task whose A6 reads "bats suite passes; fw audit clean". The gate runs only
+# what is written here; an unwritten check is a green light, not a skipped one.
+#
+# L-613: capture-then-parse, never `cmd | grep -q`. These run under pipefail,
+# where grep -q SIGPIPEs its producer (exit 141) and a producer's meaningful
+# non-zero propagates through the pipe.
+bats tests/unit/t1719_index_one_post_write.bats
+bats tests/unit/t1719_post_write_index.bats
+bats tests/unit/t1719_happiness_signal.bats
+bats tests/unit/t1719_ask_routing.bats
+# A6: the four components this slice added are fabric-registered (drift lists none of them)
+out=$(bin/fw fabric drift 2>&1 || true); for c in lib-post-write-index web-blueprints-embeddings web-templates-embeddings tests-unit-t1719_post_write_index; do test -f ".fabric/components/$c.yaml" || { echo "MISSING card: $c"; exit 1; }; done; echo "$out" | grep -q "Fabric Drift Report"
+# A4/A1: the embed endpoint the index depends on is the resolved one and is live (T-3045)
+python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; import urllib.request, json; d=json.load(urllib.request.urlopen(Config.EMBED_HOST.rstrip('/')+'/api/tags', timeout=10)); assert any('nomic-embed-text' in m['name'] for m in d['models']); print('embed ok', Config.EMBED_HOST)"
 
 ## Evolution
 
