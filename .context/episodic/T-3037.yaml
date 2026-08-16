@@ -1,0 +1,113 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3037: Prior-art gate: AEF has no control that asks WHETHER work needs doing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T13:35:23Z
+# ============================================================================
+
+task_id: T-3037
+task_name: "Prior-art gate: AEF has no control that asks WHETHER work needs doing"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T13:17:17Z
+completed: 2026-08-16T13:35:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T15:23:35+02:00
+last_commit: 2026-08-16T15:23:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  no gate asks WHETHER work needs doing — 3-for-3 rebuilt what already shipped
+
+# Key outcomes
+outcomes:
+  - 'Research artefact `docs/reports/T-3037-prior-art-gate.md` exists and'
+  - 'The measured dispatch table is **regenerable**, not a snapshot —'
+  - 'The telemetry gap claims are verifiable against committed data: the same'
+  - 'CLAUDE.md carries an execution-model section stating the dispatch default,'
+  - 'The CLAUDE.md section names the write-set constraint and points at'
+  - 'Findings are captured as observations (OBS-287 through OBS-290) so they'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'CLAUDE.md'
+  - '.context/audits/2026-08-16.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'docs/generated/components/agents-context-lib-extract_decisions.md'
+  - 'docs/generated/components/lib-index-health.md'
+  - 'docs/generated/components/lib-recall-usage.md'
+  - 'docs/generated/components/tests-integration-test_recall_miss_live.md'
+  - 'docs/generated/components/tests-unit-test_canary_manifest.md'
+  - 'docs/generated/components/tests-unit-test_chunk_cap.md'
+  - 'docs/generated/components/tests-unit-test_incremental_reindex.md'
+  - 'docs/generated/components/tests-unit-test_index_doctor_rail.md'
+  - 'docs/generated/components/tests-unit-test_index_freshness.md'
+  - 'docs/generated/components/tools-measure_chunk_tokens.md'
+  - 'docs/generated/components/web-canary.md'
+  - 'docs/generated/components/web-corpus_manifest.md'
+  - 'docs/generated/components/web-embeddings.md'
+  - 'docs/generated/components/web-recall_telemetry.md'
+  - 'docs/reports/T-3037-prior-art-gate.md'
+  - '.fabric/components/tools-dispatch_outcome_table.yaml'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3037-prior-art-gate-aef-has-no-control-that-a.md'
+  - 'tools/dispatch_outcome_table.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T15:23:35'
+    action: 'T-3037: no gate asks WHETHER work needs doing — 3-for-3 rebuilt what already shipped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 1
+  files_changed: 39
+  lines_added: 1163
+  lines_removed: 348
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3037-prior-art-gate-aef-has-no-control-that-a.md
+generated_by: context-agent-hybrid

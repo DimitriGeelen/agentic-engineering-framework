@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3038: session-scoped focus for dispatched workers — OBS-291 parallelism blocker
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T15:11:12Z
+# ============================================================================
+
+task_id: T-3038
+task_name: "session-scoped focus for dispatched workers — OBS-291 parallelism blocker"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T14:59:45Z
+completed: 2026-08-16T15:10:40Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T17:07:59+02:00
+last_commit: 2026-08-16T17:10:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  focus becomes per-session — the worker that locks its own parent out. name T-3039 in the RCA so 'filed separately' is not a dead reference
+
+# Key outcomes
+outcomes:
+  - '`FW_SESSION_SCOPED_FOCUS=1 fw context focus T-XXX` writes to a session-local'
+  - 'With no `FW_SESSION_SCOPED_FOCUS`, `fw context focus` writes the shared'
+  - '`check-active-task.sh` resolves the session-local focus file FIRST when'
+  - 'A worker setting session-scoped focus does NOT change what the parent''s gate'
+  - '`fw termlink dispatch` exports `FW_SESSION_SCOPED_FOCUS=1` +'
+  - '`tests/unit/t3038_session_scoped_focus.bats` passes and pins: default path'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/focus.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.fabric/components/tests-unit-t3038_session_scoped_focus.yaml'
+  - '.gitignore'
+  - 'lib/paths.sh'
+  - '.tasks/active/T-3038-session-scoped-focus-for-dispatched-work.md'
+  - '.tasks/active/T-3039-fw-write-set-check-blind-to-undeclared-f.md'
+  - 'tests/unit/t3038_session_scoped_focus.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T17:07:59'
+    action: 'T-3038: focus becomes per-session — the worker that locks its own parent out'
+  - time: '2026-08-16T17:10:37'
+    action: 'T-3038: name T-3039 in the RCA so ''filed separately'' is not a dead reference'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 9
+  lines_added: 834
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3038-session-scoped-focus-for-dispatched-work.md
+generated_by: context-agent-hybrid
