@@ -3588,3 +3588,17 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-279
+  text: "fw gaps hides every concern filed with status: open — 7 of 90 entries, including G-082 filed yesterday, never appear in the register's own primary view. bin/fw:7178 filters to status == 'watching' only; the header line ('11 watching, 18 resolved') accounts for 29 of 90 entries and says nothing about the other 61. CLAUDE.md §When discovering structural flaws sells the register on exactly this property — 'gaps persist in the register (visible in Watchtower, checked by audit); completed tasks archive and become invisible' — so an entry filed with the most natural status word lands in the blind spot the register exists to prevent. Two candidate fixes: widen the filter to any non-terminal status, or reject 'open' at write time and normalise to 'watching'. Found while filing G-083 (T-3030)."
+  captured: 2026-08-16T09:30:04Z
+  context_task: T-3030
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-280
+  text: "resolver-loop deploy drift: the installed unit has not picked up the T-2862 fix. /etc/systemd/system/resolver-loop.service:38 runs 'fw resolver loop --dispatch --max 1 --cooldown-min 30'; the repo template deploy/resolver-loop.service:55 runs '--stall-after 5'. The repo comment at :50-54 states why the swap was made — a cooldown the tick interval always wins is not a convergence guard (T-2862: 57 dispatches, 0 outcomes over 2 days) — and --stall-after bounds retries by evidence of advancement instead of by a clock. The host is still running the clock. This is the T-2494 deploy-mole class: the unit is a HOST-SPECIFIC TEMPLATE with no drift detector, so repo-vs-installed divergence is silent and only visible by reading both files side by side. Found while tracing the T-3030 dispatch trigger."
+  captured: 2026-08-16T09:30:12Z
+  context_task: T-3030
+  tags: []
+  status: pending
+  promoted_to: null

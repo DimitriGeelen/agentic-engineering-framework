@@ -97,7 +97,17 @@ concerns:
     type: manual
     hint: 'Check after each project: did two different agents work on the same task?'
   evidence_needed: Actual multi-agent scenario
-  evidence_collected: 0 instances across 41 tasks
+  evidence_collected: '1 instance, 2026-08-16 — the decision_trigger has FIRED. A
+    systemd-dispatched worker and the interactive session both worked T-3028 in the
+    same working tree, 08:34-08:41Z, and both wrote agents/task-create/update-task.sh.
+    See G-083 and T-3030 for the mechanism. Note what this entry got wrong:
+    why_not_now says "only one agent exists (claude-code)" and evidence_collected
+    read "0 instances across 41 tasks" — that was true at last_reviewed 2026-02-14
+    and stopped being true when the autonomous dispatch loop shipped, with nothing
+    to notice the change. trigger_check.type is manual, i.e. a promise to remember,
+    and six months of not remembering is the actual finding here. The multi-agent
+    scenario this gap was waiting for arrived as two agents COLLIDING on one task
+    rather than collaborating on it, which is the outcome the spec never modelled.'
   alternative_outcome: 'If single-agent remains the pattern after 3 projects → simplify agents field to just ''owner'', drop primary/supporting distinction.
 
     '
@@ -2983,3 +2993,95 @@ concerns:
     _cron_generate_source() defer to the registry-driven fw cron generate when
     cron-registry.yaml has jobs, so the legacy path cannot silently regress a project
     that has already migrated. Filing a build task is the next step, not done here.'
+
+- id: G-083
+  type: gap
+  title: The autonomous dispatch loop and the interactive session share one working
+    tree, and the only thing separating them is a single-slot focus field that the
+    completion path itself nulls
+  description: 'resolver-loop.timer fires every 30 minutes and runs `fw resolver loop
+    --dispatch` with WorkingDirectory pinned to the canonical MAIN checkout
+    (deploy/resolver-loop.service:39). The worker it spawns (agents/termlink/termlink.sh:861,
+    `claude -p`) therefore edits the same files, at the same paths, as whatever
+    interactive session is running — with no lock, no worktree, and no record that
+    two authors were involved.
+
+    One guard stands between them: lib/resolver.py:1526 excludes the task named in
+    .context/working/focus.yaml. Three properties make it thinner than it reads.
+    (1) It is ONE slot; a session holding two tasks in flight can protect at most
+    one. (2) The completion path nulls that slot itself —
+    agents/task-create/update-task.sh:2044-2055 (T-354) sets current_task to null
+    whenever PARTIAL_COMPLETE is false — so the window opens precisely during close,
+    reconciliation, and re-open, when the session is most likely to still be editing
+    the task. (3) It is evaluated once at pick time and never re-checked, so a
+    20-minute worker has no relationship to focus after its first second.
+
+    Observed live 2026-08-16 08:34-08:41Z: a worker for T-3028 added a 26-line guard
+    to agents/task-create/update-task.sh — a completion gate — created a bats suite,
+    edited another task file, deleted four tracked handover checkpoints, all
+    uncommitted, all concurrent with an interactive session editing the same gate for
+    T-3029. The work happened to be aligned. It was discovered only because the
+    session read a file before editing it and did not recognise its own task ID in a
+    comment. Alignment was luck; luck is not a control. Had it gone unnoticed the
+    session would have committed another agent unreviewed edit to a completion gate
+    under its own authorship.
+
+    This is not "the guard failed" — the guard did what it says. The gap is that
+    write isolation was never built, and a pick-time advisory field is carrying load
+    it was not designed for.
+
+    '
+  spec_reference: 'deploy/resolver-loop.service:39 (WorkingDirectory), :55 (ExecStart);
+    deploy/resolver-loop.timer:14 (OnUnitActiveSec=30min); lib/resolver.py:1523-1544
+    (_pick_eligibility), :1526 (focus guard), :1571 (_select_eligible);
+    agents/task-create/update-task.sh:2044-2055 (T-354 focus clear);
+    agents/termlink/termlink.sh:861 (claude -p spawn); CLAUDE.md §Trunk-Based Session
+    Flow (T-100196) — the worktree primitive that exists and that dispatched workers
+    are the one writer class not using'
+  severity: high
+  evidence:
+  - 'dispatch_id 9dba824d-b938-4cb0-bc0b-6badeacc72b9, session 2a9815a0-7015-4792-a148-9b8ccb1af3d2,
+    origin systemd:unlabeled-unit, task_snapshot {status: started-work, ac_ticked: 8}
+    — .context/dispatches.jsonl'
+  - 'journalctl -u resolver-loop.service: tick at 10:33:56 CEST, dispatch envelope
+    stamped 08:34:00.595Z four seconds later. Every other tick on 2026-08-16 logged
+    "nothing to do — no eligible tasks"; the one that differed differed because focus
+    was null'
+  - 'git show 471f054ab:.context/working/focus.yaml has current_task: T-3028 at
+    10:22:37 — the guard would have held had the close not nulled it eleven minutes
+    later'
+  - G-004 predicted this scenario in 2026-02 and has sat at status watching ever
+    since, with trigger_check.type manual and evidence_collected "0 instances across
+    41 tasks" (last_reviewed 2026-02-14). Its decision_trigger — "first project where
+    two agents need to work on the same task" — fired on 2026-08-16 and nothing
+    surfaced it, because a manual trigger-check is a promise to remember
+  trigger: &g083_trigger Any dispatched worker and any interactive session hold the
+    same task, or write the same file, within one 30-minute tick — which now has one
+    confirmed instance rather than zero
+  # `fw gaps` renders `decision_trigger`, not `trigger` (bin/fw:7224 region). G-062,
+  # G-063 and G-082 all use `trigger:` and consequently print "Trigger:" with nothing
+  # after it. Aliased rather than picked, so the entry is legible to both readers.
+  decision_trigger: *g083_trigger
+  status: watching
+  created: 2026-08-16
+  related_task: T-3030
+  related:
+  - G-004
+  - G-074
+  - T-100196
+  - T-3028
+  - T-3029
+  what_remains: 'Not fixed — registered. T-3030 carries the build: decide and
+    implement attribution (worker runs in its own worktree via the existing `fw
+    worktree create` + `fw integrate run` path, OR its dispatch id is recorded against
+    the files it touched), stop the shared single-slot focus mutation, and pin
+    whichever ships with a regression test that exercises the two-writer case rather
+    than asserting a config value. Fixing T-3029 (which is done) closes the specific
+    entry path — the false full-completion that nulled focus — but leaves all three
+    properties of the guard, and the absence of write isolation, exactly as they are.'
+  status_note: 'Filed as `watching`, not `open`, deliberately. `fw gaps` lists only
+    status == watching (bin/fw:7178); the 7 entries currently carrying `open` —
+    G-082 among them, filed yesterday — do not appear in the register''s own primary
+    view at all. Using the accurate-sounding word would have filed this gap into the
+    blind spot it describes. The invisibility itself is a separate defect and is
+    captured as an observation rather than absorbed here.'

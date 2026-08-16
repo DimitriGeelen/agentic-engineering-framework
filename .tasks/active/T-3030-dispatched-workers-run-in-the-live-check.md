@@ -200,7 +200,7 @@ in its own task — filed as an observation rather than absorbed here.
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] The trigger is identified and named in this task — cited by file:line, not inferred. See `## Trigger`. The AC's own premise ("spawned on `--status work-completed`") was wrong and is corrected there: the trigger is `resolver-loop.timer` on a 30-minute clock, and the close path's contribution was nulling the focus guard, not spawning anything.
-- [ ] The concern is registered in `concerns.yaml` (it is a structural blindness, and the register outlives this task while a completed task file does not)
+- [x] The concern is registered in `concerns.yaml` — **G-083** (high), `.context/project/concerns.yaml`, visible in `fw gaps`. Also updated **G-004**, which predicted this exact scenario in 2026-02 and whose `decision_trigger` fired here after six months of a `manual` trigger-check nobody ran.
 - [ ] A dispatched worker's writes are attributable after the fact: either it runs in its own worktree, or its dispatch id is recorded against the files it touched — decided and implemented, not left as a note
 - [ ] `.context/working/focus.yaml` is not silently mutated by a worker while an interactive session holds focus — either workers get their own focus slot or the write is refused
 - [ ] A regression test covers whichever mechanism ships, exercising the two-writer case rather than asserting a config value
