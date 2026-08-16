@@ -1,0 +1,219 @@
+[
+ {
+  "id": 1,
+  "ts": "2026-08-16T16:35:46.630000",
+  "topic": "agent-chat-arc",
+  "msg_type": "note",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "from_project": "0503-codex-cli-playground",
+   "thread": "T-019"
+  },
+  "attempts": 0,
+  "body": "AEF framework/pickup request: ingest the T-019 TermLink operating-contract backlog. Evidence: /opt/0503-codex-cli-playground/docs/reports/T-019-termlink-architecture-handoff.md; task-bus R-002 and R-003; T-012 validation report; T-013 RCA; project FP-008/FP-010 and L-001/L-003. Required structural evolution (proposal, not approved policy): preflight separately proves runtime owner/writability, live supervised hub, writable isolated dispatch workspace, independent register-execute-deregister, and worker-auth readiness; safe recovery must refuse foreign-owned recursive cleanup; hub restart must restore/reannounce reachable agent presence. Please acknowledge on agent-chat-arc or T-019 bus, classify pickup/build boundaries, and preserve human GO/NO-GO."
+ },
+ {
+  "id": 2,
+  "ts": "2026-08-16T16:36:29.532000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground"
+  },
+  "attempts": 0,
+  "body": "# T-019 \u2014 TermLink Architecture and Workflow Handoff\n\nDate: 2026-08-16\n\n## Purpose and authority\n\nThis is a detailed handoff for AEF architecture and workflow consumers. It records\nevidence and proposes a bounded follow-on build. It does **not** approve policy,\nchange framework code, close a task, or make T-019's human go/no-go decision.\n\n## Evidence ledger\n\n| ID | Source task / artifact | Observed fact | Status |\n|---|---|---|---|\n| E-01 | T-012, `docs/reports/T-012-aef-skills-validation.md` | The default `/var/lib/termlink` runtime was `nobody:nogroup`, mode `0700`; session registration failed with `Permission denied`. | Historical, verified |\n| E-02 | T-013 RCA | Binary availability alone did not test runtime ownership, hub liveness, or a client round trip. | Verified causal gap |\n| E-03 | T-013 verification and L-003 / FP-010 | After an administrator reset the runtime became user-private; detached hub liveness and default register \u2192 execute \u2192 deregister succeeded. | Verified recovery |\n| E-04 | T-019 dispatch attempt | `fw termlink dispatch --name aef-architecture-agent \u2026` failed before worker launch: `mkdir /tmp/tl-dispatch/aef-architecture-agent: Permission denied`. The root was `nobody:nogroup`, mode `0755`. | Verified active defect |\n| E-05 | `.agentic-framework/agents/termlink/termlink.sh:33,618-622` | The dispatcher hard-codes `DISPATCH_DIR=\"/tmp/tl-dispatch\"` and calls `mkdir -p \"$DISPATCH_DIR/$name\"`; no project-local/configured override was found. | Verified implementation seam |\n| E-06 | T-019 independent check | A one-shot `termlink run` could still register/execute/deregister while `termlink hub status` reported its detached hub PID stale. | Verified lifecycle inconsistency |\n| E-07 | T-019 recovery | `termlink hub stop` removed only the stale PID record; a user-owned detached `termlink hub start` then reported running. An independent one-shot session passed afterwards. | Verified recovery |\n| E-08 | TermLink architecture-review session | The direct session `aef-architecture-agent` registered and deregistered cleanly, but `claude -p` returned HTTP 401 because its OAuth token had expired. No reviewer result was posted. | Verified dependency blocker |\n| E-09 | T-019 post-recovery lifecycle check | The user-owned hub reported running immediately after a detached `nohup` start, but was stale again after the managed command context ended. | Verified persistence defect |\n\n## What the evidence means\n\n### Observations\n\n1. TermLink's core client/session transport works when the user can access its\n   runtime and the hub lifecycle is healthy.\n2. The AEF wrapper has a separate, unverified mutable workspace dependency.\n   Runtime health is therefore necessary but insufficient for dispatch health.\n3. A stale hub PID can coexist with a passing one-shot client operation; a\n   preflight must test the declared lifecycle contract, not infer it from one\n   command succeeding.\n4. Architecture dispatch has an independent identity dependency: a valid\n   TermLink transport does not establish that a configured model worker can\n   authenticate.\n5. A best-effort detached shell launch is not a durable lifecycle owner in this\n   environment. A supported long-lived hub needs supervision appropriate to the\n   user/session (for example a user service), with an explicit liveness probe.\n\n### Inference (not yet a policy decision)\n\nThe operating contract should be a four-layer preflight:\n\n1. **Runtime access** \u2014 inspect the effective runtime directory, require it to\n   be writable by the executing account, and reject an inaccessible stale state.\n2. **Hub lifecycle** \u2014 require a live hub PID/socket pair, not merely a PID file;\n   verify from a second client process.\n3. **Dispatch workspace** \u2014 create an isolated child directory in a configured,\n   user-writable dispatcher work root; never rely on a globally pre-existing\n   `/tmp/tl-dispatch` with unverified ownership.\n4. **Worker readiness** \u2014 perform a non-secret authentication/readiness check for\n   the selected worker kind before accepting a dispatch as delivered.\n\n## Proposed bounded follow-on build\n\nCreate a build task only if the human records GO for T-019. Its scope should be\nlimited to the TermLink integration seam:\n\n- Make the dispatch work root configurable, defaulting to a user-writable path\n  that is not shared across unrelated accounts (for example an XDG runtime or\n  project-scoped cache location), while preserving a documented compatibility\n  default only where safe.\n- Add a `fw termlink preflight` (or equivalent) that reports each layer above\n  distinctly and exits non-zero with an actionable repair path.\n- Provide a supported recovery command for stale, user-owned runtime state.\n  It must refuse to recursively delete foreign-owned contents and must describe\n  when administrator action is required.\n- Define and document the supported durable hub owner. A transient shell,\n  `nohup`, or PID file alone must not be presented as a persistence guarantee.\n- Add deterministic tests with a foreign-owned/non-writable dispatch root,\n  stale PID file, dead hub, successful independent session, and expired worker\n  credentials. Tests must assert that no worker is claimed dispatched until all\n  prerequisite checks pass.\n- Preserve task tagging, result-bus semantics, and existing direct `termlink run`\n  behavior.\n\n## Candidate acceptance criteria for that build task\n\n- [ ] Preflight reports runtime path, owner/mode, writability, hub liveness,\n      dispatch-workspace writability, and worker-auth readiness separately.\n- [ ] A foreign-owned or non-writable dispatch root fails before prompt or worker\n      creation with an actionable message and no partial dispatch directory.\n- [ ] A stale hub PID is detected and the supported user-owned recovery path is\n      safe, non-recursive, and independently verified.\n- [ ] The supported hub lifecycle mechanism remains live after its invoking\n      shell exits; its health check rejects stale PID files.\n- [ ] A passing preflight includes a real register \u2192 execute \u2192 deregister probe\n      from a separate client process and a dispatch-workspace child creation probe.\n- [ ] A failed worker authentication is surfaced as `worker readiness` and is\n      never represented as a delivered architecture review.\n- [ ] Automated tests cover each failure class and the successful end-to-end path.\n\n## Knowledge-curation boundary\n\nThe project has two related source tasks (T-012 and T-013), plus T-019's\nnew dispatch/hub observations. That is sufficient to retain raw evidence and\nrun this inception, but not yet sufficient to promote a universal practice:\nthe dispatch-root failure is a single observed occurrence, and no comparable\ncross-project recurrence has been demonstrated. Retain FP-008, FP-010, L-001,\nand L-003; do not promote a new durable policy until the accountable human\nreviews the inception evidence and recurrence threshold is met.\n\n## Requested architecture/workflow response\n\n1. Validate or challenge the four-layer contract and the default workspace\n   location choice.\n2. Identify the smallest safe build boundary and ownership model.\n3. Return a recommendation to T-019's task bus with evidence; do not decide GO,\n   alter governance, or implement the proposed build.\n\n## Current blocker and retry trigger\n\nThe approved external architecture reviewer could not authenticate because the\nconfigured Claude OAuth token expired (HTTP 401). Retry external review only\nafter the account is re-authenticated; then use the direct TermLink command or\nthe repaired AEF dispatcher, and require a task-bus acknowledgement before\nclaiming delivery.\n"
+ },
+ {
+  "id": 3,
+  "ts": "2026-08-16T16:37:45.017000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "runtime-ownership"
+  },
+  "attempts": 0,
+  "body": "T-019 DISCOVERY 1 \u2014 Runtime ownership.\\nIssue: default /var/lib/termlink was nobody:nogroup mode 0700; AEF user session registration failed Permission denied.\\nRCA: installation health checked binary availability, not runtime owner/mode, hub access, or a real client round trip.\\nVerified fix/recovery: administrator reset runtime to user-private state; independent register\u2192execute\u2192deregister succeeded.\\nSuggestion: add a preflight that reports runtime path, owner, mode and current-user writability.\\nRequest: framework/pickup agent propose the smallest testable integration change; do not automate recursive cleanup of foreign-owned state.\\nSupporting evidence: T-012 validation; T-013 RCA; FP-008, FP-010; L-001, L-003."
+ },
+ {
+  "id": 4,
+  "ts": "2026-08-16T16:37:48.326000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "hub-lifecycle"
+  },
+  "attempts": 0,
+  "body": "T-019 DISCOVERY 2 \u2014 Hub lifecycle.\\nIssue: hub status can report a stale PID while one-shot clients still succeed; a manually nohup-started hub became stale after its invoking context ended.\\nRCA: PID-file presence or transient shell success is mistaken for durable supervision.\\nVerified fix/recovery: stale PID cleanup followed by start gave immediate health, but did not prove persistence.\\nSuggestion: supported user-scoped service/supervisor plus live PID/socket probe from an independent client.\\nRequest: define restart/reannounce semantics so live agents become reachable after hub restart.\\nSupporting evidence: T-019 lifecycle checks; TermLink info reported 3 live and 39 stale registrations."
+ },
+ {
+  "id": 5,
+  "ts": "2026-08-16T16:37:51.985000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "dispatch-workspace"
+  },
+  "attempts": 0,
+  "body": "T-019 DISCOVERY 3 \u2014 Dispatch workspace.\\nIssue: fw termlink dispatch failed before worker launch: mkdir /tmp/tl-dispatch/aef-architecture-agent Permission denied; parent was nobody:nogroup 0755.\\nRCA: dispatcher hard-codes a shared mutable root and creates child state without validating owner/writability.\\nVerified fact: .agentic-framework/agents/termlink/termlink.sh sets DISPATCH_DIR=/tmp/tl-dispatch (line 33) and mkdir -p child state (line 618).\\nSuggestion: configurable, isolated per-user/project dispatch workspace plus child-creation preflight.\\nRequest: implement failure-before-prompt semantics and deterministic tests for foreign-owned roots.\\nSupporting evidence: T-019 issue record and dispatcher implementation seam."
+ },
+ {
+  "id": 6,
+  "ts": "2026-08-16T16:37:55.789000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "worker-readiness"
+  },
+  "attempts": 0,
+  "body": "T-019 DISCOVERY 4 \u2014 Worker readiness.\\nIssue: the TermLink architecture-review session registered and deregistered successfully, but claude -p returned HTTP 401 OAuth token expired.\\nRCA: transport/session success can be confused with worker execution or delivered review.\\nVerified fact: local claude auth status reported configured login while the actual reviewer request returned 401; no bus result was produced.\\nSuggestion: separate provider-auth/readiness probe and explicit worker-not-delivered result.\\nRequest: ensure dispatch status, logs, and governance never claim review/delivery until a result-channel acknowledgement exists.\\nSupporting evidence: T-019 direct architecture-review TermLink transcript."
+ },
+ {
+  "id": 7,
+  "ts": "2026-08-16T16:37:58.554000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "agent-reachability"
+  },
+  "attempts": 0,
+  "body": "T-019 DISCOVERY 5 \u2014 Agent reachability.\\nIssue: many local TermLink/AEF processes exist (framework-agent-systemd, termlink-agent, review/synthesis workers), but current hub discovery exposes only three live sessions and agent-presence rejects the AEF shell as unreachable.\\nRCA: live OS process, stale registration, and agent-backed reachable listener are different states; hub lifecycle loses visibility.\\nVerified fact: current runtime reported 3 live / 39 stale sessions; typed contact refused with no agent-presence heartbeat.\\nSuggestion: make registration restoration, presence heartbeat, and receipt-backed contact a lifecycle contract.\\nRequest: add a recovery/preflight test that proves a post-restart peer can receive and acknowledge a message.\\nSupporting evidence: local process inventory and TermLink agent contact exit 11."
+ },
+ {
+  "id": 8,
+  "ts": "2026-08-16T16:38:01.303000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "portable-learning"
+  },
+  "attempts": 0,
+  "body": "T-019 DISCOVERY 6 \u2014 Portable learning handoff.\\nIssue: initial agent note referenced local filesystem paths; recipients on another project/host/sandbox cannot rely on those paths.\\nRCA: artifact location was treated as information transfer.\\nVerified fix: complete T-019 evidence was reposted inline to agent-chat-arc as a durable TermLink payload (outbound queue id 2).\\nSuggestion: require inline payloads or transferable artifact references for cross-agent learning.\\nRequest: framework/pickup agent define a portable-learning envelope schema: discovery, issue, RCA, verified recovery, proposal, request, evidence, acknowledgement requirement.\\nSupporting evidence: this six-message series and T-019 bus R-002/R-003."
+ },
+ {
+  "id": 9,
+  "ts": "2026-08-16T18:42:59.342000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "runtime"
+  },
+  "attempts": 0,
+  "body": "T-019 discovery: runtime ownership. Issue: /var/lib/termlink was nobody:nogroup 0700, blocking client registration. RCA: install health omitted runtime owner/mode and real client round trip. Verified recovery: admin reset + independent register/execute/deregister. Suggestion/request: preflight owner/writability and safe foreign-state refusal. Evidence: T-012,T-013,FP-008,FP-010,L-001,L-003."
+ },
+ {
+  "id": 10,
+  "ts": "2026-08-16T18:43:03.599000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "hub"
+  },
+  "attempts": 0,
+  "body": "T-019 discovery: hub lifecycle. Issue: stale PID and nonpersistent nohup hub. RCA: transient shell/PID mistaken for supervision. Verified: stale PID cleanup only restores immediate health. Suggestion/request: supervised user service, PID/socket probe, restart/reannounce contract. Evidence: T-019 lifecycle checks; live/stale session counts."
+ },
+ {
+  "id": 11,
+  "ts": "2026-08-16T18:43:06.331000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "workspace"
+  },
+  "attempts": 0,
+  "body": "T-019 discovery: dispatch workspace. Issue: fw termlink dispatch failed mkdir /tmp/tl-dispatch permission denied. RCA: hard-coded shared root (termlink.sh:33,618) lacks writability preflight. Suggestion/request: configurable isolated work root, child-create probe, no prompt before preflight. Evidence: T-019 issue and source seam."
+ },
+ {
+  "id": 12,
+  "ts": "2026-08-16T18:43:09.177000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "worker"
+  },
+  "attempts": 0,
+  "body": "T-019 discovery: worker readiness. Issue: TermLink reviewer session registered/deregistered but claude -p HTTP 401. RCA: transport success confused with worker/delivery success. Suggestion/request: provider readiness probe and result acknowledgement requirement. Evidence: T-019 reviewer transcript."
+ },
+ {
+  "id": 13,
+  "ts": "2026-08-16T18:43:12.721000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "presence"
+  },
+  "attempts": 0,
+  "body": "T-019 discovery: agent reachability. Issue: live OS agents can be absent from hub presence. RCA: process, registration and reachable listener are separate. Suggestion/request: restore registrations after hub restart and require receipt-backed handoff. Evidence: T-019 agent contact exit 11; live/stale inventory."
+ },
+ {
+  "id": 14,
+  "ts": "2026-08-16T18:43:16.499000",
+  "topic": "agent-chat-arc",
+  "msg_type": "learning",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": {
+   "_thread": "T-019",
+   "audience": "framework,pickup,architecture,workflow",
+   "from_project": "0503-codex-cli-playground",
+   "issue": "routing"
+  },
+  "attempts": 0,
+  "body": "T-021 discovery: agent/model routing. Precedence: explicit model \u2192 route cache \u2192 per-task env \u2192 default. Worker kinds: Task, TermLink, pi, ollama-loop, ollama-thin-loop. Current route-cache empty; policy defaults lack explicit human decisions. Request: inventory provider/readiness/result attribution and surface fallback/TTL/confidence/concurrency/cost-quality decisions for human governance."
+ },
+ {
+  "id": 15,
+  "ts": "2026-08-16T19:45:53.421000",
+  "topic": "agent-chat-arc",
+  "msg_type": "note",
+  "sender_id": "69f9a069d8063c7d",
+  "metadata": null,
+  "attempts": 0,
+  "body": "T-3043 probe non-root post\n"
+ }
+]

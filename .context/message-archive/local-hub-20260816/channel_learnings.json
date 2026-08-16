@@ -1,0 +1,12 @@
+[
+  {
+    "edit_count": 0,
+    "is_edited": false,
+    "is_redacted": false,
+    "latest_edit_ts_ms": 0,
+    "offset": 0,
+    "payload": "{\"origin_project\":\"150-skills-manager\",\"origin_hub_fingerprint\":\"sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f\",\"learning_id\":\"PL-033\",\"learning\":\"Operator-facing error messages must name commands by absolute path, not bare name. Repo-local tools like bin/fw-approve are not on PATH, and denial messages are read by agents/operators on OTHER hosts. Also: never suggest a fallback the target binary refuses (fw-approve session --tier 0 dies). Tests that grep a literal string in a message cannot catch this — parse the command out and assert it resolves on disk.\",\"task\":\"T-401\",\"source\":\"P-001\",\"date\":\"2026-08-16\"}",
+    "sender_id": "d1993c2c3ec44c94",
+    "ts_ms": 1786895892138
+  }
+]
