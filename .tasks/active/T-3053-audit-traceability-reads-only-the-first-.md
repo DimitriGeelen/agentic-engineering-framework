@@ -1,13 +1,18 @@
 ---
 id: T-3053
-name: "audit traceability reads only the first T-ref in a commit subject — multi-ref commits flagged orphan"
+name: "audit traceability reads only the first T-ref in a commit subject — multi-ref
+  commits flagged orphan"
 description: >
-  From T-3047 triage M-24 (ring20-management, 2026-06-11). agents/audit/audit.sh:2476 is task_ref=$(... grep -oE "T-[0-9]+" | head -1) followed by a single-ref existence test at :2478. The revert-chain (T-2058) and root-commit (T-2851) escapes are orthogonal — neither looks at a second ref. A commit like "T-A/T-B-side:" is reported orphaned whenever the first ref does not resolve.
+  From T-3047 triage M-24 (ring20-management, 2026-06-11). agents/audit/audit.sh:2476
+  is task_ref=$(... grep -oE "T-[0-9]+" | head -1) followed by a single-ref existence
+  test at :2478. The revert-chain (T-2058) and root-commit (T-2851) escapes are orthogonal
+  — neither looks at a second ref. A commit like "T-A/T-B-side:" is reported orphaned
+  whenever the first ref does not resolve.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [upstream-pickup, T-3047-triage]
 components: []
 related_tasks: [T-3047]
@@ -22,8 +27,8 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:31:41Z
-last_update: 2026-08-16T22:31:41Z
-date_finished: null
+last_update: 2026-08-16T22:55:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +39,74 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-16T22:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3053: audit traceability reads only the first T-ref in a commit subject — multi-ref commits flagged orphan
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filed from T-3047 triage M-24 (ring20-management, 2026-06-11 — unread for two months).
+
+`agents/audit/audit.sh:2476` extracts the task reference from a commit subject with
+`grep -oE "T-[0-9]+" | head -1`, then tests only that one id for existence at `:2478`.
+A commit referencing more than one task — `T-A/T-B-side:`, `T-A + T-B:` — is therefore
+reported orphaned whenever the *first* id fails to resolve, even though a later one
+resolves fine.
+
+Two escapes were added to this check since the report and neither touches the failure
+mode: revert-chain suppression (T-2058, `:2481-2488`) and root-commit exemption
+(T-2851, `:2496-2498`). Both operate on the single already-chosen ref. The triage also
+found the same `head -1` shape surviving at a second site in the file.
+
+Direction of the error matters for prioritisation: this is a **false FAIL**, not a
+false green. It generates audit noise rather than hiding defects, which is why it has
+been survivable for two months — but audit noise is what trains operators to stop
+reading audit output, so it is not free.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1** The traceability check resolves a commit as traceable when **any**
+  `T-NNNN` in its subject names an existing task, not only the first.
+- [ ] **A2** A commit whose refs *all* fail to resolve is still reported orphaned —
+  the fix must not turn the check into a no-op. This is the direction most likely to
+  be broken silently by an over-broad fix.
+- [ ] **A3** The second `head -1` site found in the same file is either fixed the same
+  way or shown by citation to be a different question that legitimately wants one ref.
+- [ ] **A4** A regression test covers all three shapes against a synthetic repo:
+  first-ref-resolves, later-ref-resolves-first-does-not, and none-resolve. The middle
+  case must be observed red against the current `head -1` form.
+- [ ] **A5** The existing T-2058 revert-chain and T-2851 root-commit escapes still fire
+  — they operate on a single chosen ref, so a multi-ref rewrite can break them without
+  any test noticing.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -237,3 +296,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3053-audit-traceability-reads-only-the-first-.md
 - **Context:** Initial task creation
+
+### 2026-08-16T22:55:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

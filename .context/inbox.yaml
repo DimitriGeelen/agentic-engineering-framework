@@ -3817,3 +3817,17 @@ observations:
   tags: [audit]
   status: pending
   promoted_to: null
+- id: OBS-310
+  text: "OBS-306/307/309 correction: the pre-push audit block was contention with a WORKING audit, not a deadlock. Evidence: the lock holder (fd 200 on .context/locks/audit.lock) was running agents/git/lib/secret-scan.sh / git grep and exited normally after ~160s; waiting 96s then pushing once succeeded. Two of my earlier claims were wrong. (1) Process-count evidence overcounted holders ~3x: fd 200 is INHERITED by every child, so one audit appears as 3-6 hits under pgrep -f 'audit.sh'. (2) I told the operator the gate's own advice ('wait for the running audit to finish, then push again') was backwards. It is not — it is correct, and following it verbatim cleared a block I had been fighting for hours. OBS-308 (flock bound to an inode vs the EXIT trap's rm -f in audit.sh:377) remains a real defect worth fixing, but it was NOT the cause of this blockage; do not let the two travel together."
+  captured: 2026-08-16T20:41:23Z
+  context_task: T-3046
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-311
+  text: "T-3054's own Verification carries the exact anti-pattern the task is about. Reviewer R-3e24a4f6 flagged empty-output-success on line 71: 'curl -sf $(bin/fw watchtower url)/ > /dev/null' asserts reachability only — a 200 from a Watchtower serving the WRONG project satisfies it identically, which is the precise failure T-3054 exists to make detectable. Same shape as the port-3000 class in CLAUDE.md (371 violations across 277 tasks, all false greens). Correct line for whoever re-runs it: curl the /api/_identity endpoint to a file and grep that project_root equals PROJECT_ROOT — assert identity, not liveness. Task is already closed and the weak line did pass truthfully at the time, so this is a latent weak assertion rather than a live defect. Worth a reviewer rule: flag a Verification line that curls and discards the body when the task subject is which instance is served."
+  captured: 2026-08-16T22:56:31Z
+  context_task: T-3054
+  tags: []
+  status: pending
+  promoted_to: null
