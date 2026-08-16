@@ -8485,8 +8485,13 @@ PYPREDICT
                     echo -e "${BOLD}=== Bats Unit Tests ===${NC}"
                     if [ "$#" -gt 0 ]; then
                         bats "$@" || _test_exit=1
-                    else
+                    # T-3048: guard the directory, as the integration/governance/lint
+                    # legs already do. Unguarded, a vendored consumer that ships no
+                    # tests/unit/ got a bats hard error where every sibling leg skips.
+                    elif [ -d "$FRAMEWORK_ROOT/tests/unit/" ] && ls "$FRAMEWORK_ROOT/tests/unit/"*.bats >/dev/null 2>&1; then
                         bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                    else
+                        echo "  No bats unit tests found."
                     fi
                     echo ""
                 fi
@@ -8612,7 +8617,12 @@ PYPREDICT
                 # 1. Bats unit tests
                 if command -v bats >/dev/null 2>&1; then
                     echo -e "${BOLD}--- Bats Unit Tests ---${NC}"
-                    bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                    # T-3048: same guard as the `unit` subcommand above.
+                    if [ -d "$FRAMEWORK_ROOT/tests/unit/" ] && ls "$FRAMEWORK_ROOT/tests/unit/"*.bats >/dev/null 2>&1; then
+                        bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                    else
+                        echo "  No bats unit tests found."
+                    fi
                     echo ""
                 else
                     echo -e "${YELLOW}SKIP: bats not installed${NC}"

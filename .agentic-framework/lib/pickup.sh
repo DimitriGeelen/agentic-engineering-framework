@@ -470,8 +470,14 @@ pickup_process_one() {
     # Shell pickup stays portable — bridge silently no-ops on any failure.
     local processed_path="$PICKUP_PROCESSED/$basename_f"
     local bridge="${FRAMEWORK_ROOT:-}/lib/pickup-channel-bridge.sh"
-    if [ -f "$processed_path" ] && [ -x "$bridge" ]; then
-        "$bridge" "$processed_path" 2>/dev/null || true
+    # T-3051: gate on existence, invoke through `bash`. Gating on the exec bit
+    # made this a no-op on every install derived from a git clone — git tracked
+    # the bridge as 100644, so the branch was skipped and `fw pickup process`
+    # reported success while the channel mirror never ran. The surrounding code
+    # is deliberately non-fatal, which is exactly why nobody noticed for two
+    # months: a skipped bridge and a successful one look identical from outside.
+    if [ -f "$processed_path" ] && [ -f "$bridge" ]; then
+        bash "$bridge" "$processed_path" 2>/dev/null || true
     fi
 
     return 0

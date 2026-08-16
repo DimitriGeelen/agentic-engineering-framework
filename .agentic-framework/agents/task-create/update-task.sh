@@ -1650,10 +1650,11 @@ PY
         # the estimator's output is advisory; a missing proposed score does
         # not block any downstream gate.
         if [ "$NEW_STATUS" = "started-work" ] && [ -n "$TASK_ID" ]; then
-            if [ -x "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
+            # T-3051: -f + bash, not -x — git tracks this estimator as 100644.
+            if [ -f "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
                 (
                     PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
-                    "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
+                    bash "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
                         one "$TASK_ID" >/dev/null 2>&1
                 ) &
                 disown 2>/dev/null || true

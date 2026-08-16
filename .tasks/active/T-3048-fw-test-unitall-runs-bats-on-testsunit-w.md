@@ -10,7 +10,7 @@ description: >
   instead of a skip. Reproduced against this repo own .agentic-framework/, which ships
   tests/integration but no tests/unit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:28:58Z
-last_update: '2026-08-16T22:30:09Z'
+last_update: 2026-08-16T22:42:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,14 +74,36 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filed from T-3047 triage M-04 and M-05 — the same defect, reported independently by
+`proxmox-ring20-management` on 2026-05-13 and again three days later, and unread for
+three months.
+
+`bin/fw:8489` (the `unit` subcommand) and `bin/fw:8612-8615` (the `all` branch) invoke
+`bats "$FRAMEWORK_ROOT/tests/unit/"` guarded only by `command -v bats`. Every sibling
+leg guards the directory as well — pytest at `bin/fw:8496`, integration at
+`bin/fw:8517-8518`, governance and lint likewise. A vendored consumer that ships no
+`tests/unit/` therefore gets a hard `ERROR: Test file … does not exist` where the other
+legs print a skip.
+
+This repo's own `.agentic-framework/` reproduces it: it vendors `tests/integration` and
+no `tests/unit`.
+
+The asymmetry is the whole bug — the guard pattern was already established in four
+neighbouring branches and simply omitted from two.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1** Both bats legs (`unit` subcommand and `all` branch) guard on directory
+  existence *and* on the presence of at least one `.bats` file, matching the sibling
+  legs' `[ -d … ] && ls …/*.bats` shape rather than inventing a third pattern.
+- [x] **A2** With no `tests/unit/` present, both legs skip with a message and return
+  success — not a bats hard error. Verified by running against a synthetic
+  FRAMEWORK_ROOT that has no `tests/unit/`, which is the consumer's actual situation.
+- [x] **A3** With `tests/unit/` present, both legs still run the suite — the guard must
+  not silently disable testing in the framework repo itself.
+- [x] **A4** A regression test pins both directions, and is observed red against the
+  unguarded form.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -174,6 +196,19 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# A1-A4 — the regression suite, including the load-bearing-guard mutation (test 3)
+out=$(bats tests/unit/t3048_bats_leg_guard.bats 2>&1); echo "$out" | grep -q '^ok 5 ' && ! echo "$out" | grep -q '^not ok'
+
+# A1 — both legs carry the same guard shape the sibling legs use
+test "$(grep -cF 'ls "$FRAMEWORK_ROOT/tests/unit/"*.bats >/dev/null 2>&1' bin/fw)" -ge 2
+
+# no unguarded bats invocation on tests/unit/ survives
+test "$(grep -B1 -F 'bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1' bin/fw | grep -c '\[ -d ')" -eq 2
+
+# bin/fw still parses, and the router/help invariant still holds
+bash -n bin/fw
+out=$(bin/fw test invariants 2>&1); echo "$out" | grep -q '^ok 57 ' && ! echo "$out" | grep -q '^not ok'
 
 ## RCA
 
@@ -271,3 +306,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3048-fw-test-unitall-runs-bats-on-testsunit-w.md
 - **Context:** Initial task creation
+
+### 2026-08-16T22:42:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
