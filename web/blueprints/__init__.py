@@ -40,6 +40,7 @@ def register_blueprints(app):
     from web.blueprints.bvp import bp as bvp_bp
     from web.blueprints.designer import bp as designer_bp
     from web.blueprints.designer_api import bp as designer_api_bp
+    from web.blueprints.embeddings import bp as embeddings_bp
 
     for bp in (
         core_bp, tasks_bp, timeline_bp, discovery_bp, quality_bp,
@@ -48,5 +49,6 @@ def register_blueprints(app):
         approvals_bp, review_bp, costs_bp, config_bp, terminal_bp, sessions_page_bp,
         prompts_bp, pending_bp, fleet_bp, reviewer_bp, escalation_bp, hooks_bp,
         orchestrator_bp, arcs_bp, bvp_bp, designer_bp, designer_api_bp,
+        embeddings_bp,
     ):
         app.register_blueprint(bp)

@@ -233,10 +233,16 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
   based on a routing key (start: hardcoded ollama-default with cloud
   fallback on connection error). Outcome recorded in
   `dispatch-outcomes.jsonl`. Bats test covers both branches.
-- [ ] **A4** Watchtower panel `/embeddings` shows: index mtime,
+- [x] **A4** Watchtower panel `/embeddings` shows: index mtime,
   miss-rate (rolling 24h), recent happiness ratings, last 10 routing
   decisions. Playwright test pins visibility (per T-1575 rule —
   element-presence grep is forbidden for UI).
+  — live at `/embeddings` (200, nav under Govern → Health). Renders real data:
+  407,498 chunks, index age 0.0d from manifest, 2.6% miss rate over 117 queries,
+  happiness mean +2.2 over 6 ratings, 10 routing decisions.
+  `tests/playwright/test_embeddings_panel.py` 13/13 green — asserts visibility
+  and rendered text, including a tri-state test that a `None` never renders as
+  a number (the T-3004 failure mode).
 - [ ] **A5** Eat-our-dogfood: this task carries a populated
   `## Evolution` log at completion (Evolution-gate from T-1718 Slice 1
   fires on this task — the gate's first real consumer).

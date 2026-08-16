@@ -1,0 +1,20 @@
+id: web/templates/embeddings.html
+name: embeddings
+type: template
+subsystem: watchtower
+location: web/templates/embeddings.html
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-16
+created_by: unknown
