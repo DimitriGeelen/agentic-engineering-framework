@@ -1,5 +1,3 @@
-{"timestamp":"2026-07-12T07:30:01+02:00","host":"dimitrimintdev","pid":1393149,"etime_sec":61840,"rss_kb":195424,"vsz_kb":736848,"pcpu":0.3,"state":"up"}
-{"timestamp":"2026-07-12T07:35:01+02:00","host":"dimitrimintdev","pid":1393149,"etime_sec":62140,"rss_kb":195424,"vsz_kb":736848,"pcpu":0.3,"state":"up"}
 {"timestamp":"2026-07-12T07:40:01+02:00","host":"dimitrimintdev","pid":1393149,"etime_sec":62440,"rss_kb":195424,"vsz_kb":736848,"pcpu":0.3,"state":"up"}
 {"timestamp":"2026-07-12T07:45:01+02:00","host":"dimitrimintdev","pid":1393149,"etime_sec":62740,"rss_kb":195424,"vsz_kb":736848,"pcpu":0.3,"state":"up"}
 {"timestamp":"2026-07-12T07:50:01+02:00","host":"dimitrimintdev","pid":1393149,"etime_sec":63040,"rss_kb":195424,"vsz_kb":736848,"pcpu":0.3,"state":"up"}
@@ -10078,3 +10076,5 @@
 {"timestamp":"2026-08-16T21:50:01+02:00","host":"dimitrimintdev","pid":533366,"etime_sec":16319,"rss_kb":296204,"vsz_kb":2256236,"pcpu":2.2,"state":"up"}
 {"timestamp":"2026-08-16T21:55:01+02:00","host":"dimitrimintdev","pid":533366,"etime_sec":16619,"rss_kb":296204,"vsz_kb":2256236,"pcpu":2.2,"state":"up"}
 {"timestamp":"2026-08-16T22:00:01+02:00","host":"dimitrimintdev","pid":533366,"etime_sec":16919,"rss_kb":230608,"vsz_kb":2258284,"pcpu":2.2,"state":"up"}
+{"timestamp":"2026-08-16T22:05:01+02:00","host":"dimitrimintdev","pid":533366,"etime_sec":17219,"rss_kb":227856,"vsz_kb":2258284,"pcpu":2.2,"state":"up"}
+{"timestamp":"2026-08-16T22:10:01+02:00","host":"dimitrimintdev","pid":533366,"etime_sec":17519,"rss_kb":222568,"vsz_kb":2258284,"pcpu":2.2,"state":"up"}

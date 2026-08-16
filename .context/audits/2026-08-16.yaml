@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-16-2147
-timestamp: 2026-08-16T19:47:22Z
+# Audit Results - 2026-08-16-2208
+timestamp: 2026-08-16T20:08:34Z
 sections: "structure"
 summary:
-  pass: 31
+  pass: 30
   warn: 5
-  fail: 0
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -49,15 +49,15 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 1077 registered card(s)"
+    check: "Fabric: 1079 registered card(s)"
   - level: WARN
-    check: "Fabric: 160/990 cards have no edges"
+    check: "Fabric: 162/992 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 7 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 709 card(s) point at files no watch pattern covers"
+    check: "Fabric: 710 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
@@ -69,8 +69,9 @@ findings:
     check: "Large-file gate: tracked tree clean"
   - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: PASS
-    check: "Invariant suite: 57 structural invariant(s) green (tests/lint/)"
+  - level: FAIL
+    check: "Invariant suite: 1 of 57 structural invariant(s) RED (T-2837)"
+    mitigation: "Run: fw test invariants"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS
