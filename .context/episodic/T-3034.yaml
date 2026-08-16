@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3034: CTL-028 mitigation string leads with --force — steer agents to the clean close instead
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T12:25:41Z
+# ============================================================================
+
+task_id: T-3034
+task_name: "CTL-028 mitigation string leads with --force — steer agents to the clean close instead"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T12:21:12Z
+completed: 2026-08-16T12:25:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T14:25:00+02:00
+last_commit: 2026-08-16T14:25:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CTL-028 told agents to bypass the gate it exists to defend
+
+# Key outcomes
+outcomes:
+  - '`audit.sh:3958`''s mitigation leads with the plain `bin/fw task update <id>'
+  - '`--force` still appears, but explicitly demoted: named as a last resort, marked'
+  - 'Hand-editing frontmatter is no longer offered as a co-equal remedy — it is the'
+  - 'No other governance-gate `--force` remains in an audit mitigation string:'
+  - '`audit.sh` still parses and the CTL-028 control still runs: a compliance-section'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.context/audits/2026-08-16.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-3033.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3034-ctl-028-mitigation-string-leads-with---f.md'
+  - '.tasks/completed/T-3033-832-rail-delivery-works-the-extractrecen.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T14:25:00'
+    action: 'T-3034: CTL-028 told agents to bypass the gate it exists to defend'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 24
+  lines_added: 952
+  lines_removed: 338
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3034-ctl-028-mitigation-string-leads-with---f.md
+generated_by: context-agent-hybrid

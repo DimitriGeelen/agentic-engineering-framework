@@ -3866,7 +3866,16 @@ for item in data['ownership']['issues']:
 " 2>/dev/null)
 fi
 
-# CTL-029 OE: stuck partial-complete after Human-AC re-class (T-1903, L-403)
+# CTL-031 OE: stuck partial-complete after Human-AC re-class (T-1903, L-403)
+#
+# FORMERLY CTL-029 (renumbered T-3035). This control and the completable-but-not-
+# completed detector below both shipped as CTL-029 — T-1903 claimed the id first,
+# T-2055 reused it. The id stayed with T-2055's control because every downstream
+# reference had attached to it (tests/unit/test_audit_completable_not_completed.bats
+# asserts the literal "CTL-029: ... has all Agent ACs ticked", and
+# docs/reports/T-2137 cites CTL-029 four times meaning that control). Renumbering
+# this one touched only audit.sh. Audit logs and reports predating 2026-08-16 that
+# say CTL-029 may mean either — disambiguate on the message text, not the id.
 # Detects tasks in active/ with status: work-completed AND zero unchecked
 # checkboxes (after HTML-comment strip). These are archive-eligible but
 # didn't auto-archive because the partial-complete recheck only re-fires
@@ -3905,10 +3914,10 @@ print('|'.join(stuck))
 PYAUDIT_ARCHIVE
 )
 if [ -z "$ARCHIVE_ELIGIBLE_OUT" ]; then
-    pass "CTL-029: No archive-eligible stuck partial-complete tasks (T-1903/L-403)"
+    pass "CTL-031: No archive-eligible stuck partial-complete tasks (T-1903/L-403)"
 else
     stuck_count=$(echo "$ARCHIVE_ELIGIBLE_OUT" | tr '|' '\n' | wc -l)
-    warn "CTL-029: $stuck_count stuck partial-complete task(s) — all ACs ticked, in active/ — run: bin/fw task archive-eligible" \
+    warn "CTL-031: $stuck_count stuck partial-complete task(s) — all ACs ticked, in active/ — run: bin/fw task archive-eligible" \
          "Tasks: $(echo "$ARCHIVE_ELIGIBLE_OUT" | tr '|' ' ')" \
          "Sweep with: bin/fw task archive-eligible (origin: T-1903, L-403)"
 fi

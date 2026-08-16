@@ -1,9 +1,9 @@
-# Audit Results - 2026-08-16-1423
-timestamp: 2026-08-16T12:23:53Z
+# Audit Results - 2026-08-16-1425
+timestamp: 2026-08-16T12:25:09Z
 sections: "compliance"
 summary:
   pass: 1
-  warn: 51
+  warn: 52
   fail: 21
 findings:
   - level: WARN
@@ -191,6 +191,9 @@ findings:
   - level: WARN
     check: "CTL-029: T-2969 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-2969 --status work-completed"
+  - level: WARN
+    check: "CTL-029: T-3034 has all Agent ACs ticked but status='started-work' — completable, not closed"
+    mitigation: "Run: bin/fw task update T-3034 --status work-completed"
   - level: WARN
     check: "CTL-029: T-332 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-332 --status work-completed"

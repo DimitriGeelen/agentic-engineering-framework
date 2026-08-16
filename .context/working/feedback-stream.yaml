@@ -34418,3 +34418,21 @@ scan_id: R-c46fb800
 task_id: T-3033
 payload:
   task_file: .tasks/active/T-3033-832-rail-delivery-works-the-extractrecen.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T12:25:16Z'
+scan_id: R-dcdb53b0
+task_id: T-3034
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T12:25:16Z'
+scan_id: R-dcdb53b0
+task_id: T-3034
+payload:
+  task_file: .tasks/active/T-3034-ctl-028-mitigation-string-leads-with---f.md
