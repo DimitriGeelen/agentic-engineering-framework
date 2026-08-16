@@ -94,19 +94,35 @@ reading audit output, so it is not free.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **A1** The traceability check resolves a commit as traceable when **any**
+- [x] **A1** The traceability check resolves a commit as traceable when **any**
   `T-NNNN` in its subject names an existing task, not only the first.
-- [ ] **A2** A commit whose refs *all* fail to resolve is still reported orphaned —
+  → `agents/audit/audit.sh:2488` collects every ref; `:2504` short-circuits on the
+  first that resolves. Pinned by test 1.
+- [x] **A2** A commit whose refs *all* fail to resolve is still reported orphaned —
   the fix must not turn the check into a no-op. This is the direction most likely to
   be broken silently by an over-broad fix.
-- [ ] **A3** The second `head -1` site found in the same file is either fixed the same
+  → Tests 4 and 6. Test 5 pins the opposite over-reach (a resolving first ref must
+  not start reporting its dead sibling — that would be the same noise class inverted).
+- [x] **A3** The second `head -1` site found in the same file is either fixed the same
   way or shown by citation to be a different question that legitimately wants one ref.
-- [ ] **A4** A regression test covers all three shapes against a synthetic repo:
+  → Fixed, but with the **opposite** semantics, and that turned out to be the
+  interesting part. `:2807` (practice `Origin:` lines) asks whether every citation is
+  valid, not whether any is — so `head -1` there was a false **green** (a stale second
+  origin passed silently under a PASS line) where at `:2488` it was a false **fail**.
+  One `head -1` shape, two directions. Tests 10-12.
+- [x] **A4** A regression test covers all three shapes against a synthetic repo:
   first-ref-resolves, later-ref-resolves-first-does-not, and none-resolve. The middle
   case must be observed red against the current `head -1` form.
-- [ ] **A5** The existing T-2058 revert-chain and T-2851 root-commit escapes still fire
+  → `tests/unit/t3053_multiref_traceability.bats`, 12 tests. Tests 2 and 11 restore
+  the `head -1` form and assert the suite goes red at each site. Test 3 is the
+  harness guard described in the RCA.
+- [x] **A5** The existing T-2058 revert-chain and T-2851 root-commit escapes still fire
   — they operate on a single chosen ref, so a multi-ref rewrite can break them without
   any test noticing.
+  → Tests 7 and 9. Test 8 pins the widening this rewrite made available for the first
+  time: T-2058 now suppresses only when *every* unresolved ref has a revert chain, so
+  one reverted task cannot hide a genuinely orphaned sibling. For a single-ref commit
+  the new test is bit-identical to the old one.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -200,6 +216,18 @@ reading audit output, so it is not free.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# 1. The regression suite, including both mutations. ~4 min (each test runs a
+#    real audit section against a synthetic repo).
+out=$(bats tests/unit/t3053_multiref_traceability.bats 2>&1); echo "$out" | grep -q '^ok 12 ' && ! echo "$out" | grep -q '^not ok'
+
+# 2. Both call sites carry the multi-ref form. Mutation-checked: reverting either
+#    one to `head -1` drops the count to 1 and this line goes red.
+[ "$(grep -cF '!seen[$0]++' agents/audit/audit.sh)" -eq 2 ]
+
+# 3. No regression on the real corpus — 8300+ commits, 12 of the last 200 carry
+#    multi-ref subjects. ~80s.
+bash agents/audit/audit.sh --section traceability > /tmp/.t3053-trace.out 2>&1 || true; grep -q "All commit task refs resolve to actual tasks" /tmp/.t3053-trace.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -215,6 +243,66 @@ reading audit output, so it is not free.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a commit whose subject named more than one task — `T-A/T-B-side: …`,
+`T-A: …; T-B recommendation` — was reported `references non-existent task T-A`
+whenever the *leading* ref failed to resolve, even though a later ref named a real
+task. Reported by a consumer project on 2026-06-11 (T-3047 triage M-24) and unread
+for two months.
+
+**Root cause:** `agents/audit/audit.sh:2476` chose one ref with
+`grep -oE "T-[0-9]+" | head -1` and tested only that one for existence. Twelve of the
+last two hundred commits in this repo carry multi-ref subjects, so the shape is
+ordinary, not exotic.
+
+**Why structurally allowed:** three things, and the third is the one worth keeping.
+
+1. *The two halves of the same measurement disagreed and nothing compared them.*
+   `:2432` computes the traceability percentage with `grep -cE "T-[0-9]+"` — a
+   commit counts as referencing a task if **any** ref is present. `:2476` then
+   narrowed that to the first ref when deciding whether the reference resolves. The
+   same commit could be counted traceable by one line and orphaned by the next, four
+   lines apart, and no test held the two to a shared definition.
+
+2. *The error direction made it survivable, which is exactly why it lasted.* This is
+   a false FAIL: it produces audit noise rather than hiding defects. Noise is
+   tolerable one line at a time, so nobody paid the cost of fixing it — but audit
+   noise is how operators learn to stop reading audit output, which converts a false
+   FAIL into a false green at the human layer. Two months of not-reading is the
+   actual damage.
+
+3. *The same `head -1` shape at the sibling site was a false GREEN, and the report
+   did not mention it.* `:2749` validated practice `Origin:` lines the same way. But
+   an `Origin: T-A, T-B` line asserts that **both** tasks exist, so reading only the
+   first let a stale second citation pass — underneath a `PASS All practice origins
+   resolve to actual tasks`. Identical code, opposite question, opposite failure
+   direction, opposite fix. Finding the reported instance would not have found this
+   one; only grepping the shape did.
+
+**Prevention:**
+- `tests/unit/t3053_multiref_traceability.bats` — 12 tests over a synthetic repo,
+  covering both sites in both directions, with the `head -1` form restored as a
+  mutation at each site (tests 2 and 11). Each escape has its own test, plus test 8
+  for the widening the rewrite newly made possible.
+- The commit-site fix is written to agree with `:2432` by construction (any-ref), so
+  the two measures can no longer diverge.
+
+**A false green found in this task's own test harness — recorded because it is the
+more transferable finding.** The first draft installed the mutant audit.sh as a bare
+file in a temp dir. `audit.sh` derives `FRAMEWORK_ROOT` from `dirname $0`, so that
+mutant silently failed to source `lib/paths.sh`, ran with an empty `TASKS_DIR`, and
+reported **every** ref as unresolvable. The mutation test passed — for a reason that
+had nothing to do with the mutation. A broken mutant is indistinguishable from a
+detected mutation, because both are red. Caught only because the sibling mutation at
+the practices site expected *silence* and got a warning instead; had both mutations
+expected a warning, the harness would have shipped green and worthless.
+
+The fix is `_mutant()` building a shadow `FRAMEWORK_ROOT` of symlinks with the
+mutated `audit.sh` as its only real file, plus **test 3** — a harness-sanity test
+asserting the mutant still resolves a first-ref-good commit. That test is the guard
+on the guard: it fails if the mutant is broken rather than mutated. Generalisation
+for the next mutation test: *a mutant must be shown to still work, not only to still
+fail.* Filed as an observation for the reviewer-rule backlog.
 
 ## Evolution
 

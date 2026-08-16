@@ -3831,3 +3831,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-312
+  text: "T-3053: audit.sh practice-origin WARN can never name the practice — practice_id is grepped from the Origin: line (agents/audit/audit.sh:2797) but P-NNN lives on the preceding '## P-NNN' heading, so every warning reads 'Practice unknown references non-existent task T-XXX'. Pre-existing, orthogonal to the multi-ref fix. Fix needs the loop to walk the whole file tracking the last seen heading instead of grep 'Origin:'. Observed live in the T-3053 synthetic fixture."
+  captured: 2026-08-16T23:32:35Z
+  context_task: T-3053
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-313
+  text: "T-3053: mutation-test guard rule for the reviewer backlog — a broken mutant is indistinguishable from a detected mutation, because both are red. T-3053's first harness installed a mutated audit.sh in a bare temp dir; audit.sh derives FRAMEWORK_ROOT from dirname $0, so it lost lib/paths.sh, ran with empty TASKS_DIR and reported every ref unresolvable. The mutation test passed for the wrong reason. Rule: every mutation test needs a paired harness-sanity test asserting the mutant still PASSES a case the fix did not change. Candidate reviewer detector: a bats file whose mutant/copy assertions are all negative (expect-failure) with no positive control."
+  captured: 2026-08-16T23:32:35Z
+  context_task: T-3053
+  tags: []
+  status: pending
+  promoted_to: null
