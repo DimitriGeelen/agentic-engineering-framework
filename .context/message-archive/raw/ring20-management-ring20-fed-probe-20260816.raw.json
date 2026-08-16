@@ -1,0 +1,14 @@
+[
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "note",
+  "offset": 0,
+  "payload_b64": "RkVELUlTTy1URVNUIGZlZC1pc28tdGVzdC0xNzgxMTk5NTkw",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20-fed-probe",
+  "ts": 1781199590009
+ }
+]

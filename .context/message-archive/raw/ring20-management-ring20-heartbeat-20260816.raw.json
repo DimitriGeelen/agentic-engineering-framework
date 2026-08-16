@@ -1,0 +1,1752 @@
+[
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 0,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDEzOjE3OjE3KzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786454237517
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 1,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDEzOjE4OjE0KzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786454294137
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 2,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDE0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786457821528
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 3,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDE1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786461421733
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 4,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDE2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786465021400
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 5,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDE3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786468621474
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 6,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDE4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786472221666
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 7,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDE5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786475821924
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 8,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDIwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786479421325
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 9,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDIxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786483021298
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 10,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDIyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786486622022
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 11,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTExVDIzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786490221293
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 12,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDAwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786493822022
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 13,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDAxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786497421122
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 14,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDAyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786501021817
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 15,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDAzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786504621456
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 16,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDA0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786508221208
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 17,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDA1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786511821489
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 18,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDA2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786515421807
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 19,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDA3OjE3OjAyKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786519022135
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 20,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDA4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786522621694
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 21,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDA5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786526221529
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 22,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDEwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786529821826
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 23,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDExOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786533421966
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 24,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDEyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786537021623
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 25,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDEzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786540621329
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 26,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDE0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786544221421
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 27,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDE1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786547821233
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 28,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDE2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786551421699
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 29,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDE3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786555021283
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 30,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDE4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786558621683
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 31,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDE5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786562221233
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 32,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDIwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786565821364
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 33,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDIxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786569421879
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 34,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDIyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786573021517
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 35,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEyVDIzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786576621613
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 36,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDAwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786580221965
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 37,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDAxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786583821559
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 38,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDAyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786587421056
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 39,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDAzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786591021920
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 40,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDA0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786594621159
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 41,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDA1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786598221129
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 42,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDA2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786601821540
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 43,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDA3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786605421640
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 44,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDA4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786609021393
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 45,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDA5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786612621773
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 46,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDEwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786616221160
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 47,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDExOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786619821365
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 48,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDEyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786623421828
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 49,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDEzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786627021498
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 50,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDE0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786630621617
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 51,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDE1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786634221197
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 52,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDE2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786637821130
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 53,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDE3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786641421550
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 54,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDE4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786645021347
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 55,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDE5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786648621379
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 56,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDIwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786652221315
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 57,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDIxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786655821412
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 58,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDIyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786659421579
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 59,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTEzVDIzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786663021311
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 60,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDAwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786666621233
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 61,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDAxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786670221888
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 62,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDAyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786673821938
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 63,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDAzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786677422017
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 64,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDA0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786681021751
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 65,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDA1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786684621945
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 66,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDA2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786688221492
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 67,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDA3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786691821685
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 68,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDA4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786695421088
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 69,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDA5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786699021832
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 70,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDEwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786702622002
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 71,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDExOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786706221096
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 72,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDEyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786709821191
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 73,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDEzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786713421313
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 74,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDE0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786717021661
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 75,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDE1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786720621965
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 76,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDE2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786724221603
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 77,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDE3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786727821073
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 78,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDE4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786731421204
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 79,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDE5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786735021411
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 80,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDIwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786738621802
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 81,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDIxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786742221308
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 82,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDIyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786745821093
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 83,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE0VDIzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786749421761
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 84,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDAwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786753021155
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 85,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDAxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786756621306
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 86,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDAyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786760221454
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 87,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDAzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786763821039
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 88,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDA0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786767421749
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 89,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDA1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786771021372
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 90,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDA2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786774621335
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 91,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDA3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786778221335
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 92,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDA4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786781821324
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 93,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDA5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786785421709
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 94,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDEwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786789021727
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 95,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDExOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786792621330
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 96,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDEyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786796221114
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 97,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDEzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786799821657
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 98,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDE0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786803421096
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 99,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDE1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786807021184
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 100,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDE2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786810621378
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 101,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDE3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786814221887
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 102,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDE4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786817821242
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 103,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDE5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786821421338
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 104,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDIwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786825021660
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 105,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDIxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786828621076
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 106,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDIyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786832221144
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 107,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE1VDIzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786835821538
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 108,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDAwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786839421377
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 109,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDAxOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786843021589
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 110,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDAyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786846621095
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 111,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDAzOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786850221679
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 112,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDA0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786853821889
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 113,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDA1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786857421321
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 114,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDA2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786861021284
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 115,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDA3OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786864621468
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 116,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDA4OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786868221371
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 117,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDA5OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786871821783
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 118,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDEwOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786875421378
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 119,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDExOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786879021066
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 120,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDEyOjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjY3OSku",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786882621525
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 121,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDEzOjE3OjAyKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjE0MTEpLg==",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786886222034
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 122,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDE0OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjE0MTEpLg==",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786889821766
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 123,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDE1OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjE0MTEpLg==",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786893421271
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_from": "ring20-manager-vendored",
+   "_thread": "T-1584",
+   "from_project": "proxmox-ring20-management"
+  },
+  "msg_type": "chat",
+  "offset": 124,
+  "payload_b64": "VC0xNTg0IHJpbmcyMCBsb2NhbCBsaXZlbmVzcyBmcm9tIHJpbmcyMC1tYW5hZ2VyICh4ODZfNjQsIExpbnV4KSBhdCAyMDI2LTA4LTE2VDE2OjE3OjAxKzAwOjAwLiBCaW5hcnk6IC91c3IvbG9jYWwvYmluL3Rlcm1saW5rICh0ZXJtbGluayAwLjExLjE0MTEpLg==",
+  "sender_id": "9219671e28054458",
+  "topic": "ring20:heartbeat",
+  "ts": 1786897021450
+ }
+]

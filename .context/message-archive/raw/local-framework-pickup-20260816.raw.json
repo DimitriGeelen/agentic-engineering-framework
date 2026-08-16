@@ -1,0 +1,11 @@
+[
+ {
+  "artifact_ref": null,
+  "msg_type": "note",
+  "offset": 0,
+  "payload_b64": "UEVSU0lTVEVOQ0UgUFJPQkUgZnJvbSBBRUYgd29ya3N0YXRpb24tMTA3IDIwMjYtMDgtMTZUMTU6NDE6MTRaIOKAlCB0b3BpYyB3YXMgTUlTU0lORzsgZXZlcnkgcHJpb3IgcG9zdCB0byBpdCB3YXMgcmVqZWN0ZWQgd2l0aCAndW5rbm93biB0b3BpYycuIENyZWF0ZWQgbm93IHdpdGggcmV0ZW50aW9uIG1lc3NhZ2VzOjUwMDAu",
+  "sender_id": "d1993c2c3ec44c94",
+  "topic": "framework:pickup",
+  "ts": 1786894874905
+ }
+]

@@ -1,0 +1,14 @@
+[
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "from_project": "150-skills-manager"
+  },
+  "msg_type": "learning-P-001",
+  "offset": 0,
+  "payload_b64": "eyJvcmlnaW5fcHJvamVjdCI6IjE1MC1za2lsbHMtbWFuYWdlciIsIm9yaWdpbl9odWJfZmluZ2VycHJpbnQiOiJzaGEyNTY6ZDFiZDUwZjVjYjAzYzRmZDExNjg5Yjc3YzRkOWQ2YTNkNmY4ZjgzZmY5NDdhMjNjMmRkNTg2YzQzYWJiMzU5ZiIsImxlYXJuaW5nX2lkIjoiUEwtMDMzIiwibGVhcm5pbmciOiJPcGVyYXRvci1mYWNpbmcgZXJyb3IgbWVzc2FnZXMgbXVzdCBuYW1lIGNvbW1hbmRzIGJ5IGFic29sdXRlIHBhdGgsIG5vdCBiYXJlIG5hbWUuIFJlcG8tbG9jYWwgdG9vbHMgbGlrZSBiaW4vZnctYXBwcm92ZSBhcmUgbm90IG9uIFBBVEgsIGFuZCBkZW5pYWwgbWVzc2FnZXMgYXJlIHJlYWQgYnkgYWdlbnRzL29wZXJhdG9ycyBvbiBPVEhFUiBob3N0cy4gQWxzbzogbmV2ZXIgc3VnZ2VzdCBhIGZhbGxiYWNrIHRoZSB0YXJnZXQgYmluYXJ5IHJlZnVzZXMgKGZ3LWFwcHJvdmUgc2Vzc2lvbiAtLXRpZXIgMCBkaWVzKS4gVGVzdHMgdGhhdCBncmVwIGEgbGl0ZXJhbCBzdHJpbmcgaW4gYSBtZXNzYWdlIGNhbm5vdCBjYXRjaCB0aGlzIOKAlCBwYXJzZSB0aGUgY29tbWFuZCBvdXQgYW5kIGFzc2VydCBpdCByZXNvbHZlcyBvbiBkaXNrLiIsInRhc2siOiJULTQwMSIsInNvdXJjZSI6IlAtMDAxIiwiZGF0ZSI6IjIwMjYtMDgtMTYifQ==",
+  "sender_id": "d1993c2c3ec44c94",
+  "topic": "channel:learnings",
+  "ts": 1786895892138
+ }
+]

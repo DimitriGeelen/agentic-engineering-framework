@@ -1,9 +1,9 @@
-# Audit Results - 2026-08-16-1454
-timestamp: 2026-08-16T12:54:12Z
+# Audit Results - 2026-08-16-2021
+timestamp: 2026-08-16T18:21:39Z
 sections: "structure"
 summary:
   pass: 31
-  warn: 6
+  warn: 5
   fail: 0
 findings:
   - level: PASS
@@ -30,9 +30,6 @@ findings:
     check: "Arc 'capability-overlay' has no task commits in the last 30 days (15 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
   - level: WARN
-    check: "Arc 'embeddings-strategy' has no task commits in the last 30 days (3 task(s) in arc)"
-    mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
-  - level: WARN
     check: "Arc 'horizon-axis-hardening' has no task commits in the last 30 days (5 task(s) in arc)"
     mitigation: "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update $(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
   - level: INFO
@@ -52,15 +49,15 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 1065 registered card(s)"
+    check: "Fabric: 1075 registered card(s)"
   - level: WARN
-    check: "Fabric: 149/978 cards have no edges"
+    check: "Fabric: 158/988 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 7 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 702 card(s) point at files no watch pattern covers"
+    check: "Fabric: 707 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"

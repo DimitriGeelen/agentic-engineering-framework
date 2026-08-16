@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3041: AEF under multiple uids — de-rooting the framework's shared state
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T17:18:15Z
+# ============================================================================
+
+task_id: T-3041
+task_name: "AEF under multiple uids — de-rooting the framework's shared state"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T16:32:07Z
+completed: 2026-08-16T17:18:00Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-16T18:36:53+02:00
+last_commit: 2026-08-16T18:59:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  AEF has a single-principal assumption baked in everywhere, and is now leaving that world. revise — the fix is to stop mutating, not to permit mutation more politely. IW-2 measured — the shared group loses 200 of 400 updates and reports success. IW-3 measured — 27 sites, and two of them are not about uids. correct the function name IW-3 got wrong, and file the bug it found. dispose all seven open questions, ready for the go/no-go
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'correct the function name IW-3 got wrong, and file the bug it found'
+    source: git-mined
+  - description: 'revise — the fix is to stop mutating, not to permit mutation more politely'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - 'docs/reports/T-3041-lost-update-spike.md'
+  - 'docs/reports/T-3041-multi-uid-aef.md'
+  - 'docs/reports/T-3041-write-site-inventory.md'
+  - '.tasks/active/T-3041-aef-under-multiple-uids--de-rooting-the-.md'
+  - '.tasks/active/T-3042-updateoutcomerow-erases-concurrently-app.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T18:36:53'
+    action: 'T-3041: AEF has a single-principal assumption baked in everywhere, and is now leaving that world'
+  - time: '2026-08-16T18:41:02'
+    action: 'T-3041: revise — the fix is to stop mutating, not to permit mutation more politely'
+  - time: '2026-08-16T18:48:30'
+    action: 'T-3041: IW-2 measured — the shared group loses 200 of 400 updates and reports success'
+  - time: '2026-08-16T18:53:33'
+    action: 'T-3041: IW-3 measured — 27 sites, and two of them are not about uids'
+  - time: '2026-08-16T18:57:53'
+    action: 'T-3041: correct the function name IW-3 got wrong, and file the bug it found'
+  - time: '2026-08-16T18:59:50'
+    action: 'T-3041: dispose all seven open questions, ready for the go/no-go'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 45 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 45
+  commits: 6
+  files_changed: 6
+  lines_added: 1769
+  lines_removed: 63
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3041-aef-under-multiple-uids--de-rooting-the-.md
+generated_by: context-agent-hybrid

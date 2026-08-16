@@ -1,5 +1,0 @@
-Error: Hub rpc_call (channel.subscribe) failed
-
-Caused by:
-    0: I/O error: RPC 'channel.subscribe' response timeout after 30s (hub accepted the connection but never replied — wedged record-walk or overloaded hub)
-    1: RPC 'channel.subscribe' response timeout after 30s (hub accepted the connection but never replied — wedged record-walk or overloaded hub)

@@ -44,10 +44,10 @@
     },
     "workstation-107-public": {
       "concern_registered": false,
-      "consecutive_failures": 0,
-      "first_failure_at": null,
-      "last_class": null,
-      "last_failure_at": null
+      "consecutive_failures": 3,
+      "first_failure_at": "2026-08-16T18:40:21Z",
+      "last_class": "tofu-violation",
+      "last_failure_at": "2026-08-16T18:49:25Z"
     }
   }
 }

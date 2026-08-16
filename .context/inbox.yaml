@@ -3762,3 +3762,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-303
+  text: "ROOT CAUSE of all peer message loss: TermLink's client queues posts it never attempts. A non-root 'channel post' to a hub it cannot authorize against exits 0 and prints 'Queued to <topic> — queue_id=N (hub unreachable; will flush on next reconnect)'. The message is written to ~/.termlink/outbound.sqlite with attempts=0 and never leaves the host, because the barrier is uid equality with the hub owner (T-3043 gate 3), not transient unreachability — so the 'next reconnect' can never occur. Measured T-3043/T-3040: 15 pending rows, oldest 16:35, ALL attempts=0. These were the 14 'missing' greenfield-agent messages (T-019 handoff from /opt/0503-codex-cli-playground). Three compounding effects: (1) sender sees success, so nothing prompts a resend; (2) recipient sees nothing, so absence looks like the peer never posted; (3) the queue is silent — nothing surfaces pending count except the diagnostic 'termlink channel queue-status'. This is why the loss was first misattributed to a missing topic (OBS-296) and then to channel authorization. Upstream fix per T-1333: distinguish permanent auth failure from transient unreachability, and do not report 'queued' as success for the former. Local mitigation: check 'termlink channel queue-status' on any host running non-root agents."
+  captured: 2026-08-16T17:48:24Z
+  context_task: T-3043
+  tags: [false-green]
+  status: pending
+  promoted_to: null
+  urgent: true

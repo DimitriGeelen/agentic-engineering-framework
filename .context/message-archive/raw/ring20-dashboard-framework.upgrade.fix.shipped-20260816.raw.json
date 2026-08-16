@@ -1,0 +1,16 @@
+[
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "commit": "be72baa5",
+   "related": "T-1699,T-1869",
+   "task_id": "T-2099"
+  },
+  "msg_type": "artifact",
+  "offset": 0,
+  "payload_b64": "VC0yMDk5IFNFVi0xIGZvcmstYm9tYiBmaXggc2hpcHBlZCAoYmU3MmJhYTUpLiBTYWZlIHRvIHJlLXJ1biBmdyB1cGdyYWRlIGFmdGVyIHB1bGxpbmcgZ2l0aHViLmNvbS9EaW1pdHJpR2VlbGVuL2FnZW50aWMtZW5naW5lZXJpbmctZnJhbWV3b3JrIG1hc3Rlci4=",
+  "sender_id": "d1993c2c3ec44c94",
+  "topic": "framework.upgrade.fix.shipped",
+  "ts": 1780065747628
+ }
+]

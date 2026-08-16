@@ -1,0 +1,14 @@
+[
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "description": "Cross-project learnings bus (T-1217/T-1219). Publishers: each project's lib/publish-learning-to-bus.sh fires after fw context add-learning. Payload schema: {origin_project, origin_hub_fingerprint, learning_id, learning, task, source, date}. Subscribers: lib/subscribe-learnings-from-bus.sh polls and mirrors to .context/project/learnings-received.yaml. Retention: forever."
+  },
+  "msg_type": "topic_metadata",
+  "offset": 0,
+  "payload_b64": "Q3Jvc3MtcHJvamVjdCBsZWFybmluZ3MgYnVzIChULTEyMTcvVC0xMjE5KS4gUHVibGlzaGVyczogZWFjaCBwcm9qZWN0J3MgbGliL3B1Ymxpc2gtbGVhcm5pbmctdG8tYnVzLnNoIGZpcmVzIGFmdGVyIGZ3IGNvbnRleHQgYWRkLWxlYXJuaW5nLiBQYXlsb2FkIHNjaGVtYToge29yaWdpbl9wcm9qZWN0LCBvcmlnaW5faHViX2ZpbmdlcnByaW50LCBsZWFybmluZ19pZCwgbGVhcm5pbmcsIHRhc2ssIHNvdXJjZSwgZGF0ZX0uIFN1YnNjcmliZXJzOiBsaWIvc3Vic2NyaWJlLWxlYXJuaW5ncy1mcm9tLWJ1cy5zaCBwb2xscyBhbmQgbWlycm9ycyB0byAuY29udGV4dC9wcm9qZWN0L2xlYXJuaW5ncy1yZWNlaXZlZC55YW1sLiBSZXRlbnRpb246IGZvcmV2ZXIu",
+  "sender_id": "d1993c2c3ec44c94",
+  "topic": "channel:learnings",
+  "ts": 1777698122452
+ }
+]

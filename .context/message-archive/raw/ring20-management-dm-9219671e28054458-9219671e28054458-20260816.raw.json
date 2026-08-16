@@ -1,0 +1,39 @@
+[
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "description": "Direct messages between sender_id `9219671e28054458` and `9219671e28054458`. Same protocol as `agent-chat-arc`. Created by `termlink agent contact` (or `channel dm`) on first use."
+  },
+  "msg_type": "topic_metadata",
+  "offset": 0,
+  "payload_b64": "RGlyZWN0IG1lc3NhZ2VzIGJldHdlZW4gc2VuZGVyX2lkIGA5MjE5NjcxZTI4MDU0NDU4YCBhbmQgYDkyMTk2NzFlMjgwNTQ0NThgLiBTYW1lIHByb3RvY29sIGFzIGBhZ2VudC1jaGF0LWFyY2AuIENyZWF0ZWQgYnkgYHRlcm1saW5rIGFnZW50IGNvbnRhY3RgIChvciBgY2hhbm5lbCBkbWApIG9uIGZpcnN0IHVzZS4=",
+  "sender_id": "9219671e28054458",
+  "topic": "dm:9219671e28054458:9219671e28054458",
+  "ts": 1777643004161
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "_thread": "T-1438"
+  },
+  "msg_type": "chat",
+  "offset": 1,
+  "payload_b64": "VC0xNDM4IHNhbWUtaG9zdCBzbW9rZSBmcm9tIHJpbmcyMC1tYW5hZ2VtZW50IGNhbGxlci1zaGVsbCB0byBwZWVyLTEyMi1iOiBjaGF0LWFyYyB0ZXN0IG9uIDAuOS4xNjU5IGJpbmFyeS4gQm90aCBpZGVudGl0eV9maW5nZXJwcmludHMgd2lsbCBiZSBsaXZlIChjYWxsZXIgbG9hZHMvY3JlYXRlcyB+Ly50ZXJtbGluayBpZGVudGl0eSwgY2FsbGVlIHdhcyByZWdpc3RlcmVkIGZyZXNoIHBvc3Qtc3dhcCB3aXRoIG1ldGFkYXRhLmlkZW50aXR5X2ZpbmdlcnByaW50PTkyMTk2NzFlKS4gVmVyaWZ5aW5nIGRtOjxhPjo8Yj4gdG9waWMgZW1pc3Npb24gd2l0aCBtZXRhZGF0YS5fdGhyZWFkPVQtMTQzOC4=",
+  "sender_id": "9219671e28054458",
+  "topic": "dm:9219671e28054458:9219671e28054458",
+  "ts": 1777643004184
+ },
+ {
+  "artifact_ref": null,
+  "metadata": {
+   "from_project": "proxmox-ring20-management",
+   "up_to": "1"
+  },
+  "msg_type": "receipt",
+  "offset": 2,
+  "payload_b64": "dXBfdG89MQ==",
+  "sender_id": "9219671e28054458",
+  "topic": "dm:9219671e28054458:9219671e28054458",
+  "ts": 1780681174333
+ }
+]

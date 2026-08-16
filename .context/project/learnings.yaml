@@ -4571,3 +4571,10 @@ X'` returning empty group."
   task: T-3025
   date: 2026-08-15
   context: Added via context agent
+- id: PL-017
+  learning: "Fleet doctor observed tofu-violation on hub 'workstation-107-public' (192.168.10.107:9100). date_observed=2026-08-16T18:40:21Z hub_fingerprint=sha256:d1bd50f5cb03c4fd11689b77c4d9d6a3d6f8f83ff947a23c2dd586c43abb359f. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-08-16
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"

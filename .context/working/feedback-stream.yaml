@@ -34508,3 +34508,47 @@ scan_id: R-92138a28
 task_id: T-3038
 payload:
   task_file: .tasks/active/T-3038-session-scoped-focus-for-dispatched-work.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T17:18:03Z'
+scan_id: R-c07be07a
+task_id: T-3041
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T17:18:03Z'
+scan_id: R-c07be07a
+task_id: T-3041
+payload:
+  task_file: .tasks/active/T-3041-aef-under-multiple-uids--de-rooting-the-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-16T17:18:03Z'
+scan_id: RC-69f35184
+task_id: T-3041
+payload:
+  overall: CONTRADICTED
+  claim_count: 8
+---
+kind: scan_emitted
+timestamp: '2026-08-16T18:58:43Z'
+scan_id: R-52f9b4c9
+task_id: T-3045
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T18:58:43Z'
+scan_id: R-52f9b4c9
+task_id: T-3045
+payload:
+  task_file: .tasks/active/T-3045-embedhost-points-at-a-dead-sidecar--reti.md

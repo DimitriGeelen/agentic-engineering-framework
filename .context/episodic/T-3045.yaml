@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3045: embed_host points at a dead sidecar — retire 11435, D-436's premise is gone
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T18:58:55Z
+# ============================================================================
+
+task_id: T-3045
+task_name: "embed_host points at a dead sidecar — retire 11435, D-436's premise is gone"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T18:31:35Z
+completed: 2026-08-16T18:54:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T20:35:13+02:00
+last_commit: 2026-08-16T20:50:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  A1-A4 — stop pointing at a sidecar that cannot be restarted. A5-A7 — make the dead primary visible, since the config fix cannot be
+
+# Key outcomes
+outcomes:
+  - '**A1** `embed_host` no longer names a dead endpoint: the key is removed from (or'
+  - '**A2** The resolved embed endpoint is reachable: `Config.EMBED_HOST` returns HTTP 200'
+  - '**A3** A live embed produces **zero failover warnings** — `embed_failover_state()`'
+  - '**A4** Query latency does not regress: a warm `embeddings.search()` completes inside'
+  - '**A5** `fw doctor` gains an embed-endpoint reachability check so a dead primary is'
+  - '**A6** Regression test pins the resolution rule: with `embed_host` unset,'
+  - '**A7** D-436 is superseded, not silently contradicted (recorded as **D-451**): a decision entry records that'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'A5-A7 — make the dead primary visible, since the config fix cannot be'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/project/decisions.yaml'
+  - '.fabric/components/context-project-workflows-ask.yaml'
+  - '.fabric/components/tests-unit-t1719_ask_routing.yaml'
+  - '.fabric/components/tests-unit-t3045_embed_host_resolution.yaml'
+  - '.tasks/active/T-3045-embedhost-points-at-a-dead-sidecar--reti.md'
+  - 'tests/unit/t3045_embed_host_resolution.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T20:35:13'
+    action: 'T-3045: A1-A4 — stop pointing at a sidecar that cannot be restarted'
+  - time: '2026-08-16T20:50:16'
+    action: 'T-3045: A5-A7 — make the dead primary visible, since the config fix cannot be'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 2
+  files_changed: 7
+  lines_added: 569
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3045-embedhost-points-at-a-dead-sidecar--reti.md
+generated_by: context-agent-hybrid
