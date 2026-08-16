@@ -91,7 +91,10 @@ def _inflight_max_age_min() -> int:
 # NOTE: keep in sync with bin/fw:1804 (T-1734). Two tables drifted before: bin/fw
 # accepted "ollama-loop" while this one didn't, so workflows listed cleanly but
 # failed at dispatch. If you add a worker_kind here, add it there too (and vice versa).
-VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop", "ollama-thin-loop"}
+# "ollama-direct" (T-1719 A3) is the one kind that spawns nothing: `fw ask`
+# runs a synchronous RAG+chat call in the caller's own process. See
+# .context/project/workflows/ask.yaml for why it is not ollama-thin-loop.
+VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop", "ollama-thin-loop", "ollama-direct"}
 VALID_PROMPT_STRATEGIES = {"static", "assembled", "meta-prompted"}
 
 

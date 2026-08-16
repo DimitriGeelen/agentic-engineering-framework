@@ -638,6 +638,23 @@ cmd_dispatch() {
     # from a resolver-loop worker (which arrives with mechanism already set
     # via --env and overrides these lines).
     fw_worker_git_identity_env "termlink-dispatch" "$name" >> "$wdir/env.sh"
+
+    # T-3038 (OBS-291): give every dispatched worker its own focus file.
+    #
+    # Without this the worker's first `fw work-on` overwrites the SHARED
+    # .context/working/focus.yaml — task and focus_session both — and the parent
+    # session is then blocked by check-active-task.sh on every Write and every
+    # Bash, read-only commands included. The parent gets locked out of its own
+    # unrelated work by a worker it spawned, and re-asserting focus only holds
+    # until the next worker calls work-on.
+    #
+    # Written BEFORE the caller's --env pairs so an explicit --env
+    # FW_SESSION_SCOPED_FOCUS=0 can still opt a worker back onto the shared file
+    # (same later-wins ordering the git identity block above relies on). The key
+    # is $name, which dispatch already requires to be unique per worker.
+    printf 'export FW_SESSION_SCOPED_FOCUS=%q\n' "1" >> "$wdir/env.sh"
+    printf 'export FW_FOCUS_SESSION_KEY=%q\n' "$name" >> "$wdir/env.sh"
+
     local env_keys_json="[]"
     if [ "${#envs[@]}" -gt 0 ]; then
         local _key_list=""

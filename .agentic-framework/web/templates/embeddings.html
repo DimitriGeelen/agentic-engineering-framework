@@ -1,0 +1,179 @@
+{# Embeddings panel — T-1719 A4.
+   Tri-state rendering is load-bearing: a None value MUST read as "unknown",
+   never as a dash or a zero. A five-month-old index passing for current (T-3004)
+   is the failure this whole surface exists to make visible. #}
+<style>
+    .emb-verdict { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem;
+                   border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--pico-muted-border-color); }
+    .emb-verdict .dot { width: 0.9rem; height: 0.9rem; border-radius: 50%; flex-shrink: 0; }
+    .emb-verdict.v-ok      { background: rgba(39, 174, 96, 0.10); }
+    .emb-verdict.v-ok      .dot { background: #27ae60; }
+    .emb-verdict.v-stale   { background: rgba(230, 126, 34, 0.12); }
+    .emb-verdict.v-stale   .dot { background: #e67e22; }
+    .emb-verdict.v-unused  { background: rgba(241, 196, 15, 0.12); }
+    .emb-verdict.v-unused  .dot { background: #f1c40f; }
+    .emb-verdict.v-unknown { background: rgba(127, 140, 141, 0.12); }
+    .emb-verdict.v-unknown .dot { background: #7f8c8d; }
+    .emb-verdict .label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .emb-verdict .note { color: var(--pico-muted-color); }
+
+    .emb-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    @media (max-width: 768px) { .emb-stats { grid-template-columns: repeat(2, 1fr); } }
+    .emb-stat { text-align: center; border: 1px solid var(--pico-muted-border-color);
+                border-radius: 8px; padding: 1rem; }
+    .emb-stat .num { font-size: 1.9rem; font-weight: 700; margin: 0; line-height: 1.2; }
+    .emb-stat .num.unknown { color: var(--pico-muted-color); font-size: 1.1rem; font-style: italic; font-weight: 500; }
+    .emb-stat .label { font-size: 0.8rem; color: var(--pico-muted-color); margin: 0.25rem 0 0; }
+
+    .emb-section { margin-bottom: 2.5rem; }
+    .emb-unavailable { color: var(--pico-muted-color); font-style: italic; }
+    .emb-table { width: 100%; font-size: 0.85rem; }
+    .emb-table td, .emb-table th { padding: 0.4rem 0.5rem; }
+    .emb-scroll { overflow-x: auto; }
+    .rating { font-weight: 700; }
+    .rating.pos { color: #27ae60; }
+    .rating.neg { color: #c0392b; }
+    .emb-path { font-size: 0.75rem; color: var(--pico-muted-color); word-break: break-all; }
+</style>
+
+<div class="emb-verdict v-{{ verdict }}">
+    <span class="dot"></span>
+    <span class="label">{{ verdict }}</span>
+    {% if verdict_note %}<span class="note">— {{ verdict_note }}</span>{% endif %}
+</div>
+
+<div class="emb-stats">
+    <div class="emb-stat">
+        {% if index.age_days is not none %}
+            <p class="num">{{ index.age_days }}<span style="font-size:1rem">d</span></p>
+        {% else %}
+            <p class="num unknown">unknown</p>
+        {% endif %}
+        <p class="label">Index age</p>
+    </div>
+    <div class="emb-stat">
+        {% if index.chunks is not none %}
+            <p class="num">{{ "{:,}".format(index.chunks) }}</p>
+        {% else %}
+            <p class="num unknown">unknown</p>
+        {% endif %}
+        <p class="label">Chunks</p>
+    </div>
+    <div class="emb-stat">
+        {% if usage.available and usage.miss_rate is not none %}
+            <p class="num">{{ (usage.miss_rate * 100) | round(1) }}%</p>
+        {% else %}
+            <p class="num unknown">{{ "no queries" if usage.available else "unknown" }}</p>
+        {% endif %}
+        <p class="label">Miss rate ({{ miss_rate_window_days }}d)</p>
+    </div>
+    <div class="emb-stat">
+        {% if happiness.mean is not none %}
+            <p class="num">{{ "%+.1f"|format(happiness.mean) }}</p>
+        {% else %}
+            <p class="num unknown">no ratings</p>
+        {% endif %}
+        <p class="label">Happiness (last {{ happiness.count }})</p>
+    </div>
+</div>
+
+<div class="emb-section">
+    <h3>Index</h3>
+    {% if not index.available %}
+        <p class="emb-unavailable">{{ index.reason }}</p>
+    {% else %}
+        <table class="emb-table">
+            <tbody>
+                <tr><th>Built at</th><td>{{ index.built_at if index.built_at else "unknown" }}</td></tr>
+                <tr><th>Freshness source</th><td>
+                    {{ index.freshness_source if index.freshness_source else "unknown" }}
+                    {% if index.freshness_source == "db_mtime" %}
+                        <small class="emb-unavailable">— upper bound only; any write moves it</small>
+                    {% endif %}
+                </td></tr>
+                <tr><th>Database</th><td class="emb-path">{{ index.db_path }}</td></tr>
+            </tbody>
+        </table>
+        {% if index.reason %}<p class="emb-unavailable">{{ index.reason }}</p>{% endif %}
+    {% endif %}
+</div>
+
+<div class="emb-section">
+    <h3>Recall usage <small class="emb-unavailable">last {{ miss_rate_window_days }}d</small></h3>
+    {% if not usage.available %}
+        <p class="emb-unavailable">{{ usage.reason }}</p>
+    {% elif usage.zero_consumer %}
+        <p class="emb-unavailable">
+            No recall queries in the window. This is the zero-consumer signal —
+            the index can be perfectly healthy and still be answering nobody.
+        </p>
+    {% else %}
+        <table class="emb-table">
+            <tbody>
+                <tr><th>Queries</th><td>{{ usage.rows }}</td></tr>
+                <tr><th>Hits</th><td>{{ usage.hits }}</td></tr>
+                <tr><th>Misses</th><td>{{ usage.misses }}</td></tr>
+                <tr><th>Unavailable</th><td>{{ usage.unavailable }}</td></tr>
+                <tr><th>Median latency</th><td>
+                    {{ usage.median_latency_ms ~ " ms" if usage.median_latency_ms is not none else "unknown" }}
+                </td></tr>
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+<div class="emb-section">
+    <h3>Retrieval happiness <small class="emb-unavailable">last {{ happiness.count }} ratings</small></h3>
+    {% if not happiness.recent %}
+        <p class="emb-unavailable">
+            No ratings recorded yet. Rate a retrieval with
+            <code>bin/fw task update T-XXX --happiness +3 --happiness-reason "..."</code>
+        </p>
+    {% else %}
+        <div class="emb-scroll">
+        <table class="emb-table">
+            <thead><tr><th>When</th><th>Task</th><th>By</th><th>Rating</th><th>Reason</th></tr></thead>
+            <tbody>
+            {% for h in happiness.recent %}
+                <tr>
+                    <td>{{ h.ts if h.ts else "—" }}</td>
+                    <td>{% if h.task_id %}<a href="/tasks/{{ h.task_id }}">{{ h.task_id }}</a>{% else %}—{% endif %}</td>
+                    <td>{{ h.source if h.source else "—" }}</td>
+                    <td class="rating {{ 'pos' if (h.value or 0) > 0 else 'neg' }}">
+                        {{ "%+d"|format(h.value) if h.value is number else "—" }}
+                    </td>
+                    <td>{{ h.reason if h.reason else "" }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <p class="emb-unavailable">
+            {{ happiness.positive }} positive / {{ happiness.negative }} negative in the shown window.
+        </p>
+    {% endif %}
+</div>
+
+<div class="emb-section">
+    <h3>Recent routing decisions</h3>
+    {% if not routing.recent %}
+        <p class="emb-unavailable">No dispatch records found at {{ routing.path }}.</p>
+    {% else %}
+        <div class="emb-scroll">
+        <table class="emb-table">
+            <thead><tr><th>When</th><th>Task</th><th>Type</th><th>Mechanism</th><th>Model</th></tr></thead>
+            <tbody>
+            {% for d in routing.recent %}
+                <tr>
+                    <td>{{ d.ts if d.ts else "—" }}</td>
+                    <td>{% if d.task_id %}<a href="/tasks/{{ d.task_id }}">{{ d.task_id }}</a>{% else %}—{% endif %}</td>
+                    <td>{{ d.workflow_type if d.workflow_type else "—" }}</td>
+                    <td>{{ d.mechanism if d.mechanism else "—" }}</td>
+                    <td>{{ d.model if d.model else "—" }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% endif %}
+</div>

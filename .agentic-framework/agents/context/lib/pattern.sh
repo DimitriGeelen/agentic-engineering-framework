@@ -156,6 +156,17 @@ EOF
 
     mv "$temp_file" "$patterns_file"
 
+    # T-1719 A1: patterns.yaml is an aggregate, but a small one (~8 chunks), so a
+    # full re-embed per add is affordable and buys sub-hour retrievability. This
+    # is the ONLY aggregate wired — learnings.yaml (~386 chunks) and
+    # decisions.yaml (~112, written in a per-decision loop at task close) are
+    # left to the hourly cron on purpose. See lib/post-write-index.sh.
+    if [ -f "$FRAMEWORK_ROOT/lib/post-write-index.sh" ]; then
+        # shellcheck source=/dev/null
+        . "$FRAMEWORK_ROOT/lib/post-write-index.sh"
+        fw_post_write_index "$patterns_file"
+    fi
+
     echo -e "${GREEN}Pattern added: $id ($pattern_type)${NC}"
     echo "  $pattern_name"
     [ -n "$task" ] && echo "  From: $task"

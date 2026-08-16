@@ -176,6 +176,10 @@ NAV_GROUPS = [
             ("Quality",       "quality.quality_gate",                  None),
             ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
             ("Escalation Drift", "escalation.escalation_drift",        None),
+            # T-1719 A4: recall-substrate instrument panel. Filed under Health
+            # rather than Architecture because the question it answers is "is
+            # this working right now", not "how is this put together".
+            ("Embeddings",    "embeddings.embeddings_panel",           None),
         ]),
         ("Operations", [
             ("Metrics",       "metrics.project_metrics",               None),

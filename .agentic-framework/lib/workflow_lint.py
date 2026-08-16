@@ -39,7 +39,7 @@ except ImportError:  # pragma: no cover - exercised in environments without yaml
 
 
 # Kept in sync with bin/fw and lib/resolver.py:VALID_WORKER_KINDS (T-1734/T-1735).
-VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop", "ollama-thin-loop"}
+VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop", "ollama-thin-loop", "ollama-direct"}
 VALID_PROMPT_STRATEGIES = {"static", "assembled", "meta-prompted"}
 VALID_PAUSE_THRESHOLDS = {"low", "medium", "high"}
 
