@@ -1136,6 +1136,28 @@ def cmd_explain(args: argparse.Namespace) -> int:
             print(f"retryable:      {te['retryable']}")
         elif te.get("type") == "result" and "is_error" in te:
             print(f"is_error:       {te['is_error']}")
+    # T-3030: what this worker actually wrote. Absent on rows predating the
+    # field, and absent (rather than empty) when git was unreadable — see
+    # spawn._writes_between on why "nothing" and "could not look" must not
+    # render the same.
+    writes = found.get("worker_writes")
+    if writes is None:
+        print("worker_writes:  (not recorded — dispatch predates T-3030)")
+    else:
+        paths = writes.get("paths") or []
+        reverted = writes.get("reverted_paths") or []
+        guarded = writes.get("clean_tree_guard", True)
+        print(f"worker_writes:  {len(paths)} path(s) changed during the dispatch")
+        for path in paths:
+            print(f"  wrote:       {path}")
+        for path in reverted:
+            print(f"  reverted:    {path}")
+        if not guarded:
+            print(
+                "  NOTE:        FW_DISPATCH_REQUIRE_CLEAN_TREE was 0 for this "
+                "dispatch, so another writer may have been active in the same "
+                "tree; treat these paths as correlated, not attributed."
+            )
     print(f"blob_dir:       {found.get('blob_dir')}")
     blob_dir = PROJECT_ROOT / found.get("blob_dir", "")
     if blob_dir.is_dir():
@@ -1493,9 +1515,99 @@ def _recently_dispatched_ids(cooldown_min: int) -> set:
     return cooling
 
 
+# ── Two-writer guard (T-3030, G-083) ────────────────────────────────────────
+#
+# The loop's worker runs `claude -p` with WorkingDirectory pinned to the MAIN
+# checkout (deploy/resolver-loop.service:39), so it writes the same files, at
+# the same paths, as whatever interactive session is running — no lock, no
+# worktree. Until T-3030 the only separation was `_focused_task_id()` below,
+# and a single advisory slot cannot carry that load: it names ONE task when a
+# session holds several, `update-task.sh:2044-2055` nulls it on every full
+# completion, and it is read once at pick time and never re-checked.
+#
+# On 2026-08-16 a worker was dispatched onto T-3028 four seconds after a tick
+# that found focus null — nulled by the close path itself — while the session
+# was mid-reconciliation on that very task. Both wrote update-task.sh.
+#
+# So the guard here is EVIDENCE, not declaration: a dirty working tree is
+# proof someone is mid-edit, and it cannot be nulled by a code path that
+# thinks the work is done. In the origin incident T-3028's task file was an
+# uncommitted rename back into active/ at pick time (deducible from
+# `_select_eligible`'s glob of TASKS_ACTIVE plus b0f6091cc landing that rename
+# 35 minutes later), so this guard would have excluded it.
+
+# Machine-written churn. These are dirty on essentially every tick — counters,
+# session metrics, generated docs, vendored mirror — and say nothing about
+# whether anyone is mid-edit. Without this list the guard would read the tree
+# as permanently busy and silently disable autonomy, which is a worse failure
+# than the one it prevents because it looks like "nothing to do".
+_CHURN_PREFIXES = (
+    ".context/working/",
+    ".context/audits/",
+    ".context/monitors/",
+    ".context/handovers/",
+    ".context/episodic/",
+    ".context/inbox.yaml",
+    ".context/dispatches.jsonl",
+    ".context/dispatch-outcomes.jsonl",
+    ".context/project/metrics-history.yaml",
+    ".agentic-framework/",
+    "docs/generated/",
+    "VERSION",
+)
+
+
+def _dirty_paths() -> List[str]:
+    """Tracked files with uncommitted changes, minus the machine-churn set.
+
+    Fails OPEN on any git error: a guard that cannot read the tree must not
+    latch the loop off, because a permanently-excluded task is indistinguishable
+    from an empty backlog in the journal."""
+    try:
+        proc = subprocess.run(
+            [
+                "git", "-C", str(PROJECT_ROOT), "status",
+                "--porcelain", "--untracked-files=no",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    if proc.returncode != 0:
+        return []
+    out: List[str] = []
+    for line in proc.stdout.splitlines():
+        if len(line) < 4:
+            continue
+        path = line[3:].strip()
+        if " -> " in path:  # rename: the destination is the live path
+            path = path.split(" -> ", 1)[1]
+        path = path.strip('"')
+        if path.startswith(_CHURN_PREFIXES):
+            continue
+        out.append(path)
+    return out
+
+
+def _dirty_task_ids(paths: List[str]) -> set:
+    """Task IDs whose own .tasks/ file is uncommitted — someone is editing it."""
+    ids = set()
+    for path in paths:
+        match = re.search(r"\.tasks/(?:active|completed)/(T-\d+)", path)
+        if match:
+            ids.add(match.group(1))
+    return ids
+
+
 def _focused_task_id() -> str:
     """The task currently in focus.yaml — excluded from picking so the picker
-    never dispatches the task the main agent is actively working."""
+    never dispatches the task the main agent is actively working.
+
+    Retained as a first line of defence, but see the T-3030 comment above: it
+    is advisory and the completion path nulls it. `_dirty_paths()` is the guard
+    that holds when this one does not."""
     focus = PROJECT_ROOT / ".context" / "working" / "focus.yaml"
     if not focus.exists():
         return ""
@@ -1567,6 +1679,20 @@ def _pick_rank_key(meta: Dict[str, Any]) -> tuple:
     return (status_rank, horizon_rank, quad_rank, value_key, cost_key, idnum)
 
 
+def _require_clean_tree() -> bool:
+    """Whether a hand-edited working tree blocks ALL dispatch (T-3030).
+
+    Per-task dirtiness always excludes that task — that is not negotiable and
+    has no switch. This controls the wider claim: that ANY uncommitted source
+    change means an interactive session is mid-work in the shared tree, so the
+    worker has no safe file to write. Default on. An operator running fully
+    unattended with a permanently dirty checkout can set
+    FW_DISPATCH_REQUIRE_CLEAN_TREE=0, and the loop reports what it skipped
+    either way — a guard that silently declines is the failure mode of the one
+    it replaces."""
+    return os.environ.get("FW_DISPATCH_REQUIRE_CLEAN_TREE", "1").strip() != "0"
+
+
 def _select_eligible(
     claimed: Optional[set] = None, cooldown_min: int = 0, stall_after: int = 0
 ) -> tuple:
@@ -1587,11 +1713,29 @@ def _select_eligible(
     focused = _focused_task_id()
     cooling = _recently_dispatched_ids(cooldown_min) if cooldown_min > 0 else set()
     stalled = _stalled_task_ids(stall_after) if stall_after > 0 else {}
+    # T-3030 / G-083: evidence-based two-writer guard. See _dirty_paths().
+    dirty = _dirty_paths()
+    dirty_ids = _dirty_task_ids(dirty)
+    busy_paths = [p for p in dirty if not p.startswith(".tasks/")]
+    tree_busy = bool(busy_paths) and _require_clean_tree()
     eligible: List[Dict[str, Any]] = []
     excluded: List[tuple] = []
     for path in sorted(TASKS_ACTIVE.glob("T-*.md")):
         meta = _read_task_meta(path)
         reason = _pick_eligibility(meta, inflight, focused)
+        # T-3030: dirtiness before cooldown/stall — it is the strongest signal
+        # of a live second writer, and naming it first makes the journal say
+        # WHY a busy tick found nothing.
+        if reason is None and meta["id"] in dirty_ids:
+            reason = "task file uncommitted (a session is editing it)"
+        if reason is None and tree_busy:
+            shown = ", ".join(sorted(busy_paths)[:3])
+            more = f" +{len(busy_paths) - 3} more" if len(busy_paths) > 3 else ""
+            reason = (
+                f"working tree has uncommitted changes ({shown}{more}) — a worker "
+                f"would write the same tree; set FW_DISPATCH_REQUIRE_CLEAN_TREE=0 "
+                f"to dispatch anyway"
+            )
         if reason is None and meta["id"] in cooling:
             reason = f"cooldown (<{cooldown_min}m since last dispatch)"
         if reason is None and meta["id"] in stalled:
