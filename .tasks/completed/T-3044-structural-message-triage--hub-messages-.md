@@ -4,16 +4,16 @@ name: "Structural message triage — hub messages and observations to typed task
 description: >
   Inception: Structural message triage — hub messages and observations to typed tasks
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-16T18:09:29Z
-last_update: '2026-08-16T18:15:07Z'
-date_finished:
+last_update: 2026-08-16T19:43:37Z
+date_finished: 2026-08-16T19:43:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -240,7 +240,7 @@ a later slice and deliberately not on the critical path.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -325,7 +325,11 @@ a later slice and deliberately not on the critical path.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 35,125 recovered messages, 176 pending observations, and a framework-pickup bug report unprocessed for 3 months prove there is no pipeline from message to task. The machinery (fw pickup process, fw note triage, fw bus) exists but nothing routes to it. Census shows 79% is telemetry that should never reach a human and ~12 messages are typed and directly actionable, so the classification problem is tractable rather than open-ended.
+
+**Date**: 2026-08-16T19:43:36Z
 
 ## Updates
 
@@ -334,3 +338,44 @@ a later slice and deliberately not on the critical path.
 
 ### 2026-08-16T18:11:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-16T19:43:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 35,125 recovered messages, 176 pending observations, and a framework-pickup bug report unprocessed for 3 months prove there is no pipeline from message to task. The machinery (fw pickup process, fw note triage, fw bus) exists but nothing routes to it. Census shows 79% is telemetry that should never reach a human and ~12 messages are typed and directly actionable, so the classification problem is tractable rather than open-ended.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8ae8f45b
+- **Timestamp:** 2026-08-16T19:43:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-a351daf5
+- **Timestamp:** 2026-08-16T19:43:38Z
+- **Overall:** CONFIRMED
+- **Claims:** 8
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3044-message-triage-inception.md` | file | ✓ pass |
+| `.context/message-archive/outbound-queue-20260816/decoded.json` | file | ✓ pass |
+| `docs/reports/T-3041-write-site-inventory.md` | file | ✓ pass |
+| `.context/inbox.yaml` | file | ✓ pass |
+| `docs/reports/T-3043-termlink-nonroot-rca.md` | file | ✓ pass |
+| `T-3041` | task | ✓ pass |
+| `T-3042` | task | ✓ pass |
+| `T-3043` | task | ✓ pass |
+
+### 2026-08-16T19:43:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

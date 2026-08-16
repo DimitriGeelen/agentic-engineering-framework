@@ -4584,3 +4584,9 @@ X'` returning empty group."
   task: T-3039
   date: 2026-08-16
   context: Added via context agent
+- id: L-614
+  learning: "AN INCEPTION'S CENSUS IS A SNAPSHOT, AND THE BUILD SLICE INHERITS IT AS FACT. T-3044 counted 35,125 messages / 16 msg_types; re-measuring at build time (T-3046, same archive, 4 hours later) found 47,879 / 79 — 27% and 5x off, and the origin-case bug report was under a type name the census never listed. Nothing was wrong with the census when written; archives grow. The failure is that the build slice's coverage check was originally specified against the census's declared list, which you can satisfy by editing a constant. Fix: coverage assertions must replay the live source (assert_table_complete() reads the archive), never a hand-copied list. Re-measure any inception number you are about to write an AC against."
+  source: P-001
+  task: T-3046
+  date: 2026-08-16
+  context: Added via context agent

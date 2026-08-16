@@ -1,14 +1,14 @@
 check-inception-schema=4
 k-project-boundary=61
-loop-detect=107
-audit-task-tools=6
+loop-detect=110
+audit-task-tools=9
 
-checkpoint=6
-check-tier0=5
-budget-gate=6
-check-project-boundary=6
-check-active-task=6
-error-watchdog=4
+checkpoint=9
+check-tier0=8
+budget-gate=9
+check-project-boundary=9
+check-active-task=9
+error-watchdog=7
 check-active-completed-dup=1
 check-arc-id=1
 check-onboarding-gate=1
