@@ -1,6 +1,7 @@
 ---
 id: T-3032
-name: "do old handovers actually get retrieved — recall evidence for the retention window"
+name: "do old handovers actually get retrieved — recall evidence for the retention
+  window"
 description: >
   do old handovers actually get retrieved — recall evidence for the retention window
 
@@ -22,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T09:57:44Z
-last_update: 2026-08-16T09:57:44Z
-date_finished: null
+last_update: '2026-08-16T10:00:16Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +35,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-16T10:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-16T10:00:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link);
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3032: do old handovers actually get retrieved — recall evidence for the retention window
@@ -68,12 +98,12 @@ stock, which is a migration) is also a separate task.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] What recall telemetry actually exists is established first and stated plainly — `lib/recall-usage.sh` and any retrieval log are read and their real coverage reported, including "there is no usable data" if that is the answer
-- [ ] Retrieval of handover chunks is quantified by **age of the handover**, not just by class: the question is whether hits concentrate in recent files or spread across the archive, and a class-level count cannot answer it
-- [ ] If telemetry is absent or too thin to decide, that is reported as the finding and a direct probe is run instead — e.g. replaying representative `fw recall` queries against the current index and recording which handovers surface, with the queries written down so the probe is repeatable
-- [ ] The verdict is one of: retention window is SAFE at a named N, UNSAFE (with the retrieved-old-handover evidence), or UNDECIDABLE on current data (with what would decide it) — no fourth option, and no recommendation that leaves the choice open
-- [ ] Findings are written to `docs/reports/T-3032-handover-recall-evidence.md` with the commands used, so the next session can re-run rather than re-reason
-- [ ] The report states explicitly whether it is measuring what a *human/agent actually retrieved* or what a *replayed query would retrieve* — these are different claims and conflating them would launder a synthetic probe as usage evidence
+- [x] What recall telemetry actually exists is established first and stated plainly — `lib/recall-usage.sh` and any retrieval log are read and their real coverage reported, including "there is no usable data" if that is the answer
+- [x] Retrieval of handover chunks is quantified by **age of the handover**, not just by class: the question is whether hits concentrate in recent files or spread across the archive, and a class-level count cannot answer it
+- [x] If telemetry is absent or too thin to decide, that is reported as the finding and a direct probe is run instead — e.g. replaying representative `fw recall` queries against the current index and recording which handovers surface, with the queries written down so the probe is repeatable
+- [x] The verdict is one of: retention window is SAFE at a named N, UNSAFE (with the retrieved-old-handover evidence), or UNDECIDABLE on current data (with what would decide it) — no fourth option, and no recommendation that leaves the choice open
+- [x] Findings are written to `docs/reports/T-3032-handover-recall-evidence.md` with the commands used, so the next session can re-run rather than re-reason
+- [x] The report states explicitly whether it is measuring what a *human/agent actually retrieved* or what a *replayed query would retrieve* — these are different claims and conflating them would launder a synthetic probe as usage evidence
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -166,6 +196,17 @@ stock, which is a migration) is also a separate task.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# The telemetry census must be re-runnable — it is the evidence for "no usable data".
+python3 -c "import json,collections;k=collections.Counter();[k.update(json.loads(l).keys()) for l in open('.context/working/recall-telemetry.jsonl') if l.strip()];assert not [f for f in k if any(t in f.lower() for t in ('path','doc','file','source'))], 'telemetry now names documents — re-run the probe, the finding may be stale'"
+# The probe script parses and declares its own limitation, which is the AC #6 claim.
+python3 -c "import ast; ast.parse(open('tools/probe_handover_recall.py').read())"
+grep -q "not what anyone actually retrieved" tools/probe_handover_recall.py
+# The report exists and carries the verdict and its load-bearing numbers.
+test -s docs/reports/T-3032-handover-recall-evidence.md
+grep -q "UNSAFE at N=90" docs/reports/T-3032-handover-recall-evidence.md
+grep -q "31.8%" docs/reports/T-3032-handover-recall-evidence.md
+grep -q "173" docs/reports/T-3032-handover-recall-evidence.md
 
 ## RCA
 

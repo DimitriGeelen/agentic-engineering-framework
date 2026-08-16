@@ -1,0 +1,20 @@
+id: tools/probe_handover_recall.py
+name: probe_handover_recall
+type: script
+subsystem: unknown
+location: tools/probe_handover_recall.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-16
+created_by: unknown
