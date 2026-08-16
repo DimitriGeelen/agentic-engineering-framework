@@ -1,18 +1,16 @@
 ---
-id: T-3040
-name: "peer message backlog lost — local hub had no framework:pickup topic, posts
-  rejected for months"
+id: T-3049
+name: "fabric drift joins https:// card locations onto PROJECT_ROOT and reports them file-missing"
 description: >
-  peer message backlog lost — local hub had no framework:pickup topic, posts rejected
-  for months
+  From T-3047 triage M-06 (ring20-management, 2026-05-14). agents/fabric/lib/drift.sh:58-64 has only an absolute-path branch; any non-/ location becomes $PROJECT_ROOT/$loc and fails [ ! -f ]. grep -c http agents/fabric/lib/drift.sh returns 0 — no URL skip exists. saas-account cards with URL locations are permanently flagged. The T-2519 gitignore escape at drift.sh:76 does not catch it. Part 2 of the original report (depends_on under .agentic-framework/) is already fixed.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
+horizon: next
+tags: [upstream-pickup, T-3047-triage]
 components: []
-related_tasks: []
+related_tasks: [T-3047]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T15:43:14Z
-last_update: '2026-08-16T22:24:15Z'
-date_finished:
+created: 2026-08-16T22:29:29Z
+last_update: 2026-08-16T22:29:29Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,95 +34,11 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-16T15:45:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-16T15:45:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-08-16T22:24:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 3
-      D3: 3
-      D4: 2
-      F-RECALL: 3
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=3 
-      (body:component-silent-failure); D3=3 (body:component-discoverability); 
-      D4=2 (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link);
-      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3040: peer message backlog lost — local hub had no framework:pickup topic, posts rejected for months
+# T-3049: fabric drift joins https:// card locations onto PROJECT_ROOT and reports them file-missing
 
 ## Context
-
-### Recovered backlog — triage map (18 messages, `framework:pickup` @ ring20 .122)
-
-Archived verbatim at `.context/message-archive/framework-pickup-ring20-20260816.json`.
-Offsets are the hub's. **Nothing below has been filed yet** — this table is the
-guard against a second silent drop, and the remaining work of AC 4.
-
-| # | Kind | Sev | Subject | Disposition |
-|---|------|-----|---------|-------------|
-| 1 | deploy-announce | — | T-1166 cut staged for .122 swap | info only |
-| 2 | bug-FIXED | — | G-082 episodic generator fixed upstream | verify against #17 — may be superseded |
-| 3 | bug-report | — | (payload title empty — needs body read) | **read + file** |
-| 4 | gap-registered | — | G-WATCHTOWER-INCEPTION-DECIDE-NO-TERMINAL-GAP (2026-05-15) | cross-check our register |
-| 5 | followup | med | episodic corruption is **silent** — output is valid YAML, so the `yaml.safe_load` guard cannot catch it | **file — defeats an existing control** |
-| 6 | bug-report | med | fw-authority approvals invisible in Watchtower `/approvals`; "50+ sessions hit this" | homes to 150-skills-manager (T-1333) |
-| 7 | bug-report | med | (title empty — needs body read) | **read + file** |
-| 8 | patch-ready | — | T-916 / G-023 patch artifact ready for review | review |
-| 9 | defect | — | Watchtower has **zero HTTP access logging** (audit-trail gap) | **file** |
-| 10 | defect | — | `fw context add-learning` emits **invalid YAML** for quoted/multiline input | **file — corrupts memory** |
-| 11 | defect | — | `fw_hook_crash_trap` misclassifies usage-error exit as crash | file (low) |
-| 12 | enhancement | — | `fw work-on` autonomous-cron pattern needs sibling-check | file (low) |
-| 13 | diagnosis | — | watchtower-dev auto-updater on CT170 | no action toward us |
-| 15 | docs | — | FRAMEWORK.md documents `fw observe`; verb is `fw note` | **quick fix** |
-| 16 | defect | — | `bin/migrate-horizon-null-completed.sh` cannot run vendored | **file** |
-| 17 | defect | — | episodic generator harvests template headings — **still live after the G-082 fix** | **file — conflicts with #2** |
-| 18 | security | — | OneDev token rotated (ring20 T-1626); old one revoked | ✅ answers OBS-106/OBS-277 |
-| 19 | reply | — | answers to this session's two asks + hub-diagnosis correction | ✅ consumed |
-
-Two entries deserve attention beyond their severity labels:
-
-- **#5 + #17 vs #2.** #2 announces G-082 fixed; #17 says the defect is still live
-  after that fix, and #5 explains why the fix's own validation cannot detect it —
-  the corrupted output *is* valid YAML. A guard that cannot fail on the failure it
-  guards against is the same class as T-3004 and as this task's own root cause.
-- **#10.** `fw context add-learning` producing invalid YAML means the framework's
-  learning capture has been silently corrupting its own memory for anyone hitting
-  quoted or multiline input.
-
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
@@ -132,24 +46,8 @@ Two entries deserve attention beyond their severity labels:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause identified and reproduced: `channel.post` to a topic that does
-      not exist on the local hub is REJECTED (`unknown topic … posts do not
-      auto-create topics`), not queued — so every peer message sent to
-      `framework:pickup` on this host was discarded at send time
-- [x] `framework:pickup` and `broadcast-chat` created on the local hub; a probe
-      post to `framework:pickup` persists (`Posts: 1`, offset returned)
-- [x] Recoverable backlog archived from the ring20 hub (which holds the same
-      topics at `forever` retention) into `.context/message-archive/` and
-      committed — 18 `framework:pickup` + 14 `broadcast:global` messages
-- [ ] Every recovered peer report is triaged into the framework's own registers
-      (observation / task / concern), with a mapping table in the task body so
-      nothing recovered is silently dropped a second time
-- [ ] A guard exists so a missing topic cannot silently discard messages again:
-      either topic auto-provisioning at post time, or a `fw doctor` check that
-      the topics the codebase posts to actually exist on the local hub
-- [ ] `agent-chat-arc` recovery attempted and its outcome recorded — the remote
-      hub currently wedges on `channel.subscribe` for that topic (30s internal
-      RPC timeout), which is filed upstream rather than silently abandoned
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -335,7 +233,7 @@ Two entries deserve attention beyond their severity labels:
 
 ## Updates
 
-### 2026-08-16T15:43:14Z — task-created [task-create-agent]
+### 2026-08-16T22:29:29Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3040-peer-message-backlog-lost--local-hub-had.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3049-fabric-drift-joins-https-card-locations-.md
 - **Context:** Initial task creation

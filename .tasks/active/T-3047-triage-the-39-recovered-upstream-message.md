@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:20:24Z
-last_update: 2026-08-16T22:20:24Z
-date_finished: null
+last_update: '2026-08-16T22:30:05Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:24:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-16T22:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3047: Triage the 39 recovered upstream messages against current framework code
@@ -64,15 +92,15 @@ remain gated behind T-3046's open Human AC.
 - [x] **A1** `docs/reports/T-3047-recovered-upstream-messages.md` exists and contains
   all 39 messages verbatim (body, sender, timestamp, archive filename), so the
   evidence survives independently of the hub that held it.
-- [ ] **A2** Every one of the 39 messages carries a verdict in
+- [x] **A2** Every one of the 39 messages carries a verdict in
   `docs/reports/T-3047-triage.md`: `LIVE`, `FIXED`, `NOT-OURS`, or `STALE`, each with
   a file:line or command citation. A verdict with no citation does not count — the
   whole point of this pass is that "probably fixed" is what let them rot.
-- [ ] **A3** Counts reconcile: verdicts in the triage report == 39, and the four
+- [x] **A3** Counts reconcile: verdicts in the triage report == 39, and the four
   verdict classes sum to 39. Asserted by a command in `## Verification`, not by eye.
-- [ ] **A4** Every `LIVE` verdict has a filed task (`.tasks/active/`) or an existing
+- [x] **A4** Every `LIVE` verdict has a filed task (`.tasks/active/`) or an existing
   task/concern id cited. One bug = one task.
-- [ ] **A5** The triage report names, for each `FIXED` verdict, the commit or task
+- [x] **A5** The triage report names, for each `FIXED` verdict, the commit or task
   that fixed it — so a future reader can check the claim rather than trust it.
 
 ### Human
@@ -166,6 +194,24 @@ remain gated behind T-3046's open Human AC.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# A1 — the verbatim dump exists and holds all 39 messages
+test -f docs/reports/T-3047-recovered-upstream-messages.md
+test "$(grep -c '^## M-' docs/reports/T-3047-recovered-upstream-messages.md)" -eq 39
+
+# A2/A3 — 39 verdicts, and the classes sum to 39 (counted, not eyeballed)
+test "$(grep -c '^## M-[0-9]* — ' docs/reports/T-3047-triage.md)" -eq 39
+grep -oE '^## M-[0-9]+ — (LIVE|FIXED|NOT-OURS|STALE)$' docs/reports/T-3047-triage.md > /tmp/.t3047v && test "$(wc -l < /tmp/.t3047v)" -eq 39
+
+# A2 — every verdict carries an evidence citation
+test "$(grep -c '^- \*\*evidence:\*\*' docs/reports/T-3047-triage.md)" -eq 39
+
+# A4 — every LIVE finding maps to a filed task, and each task file exists
+grep -oE '\| T-30(4[89]|5[0-7]) \|' docs/reports/T-3047-triage.md | tr -d '| ' | sort -u > /tmp/.t3047t && test "$(wc -l < /tmp/.t3047t)" -eq 10
+while read -r t; do ls .tasks/active/${t}-*.md >/dev/null; done < /tmp/.t3047t
+
+# A5 — every FIXED verdict cites a task id or a commit sha (checked per section)
+awk '/^## M-[0-9]+ . FIXED/{f=1;c=0;next} /^## M-/{if(f&&!c)exit 1;f=0} f&&/T-[0-9][0-9][0-9]|[0-9a-f]{7,}/{c=1} END{if(f&&!c)exit 1}' docs/reports/T-3047-triage.md
 
 ## RCA
 
