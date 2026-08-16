@@ -1,15 +1,15 @@
 ---
-id: T-3028
-name: "T-3025 GO: handover digest-plus-reference for the three dump sections"
+id: T-3037
+name: "Prior-art gate: AEF has no control that asks WHETHER work needs doing"
 description: >
-  T-3025 GO: handover digest-plus-reference for the three dump sections
+  Prior-art gate: AEF has no control that asks WHETHER work needs doing
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
-horizon: null
+owner: agent
+horizon: now
 tags: []
-components: [agents/handover/handover.sh, lib/config.sh, tests/unit/handover_digest.bats, web/blueprints/config.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T07:56:57Z
-last_update: 2026-08-16T12:48:14Z
-date_finished: 2026-08-16T08:38:36Z
+created: 2026-08-16T13:17:17Z
+last_update: 2026-08-16T13:17:17Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,114 +34,48 @@ date_finished: 2026-08-16T08:38:36Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-16T08:00:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-16T08:00:16Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 3
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3028: T-3025 GO: handover digest-plus-reference for the three dump sections
+# T-3037: Prior-art gate: AEF has no control that asks WHETHER work needs doing
 
 ## Context
 
-Implements the T-3025 GO: **option (3), digest-plus-reference, scoped to the three
-dump sections only.** Decision recorded by the operator via Watchtower (`5148d07f6`).
+Three enhancements proposed in one session were all already built (T-1722
+artefact linking, 1339-dispatch telemetry, T-100186 inception reviewer). Every
+AEF gate fires downstream of the decision to build, so a perfect duplicate
+passes all of them. Both discovery surfaces failed live: `fw fabric search
+"auto_link"` returns "No components match" despite 1065 cards, and `fw recall`
+on the topic returned five irrelevant learnings.
 
-The measured case (T-3022 §Spike 9-10, T-3025 §Spike 11-12): `.context/handovers` is
-68% of the indexed corpus and 79% of the last month's growth. Section accounting of a
-265,888-byte handover shows **state dumps are 97.3%** of it — Observation Inbox
-137,505 B, Work in Progress 69,568 B, Awaiting Your Action 48,355 B — against ~2 KB of
-session narrative. Consecutive handovers are byte-identical across those three
-sections. The prototype at `docs/reports/T-3025-digest-spike.py` reduced a real
-handover 273,761 → 18,762 B (14.6×) with **all 14 narrative sections byte-identical
-by md5**.
+Full findings, 5-Whys, and the measured dispatch table:
+`docs/reports/T-3037-prior-art-gate.md`
 
-The GO's reasoning, which sets the scope: narrative is what a cold reader needs and it
-is preserved in full; what gets referenced is enumerated live state — a queue snapshot
-that is stale the moment it is written and that every consumer re-derives anyway.
-Referencing the part that goes stale and embedding the part that does not is the split,
-not a compromise.
-
-**GO condition 2 is already satisfied** by T-3027: `tasks_active:` now means active, so
-frontmatter carries correct identity + state for every in-flight task. That is what
-makes eliding the WIP dump safe — the T-3025 IW-2 probe's digest arm failed precisely
-because the surviving carrier asserted a false status, and it no longer does. Condition 1
-(digest must carry per-task Status) is subsumed, but the retained top-N entries carry
-Status anyway.
-
-**Reversibility is a requirement, not a nicety.** The whole chain (E′ → F → A) was
-ordered to put subtraction before construction. `FW_HANDOVER_DIGEST=0` must restore the
-full dumps with no other change.
-
-Not in scope: candidate A (binary quantization), and any change to the 14 narrative
-sections.
+This task records the findings and lands the CLAUDE.md parallelism rule. The
+gate itself (layer 3) and the fabric symbol indexing (layer 2a) are follow-ups,
+filed separately — this task does not build them.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] All three dump sections digest to `count + regenerating command + top-N entries`: Observation Inbox (`fw note triage`), Work in Progress (`fw task list --status started-work`), Awaiting Your Action (`fw review-queue`)
-- [x] The partial-complete footer inside Work in Progress — which re-lists the same set as Awaiting Your Action — is digested too, since leaving it whole would keep ~40% of the savings on the table
-- [x] Every digested section states its own total, so a reader can tell a truncated list from a complete one; a section listing fewer than it claims says so (preserving the T-2927 mismatch line, which is the control that made the last silent-truncation bug visible)
-- [x] `FW_HANDOVER_DIGEST=0` restores byte-identical full dumps — verified by generating both ways and diffing, not by reading the code
-- [x] `FW_HANDOVER_DIGEST` and `FW_HANDOVER_DIGEST_TOP_N` are registered in **both** `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` (the two are pinned equal by `config registry key count matches across sources`; a one-sided registration fails the pre-push audit — T-3024 origin)
-- [x] All 14 narrative sections are byte-identical between digested and undigested output, checked by md5 per section rather than by eyeball
-- [x] A real generated handover is ≥5× smaller than the same handover undigested, measured on this repo's live corpus
-- [x] `tests/unit/handover_digest.bats` pins: digest on/off parity for narrative, count-vs-listed honesty, top-N respected, and that an empty section digests to nothing rather than to a "0 items" stub
-
+- [x] Research artefact `docs/reports/T-3037-prior-art-gate.md` exists and
+      contains the 5-Whys, the structural statement, the measured dispatch
+      table, and the three-layer fix proposal
+- [x] The measured dispatch table is **regenerable**, not a snapshot —
+      `tools/dispatch_outcome_table.py` rebuilds it from committed JSONL and
+      reproduces the inception row (N=122, 0 verification passes)
+- [x] The telemetry gap claims are verifiable against committed data: the same
+      tool reports `retry_of_dispatch_id` and `parent_dispatch_id` populated in
+      0 of 1339 records
+- [x] CLAUDE.md carries an execution-model section stating the dispatch default,
+      the "can you write the prompt without doing the work" test, and the
+      measured per-workflow_type table
+- [x] The CLAUDE.md section names the write-set constraint and points at
+      `fw write-set check` for the converging-writes case
+- [x] Findings are captured as observations (OBS-287 through OBS-290) so they
+      survive this task archiving
 
 ### Human
-
-- [ ] [REVIEW] The digested handover still gives you what you open a handover for
-
-  This is the one thing no measurement settles, and it is the open half of the
-  T-3025 GO. Byte counts and md5 parity say the narrative survived; they cannot say
-  whether a session start reads *well*. You are also the party IW-1 was left to —
-  whether the handover's primary consumer is a cold reader (narrative) or a live
-  session (enumerations). If the enumerations turn out to be what you actually
-  reach for, this is the wrong trade and `HANDOVER_DIGEST=0` is the answer, not a
-  tweak.
-
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw handover`
-  2. Open the newest file in `.context/handovers/` and read it as if you had been
-     away a week.
-  3. For contrast, generate the old shape and open it too:
-     `cd /opt/999-Agentic-Engineering-Framework && FW_HANDOVER_DIGEST=0 bin/fw handover`
-
-  **Expected:** the digested one answers "where am I, what must I not do, what next"
-  without your needing the full dumps; where it truncates, it says so and names the
-  command that gives you the rest.
-
-  **If not:** say which section you missed and whether you wanted *more entries*
-  (raise `HANDOVER_DIGEST_TOP_N`) or *the whole dump back* (set `HANDOVER_DIGEST=0`
-  — that path is tested and restores the previous output unchanged). Either is one
-  `bin/fw config set` away; nothing needs rebuilding.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -172,30 +106,18 @@ sections.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-## Measured Result
-
-Generated both ways against this repo's live corpus, same session, minutes apart:
-
-| | full (`FW_HANDOVER_DIGEST=0`) | digested | ratio |
-|---|---|---|---|
-| **whole file** | 270,039 B | 17,643 B | **15.3×** |
-| `## Observation Inbox` | 141,774 B | 1,504 B | 94× |
-| `## Work in Progress` | 69,198 B | 5,279 B | 13× |
-| `## Awaiting Your Action (Human)` | 48,566 B | 1,635 B | 30× |
-| 14 narrative sections | — | — | **byte-identical (md5)** |
-
-Close to the prototype's prediction (273,761 → 18,762 B, 14.6×), which is the
-useful part: the spike measured a post-processed handover, this is the generator
-producing it directly, and they agree.
-
-**Reversibility proven against the pre-change script, not against the code.**
-Generated a handover with `git show HEAD:agents/handover/handover.sh` and compared
-section-by-section with `FW_HANDOVER_DIGEST=0` output: **16 of 17 sections
-md5-identical, section sets equal.** The one difference is `## Token Usage`, which
-carries live session metrics (turn counts moved 5827 → 5823 between the two runs) —
-not a structural difference.
-
 ## Verification
+
+test -f docs/reports/T-3037-prior-art-gate.md
+grep -q "AEF gates verify HOW work is done" docs/reports/T-3037-prior-art-gate.md
+grep -q "## Execution Model: Dispatch by Default" CLAUDE.md
+grep -q "Dispatch the review, never the exploration" CLAUDE.md
+grep -q "fw write-set check" CLAUDE.md
+python3 tools/dispatch_outcome_table.py > /tmp/.t3037-table 2>&1 && grep -qE "^inception +122 +0 \( +0\.0%\)" /tmp/.t3037-table
+python3 tools/dispatch_outcome_table.py > /tmp/.t3037-link 2>&1 && grep -q "retry_of_dispatch_id populated: 0/" /tmp/.t3037-link
+python3 tools/dispatch_outcome_table.py --json > /tmp/.t3037-json 2>&1 && python3 -c "import json;json.load(open('/tmp/.t3037-json'))"
+grep -q "OBS-287" .context/inbox.yaml
+grep -q "OBS-290" .context/inbox.yaml
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -255,19 +177,6 @@ not a structural difference.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-bash -n agents/handover/handover.sh
-out=$(bats tests/unit/handover_digest.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# T-3027's classifier must keep passing — this task changed the same generator.
-out=$(bats tests/unit/handover_task_classification.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# Both config keys registered on BOTH sides. A one-sided registration is green
-# locally and red only at the pre-push audit's cross-source parity invariant,
-# where it reads as a hung push rather than a config error (T-3024 origin).
-[ "$(grep -c '"HANDOVER_DIGEST|' lib/config.sh)" -eq 1 ]
-[ "$(grep -c '"HANDOVER_DIGEST_TOP_N|' lib/config.sh)" -eq 1 ]
-[ "$(grep -c '("HANDOVER_DIGEST",' web/blueprints/config.py)" -eq 1 ]
-[ "$(grep -c '("HANDOVER_DIGEST_TOP_N",' web/blueprints/config.py)" -eq 1 ]
-bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(fw_config HANDOVER_DIGEST_TOP_N)" = "5" ]'
 
 ## RCA
 
@@ -338,47 +247,6 @@ bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO — keep the digest on, at `HANDOVER_DIGEST_TOP_N=5`.
-
-**Rationale:**
-
-Your GO on T-3025 authorised this shape and this scope, and the build came in where
-the spike said it would: 15.3× on the whole file, all 14 narrative sections
-byte-identical. The spike measured a post-processed handover; this is the generator
-emitting it directly, and the two agree — which is the part worth trusting, not the
-ratio itself.
-
-The reason I am comfortable recommending GO rather than asking you to pilot it is
-that the failure mode has a proven exit. `HANDOVER_DIGEST=0` was tested against the
-*pre-change script*, not against my reading of the code: 16 of 17 sections
-md5-identical, section sets equal, the one difference being live session metrics that
-moved between two runs seconds apart. If the digest turns out to be wrong for how you
-work, one `bin/fw config set` puts the old handover back exactly.
-
-The one thing I cannot settle is IW-1, and it is genuinely yours: whether the
-handover's primary consumer is a cold reader (narrative — in which case this trade is
-right) or a live session (the enumerations — in which case it is wrong and the growth
-should be attacked elsewhere). The cold-reader probe supports the first reading, but
-it probed an agent, not you. That is what the Human AC asks.
-
-**What I am not claiming:** that this closes the corpus-growth problem. It removes the
-largest term — handovers were 68% of the indexed corpus and 79% of its growth — but
-candidate A (binary quantization, ~10× on recall latency) remains unstarted and
-unauthorised, and E′'s inclusion-set work is T-3024, still with you for review.
-
-**Evidence:**
-
-- Whole file 270,039 → 17,643 B (15.3×); per-section 141,774 → 1,504, 69,198 → 5,279,
-  48,566 → 1,635. Generated both ways against this repo's live corpus, minutes apart.
-- 14/14 narrative sections byte-identical by md5; section sets equal.
-- Reversibility proven against `git show HEAD:agents/handover/handover.sh`, not
-  asserted from the diff.
-- 10 bats tests in `tests/unit/handover_digest.bats` run the real generator against a
-  synthetic corpus; totals are derived from disk so they stay independent oracles.
-- T-3027 landed first and is the precondition: `tasks_active:` now means active, so
-  eliding the WIP dump no longer leaves a false status as the sole carrier.
-- Both config keys registered on both sides; `fw_config` resolves 1 and 5.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -402,26 +270,7 @@ unauthorised, and E′'s inclusion-set work is T-3024, still with you for review
 
 ## Updates
 
-### 2026-08-16T07:56:57Z — task-created [task-create-agent]
+### 2026-08-16T13:17:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3037-prior-art-gate-aef-has-no-control-that-a.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-0ed71de8
-- **Timestamp:** 2026-08-16T08:39:20Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 1
-
-**Per-AC findings:**
-
-- **AC#1 (Human)** — [REVIEW] The digested handover still gives you what you open a handover for
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='names the\n  c' in Expected: the digested one answers "where am I, what must I not do, what next"   without your needing the full dumps; where it truncates, it says so a`
-### 2026-08-16T08:22:55Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-
-### 2026-08-16T08:38:36Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

@@ -3644,3 +3644,31 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-287
+  text: "Dispatch outcome table measured from existing telemetry for the first time (1339 dispatches / 1838 outcome events, 69% joined). By task workflow_type: build N=696 verif-pass 30%; INCEPTION N=122 verif-pass 0% AC-satisfied 0%; test N=66 verif-pass 83% but AC-satisfied only 9% (divergence unexplained); refactor N=41 65%. The inception 0/122 empirically confirms the 'never dispatch inceptions' instinct. Caveat: inceptions have no meaningful Verification/AC so 0% may partly be a build-shaped evaluator applied to exploration work — same operational conclusion either way. Sharpened rule that falls out: DISPATCH THE REVIEW, NEVER THE EXPLORATION. Reproduce: join .context/dispatches.jsonl to dispatch-outcomes.jsonl on dispatch_id, map task_id to workflow_type from task frontmatter."
+  captured: 2026-08-16T13:15:35Z
+  context_task: T-100201
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-288
+  text: "Dispatch telemetry has three gaps blocking a try-fail-retry learning loop. (1) retry_of_dispatch_id: 0 of 1339 populated — the field exists in schema, nothing writes it, so a retried dispatch is indistinguishable from a fresh one and the enhance-and-retry cycle leaves no trace. (2) parent_dispatch_id: 0 of 1339 — no dispatch lineage. (3) No counterfactual: only dispatches are recorded, so telemetry can never say 'you should have dispatched this'. Cheap fix for (3): a completed task with NO dispatch record WAS self-executed, so the self-executed arm is derivable from data already on disk with no new capture path. Proposed surface: fw orchestrator table."
+  captured: 2026-08-16T13:15:38Z
+  context_task: T-100201
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-289
+  text: "Artefact-path-to-URL linking is ALREADY BUILT and working (T-1722 _auto_link_files + T-632 /file/<path> route), wired into 5 blueprints (tasks, docs, inception, core, shared). Verified live against every shape task bodies use: bare path, mid-prose, path:LINE suffix, backticked, and inside <pre><code> — all link correctly, existence-gated and idempotent. Covers 22 dir prefixes x 8 extensions. The residual is NOT a linker gap: across active tasks there are 84 unique docs/reports refs and 6 point at files that DO NOT EXIST, so the existence gate correctly refuses to link a dead reference. That makes the gate an accidental DETECTOR — a bare path on a rendered page IS the signal the artefact is missing, but that signal currently renders identically to plain prose. Two cheap slices: (A) audit control flagging task-body artefact refs to non-existent files, reusing is_viewable_path — starts red with 6 real hits; (B) render dead refs visibly (strikethrough/amber 'missing') instead of silently."
+  captured: 2026-08-16T13:15:48Z
+  context_task: T-100201
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-290
+  text: "MEta-finding, 3 for 3 in one session: every enhancement proposed was ALREADY BUILT. (1) artefact-path-to-URL linking = T-1722, shipped. (2) dispatch telemetry = 1339 dispatches already recorded. (3) inception review agent = T-100186 GO'd 2026-07-05, T-100187 work-completed, T-100188 work-completed awaiting Human ACs. The constraint on this project is NOT build capacity, it is KNOWING WHAT ALREADY EXISTS — which is precisely what vector-DB recall is for, and is the strongest available argument for prioritising the recall/embeddings work. Compounding evidence: the research artefact docs/reports/T-100186-reviewer-assisted-inception-decides.md is one of the 6 DEAD references found in the same session — the memory of having decided to build the inception reviewer went missing because its artefact did. Dead artefact refs and repeated rebuilding are the same failure with one cause."
+  captured: 2026-08-16T13:15:53Z
+  context_task: T-100201
+  tags: []
+  status: pending
+  promoted_to: null

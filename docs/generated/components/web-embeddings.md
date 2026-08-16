@@ -8,8 +8,6 @@
 
 ## What It Does
 
-Configuration (T-273: config-driven, no hardcoded paths)
-
 ## Dependencies (5)
 
 | Component | Relationship | Description |

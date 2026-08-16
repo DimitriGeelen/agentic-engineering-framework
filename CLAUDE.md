@@ -48,6 +48,81 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 
 **Why this matters:** Third-party plugins are not aware of project-specific governance. They will issue instructions like "implement now" or "code first, test first" without checking for task context. The agent must apply framework rules as a pre-filter before deferring to skill workflows.
 
+## Execution Model: Dispatch by Default (T-3037)
+
+**Default: dispatch the work to a TermLink worker. Executing it yourself is the
+exception you justify, not the default you fall into.**
+
+The parent session's context is the binding constraint on how much work a day
+holds. A TermLink worker costs zero parent context, survives compaction, and runs
+observably. Self-execution spends the one resource that cannot be replenished
+mid-session.
+
+### The test — can you write the dispatch prompt without doing the work first?
+
+If you can state scope, deliverable, output format and constraints, the work is
+**specified**: dispatch it. If writing the prompt requires you to first find out
+what is wrong, it is **not specified yet** — localise first, then dispatch the fix.
+
+Writing the prompt *is* the test. If you sit down to write it and cannot, that is
+the signal, not a reason to push through.
+
+### Measured outcomes by workflow_type
+
+Not asserted — joined from `.context/dispatches.jsonl` (1339 dispatches) and
+`.context/dispatch-outcomes.jsonl` (1838 outcome events), T-3037:
+
+| workflow_type | N | verification pass | Dispatch? |
+|---|---:|---:|---|
+| refactor | 41 | 65% | Yes — best measured class |
+| build | 696 | 30% | Yes, but verify the result |
+| test | 66 | 83% verif / 9% AC | Yes — note the unexplained AC divergence |
+| **inception** | **122** | **0%** | **Never** |
+
+**122 inception dispatches produced zero passing outcomes.** Inceptions are
+dialogue with a human; there is no prompt to write. The sharpened rule:
+
+> **Dispatch the review, never the exploration.**
+
+An inception's *artefact* can be reviewed by a dispatched worker — that is a
+static scan over finished work, which is exactly the shape that dispatches well
+(`fw reviewer T-XXX --dispatch`). The exploration itself cannot.
+
+Regenerate the table rather than trusting this copy: it is a snapshot, and the
+rule is meant to move when the data moves.
+
+### Execute yourself only when
+
+1. **Inception** — see above. Also any work whose substance is human dialogue.
+2. **Unlocalised debugging** — until a hypothesis is confirmed. **Dispatch the
+   fix, never the search.**
+3. **Human-facing handoffs** — `fw task review`, Tier 0 approvals, inception
+   decisions, arc closure.
+4. **Converging write-sets** — work that writes the same files cannot be
+   parallelised. **Fan out on reads, fan in serially on writes.** Check with
+   `fw write-set check T-A T-B` (exit 0 = disjoint, 1 = overlap, 2 = undecidable).
+   Worked example: observation triage reads independently but converges on
+   `.context/inbox.yaml`, `concerns.yaml`, and `.tasks/` — so workers analyse and
+   post via `fw bus`, and the parent integrates serially.
+5. **Below the floor** — a single edit you already know how to make; dispatch
+   overhead exceeds the work.
+
+Anything not on that list: dispatch. **"It'll be quicker if I just do it" is the
+rationalisation this rule exists to catch** — true for one task, false across a
+session.
+
+### Parallelism limits
+
+- **Cap 5** concurrent workers (same limit as sub-agent dispatch).
+- **40K tokens headroom** before dispatching, for result ingestion.
+- **Do not spawn when context > 60%.**
+- **Worktree isolation** (`fw worktree create`) for any parallel work that edits
+  files, then `fw integrate run master --push` from the main checkout.
+- Workers write to **repo paths**, never `/tmp/fw-agent-*` (T-818).
+
+Mechanics, prompt structure, and result-ledger discipline: §Sub-Agent Dispatch
+Protocol. Substrate observability: `fw orchestrator status`.
+
 ## Watchtower Port (read this FIRST, before any `curl localhost:3000`)
 
 **Watchtower's port is per-project, not hard-coded to `3000`.** Two consumer projects on one host would collide if the framework assumed 3000 everywhere.
