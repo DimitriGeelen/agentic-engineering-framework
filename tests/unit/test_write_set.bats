@@ -44,10 +44,27 @@ $ws_block
 EOF
 }
 
-@test "disjoint case — two tasks with non-overlapping write_set return exit 0 + 'disjoint'" {
+@test "non-overlapping write_set is 'converging', not 'disjoint' (T-3039)" {
+    # CHANGED BY T-3039, and the change is the point rather than a relaxation.
+    # This test previously asserted exit 0 + 'disjoint' — which was true of the
+    # DECLARED lists and false of the tasks: both also write inbox.yaml,
+    # learnings.yaml, focus.yaml and session.yaml, because the framework writes
+    # those on every task's behalf. Exit 0 here was a green light to parallelise
+    # into the 27-site RMW set that T-3042 lost data in.
     _write_task "T-PAR-A" "write_set: [docs/reports/T-PAR-A.md]"
     _write_task "T-PAR-B" "write_set: [docs/reports/T-PAR-B.md]"
     run "$FRAMEWORK_ROOT/bin/fw" write-set check T-PAR-A T-PAR-B
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"converging"* ]]
+}
+
+@test "--declared-only still reports the old 'disjoint' for the same pair (T-3039)" {
+    # The pre-T-3039 comparison is retained behind an explicit flag, so the
+    # original contract is still exercised and the behaviour change is visible
+    # as a deliberate seam rather than a deleted assertion.
+    _write_task "T-PAR-A" "write_set: [docs/reports/T-PAR-A.md]"
+    _write_task "T-PAR-B" "write_set: [docs/reports/T-PAR-B.md]"
+    run "$FRAMEWORK_ROOT/bin/fw" write-set check T-PAR-A T-PAR-B --declared-only
     [ "$status" -eq 0 ]
     [[ "$output" == *"disjoint"* ]]
 }
@@ -100,10 +117,26 @@ EOF
     [[ "$output" == *"usage"* ]]
 }
 
-@test "empty write_set list — explicitly-declared empty set is disjoint with anything" {
+@test "empty write_set list is still DECLARED — decidable, and converging (T-3039)" {
+    # The property this test was written to protect is that an empty list is
+    # distinguishable from a missing field: `[]` means "I declare that I write
+    # nothing", not "I did not say". That still holds — the verdict is decidable
+    # (not 'undecidable'), which is what read_write_set()'s empty-list branch
+    # exists for.
+    #
+    # What changed is the verdict word: a task cannot actually write nothing.
+    # Being a framework task means writing focus.yaml and session.yaml at
+    # minimum, so 'converging' is the honest answer and 'disjoint' never was.
     _write_task "T-EMPTY" "write_set: []"
     _write_task "T-NORMAL" "write_set: [docs/foo.md]"
     run "$FRAMEWORK_ROOT/bin/fw" write-set check T-EMPTY T-NORMAL
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"converging"* ]]
+    [[ "$output" != *"undecidable"* ]]
+
+    # The declared-only view proves the empty list was parsed as a declaration
+    # rather than silently treated as absent.
+    run "$FRAMEWORK_ROOT/bin/fw" write-set check T-EMPTY T-NORMAL --declared-only
     [ "$status" -eq 0 ]
     [[ "$output" == *"disjoint"* ]]
 }

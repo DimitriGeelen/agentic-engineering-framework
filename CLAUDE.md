@@ -100,10 +100,27 @@ rule is meant to move when the data moves.
    decisions, arc closure.
 4. **Converging write-sets** — work that writes the same files cannot be
    parallelised. **Fan out on reads, fan in serially on writes.** Check with
-   `fw write-set check T-A T-B` (exit 0 = disjoint, 1 = overlap, 2 = undecidable).
+   `fw write-set check T-A T-B` (exit 0 = disjoint, 1 = overlap *or* converging,
+   2 = undecidable).
    Worked example: observation triage reads independently but converges on
    `.context/inbox.yaml`, `concerns.yaml`, and `.tasks/` — so workers analyse and
    post via `fw bus`, and the parent integrates serially.
+
+   **Expect `undecidable`, and read what it prints (T-3039).** No task in the
+   corpus declares `write_set:` frontmatter — 0 of 3032 — so the declared-path
+   comparison has nothing to compare and every real pair exits 2. That is the
+   honest answer, not a malfunction, and it is not the whole output: the command
+   also names the **implicit framework write-set** (`inbox.yaml`,
+   `learnings.yaml`, `concerns.yaml`, `focus.yaml`, `session.yaml`), which two
+   tasks converge on whether or not either declares anything, because the
+   framework writes those on the task's behalf.
+
+   So the operative rule is the reverse of what exit 2 suggests: **assume
+   convergence on framework state and serialise the write leg**, then use the
+   command's `converging` / `overlap` output to find out whether the tasks
+   *additionally* collide on their own files. `disjoint` is reachable only with
+   `--declared-only`, which reproduces the pre-T-3039 comparison and can call two
+   tasks safe that are not — that false green is the reason the verdict exists.
 5. **Below the floor** — a single edit you already know how to make; dispatch
    overhead exceeds the work.
 
@@ -1258,7 +1275,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 **Fabric (before modifying source):**
 - `fw fabric deps <path>` / `fw fabric impact <path>` / `fw fabric blast-radius [ref]`
 - `fw fabric overview` / `fw fabric drift` / `fw fabric register <path>`
-- `fw write-set check <T-A> <T-B>` — disjoint-write-set validator for arc-011 parallel dispatch (T-2337); exit 0=disjoint, 1=overlap, 2=undecidable
+- `fw write-set check <T-A> <T-B> [--json] [--declared-only]` — write-set validator for arc-011 parallel dispatch (T-2337, T-3039); exit 0=disjoint, 1=overlap|converging, 2=undecidable. Expect exit 2 (no task declares `write_set:`) and read the printed convergence — see §Execution Model item 4
 
 **Dispatch and cross-project:**
 - `fw termlink check|spawn|exec|dispatch|status|cleanup|wait|result` (see TermLink section)

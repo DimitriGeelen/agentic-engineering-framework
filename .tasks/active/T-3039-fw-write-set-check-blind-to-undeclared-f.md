@@ -153,7 +153,7 @@ less than its name implies, and is indistinguishable from one that asserts every
   the current implementation** — recorded as run, not asserted.
 - [x] **A5** `undecidable` is preserved for genuinely missing declarations and still exits 2.
   Fixing the blind spot must not turn "I don't know" into a confident answer.
-- [ ] **A6** Adoption has a path: either the field is emitted at task-create time, or
+- [x] **A6** Adoption has a path: either the field is emitted at task-create time, or
   `write-set check` infers a declared set when the field is absent, or CLAUDE.md's instruction
   is corrected to say what the tool actually answers today. Whichever is chosen is recorded as
   a decision with its rejected alternatives — shipping A1-A5 while leaving 0/3032 adoption
@@ -195,6 +195,20 @@ less than its name implies, and is indistinguishable from one that asserts every
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+#
+# A1-A5: the implicit set, the converging verdict, and the preserved undecidable
+bats tests/unit/t3039_write_set_implicit.bats
+# The pre-existing T-2337 suite, updated to the new contract (2 of its 8 tests
+# asserted the false green and now assert 'converging' + a --declared-only pair)
+bats tests/unit/test_write_set.bats
+# A3 + CLI: flags reach the script (they were being swallowed) and JSON carries the detail
+bin/fw write-set check T-3042 T-3043 --json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['verdict']=='undecidable'; assert d['converging'], 'convergence not reported'; print('ok')"
+# A5: undecidable still exits 2 on a real pair
+bash -c 'bin/fw write-set check T-3042 T-3043 >/dev/null 2>&1; [ $? -eq 2 ]'
+# A6: CLAUDE.md states what the tool actually answers today
+grep -q "Expect \`undecidable\`, and read what it prints" CLAUDE.md
+# bin/fw edited — L-408 requires syntax verification
+bash -n bin/fw
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
