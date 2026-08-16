@@ -2354,6 +2354,44 @@ for e in d.get('errors',[])[:3]:
             _doctor_warn_host "ollama not reachable on http://192.168.10.107:11434; ollama-loop workflows will fail"
         fi
     fi
+
+    # Check: embed endpoint reachable (T-3045).
+    #
+    # This check exists because its absence is INVISIBLE BY CONSTRUCTION. T-3017
+    # made the embed path fail over to the other configured host, so a dead
+    # primary produces working embeddings — the only signal is a stderr WARNING
+    # nobody aggregates. This install pinned embed_host at a loopback sidecar
+    # (127.0.0.1:11435) that died 2026-08-15 with no systemd unit able to restart
+    # it, and ran on its backup for a day while every surface said fine.
+    #
+    # It is also unreachable by any test: .context/settings.yaml is gitignored, so
+    # a hand-pinned dead host is absent from code review and from CI. doctor is the
+    # only place that can see the resolved value AND probe it on this machine.
+    #
+    # Resolution goes through web/config.py rather than re-reading settings.yaml,
+    # so env overrides (FW_EMBED_HOST) and the `or OLLAMA_HOST` fallback are
+    # honoured exactly as the embed path honours them — a check that resolved the
+    # host differently from the code under test would be worse than none.
+    if [ -f "$FRAMEWORK_ROOT/web/embeddings.py" ]; then
+        local _embed_host
+        _embed_host="$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+import sys
+sys.path.insert(0, '$FRAMEWORK_ROOT/web')
+try:
+    from config import Config
+    print(Config.EMBED_HOST or '')
+except Exception:
+    print('')
+" 2>/dev/null)"
+        if [ -z "$_embed_host" ]; then
+            echo -e "  ${CYAN}INFO${NC}  embed endpoint not configured (no embed_host, no ollama_host)"
+        elif curl -sf --max-time 3 "${_embed_host%/}/api/tags" >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  embed endpoint reachable ($_embed_host)"
+        else
+            _doctor_warn_host "embed endpoint not reachable on $_embed_host; embeds still succeed via T-3017 failover, so nothing else will report this"
+            echo -e "         Unset embed_host in .context/settings.yaml to resolve to ollama_host, or start the endpoint. See T-3045."
+        fi
+    fi
     fi  # T-2452/F6: end --quick guard for litellm/ollama curls
 
     # Check: TypeScript build health (optional)

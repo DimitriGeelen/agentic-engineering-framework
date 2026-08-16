@@ -3138,3 +3138,10 @@ decisions:
     date: 2026-08-16
     task: T-3030
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-451
+    decision: "Retire the T-3006 embed sidecar split: embed_host resolves to ollama_host"
+    scope: project
+    date: 2026-08-16
+    task: T-3045
+    rationale: "D-436 pinned embed_host at a dedicated CPU sidecar (127.0.0.1:11435) because the shared provider ran OLLAMA_MAX_LOADED_MODELS=1, where one resident chat model starves every unloaded model. That premise is gone: the host now runs OLLAMA_MAX_LOADED_MODELS=2 and keeps nomic-embed-text-v2-moe resident. T-3016 measured query latency at 208ms shared vs 210ms sidecar — indistinguishable — so the split bought throughput isolation only for bulk reindex, which EMBED_BULK_HOST already handles separately. The sidecar itself died 2026-08-15 with no systemd unit, no docker service and no documented launch parameters, so nothing could restart it; every embed had been failing over to ollama_host for a day with only transient stderr as signal. Supersedes D-436. What brings it back: the shared host returning to OLLAMA_MAX_LOADED_MODELS=1 — that condition and no other. The mechanism is retained, not removed (an explicit embed_host still wins, pinned by tests/unit/t3045_embed_host_resolution.bats)."

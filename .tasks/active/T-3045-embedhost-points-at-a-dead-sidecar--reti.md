@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T18:31:35Z
-last_update: 2026-08-16T18:31:35Z
-date_finished: null
+last_update: '2026-08-16T18:45:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-16T18:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-16T18:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3045: embed_host points at a dead sidecar — retire 11435, D-436's premise is gone
@@ -82,14 +111,14 @@ comment. T-3016's measurement removes the last reason to prefer the sidecar for 
   shows no new failover after an `index_one()` call, proving the primary now serves.
 - [x] **A4** Query latency does not regress: a warm `embeddings.search()` completes inside
   the same 5 s budget the T-1719 A1 test asserts, measured after the change.
-- [ ] **A5** `fw doctor` gains an embed-endpoint reachability check so a dead primary is
+- [x] **A5** `fw doctor` gains an embed-endpoint reachability check so a dead primary is
   surfaced instead of being masked by failover (closes the detection half of
   `.context/inbox.yaml:3697` — the framework ran on its backup for a day with no surface
   reporting it).
-- [ ] **A6** Regression test pins the resolution rule: with `embed_host` unset,
+- [x] **A6** Regression test pins the resolution rule: with `embed_host` unset,
   `Config.EMBED_HOST == Config.OLLAMA_HOST`; with it set, the explicit value wins. Guards
   against a future edit silently re-pinning a dead host.
-- [ ] **A7** D-436 is superseded, not silently contradicted: a decision entry records that
+- [x] **A7** D-436 is superseded, not silently contradicted (recorded as **D-451**): a decision entry records that
   the sidecar split is retired, cites `OLLAMA_MAX_LOADED_MODELS=2` and the 208/210 ms
   parity as the reason, and names what would bring it back (a return to `=1`).
 
