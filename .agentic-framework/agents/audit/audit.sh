@@ -2470,43 +2470,80 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
     unset _SESSION_STATE_FILTER _ALL_DIRTY _REAL_DIRTY _NOISE_COUNT _REAL_COUNT
 
     # Quality Check: Verify task refs in commits exist as actual tasks
+    #
+    # T-3053: a commit subject may name more than one task ("T-A/T-B-side: ...",
+    # "T-A: ...; T-B recommendation"). The question this check asks is whether the
+    # commit is traceable to a real task, so ANY resolving ref answers it. Reading
+    # only the first (`grep -oE "T-[0-9]+" | head -1`) reported a false orphan
+    # whenever the leading ref did not resolve but a later one did.
+    #
+    # The traceability percentage at :2432 already counts a commit as referencing a
+    # task when *any* T-ref is present — this loop was the only place that silently
+    # narrowed that to the first, so the two measures disagreed about the same
+    # commit. Any-resolves is the reading that makes them agree.
     orphan_refs=0
     # shellcheck disable=SC2086 # trace_range intentionally unquoted
     while IFS= read -r commit_line; do
-        task_ref=$(echo "$commit_line" | grep -oE "T-[0-9]+" | head -1)
-        if [ -n "$task_ref" ]; then
-            # Check if task file exists (active or completed)
-            task_file=$(find "$TASKS_DIR" -name "${task_ref}-*.md" -type f 2>/dev/null | head -1)
-            if [ -z "$task_file" ]; then
-                # T-2058: suppress WARN when a later commit explicitly reverted this task
-                # (deliberate orphan). Pattern: any commit message containing "revert ... T-NNNN".
-                # Capture-then-grep avoids SIGPIPE on truncation (L-387 safe pattern).
-                _revert_log=$(git -C "$PROJECT_ROOT" log --all --format=%s 2>/dev/null)
-                if echo "$_revert_log" | grep -qiE "revert[^A-Za-z0-9_].*${task_ref}([^0-9]|$)"; then
-                    # Revert-chain detected — task was intentionally removed from history
-                    continue
-                fi
-                unset _revert_log
-                commit_sha=$(echo "$commit_line" | cut -d' ' -f1)
-                # T-2851: a root commit predates every task by construction, so it
-                # cannot reference one. `fw init`'s bootstrap commit (lib/init.sh:742)
-                # is exactly this case and made every fresh project fail its own
-                # traceability audit on day zero. Keyed on parentlessness, not on the
-                # `T-000` sentinel — see lib/traceability.sh for why that distinction
-                # is what stops this being a general P-002 escape hatch.
-                if trace_is_root_commit "$PROJECT_ROOT" "$commit_sha"; then
-                    continue
-                fi
-                if [ "$orphan_refs" -eq 0 ]; then
-                    echo ""
-                fi
-                warn "Commit $commit_sha references non-existent task $task_ref" \
-                     "Task file for $task_ref not found in .tasks/" \
-                     "Create task or fix commit reference"
-                orphan_refs=$((orphan_refs + 1))
+        # Every ref in the subject, de-duplicated, order preserved.
+        _refs=$(echo "$commit_line" | grep -oE "T-[0-9]+" | awk '!seen[$0]++')
+        [ -n "$_refs" ] || continue
+
+        _any_resolved=0
+        _unresolved=""
+        while IFS= read -r _ref; do
+            [ -n "$_ref" ] || continue
+            if [ -n "$(find "$TASKS_DIR" -name "${_ref}-*.md" -type f 2>/dev/null | head -1)" ]; then
+                _any_resolved=1
+            else
+                _unresolved="${_unresolved}${_ref} "
             fi
+        done <<< "$_refs"
+
+        # At least one named task exists → the commit is traceable, which is what
+        # this check measures. Unresolved siblings are deliberately not reported:
+        # warning about them would re-introduce the noise class in the other
+        # direction (a real task plus a stale mention is not an orphan commit).
+        [ "$_any_resolved" -eq 1 ] && continue
+
+        # Nothing resolved. Both pre-existing escapes still apply below.
+        #
+        # T-2058: suppress WARN when a later commit explicitly reverted this task
+        # (deliberate orphan). Pattern: any commit message containing "revert ... T-NNNN".
+        # Capture-then-grep avoids SIGPIPE on truncation (L-387 safe pattern).
+        # T-3053: suppress only when EVERY unresolved ref has a revert chain — one
+        # reverted task must not hide a genuinely orphaned sibling. For a single-ref
+        # commit this is bit-identical to the pre-T-3053 test.
+        _revert_log=$(git -C "$PROJECT_ROOT" log --all --format=%s 2>/dev/null)
+        _all_reverted=1
+        for _ref in $_unresolved; do
+            if ! echo "$_revert_log" | grep -qiE "revert[^A-Za-z0-9_].*${_ref}([^0-9]|$)"; then
+                _all_reverted=0
+                break
+            fi
+        done
+        unset _revert_log
+        [ "$_all_reverted" -eq 1 ] && continue
+
+        commit_sha=$(echo "$commit_line" | cut -d' ' -f1)
+        # T-2851: a root commit predates every task by construction, so it
+        # cannot reference one. `fw init`'s bootstrap commit (lib/init.sh:742)
+        # is exactly this case and made every fresh project fail its own
+        # traceability audit on day zero. Keyed on parentlessness, not on the
+        # `T-000` sentinel — see lib/traceability.sh for why that distinction
+        # is what stops this being a general P-002 escape hatch.
+        if trace_is_root_commit "$PROJECT_ROOT" "$commit_sha"; then
+            continue
         fi
+        if [ "$orphan_refs" -eq 0 ]; then
+            echo ""
+        fi
+        _ref_list=$(echo "$_unresolved" | sed 's/ *$//; s/ /, /g')
+        warn "Commit $commit_sha references non-existent task $_ref_list" \
+             "Task file(s) for $_ref_list not found in .tasks/" \
+             "Create task or fix commit reference"
+        orphan_refs=$((orphan_refs + 1))
     done < <(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null)
+    unset _refs _ref _any_resolved _unresolved _all_reverted _ref_list
 
     if [ "$orphan_refs" -eq 0 ] && [ "$task_commits" -gt 0 ]; then
         pass "All commit task refs resolve to actual tasks"
@@ -2744,19 +2781,30 @@ if [ -f "$PRACTICES_MD" ]; then
             pass "All practices have traceable origins"
 
             # Quality Check: Verify practice origins reference existing tasks
+            # T-3053 (A3): the same `head -1` shape lived here, but it is the
+            # opposite question and so needs the opposite fix. A commit subject
+            # naming two tasks is traceable if EITHER resolves; an
+            # `Origin: T-A, T-B` line asserts that BOTH are where the practice came
+            # from, so every ref must resolve and each failure is its own broken
+            # citation. Reading only the first was therefore a false GREEN here —
+            # a stale second origin passed silently — where at the commit site it
+            # was a false FAIL. No multi-ref Origin line exists in 015-Practices.md
+            # today (7 Origin lines, all single-ref), so this closes a latent hole
+            # rather than an observed one; the regression test supplies the case
+            # the corpus does not.
             orphan_origins=0
             while IFS= read -r origin_line; do
-                task_ref=$(echo "$origin_line" | grep -oE "T-[0-9]+" | head -1)
-                if [ -n "$task_ref" ]; then
+                practice_id=$(echo "$origin_line" | grep -oE "P-[0-9]+" | head -1)
+                while IFS= read -r task_ref; do
+                    [ -n "$task_ref" ] || continue
                     task_file=$(find "$TASKS_DIR" -name "${task_ref}-*.md" -type f 2>/dev/null | head -1)
                     if [ -z "$task_file" ]; then
-                        practice_id=$(echo "$origin_line" | grep -oE "P-[0-9]+" | head -1)
                         warn "Practice ${practice_id:-unknown} references non-existent task $task_ref" \
                              "Origin task $task_ref not found in .tasks/" \
                              "Fix origin reference in 015-Practices.md"
                         orphan_origins=$((orphan_origins + 1))
                     fi
-                fi
+                done < <(echo "$origin_line" | grep -oE "T-[0-9]+" | awk '!seen[$0]++')
             done < <(grep "Origin:" "$PRACTICES_MD" 2>/dev/null)
 
             if [ "$orphan_origins" -eq 0 ]; then
