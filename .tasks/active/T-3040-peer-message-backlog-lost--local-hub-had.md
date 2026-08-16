@@ -70,6 +70,44 @@ bvp_scores_proposed:
 
 ## Context
 
+### Recovered backlog — triage map (18 messages, `framework:pickup` @ ring20 .122)
+
+Archived verbatim at `.context/message-archive/framework-pickup-ring20-20260816.json`.
+Offsets are the hub's. **Nothing below has been filed yet** — this table is the
+guard against a second silent drop, and the remaining work of AC 4.
+
+| # | Kind | Sev | Subject | Disposition |
+|---|------|-----|---------|-------------|
+| 1 | deploy-announce | — | T-1166 cut staged for .122 swap | info only |
+| 2 | bug-FIXED | — | G-082 episodic generator fixed upstream | verify against #17 — may be superseded |
+| 3 | bug-report | — | (payload title empty — needs body read) | **read + file** |
+| 4 | gap-registered | — | G-WATCHTOWER-INCEPTION-DECIDE-NO-TERMINAL-GAP (2026-05-15) | cross-check our register |
+| 5 | followup | med | episodic corruption is **silent** — output is valid YAML, so the `yaml.safe_load` guard cannot catch it | **file — defeats an existing control** |
+| 6 | bug-report | med | fw-authority approvals invisible in Watchtower `/approvals`; "50+ sessions hit this" | homes to 150-skills-manager (T-1333) |
+| 7 | bug-report | med | (title empty — needs body read) | **read + file** |
+| 8 | patch-ready | — | T-916 / G-023 patch artifact ready for review | review |
+| 9 | defect | — | Watchtower has **zero HTTP access logging** (audit-trail gap) | **file** |
+| 10 | defect | — | `fw context add-learning` emits **invalid YAML** for quoted/multiline input | **file — corrupts memory** |
+| 11 | defect | — | `fw_hook_crash_trap` misclassifies usage-error exit as crash | file (low) |
+| 12 | enhancement | — | `fw work-on` autonomous-cron pattern needs sibling-check | file (low) |
+| 13 | diagnosis | — | watchtower-dev auto-updater on CT170 | no action toward us |
+| 15 | docs | — | FRAMEWORK.md documents `fw observe`; verb is `fw note` | **quick fix** |
+| 16 | defect | — | `bin/migrate-horizon-null-completed.sh` cannot run vendored | **file** |
+| 17 | defect | — | episodic generator harvests template headings — **still live after the G-082 fix** | **file — conflicts with #2** |
+| 18 | security | — | OneDev token rotated (ring20 T-1626); old one revoked | ✅ answers OBS-106/OBS-277 |
+| 19 | reply | — | answers to this session's two asks + hub-diagnosis correction | ✅ consumed |
+
+Two entries deserve attention beyond their severity labels:
+
+- **#5 + #17 vs #2.** #2 announces G-082 fixed; #17 says the defect is still live
+  after that fix, and #5 explains why the fix's own validation cannot detect it —
+  the corrupted output *is* valid YAML. A guard that cannot fail on the failure it
+  guards against is the same class as T-3004 and as this task's own root cause.
+- **#10.** `fw context add-learning` producing invalid YAML means the framework's
+  learning capture has been silently corrupting its own memory for anyone hitting
+  quoted or multiline input.
+
+
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
