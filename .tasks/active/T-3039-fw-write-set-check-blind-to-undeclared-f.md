@@ -1,13 +1,13 @@
 ---
-id: T-3038
-name: "session-scoped focus for dispatched workers — OBS-291 parallelism blocker"
+id: T-3039
+name: "fw write-set check blind to undeclared framework-state writes"
 description: >
-  session-scoped focus for dispatched workers — OBS-291 parallelism blocker
+  fw write-set check compares tasks' declared components:, so writes to framework state no task declares (.context/working/focus.yaml, session.yaml, .termlink-task) are invisible to it. It returned rc=2 undecidable for every pair tested during T-3038 rather than rc=1 overlap. 'Undecidable' reads to the operator as no evidence of danger when it actually means no ability to look. Fix direction: a known-converging-paths list that the checker treats as an implicit component of every task, so parallel dispatch of two tasks that both touch governance state reports overlap. Origin: T-3038 RCA / OBS-291.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T14:59:45Z
-last_update: 2026-08-16T14:59:45Z
+created: 2026-08-16T15:08:36Z
+last_update: 2026-08-16T15:08:36Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,7 +36,7 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3038: session-scoped focus for dispatched workers — OBS-291 parallelism blocker
+# T-3039: fw write-set check blind to undeclared framework-state writes
 
 ## Context
 
@@ -46,24 +46,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `FW_SESSION_SCOPED_FOCUS=1 fw context focus T-XXX` writes to a session-local
-      focus file (`.context/working/focus.<session>.yaml`) and leaves the shared
-      `.context/working/focus.yaml` byte-identical
-      — verified live: md5 `656acba5…` before and after a scoped write to T-1719
-- [x] With no `FW_SESSION_SCOPED_FOCUS`, `fw context focus` writes the shared
-      `focus.yaml` exactly as before — default behaviour unchanged
-- [x] `check-active-task.sh` resolves the session-local focus file FIRST when
-      `FW_SESSION_SCOPED_FOCUS=1`, falling back to the shared file when absent
-      (producer/consumer parity, L-399 — both legs in one commit)
-- [x] A worker setting session-scoped focus does NOT change what the parent's gate
-      reads: parent `current_task` and `focus_session` survive the worker's write
-      — verified live: worker set T-1719, parent still read T-3038
-- [x] `fw termlink dispatch` exports `FW_SESSION_SCOPED_FOCUS=1` +
-      `FW_FOCUS_SESSION_KEY=<name>` into the worker env, written BEFORE caller
-      `--env` pairs so an explicit `=0` can still opt back onto the shared file
-- [x] `tests/unit/t3038_session_scoped_focus.bats` passes and pins: default path
-      unchanged, scoped path isolates, parent focus survives a worker write,
-      and the gate reads the scoped file back — 11/11 green
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -157,16 +141,6 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bats tests/unit/t3038_session_scoped_focus.bats > /tmp/.t3038.out 2>&1 && grep -q "^ok 11" /tmp/.t3038.out
-bash -n lib/paths.sh && bash -n agents/context/lib/focus.sh && bash -n agents/context/check-active-task.sh && bash -n agents/termlink/termlink.sh
-# The isolation claim, end-to-end against the real writer: a scoped write must
-# leave the shared focus.yaml byte-identical. This is the OBS-291 reproduction.
-b=$(md5sum .context/working/focus.yaml | awk '{print $1}'); FW_SESSION_SCOPED_FOCUS=1 FW_FOCUS_SESSION_KEY=verify-probe bin/fw context focus T-3038 >/dev/null 2>&1; a=$(md5sum .context/working/focus.yaml | awk '{print $1}'); rm -f .context/working/focus.verify-probe.yaml; [ "$b" = "$a" ]
-# Scoped focus files must never become tracked noise.
-git check-ignore -q .context/working/focus.someworker.yaml
-# ...while the shared one stays tracked.
-! git check-ignore -q .context/working/focus.yaml
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -182,38 +156,6 @@ git check-ignore -q .context/working/focus.someworker.yaml
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** A TermLink-dispatched worker running `fw work-on T-XXX` locked the
-parent session out of its own unrelated work. The parent was then refused on every
-Write **and** every Bash — including read-only `ls`/`cat`/`grep` (the G-078 class).
-Hit live during the T-3037/T-1719 session; recovery (`bin/fw context focus T-PARENT`)
-held only until the next worker called `work-on`.
-
-**Root cause:** Focus was per-project global state, not per-session. Parent and every
-worker shared one `.context/working/focus.yaml`. The lockout — as opposed to a mere
-lost write — comes from the *session stamp*: `fw context focus` writes `focus_session`
-alongside `current_task` (T-560), and `check-active-task.sh` blocks when that stamp
-does not match the running session. So the worker's write did not just change a value,
-it made the file actively hostile to the parent.
-
-**Why structurally allowed:** This is a converging write that the disjointness checker
-is blind to by construction. `fw write-set check` compares tasks' declared
-`components:`, and no task declares `focus.yaml` as a component — it is framework
-state, not task deliverable. So the check returned rc=2 (undecidable) for every pair
-tested rather than rc=1 (overlap). A checker that cannot see the one file every
-parallel actor writes will report "undecidable" forever and never once say "unsafe",
-which reads to the operator as *no evidence of danger* rather than *no ability to look*.
-The two-writer guard (T-3030) landed for repo files and did not cover governance state.
-
-**Prevention:** The fix is isolation (`FW_SESSION_SCOPED_FOCUS`); the *prevention* is
-that writer and reader now resolve through one helper, `fw_focus_file`, with a test
-(`t3038:…same helper (L-399 parity)`) that fails if either side hand-rolls the path
-again. That is the T-1890 producer/consumer class: a bypass contract honoured on one
-side only is silently no contract at all. Still open and deliberately not claimed as
-fixed here: `fw write-set check` remains blind to undeclared framework-state writes —
-filed as **T-3039** rather than folded in, because a checker that says "undecidable"
-when it means "I cannot see this class of file" is its own defect, not a symptom of
-this one.
 
 ## Evolution
 
@@ -291,7 +233,7 @@ this one.
 
 ## Updates
 
-### 2026-08-16T14:59:45Z — task-created [task-create-agent]
+### 2026-08-16T15:08:36Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3038-session-scoped-focus-for-dispatched-work.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3039-fw-write-set-check-blind-to-undeclared-f.md
 - **Context:** Initial task creation
