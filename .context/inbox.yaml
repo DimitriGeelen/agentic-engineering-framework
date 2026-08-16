@@ -3770,3 +3770,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-304
+  text: "A full 'fw audit' run exceeds 10 minutes and produces no verdict when killed — it buffers output to the end, so a timed-out run yields nothing partial to read. Observed twice in one session (T-1719 A6 verification, 2026-08-16), both killed at exit 143 with 3 lines of output. Consequence: 'fw audit clean' is unusable as an acceptance criterion or verification-gate command anywhere, because P-011 runs commands with a bounded window and a task cannot close on a check that never returns. It also means an agent cannot cheaply confirm audit health mid-session, so drift is only caught by the daily cron. Fix directions: (1) incremental/streamed output so a partial run is still informative, (2) a --quick profile scoped to the sections a task-close actually needs, (3) cache the last cron verdict so 'is audit clean' is a read rather than a run."
+  captured: 2026-08-16T19:38:15Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

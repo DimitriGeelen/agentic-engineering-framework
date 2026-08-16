@@ -286,6 +286,27 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
   fires on this task — the gate's first real consumer).
 - [ ] **A6** Bats test suite passes; `fw audit` clean; new components
   fabric-registered.
+  <!-- 2026-08-16 status — two of three legs verified, the third unverified:
+       - bats: PASS. 37/37 across the four t1719_* files, three consecutive
+         runs, after the T-3045 embed fix removed the failover round-trip that
+         was making the 5s-budget test intermittently red.
+       - fabric: PASS. Cards exist for lib-post-write-index,
+         web-blueprints-embeddings, web-templates-embeddings and
+         tests-unit-t1719_post_write_index; `fw fabric drift` lists none of
+         them as unregistered.
+       - fw audit clean: UNVERIFIED. A full `fw audit` was run twice this
+         session and exceeded 10 minutes both times, producing no verdict
+         before being killed (exit 143). It buffers output to the end, so a
+         killed run yields nothing partial to read.
+       Left unticked deliberately. Ticking on two of three legs is exactly the
+       proxy-diverged-from-reality shape T-1831 C-4 exists to prevent, and the
+       unverified leg is the one that scans the whole corpus. -->
+  <!-- Follow-up: a full audit that cannot finish inside any reasonable gate
+       window is its own problem — it makes "audit clean" unusable as an AC
+       anywhere, not just here. Not filed as a task from this session; noted so
+       the next reader does not re-derive it. -->
+- [ ] **A6b** `fw audit` completes and is clean (split from A6 so the two
+  verified legs above are not held hostage by the unverified one).
 
 ### Human (Slice 1)
 - [ ] [REVIEW] Watch the headline mechanic fire end-to-end.
