@@ -91,46 +91,46 @@ silent drops is a design constraint, not a goal).
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A1 — `lib/message_router.py` classifies **all 79 measured `msg_type` values** via
+- [x] A1 — `lib/message_router.py` classifies **all 79 measured `msg_type` values** via
       prefix-family rules plus exact-match overrides. A type matching no rule is a hard
       error, not a silent default: the router refuses rather than guessing, so a new producer
       surfaces as a failure instead of being swallowed. `assert_table_complete()` replays the
       live archive's full type list and fails on any unclassified type — the coverage check
       is against measured reality, not against a hand-copied list that can go stale (which is
       precisely how the T-3044 census became wrong).
-- [ ] A2 — `bin/fw triage route --dry-run` reads the archive, prints a per-type count with
+- [x] A2 — `bin/fw triage route --dry-run` reads the archive, prints a per-type count with
       the disposition each would receive, exits 0, and writes nothing. Verified by asserting
       the ledger's byte size is unchanged across the run.
-- [ ] A3 — Every input message yields exactly one disposition row in
+- [x] A3 — Every input message yields exactly one disposition row in
       `.context/triage-dispositions.jsonl`. Rows are
       `{key, locator, msg_type, disposition, reason, ts}` where `locator` is
       `{source_file, topic, offset}`; `disposition: dropped` REQUIRES a non-empty `reason`.
       Asserted as a count identity (rows written == messages read), not as a spot check.
-- [ ] A4 — Re-running `fw triage route` is idempotent: a second run over the same archive
+- [x] A4 — Re-running `fw triage route` is idempotent: a second run over the same archive
       appends **zero** new rows. `key` is the **content hash** (sha256 of the canonicalised
       message), not a position cursor and not `msg_id` — there is no id field, and the
       content hash was measured unique 47,879/47,879. It survives the case
       `(source_file, topic, offset)` cannot: the same message re-recovered into tomorrow's
       dated archive file, which would otherwise route twice.
-- [ ] A5 — Ledger writes are serialised under `flock`, reusing the T-3042 mechanism rather
+- [x] A5 — Ledger writes are serialised under `flock`, reusing the T-3042 mechanism rather
       than a second implementation. `.context/triage-dispositions.jsonl` is registered in
       `lib/write_set.py:IMPLICIT_WRITE_SET` with hazard `protected`.
-- [ ] A6 — Routing calls match the artifact §5, corrected for the measured type names:
+- [x] A6 — Routing calls match the artifact §5, corrected for the measured type names:
       the pickup family — `pickup`, `framework:pickup`, `framework-pickup`, `upstream-pickup`
       (**four spellings, 12 messages**; the artifact named only one) → `fw pickup process`;
       `handoff` / `request` / `prod-deploy-approval` / `prod-deploy-withdraw` / `question` /
       `urgent` → surfaced to `/approvals`, **never** auto-filed as tasks; the 18 telemetry
       types → `dropped` with reason, never surfaced to a human.
-- [ ] A6b — `reflection.envelope.v1` (537 msgs — 85% of the actionable bucket by volume) gets
+- [x] A6b — `reflection.envelope.v1` (537 msgs — 85% of the actionable bucket by volume) gets
       an explicit disposition rather than falling through a family rule. It is machine-generated
       peer-reflection traffic (T-1271 cron), so surfacing it to `/approvals` would bury the
       other 95 actionable messages under it. Whichever way it routes, the choice is recorded
       in §Decisions with the count that motivated it.
-- [ ] A7 — `tests/unit/t3046_message_router.bats` covers: full-type-coverage refusal (A1),
+- [x] A7 — `tests/unit/t3046_message_router.bats` covers: full-type-coverage refusal (A1),
       dry-run purity (A2), the count identity (A3), idempotency (A4), and drop-requires-reason.
       Each test asserts the failing state fails — a guard that has never been seen red is
       not a guard (this session's recurring finding).
-- [ ] A8 — Regression fixture: running the router over the real archive classifies the
+- [x] A8 — Regression fixture: running the router over the real archive classifies the
       three-month-old bug report as **routed or surfaced**, never dropped. The measured type
       names for it are `pickup-bug-report` (10), `bug-report` (1),
       `pickup-bug-report-followup` (1) and `pickup-bug-fixed` (1) — the artifact's
@@ -337,6 +337,42 @@ out=$(bin/fw reviewer T-3046 2>&1); echo "$out" | grep -q "Overall:.*PASS"
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The slice clears the bar it was created to clear, and clears it against the
+real archive rather than a fixture: all five origin-case types (`pickup-bug-report` ×10,
+`bug-report`, `pickup-bug-report-followup`, `pickup-bug-fixed`, `gap-report`) classify as
+`surfaced`, none as `dropped`. On the day that bug report arrived it would have appeared in
+`/approvals` instead of sitting unread for three months.
+
+What is left for you is one question the code cannot answer: **12 messages are set to
+`routed`, meaning `fw pickup process` runs on them without asking you.** Everything else
+either waits for you (27 `surfaced`) or does nothing (13,272 `deferred`, 34,568 `dropped`,
+each with a recorded reason). I have deliberately **not** written the 47,879-row ledger or
+executed any handler, because doing so before you approve the table would answer the
+sovereignty question on your behalf.
+
+One thing to weigh against this: **the T-3044 census I scoped from was wrong** — it
+undercounted messages by 27% and types by 5×, and named the origin case by a type
+(`framework-pickup`) that is not the type the bug report actually uses. I found that by
+re-measuring at build time rather than trusting the artifact. The router's coverage check
+now reads the live archive for exactly this reason, so the same staleness cannot recur
+silently — but it is fair to treat the inception's other numbers with the same suspicion.
+
+**Evidence:**
+- 16/16 bats tests pass (`tests/unit/t3046_message_router.bats`); 7/7 Verification lines
+  pass, each rehearsed under `set -eo pipefail` rather than in an interactive shell.
+- **Mutation-tested, not just green:** breaking pickup routing kills only test 10; breaking
+  the bug-report disposition kills only test 11; disabling dedupe kills tests 7–9. Each
+  guard has been observed red, and each kills a discriminating set.
+- Full coverage measured live: 79/79 `msg_type` values classify; an unmatched type raises
+  rather than defaulting, so the next new producer fails loudly instead of being swallowed.
+- Identity chosen on measurement: content-hash unique 47,879/47,879; `(topic, offset)` — the
+  obvious choice — collides 3,593 times and would have silently merged distinct messages.
+- Ledger writes reuse `keylock.guarding()` (the T-3042 mechanism), and the ledger is
+  registered in `write_set.py:IMPLICIT_WRITE_SET` as `protected`.
+- One reviewer CONCERN, overridden as `OV-d067b2d0` with reasoning, not by editing the AC.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -367,6 +403,32 @@ out=$(bin/fw reviewer T-3046 2>&1); echo "$out" | grep -q "Overall:.*PASS"
   re-recovery re-routes everything. Kept as the locator because it is far more legible than
   a hash when reading the ledger by hand.
 
+### 2026-08-16 — A fourth disposition, `deferred`, rather than stretching the other three
+
+- **Chose:** `routed` / `surfaced` / `deferred` / `dropped`, where `deferred` means
+  "genuinely actionable, handler out of slice 1's scope", and carries a mandatory reason.
+- **Why:** `reflection.envelope.v1` alone is 537 messages — 85% of the actionable bucket by
+  volume. Calling it `dropped` would be false, and `surfaced` would bury the 95 messages
+  that actually need the operator underneath it. Neither existing label was true, and
+  picking the less-wrong one is how a ledger stops being trustworthy. Same applies to the
+  12,697 `note`/`chat` (IW-4) and the 22 `learning-*`.
+- **Rejected:** forcing them into `dropped` — the ledger's whole value is that a drop is a
+  recorded decision, so a drop that isn't one poisons the record.
+- **Rejected:** surfacing them — 13,272 items in `/approvals` is the same as none.
+
+### 2026-08-16 — Slice 1 records dispositions; it does not execute handlers
+
+- **Chose:** `handler` is a *name* in the ledger row. Nothing is executed, and no task is
+  auto-filed. The real 47,879-row ledger is deliberately **not written yet**.
+- **Why:** the operator's Human AC on this task is precisely "may these types act without
+  me". Writing 47,879 disposition records — or running `fw pickup process` — before that
+  question is answered would answer it on their behalf. Recording is additive and
+  reversible; executing is neither. The write path itself is proven on fixtures by the bats
+  suite, so deferring the bulk run costs no confidence.
+- **Rejected:** running the full route now for a more impressive-looking result. The count
+  identity (A3) is a property of the code, and it is tested; running it over 47,879 real
+  messages demonstrates nothing further while pre-empting a sovereignty decision.
+
 ### 2026-08-16 — Prefix families over a literal type table
 
 - **Chose:** prefix-family rules + exact-match overrides, with an unknown-type hard error.
@@ -393,3 +455,15 @@ out=$(bin/fw reviewer T-3046 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-260faceb
+- **Timestamp:** 2026-08-16T19:59:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - human-ac-mechanical-signal @ AC#3 (Human)

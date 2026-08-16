@@ -34570,3 +34570,92 @@ scan_id: R-418f1b7f
 task_id: T-3039
 payload:
   task_file: .tasks/active/T-3039-fw-write-set-check-blind-to-undeclared-f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T19:43:38Z'
+scan_id: R-8ae8f45b
+task_id: T-3044
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T19:43:38Z'
+scan_id: R-8ae8f45b
+task_id: T-3044
+payload:
+  task_file: .tasks/active/T-3044-structural-message-triage--hub-messages-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-16T19:43:38Z'
+scan_id: RC-a351daf5
+task_id: T-3044
+payload:
+  overall: CONFIRMED
+  claim_count: 8
+---
+kind: scan_emitted
+timestamp: '2026-08-16T19:58:52Z'
+scan_id: R-38cf8e79
+task_id: T-3046
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T19:58:52Z'
+scan_id: R-38cf8e79
+task_id: T-3046
+payload:
+  task_file: .tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T19:58:59Z'
+scan_id: R-7452f58e
+task_id: T-3046
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T19:58:59Z'
+scan_id: R-7452f58e
+task_id: T-3046
+payload:
+  task_file: .tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T19:59:25Z'
+scan_id: R-260faceb
+task_id: T-3046
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T19:59:25Z'
+scan_id: R-260faceb
+task_id: T-3046
+payload:
+  task_file: .tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md
+---
+kind: override_applied
+timestamp: '2026-08-16T19:59:25Z'
+scan_id: R-260faceb
+task_id: T-3046
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 3
+  ac_subhead: Human

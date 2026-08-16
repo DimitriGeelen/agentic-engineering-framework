@@ -4436,6 +4436,57 @@ case "$cmd" in
         bvp_dispatch "$@"
         exit $?
         ;;
+    triage)
+        # T-3046 (slice 1 of the T-3044 GO): static msg_type router over the
+        # recovered hub-message archive. Records dispositions; does not execute
+        # handlers — wiring execution is slice 2, behind operator approval of
+        # the routing table.
+        tr_subcmd="${1:-}"
+        shift || true
+        case "$tr_subcmd" in
+            route)
+                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/message_router.py" "$@"
+                ;;
+            ""|--help|-h|help)
+                cat <<'EOF'
+fw triage route [--dry-run] [--json]
+
+Classify every message in .context/message-archive/raw/ and record exactly one
+disposition for each in .context/triage-dispositions.jsonl (T-3046).
+
+Dispositions:
+  routed     a handler exists and should act (slice 1 records, slice 2 runs)
+  surfaced   needs the operator — goes to /approvals, never auto-filed
+  deferred   genuinely actionable, handler out of slice 1 scope, with reason
+  dropped    a recorded decision not to act, with reason. Never deleted.
+
+An unrecognised msg_type is a hard error, not a silent default: a new producer
+must surface as a failure rather than be swallowed. Add an EXACT entry or a
+FAMILIES prefix in lib/message_router.py.
+
+Idempotent on the message content hash — the archive carries no id field of
+any kind, and (topic, offset) collides 3,593 times across hubs. A second run
+appends zero rows.
+
+Flags:
+  --dry-run   classify and print, write nothing
+  --json      machine-readable counts and per-type dispositions
+
+Examples:
+  fw triage route --dry-run        # see the table before it writes anything
+  fw triage route --dry-run --json # same, for scripts
+  fw triage route                  # record dispositions
+EOF
+                exit 0
+                ;;
+            *)
+                echo "ERROR: unknown triage subcommand: $tr_subcmd" >&2
+                echo "Run 'fw triage --help' for usage." >&2
+                exit 64
+                ;;
+        esac
+        ;;
+
     write-set)
         # T-2337 (arc-011 M1 §3): disjoint write-set validator.
         # Verbs: check <T-A> <T-B> — compare two tasks' declared write_set: frontmatter
