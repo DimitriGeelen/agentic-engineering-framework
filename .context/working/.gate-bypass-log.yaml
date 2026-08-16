@@ -7002,3 +7002,9 @@ IW-2'
   command: 'FW_SWITCH_FOCUS=1 git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-3042: vendor the ledger lock so consumers get it too
 
 spawn.py, resolver.py and the new keylock.py carry the floc'
+- timestamp: '2026-08-16T19:21:43Z'
+  task: 'T-1719'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3039'
+  command: 'bin/fw vendor self 2>&1 | tail -2; FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/episodic/T-3039.yaml .context/project/ .agentic-framework/ .fabric/ VERSION 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -'

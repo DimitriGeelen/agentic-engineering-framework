@@ -385,3 +385,4 @@ Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypas
 127.0.0.1 - - [16/Aug/2026 20:58:20] "GET /tasks HTTP/1.1" 200 -
 127.0.0.1 - - [16/Aug/2026 20:58:20] "GET /terminal HTTP/1.1" 200 -
 127.0.0.1 - - [16/Aug/2026 20:58:21] "GET /timeline HTTP/1.1" 200 -
+192.168.10.134 - - [16/Aug/2026 21:11:48] "GET /review/T-251/acs HTTP/1.1" 200 -

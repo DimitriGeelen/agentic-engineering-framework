@@ -14,3 +14,18 @@
 {"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T18:29:56.893560Z", "value": 1}
 {"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T18:29:57.273722Z", "value": 5}
 {"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T18:29:57.738589Z", "value": 2}
+{"reason": "bats probe", "source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:03:28.485037Z", "value": 3}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:03:29.286088Z", "value": -2}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:03:29.790565Z", "value": 1}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:03:30.151032Z", "value": 5}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:03:30.646184Z", "value": 2}
+{"reason": "bats probe", "source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:04:45.417483Z", "value": 3}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:04:45.876825Z", "value": -2}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:04:46.333746Z", "value": 1}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:04:46.647285Z", "value": 5}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:04:47.088352Z", "value": 2}
+{"reason": "bats probe", "source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:05:36.780369Z", "value": 3}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:05:37.264968Z", "value": -2}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:05:37.724132Z", "value": 1}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:05:38.052237Z", "value": 5}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-16T19:05:38.529782Z", "value": 2}
