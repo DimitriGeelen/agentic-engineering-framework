@@ -55,13 +55,20 @@ The LLM agent synthesizes:
 session_id: S-YYYY-MMDD-HHMM
 timestamp: [ISO 8601]
 predecessor: [previous session ID]
-tasks_active: [list]
+tasks_active: [list]              # status started-work or issues — in flight
+tasks_parked: [list]              # status captured — backlog, not being worked
+tasks_awaiting_review: [list]     # status work-completed, still in active/ — partial-complete
+tasks_unknown_status: [list]      # status missing or unparseable — a parse failure, not a state
 tasks_touched: [list]
 tasks_completed: [list]
 owner: [who generated]
 ---
 
 # Session Handover: [session_id]
+<!-- T-3027 (OBS-276): the four task fields above partition `.tasks/active/` by
+     `status:`, not by directory membership. `.tasks/active/` is a workspace, not a
+     state — it holds all four at once. Do not reintroduce a "list the directory"
+     shortcut for `tasks_active:`; pinned by tests/unit/handover_task_classification.bats. -->
 
 ## Where We Are
 [2-3 sentences: Current state, immediate situation]

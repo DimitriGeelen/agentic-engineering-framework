@@ -145,13 +145,59 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # Ensure directories exist
 mkdir -p "$HANDOVER_DIR"
 
+# ─── T-3027 (OBS-276): classify .tasks/active/ by status, not by directory ───
+#
+# `tasks_active:` used to be every file in .tasks/active/ with its `id:` read and
+# its `status:` ignored. But .tasks/active/ is a directory, not a state: it holds
+# captured (parked), started-work, issues, and partial-complete (work-completed,
+# awaiting a human) side by side. The field therefore asserted ~119 tasks were
+# active when ~37 were in flight.
+#
+# That was survivable while the Work in Progress dump appeared a few hundred lines
+# below and carried per-task Status — a reader hitting the contradiction believed
+# the dump. T-3025's GO elides that dump, which promotes this frontmatter to the
+# only carrier of task state. The IW-2 probe measured the consequence directly:
+# given the digest alone, the reader read 82 parked tasks as live work and named
+# one as in-progress, with high confidence.
+#
+# Filtering alone would be lossy — a parked or awaiting-review task is still worth
+# surfacing — so the states the old field absorbed get their own fields. Union of
+# the four equals the directory listing; nothing is dropped.
+#
+# Sets: ACTIVE_TASKS, PARKED_TASKS, AWAITING_REVIEW_TASKS, UNKNOWN_STATUS_TASKS.
+classify_active_tasks() {
+    ACTIVE_TASKS=""; PARKED_TASKS=""; AWAITING_REVIEW_TASKS=""; UNKNOWN_STATUS_TASKS=""
+    local f task_id task_status
+    shopt -s nullglob
+    for f in "$TASKS_DIR/active"/*.md; do
+        [ -f "$f" ] || continue
+        task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
+        [ -n "$task_id" ] || continue
+        task_status=$({ grep "^status:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
+        case "$task_status" in
+            started-work|issues) ACTIVE_TASKS="$ACTIVE_TASKS$task_id, " ;;
+            captured)            PARKED_TASKS="$PARKED_TASKS$task_id, " ;;
+            work-completed)      AWAITING_REVIEW_TASKS="$AWAITING_REVIEW_TASKS$task_id, " ;;
+            # An unreadable or absent status is its own answer. Defaulting it into
+            # `active` would turn a parse failure into a live-work assertion — the
+            # exact class of silent wrongness this task exists to remove.
+            *)                   UNKNOWN_STATUS_TASKS="$UNKNOWN_STATUS_TASKS$task_id, " ;;
+        esac
+    done
+    shopt -u nullglob
+    ACTIVE_TASKS="${ACTIVE_TASKS%, }"
+    PARKED_TASKS="${PARKED_TASKS%, }"
+    AWAITING_REVIEW_TASKS="${AWAITING_REVIEW_TASKS%, }"
+    UNKNOWN_STATUS_TASKS="${UNKNOWN_STATUS_TASKS%, }"
+}
+
 # ─── Checkpoint Mode: lightweight mid-session snapshot ───
 if [ "$CHECKPOINT_MODE" = true ]; then
     HANDOVER_FILE="$HANDOVER_DIR/CHECKPOINT-$SESSION_ID.md"
     echo -e "${CYAN}=== Checkpoint Handover ===${NC}"
     echo "Session: $SESSION_ID"
 
-    ACTIVE_TASKS=""
+    classify_active_tasks   # T-3027: sets ACTIVE_TASKS + the three sibling lists
     ACTIVE_DETAILS=""
     shopt -s nullglob
     for f in "$TASKS_DIR/active"/*.md; do
@@ -160,7 +206,6 @@ if [ "$CHECKPOINT_MODE" = true ]; then
         task_name=$({ grep "^name:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2- | sed 's/^ *//')
         task_status=$({ grep "^status:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
         task_wftype=$({ grep "^workflow_type:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
-        [ -n "$task_id" ] && ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
         # T-1461: render task as a Watchtower link when WT_URL is available.
         # Inception → /inception/T-XXX, otherwise → /review/T-XXX. Plain bold ID when WT_URL empty.
         if [ -n "$WT_URL" ]; then
@@ -175,7 +220,6 @@ if [ "$CHECKPOINT_MODE" = true ]; then
         ACTIVE_DETAILS="$ACTIVE_DETAILS- $_link: $task_name ($task_status)\n"
     done
     shopt -u nullglob
-    ACTIVE_TASKS="${ACTIVE_TASKS%, }"
 
     UNCOMMITTED=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
     RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log -5 --pretty=format:"- %h %s" 2>/dev/null)
@@ -186,6 +230,9 @@ session_id: $SESSION_ID
 timestamp: $TIMESTAMP
 type: checkpoint
 tasks_active: [$ACTIVE_TASKS]
+tasks_parked: [$PARKED_TASKS]
+tasks_awaiting_review: [$AWAITING_REVIEW_TASKS]
+tasks_unknown_status: [$UNKNOWN_STATUS_TASKS]
 uncommitted_changes: $UNCOMMITTED
 owner: ${AGENT_OWNER:-claude-code}
 ---
@@ -259,18 +306,8 @@ if [ -f "$HANDOVER_DIR/LATEST.md" ]; then
     PREDECESSOR=$(grep "^session_id:" "$HANDOVER_DIR/LATEST.md" 2>/dev/null | cut -d: -f2 | tr -d ' ')
 fi
 
-# Get active tasks
-ACTIVE_TASKS=""
-shopt -s nullglob
-for f in "$TASKS_DIR/active"/*.md; do
-    [ -f "$f" ] || continue
-    task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
-    if [ -n "$task_id" ]; then
-        ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
-    fi
-done
-shopt -u nullglob
-ACTIVE_TASKS="${ACTIVE_TASKS%, }"  # Remove trailing comma
+# Get active tasks — T-3027: classified by status, not by directory membership.
+classify_active_tasks
 
 # Get git info
 UNCOMMITTED=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
@@ -582,6 +619,9 @@ session_id: $SESSION_ID
 timestamp: $TIMESTAMP
 predecessor: $PREDECESSOR
 tasks_active: [$ACTIVE_TASKS]
+tasks_parked: [$PARKED_TASKS]
+tasks_awaiting_review: [$AWAITING_REVIEW_TASKS]
+tasks_unknown_status: [$UNKNOWN_STATUS_TASKS]
 tasks_touched: [$TASKS_TOUCHED]
 tasks_completed: []
 uncommitted_changes: $UNCOMMITTED
