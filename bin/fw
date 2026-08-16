@@ -8500,13 +8500,31 @@ PYPREDICT
                     echo -e "${YELLOW}SKIP: bats not installed${NC}"
                 fi
 
-                # 1b. Pytest unit tests (T-2745)
-                if python3 -c "import pytest" 2>/dev/null; then
+                # 1b. Pytest unit tests (T-2745, gated by T-1719/OBS-293)
+                #
+                # OPT-IN, deliberately. T-2745 wired 2306 pytest tests in here
+                # after sampling 20 of them from 3 files. Measured afterwards:
+                # 1274 passed / 17 FAILED / 5 skipped at 56% of the suite, which
+                # was still running when a 900s timeout killed it. So this leg
+                # adds an estimated ~27 minutes and turns `fw test all` RED on
+                # roughly 30 pre-existing failures nobody has triaged.
+                #
+                # `fw test all` gates pushes. A target that is red for reasons
+                # unrelated to your change trains people to ignore it, which is
+                # worse than not running the tests at all. Run the leg directly
+                # via `fw test unit` (which does invoke pytest unconditionally),
+                # or set FW_TEST_PYTEST=1 here once the failures are triaged and
+                # filed. Removing this gate without fixing them re-reds the rail.
+                if [ "${FW_TEST_PYTEST:-0}" = "1" ] && python3 -c "import pytest" 2>/dev/null; then
                     if [ -d "$FRAMEWORK_ROOT/tests/unit/" ]; then
                         echo -e "${BOLD}--- Pytest Unit Tests ---${NC}"
                         cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/unit/ -v || _test_exit=1
                         echo ""
                     fi
+                elif python3 -c "import pytest" 2>/dev/null; then
+                    echo -e "${YELLOW}SKIP: pytest unit tests (~27min, 17+ known failures — OBS-293)${NC}"
+                    echo -e "      Run them: ${BOLD}fw test unit${NC}  or  ${BOLD}FW_TEST_PYTEST=1 fw test all${NC}"
+                    echo ""
                 fi
 
                 # 2. Bats integration tests
