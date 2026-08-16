@@ -55,7 +55,34 @@ cost_estimate_proposed:
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+AEF was built, and has run for its entire life, as `root`. Every assumption about
+who can write what has been true by accident: there is only one principal and it
+can write everything.
+
+That assumption is now breaking. A Codex agent running as `dimitri-mint-dev` could
+not reach the local TermLink hub (`srwxr-xr-x root root` — connecting to a Unix
+socket needs the write bit) while a *remote* host authenticated in fine over TCP.
+**When remote access is easier than local, the local path is not using the auth
+model.** Three hub processes now exist on this box because each uid that could not
+reach an existing hub silently started its own.
+
+The question is not "how do we chmod this socket". It is: **what does AEF have to
+become for agents running as different users to be first-class?** Asked now
+because non-root agents have already arrived, and every additional one fragments
+the substrate further and silently.
+
+Full artifact: `docs/reports/T-3041-multi-uid-aef.md`.
+
+## Exploration Plan
+
+| Spike | Question | Time-box | Output | Status |
+|---|---|---|---|---|
+| IW-2 | Does shared group + setgid + umask hold, or convert clean failures into silent lost updates? | 1 session | `docs/reports/T-3041-lost-update-spike.md` | **done** — measured, A rejected |
+| IW-3 | Which `.context/` state is genuinely shared vs per-principal? | 1 session | `docs/reports/T-3041-write-site-inventory.md` | **done** — 27 dangerous sites |
+| IW-1 | Which users are agent runtimes; is root staying a principal? | operator input | — | **open** (does not gate GO) |
+
+Both spikes were dispatched to isolated TermLink workers and told explicitly that
+disproving the hypothesis was a real result. IW-2 duly disproved half of it.
 
 ## Assumptions
 
@@ -81,8 +108,20 @@ cost_estimate_proposed:
 
 - **IW-1: Which users are agent runtimes, and is `root` staying a principal at all?**
   confidence: 0
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: >-
+    Operator-only by construction — this is a policy decision about the host and
+    the fleet, not a fact discoverable from the code, so it is asked rather than
+    guessed. It forks IW-7's scope and the size of step 4, but it does NOT gate
+    the GO: steps 1-3 (A-minimal unblock, E on the 27 dangerous sites, B on the
+    genuinely per-principal state) are correct under either answer, because E's
+    append-only shape is uid-independent by design — that is the whole reason it
+    was chosen over A. What the answer changes: "root stays, others join" keeps
+    the identity model small (a registry reconciling uid / sender_id / origin /
+    focus key); "no agent runs as root" makes it a real migration touching cron,
+    systemd units, Watchtower, and /opt ownership, and would also un-reject
+    Candidate F if the end state is fully containerised. Revisit trigger: the
+    operator's answer, at which point IW-7 re-scopes and step 4 gets sized.
   <!-- Operator-only. Determines whether the end state is "root + others share a
        group" (A) or "no agent runs as root" (a much larger migration: cron,
        systemd units, Watchtower, /opt ownership). Everything downstream forks
@@ -129,7 +168,7 @@ cost_estimate_proposed:
     all in artifact §5d: (a) the ~24-site "L-493 class / atomic write" comment
     sweep is a false-safety surface — it means crash-atomic and is silent on
     concurrency, so grep-based triage will skip the sites that need fixing
-    (OBS-301); (b) lib/spawn.py:231-254 erases concurrently-appended
+    (OBS-301); (b) lib/spawn.py:216-258 (update_outcome_row) erases concurrently-appended
     dispatches.jsonl rows — a live single-uid bug in the ledger CLAUDE.md's own
     dispatch table is computed from, not a de-rooting concern (OBS-300); (c) the
     correct multi-writer pattern already exists complete in-tree at
@@ -143,9 +182,24 @@ cost_estimate_proposed:
 
 - **IW-4: Is host provisioning (creating the group, umask, setgid) in `fw init` /
   `fw upgrade`'s remit, or is it operator setup the framework only *checks*?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: >-
+    Answered by the evidence rather than by preference, and the answer got easier
+    once A-full was disqualified. The framework CHECKS and REPORTS; it does not
+    provision. Three reasons, in order of weight. (1) There is now much less to
+    provision: IW-2 killed the tree-wide chgrp, so what remains is A-minimal on
+    /var/lib/termlink — TermLink's own state dir, not the consumer's repo — plus
+    keeping .context/locks/ group-openable, which the framework already creates
+    itself (lib/keylock.sh:42) and can therefore mode correctly at creation
+    without touching anything it does not own. (2) D4/Portability: chgrp-ing a
+    consumer's tree is a host-policy decision the framework has no authority to
+    make, and it would need root to do it — precisely the dependency this whole
+    inception exists to remove. (3) Demonstrated infeasible, not merely
+    undesirable: this session's agent was classifier-blocked from running the
+    chmod at all, twice. Any design requiring the agent to provision is already
+    known to fail in practice. So: fw doctor grows a check, fw init documents the
+    host prerequisite, and the operator runs the one privileged command.
   <!-- Bears on Portability (D4): a framework that chgrps a consumer's tree is
        making a host-policy decision it has no authority to make. Leaning toward
        "fw doctor checks and reports, fw init documents" — but that is a
@@ -156,8 +210,19 @@ cost_estimate_proposed:
 
 - **IW-5: Does the TermLink fix belong upstream, and does that block us?**
   confidence: 3
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: >-
+    Yes it belongs upstream, and no it does not block us. Gap-homing (T-1333): the
+    dual-auth-model defect is in TermLink's code — a Unix socket authorised by
+    POSIX mode alongside TCP authorised by HMAC fleet secret, with nothing
+    reconciling them — so the fix (SO_PEERCRED on the local path, or drop the
+    socket for loopback TCP with the same HMAC) lands in the TermLink repo. Filing
+    it here would create a zombie entry nobody who could fix it will read. It does
+    not block: A-minimal (chgrp + chmod 0770 on hub.sock) restores local access
+    without TermLink changing a line, and it is unaffected by the IW-2 verdict
+    because a socket has no read-modify-write shape to lose updates in. Note the
+    two are not substitutes — A-minimal stops THIS host fragmenting; only the
+    upstream fix stops the next host doing the same thing for the same reason.
   <!-- Gap-homing (T-1333) says the socket/auth-model fix lives in the TermLink
        repo, not here. Confidence 3 because the code is not ours. The real
        question is whether our A+B work is independently useful while that sits
@@ -195,9 +260,25 @@ cost_estimate_proposed:
 
 - **IW-7: Should AEF have a first-class principal identity, and does it subsume
   `sender_id`, `origin`, and the T-3038 focus key?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: >-
+    Deferred deliberately, and this is an evidence gap rather than a hedge. The
+    problem is now better evidenced than when filed — §5b names four identity
+    notions that never reconcile (OS uid, TermLink sender_id, dispatch origin,
+    T-3038 focus key), and this session produced a live instance: an
+    auto-dispatcher (origin systemd:unlabeled-unit) spawned a worker onto T-1719
+    while a human session was mid-edit on the same files, with nothing in the
+    system able to tell those apart as two principals with a converging write set.
+    What is missing is not motivation but SCOPE, and the missing input is IW-1: if
+    root stops being a principal the identity model has to span uids, containers
+    and remote agents; if root stays and others join, a small registry mapping the
+    four existing notions may be enough. Those are different-sized pieces of work
+    and picking one now would be guessing. Concretely revisitable: answer IW-1,
+    then re-scope. Nothing in the GO recommendation depends on it — it is step 4,
+    sequenced after E, and it is flagged in the artifact as the piece most likely
+    to be skipped precisely so that deferring it does not quietly become dropping
+    it.
   <!-- §5b. Four ad-hoc identity notions already exist and never reconcile.
        Evidence they need to: an auto-dispatcher (origin:
        systemd:unlabeled-unit) spawned a worker onto T-1719 while a human
@@ -220,17 +301,34 @@ cost_estimate_proposed:
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN** — deciding the shape of the fix and sizing it: the candidate analysis
+(A/B/C/E/F/G/D), the two measurement spikes, the write-site inventory, and the
+sequencing of the build slices a GO would authorise.
+
+**OUT, explicitly:**
+- **Doing any of the build work.** This is an inception. E's 27-site conversion,
+  the A-minimal chmod, and the `fw doctor` rail are all separate build tasks
+  created *after* a GO.
+- **The TermLink socket/auth fix.** Gap-homing (T-1333) — it belongs in the
+  TermLink repo. Filing it here would create a zombie entry.
+- **T-3042.** The `update_outcome_row` ledger-erasure bug surfaced by the IW-3
+  inventory is a live single-uid bug with its own root cause and its own
+  regression test. One bug, one task — already filed and dispatched separately.
+- **Provisioning the host.** The framework checks and reports (IW-4); creating
+  groups and setting modes is the operator's privileged action.
+- **The principal-identity model (IW-7).** Real, evidenced, and deliberately
+  deferred — it needs IW-1's answer to be scoped, and nothing in steps 1-3
+  depends on it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -266,11 +364,48 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** GO — Candidate E as the spine, A-minimal as the unblock,
+B where E does not reach; C upstream; F rejected unless IW-1 says "fully
+containerised".
 
 **Rationale:**
 
-Forced by evidence, not preference: a non-root Codex agent cannot reach the TermLink hub on its own host while a remote host authenticates in fine, and three hubs now exist on this box purely because each uid that could not reach an existing hub silently started its own (OBS-296). The uid-coupling is not one bug; it runs through the socket, the repo tree, git object ownership, the .context write path and cron. Doing nothing means every additional non-root agent fragments the substrate further and silently. The shape of the fix is known (shared group + setgid + umask + per-principal vs shared state split, the T-3038 focus-isolation pattern generalised), so this is scoping and sequencing work, not open research.
+Forced by evidence, not preference. A non-root Codex agent cannot reach the
+TermLink hub on its own host while a remote host authenticates in fine, and three
+hubs now exist on this box purely because each uid that could not reach an
+existing hub silently started its own (OBS-296). Fragmentation is the default
+outcome the moment two agent runtimes run as different users — which is now the
+normal case.
+
+**Both evidence gates ran and both changed the answer.** My first pass recommended
+a shared POSIX group (A) because the triggering bug was a permission. That framing
+was too narrow, and the measurement killed it: under group+setgid, temp+`mv` lost
+exactly 200 of 400 updates in every run while reporting 400/400 successful writes
+with zero errors and a file that parses cleanly. A also fails to grant the access
+it was trading that safety for — `mktemp` hard-codes `0600`, `rename(2)` preserves
+it, so the aggregate lands owned by the last writer and locks the other principal
+out. The append-only control passed 400/400 with **no group at all**. So the fix is
+not to permit concurrent mutation more politely; it is to **stop mutating**.
+That is Candidate E, and row 7 of the framework already proves it in-tree.
+
+The work is bounded: **27 dangerous sites**, against a complete multi-writer
+pattern that already exists here (`lib/bus.sh:120-137`, T-605). This is 27 sites
+bypassing a working pattern, not a design gap needing invention.
+
+**Two corrections to my own filing-time claims**, both recorded in artifact §5c
+rather than quietly amended: the "today it fails loudly with a clean EACCES"
+premise was overstated — it holds only uncontended, and not at all when root is
+the writer, because root bypasses DAC. E4b/E4c measured the framework losing 90
+and 200 updates *today*, with no group and no config change. We are not protecting
+a working system; we are fixing one that is already silently lossy in half the
+matrix. That raises the urgency rather than lowering it.
+
+**Two items jump the queue** because they are true now under a single uid: the
+~24-site `L-493 class / atomic write` comment sweep means *crash*-atomic and is
+silent on concurrency, so grep-based triage will skip exactly the sites needing
+fixes (OBS-301); and `lib/spawn.py:216-258` erases concurrently-appended dispatch
+rows in the ledger this framework's own dispatch guidance is measured from
+(OBS-300 → **T-3042**, already filed and dispatched).
 
 **Evidence:**
 
