@@ -130,6 +130,13 @@ IMPLICIT_WRITE_SET: tuple[tuple[str, str, str], ...] = (
         "protected",
     ),
     (
+        ".context/triage-dispositions.jsonl",
+        "T-3046 — one disposition row per archived message; appended by "
+        "`fw triage route` under keylock.guarding(), same mechanism as "
+        "dispatches.jsonl above",
+        "protected",
+    ),
+    (
         ".context/project/decisions.yaml",
         "inventory §3 — single echo >> per entry; atomic while entries stay "
         "under PIPE_BUF",
