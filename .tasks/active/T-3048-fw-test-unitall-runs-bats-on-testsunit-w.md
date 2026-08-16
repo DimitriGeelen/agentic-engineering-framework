@@ -226,7 +226,34 @@ out=$(bin/fw test invariants 2>&1); echo "$out" | grep -q '^ok 57 ' && ! echo "$
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
+**Symptom:** `fw test unit` and `fw test all` on a vendored consumer that ships no
+`tests/unit/` printed `ERROR: Test file "…/tests/unit/" does not exist` and
+`not ok 1 bats-gather-tests`, failing the run. Reported twice by
+proxmox-ring20-management (2026-05-13, 2026-05-16) and unread for three months.
+
+**Root cause:** `bin/fw`'s two bats legs guarded only on `command -v bats` — the
+availability of the *runner* — and not on the existence of the *suite*. The four
+sibling legs in the same `case` block (pytest, integration, governance, lint) each
+guard both. The bats legs were written first and the guard was added to later legs
+without being backported.
+
+**Why structurally allowed:** the framework repo always has `tests/unit/`, so the
+missing guard is unreachable here. The only environment that exercises it is a
+vendored consumer, and nothing in CI runs `fw test` from one — the T-1633
+fresh-machine simulation covers `fw upgrade`/`vendor`/`init` but not `fw test`. So
+the defect was invisible on every machine that could have caught it, and visible
+only on machines with no way to report except a hub message nobody drained. Two
+independent blind spots had to line up, which is why a three-month lifetime produced
+zero local signal.
+
+**Prevention:** `tests/unit/t3048_bats_leg_guard.bats` builds a synthetic
+FRAMEWORK_ROOT with no `tests/unit/` and drives the real `bin/fw test unit|all`
+through it — i.e. it reproduces the consumer's environment inside the framework's own
+suite, which is the condition that was previously untestable here. Its third test
+runs the pre-fix call shape against the same tree and asserts it errors, so the guard
+is pinned as load-bearing rather than merely present. The wider gap — that no test
+exercises `fw test` from a vendored tree the way T-1633 exercises `fw upgrade` — is
+noted here rather than fixed, since it is a different deliverable.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -309,3 +336,12 @@ out=$(bin/fw test invariants 2>&1); echo "$out" | grep -q '^ok 57 ' && ! echo "$
 
 ### 2026-08-16T22:42:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-052a66f4
+- **Timestamp:** 2026-08-16T22:45:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
