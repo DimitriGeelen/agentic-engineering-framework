@@ -3794,3 +3794,26 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-307
+  text: "THE PRE-PUSH AUDIT GATE IS SELF-POISONING: EACH BLOCKED PUSH LEAVES A HUNG AUDIT HOLDING THE LOCK. Sharpens OBS-305/306 with the mechanism, verified by parentage rather than inferred. PID 1328953 (audit.sh, 1m27s elapsed, 00:00:00 CPU, state S) has ppid 1325718 = .git/hooks/pre-push — i.e. it was spawned by MY OWN push attempt, not by cron. It in turn forked 1359124 (audit.sh, same args) which also blocks. fuser shows BOTH still holding .context/locks/audit.lock, plus a leftover git process fd. Consequence: the pre-push hook runs audit.sh; audit.sh blocks; the push fails; the blocked audit is NEVER reaped and keeps the lock open; the next push therefore hits exit 75 again with certainty. Retrying does not wait out the contention — it MANUFACTURES it, one hung lock-holder per attempt, monotonically. Observed live: 6 push attempts this session produced a growing set of 0-CPU audit.sh processes, and the framework audits that pre-dated them (250439 etc.) had drained on their own. This means (a) the block message's advice 'wait for the running audit to finish, then push again' is actively harmful, since pushing again is what creates the next holder; (b) any automated push-retry loop degrades the repo for every other consumer on the host; (c) the fix must reap or bound the audit the hook itself spawns — a cron overlap guard alone would not have prevented any of this, because cron was not the contender. Cleanup for a poisoned state: identify audit.sh with ~0 CPU whose ppid is a pre-push hook, terminate those, then push once."
+  captured: 2026-08-16T20:10:41Z
+  context_task: T-3046
+  tags: [push-gate]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-308
+  text: "AUDIT.SH UNLINKS THE FLOCK'D LOCK FILE IN ITS EXIT TRAP, BREAKING THE MUTUAL EXCLUSION IT THINKS IT HAS. agents/audit/audit.sh:352 does exec 200>\"$AUDIT_LOCK_FILE\" then flock -n 200 (line 353); line 377 sets trap 'kill $AUDIT_TIMEOUT_PID; rm -f $AUDIT_LOCK_FILE' EXIT. Unlinking a flock'd path does not release the lock and does not stop a later process from creating a NEW inode at the same path and flocking that immediately — so two audits can hold 'the' lock at once. The framework already documents this exact invariant in the file written to fix the sibling problem: lib/keylock.py's module docstring says 'flock binds to an open file description, i.e. to an inode — not to a path', which is why keylock never unlinks. audit.sh predates it and was not migrated. Second defect in the same block: line 374 runs the watchdog as ( ...; sleep $AUDIT_TIMEOUT && kill -TERM $$ ) & and the trap kills only $AUDIT_TIMEOUT_PID, the SUBSHELL — killing a subshell does not kill its sleep child, which reparents to init and lives AUDIT_TIMEOUT (default 600s). Directly observed as audit.sh(251163)---sleep(251165). T-1464/T-1772 mitigated the fd-inheritance half of this (walk /proc/self/fd, close >2) but not the orphan itself. Suggested fix: migrate audit.sh to lib/keylock.sh exclusive() and delete the rm -f entirely; kill the whole process group for the watchdog. Needs its own task (one bug = one task) — this is the root under OBS-304/305/306/307, all of which describe symptoms of it."
+  captured: 2026-08-16T20:12:29Z
+  context_task: T-3046
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-309
+  text: "CORRECTION TO OBS-307: 'NEVER REAPED' WAS TOO STRONG. OBS-307 claimed the hung audit.sh processes spawned by the pre-push hook are never reaped. Measured afterwards: pgrep -c audit.sh reached 0 with no intervention, so they ARE reaped — consistent with the 600s AUDIT_TIMEOUT watchdog in agents/audit/audit.sh:374 rather than with never. The accurate claim is that they persist for up to AUDIT_TIMEOUT (default 600s) while holding the lock, which is long enough that a push-retry loop tightens faster than the holders drain, and that is why retrying degraded rather than recovered. The rest of OBS-307 stands: parentage was verified (ppid = .git/hooks/pre-push), and retrying does manufacture holders. Also correcting the sequence: after the holders drained, a push attempt failed with exit 2 'audit has FAILURES' — a DIFFERENT block from exit 75 contention — so the gate is not only a contention problem and the audit's actual findings still need reading once the lock behaves."
+  captured: 2026-08-16T20:12:39Z
+  context_task: T-3046
+  tags: [audit]
+  status: pending
+  promoted_to: null
