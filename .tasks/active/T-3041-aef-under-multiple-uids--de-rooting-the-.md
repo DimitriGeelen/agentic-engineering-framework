@@ -124,6 +124,32 @@ bvp_scores_proposed:
        upstream — believed yes, since group+setgid fixes our side of the socket
        without TermLink changing anything. -->
 
+- **IW-6: Can the shared read-modify-write aggregates become append-only +
+  derived view, and what breaks in the read path?**
+  confidence: 2
+  disposition:
+  rationale:
+  <!-- Candidate E, added after the first pass. `dispatches.jsonl` is already
+       multi-writer safe with no group, no lock and no rail, purely because it is
+       append-only. The question is whether learnings/decisions/patterns can be
+       moved to that shape, and what the compatibility window costs: every
+       consumer that currently yaml.safe_load()s the aggregate. Confidence 2 —
+       the mechanism is proven in-tree, the blast radius is not yet measured.
+       Depends on the IW-3 inventory to size it. -->
+
+- **IW-7: Should AEF have a first-class principal identity, and does it subsume
+  `sender_id`, `origin`, and the T-3038 focus key?**
+  confidence: 1
+  disposition:
+  rationale:
+  <!-- §5b. Four ad-hoc identity notions already exist and never reconcile.
+       Evidence they need to: an auto-dispatcher (origin:
+       systemd:unlabeled-unit) spawned a worker onto T-1719 while a human
+       session was mid-edit on the same files, and nothing in the system could
+       tell those were two principals with a converging write set. Low
+       confidence because the right scope is unclear — this could be a small
+       registry or a large refactor. -->
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
