@@ -9,6 +9,33 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # production it is unset, so the default below is used unchanged.
 HANDOVER_DIR="${HANDOVER_DIR:-$CONTEXT_DIR/handovers}"
 
+# ─── T-3028 (T-3025 GO, option 3): state-dump digest ───
+#
+# Three sections — Observation Inbox, Work in Progress, Awaiting Your Action —
+# are 97.3% of a handover's bytes and are byte-identical between consecutive
+# sessions. That is what makes .context/handovers 68% of the semantic corpus and
+# 79% of its growth. Digested, each becomes: its own total, the command that
+# regenerates it in full, and the top N entries.
+#
+# What is NOT touched: the 14 narrative sections. The cold-reader probe (T-3025
+# IW-2) showed narrative is the payload — "what must you not do", "name a decision
+# and its reasoning" were answered correctly from the digest alone. What it loses
+# is a queue snapshot that is stale the moment it is written and that every
+# consumer re-derives anyway.
+#
+# HANDOVER_DIGEST=0 restores the full dumps. Subtraction before construction, and
+# reversible by construction, is why this candidate was ordered ahead of the
+# 10x binary-quantization build.
+source "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null || true
+if declare -f fw_config >/dev/null 2>&1; then
+    HANDOVER_DIGEST=$(fw_config HANDOVER_DIGEST 2>/dev/null || echo 1)
+    DIGEST_TOP_N=$(fw_config HANDOVER_DIGEST_TOP_N 2>/dev/null || echo 5)
+else
+    HANDOVER_DIGEST="${FW_HANDOVER_DIGEST:-1}"
+    DIGEST_TOP_N="${FW_HANDOVER_DIGEST_TOP_N:-5}"
+fi
+case "$DIGEST_TOP_N" in ''|*[!0-9]*) DIGEST_TOP_N=5 ;; esac
+
 # T-1461: Resolve Watchtower URL once for inline link rendering.
 # Falls back to the literal port file or 3000 if `fw watchtower url` fails — the
 # handover should never crash if Watchtower isn't running. Renders as plain text
@@ -754,7 +781,8 @@ fi
 EOF
 
 # Add active tasks sorted by horizon (now > next > later)
-TASKS_DIR_PY="$TASKS_DIR" WT_URL_PY="$WT_URL" PROJECT_ROOT_PY="$PROJECT_ROOT" python3 << 'PYEOF' >> "$HANDOVER_FILE"
+TASKS_DIR_PY="$TASKS_DIR" WT_URL_PY="$WT_URL" PROJECT_ROOT_PY="$PROJECT_ROOT" \
+HANDOVER_DIGEST="$HANDOVER_DIGEST" DIGEST_TOP_N="$DIGEST_TOP_N" python3 << 'PYEOF' >> "$HANDOVER_FILE"
 # T-1825: heredoc delimiter quoted ('PYEOF') so shellcheck doesn't lint Python
 # `==` as bash (SC2284 false-positive). Shell vars now come in via env; no \$
 # escapes needed inside the body.
@@ -810,10 +838,16 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     wf = twf.group(1).strip() if twf else ''
     dec_m = re.search(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', content, re.M)
     dec = dec_m.group(1) if dec_m else ''
+    # T-3028: last_update drives "most recently touched" ordering in digest mode.
+    # Ordering by task ID would surface whatever was filed most recently, which is
+    # not the same as what was worked on most recently — and the latter is what a
+    # reader resuming a session needs.
+    tlu = re.search(r'^last_update:\s*[\'"]?([^\'"\s]+)', content, re.M)
+    lu = tlu.group(1) if tlu else ''
     tasks.append((horizon_order.get(h, 0), tid.group(1).strip(),
                   tname.group(1).strip() if tname else '',
                   tstatus.group(1).strip() if tstatus else '',
-                  h, verdict, wf, dec))
+                  h, verdict, wf, dec, lu))
 
 tasks.sort(key=lambda t: (t[0], t[1]))
 current_horizon = None
@@ -823,7 +857,18 @@ current_horizon = None
 # "Awaiting Human Review" sub-section, interleaving 135+ partial-complete
 # tasks with active WIP. Single bottom footer = primary signal first.
 pending_completed = []
-for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
+
+# T-3028: digest mode retains the N most recently touched, and refers the reader
+# to the command that regenerates the rest. Identity for every in-flight task is
+# already in frontmatter `tasks_active:` — and, since T-3027, it is finally true
+# there, which is the precondition that makes eliding this dump safe rather than
+# merely smaller. Two of the four rendered fields were constant across all 119
+# entries anyway ("Next step: See task file", "Blockers: None" — 119/119; §11b).
+digest = os.environ.get('HANDOVER_DIGEST', '1') != '0'
+top_n = int(os.environ.get('DIGEST_TOP_N') or 5)
+
+wip = []
+for _, tid, tname, tstatus, h, verdict, wf, dec, lu in tasks:
     # T-1619: DEFER'd inceptions are parked (decision is final, not WIP).
     # Skip from WIP — they are surfaced in the "Deferred Inceptions"
     # section below (T-1517) which already covers visibility.
@@ -834,6 +879,23 @@ for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
     if tstatus == 'work-completed':
         pending_completed.append((tid, tname, verdict, h))
         continue
+    wip.append((tid, tname, tstatus, h, lu))
+
+total_wip = len(wip)
+if digest and wip:
+    # started-work outranks captured; within each, most recently touched first.
+    # Two stable passes rather than one composite key: last_update is a string,
+    # so it sorts descending by reverse= and cannot be negated inside a tuple.
+    wip.sort(key=lambda t: (t[4] or ''), reverse=True)
+    wip.sort(key=lambda t: t[2] != 'started-work')
+    wip = wip[:top_n]
+    print(f'Showing {len(wip)} of {total_wip} — in-flight first, then most recently '
+          f'touched. Every in-flight task ID is in frontmatter `tasks_active:`.')
+    print(f'Regenerate in full: `bin/fw task list --status started-work`')
+    print()
+
+current_horizon = None
+for tid, tname, tstatus, h, lu in wip:
     if h != current_horizon:
         current_horizon = h
         print(f'<!-- horizon: {h} -->')
@@ -853,8 +915,11 @@ for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
     print(f'### {tid}: {tname}')
     print(f'- **Status:** {tstatus} (horizon: {h})')
     print(f'- **Last action:** {last_action}')
-    print(f'- **Next step:** See task file')
-    print(f'- **Blockers:** None')
+    if not digest:
+        # Constant across 119/119 entries when measured (§11b). Kept in full mode
+        # so `HANDOVER_DIGEST=0` reproduces the old output byte-for-byte.
+        print(f'- **Next step:** See task file')
+        print(f'- **Blockers:** None')
     print()
     print()
 
@@ -876,8 +941,15 @@ if pending_completed:
             continue
         print(f'**horizon: {hk}** ({len(by_h[hk])})')
         print()
-        for pc_tid, pc_name, pc_verdict in by_h[hk]:
+        # T-3028: this footer re-lists the same set as "Awaiting Your Action"
+        # below — the duplication is ~40% of what the two sections cost together.
+        rows = by_h[hk]
+        shown = rows[:top_n] if digest else rows
+        for pc_tid, pc_name, pc_verdict in shown:
             print(f'- [{pc_verdict}] {review_link(pc_tid, pc_name)}')
+        if digest and len(rows) > len(shown):
+            print(f'- _…and {len(rows) - len(shown)} more at horizon {hk}. '
+                  f'Full queue: `bin/fw review-queue`._')
         print()
 
 # T-1461: render inception tasks awaiting decision with /inception/T-XXX links
@@ -889,7 +961,7 @@ inception_pending = []
 inception_deferred = []
 # T-1619: tuple grew to 8 elements (verdict, wf, dec). Reuse the captured
 # values; no need to re-read each task file.
-for _, tid, tname, tstatus, h, _verdict, wf, dec in tasks:
+for _, tid, tname, tstatus, h, _verdict, wf, dec, _lu in tasks:
     if tstatus == 'work-completed':
         continue
     if wf != 'inception':
@@ -940,7 +1012,8 @@ fi
 
 # Step 2.1: Surface partial-complete tasks (T-372 — blind completion anti-pattern)
 # Tasks that are work-completed but have unchecked Human ACs
-PARTIAL_COMPLETE_SECTION=$(WT_URL_FOR_PYTHON="$WT_URL" python3 << 'PCEOF'
+PARTIAL_COMPLETE_SECTION=$(WT_URL_FOR_PYTHON="$WT_URL" \
+    HANDOVER_DIGEST="$HANDOVER_DIGEST" DIGEST_TOP_N="$DIGEST_TOP_N" python3 << 'PCEOF'
 import glob, re, os
 
 tasks_dir = os.environ.get("TASKS_DIR", ".tasks")
@@ -1000,7 +1073,18 @@ if partial:
     # in this queue. The [?] is defensive only.
     print("Review each when ready. No urgency implied. Prefix is the agent's recommendation: `[GO]` confirm, `[DEFER]`/`[NO-GO]` decide. `[NO-REC]` means the agent never wrote a Recommendation block — task isn't ready for review yet (T-1576). (`[?]` would mean a partial-complete task slipped past the T-1529 recommendation gate — should not occur in normal flow.)")
     print()
-    for tid, tname, count, preview, verdict in partial:
+    # T-3028: 48,355 B of a 265,888 B handover, and a snapshot of a queue that is
+    # stale the moment it is written. GO-first matches `fw review-queue`'s own
+    # ordering, so the retained head is the head of the queue the reader will open.
+    _digest = os.environ.get('HANDOVER_DIGEST', '1') != '0'
+    _top_n = int(os.environ.get('DIGEST_TOP_N') or 5)
+    _rows = partial
+    if _digest:
+        _rows = sorted(partial, key=lambda r: (r[4] != 'GO', r[0]))[:_top_n]
+        print(f"Showing {len(_rows)} of {len(partial)} (GO first). "
+              f"Full queue, same order: `bin/fw review-queue`.")
+        print()
+    for tid, tname, count, preview, verdict in _rows:
         # T-1461: render review URL inline if Watchtower is reachable
         # T-1530: prefix with agent recommendation verdict
         if WT_URL:
@@ -1041,13 +1125,17 @@ if [ "$PENDING_OBS" -gt 0 ]; then
         # just printed must SAY so. Without it, the section is well-formed and
         # complete-looking with its payload absent, and nothing anywhere reports
         # "listed 1 of 112".
-        INBOX_FILE="$INBOX_FILE" PENDING_OBS="$PENDING_OBS" python3 << 'PYEOF'
+        INBOX_FILE="$INBOX_FILE" PENDING_OBS="$PENDING_OBS" \
+        HANDOVER_DIGEST="$HANDOVER_DIGEST" DIGEST_TOP_N="$DIGEST_TOP_N" python3 << 'PYEOF'
 import os, sys
 
 path = os.environ['INBOX_FILE']
 claimed = int(os.environ.get('PENDING_OBS') or 0)
+# T-3028: this section alone was 137,505 B of a 265,888 B handover.
+digest = os.environ.get('HANDOVER_DIGEST', '1') != '0'
+top_n = int(os.environ.get('DIGEST_TOP_N') or 5)
 
-listed = 0
+rows = []
 err = None
 try:
     import yaml
@@ -1060,17 +1148,39 @@ try:
         text = o.get('text')
         if not obs_id or not text:
             continue
-        prefix = "[URGENT] " if o.get('urgent') is True else ""
-        print(f"- {prefix}{obs_id}: {str(text).strip()}")
-        listed += 1
+        rows.append((o.get('urgent') is True, obs_id, str(text).strip()))
 except Exception as e:
     err = e
+
+listed = len(rows)
+
+if digest and rows:
+    # Urgent first, then most recently captured — file order is capture order.
+    shown = sorted(range(len(rows)), key=lambda i: (not rows[i][0], -i))[:top_n]
+    shown = [rows[i] for i in shown]
+    print(f"Showing {len(shown)} of {listed} (urgent first, then newest). "
+          f"Full list: `bin/fw note triage`.")
+    print("")
+    for urgent, obs_id, text in shown:
+        prefix = "[URGENT] " if urgent else ""
+        # Digest the entry too — observation bodies run 400-1200 chars and the
+        # first sentence is the finding; the rest is evidence the reader can go
+        # get. Truncation is marked, never silent.
+        body = text if len(text) <= 240 else text[:240].rstrip() + "…"
+        print(f"- {prefix}{obs_id}: {body}")
+else:
+    for urgent, obs_id, text in rows:
+        prefix = "[URGENT] " if urgent else ""
+        print(f"- {prefix}{obs_id}: {text}")
 
 if err is not None:
     print(f"- _Could not read the observation inbox ({err.__class__.__name__}). "
           f"{claimed} pending — run `fw note list`._")
 elif listed < claimed:
     # Never silent. The count and the list disagreeing is itself the finding.
+    # T-3028 note: this is about a PARSE shortfall, not the digest's deliberate
+    # top-N. The digest announces its own truncation on the line above; this line
+    # still means "entries we could not summarise at all", and must keep saying so.
     print("")
     print(f"_Listed {listed} of {claimed} pending — {claimed - listed} could not be "
           f"summarised (missing `id` or `text`). Run `fw note list` for the full set._")

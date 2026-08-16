@@ -3581,3 +3581,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-278
+  text: "OBS: tests/unit/handover_push_timeout.bats:35 is a false red and has been for some time. It greps checkpoint.sh for 'timeout \"$_ah_total_timeout\" \"$FRAMEWORK_ROOT/agents/handover/handover.sh\"' but the live code at agents/context/checkpoint.sh:171 reads 'timeout \"$_ah_total_timeout\" bash \"$FRAMEWORK_ROOT/agents/handover/handover.sh\"' — a 'bash ' was inserted between the timeout and the path. The invariant the test guards (T-1277 belt-and-braces: the auto-handover invocation IS wrapped in timeout) is satisfied; only the string pattern is stale. Two costs: (1) a permanently-red test in a suite people run for regressions trains everyone to skim past 'not ok', which is how a real red gets missed; (2) the test asserts on an exact command spelling rather than on the property, so any future refactor of that line re-reds it for the same non-reason. Suggested fix: assert the property — grep for timeout and the handover.sh path on the same line, not the exact interleaving. Found while regression-checking T-3028; checkpoint.sh is untouched by that task, so this predates it. Origin: T-3028 session, 2026-08-16."
+  captured: 2026-08-16T08:21:20Z
+  context_task: T-3028
+  tags: [bug]
+  status: pending
+  promoted_to: null

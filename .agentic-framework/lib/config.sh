@@ -229,6 +229,13 @@ FW_CONFIG_REGISTRY=(
     # than the one you are working in.
     "INDEX_STALE_DAYS|7|Days before fw doctor WARNs that the vector index is stale, measured from the corpus manifest's build time (web/embeddings.py:index_freshness). T-3013."
     "RECALL_USAGE_DAYS|7|Window fw doctor looks back over for semantic-recall queries. Zero rows in the window WARNs — the G-064 zero-consumer signal, distinct from the index being stale (web/recall_telemetry.py:usage_summary). T-3019."
+    # T-3028 (T-3025 GO, option 3). State dumps are 97.3% of a handover and the
+    # three of them are byte-identical between consecutive sessions. Digesting
+    # them to count + regenerating command + top-N is what stops handovers being
+    # 68% of the semantic corpus. Set to 0 to restore the full dumps — subtraction
+    # first, and reversible by construction, is the whole point of the ordering.
+    "HANDOVER_DIGEST|1|Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028."
+    "HANDOVER_DIGEST_TOP_N|5|How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028."
 )
 
 # fw_config_registry — Print all known settings with current values
