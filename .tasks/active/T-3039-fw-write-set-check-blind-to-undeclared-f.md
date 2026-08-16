@@ -11,10 +11,10 @@ description: >
   dispatch of two tasks that both touch governance state reports overlap. Origin:
   T-3038 RCA / OBS-291.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T15:08:36Z
-last_update: '2026-08-16T15:15:14Z'
+last_update: 2026-08-16T19:13:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -69,20 +69,95 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T19:13:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=1 (body/components:prompt-incidental); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3039: fw write-set check blind to undeclared framework-state writes
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+CLAUDE.md §Execution Model item 4 tells agents to check `fw write-set check T-A T-B`
+before parallelising work — exit 0 = disjoint, 1 = overlap, 2 = undecidable. Two things
+are wrong with what they get back.
+
+**Finding 1 — adoption is zero, so the verdict is always `undecidable`.**
+`grep -rl '^write_set:' .tasks/` returns **0 of 3032** tasks. `read_write_set()`
+(`lib/write_set.py:68-83`) returns `None` on a missing field, and `compare()` short-circuits
+to `"undecidable"` when either side is `None` (`:150-151`). Measured on real pairs:
+
+```
+$ bin/fw write-set check T-3042 T-3043   → undecidable, exit 2
+$ bin/fw write-set check T-1719 T-3045   → undecidable, exit 2
+```
+
+The tool has never returned an actionable verdict for any real pair, and cannot until
+something writes the field. An agent that follows the CLAUDE.md instruction learns nothing
+and falls back to guessing — which is the state the tool was built to replace.
+
+**Finding 2 — the latent false green, which is why finding 1 is load-bearing.**
+`disjoint` means *the declared sets do not intersect*. It does not mean the two tasks do
+not write the same files, because **every** framework task writes shared state nobody
+declares: `.context/working/focus.yaml`, `.context/inbox.yaml`,
+`.context/dispatches.jsonl`, `.context/project/{decisions,learnings}.yaml`,
+`.context/working/session.yaml`, `VERSION`. Agents declare *their* files; the framework
+writes these underneath them.
+
+So the first task to declare a `write_set:` gets `disjoint` / exit 0 — a green light to
+parallelise straight into the 27-site shared read-modify-write set T-3041 IW-3 measured,
+where T-3042 is the live loss instance. Today's universal `undecidable` is *accidentally*
+protecting us: exit 2 is honest, and finding 1 is the only reason finding 2 has not bitten.
+
+Fixing adoption without fixing the blind spot would convert a useless tool into a
+dangerous one. Both legs ship together or neither does.
+
+Same false-green class as the port-3000 literal (CLAUDE.md §Watchtower Port, 371
+violations) and OBS-302 (failed RPC rendering as an empty result): a check that asserts
+less than its name implies, and is indistinguishable from one that asserts everything.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1** The implicit framework write-set is defined in one place as data (not scattered
+  literals), covering at minimum: `.context/working/focus.yaml`, `.context/working/session.yaml`,
+  `.context/inbox.yaml`, `.context/dispatches.jsonl`, `.context/project/decisions.yaml`,
+  `.context/project/learnings.yaml`, `VERSION`. Sourced from the T-3041 inventory
+  (`docs/reports/T-3041-write-site-inventory.md`), not from memory.
+- [x] **A2** `compare()` unions the implicit set into **both** sides before intersecting, so
+  two tasks with genuinely disjoint declared sets return `overlap` — because they do overlap,
+  on framework state.
+- [x] **A3** The verdict distinguishes *why*: an overlap caused solely by implicit framework
+  state is reported distinctly from a declared-path collision, so an agent can tell "you must
+  serialise the write leg" (CLAUDE.md's fan-out-on-reads pattern) from "these tasks edit the
+  same source file". A single undifferentiated `overlap` would make the tool useless in the
+  opposite direction — every pair overlaps, so nothing is ever parallelisable.
+- [x] **A4** Regression test proves the false green is closed: two synthetic tasks with
+  disjoint declared `write_set:` values must NOT return `disjoint`. This test **fails against
+  the current implementation** — recorded as run, not asserted.
+- [x] **A5** `undecidable` is preserved for genuinely missing declarations and still exits 2.
+  Fixing the blind spot must not turn "I don't know" into a confident answer.
+- [ ] **A6** Adoption has a path: either the field is emitted at task-create time, or
+  `write-set check` infers a declared set when the field is absent, or CLAUDE.md's instruction
+  is corrected to say what the tool actually answers today. Whichever is chosen is recorded as
+  a decision with its rejected alternatives — shipping A1-A5 while leaving 0/3032 adoption
+  would fix a code path no one reaches.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,3 +347,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3039-fw-write-set-check-blind-to-undeclared-f.md
 - **Context:** Initial task creation
+
+### 2026-08-16T19:13:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
