@@ -41,6 +41,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
+import keylock
 import worker_identity
 
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
@@ -743,6 +744,26 @@ def _stall_coverage(stall_after: int) -> Dict[str, int]:
 # ---------------------------------------------------------------------------
 # Telemetry capture (dispatches.jsonl + blob dir)
 # ---------------------------------------------------------------------------
+def append_dispatch_row(row: Dict[str, Any]) -> None:
+    """Append one dispatch row to dispatches.jsonl under the ledger lock.
+
+    T-3042 — O_APPEND alone is atomic against other *appenders*, and that was
+    the only writer this site was written to expect. It is not atomic against
+    lib/spawn.py:update_outcome_row, which reads the whole ledger and swaps a
+    rewritten inode in over it: a row appended after that read lands in the
+    inode os.replace is about to discard, and is erased. So this side takes the
+    same sidecar lock the rewriter takes. Locking only the rewriter closes
+    nothing — that is the whole point of the pairing, and the reason this
+    two-line append is a named function: so the pairing is greppable and so
+    the regression test can drive the real appender rather than a stand-in.
+    """
+    DISPATCHES_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with keylock.guarding(DISPATCHES_LOG):
+        # Per-line JSON keeps each dispatch self-contained.
+        with DISPATCHES_LOG.open("a") as f:
+            f.write(json.dumps(row) + "\n")
+
+
 def capture_dispatch(
     *,
     task_id: str,
@@ -807,11 +828,7 @@ def capture_dispatch(
         row.update(extra)
 
     if write:
-        DISPATCHES_LOG.parent.mkdir(parents=True, exist_ok=True)
-        # O_APPEND is atomic for small writes (<= PIPE_BUF, ~4KB) on POSIX.
-        # Per-line JSON keeps each dispatch self-contained.
-        with DISPATCHES_LOG.open("a") as f:
-            f.write(json.dumps(row) + "\n")
+        append_dispatch_row(row)
 
     cwd_template = workflow.get("cwd", "$PROJECT_ROOT")
     cwd_resolved = cwd_template.replace("$PROJECT_ROOT", str(PROJECT_ROOT))
