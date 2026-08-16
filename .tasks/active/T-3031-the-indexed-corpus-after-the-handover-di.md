@@ -62,12 +62,12 @@ in scope here.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The current indexed corpus is measured by source class (handovers, task files, episodics, docs, reports, generated component docs, …) with per-class byte totals and share-of-total, written to `docs/reports/T-3031-corpus-after-digest.md`
-- [ ] The measurement is reproducible from a committed command or script, not a one-off shell pipeline that exists only in the transcript — a number nobody can regenerate is not a measurement
-- [ ] The pre-digest baseline (68% handovers / 79% of growth) is restated with its date and method, so the before/after is a comparison rather than two unrelated numbers
-- [ ] Growth is measured separately from size — the class that dominates the corpus today and the class that dominates its growth are named independently, since T-3028 showed they can be the same and future candidates may not be
-- [ ] The next reduction candidate is named with its measured size, its estimated reduction, and one sentence on whether the reduction is reversible (subtraction) or a migration — the T-3025 criterion that chose the digest over the 10× option
-- [ ] Any candidate rejected during the ranking is recorded with the measured reason, so the next session does not re-derive it
+- [x] The current indexed corpus is measured by source class (handovers, task files, episodics, docs, reports, generated component docs, …) with per-class byte totals and share-of-total, written to `docs/reports/T-3031-corpus-after-digest.md`
+- [x] The measurement is reproducible from a committed command or script, not a one-off shell pipeline that exists only in the transcript — a number nobody can regenerate is not a measurement
+- [x] The pre-digest baseline (68% handovers / 79% of growth) is restated with its date and method, so the before/after is a comparison rather than two unrelated numbers
+- [x] Growth is measured separately from size — the class that dominates the corpus today and the class that dominates its growth are named independently, since T-3028 showed they can be the same and future candidates may not be
+- [x] The next reduction candidate is named with its measured size, its estimated reduction, and one sentence on whether the reduction is reversible (subtraction) or a migration — the T-3025 criterion that chose the digest over the 10× option
+- [x] Any candidate rejected during the ranking is recorded with the measured reason, so the next session does not re-derive it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -160,6 +160,17 @@ in scope here.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# The measurement must actually run — an unrunnable script is the failure this
+# task's AC #2 exists to prevent, and the report would still read fine.
+python3 tools/measure_corpus_classes.py --growth-days 30 > /tmp/.t3031-measure.out 2>&1 && grep -q "^handovers" /tmp/.t3031-measure.out
+python3 tools/measure_corpus_classes.py --json > /tmp/.t3031-measure.json 2>&1 && python3 -c "import json; d=json.load(open('/tmp/.t3031-measure.json')); assert d['total_bytes'] > 0 and d['size']['handovers']['bytes'] > 0"
+# The report exists and carries the numbers, not just the prose around them.
+test -s docs/reports/T-3031-corpus-after-digest.md
+grep -q "67.6%" docs/reports/T-3031-corpus-after-digest.md
+grep -q "tools/measure_corpus_classes.py" docs/reports/T-3031-corpus-after-digest.md
+# The inclusion set the report claims to use is the one the indexer uses.
+grep -q "collect_files" tools/measure_corpus_classes.py
 
 ## RCA
 
