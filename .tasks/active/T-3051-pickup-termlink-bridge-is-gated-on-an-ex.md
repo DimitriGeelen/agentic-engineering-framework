@@ -1,10 +1,15 @@
 ---
 id: T-3051
-name: "pickup TermLink bridge is gated on an exec bit the repo does not track — silent delivery loss"
+name: "pickup TermLink bridge is gated on an exec bit the repo does not track — silent
+  delivery loss"
 description: >
-  From T-3047 triage M-22 (ring20-dashboard P-009, 2026-06-09). lib/pickup.sh:473-474 gates the bridge on [ -x "$bridge" ], but git ls-files -s lib/pickup-channel-bridge.sh reports mode 100644. On any consumer installed from git the bridge is skipped and pickups report success while TermLink delivery is lost. Fix shape: [ -f ] && bash "$bridge", per the T-2052/T-2061 secret-scan pattern.
+  From T-3047 triage M-22 (ring20-dashboard P-009, 2026-06-09). lib/pickup.sh:473-474
+  gates the bridge on [ -x "$bridge" ], but git ls-files -s lib/pickup-channel-bridge.sh
+  reports mode 100644. On any consumer installed from git the bridge is skipped and
+  pickups report success while TermLink delivery is lost. Fix shape: [ -f ] && bash
+  "$bridge", per the T-2052/T-2061 secret-scan pattern.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +27,8 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:30:39Z
-last_update: 2026-08-16T22:30:39Z
-date_finished: null
+last_update: 2026-08-16T22:37:23Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +39,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:37:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3051: pickup TermLink bridge is gated on an exec bit the repo does not track — silent delivery loss
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filed from T-3047 triage M-22 (ring20-dashboard P-009, 2026-06-09 — unread for two
+months). `lib/pickup.sh:473` gates the TermLink channel bridge on `[ -x "$bridge" ]`,
+but git tracks `lib/pickup-channel-bridge.sh` as mode `100644`. On any consumer whose
+install comes from a git clone or a vendor sync, the bit is absent, the branch is
+skipped, and `fw pickup process` reports success while the channel mirror never runs.
+
+The shape is this session's recurring one: **a false green.** A failed bridge would be
+noticed; a bridge that is never attempted is indistinguishable from one that succeeded,
+because the surrounding code is deliberately non-fatal (`2>/dev/null || true`).
+
+Two independent things are wrong and both need fixing — restoring the bit alone leaves
+the code still depending on a property git does not reliably carry across every install
+path, and changing the gate alone leaves a script that cannot be run directly.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1** The gate no longer depends on the exec bit: `lib/pickup.sh` invokes the
+  bridge as `bash "$bridge"` behind an `[ -f ]` test, matching the T-2052/T-2061
+  secret-scan pattern already used elsewhere in the repo.
+- [x] **A2** `git ls-files -s lib/pickup-channel-bridge.sh` reports mode `100755`, so a
+  direct invocation also works.
+- [x] **A3** A regression test asserts the bridge is reached when the exec bit is
+  **absent** — the actual failing condition, not merely that it is reached when present.
+  The test must be observed red against the old gate, not just green against the new one.
+- [x] **A4** No sibling instance of the same class is left behind: every `[ -x ]` gate in
+  `lib/`, `agents/` and `bin/fw` that guards a repo-tracked script is either fixed the
+  same way or shown to be guarding a genuinely external binary.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +183,22 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# A3 — the regression suite, including the mutation that proves it discriminates
+out=$(bats tests/unit/t3051_exec_bit_gates.bats 2>&1); echo "$out" | grep -q '^ok 5 ' && ! echo "$out" | grep -q '^not ok'
+
+# A1 — the gate is on existence and the bridge is invoked through bash
+grep -q 'if \[ -f "$processed_path" \] && \[ -f "$bridge" \]; then' lib/pickup.sh
+grep -q 'bash "$bridge" "$processed_path"' lib/pickup.sh
+
+# A2 — all three helpers are 100755 in the index
+test "$(git ls-files -s lib/pickup-channel-bridge.sh agents/termlink/bvp-estimator/bvp-estimator.sh agents/handover/discard-manifest.sh | awk '$1=="100755"' | wc -l)" -eq 3
+
+# A4 — no -x gate on any of the three remains anywhere
+! grep -rnE '\[ -x .*(pickup-channel-bridge|bvp-estimator|discard-manifest)' lib/ agents/ bin/fw
+
+# the four edited scripts still parse
+bash -n lib/pickup.sh && bash -n agents/task-create/update-task.sh && bash -n agents/resume/resume.sh && bash -n agents/handover/handover.sh
 
 ## RCA
 
@@ -237,3 +296,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3051-pickup-termlink-bridge-is-gated-on-an-ex.md
 - **Context:** Initial task creation
+
+### 2026-08-16T22:37:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -124,10 +124,11 @@ cmd_status() {
     # NEVER blocks resume (cmd_with_sla always exits 0; output silent unless
     # the SLA was exceeded). Runs in background so even a hung subprocess
     # cannot delay status output.
-    if [ -n "$focus" ] && [ -x "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
+    # T-3051: -f + bash, not -x — git tracks this estimator as 100644.
+    if [ -n "$focus" ] && [ -f "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
         (
             PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
-            timeout 10 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
+            timeout 10 bash "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
                 with-sla "$focus" --timeout 10 >/dev/null 2>&1 || true
         ) &
         disown 2>/dev/null || true

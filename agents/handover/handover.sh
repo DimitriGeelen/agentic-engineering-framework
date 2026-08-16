@@ -609,9 +609,12 @@ fi
 # deprecated `--emergency` alias both route through this normal path. Best-effort:
 # the helper never fails the handover (graceful degradation to a placeholder).
 DISCARD_MANIFEST_LINE=""
-if [ -x "$FRAMEWORK_ROOT/agents/handover/discard-manifest.sh" ]; then
+# T-3051: -f + bash, not -x. This one was already dark on the origin host —
+# discard-manifest.sh sat at 664 in the worktree, so the handover silently
+# stopped emitting the manifest line and nothing reported it.
+if [ -f "$FRAMEWORK_ROOT/agents/handover/discard-manifest.sh" ]; then
     if SESSION_ID="$SESSION_ID" HANDOVER_DIR="$HANDOVER_DIR" PROJECT_ROOT="$PROJECT_ROOT" \
-        CONTEXT_DIR="$CONTEXT_DIR" "$FRAMEWORK_ROOT/agents/handover/discard-manifest.sh" \
+        CONTEXT_DIR="$CONTEXT_DIR" bash "$FRAMEWORK_ROOT/agents/handover/discard-manifest.sh" \
         "$SESSION_ID" >/dev/null 2>&1; then
         DISCARD_MANIFEST_LINE="**Discard Manifest:** \`$SESSION_ID.discard-manifest.yaml\` (category-level compaction discards — T-2366)
 
