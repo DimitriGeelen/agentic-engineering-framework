@@ -273,6 +273,70 @@ rather than argument, and disqualified twice over — it fails to prevent the lo
 *and* fails to grant the access. Row 5 is promoted from inferred to measured, and
 upgraded: it **corrupts**, it does not merely lose.
 
+## 5d. Sizing evidence (IW-3 static inventory, 2026-08-16)
+
+Full report: `docs/reports/T-3041-write-site-inventory.md`. Two variable-resolving
+scanners over `lib/`, `agents/`, `bin/`, `web/` and the hook scripts, then per-site
+code reading. Every classification cites `file:line`.
+
+| Category | Count |
+|---|---:|
+| **Dangerous — shared + read-modify-write, unprotected** | **27** |
+| Per-principal RMW/truncate (different failure: wrong-agent state) | 27 |
+| Already-safe append-only | 29 (28 clean + 1 interleaving exception) |
+| Lock-protected (`flock` / `mkdir` test-and-set, shown not assumed) | 7 |
+| Undetermined — listed as gaps rather than guessed | 11 |
+
+**27 is the size of step 2.** That is the number E has to move, and it is
+tractable — not the "everything under `.context/`" that the un-sized version of
+this recommendation implied.
+
+Three findings change more than the count:
+
+1. **The `L-493` comment sweep is a false-safety surface — and it is the single
+   biggest execution risk to this work.** ~24 sites carry
+   `# T-100190/T-100191: same-dir temp + os.replace — atomic write (L-493 class)`.
+   The origin (`agents/audit/audit.sh:5938-5940`) is explicit that the problem
+   solved was *a cron audit killed mid-write*. That is **crash-atomicity**.
+   `os.replace` guarantees a reader never sees a half-written file; it guarantees
+   nothing about a lost update. Every one of those comments is true about crashes
+   and silent about concurrency. Anyone triaging the dangerous set by grepping for
+   that string will skip exactly the sites that need fixing. Registered **OBS-301**;
+   the comment should be amended in place to *"crash-atomic; NOT concurrency-safe"*
+   before any de-rooting work starts, not after.
+
+2. **One of the 27 is a live single-uid bug and does not belong to this inception
+   at all.** `lib/spawn.py:231-254` (`stamp_outcome`) reads all of
+   `dispatches.jsonl` and `os.replace`s the whole file. A row appended by
+   `lib/resolver.py:813` in that window is **erased**, not un-updated — violating
+   the invariant `lib/outcome.py:177` documents and depends on. The framework runs
+   up to 5 concurrent workers plus cron dispatchers, so the window is routinely
+   open **today, as root, with no second principal involved.** The blast radius is
+   the evidence base itself: CLAUDE.md's measured dispatch table is computed from
+   this file. Registered **OBS-300**; needs its own task per one-bug-one-task.
+
+3. **The safe multi-writer pattern is already in-tree and complete.**
+   `lib/bus.sh:120-137` + `:198-204` — `mkdir` atomic test-and-set for id
+   allocation, same-dir temp + `os.replace` for the payload — is a working
+   multi-writer design written in ~2 dozen lines of shell for exactly this reason
+   (T-605). So the dangerous set is not a design gap the framework has to solve
+   from scratch. It is 27 sites that predate or bypassed a pattern that already
+   works here.
+
+Two smaller findings worth carrying into the build slices: `learnings.yaml` has an
+**unguarded id race** (`corpus_max_id` read at `learning.sh:74`, `L-NNN` written at
+`:139`, no lock — two principals mint the same id), and `bvp-weight-history.yaml`
+is **documented append-only at `lib/bvp.sh:1434` but implemented as full
+read-modify-write** — a doc/impl divergence that will cause it to be mis-triaged
+as already-safe.
+
+**Honest limit of the inventory.** 11 paths are undetermined and were listed as
+gaps rather than guessed — including `.context/message-archive/**` (no in-repo
+writer found, yet actively changing), and two SQLite DBs whose safety depends
+entirely on journal mode and `busy_timeout`, neither of which is set in the code
+read. The recall-telemetry file was left unclassified with the note that *"the
+file name is not evidence"*. Those need runtime probes, not more static reading.
+
 ## 5b. The identity question underneath all of this
 
 Every candidate above treats the symptom. The cause is that **AEF has no concept
@@ -345,11 +409,20 @@ lowering it.
    less there is to detect drift in.
 6. **C** — file in the TermLink repo, referencing this artifact.
 
-**Evidence gate — half resolved.** The IW-2 spike has reported (§5c): it did *not*
-show zero lost updates, so the branch where A becomes attractive and E narrows to
-a few files is closed. **E is not optional.** The IW-3 inventory is still running;
-it sizes step 2 (how many files are in the dangerous set) but can no longer change
-its direction.
+**Evidence gate — resolved, both legs.** IW-2 (§5c) did *not* show zero lost
+updates, so the branch where A becomes attractive is closed: **E is not optional.**
+IW-3 (§5d) sizes it: **27 sites**, against an in-tree pattern (`lib/bus.sh`) that
+already works. Step 2 is bounded work, not open-ended.
+
+Two things jump the queue ahead of step 1, because they are true today with a
+single uid and get worse the longer they sit:
+
+- **Amend the ~24 `L-493 class` comments** to say *crash-atomic; NOT
+  concurrency-safe* (OBS-301). This is nearly free and it is the difference
+  between the 27-site sweep being done correctly and being done by grep.
+- **Fix `lib/spawn.py:231-254`** (OBS-300) — it is erasing dispatch rows now, in
+  the ledger this framework's own dispatch guidance is measured from. It is not a
+  de-rooting task and should not wait for one.
 
 Step 5 is what makes this antifragile rather than a one-time cleanup — but the
 better outcome is a design that needs less of it.

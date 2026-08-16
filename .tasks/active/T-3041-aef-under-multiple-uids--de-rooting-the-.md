@@ -115,9 +115,26 @@ cost_estimate_proposed:
        lost updates. -->
 
 - **IW-3: Which `.context/` state is genuinely shared and which is per-principal?**
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: >-
+    Inventoried, not guessed. docs/reports/T-3041-write-site-inventory.md — two
+    variable-resolving scanners plus per-site code reading, every classification
+    citing file:line. Counts: 27 dangerous (shared + read-modify-write,
+    unprotected), 27 per-principal RMW/truncate (a distinct failure — wrong-agent
+    state, not lost update), 29 append-only already safe, 7 lock-protected
+    (flock/mkdir, shown not assumed), 11 undetermined and listed as gaps rather
+    than guessed. Rows 5/6 of the artifact table are now measured, not inferred.
+    27 is the size of step 2 and it is tractable. Three findings beyond the count,
+    all in artifact §5d: (a) the ~24-site "L-493 class / atomic write" comment
+    sweep is a false-safety surface — it means crash-atomic and is silent on
+    concurrency, so grep-based triage will skip the sites that need fixing
+    (OBS-301); (b) lib/spawn.py:231-254 erases concurrently-appended
+    dispatches.jsonl rows — a live single-uid bug in the ledger CLAUDE.md's own
+    dispatch table is computed from, not a de-rooting concern (OBS-300); (c) the
+    correct multi-writer pattern already exists complete in-tree at
+    lib/bus.sh:120-137 + :198-204 (T-605), so this is 27 sites bypassing a working
+    pattern, not a design gap.
   <!-- T-3038 already answered this for focus (shared file + per-key override +
        one resolver + reader fallback). The open part is the inventory: rows 5/6
        of the artifact's table are a guess until each write site is read. The
@@ -149,9 +166,25 @@ cost_estimate_proposed:
 
 - **IW-6: Can the shared read-modify-write aggregates become append-only +
   derived view, and what breaks in the read path?**
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: >-
+    Mechanism proven and blast radius now measured. IW-2 (spike §4) ran the
+    append-only shape under two real uids with NO shared group and got 400/400
+    lines, zero torn, zero lost — so the target shape is verified, not assumed.
+    IW-3 sizes the read path: 27 dangerous sites to convert, against 29 that are
+    already append-only and an in-tree reference implementation at
+    lib/bus.sh:120-137 + :198-204 (mkdir test-and-set + same-dir temp/os.replace,
+    T-605). What breaks in the read path is bounded and enumerated per-site with
+    file:line in the inventory. Two traps recorded for the build slices: the
+    ~24-site "L-493 class / atomic write" comment means crash-atomic only and will
+    cause grep-based triage to skip real sites (OBS-301), and
+    bvp-weight-history.yaml is documented append-only at lib/bvp.sh:1434 while
+    implemented as full read-modify-write — it will be mis-triaged as safe.
+    Remaining unknown is not the mechanism but 11 undetermined paths (two SQLite
+    DBs whose safety turns on journal_mode/busy_timeout, and
+    .context/message-archive/** which has no in-repo writer) — those need runtime
+    probes, not more static reading, and none of them gate the decision.
   <!-- Candidate E, added after the first pass. `dispatches.jsonl` is already
        multi-writer safe with no group, no lock and no rail, purely because it is
        append-only. The question is whether learnings/decisions/patterns can be

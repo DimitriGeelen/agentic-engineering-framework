@@ -3707,3 +3707,50 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-296
+  text: "TermLink hub split-brain: two hub processes share one runtime dir (/var/lib/termlink). systemd hub PID 3093442 (ProtectSystem=strict, ReadWritePaths=/var/lib/termlink, TCP 0.0.0.0:9100) serves the FLEET; a second hub started 16:52 (PID 3869961, socket-only) CLAIMED the same hub.pid+hub.sock and serves LOCAL CLI. Both write the same bus/topics + meta.db. Consequence: the topics created locally to fix the lost-message bug are visible to local CLI but peers posting over TCP 9100 got 'Read-only file system (os error 30)' (ring20-management-agent, 2026-08-16). CORRECTS the T-3040 RCA: messages were not lost merely because framework:pickup did not exist, they were lost because peer writes hit a hub that could not persist them. Also /var/lib/termlink/hub.secret is ABSENT on disk while the systemd hub holds it in memory: any restart mints a new secret and breaks every fleet credential (T-933 persist-if-present). DO NOT restart or stop either hub before the secret is restored."
+  captured: 2026-08-16T15:58:20Z
+  context_task: T-3040
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-297
+  text: "CORRECTION to OBS-295: 'fw-approve' is NOT a non-existent command. It exists and is executable at /opt/150-skills-manager/bin/fw-approve. The defect is narrower and more interesting: the gate emits a BARE command name, but the message is read by agents and operators on OTHER hosts and other projects where that bin/ is not on PATH. So the remediation resolves for the emitter and not for the reader. Reclassify the class from 'gate names a command that does not exist' to 'gate names a command that does not resolve in the reader's context'. The rail is the same shape but the predicate differs: a test asserting the referenced binary exists PASSES on the emitting host and still ships the bug. The correct rail asserts the emitted remediation is absolute or project-qualified. Second finding from the same probe: fw-authority is the WRONG tool for credential requests (it handles ESC-xxx skill escalations, is blind to REQ-xxx), so the 2026-05-17 pickup that named it was also wrong -- two independent bad remediations for the same gate."
+  captured: 2026-08-16T15:58:30Z
+  context_task: T-3040
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-298
+  text: "T-1719 A3 built the cloud fallback for fw ask, and building it revealed the fallback cannot fire in the case operators would expect. rag_retrieve() embeds the query via ollama BEFORE the routing decision, so a total ollama outage kills retrieval and the generation fallback is never reached. The fallback only covers the narrower real case: embeddings resolve but the chat model does not (different hosts, or chat model unloaded). This is correct behaviour -- answering from zero retrieved chunks is a silently worse product -- but the AC wording 'cloud fallback on connection error' reads as broader coverage than exists. Lifting it needs a cloud EMBEDDING path (Slice 2+), not a wider trigger. Pinned by tests/unit/t1719_ask_routing.bats 'a total ollama outage fails at RETRIEVAL, and says so'. Generalises: when a system has TWO provider-dependent stages in sequence, a fallback on the second stage buys nothing against an outage of the shared provider -- and the fallback's existence reads as coverage it does not have."
+  captured: 2026-08-16T16:15:35Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-299
+  text: "Credential gate names an escalation command that does not exist: infisical_manager_get_secret denies with 'Request escalation: fw-authority request --skill ...' but fw-authority is not on PATH on this host. Same class as OBS-297 (fw-approve bare command name unreachable). Net effect: the credential gate is a dead end, not a queue — there is no path from denial to approval. Blocks retrieval of the rotated ONEDEV_TOKEN, which is the sole remaining blocker on 16 unpushed commits now that T-2240 vendor drift is cleared."
+  captured: 2026-08-16T16:51:50Z
+  context_task: T-3041
+  tags: [credential-gate]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-300
+  text: "lib/spawn.py:231-254 stamp_outcome() erases concurrently-appended dispatch rows. It reads all of .context/dispatches.jsonl into memory, then tmp+os.replace's the whole file. Any row appended by lib/resolver.py:813 between the read loop and the replace is GONE — not un-updated, erased. This is a live single-uid bug: the framework caps at 5 concurrent workers and runs cron dispatchers, so the window is routinely open. It directly violates the invariant lib/outcome.py:177 documents and relies on ('Append-only design: NEVER touches dispatches.jsonl'). Blast radius is the evidence base itself — CLAUDE.md's measured dispatch-outcome table (1339 dispatches / 1838 outcomes, workflow_type pass rates) is computed from this file, so silent row loss biases the numbers agents use to decide whether to dispatch. Found by the T-3041 IW-3 static inventory (dangerous-set entry 4). Deserves its own task per one-bug-one-task."
+  captured: 2026-08-16T16:52:21Z
+  context_task: T-3041
+  tags: [data-loss]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-301
+  text: "The L-493 / T-100190 / T-100191 'atomic write' comment sweep is a false-safety surface. ~24 sites across the tree carry a comment of the form '# T-100190/T-100191: same-dir temp + os.replace — atomic write (L-493 class)'. Origin (agents/audit/audit.sh:5938-5940) is explicit that the problem solved was a cron audit KILLED MID-WRITE corrupting YAML — i.e. crash-atomicity. os.replace guarantees a reader never sees a half-written file. It guarantees NOTHING about a lost update: A loads, B loads, A dumps, B dumps, A's edit is gone silently. Every tmp+os.replace site in the T-3041 dangerous set is still a lost-update site. Risk: anyone triaging concurrency by grepping that comment string will conclude the tree is safer than it is, and will skip exactly the sites that need fixing. Suggest the comment be amended in place to say 'crash-atomic; NOT concurrency-safe' wherever it appears. Found by T-3041 IW-3 inventory §0."
+  captured: 2026-08-16T16:52:28Z
+  context_task: T-3041
+  tags: [concurrency]
+  status: pending
+  promoted_to: null
+  urgent: true
