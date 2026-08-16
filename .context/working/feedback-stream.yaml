@@ -34839,3 +34839,57 @@ scan_id: R-64a9e84d
 task_id: T-3053
 payload:
   task_file: .tasks/active/T-3053-audit-traceability-reads-only-the-first-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T23:42:29Z'
+scan_id: R-47bc2618
+task_id: T-3058
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T23:42:29Z'
+scan_id: R-47bc2618
+task_id: T-3058
+payload:
+  task_file: .tasks/active/T-3058-vector-reindex-temp-files-are-git-stagea.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T23:42:59Z'
+scan_id: R-6212f7ca
+task_id: T-3058
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T23:42:59Z'
+scan_id: R-6212f7ca
+task_id: T-3058
+payload:
+  task_file: .tasks/active/T-3058-vector-reindex-temp-files-are-git-stagea.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T23:43:05Z'
+scan_id: R-5248ea96
+task_id: T-3058
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T23:43:05Z'
+scan_id: R-5248ea96
+task_id: T-3058
+payload:
+  task_file: .tasks/active/T-3058-vector-reindex-temp-files-are-git-stagea.md

@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3058: vector reindex temp files are git-stageable and trip the large-file guard
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T23:43:12Z
+# ============================================================================
+
+task_id: T-3058
+task_name: "vector reindex temp files are git-stageable and trip the large-file guard"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T23:36:40Z
+completed: 2026-08-16T23:43:04Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vector reindex temp files are git-stageable and trip the large-file guard
+
+# Key outcomes
+outcomes:
+  - '**A1** A reindex scratch file — `.context/working/fw-vec-index.db.reindex.<pid>.tmp`'
+  - '**A2** The tracked-vs-ignored status of the *real* index (`fw-vec-index.db`'
+  - '**A3** The producer is identified by file:line, and either shown to remove its'
+  - '**A4** ~~Scratch files on disk are removed~~ — **revised after A3.** The'
+  - '**A5** A regression test pins A1 — `git check-ignore` matches a synthesized'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 2723
+  lines_added: 50988
+  lines_removed: 3789
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3058-vector-reindex-temp-files-are-git-stagea.md
+generated_by: context-agent-hybrid
