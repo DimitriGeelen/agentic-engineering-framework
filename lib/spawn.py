@@ -43,6 +43,8 @@ _LIB_DIR = Path(__file__).resolve().parent
 if str(_LIB_DIR) not in sys.path:
     sys.path.insert(0, str(_LIB_DIR))
 
+import keylock  # noqa: E402 — after the sys.path insert above
+
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 DISPATCHES_LOG = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
@@ -223,36 +225,52 @@ def update_outcome_row(
 
     Atomic via tmp + os.replace so a crash mid-rewrite leaves the original
     intact. Returns False (no-op) when dispatch_id missing or log absent.
+
+    T-3042 — CRASH-atomic is not CONCURRENCY-safe. The tmp + os.replace pattern
+    guarantees a reader never sees a half-written file; it guarantees nothing
+    about a *writer* that appended between this function's read loop and its
+    replace. That row lands in the old inode and os.replace discards it — the
+    dispatch is erased outright, not merely left un-updated, and the pass-rate
+    table agents consult before dispatching is computed from what survives.
+    So the whole read→replace window is held under the ledger's sidecar lock,
+    which lib/resolver.py's appender takes too. Locking one side would have
+    left the race exactly where it was.
     """
     if not dispatch_id or not DISPATCHES_LOG.exists():
         return False
 
-    rows = []
-    found = False
-    with DISPATCHES_LOG.open() as f:
-        for line in f:
-            line = line.rstrip("\n")
-            if not line:
-                continue
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError:
-                rows.append(line)  # preserve malformed lines verbatim
-                continue
-            if row.get("dispatch_id") == dispatch_id:
-                row["outcome"] = outcome
-                if extra:
-                    row.update(extra)
-                found = True
-            rows.append(json.dumps(row) if isinstance(row, dict) else row)
+    # Bounded; raises keylock.LockTimeout (loudly, on stderr) rather than
+    # returning False on expiry. False here means "no such dispatch_id", and a
+    # caller cannot distinguish that from "lock lost" — silently dropping the
+    # outcome would recreate this bug's signature: a ledger that under-reports
+    # without saying so.
+    with keylock.guarding(DISPATCHES_LOG):
+        rows = []
+        found = False
+        with DISPATCHES_LOG.open() as f:
+            for line in f:
+                line = line.rstrip("\n")
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    rows.append(line)  # preserve malformed lines verbatim
+                    continue
+                if row.get("dispatch_id") == dispatch_id:
+                    row["outcome"] = outcome
+                    if extra:
+                        row.update(extra)
+                    found = True
+                rows.append(json.dumps(row) if isinstance(row, dict) else row)
 
-    if not found:
-        return False
+        if not found:
+            return False
 
-    tmp = DISPATCHES_LOG.with_suffix(DISPATCHES_LOG.suffix + f".tmp.{os.getpid()}")
-    tmp.write_text("\n".join(rows) + "\n")
-    os.replace(tmp, DISPATCHES_LOG)
-    return True
+        tmp = DISPATCHES_LOG.with_suffix(DISPATCHES_LOG.suffix + f".tmp.{os.getpid()}")
+        tmp.write_text("\n".join(rows) + "\n")
+        os.replace(tmp, DISPATCHES_LOG)
+        return True
 
 
 # ---------------------------------------------------------------------------

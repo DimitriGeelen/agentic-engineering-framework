@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T16:54:50Z
-last_update: 2026-08-16T16:54:50Z
-date_finished: null
+last_update: '2026-08-16T17:00:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-16T17:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-16T17:00:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3042: update_outcome_row erases concurrently-appended dispatches.jsonl rows
@@ -46,26 +74,53 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A regression test in `tests/unit/test_spawn.py` reproduces the race: a row
+- [x] A regression test in `tests/unit/test_spawn.py` reproduces the race: a row
       appended to `dispatches.jsonl` concurrently with `update_outcome_row()`
       survives. It **fails against the pre-fix code** — verified by stashing the
       fix and running it — and passes after. Both directions stated in the task.
-- [ ] `lib/spawn.py:update_outcome_row` takes an exclusive `fcntl.flock` on a
+      → `test_concurrent_append_survives_update_outcome_row`. Pre-fix (fix
+      patched out, `lib/keylock.py` moved aside): **FAILED** on the symptom, not
+      on a missing symbol — `AssertionError: concurrently-appended row was
+      ERASED by update_outcome_row's os.replace — ledger holds ['row-1',
+      'row-2']`. Post-fix: **PASSES** (33/33 in the file).
+- [x] `lib/spawn.py:update_outcome_row` takes an exclusive `fcntl.flock` on a
       **sidecar** lock path (never on `dispatches.jsonl` itself, whose inode
       `os.replace` swaps) around the read→replace window.
-- [ ] The appender at `lib/resolver.py:813` takes the **same** lock. Locking only
+      → `lib/spawn.py:243` wraps the whole read→replace window in
+      `keylock.guarding(DISPATCHES_LOG)`; the lock lives at
+      `.context/locks/dispatches.lock`. Pinned by
+      `test_ledger_lock_is_a_sidecar_not_the_ledger_itself`.
+- [x] The appender at `lib/resolver.py:813` takes the **same** lock. Locking only
       the rewriter does not close the race; both sides or neither.
-- [ ] Lock acquisition is bounded (no indefinite block) and a timeout degrades
+      → extracted to `lib/resolver.py:append_dispatch_row` (line 746), which
+      takes `keylock.guarding(DISPATCHES_LOG)` — the same sidecar path derived
+      from the same ledger. Pinned by
+      `test_appender_blocks_while_rewriter_holds_the_ledger_lock`.
+- [x] Lock acquisition is bounded (no indefinite block) and a timeout degrades
       **loudly** — never silently skips the outcome write.
-- [ ] The lock file is created with a mode a future non-root principal can open
+      → `LOCK_NB` poll to a deadline (`FW_LEDGER_LOCK_TIMEOUT`, default 30s);
+      on expiry a stderr banner is printed and `keylock.LockTimeout` is raised.
+      It never returns "did not get the lock" as an ordinary value. Pinned by
+      `test_lock_timeout_is_bounded_and_raises_loudly`.
+- [x] The lock file is created with a mode a future non-root principal can open
       for writing (T-3041 de-rooting is in flight; do not regress it).
-- [ ] The four existing `test_update_outcome_row_*` tests stay green.
-- [ ] `## RCA` answers the structural question: whether the ~24-site
+      → `os.open(..., 0o666)` plus an explicit `chmod` (umask 022 would
+      otherwise mask it to 0644 and lock out every later non-root principal);
+      lock dir 0o777, both best-effort. Asserted in the sidecar test.
+- [x] The four existing `test_update_outcome_row_*` tests stay green.
+      → `_rewrites_match`, `_no_match_returns_false`, `_no_log_returns_false`,
+      `_empty_dispatch_id_returns_false` all pass, unmodified.
+- [x] `## RCA` answers the structural question: whether the ~24-site
       `# T-100190/T-100191 … atomic write (L-493 class)` comment — which means
       *crash*-atomic and is silent on concurrency — contributed to this site
       being written this way.
-- [ ] The ledger format is unchanged. Append-only + derived view is T-3041's
+      → answered under **Why structurally allowed** below: yes, contributory
+      but not causal at this site — the comment is absent here, the *framing*
+      was reproduced in prose.
+- [x] The ledger format is unchanged. Append-only + derived view is T-3041's
       recommendation and is explicitly out of scope here.
+      → no schema field added, removed or renamed; rows are byte-identical in
+      shape. The only new file is a zero-byte sidecar lock outside the ledger.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -159,6 +214,21 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# The regression suite, including the four pre-existing update_outcome_row tests.
+python3 -m pytest tests/unit/test_spawn.py -q > /tmp/.t3042-spawn.out 2>&1 && grep -q "passed" /tmp/.t3042-spawn.out
+# The race test specifically — the one that fails against pre-fix code.
+python3 -m pytest tests/unit/test_spawn.py -q -k "concurrent_append_survives or appender_blocks or sidecar or lock_timeout" > /tmp/.t3042-race.out 2>&1 && grep -q "4 passed" /tmp/.t3042-race.out
+# The appender side is the half that is easy to forget; resolver must stay green.
+python3 -m pytest tests/unit/test_resolver.py tests/unit/test_outcome.py -q > /tmp/.t3042-resolver.out 2>&1 && grep -q "passed" /tmp/.t3042-resolver.out
+# Both sides of the pairing take the lock — a lock on one side protects nothing.
+grep -q "keylock.guarding(DISPATCHES_LOG)" lib/spawn.py
+grep -q "keylock.guarding(DISPATCHES_LOG)" lib/resolver.py
+# The lock is a sidecar: os.replace swaps the ledger inode, so locking the
+# ledger itself would leave the appender holding a lock on a dead inode.
+python3 -c "import sys; sys.path.insert(0,'lib'); import keylock; from pathlib import Path; p=keylock.lock_path_for(Path('.context/dispatches.jsonl')); assert p==Path('.context/locks/dispatches.lock'), p"
+# Ledger format unchanged: every existing row still parses as one JSON object.
+python3 -c "import json,pathlib; p=pathlib.Path('.context/dispatches.jsonl'); [json.loads(l) for l in p.read_text().splitlines() if l.strip()] if p.exists() else None"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -174,6 +244,92 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Dispatch rows disappear from `.context/dispatches.jsonl` outright.
+Not left stale, not left `pending` — gone, as if the dispatch never happened.
+Nothing reports the loss, because the evidence of the loss is the thing that was
+lost. Downstream, CLAUDE.md's measured pass-rate table (`workflow_type` × N ×
+verification pass) is computed by joining this file against
+`dispatch-outcomes.jsonl`, so the numbers agents consult when deciding whether
+to dispatch at all are biased by an unknown, unreported amount.
+
+**Root cause:** `lib/spawn.py:update_outcome_row` implemented an in-place field
+update on an append-only log as *read-all → rewrite-all → `os.replace`*. That
+sequence is not a read-modify-write of one row; it is a whole-file swap whose
+input is a snapshot. `lib/resolver.py:813` appends with `O_APPEND` to the same
+file. Any row appended after the read loop finishes and before `os.replace`
+lands in the inode `os.replace` is about to unlink, and is destroyed by a
+writer that never knew it existed. `os.replace` is the mechanism of loss, not a
+protection that failed: the more reliably it swaps, the more reliably it erases.
+
+The window needs no second uid and no unusual load. The framework runs up to 5
+concurrent workers and cron dispatchers, and `spawn_dispatch` calls this on
+*every* dispatch completion, so the window opens on every worker that finishes
+while any other worker starts.
+
+The fix pairs both sides on one sidecar lock (`.context/locks/dispatches.lock`,
+the `lib/keylock.sh` directory). Locking only the rewriter would have been worse
+than nothing — it would look like a fix and change no outcome.
+
+**Why structurally allowed** — the question about the `L-493` idiom:
+
+*Contributory, but not causal at this site.* The distinction matters for
+prevention, so both halves are stated precisely.
+
+Not causal: the `# T-100191: same-dir temp + os.replace — atomic write (L-493
+class)` comment does **not** appear at `lib/spawn.py`. It sits at 15 canonical
+sites (8 in `lib/`, 5 in `agents/context/`, 2 in `agents/audit/`), mirrored into
+`.agentic-framework/` and the worktrees for ~90 textual occurrences. This site
+was not written by copying that comment.
+
+Contributory: it was written by copying that *framing*. The pre-fix docstring
+read "Atomic via tmp + os.replace so a crash mid-rewrite leaves the original
+intact" — the L-493 idiom restated in the author's own words, arrived at
+independently, and reaching the identical conclusion that the write was now
+safe. That is the more troubling form of influence: a shared comment can be
+audited and amended at 15 sites, whereas an internalised idiom regenerates
+itself at site 16 with no string to grep for.
+
+What the idiom actually guarantees, and where it stops:
+
+| Property | tmp + `os.replace` | Needed here |
+|---|---|---|
+| A reader never sees a half-written file (L-493's literal origin: `fw fabric drift` grepping a card mid-write) | yes | — |
+| A crash mid-write leaves the previous version intact | yes | — |
+| A concurrent *writer*'s work is preserved | **no** | **yes** |
+
+L-493's own text names its scope exactly — "any framework writer of a file that
+other tools **scan/grep** concurrently" — readers, not writers. The learning is
+correct and was correctly applied everywhere it is cited. The failure is that
+"atomic write" reads, in English, like a total safety property, so the unstated
+half ("…against readers and crashes; it *destroys* concurrent appends") never
+gets supplied. Applied to an append-only ledger the idiom inverts: for a file
+whose other writer only ever appends, whole-file replacement is the single most
+destructive way to update one field.
+
+Second contributing factor, independent of the idiom: `lib/outcome.py:177`
+documents the invariant this violated — "Append-only design: NEVER touches
+dispatches.jsonl" — as a *comment in the module that honours it*, not as a test
+or a gate. An invariant asserted only in the prose of the compliant module
+cannot constrain a different module written later. `spawn.py` broke a rule that
+was, from `spawn.py`'s vantage point, invisible.
+
+**Prevention** (distinct from the fix):
+1. `test_concurrent_append_survives_update_outcome_row` reproduces the real race
+   with a real thread and a widened window; verified to fail on the erased row
+   against pre-fix code, so it is a live oracle rather than a green rubber stamp.
+2. `test_appender_blocks_while_rewriter_holds_the_ledger_lock` pins the *pairing*
+   directly. Un-locking either side turns it red — the half-fix (rewriter only)
+   is the plausible regression, and it is now the tested one.
+3. `lib/keylock.py` exists as the Python sibling of `lib/keylock.sh`, so the next
+   author who needs this reaches for a primitive instead of reasoning from
+   scratch about flock and inode swaps. Its module docstring carries the
+   sidecar-vs-inode reasoning at the point of use.
+4. Follow-up not taken here (out of scope, worth filing): the ~15 `L-493` comment
+   sites should say *crash-atomic and reader-atomic; NOT writer-safe* so the
+   idiom stops implying a guarantee it does not carry. Every one of those sites
+   should be checked for a concurrent appender; this task fixed the one site
+   that provably had one.
 
 ## Evolution
 

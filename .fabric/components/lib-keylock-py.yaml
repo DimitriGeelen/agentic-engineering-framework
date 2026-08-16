@@ -1,0 +1,23 @@
+id: lib/keylock.py
+name: keylock-py
+type: library
+subsystem: framework-core
+location: lib/keylock.py
+tags:
+- concurrency
+- locking
+purpose: 'Python sibling of lib/keylock.sh: sidecar fcntl.flock advisory locks in
+  .context/locks/, with a bounded timeout that raises loudly rather than degrading
+  to a silent skipped write. Guards the dispatch ledger against the concurrent-append
+  erasure fixed in T-3042.'
+depends_on: []
+depended_by:
+- target: lib/spawn.py
+  type: called_by
+- target: lib/resolver.py
+  type: called_by
+- target: tests/unit/test_spawn.py
+  type: tests_by
+last_verified: 2026-08-16
+created_by: T-3042
+last_enriched: '2026-08-16'

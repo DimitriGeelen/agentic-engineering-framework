@@ -17,6 +17,8 @@ import json
 import sys
 import os
 import tempfile
+import threading
+import time
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
@@ -338,6 +340,180 @@ def test_update_outcome_row_empty_dispatch_id_returns_false(tmp_project):
     (tmp_path / ".context" / "dispatches.jsonl").write_text("")
     ok = spawn.update_outcome_row("", "success", None)
     assert ok is False
+
+
+# ---------------------------------------------------------------------------
+# T-3042 — concurrent append vs. update_outcome_row's read→os.replace window
+# ---------------------------------------------------------------------------
+def _fresh_resolver():
+    """Import lib/resolver.py against the tmp_project PROJECT_ROOT.
+
+    Its DISPATCHES_LOG is computed at import time, same as spawn's, so it must
+    be reloaded inside the fixture's env for the two modules to agree on which
+    ledger — and therefore which sidecar lock — they are contending over.
+    """
+    for mod in ("resolver", "keylock"):
+        sys.modules.pop(mod, None)
+    import resolver
+    return resolver
+
+
+def _append_row(resolver, row):
+    """Drive the real appender, falling back to the pre-fix inline form.
+
+    The fallback exists only so that stashing the fix makes the race test fail
+    on the symptom — an erased row — instead of on a missing symbol. A test
+    that goes red because `append_dispatch_row` does not exist yet would prove
+    nothing about the race it claims to reproduce.
+    """
+    appender = getattr(resolver, "append_dispatch_row", None)
+    if appender is not None:
+        appender(row)
+        return
+    with resolver.DISPATCHES_LOG.open("a") as f:  # pre-fix resolver.py:813
+        f.write(json.dumps(row) + "\n")
+
+
+def test_concurrent_append_survives_update_outcome_row(tmp_project):
+    """A row appended while update_outcome_row is mid-rewrite must survive.
+
+    Reproduces the live race: update_outcome_row reads the whole ledger, then
+    os.replace()s a rewritten inode over it. Any row appended in between lands
+    in the doomed inode and is erased outright. Widening that window with a
+    patched os.replace makes a real thread race deterministic.
+
+    Pre-fix this fails: `row-concurrent` is gone from the ledger.
+    """
+    tmp_path, spawn = tmp_project
+    resolver = _fresh_resolver()
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(
+        json.dumps({"dispatch_id": "row-1", "outcome": "pending"}) + "\n"
+        + json.dumps({"dispatch_id": "row-2", "outcome": "pending"}) + "\n"
+    )
+    assert resolver.DISPATCHES_LOG == log, "resolver and spawn must share the ledger"
+
+    in_replace = threading.Event()
+    appended = threading.Event()
+    real_replace = os.replace
+
+    def slow_replace(src, dst):
+        # The window the bug lives in: rows are read, the replacement is
+        # staged, the swap has not happened yet.
+        in_replace.set()
+        # Post-fix the appender is parked on the lock and never sets this, so
+        # the wait expires — that expiry IS the fix working. Pre-fix it fires
+        # in milliseconds and the append is swallowed by the swap below.
+        appended.wait(timeout=0.5)
+        return real_replace(src, dst)
+
+    errors = []
+
+    def appender():
+        try:
+            in_replace.wait(timeout=5.0)
+            _append_row(resolver, {"dispatch_id": "row-concurrent",
+                                   "outcome": "pending"})
+            appended.set()
+        except Exception as exc:  # surfaced below rather than lost in a thread
+            errors.append(exc)
+
+    thread = threading.Thread(target=appender, daemon=True)
+    # Patches the shared os module for the duration; scoped to this test.
+    with patch.object(spawn.os, "replace", slow_replace):
+        thread.start()
+        ok = spawn.update_outcome_row("row-2", "success", {"events_count": 3})
+    thread.join(timeout=10.0)
+
+    assert not errors, f"appender thread raised: {errors}"
+    assert not thread.is_alive(), "appender never completed — lock not released?"
+    assert ok is True
+
+    rows = [json.loads(line) for line in log.read_text().strip().splitlines()]
+    ids = [r["dispatch_id"] for r in rows]
+    assert "row-concurrent" in ids, (
+        "concurrently-appended row was ERASED by update_outcome_row's "
+        f"os.replace — ledger holds {ids}"
+    )
+    outcomes = {r["dispatch_id"]: r["outcome"] for r in rows}
+    assert outcomes["row-2"] == "success", "the outcome update itself was lost"
+    assert outcomes["row-1"] == "pending"
+
+
+def test_appender_blocks_while_rewriter_holds_the_ledger_lock(tmp_project):
+    """The appender at resolver.py must take the SAME lock as the rewriter.
+
+    Locking only the rewriter leaves the race exactly where it was, so this
+    pins the pairing directly rather than inferring it from the race test.
+    """
+    tmp_path, spawn = tmp_project
+    resolver = _fresh_resolver()
+    import keylock
+
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(json.dumps({"dispatch_id": "row-1", "outcome": "pending"}) + "\n")
+
+    done = threading.Event()
+
+    def appender():
+        _append_row(resolver, {"dispatch_id": "row-blocked", "outcome": "pending"})
+        done.set()
+
+    with keylock.guarding(log):
+        thread = threading.Thread(target=appender, daemon=True)
+        thread.start()
+        assert not done.wait(timeout=0.5), (
+            "appender wrote while the ledger lock was held — resolver.py is "
+            "not taking the lock, so the rewriter's lock protects nothing"
+        )
+    assert done.wait(timeout=10.0), "appender did not proceed after release"
+    thread.join(timeout=5.0)
+    ids = [json.loads(l)["dispatch_id"] for l in log.read_text().strip().splitlines()]
+    assert ids == ["row-1", "row-blocked"]
+
+
+def test_ledger_lock_is_a_sidecar_not_the_ledger_itself(tmp_project):
+    """os.replace swaps the ledger's inode; a lock held on it would be orphaned."""
+    tmp_path, spawn = tmp_project
+    import keylock
+
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(json.dumps({"dispatch_id": "row-1", "outcome": "pending"}) + "\n")
+    spawn.update_outcome_row("row-1", "success", None)
+
+    lock = keylock.lock_path_for(log)
+    assert lock == tmp_path / ".context" / "locks" / "dispatches.lock"
+    assert lock.exists(), "lock file was never created"
+    assert lock.resolve() != log.resolve()
+    # T-3041 de-rooting: a root cron run must not leave the ledger unlockable
+    # for the non-root principal that comes after it.
+    assert (lock.stat().st_mode & 0o666) == 0o666, oct(lock.stat().st_mode)
+
+
+def test_lock_timeout_is_bounded_and_raises_loudly(tmp_project, capfd):
+    """Timeout must be bounded and never degrade to a silent skipped write."""
+    tmp_path, spawn = tmp_project
+    import keylock
+
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(json.dumps({"dispatch_id": "row-1", "outcome": "pending"}) + "\n")
+
+    os.environ["FW_LEDGER_LOCK_TIMEOUT"] = "0.2"
+    try:
+        with keylock.guarding(log):  # hold it; the rewriter cannot get in
+            start = time.monotonic()
+            with pytest.raises(keylock.LockTimeout):
+                spawn.update_outcome_row("row-1", "success", None)
+            elapsed = time.monotonic() - start
+    finally:
+        os.environ.pop("FW_LEDGER_LOCK_TIMEOUT", None)
+
+    assert elapsed < 5.0, f"acquisition was not bounded ({elapsed:.1f}s)"
+    err = capfd.readouterr().err
+    assert "TIMEOUT" in err and "was NOT performed" in err, err
+    # And the row is untouched — not half-written.
+    rows = [json.loads(l) for l in log.read_text().strip().splitlines()]
+    assert rows[0]["outcome"] == "pending"
 
 
 def test_module_imports_without_pi_on_path():
