@@ -1001,6 +1001,7 @@ show_help() {
     echo -e "  ${GREEN}resolver${NC} <cmd>       Workflow lookup + prompt assembly (workflows, dispatch, run, explain)"
     echo -e "  ${GREEN}outcome${NC} <cmd>        Outcome evaluation + back-prop (evaluate, backprop, read, list)"
     echo -e "  ${GREEN}write-set${NC} check <T-A> <T-B>  Disjoint write-set validator (0=disjoint, 1=overlap, 2=undecidable)"
+    echo -e "  ${GREEN}triage${NC} route          Route recovered hub messages by msg_type (routed/surfaced/deferred/dropped)"
     echo ""
     echo -e "${BOLD}Design & corpus:${NC}"
     echo -e "  ${GREEN}designer${NC} <cmd>       Vendor + serve the pinned Workflow Designer build"
