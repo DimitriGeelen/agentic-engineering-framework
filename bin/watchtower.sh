@@ -205,7 +205,16 @@ do_start() {
 
     # Start Watchtower
     # Pass PROJECT_ROOT so Flask serves the correct project's data (T-467)
-    export PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    # T-3054: route through the shared resolver so an unset PROJECT_ROOT warns
+    # instead of silently serving the framework's own .tasks/ and .context/.
+    # The substitution stays — serving the framework repo is a legitimate run —
+    # but it is no longer invisible to the operator who did not intend it.
+    if type _watchtower_our_root >/dev/null 2>&1; then
+        PROJECT_ROOT="$(_watchtower_our_root)"
+    else
+        PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    fi
+    export PROJECT_ROOT
     log_info "Starting Watchtower on port $port (project: $PROJECT_ROOT)..."
     cd "$FRAMEWORK_ROOT"
     PROJECT_ROOT="$PROJECT_ROOT" python3 -m web.app --port "$port" $debug_flag > "$LOG_FILE" 2>&1 &

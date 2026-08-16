@@ -25,9 +25,44 @@ _FW_WATCHTOWER_LOADED=1
 # (PROJECT_ROOT, else FRAMEWORK_ROOT). Single source of truth for the identity
 # handshake used by both the reader (_watchtower_url) and the writer
 # (bin/watchtower.sh's port-kill guard + triple-write gate). T-1803.
+# _watchtower_our_root
+#
+# T-3054: the single place the "which project are we?" answer is derived, and
+# the only place the FRAMEWORK_ROOT fallback is allowed to fire. It prints the
+# root on stdout and — when it fell back — a warning on stderr.
+#
+# The fallback existed in two places (bin/watchtower.sh's launch line and the
+# identity check below) and was silent in both, which is what made it a false
+# green: the check that exists to catch a wrong-project instance computed its
+# expected value with the same expression the instance had used, so a
+# misconfigured server matched itself and passed `fw doctor`. A guard whose
+# predicate is derived from the thing it validates cannot fail.
+#
+# The fallback is kept, not removed — serving the framework repo itself is a
+# legitimate run. It is now audible.
+_watchtower_our_root() {
+    if [ -n "${PROJECT_ROOT:-}" ]; then
+        printf '%s' "$PROJECT_ROOT"
+        return 0
+    fi
+    if [ -n "${FRAMEWORK_ROOT:-}" ]; then
+        if [ -z "${_WT_ROOT_FALLBACK_WARNED:-}" ]; then
+            _WT_ROOT_FALLBACK_WARNED=1
+            echo "WARNING: PROJECT_ROOT is unset — falling back to FRAMEWORK_ROOT ($FRAMEWORK_ROOT)." >&2
+            echo "         Watchtower will serve the FRAMEWORK's own .tasks/ and .context/, not a" >&2
+            echo "         consumer project's. If you meant to serve a project, export PROJECT_ROOT" >&2
+            echo "         and restart. (T-3054)" >&2
+        fi
+        printf '%s' "$FRAMEWORK_ROOT"
+        return 0
+    fi
+    return 1
+}
+
 _watchtower_identity_matches() {
     local _u="$1"
-    local _our_root="${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}"
+    local _our_root
+    _our_root=$(_watchtower_our_root) || _our_root=""
     local _json _svc _proot
     _json=$(curl -sf --max-time 2 "${_u}/api/_identity" 2>/dev/null) || return 1
     _svc=$(printf '%s' "$_json" | grep -oE '"service"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')
@@ -76,7 +111,9 @@ _watchtower_url() {
         return 0
     fi
 
-    local _our_root="${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}"
+    # T-3054: through the shared resolver, so the fallback is audible here too.
+    local _our_root
+    _our_root=$(_watchtower_our_root) || _our_root=""
 
     # Helper: verify a url is OUR Watchtower via /api/_identity. Returns 0 iff
     # match. Delegates to the top-level _watchtower_identity_matches (T-1803) so

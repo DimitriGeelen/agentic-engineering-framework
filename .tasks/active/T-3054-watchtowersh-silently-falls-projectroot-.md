@@ -1,13 +1,18 @@
 ---
 id: T-3054
-name: "watchtower.sh silently falls PROJECT_ROOT back to FRAMEWORK_ROOT, serving the wrong project"
+name: "watchtower.sh silently falls PROJECT_ROOT back to FRAMEWORK_ROOT, serving the
+  wrong project"
 description: >
-  From T-3047 triage M-26 (ring20-dashboard P-011, 2026-06-13). bin/watchtower.sh:208 is export PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}" with no die and no warn. The identity check at lib/watchtower.sh:30,:79 compares against the same fallback, so a misconfigured instance matches itself and passes doctor. Operator sees a fresh-install Setup Checklist for a project with hundreds of tasks.
+  From T-3047 triage M-26 (ring20-dashboard P-011, 2026-06-13). bin/watchtower.sh:208
+  is export PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}" with no die and no warn.
+  The identity check at lib/watchtower.sh:30,:79 compares against the same fallback,
+  so a misconfigured instance matches itself and passes doctor. Operator sees a fresh-install
+  Setup Checklist for a project with hundreds of tasks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [upstream-pickup, T-3047-triage]
 components: []
 related_tasks: [T-3047]
@@ -22,8 +27,8 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:32:12Z
-last_update: 2026-08-16T22:32:12Z
-date_finished: null
+last_update: 2026-08-16T22:46:35Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +39,77 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-16T22:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3054: watchtower.sh silently falls PROJECT_ROOT back to FRAMEWORK_ROOT, serving the wrong project
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filed from T-3047 triage M-26 (ring20-dashboard P-011, 2026-06-13 — unread for two
+months). `bin/watchtower.sh:208` reads `export PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"`
+with no die and no warning: a caller that forgets to export `PROJECT_ROOT` gets Flask
+serving the framework's own `.tasks/` and `.context/`, so the operator sees a
+fresh-install Setup Checklist for a project holding hundreds of tasks.
+
+What makes it a *false green* rather than a plain bug is the second half. The identity
+check that exists to catch exactly this — `lib/watchtower.sh` `_watchtower_identity_matches`
+— compares the served `project_root` against `"${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}"`,
+i.e. the same fallback expression. A misconfigured instance therefore matches *itself*
+and passes `fw doctor`. The check cannot fail in the one situation it was written for.
+
+This is the same shape as T-3051 and as the port-3000 class in CLAUDE.md: a guard whose
+predicate is derived from the thing it is meant to validate reports green forever.
+
+Scope fence: make the fallback observable and make the identity check independent of
+it. Not in scope: changing how `PROJECT_ROOT` is discovered, or making the fallback
+fatal — an intentional framework-repo-serves-itself run must keep working.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1** When `PROJECT_ROOT` is unset and the fallback fires, `bin/watchtower.sh`
+  emits a clearly-worded warning naming both the value used and the fact that it was a
+  fallback. Silent substitution is the defect; the fallback itself is not.
+- [x] **A2** `_watchtower_identity_matches` no longer derives its expected value from
+  the same `${PROJECT_ROOT:-$FRAMEWORK_ROOT}` expression, so a fallback-serving instance
+  is *detectable* rather than self-matching.
+- [x] **A3** A regression test drives the real fallback path with `PROJECT_ROOT` unset
+  and asserts the warning appears. It must be observed red against the current silent
+  form — a test that only proves the warning exists when the variable is set proves
+  nothing.
+- [x] **A4** A regression test asserts the identity check returns *non-matching* for an
+  instance serving `FRAMEWORK_ROOT` while a distinct `PROJECT_ROOT` is configured — the
+  case that previously self-matched.
+- [x] **A5** The intentional case still works: serving the framework repo itself with
+  `PROJECT_ROOT` explicitly set to `FRAMEWORK_ROOT` produces no warning and matches.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -141,6 +203,19 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# A1-A5 — the regression suite, including the silent-predecessor mutation (test 2)
+out=$(bats tests/unit/t3054_watchtower_root_fallback.bats 2>&1); echo "$out" | grep -q '^ok 7 ' && ! echo "$out" | grep -q '^not ok'
+
+# A2 — the inline fallback expression is gone from both identity sites
+! grep -q 'PROJECT_ROOT:-${FRAMEWORK_ROOT:-}' lib/watchtower.sh
+test "$(grep -c '_our_root=$(_watchtower_our_root)' lib/watchtower.sh)" -eq 2
+grep -q 'PROJECT_ROOT="$(_watchtower_our_root)"' bin/watchtower.sh
+
+# both scripts parse, and URL resolution still works against the live instance
+bash -n bin/watchtower.sh && bash -n lib/watchtower.sh
+bin/fw watchtower url > /tmp/.t3054url 2>&1 && grep -qE '^https?://' /tmp/.t3054url
+curl -sf "$(bin/fw watchtower url)/" > /dev/null
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -156,6 +231,32 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** an operator running Watchtower without exporting `PROJECT_ROOT` saw a
+fresh-install Setup Checklist for a project holding hundreds of tasks — Flask was
+serving the framework's own empty `.tasks/` and `.context/`. Reported by
+ring20-dashboard as P-011 on 2026-06-13; unread for two months.
+
+**Root cause:** `bin/watchtower.sh:208` substituted `FRAMEWORK_ROOT` for an unset
+`PROJECT_ROOT` with no warning, and `_watchtower_identity_matches` computed "our root"
+with the *same* `${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}` expression. The server and its
+validator therefore agreed by construction.
+
+**Why structurally allowed:** the identity handshake (T-1803) was built to catch a
+wrong-project instance, and it is the reason nobody looked again. But a predicate
+derived from the value it is meant to validate cannot return false — the check passed
+on every misconfigured instance, which is indistinguishable from there being no
+misconfigured instances. Same class as the port-3000 false green in CLAUDE.md and as
+T-3051's exec-bit gate: the failure mode is a guard that reports green rather than a
+guard that is missing, so nothing ever prompts an audit.
+
+**Prevention:** one shared resolver, `_watchtower_our_root`, is now the only place the
+fallback fires, and it warns on stderr naming both the root and the fact that it was a
+fallback. `tests/unit/t3054_watchtower_root_fallback.bats` exercises the unset case —
+the only one that could ever have failed — and its second test runs the pre-fix
+expression on the same input to prove it was silent, so the warning is pinned as
+attributable to the fix. Test 7 stands up a server answering with FRAMEWORK_ROOT while
+PROJECT_ROOT is set elsewhere and asserts the identity check now reports non-matching.
 
 ## Evolution
 
@@ -237,3 +338,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3054-watchtowersh-silently-falls-projectroot-.md
 - **Context:** Initial task creation
+
+### 2026-08-16T22:46:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
