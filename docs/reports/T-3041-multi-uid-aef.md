@@ -306,7 +306,7 @@ Three findings change more than the count:
    before any de-rooting work starts, not after.
 
 2. **One of the 27 is a live single-uid bug and does not belong to this inception
-   at all.** `lib/spawn.py:231-254` (`stamp_outcome`) reads all of
+   at all.** `lib/spawn.py:216-258` (`update_outcome_row`) reads all of
    `dispatches.jsonl` and `os.replace`s the whole file. A row appended by
    `lib/resolver.py:813` in that window is **erased**, not un-updated — violating
    the invariant `lib/outcome.py:177` documents and depends on. The framework runs
@@ -420,7 +420,7 @@ single uid and get worse the longer they sit:
 - **Amend the ~24 `L-493 class` comments** to say *crash-atomic; NOT
   concurrency-safe* (OBS-301). This is nearly free and it is the difference
   between the 27-site sweep being done correctly and being done by grep.
-- **Fix `lib/spawn.py:231-254`** (OBS-300) — it is erasing dispatch rows now, in
+- **Fix `lib/spawn.py:216-258`** (OBS-300) — it is erasing dispatch rows now, in
   the ledger this framework's own dispatch guidance is measured from. It is not a
   de-rooting task and should not wait for one.
 
