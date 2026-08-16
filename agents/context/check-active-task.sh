@@ -31,7 +31,25 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 fw_hook_crash_trap "check-active-task"
-FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
+
+# T-3038 (OBS-291): resolve focus through the shared helper so this gate reads
+# the same file `fw context focus` wrote. Under FW_SESSION_SCOPED_FOCUS=1 that is
+# a session-local focus.<key>.yaml; otherwise the shared focus.yaml, unchanged.
+#
+# The READER falls back to the shared file when the scoped one does not exist yet
+# — and that fallback is deliberate, not defensive padding. A dispatched worker
+# that never calls `fw work-on` should still be governed by the parent's active
+# task rather than being refused for having no focus of its own. Inheriting is
+# safe (read-only on the shared file); only WRITING it was ever the hijack.
+_resolve_focus_file() {
+    local f
+    f=$(fw_focus_file "$PROJECT_ROOT")
+    if [ ! -f "$f" ] && [ -f "$PROJECT_ROOT/.context/working/focus.yaml" ]; then
+        f="$PROJECT_ROOT/.context/working/focus.yaml"
+    fi
+    printf '%s\n' "$f"
+}
+FOCUS_FILE=$(_resolve_focus_file)
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
@@ -54,7 +72,7 @@ except:
 # the original inline block so every hook shares one implementation). No-op for
 # non-worktree sessions. Recompute FOCUS_FILE after, since it caches PROJECT_ROOT.
 fw_reanchor_from_hook_stdin "$INPUT"
-FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
+FOCUS_FILE=$(_resolve_focus_file)   # T-3038: re-resolve, PROJECT_ROOT just moved
 
 # --- Drift-target extraction (T-1730; hoisted out of the gate by T-2880) ---
 # Answers ONE purely syntactic question: does this command name a task?

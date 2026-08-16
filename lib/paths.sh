@@ -142,6 +142,57 @@ except Exception:
     fw_reanchor_from_cwd "$cwd"
 }
 
+# T-3038 (OBS-291): resolve the focus file for THIS session.
+#
+# Focus was per-project global state: one `.context/working/focus.yaml` shared by
+# the parent session and every worker it dispatches. That is an unavoidable
+# converging write that no task declares as a component, so `fw write-set check`
+# returns rc=2 (undecidable) for every pair — the disjointness check cannot see it.
+#
+# The failure is not a lost write, it is a LOCKOUT. `fw context focus` stamps
+# `focus_session` alongside `current_task`, and check-active-task.sh:448 blocks
+# when that stamp does not match the running session. So a dispatched worker
+# calling `fw work-on` flips the shared file to its own task and its own session
+# id, and the PARENT is then refused on every Write AND every Bash — including
+# read-only ls/cat/grep (the G-078 class). The parent is locked out of its own
+# unrelated work by a worker it spawned. Recovery (`fw context focus T-PARENT`)
+# is racy: the next `fw work-on` in any worker re-hijacks it.
+#
+# The fix is to give workers their own file. When FW_SESSION_SCOPED_FOCUS=1, focus
+# reads and writes go to `focus.<key>.yaml` and the shared file is never touched,
+# so the parent's task and session stamp survive untouched.
+#
+# The key must be stable for the worker's whole lifetime and distinct per worker.
+# Preference order, first non-empty wins:
+#   FW_FOCUS_SESSION_KEY  explicit override; what `fw termlink dispatch` exports
+#                         (the worker name, which is unique per dispatch)
+#   TERMLINK_SESSION      set by TermLink itself when a session owns the shell
+#   PPID                  last-resort fallback — correct per-process, but not
+#                         stable if the parent shell is replaced, hence last
+#
+# Default (unset/0) returns the shared path verbatim: existing single-session
+# behaviour is unchanged, which is what keeps this safe to land without migration.
+#
+# Usage: focus_file=$(fw_focus_file "$PROJECT_ROOT")
+fw_focus_file() {
+    local root="${1:-$PROJECT_ROOT}"
+    local dir="$root/.context/working"
+
+    if [ "${FW_SESSION_SCOPED_FOCUS:-0}" != "1" ]; then
+        printf '%s\n' "$dir/focus.yaml"
+        return 0
+    fi
+
+    local key="${FW_FOCUS_SESSION_KEY:-${TERMLINK_SESSION:-$PPID}}"
+    # Sanitize: the key lands in a filename and worker names are free-form
+    # (--name is caller-supplied). Dropping '/' alone would already contain the
+    # path, but '.' is excluded too so a key like '../x' cannot produce a
+    # filename containing '..' — there is no reason to carry traversal-shaped
+    # text into a path, even a contained one.
+    key=$(printf '%s' "$key" | tr -c 'a-zA-Z0-9_-' '-')
+    printf '%s\n' "$dir/focus.$key.yaml"
+}
+
 # T-2375: Claude Code transcript project-dir-name sanitizer.
 # Claude Code encodes a session's cwd into ~/.claude/projects/<name> by replacing
 # EVERY non-alphanumeric character with '-' (so both '/' and '.' become '-').

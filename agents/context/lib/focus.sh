@@ -5,7 +5,19 @@
 do_focus() {
     ensure_context_dirs
 
-    local focus_file="$CONTEXT_DIR/working/focus.yaml"
+    # T-3038 (OBS-291): under FW_SESSION_SCOPED_FOCUS=1 this resolves to a
+    # session-local focus.<key>.yaml so a dispatched worker cannot overwrite the
+    # parent's task + focus_session stamp and lock it out of its own work.
+    # Unset/0 returns the shared focus.yaml — default behaviour is unchanged.
+    # The reader (check-active-task.sh) calls the SAME helper; keeping one
+    # implementation is what makes producer/consumer parity structural (L-399)
+    # rather than a convention two files are trusted to remember.
+    local focus_file
+    if declare -F fw_focus_file >/dev/null 2>&1; then
+        focus_file=$(fw_focus_file "$PROJECT_ROOT")
+    else
+        focus_file="$CONTEXT_DIR/working/focus.yaml"
+    fi
 
     if [ $# -eq 0 ]; then
         # Show current focus

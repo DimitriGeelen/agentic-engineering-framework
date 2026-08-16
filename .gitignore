@@ -109,3 +109,7 @@ datetime
 
 # T-2734: generated at test time by tests/unit/test_bvp_cli_*.py (tmp.write_text)
 tests/unit/_bvp_cli_imported*.py
+
+# T-3038 (OBS-291): per-worker session-scoped focus files. Ephemeral worker
+# state — the shared .context/working/focus.yaml stays tracked, these do not.
+.context/working/focus.*.yaml
