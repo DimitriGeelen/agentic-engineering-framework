@@ -16,7 +16,7 @@ components: [C-004, agents/termlink/bvp-estimator/estimator.py,
 related_tasks: [T-2157, T-2165, T-2166, T-1922, T-1923, T-1935]
 arc_id: value-prioritisation
 created: 2026-06-01T20:28:50Z
-last_update: '2026-06-11T22:24:10Z'
+last_update: '2026-08-16T22:24:55Z'
 date_finished: 2026-06-09T22:45:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,6 +71,25 @@ bvp_scores_proposed:
       D4=2 (body:env-class-handled); F-RECALL=5 
       (body/components:retrieval-layer); F-ORCH=5 (body:substrate-expand); F3=1 
       (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 4
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 5
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 1
+      F2: 0
+    rationale: estimator-fidelity=4 (body:framework-estimator-fidelity-audit); 
+      D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=5 (body/components:retrieval-layer); 
+      F-AUTONOMY=0 (no-signal); F3=1 (body/components:prompt-incidental); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:

@@ -2,12 +2,18 @@
 id: T-2472
 name: "fw integrate run — broaden taxonomy to live working-dir transients"
 description: >
-  T-2471 follow-up. fw integrate run MVP refuses on a busy real tree because many transient/governance files are not in the T-2397 section-3.2 taxonomy (classify_path), defaulting to needs-human real-code: working focus.yaml, session.yaml, .session-metrics.yaml, watchtower.log, watchtower.pid, .gate-bypass-log.yaml, project decisions.yaml, VERSION. Add per-class strategies (regenerate, take-newest, append-union) so merge-back works on a live tree. Touches shared classify_path so must keep tests/unit/t2399_integrate_check.bats green and extend it. See T-2471 Evolution.
+  T-2471 follow-up. fw integrate run MVP refuses on a busy real tree because many
+  transient/governance files are not in the T-2397 section-3.2 taxonomy (classify_path),
+  defaulting to needs-human real-code: working focus.yaml, session.yaml, .session-metrics.yaml,
+  watchtower.log, watchtower.pid, .gate-bypass-log.yaml, project decisions.yaml, VERSION.
+  Add per-class strategies (regenerate, take-newest, append-union) so merge-back works
+  on a live tree. Touches shared classify_path so must keep tests/unit/t2399_integrate_check.bats
+  green and extend it. See T-2471 Evolution.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [lib/integrate.py, tests/unit/t2399_integrate_check.bats]
 related_tasks: []
@@ -22,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T20:56:42Z
-last_update: 2026-06-24T00:10:16Z
+last_update: '2026-08-16T22:25:07Z'
 date_finished: 2026-06-24T00:10:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +40,24 @@ date_finished: 2026-06-24T00:10:16Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2472: fw integrate run — broaden taxonomy to live working-dir transients

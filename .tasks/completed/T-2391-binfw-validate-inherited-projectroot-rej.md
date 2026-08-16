@@ -1,13 +1,24 @@
 ---
 id: T-2391
-name: "bin/fw: validate inherited PROJECT_ROOT; reject stale /root from tmux-server env"
+name: "bin/fw: validate inherited PROJECT_ROOT; reject stale /root from tmux-server
+  env"
 description: >
-  Bug A from T-2390 re-drive 2. The tmux-server daemon (PID 6177, child of init) carries a stale PROJECT_ROOT=/root in its env; every 'termlink spawn --backend tmux' session inherits it. bin/fw resolves PROJECT_ROOT only when empty (if [ -z ]), so it uses the poison verbatim and find_project_root never runs. This blinds budget-gate/checkpoint in spawned sessions (arc-012 loop never arms). The T-2390 CLAUDE_PROJECT_DIR-preference fix is dead code (inside the [ -z ] guard; CLAUDE_PROJECT_DIR also unset). Fix: validate an inherited PROJECT_ROOT and re-resolve when stale (PWD not under it / equals $HOME). High blast-radius (every fw invocation) -> needs careful design + bats. Validity criterion is non-trivial: framework repo has no .framework.yaml; /root may have stray .tasks. See T-2390 ## Re-drive 2 Bug A. Cheaper sibling mitigation: restart tmux server with clean env.
+  Bug A from T-2390 re-drive 2. The tmux-server daemon (PID 6177, child of init) carries
+  a stale PROJECT_ROOT=/root in its env; every 'termlink spawn --backend tmux' session
+  inherits it. bin/fw resolves PROJECT_ROOT only when empty (if [ -z ]), so it uses
+  the poison verbatim and find_project_root never runs. This blinds budget-gate/checkpoint
+  in spawned sessions (arc-012 loop never arms). The T-2390 CLAUDE_PROJECT_DIR-preference
+  fix is dead code (inside the [ -z ] guard; CLAUDE_PROJECT_DIR also unset). Fix:
+  validate an inherited PROJECT_ROOT and re-resolve when stale (PWD not under it /
+  equals $HOME). High blast-radius (every fw invocation) -> needs careful design +
+  bats. Validity criterion is non-trivial: framework repo has no .framework.yaml;
+  /root may have stray .tasks. See T-2390 ## Re-drive 2 Bug A. Cheaper sibling mitigation:
+  restart tmux server with clean env.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [bin/fw, tests/unit/t2391_project_root_inherited_stale.bats]
 related_tasks: []
@@ -22,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T10:01:16Z
-last_update: 2026-06-14T15:45:43Z
+last_update: '2026-08-16T22:25:04Z'
 date_finished: 2026-06-14T15:45:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +45,23 @@ date_finished: 2026-06-14T15:45:43Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2391: bin/fw: validate inherited PROJECT_ROOT; reject stale /root from tmux-server env

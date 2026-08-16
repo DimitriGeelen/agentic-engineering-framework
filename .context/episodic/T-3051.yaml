@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3051: pickup TermLink bridge is gated on an exec bit the repo does not track — silent delivery loss
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T22:42:00Z
+# ============================================================================
+
+task_id: T-3051
+task_name: "pickup TermLink bridge is gated on an exec bit the repo does not track — silent delivery loss"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:30:39Z
+completed: 2026-08-16T22:41:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-17T00:41:43+02:00
+last_commit: 2026-08-17T00:41:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  three helpers were gated on an exec bit git recorded as 644
+
+# Key outcomes
+outcomes:
+  - '**A1** The gate no longer depends on the exec bit: `lib/pickup.sh` invokes the'
+  - '**A2** `git ls-files -s lib/pickup-channel-bridge.sh` reports mode `100755`, so a'
+  - '**A3** A regression test asserts the bridge is reached when the exec bit is'
+  - '**A4** No sibling instance of the same class is left behind: every `[ -x ]` gate in'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/handover/discard-manifest.sh'
+  - 'agents/handover/handover.sh'
+  - 'agents/resume/resume.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'agents/termlink/bvp-estimator/bvp-estimator.sh'
+  - '.fabric/components/tests-unit-t3051_exec_bit_gates.yaml'
+  - 'lib/pickup-channel-bridge.sh'
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-3051-pickup-termlink-bridge-is-gated-on-an-ex.md'
+  - '.tasks/completed/T-3047-triage-the-39-recovered-upstream-message.md'
+  - 'tests/unit/t3051_exec_bit_gates.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T00:41:43'
+    action: 'T-3051: three helpers were gated on an exec bit git recorded as 644'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upstream-pickup, T-3047-triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 11
+  lines_added: 231
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3051-pickup-termlink-bridge-is-gated-on-an-ex.md
+generated_by: context-agent-hybrid

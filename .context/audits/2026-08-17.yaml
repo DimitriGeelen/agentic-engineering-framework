@@ -1,0 +1,15 @@
+# Audit Results - 2026-08-17-0133
+timestamp: 2026-08-16T23:33:12Z
+sections: "traceability"
+summary:
+  pass: 2
+  warn: 1
+  fail: 0
+findings:
+  - level: PASS
+    check: "Git traceability: 99% (8254/8302 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+  - level: PASS
+    check: "All commit task refs resolve to actual tasks"

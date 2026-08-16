@@ -16,7 +16,7 @@ components: [agents/task-create/update-task.sh,
       tests/unit/update_task_yaml_components_emit.bats]
 related_tasks: []
 created: 2026-04-25T19:21:27Z
-last_update: '2026-06-11T22:23:49Z'
+last_update: '2026-08-16T22:24:33Z'
 date_finished: 2026-04-25T19:27:23Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:49Z'
@@ -34,6 +34,23 @@ bvp_scores_proposed:
     rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
       (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
       F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---

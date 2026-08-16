@@ -15,7 +15,7 @@ components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py]
 related_tasks: ["T-1812", "T-1813", "T-1815"]
 arc_id: dispatch-safety
 created: 2026-05-13T20:15:46Z
-last_update: '2026-06-11T22:23:59Z'
+last_update: '2026-08-16T22:24:45Z'
 date_finished: 2026-05-13T20:28:54Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:59Z'
@@ -33,6 +33,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
       (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
       F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

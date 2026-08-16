@@ -19,7 +19,7 @@ components: [agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh,
 related_tasks: [T-1915, T-1916, T-1922, T-1923, T-1928]
 arc_id: value-prioritisation
 created: 2026-05-19T18:36:52Z
-last_update: '2026-06-11T22:23:26Z'
+last_update: '2026-08-16T22:24:01Z'
 date_finished: 2026-05-20T18:17:34Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:45:02Z'
@@ -61,6 +61,25 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
       (no-signal); F-ORCH=2 (components:substrate-edit); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 3
+      D1: 3
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: estimator-fidelity=3 (components:bvp-estimator-code); D1=3 
+      (body:test-or-audit-check); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T19:08:39Z'

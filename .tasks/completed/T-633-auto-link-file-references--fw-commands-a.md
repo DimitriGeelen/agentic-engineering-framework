@@ -13,7 +13,7 @@ tags: []
 components: [bin/fw, lib/inception.sh, web/blueprints/docs.py]
 related_tasks: []
 created: 2026-03-26T22:37:19Z
-last_update: '2026-06-11T22:24:26Z'
+last_update: '2026-08-16T22:25:35Z'
 date_finished: 2026-03-27T06:47:34Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:26Z'
@@ -30,6 +30,22 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
       F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

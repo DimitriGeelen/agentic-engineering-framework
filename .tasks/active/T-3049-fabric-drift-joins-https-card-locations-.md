@@ -1,8 +1,14 @@
 ---
 id: T-3049
-name: "fabric drift joins https:// card locations onto PROJECT_ROOT and reports them file-missing"
+name: "fabric drift joins https:// card locations onto PROJECT_ROOT and reports them
+  file-missing"
 description: >
-  From T-3047 triage M-06 (ring20-management, 2026-05-14). agents/fabric/lib/drift.sh:58-64 has only an absolute-path branch; any non-/ location becomes $PROJECT_ROOT/$loc and fails [ ! -f ]. grep -c http agents/fabric/lib/drift.sh returns 0 — no URL skip exists. saas-account cards with URL locations are permanently flagged. The T-2519 gitignore escape at drift.sh:76 does not catch it. Part 2 of the original report (depends_on under .agentic-framework/) is already fixed.
+  From T-3047 triage M-06 (ring20-management, 2026-05-14). agents/fabric/lib/drift.sh:58-64
+  has only an absolute-path branch; any non-/ location becomes $PROJECT_ROOT/$loc
+  and fails [ ! -f ]. grep -c http agents/fabric/lib/drift.sh returns 0 — no URL skip
+  exists. saas-account cards with URL locations are permanently flagged. The T-2519
+  gitignore escape at drift.sh:76 does not catch it. Part 2 of the original report
+  (depends_on under .agentic-framework/) is already fixed.
 
 status: captured
 workflow_type: build
@@ -22,8 +28,8 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:29:29Z
-last_update: 2026-08-16T22:29:29Z
-date_finished: null
+last_update: '2026-08-16T22:45:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +40,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-16T22:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3049: fabric drift joins https:// card locations onto PROJECT_ROOT and reports them file-missing

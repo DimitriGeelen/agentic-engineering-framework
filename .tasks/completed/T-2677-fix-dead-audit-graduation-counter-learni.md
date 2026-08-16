@@ -2,12 +2,18 @@
 id: T-2677
 name: "fix dead audit graduation counter (learnings >=20 branch never fires)"
 description: >
-  agents/audit/audit.sh:2720 counts learnings with a fixed-shape grep that returns 0 against the real learnings.yaml (column-0 list items dominant, 315 entries) — the >=20 threshold branch that runs 'fw promote suggest' has never fired; audit forever reports '0 learnings'. Same file-shape-blindness family as T-2676/T-2672 but a different site+mechanism (count-then-threshold vs extract-values) — filed separately per one-bug-one-task. G-005's trigger_check enshrines the same stale pattern. Surfaced by T-2667 knowledge-leveling baseline.
+  agents/audit/audit.sh:2720 counts learnings with a fixed-shape grep that returns
+  0 against the real learnings.yaml (column-0 list items dominant, 315 entries) —
+  the >=20 threshold branch that runs 'fw promote suggest' has never fired; audit
+  forever reports '0 learnings'. Same file-shape-blindness family as T-2676/T-2672
+  but a different site+mechanism (count-then-threshold vs extract-values) — filed
+  separately per one-bug-one-task. G-005's trigger_check enshrines the same stale
+  pattern. Surfaced by T-2667 knowledge-leveling baseline.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-29T12:00:15Z
-last_update: 2026-07-29T12:07:13Z
+last_update: '2026-08-16T22:25:13Z'
 date_finished: 2026-07-29T12:07:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +40,24 @@ date_finished: 2026-07-29T12:07:13Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2677: fix dead audit graduation counter (learnings >=20 branch never fires)

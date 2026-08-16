@@ -14,7 +14,7 @@ components: []
 related_tasks: [T-1792, T-1794]
 arc_id: orchestrator-rethink
 created: 2026-05-12T21:28:40Z
-last_update: '2026-06-11T22:23:25Z'
+last_update: '2026-08-16T22:23:59Z'
 date_finished: 2026-05-12T21:31:13Z
 bvp_scores_proposed:
   - ts: '2026-05-28T22:54:09Z'
@@ -45,6 +45,23 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

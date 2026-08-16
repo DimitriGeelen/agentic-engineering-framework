@@ -14,7 +14,7 @@ tags: [termlink, governance, mcp]
 components: [agents/context/lib/focus.sh, agents/termlink/termlink.sh]
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:10Z
-last_update: '2026-06-11T22:23:38Z'
+last_update: '2026-08-16T22:24:21Z'
 date_finished: 2026-04-24T09:15:08Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:38Z'
@@ -34,6 +34,23 @@ bvp_scores_proposed:
       (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F3=0 
       (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 1
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=1 
+      (body:error-msg-improved); D4=3 (body:portability-abstraction); F-RECALL=2
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

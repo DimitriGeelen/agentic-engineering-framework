@@ -5,18 +5,36 @@ description: >
   Batched structural remediation of the four correctness defects found in the T-2441
   live onboarding dogfood: F4 invalid greenfield value-drivers.yaml, F5 session-init
   fails on happy path, F9 Watchtower false-positive health, F10 fw serve misidentifies
-  the project. Inception scopes/sequences the fix; F4 is the cleanest first build slice.
+  the project. Inception scopes/sequences the fix; F4 is the cleanest first build
+  slice.
 status: work-completed
 workflow_type: inception
 target_blast_radius: 4
 voi_score: 0.7
 owner: agent
-horizon: null
+horizon:
 tags: [onboarding, remediation, dogfood, high-prio]
 related_tasks: [T-2441]
 created: 2026-06-21T07:30:00Z
-last_update: 2026-07-06T11:54:51Z
+last_update: '2026-08-16T22:25:06Z'
 date_finished: 2026-07-06T11:54:51Z
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 4
+      F-RECALL: 4
+      F-AUTONOMY: 4
+      F3: 4
+      F1: 4
+      F2: 4
+    rationale: D1=4 (no-signal); D2=4 (no-signal); D3=4 (no-signal); D4=4 
+      (no-signal); F-RECALL=4 (no-signal); F-AUTONOMY=4 (no-signal); F3=4 
+      (no-signal); F1=4 (no-signal); F2=4 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2442: Remediate greenfield-onboarding bug-class (dogfood F4/F5/F9/F10)

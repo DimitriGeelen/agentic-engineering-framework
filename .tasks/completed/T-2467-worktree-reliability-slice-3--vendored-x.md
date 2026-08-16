@@ -1,15 +1,24 @@
 ---
 id: T-2467
-name: "Worktree reliability slice 3 — vendored +x preservation + reassess T-2054/T-2462 safe-list exemptions"
+name: "Worktree reliability slice 3 — vendored +x preservation + reassess T-2054/T-2462
+  safe-list exemptions"
 description: >
-  Preserve executable bit on vendored .agentic-framework/agents/**/*.sh (bare fw shim hits Permission denied). Reassess whether the T-2054/T-2462 git push/fetch/commit safe-list exemptions are still needed once slice-1 central resolver lands (IW-3, deferred). T-2464 GO Candidate C slice 3.
+  Preserve executable bit on vendored .agentic-framework/agents/**/*.sh (bare fw shim
+  hits Permission denied). Reassess whether the T-2054/T-2462 git push/fetch/commit
+  safe-list exemptions are still needed once slice-1 central resolver lands (IW-3,
+  deferred). T-2464 GO Candidate C slice 3.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/context/check-active-task.sh, agents/context/check-visual-verification.sh, lib/paths.sh, tests/unit/check_active_task_switch_focus.bats, tests/unit/check_inception_recommendation.bats, tests/unit/t2465_reanchor_from_cwd.bats, tests/unit/tier0_hash_normalization.bats]
+components: [agents/context/check-active-task.sh, 
+      agents/context/check-visual-verification.sh, lib/paths.sh, 
+      tests/unit/check_active_task_switch_focus.bats, 
+      tests/unit/check_inception_recommendation.bats, 
+      tests/unit/t2465_reanchor_from_cwd.bats, 
+      tests/unit/tier0_hash_normalization.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T13:09:08Z
-last_update: 2026-06-23T18:30:29Z
+last_update: '2026-08-16T22:25:07Z'
 date_finished: 2026-06-23T18:30:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +43,25 @@ date_finished: 2026-06-23T18:30:29Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2467: Worktree reliability slice 3 — eliminate the hook-test +x dependency (live system is +x-independent)

@@ -34659,3 +34659,183 @@ payload:
   pattern_id: human-ac-mechanical-signal
   ac_index: 3
   ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:36:26Z'
+scan_id: R-99f3440f
+task_id: T-3047
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:36:26Z'
+scan_id: R-99f3440f
+task_id: T-3047
+payload:
+  task_file: .tasks/active/T-3047-triage-the-39-recovered-upstream-message.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:36:33Z'
+scan_id: R-a06090bc
+task_id: T-3047
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:36:33Z'
+scan_id: R-a06090bc
+task_id: T-3047
+payload:
+  task_file: .tasks/active/T-3047-triage-the-39-recovered-upstream-message.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:41:51Z'
+scan_id: R-f397742c
+task_id: T-3051
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:41:51Z'
+scan_id: R-f397742c
+task_id: T-3051
+payload:
+  task_file: .tasks/active/T-3051-pickup-termlink-bridge-is-gated-on-an-ex.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:41:53Z'
+scan_id: R-0350b86b
+task_id: T-3051
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:41:53Z'
+scan_id: R-0350b86b
+task_id: T-3051
+payload:
+  task_file: .tasks/active/T-3051-pickup-termlink-bridge-is-gated-on-an-ex.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:45:29Z'
+scan_id: R-052a66f4
+task_id: T-3048
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:45:29Z'
+scan_id: R-052a66f4
+task_id: T-3048
+payload:
+  task_file: .tasks/active/T-3048-fw-test-unitall-runs-bats-on-testsunit-w.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:46:14Z'
+scan_id: R-171ec9b3
+task_id: T-3048
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:46:14Z'
+scan_id: R-171ec9b3
+task_id: T-3048
+payload:
+  task_file: .tasks/active/T-3048-fw-test-unitall-runs-bats-on-testsunit-w.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:54:37Z'
+scan_id: R-09b0e47f
+task_id: T-3054
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:54:37Z'
+scan_id: R-09b0e47f
+task_id: T-3054
+payload:
+  task_file: .tasks/active/T-3054-watchtowersh-silently-falls-projectroot-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T22:54:42Z'
+scan_id: R-3e24a4f6
+task_id: T-3054
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T22:54:42Z'
+scan_id: R-3e24a4f6
+task_id: T-3054
+payload:
+  task_file: .tasks/active/T-3054-watchtowersh-silently-falls-projectroot-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T23:33:00Z'
+scan_id: R-e3a06b0c
+task_id: T-3053
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T23:33:00Z'
+scan_id: R-e3a06b0c
+task_id: T-3053
+payload:
+  task_file: .tasks/active/T-3053-audit-traceability-reads-only-the-first-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T23:34:29Z'
+scan_id: R-64a9e84d
+task_id: T-3053
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T23:34:29Z'
+scan_id: R-64a9e84d
+task_id: T-3053
+payload:
+  task_file: .tasks/active/T-3053-audit-traceability-reads-only-the-first-.md

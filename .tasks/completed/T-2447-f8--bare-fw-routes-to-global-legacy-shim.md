@@ -1,18 +1,20 @@
 ---
 id: T-2447
-name: "F8 — bare fw routes to global legacy shim instead of consumer-local fw (T-1257 hazard)"
+name: "F8 — bare fw routes to global legacy shim instead of consumer-local fw (T-1257
+  hazard)"
 description: >
-  Inception: F8 — bare fw routes to global legacy shim instead of consumer-local fw (T-1257 hazard)
+  Inception: F8 — bare fw routes to global legacy shim instead of consumer-local fw
+  (T-1257 hazard)
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-21T10:39:29Z
-last_update: 2026-06-21T11:17:49Z
+last_update: '2026-08-16T22:25:06Z'
 date_finished: 2026-06-21T11:17:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -22,6 +24,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2447: F8 — bare fw routes to global legacy shim instead of consumer-local fw (T-1257 hazard)

@@ -99,9 +99,21 @@ datetime
 .context/working/*.db
 .context/working/*.db-shm
 .context/working/*.db-wal
+.context/working/*.db-journal
 .context/working/*.db.manifest.json
 .context/working/*.db.reindex.lock
 .context/working/*.db.reindex.resume
+# T-3058: the reindex SCRATCH copy and its journal. `.reindex.resume` above was
+# already here, and `web/embeddings.py:1092` moves the scratch into that exact
+# path — the two are the same file at different moments of one run, and only one
+# of them was ignored. The scratch is not a leak: a bootstrap resumes across
+# hourly cron firings for 29-58h (OBS-258), so it sits in .context/working/ for
+# days, at index size (1.7GB here), inside the directory every handover commits
+# from. Staged once by `git add -A .context`, refused by the T-1845 large-file
+# guard. Kept narrow — `.db.reindex.*` would work but the T-2990 note above is
+# about ignore rules that blind git-status, so these name only what they cover.
+.context/working/*.db.reindex.*.tmp
+.context/working/*.db.reindex.*.tmp-journal
 .context/working/.agent-dispatch-counter
 
 # Child-2 write-out staging proposals (T-2539) — generated, not tasks; regenerable via `fw bpmn compile --write`

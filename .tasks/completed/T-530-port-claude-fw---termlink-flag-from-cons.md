@@ -16,7 +16,7 @@ tags: []
 components: [bin/claude-fw]
 related_tasks: []
 created: 2026-03-18T08:31:44Z
-last_update: '2026-06-11T22:24:24Z'
+last_update: '2026-08-16T22:25:33Z'
 date_finished: 2026-03-23T09:52:05Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:24Z'
@@ -35,6 +35,23 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=1 
       (body:hand-wired-dispatch); F3=1 (body/components:prompt-incidental); F1=0
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

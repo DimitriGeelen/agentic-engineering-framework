@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3054: watchtower.sh silently falls PROJECT_ROOT back to FRAMEWORK_ROOT, serving the wrong project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T22:54:48Z
+# ============================================================================
+
+task_id: T-3054
+task_name: "watchtower.sh silently falls PROJECT_ROOT back to FRAMEWORK_ROOT, serving the wrong project"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:32:12Z
+completed: 2026-08-16T22:54:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-17T00:54:18+02:00
+last_commit: 2026-08-17T00:54:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the identity check computed 'ours' with the same fallback the server used
+
+# Key outcomes
+outcomes:
+  - '**A1** When `PROJECT_ROOT` is unset and the fallback fires, `bin/watchtower.sh`'
+  - '**A2** `_watchtower_identity_matches` no longer derives its expected value from'
+  - '**A3** A regression test drives the real fallback path with `PROJECT_ROOT` unset'
+  - '**A4** A regression test asserts the identity check returns *non-matching* for an'
+  - '**A5** The intentional case still works: serving the framework repo itself with'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/watchtower.sh'
+  - '.fabric/components/tests-unit-t3054_watchtower_root_fallback.yaml'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-3054-watchtowersh-silently-falls-projectroot-.md'
+  - '.tasks/completed/T-3048-fw-test-unitall-runs-bats-on-testsunit-w.md'
+  - 'tests/unit/t3054_watchtower_root_fallback.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T00:54:18'
+    action: 'T-3054: the identity check computed ''ours'' with the same fallback the server used'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upstream-pickup, T-3047-triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 1
+  files_changed: 9
+  lines_added: 356
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3054-watchtowersh-silently-falls-projectroot-.md
+generated_by: context-agent-hybrid

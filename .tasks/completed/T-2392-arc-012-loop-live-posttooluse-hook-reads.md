@@ -1,15 +1,27 @@
 ---
 id: T-2392
-name: "arc-012 loop: live PostToolUse hook reads 0 tokens despite correct PROJECT_ROOT (transcript_path mismatch)"
+name: "arc-012 loop: live PostToolUse hook reads 0 tokens despite correct PROJECT_ROOT
+  (transcript_path mismatch)"
 description: >
-  Bug B from T-2390 re-drive 2. After forcing PROJECT_ROOT=worktree (Bug A bypassed) the gauge resolves correctly (.tool-counter/.budget-status write to worktree, checkpoint ran 107x) but the loop STILL did not fire: in-hook get_context_tokens returns 0 every check. Gauge logic PROVEN correct (manual hook invocation with same PROJECT_ROOT = 972318 tokens, both stdin and reconstruction paths). Main checkout same HEAD, no local mods, has T-2375+T-2377. So CC passes a valid-but-wrong transcript_path to the live PostToolUse hook, bypassing reconstruction via find_transcript's explicit-path branch (line 72). NOT yet fixable blind. FIRST STEP: instrumented re-drive -- tee the live hook stdin (instrument <worktree>/bin/fw hook dispatcher, which is T-559-allowlisted) and read the captured transcript_path. arc012-livefire-demo worktree is left pre-configured for this. See T-2390 ## Re-drive 2 Bug B.
+  Bug B from T-2390 re-drive 2. After forcing PROJECT_ROOT=worktree (Bug A bypassed)
+  the gauge resolves correctly (.tool-counter/.budget-status write to worktree, checkpoint
+  ran 107x) but the loop STILL did not fire: in-hook get_context_tokens returns 0
+  every check. Gauge logic PROVEN correct (manual hook invocation with same PROJECT_ROOT
+  = 972318 tokens, both stdin and reconstruction paths). Main checkout same HEAD,
+  no local mods, has T-2375+T-2377. So CC passes a valid-but-wrong transcript_path
+  to the live PostToolUse hook, bypassing reconstruction via find_transcript's explicit-path
+  branch (line 72). NOT yet fixable blind. FIRST STEP: instrumented re-drive -- tee
+  the live hook stdin (instrument <worktree>/bin/fw hook dispatcher, which is T-559-allowlisted)
+  and read the captured transcript_path. arc012-livefire-demo worktree is left pre-configured
+  for this. See T-2390 ## Re-drive 2 Bug B.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [C-007, C-008, agents/context/session-metrics.sh, bin/fw, lib/paths.sh, tests/unit/t2391_project_root_inherited_stale.bats]
+components: [C-007, C-008, agents/context/session-metrics.sh, bin/fw, 
+      lib/paths.sh, tests/unit/t2391_project_root_inherited_stale.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T10:01:22Z
-last_update: 2026-06-14T17:28:13Z
+last_update: '2026-08-16T22:25:04Z'
 date_finished: 2026-06-14T17:28:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +46,25 @@ date_finished: 2026-06-14T17:28:13Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2392: arc-012 loop: live PostToolUse hook reads 0 tokens despite correct PROJECT_ROOT (transcript_path mismatch)

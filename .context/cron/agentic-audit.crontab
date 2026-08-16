@@ -9,7 +9,7 @@ PATH=/usr/local/bin:/usr/bin:/bin
 37 4 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" reviewer audit 2>&1 | logger -t agentic-cron
 
 # Structural audits (30 min)
-# PAUSED: */30 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-structural-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron' 2>&1 | logger -t agentic-cron
+*/30 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-structural-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron' 2>&1 | logger -t agentic-cron
 
 # Git traceability + episodic (hourly)
 0 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-traceability-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron' 2>&1 | logger -t agentic-cron

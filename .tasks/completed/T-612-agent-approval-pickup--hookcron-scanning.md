@@ -16,7 +16,7 @@ tags: []
 components: [agents/context/check-tier0.sh, bin/fw]
 related_tasks: [T-608, T-610, T-611]
 created: 2026-03-25T16:51:32Z
-last_update: '2026-06-11T22:24:25Z'
+last_update: '2026-08-16T22:25:35Z'
 date_finished: 2026-03-26T12:30:48Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:25Z'
@@ -34,6 +34,23 @@ bvp_scores_proposed:
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
       D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
       (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 3
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=3 
+      (body:feedback-loop-closed); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

@@ -17,7 +17,7 @@ related_tasks: [T-124, T-108, T-125, T-126, T-127, T-295, T-296, T-297, T-298,
       T-299, T-300, T-301, T-302, T-303, T-304, T-305, T-306, T-307, T-308, 
       T-309, T-310, T-311, T-312]
 created: 2026-03-04T14:23:26Z
-last_update: '2026-06-11T22:24:18Z'
+last_update: '2026-08-16T22:25:23Z'
 date_finished: 2026-03-08T20:49:19Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
@@ -36,6 +36,22 @@ bvp_scores_proposed:
       F2: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---

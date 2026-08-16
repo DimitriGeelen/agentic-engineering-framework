@@ -17,7 +17,7 @@ components: [bin/fw, tests/playwright/test_review_page.py,
       web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T06:53:04Z
-last_update: '2026-06-11T22:23:52Z'
+last_update: '2026-08-16T22:24:37Z'
 date_finished: 2026-04-28T15:23:42Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:52Z'
@@ -35,6 +35,23 @@ bvp_scores_proposed:
     rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

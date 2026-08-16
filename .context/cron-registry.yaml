@@ -16,7 +16,7 @@ jobs:
     structure,compliance,quality,discovery --cron'
   source_file: agentic-audit.crontab
   origin_task: T-184
-  status: paused
+  status: active
   description: Checks task quality, project structure integrity, compliance, and discovery
     patterns every 30 minutes.
 - id: traceability-hourly

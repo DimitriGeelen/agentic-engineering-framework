@@ -29,7 +29,7 @@ components: [agents/mcp/framework_mcp_server.py, agents/mcp/manifest.py, bin/fw,
 related_tasks: [T-2209, T-2256, T-2258, T-2260]
 arc_id: arc-010
 created: 2026-06-08T14:45:31Z
-last_update: '2026-06-11T22:23:33Z'
+last_update: '2026-08-16T22:24:08Z'
 date_finished: 2026-06-08T20:06:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
       (no-signal); D4=3 (body:portability-abstraction); F-RECALL=2 
       (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=3 (body:portability-abstraction); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---

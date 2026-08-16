@@ -14,7 +14,7 @@ components: [C-007, agents/handover/handover.sh,
       agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-03-30T16:28:06Z
-last_update: '2026-06-11T22:24:29Z'
+last_update: '2026-08-16T22:25:39Z'
 date_finished: 2026-03-30T16:31:31Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:29Z'
@@ -32,6 +32,23 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
       (body:portability-abstraction); F-RECALL=1 (body:episodic-only); F-ORCH=2 
       (components:substrate-edit); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=1 (body:episodic-only); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

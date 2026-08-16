@@ -2,12 +2,16 @@
 id: T-2481
 name: "safe zone-3 go-live: land master into MAIN busy checkout without losing transients"
 description: >
-  Operator's git merge to go live on MAIN aborted (transactional, no loss): 16 tracked regenerable transients have local edits + 1 untracked vendored file .agentic-framework/lib/integrate.py block the merge. Diagnose MAIN branch topology (t2417-fw-sessions vs origin/master) and give a safe, copy-pasteable go-live that preserves real state and discards only regenerable churn. Assess whether fw integrate should offer a zone-3 go-live verb.
+  Operator's git merge to go live on MAIN aborted (transactional, no loss): 16 tracked
+  regenerable transients have local edits + 1 untracked vendored file .agentic-framework/lib/integrate.py
+  block the merge. Diagnose MAIN branch topology (t2417-fw-sessions vs origin/master)
+  and give a safe, copy-pasteable go-live that preserves real state and discards only
+  regenerable churn. Assess whether fw integrate should offer a zone-3 go-live verb.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T11:33:59Z
-last_update: 2026-06-24T11:40:58Z
+last_update: '2026-08-16T22:25:07Z'
 date_finished: 2026-06-24T11:40:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +38,24 @@ date_finished: 2026-06-24T11:40:58Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2481: safe zone-3 go-live: land master into MAIN busy checkout without losing transients

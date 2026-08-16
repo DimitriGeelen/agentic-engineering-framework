@@ -17,7 +17,7 @@ tags: []
 components: [agents/git/lib/hooks.sh, agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-02-21T21:48:24Z
-last_update: '2026-06-11T22:24:16Z'
+last_update: '2026-08-16T22:25:03Z'
 date_finished: 2026-02-21T22:10:34Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:16Z'
@@ -34,6 +34,23 @@ bvp_scores_proposed:
       F2: 1
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
       F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801

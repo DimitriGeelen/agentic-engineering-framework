@@ -1,15 +1,24 @@
 ---
 id: T-2468
-name: "Worktree reliability slice 1b — python-side hook root-resolver parity (check-arc-id / check-inception-* read env PROJECT_ROOT)"
+name: "Worktree reliability slice 1b — python-side hook root-resolver parity (check-arc-id
+  / check-inception-* read env PROJECT_ROOT)"
 description: >
-  The bash hooks now share fw_reanchor_from_cwd (T-2465). The python hooks (check-arc-id.py, check-inception-decisions.py, check-inception-recommendation.py, check-inception-schema.py) still read project_root = os.environ['PROJECT_ROOT'] (line 141 in check-arc-id.py) — misanchored to MAIN in worktree sessions, so they check main's .context/arcs / tasks. Add a python-side parity resolver (read stdin cwd → walk up to project root → override env PROJECT_ROOT), wire the 4 hooks, add python/bats tests. T-2464 GO Candidate C, slice 1b.
+  The bash hooks now share fw_reanchor_from_cwd (T-2465). The python hooks (check-arc-id.py,
+  check-inception-decisions.py, check-inception-recommendation.py, check-inception-schema.py)
+  still read project_root = os.environ['PROJECT_ROOT'] (line 141 in check-arc-id.py)
+  — misanchored to MAIN in worktree sessions, so they check main's .context/arcs /
+  tasks. Add a python-side parity resolver (read stdin cwd → walk up to project root
+  → override env PROJECT_ROOT), wire the 4 hooks, add python/bats tests. T-2464 GO
+  Candidate C, slice 1b.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/context/check-active-task.sh, agents/context/check-visual-verification.sh, lib/paths.sh, tests/unit/t2465_reanchor_from_cwd.bats]
+components: [agents/context/check-active-task.sh, 
+      agents/context/check-visual-verification.sh, lib/paths.sh, 
+      tests/unit/t2465_reanchor_from_cwd.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T13:19:20Z
-last_update: 2026-06-23T17:46:11Z
+last_update: '2026-08-16T22:25:07Z'
 date_finished: 2026-06-23T17:46:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +43,24 @@ date_finished: 2026-06-23T17:46:11Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2468: Worktree reliability slice 1b — python-side hook root-resolver parity (check-arc-id / check-inception-* read env PROJECT_ROOT)

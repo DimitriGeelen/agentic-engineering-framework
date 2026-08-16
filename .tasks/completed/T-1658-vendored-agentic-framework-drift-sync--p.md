@@ -19,7 +19,7 @@ components: [.agentic-framework/lib/inception.sh,
       .agentic-framework/lib/hook-telemetry.sh]
 related_tasks: [T-1620, T-1626, T-1627, T-1628, T-1542, T-012]
 created: 2026-05-01T16:39:49Z
-last_update: '2026-06-11T22:23:55Z'
+last_update: '2026-08-16T22:24:40Z'
 date_finished: 2026-05-01T16:48:01Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:55Z'
@@ -38,6 +38,23 @@ bvp_scores_proposed:
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
       (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
       F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

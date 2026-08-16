@@ -1,15 +1,18 @@
 ---
 id: T-2920
-name: "check-project-boundary matches cd-to-path anywhere in the command string — heredoc bodies and quoted prose false-block"
+name: "check-project-boundary matches cd-to-path anywhere in the command string —
+  heredoc bodies and quoted prose false-block"
 description: >
-  check-project-boundary matches cd-to-path anywhere in the command string — heredoc bodies and quoted prose false-block
+  check-project-boundary matches cd-to-path anywhere in the command string — heredoc
+  bodies and quoted prose false-block
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/context/check-project-boundary.sh, tests/unit/t2920_boundary_heredoc_strip_order.bats]
+components: [agents/context/check-project-boundary.sh, 
+      tests/unit/t2920_boundary_heredoc_strip_order.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T14:33:04Z
-last_update: 2026-08-11T14:40:47Z
+last_update: '2026-08-16T22:25:23Z'
 date_finished: 2026-08-11T14:40:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +37,24 @@ date_finished: 2026-08-11T14:40:47Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2920: check-project-boundary matches cd-to-path anywhere in the command string — heredoc bodies and quoted prose false-block

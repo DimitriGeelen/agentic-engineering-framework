@@ -20,7 +20,7 @@ components: [agents/context/check-project-boundary.sh, bin/fw, lib/verify-acs.sh
 related_tasks: [T-559]
 arc_id: orchestrator-rethink
 created: 2026-05-03T18:22:59Z
-last_update: '2026-06-11T22:23:24Z'
+last_update: '2026-08-16T22:23:58Z'
 date_finished: 2026-05-31T18:14:08Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -82,6 +82,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=0 
       (no-signal); D4=4 (body:cross-machine); F-RECALL=2 
       (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=4 (body:cross-machine); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:

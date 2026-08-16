@@ -18,7 +18,7 @@ components: [agents/context/check-active-task.sh, C-009, lib/init.sh,
 related_tasks: [T-1729, T-1671, T-1259]
 arc_id: orchestrator-rethink
 created: 2026-05-05T05:41:36Z
-last_update: '2026-06-11T22:23:57Z'
+last_update: '2026-08-16T22:24:42Z'
 date_finished: 2026-05-05T07:08:19Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:23Z'
@@ -47,6 +47,24 @@ bvp_scores_proposed:
       D3=0 (no-signal); D4=0 (no-signal); F-RECALL=3 
       (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); F3=0 (no-signal); 
       F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
+      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---

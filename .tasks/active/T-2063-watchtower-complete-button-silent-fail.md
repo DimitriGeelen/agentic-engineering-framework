@@ -19,7 +19,7 @@ components: [web/app.py, web/static/csrf-htmx.js, web/templates/_review_acs.html
 related_tasks: [T-1302, T-1306, T-1453, T-2060]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-06-11T22:23:31Z'
+last_update: '2026-08-16T22:24:05Z'
 date_finished: 2026-05-28T17:59:34Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -70,6 +70,22 @@ bvp_scores_proposed:
       F2: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)

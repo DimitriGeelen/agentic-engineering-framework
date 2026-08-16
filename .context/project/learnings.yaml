@@ -4590,3 +4590,15 @@ X'` returning empty group."
   task: T-3046
   date: 2026-08-16
   context: Added via context agent
+- id: L-615
+  learning: "When a bug report names one instance of a code shape, grep the shape across the file before fixing — the sibling occurrence may be the same code asking the OPPOSITE question, and therefore failing in the opposite direction. T-3053: 'grep -oE T-[0-9]+ | head -1' was a false FAIL at the commit-traceability site (any ref resolving should suffice) and a false GREEN at the practice-origin site (every ref must resolve). Fixing only the reported one would have left the more dangerous half in place, under a reassuring PASS line."
+  source: P-001
+  task: T-3053
+  date: 2026-08-16
+  context: Added via context agent
+- id: L-616
+  learning: "A broken mutant is indistinguishable from a detected mutation — both are red. Any mutation test needs a paired positive control asserting the mutant still PASSES a case the fix did not change. T-3053: a mutated audit.sh dropped in /tmp lost FRAMEWORK_ROOT (derived from dirname $0), ran with an empty TASKS_DIR and reported every ref unresolvable, so the mutation test passed for a reason unrelated to the mutation. Install mutants in a shadow root, and add the sanity test."
+  source: P-001
+  task: T-3053
+  date: 2026-08-16
+  context: Added via context agent

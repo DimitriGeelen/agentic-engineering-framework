@@ -2,14 +2,21 @@
 id: T-2366
 name: "T-2158 S4: discard manifest enhancement to fw handover --emergency"
 description: >
-  Slice S4 of T-2158. Extend agents/handover/handover.sh --emergency to enumerate category-level discards (counts of tool-results compressed, turns summarised, files dropped from working set) into .context/handovers/SESSION.discard-manifest.yaml. Category-level fidelity sufficient (S6 Q4 — model self-compacts so token-level diff impossible). The Discard fidelity scoped driver rewards work here.
+  Slice S4 of T-2158. Extend agents/handover/handover.sh --emergency to enumerate
+  category-level discards (counts of tool-results compressed, turns summarised, files
+  dropped from working set) into .context/handovers/SESSION.discard-manifest.yaml.
+  Category-level fidelity sufficient (S6 Q4 — model self-compacts so token-level diff
+  impossible). The Discard fidelity scoped driver rewards work here.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [arc:continuous-run, t-2158-slice, discard-fidelity]
-components: [agents/context/inject-next-directive.py, agents/context/post-compact-resume.sh, agents/handover/discard-manifest.sh, agents/handover/handover.sh, agents/resume/resume.sh, lib/config-file.sh, tests/unit/test_inject_next_directive.py]
+components: [agents/context/inject-next-directive.py, 
+      agents/context/post-compact-resume.sh, agents/handover/discard-manifest.sh,
+  agents/handover/handover.sh, agents/resume/resume.sh, lib/config-file.sh, 
+      tests/unit/test_inject_next_directive.py]
 related_tasks: [T-2158]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,7 +29,7 @@ related_tasks: [T-2158]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T08:45:37Z
-last_update: 2026-06-13T11:00:27Z
+last_update: '2026-08-16T22:25:03Z'
 date_finished: 2026-06-13T11:00:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +41,25 @@ date_finished: 2026-06-13T11:00:27Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2366: T-2158 S4: discard manifest enhancement to fw handover --emergency

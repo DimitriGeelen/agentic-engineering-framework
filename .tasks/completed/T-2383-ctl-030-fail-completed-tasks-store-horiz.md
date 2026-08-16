@@ -1,13 +1,18 @@
 ---
 id: T-2383
-name: "CTL-030 FAIL: completed tasks store horizon=now + missing episodics + horizon-clear prevention"
+name: "CTL-030 FAIL: completed tasks store horizon=now + missing episodics + horizon-clear
+  prevention"
 description: >
-  Two arc-012 completed tasks (T-2364/T-2365) store horizon: now triggering CTL-030 FAIL; 3 completed tasks (T-2364/T-2365/T-2351) lack episodics. Root cause: the OBS-072 git-mv bypass (files moved to completed/ without fw task update, so update-task.sh's existing horizon-null normalization never ran); T-2370 fixed status but deferred horizon. Fix the data; prevention already exists (line 1791 + tests).
+  Two arc-012 completed tasks (T-2364/T-2365) store horizon: now triggering CTL-030
+  FAIL; 3 completed tasks (T-2364/T-2365/T-2351) lack episodics. Root cause: the OBS-072
+  git-mv bypass (files moved to completed/ without fw task update, so update-task.sh's
+  existing horizon-null normalization never ran); T-2370 fixed status but deferred
+  horizon. Fix the data; prevention already exists (line 1791 + tests).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [audit, governance, completion-hygiene]
 components: []
 related_tasks: []
@@ -22,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T22:48:18Z
-last_update: 2026-06-13T22:58:43Z
+last_update: '2026-08-16T22:25:04Z'
 date_finished: 2026-06-13T22:58:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +39,24 @@ date_finished: 2026-06-13T22:58:43Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2383: CTL-030 FAIL: completed tasks store horizon=now + missing episodics + horizon-clear prevention

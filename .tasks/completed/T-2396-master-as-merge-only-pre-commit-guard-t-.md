@@ -2,12 +2,21 @@
 id: T-2396
 name: "Master-as-merge-only pre-commit guard (T-2394 G1 first slice)"
 description: >
-  Build Layer-1 of inception T-2394 (operator GO in chat 2026-06-14): a master-as-merge-only pre-commit guard. New agents/git/lib/master-guard.sh (scanner-pattern, like secret-scan.sh) called from the pre-commit hook in agents/git/lib/hooks.sh. Refuses a direct authored commit when HEAD is on master/main, while allowing merge commits (MERGE_HEAD), fast-forwards (no commit fires the hook), and rebases. Opt-in via config PROTECT_MASTER (default 0 = consumer-safe; set to 1 in this repo). Bypass: FW_ALLOW_MASTER_COMMIT=1 (Tier-2) or git commit --no-verify (Tier-0). Cherry-pick onto master blocked by default per T-2394 Decisions. Bump commit-msg + pre-commit VERSION markers (PL-078). Bats test: block-direct / allow-merge / allow-rebase / allow-feature-branch / off-by-default / env-bypass. Makes the operator invariant structural not advisory (L-405).
+  Build Layer-1 of inception T-2394 (operator GO in chat 2026-06-14): a master-as-merge-only
+  pre-commit guard. New agents/git/lib/master-guard.sh (scanner-pattern, like secret-scan.sh)
+  called from the pre-commit hook in agents/git/lib/hooks.sh. Refuses a direct authored
+  commit when HEAD is on master/main, while allowing merge commits (MERGE_HEAD), fast-forwards
+  (no commit fires the hook), and rebases. Opt-in via config PROTECT_MASTER (default
+  0 = consumer-safe; set to 1 in this repo). Bypass: FW_ALLOW_MASTER_COMMIT=1 (Tier-2)
+  or git commit --no-verify (Tier-0). Cherry-pick onto master blocked by default per
+  T-2394 Decisions. Bump commit-msg + pre-commit VERSION markers (PL-078). Bats test:
+  block-direct / allow-merge / allow-rebase / allow-feature-branch / off-by-default
+  / env-bypass. Makes the operator invariant structural not advisory (L-405).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [git-hygiene, governance, pre-commit-hook, parallel-agents]
 components: [agents/git/lib/hooks.sh, agents/git/lib/master-guard.sh]
 related_tasks: []
@@ -22,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T14:14:16Z
-last_update: 2026-06-14T14:46:07Z
+last_update: '2026-08-16T22:25:04Z'
 date_finished: 2026-06-14T14:46:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +43,25 @@ date_finished: 2026-06-14T14:46:07Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2396: Master-as-merge-only pre-commit guard (T-2394 G1 first slice)

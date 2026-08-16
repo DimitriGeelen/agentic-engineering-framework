@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3053: audit traceability reads only the first T-ref in a commit subject — multi-ref commits flagged orphan
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T23:34:35Z
+# ============================================================================
+
+task_id: T-3053
+task_name: "audit traceability reads only the first T-ref in a commit subject — multi-ref commits flagged orphan"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:31:41Z
+completed: 2026-08-16T23:33:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-17T00:56:39+02:00
+last_commit: 2026-08-17T01:32:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs for the multi-ref traceability fix, plus OBS-311. one head -1 shape, two opposite defects
+
+# Key outcomes
+outcomes:
+  - '**A1** The traceability check resolves a commit as traceable when **any**'
+  - '**A2** A commit whose refs *all* fail to resolve is still reported orphaned —'
+  - '**A3** The second `head -1` site found in the same file is either fixed the same'
+  - '**A4** A regression test covers all three shapes against a synthetic repo:'
+  - '**A5** The existing T-2058 revert-chain and T-2851 root-commit escapes still fire'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'real ACs for the multi-ref traceability fix, plus OBS-311'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3053-audit-traceability-reads-only-the-first-.md'
+  - '.tasks/completed/T-3054-watchtowersh-silently-falls-projectroot-.md'
+  - 'tests/unit/t3053_multiref_traceability.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T00:56:39'
+    action: 'T-3053: real ACs for the multi-ref traceability fix, plus OBS-311'
+  - time: '2026-08-17T01:32:52'
+    action: 'T-3053: one head -1 shape, two opposite defects'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upstream-pickup, T-3047-triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 61
+  commits: 2
+  files_changed: 5
+  lines_added: 499
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3053-audit-traceability-reads-only-the-first-.md
+generated_by: context-agent-hybrid

@@ -14,7 +14,7 @@ tags: [post-compact, context-recovery, budget-gate]
 components: [agents/context/post-compact-resume.sh]
 related_tasks: [T-1087, T-1088, T-179, T-188, T-111]
 created: 2026-05-04T22:00:07Z
-last_update: '2026-06-11T22:23:57Z'
+last_update: '2026-08-16T22:24:42Z'
 date_finished: 2026-05-28T15:22:07Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -42,6 +42,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F-RECALL=1 (body:episodic-only); F-ORCH=0 
       (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=1 (body:episodic-only); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:

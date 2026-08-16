@@ -9,12 +9,12 @@ description: >
   so a misconfigured instance matches itself and passes doctor. Operator sees a fresh-install
   Setup Checklist for a project with hundreds of tasks.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [upstream-pickup, T-3047-triage]
-components: []
+components: [bin/watchtower.sh, lib/watchtower.sh, tests/unit/t3054_watchtower_root_fallback.bats]
 related_tasks: [T-3047]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:32:12Z
-last_update: 2026-08-16T22:46:35Z
-date_finished:
+last_update: 2026-08-16T22:54:37Z
+date_finished: 2026-08-16T22:54:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -342,3 +342,20 @@ PROJECT_ROOT is set elsewhere and asserts the identity check now reports non-mat
 ### 2026-08-16T22:46:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3e24a4f6
+- **Timestamp:** 2026-08-16T22:54:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 71
+     - evidence: `curl -sf "$(bin/fw watchtower url)/" > /dev/null`
+
+### 2026-08-16T22:54:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

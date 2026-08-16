@@ -15,11 +15,29 @@ owner: human
 horizon: now
 target_blast_radius: 7
 voi_score: 0.85
-tags: [governance, proxy, payload-mediation, portability, livefire, lock-1, autonomy]
+tags: [governance, proxy, payload-mediation, portability, livefire, lock-1, 
+      autonomy]
 related_tasks: [T-2389]
 created: 2026-06-18T19:50:00Z
-last_update: 2026-06-18T11:31:47Z
+last_update: '2026-08-16T22:24:09Z'
 date_finished: 2026-06-18T11:31:47Z
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:24:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 4
+      F-RECALL: 4
+      F-AUTONOMY: 4
+      F3: 4
+      F1: 4
+      F2: 4
+    rationale: D1=4 (no-signal); D2=4 (no-signal); D3=4 (no-signal); D4=4 
+      (no-signal); F-RECALL=4 (no-signal); F-AUTONOMY=4 (no-signal); F3=4 
+      (no-signal); F1=4 (no-signal); F2=4 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2428: Governance by payload mediation — model-agnostic LLM gateway

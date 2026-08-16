@@ -14,7 +14,7 @@ tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-29T07:45:01Z
-last_update: '2026-06-11T22:23:53Z'
+last_update: '2026-08-16T22:24:38Z'
 date_finished: 2026-04-29T22:32:31Z
 source_task_id_in_origin: T-057
 source_project_in_origin: "003-NTB-ATC-Plugin"
@@ -34,6 +34,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=5 (body:class-neutral); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 5
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=5 (body:class-neutral); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

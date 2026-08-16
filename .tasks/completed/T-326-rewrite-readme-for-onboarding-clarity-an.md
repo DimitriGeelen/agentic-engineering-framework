@@ -20,7 +20,7 @@ tags: [docs, onboarding, ux]
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z
-last_update: '2026-06-11T22:24:18Z'
+last_update: '2026-08-16T22:25:28Z'
 date_finished: 2026-03-05T02:11:30Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:18Z'
@@ -39,6 +39,24 @@ bvp_scores_proposed:
       (body:framework-level-ux); D4=5 (body:class-neutral); F-RECALL=3 
       (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); F3=0 (no-signal); 
       F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 4
+      D4: 5
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=5 (body:class-neutral); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---

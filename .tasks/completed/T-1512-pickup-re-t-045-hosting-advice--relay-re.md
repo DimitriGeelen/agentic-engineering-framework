@@ -14,7 +14,7 @@ tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-26T17:00:02Z
-last_update: '2026-06-11T22:23:50Z'
+last_update: '2026-08-16T22:24:35Z'
 date_finished: 2026-04-26T18:45:03Z
 source_task_id_in_origin: T-1499
 source_project_in_origin: "999-Agentic-Engineering-Framework"
@@ -35,6 +35,22 @@ bvp_scores_proposed:
       F2: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---

@@ -17,7 +17,7 @@ components: [CLAUDE.md, AGENTS.md]
 related_tasks: [T-1915, T-1916, T-1918]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-06-11T22:24:03Z'
+last_update: '2026-08-16T22:24:49Z'
 date_finished: 2026-05-19T07:44:00Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:03Z'
@@ -35,6 +35,24 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal); F-RECALL=4 (body/components:instruction-sync); F-ORCH=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 0
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 4
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: estimator-fidelity=0 (no-signal); D1=0 (no-signal); D2=0 
+      (no-signal); D3=0 (no-signal); D4=0 (no-signal); F-RECALL=4 
+      (body/components:instruction-sync); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

@@ -18,7 +18,7 @@ components: [web/blueprints/__init__.py, web/blueprints/reviewer.py,
       web/shared.py, web/templates/reviewer_overrides.html]
 related_tasks: [T-1443, T-1449]
 created: 2026-04-25T11:21:00Z
-last_update: '2026-06-11T22:23:48Z'
+last_update: '2026-08-16T22:24:33Z'
 date_finished: 2026-04-25T13:30:49Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:48Z'
@@ -36,6 +36,23 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
       (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

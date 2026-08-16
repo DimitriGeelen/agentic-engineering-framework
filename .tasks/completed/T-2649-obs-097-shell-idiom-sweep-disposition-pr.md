@@ -1,13 +1,15 @@
 ---
 id: T-2649
-name: "OBS-097 shell-idiom sweep: disposition PROJECT_ROOT resolution of framework assets in shell (bin/fw, agents/, lib/)"
+name: "OBS-097 shell-idiom sweep: disposition PROJECT_ROOT resolution of framework
+  assets in shell (bin/fw, agents/, lib/)"
 description: >
-  OBS-097 shell-idiom sweep: disposition PROJECT_ROOT resolution of framework assets in shell (bin/fw, agents/, lib/)
+  OBS-097 shell-idiom sweep: disposition PROJECT_ROOT resolution of framework assets
+  in shell (bin/fw, agents/, lib/)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T08:32:10Z
-last_update: 2026-07-28T08:38:23Z
+last_update: '2026-08-16T22:25:13Z'
 date_finished: 2026-07-28T08:38:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +36,24 @@ date_finished: 2026-07-28T08:38:23Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 2
+      D4: 3
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2649: OBS-097 shell-idiom sweep: disposition PROJECT_ROOT resolution of framework assets in shell (bin/fw, agents/, lib/)

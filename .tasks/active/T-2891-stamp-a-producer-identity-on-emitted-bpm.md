@@ -2,7 +2,16 @@
 id: T-2891
 name: "stamp a producer identity on emitted BPMN definitions (832 rail 492/493)"
 description: >
-  832 measured their side and shipped option 2: their emitter overwrites a foreign exporter with their own, and drops exporterVersion entirely -- same reconstruct-the-position mechanism T-2884 measured on ours. At 493 they added a consequence we did not have when the question was asked: their T-406 fix now gates doc-comment suppression on producer identity, so a peer document whose rationale opens with their trailer words survives import IF the document names its producer. We stamp nothing, so our documents are still destroyed on their import. Decide whether to stamp, and if so stamp the true producer of these bytes (tools/corpus_spec.py, not the designer). Also measure whether workflowRef uuids survive our round-trip, which 832 flagged as the unmeasured candidate for carrying origin as a separate fact from production.
+  832 measured their side and shipped option 2: their emitter overwrites a foreign
+  exporter with their own, and drops exporterVersion entirely -- same reconstruct-the-position
+  mechanism T-2884 measured on ours. At 493 they added a consequence we did not have
+  when the question was asked: their T-406 fix now gates doc-comment suppression on
+  producer identity, so a peer document whose rationale opens with their trailer words
+  survives import IF the document names its producer. We stamp nothing, so our documents
+  are still destroyed on their import. Decide whether to stamp, and if so stamp the
+  true producer of these bytes (tools/corpus_spec.py, not the designer). Also measure
+  whether workflowRef uuids survive our round-trip, which 832 flagged as the unmeasured
+  candidate for carrying origin as a separate fact from production.
 
 status: work-completed
 workflow_type: build
@@ -22,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T10:47:41Z
-last_update: 2026-08-09T10:56:55Z
+last_update: '2026-08-16T22:24:13Z'
 date_finished: 2026-08-09T10:56:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +43,24 @@ date_finished: 2026-08-09T10:56:55Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:24:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 4
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=4 (body:cross-machine); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2891: stamp a producer identity on emitted BPMN definitions (832 rail 492/493)

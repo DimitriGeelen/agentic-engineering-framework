@@ -15,7 +15,7 @@ components: [agents/context/check-tier0.sh, lib/inception.sh, lib/paths.sh,
       lib/review.sh]
 related_tasks: []
 created: 2026-04-12T10:06:32Z
-last_update: '2026-06-11T22:23:41Z'
+last_update: '2026-08-16T22:24:23Z'
 date_finished: 2026-04-12T10:14:21Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:41Z'
@@ -33,6 +33,23 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=4 
       (body:framework-level-ux); D4=0 (no-signal); F-RECALL=0 (no-signal); 
       F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 4
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=0 (no-signal); F-RECALL=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

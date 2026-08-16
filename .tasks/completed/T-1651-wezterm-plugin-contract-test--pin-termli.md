@@ -21,7 +21,7 @@ components: [tests/fixtures/termlink-list-schema.json,
 related_tasks: [T-1641, T-1644, T-1062, T-1647, T-1649]
 arc_id: orchestrator-rethink
 created: 2026-05-01T12:20:27Z
-last_update: '2026-06-11T22:23:54Z'
+last_update: '2026-08-16T22:24:40Z'
 date_finished: 2026-05-01T12:59:06Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:54Z'
@@ -38,6 +38,23 @@ bvp_scores_proposed:
       F2: 1
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
       (body:portability-abstraction); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801

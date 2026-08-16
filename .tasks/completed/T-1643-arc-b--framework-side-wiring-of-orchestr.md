@@ -30,7 +30,7 @@ components: [agents/dispatch/preamble.md, agents/termlink/termlink.sh,
 related_tasks: [T-1641, T-1642, T-1063, T-1064, T-1065, T-1066]
 arc_id: orchestrator-rethink
 created: 2026-05-01T11:54:52Z
-last_update: '2026-06-11T22:23:54Z'
+last_update: '2026-08-16T22:24:39Z'
 date_finished: 2026-05-02T05:51:46Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:54Z'
@@ -50,6 +50,24 @@ bvp_scores_proposed:
       D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=1 
       (body:hand-wired-dispatch); F3=1 (body/components:prompt-incidental); F1=0
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

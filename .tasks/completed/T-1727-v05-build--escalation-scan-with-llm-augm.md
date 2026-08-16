@@ -26,7 +26,7 @@ components: [prompts/default.md, prompts/escalation-triage.md,
 related_tasks: [T-1688, T-1726, T-1741, T-1743, T-1744, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-04T21:39:23Z
-last_update: '2026-06-11T22:23:57Z'
+last_update: '2026-08-16T22:24:42Z'
 date_finished: 2026-05-05T16:50:22Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:57Z'
@@ -44,6 +44,24 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=5
       (body:new-collab-mode); D4=2 (body:env-class-handled); F-RECALL=2 
       (body:lightly-promoted); F-ORCH=3 (body:typed-io-or-gate); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 5
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=5
+      (body:new-collab-mode); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801

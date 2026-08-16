@@ -19,7 +19,7 @@ tags: [from-T-1061, termlink, orchestrator, integration, verification]
 components: []
 related_tasks: [T-1061, T-1641]
 created: 2026-05-01T10:48:05Z
-last_update: '2026-06-11T22:23:54Z'
+last_update: '2026-08-16T22:24:39Z'
 date_finished: 2026-05-01T10:51:41Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:54Z'
@@ -38,6 +38,23 @@ bvp_scores_proposed:
       D4=3 (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
       F-ORCH=0 (body:wrap-phrase-without-substrate); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

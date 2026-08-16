@@ -17,7 +17,7 @@ components: [C-004, agents/context/post-compact-resume.sh, bin/fw,
       tests/unit/session_start_hook_warning.bats]
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:34Z
-last_update: '2026-06-11T22:23:54Z'
+last_update: '2026-08-16T22:24:39Z'
 date_finished: 2026-05-01T09:51:27Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:54Z'
@@ -35,6 +35,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
       (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
       F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

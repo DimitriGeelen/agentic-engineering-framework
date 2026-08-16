@@ -21,7 +21,7 @@ components: [agents/resume/resume.sh, agents/task-create/update-task.sh,
 related_tasks: [T-1915, T-1916, T-1922]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-06-11T22:24:03Z'
+last_update: '2026-08-16T22:24:49Z'
 date_finished: 2026-05-20T18:57:41Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -60,6 +60,25 @@ bvp_scores_proposed:
       (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=2 
       (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 3
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 4
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: estimator-fidelity=3 (components:bvp-estimator-code); D1=0 
+      (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=4 
+      (body:auto-promote-class-eligibility); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

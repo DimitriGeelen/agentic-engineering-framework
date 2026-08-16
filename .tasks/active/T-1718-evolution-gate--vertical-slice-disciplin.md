@@ -22,7 +22,7 @@ components: [agents/task-create/update-task.sh, lib/evolution_log.sh,
 related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
 arc_id: embeddings-strategy
 created: 2026-05-04T14:50:48Z
-last_update: '2026-06-11T22:23:25Z'
+last_update: '2026-08-16T22:23:59Z'
 date_finished: 2026-05-27T05:11:05Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -63,6 +63,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=1 
       (body:error-msg-improved); D4=0 (no-signal); F-RECALL=2 
       (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 1
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=1 
+      (body:error-msg-improved); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:

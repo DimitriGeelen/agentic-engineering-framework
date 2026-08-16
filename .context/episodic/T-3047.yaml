@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3047: Triage the 39 recovered upstream messages against current framework code
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T22:36:39Z
+# ============================================================================
+
+task_id: T-3047
+task_name: "Triage the 39 recovered upstream messages against current framework code"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:20:24Z
+completed: 2026-08-16T22:36:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T00:22:45+02:00
+last_commit: 2026-08-17T00:36:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  39 recovered upstream messages, verbatim, plus real ACs. 39 verdicts, 11 still live, 10 tasks filed
+
+# Key outcomes
+outcomes:
+  - '**A1** `docs/reports/T-3047-recovered-upstream-messages.md` exists and contains'
+  - '**A2** Every one of the 39 messages carries a verdict in'
+  - '**A3** Counts reconcile: verdicts in the triage report == 39, and the four'
+  - '**A4** Every `LIVE` verdict has a filed task (`.tasks/active/`) or an existing'
+  - '**A5** The triage report names, for each `FIXED` verdict, the commit or task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3047-recovered-upstream-messages.md'
+  - 'docs/reports/T-3047-triage-batch-1.md'
+  - 'docs/reports/T-3047-triage-batch-2.md'
+  - 'docs/reports/T-3047-triage-batch-3.md'
+  - 'docs/reports/T-3047-triage-batch-4.md'
+  - 'docs/reports/T-3047-triage-batch-5.md'
+  - 'docs/reports/T-3047-triage.md'
+  - '.tasks/active/T-3006-slice-1--restore-embed-path-availability.md'
+  - '.tasks/active/T-3010-chunkcontents-1500-char-cap-does-not-hol.md'
+  - '.tasks/active/T-3013-t-3005-slice-4-doctor-and-audit-rail-con.md'
+  - '.tasks/active/T-3016-bulk-reindex-targets-the-shared-gpu-host.md'
+  - '.tasks/active/T-3019-t-3005-slice-6a-recall-telemetry--the-us.md'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3030-dispatched-workers-run-in-the-live-check.md'
+  - '.tasks/active/T-3040-peer-message-backlog-lost--local-hub-had.md'
+  - '.tasks/active/T-3042-updateoutcomerow-erases-concurrently-app.md'
+  - '.tasks/active/T-3043-rca-non-root-agent-cannot-use-termlink-h.md'
+  - '.tasks/active/T-3047-triage-the-39-recovered-upstream-message.md'
+  - '.tasks/active/T-3048-fw-test-unitall-runs-bats-on-testsunit-w.md'
+  - '.tasks/active/T-3049-fabric-drift-joins-https-card-locations-.md'
+  - '.tasks/active/T-3050-b-005-settingsjson-gate-refuses-additive.md'
+  - '.tasks/active/T-3051-pickup-termlink-bridge-is-gated-on-an-ex.md'
+  - '.tasks/active/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md'
+  - '.tasks/active/T-3053-audit-traceability-reads-only-the-first-.md'
+  - '.tasks/active/T-3054-watchtowersh-silently-falls-projectroot-.md'
+  - '.tasks/active/T-3055-watchtower-serves-via-the-werkzeug-dev-s.md'
+  - '.tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md'
+  - '.tasks/active/T-3057-watchtower-has-no-project-local-blueprin.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T00:22:45'
+    action: 'T-3047: 39 recovered upstream messages, verbatim, plus real ACs'
+  - time: '2026-08-17T00:36:08'
+    action: 'T-3047: 39 verdicts, 11 still live, 10 tasks filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 2
+  files_changed: 28
+  lines_added: 5906
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3047-triage-the-39-recovered-upstream-message.md
+generated_by: context-agent-hybrid

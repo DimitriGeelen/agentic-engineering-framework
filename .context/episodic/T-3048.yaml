@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3048: fw test unit/all runs bats on tests/unit with no directory guard — hard error on vendored consumers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T22:46:20Z
+# ============================================================================
+
+task_id: T-3048
+task_name: "fw test unit/all runs bats on tests/unit with no directory guard — hard error on vendored consumers"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:28:58Z
+completed: 2026-08-16T22:46:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-17T00:45:14+02:00
+last_commit: 2026-08-17T00:46:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the two bats legs were the only ones without a directory guard. RCA — two blind spots had to line up for a three-month lifetime
+
+# Key outcomes
+outcomes:
+  - '**A1** Both bats legs (`unit` subcommand and `all` branch) guard on directory'
+  - '**A2** With no `tests/unit/` present, both legs skip with a message and return'
+  - '**A3** With `tests/unit/` present, both legs still run the suite — the guard must'
+  - '**A4** A regression test pins both directions, and is observed red against the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/agents/resume/resume.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/pickup.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-t3048_bats_leg_guard.yaml'
+  - '.tasks/active/T-3048-fw-test-unitall-runs-bats-on-testsunit-w.md'
+  - '.tasks/completed/T-3051-pickup-termlink-bridge-is-gated-on-an-ex.md'
+  - 'tests/unit/t3048_bats_leg_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T00:45:14'
+    action: 'T-3048: the two bats legs were the only ones without a directory guard'
+  - time: '2026-08-17T00:46:07'
+    action: 'T-3048: RCA — two blind spots had to line up for a three-month lifetime'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upstream-pickup, T-3047-triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 2
+  files_changed: 11
+  lines_added: 222
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3048-fw-test-unitall-runs-bats-on-testsunit-w.md
+generated_by: context-agent-hybrid

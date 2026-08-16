@@ -22,7 +22,7 @@ related_tasks: ["T-1442", "T-1443", "T-1668", "T-1671", "T-1711", "T-1713", "T-1
   "T-1716", "T-1709"]
 arc_id: orchestrator-rethink
 created: 2026-05-06T07:57:36Z
-last_update: '2026-06-11T22:23:58Z'
+last_update: '2026-08-16T22:24:43Z'
 date_finished: 2026-05-13T22:33:56Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:58Z'
@@ -41,6 +41,23 @@ bvp_scores_proposed:
       (body:component-silent-failure); D3=0 (no-signal); D4=2 
       (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
       F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

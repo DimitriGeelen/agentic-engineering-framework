@@ -20,7 +20,7 @@ components: [lib/pi_worker.py, lib/resolver.py, lib/spawn.py,
 related_tasks: [T-1692, T-1696, T-1693, T-1694]
 arc_id: orchestrator-rethink
 created: 2026-05-03T15:47:11Z
-last_update: '2026-06-11T22:23:24Z'
+last_update: '2026-08-16T22:23:58Z'
 date_finished: 2026-05-26T21:50:17Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -61,6 +61,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
       (body:framework-level-ux); D4=0 (no-signal); F-RECALL=2 
       (body:lightly-promoted); F-ORCH=3 (body:typed-io-or-gate); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
+      (body:framework-level-ux); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:

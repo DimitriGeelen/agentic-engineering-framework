@@ -2,13 +2,15 @@
 id: T-2432
 name: "payload-mediation: proxy policy emit/install + drift audit class"
 description: >
-  fw policy emit (agent-safe) / sudo fw policy install (human/root boundary). Static invariants from existing gates; emitted-but-not-installed drift audit class (reuse cron/MCP emit-install pattern). Gated on T-2428 GO.
+  fw policy emit (agent-safe) / sudo fw policy install (human/root boundary). Static
+  invariants from existing gates; emitted-but-not-installed drift audit class (reuse
+  cron/MCP emit-install pattern). Gated on T-2428 GO.
 
 status: work-completed
 arc_id: payload-mediation
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [bin/fw, lib/govd_policy.py, tests/unit/test_govd_policy.py]
 related_tasks: []
@@ -23,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-18T07:18:38Z
-last_update: 2026-06-18T15:01:24Z
+last_update: '2026-08-16T22:25:06Z'
 date_finished: 2026-06-18T15:01:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -35,6 +37,24 @@ date_finished: 2026-06-18T15:01:24Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2432: payload-mediation: proxy policy emit/install + drift audit class

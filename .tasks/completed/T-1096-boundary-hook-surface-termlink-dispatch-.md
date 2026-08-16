@@ -18,7 +18,7 @@ tags: []
 components: [agents/context/check-project-boundary.sh]
 related_tasks: [T-1093, T-1089]
 created: 2026-04-11T12:15:46Z
-last_update: '2026-06-11T22:23:39Z'
+last_update: '2026-08-16T22:24:22Z'
 date_finished: 2026-04-12T07:18:03Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:39Z'
@@ -36,6 +36,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
       (body:framework-level-ux); D4=4 (body:cross-machine); F-RECALL=0 
       (no-signal); F-ORCH=1 (body:hand-wired-dispatch); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 4
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=4 (body:cross-machine); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---

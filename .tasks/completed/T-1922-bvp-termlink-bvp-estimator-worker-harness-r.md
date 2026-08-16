@@ -23,7 +23,7 @@ components: [012-ArcSystem.md, agents/resume/resume.sh,
 related_tasks: [T-1915, T-1916, T-1918, T-1921]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-06-11T22:24:03Z'
+last_update: '2026-08-16T22:24:49Z'
 date_finished: 2026-05-20T18:54:59Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:34Z'
@@ -62,6 +62,25 @@ bvp_scores_proposed:
       D3=0 (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
       F-ORCH=1 (body:hand-wired-dispatch); F3=3 (body:prompt-meaningful); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 3
+      D1: 0
+      D2: 3
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 3
+      F1: 0
+      F2: 0
+    rationale: estimator-fidelity=3 (components:bvp-estimator-code); D1=0 
+      (tag:novel-mechanism); D2=3 (body:component-silent-failure); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=3 (body:prompt-meaningful); F1=0 (no-signal);
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

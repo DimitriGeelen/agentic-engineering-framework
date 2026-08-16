@@ -11,26 +11,27 @@ description: >
   the warm-up buys nothing beyond the first few tests.
 
   Evidence: /approvals, /approvals/content and /metrics FAIL the 5s cap inside the
-  suite, while the same three routes measure 1.38s, 0.90s and 2.75s against the 
-  live server. The suite is reporting cold-cache cost under the name 
-  'warm-load', which is a measurement defect, not a page defect. It also masks 
-  the real ones — /timeline (T-2775) and /tasks (T-2776) are genuinely over cap 
-  and are currently indistinguishable from these three in the output.
+  suite, while the same three routes measure 1.38s, 0.90s and 2.75s against the  live
+  server. The suite is reporting cold-cache cost under the name  'warm-load', which
+  is a measurement defect, not a page defect. It also masks  the real ones — /timeline
+  (T-2775) and /tasks (T-2776) are genuinely over cap  and are currently indistinguishable
+  from these three in the output.
 
-  Fix options to weigh, not a decided design: (a) re-warm per-test rather than 
-  per-session; (b) measure the second of two consecutive gotos so the first pays
-  the cold cost; (c) drop the pretence and assert a separate, higher cold-start 
-  budget under an honest name. Whichever is chosen, the assertion message must 
-  say which cost it is measuring — the current message says 'warm-load' for a 
-  number that is usually cold, and a check that misnames what it measured is how
+  Fix options to weigh, not a decided design: (a) re-warm per-test rather than  per-session;
+  (b) measure the second of two consecutive gotos so the first pays
+  the cold cost; (c) drop the pretence and assert a separate, higher cold-start  budget
+  under an honest name. Whichever is chosen, the assertion message must  say which
+  cost it is measuring — the current message says 'warm-load' for a  number that is
+  usually cold, and a check that misnames what it measured is how
   a false green or a false red survives review.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/task-create/create-task.sh, tests/unit/test_task_create_description_yaml.py]
+components: [agents/task-create/create-task.sh, 
+      tests/unit/test_task_create_description_yaml.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -43,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T19:20:31Z
-last_update: 2026-08-03T23:32:08Z
+last_update: '2026-08-16T22:25:17Z'
 date_finished: 2026-08-03T23:32:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +83,23 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 5
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4-5 (body:new-class); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

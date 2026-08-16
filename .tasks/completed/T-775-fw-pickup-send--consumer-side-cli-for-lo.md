@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: [T-772, T-774]
 created: 2026-03-30T13:21:40Z
-last_update: '2026-06-11T22:24:29Z'
+last_update: '2026-08-16T22:25:39Z'
 date_finished: 2026-03-30T14:11:45Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:29Z'
@@ -33,6 +33,22 @@ bvp_scores_proposed:
       (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=3 
       (body:typed-io-or-gate); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:25:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

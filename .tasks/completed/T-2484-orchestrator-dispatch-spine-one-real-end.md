@@ -10,15 +10,32 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [orchestrator, dispatch, triage, spine]
 components: []
 related_tasks: [T-1773, T-1774, T-1775, T-1797, T-1636, T-1685, T-1687, T-1792]
 created: 2026-06-24T15:07:23Z
-last_update: 2026-06-24T16:17:24Z
+last_update: '2026-08-16T22:25:07Z'
 date_finished: 2026-06-24T16:17:24Z
 target_blast_radius: 5            # cross-subsystem (orchestrator/resolver/dispatch + worker primitives)
 voi_score: 0.9                    # unblocks the operator's stated top priority + gates all parallel-execution work
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 4
+      F-RECALL: 4
+      F-AUTONOMY: 4
+      F3: 4
+      F1: 4
+      F2: 4
+    rationale: D1=4 (no-signal); D2=4 (no-signal); D3=4 (no-signal); D4=4 
+      (no-signal); F-RECALL=4 (no-signal); F-AUTONOMY=4 (no-signal); F3=4 
+      (no-signal); F1=4 (no-signal); F2=4 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2484: orchestrator dispatch spine: one real end-to-end dispatch then iterate

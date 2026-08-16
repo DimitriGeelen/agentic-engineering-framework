@@ -18,7 +18,7 @@ components: [prompts/default.md]
 related_tasks: [T-1687]
 arc_id: orchestrator-rethink
 created: 2026-05-02T22:56:11Z
-last_update: '2026-06-11T22:23:56Z'
+last_update: '2026-08-16T22:24:41Z'
 date_finished: 2026-05-03T07:56:39Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:56Z'
@@ -38,6 +38,24 @@ bvp_scores_proposed:
       (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=3 
       (body:typed-io-or-gate); F3=1 (body/components:prompt-incidental); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

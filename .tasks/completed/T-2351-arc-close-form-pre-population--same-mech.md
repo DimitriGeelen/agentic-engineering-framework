@@ -1,18 +1,31 @@
 ---
 id: T-2351
-name: "Arc close form pre-population — same mechanic as task/inception ## Recommendation block (Defect D from T-2347)"
+name: "Arc close form pre-population — same mechanic as task/inception ## Recommendation
+  block (Defect D from T-2347)"
 description: >
-  T-2347 RCA missed Defect D. The /arcs/<slug>/close form has slots for demo_value, decision, justification but on GET only pre-populates demo_value from anchor task's ## Recommendation -> Suggested demo: field (web/blueprints/arcs.py:1318). prev_decision and prev_justification are hardcoded empty strings on GET (line 1335). When agent surfaces an arc for closure with a recommendation in hand, the operator faces an empty form and must hand-type demo path + decision narrative — even though the same agent could have written all of it. Tasks/inceptions don't have this gap: ## Recommendation block renders, operator confirms or amends. The arc YAML has decision:/demo_evidence: fields (currently set ONLY by fw arc close itself) — by design they could be agent-set pre-handoff. Three viable approaches: (X) extend anchor task ## Recommendation parser with Suggested decision: + Suggested justification: fields and wire form. (Y) Add proposed_decision: / proposed_demo: fields to arc YAML schema. (Z) Hybrid — read arc YAML fields if present, fall back to anchor task block.
+  T-2347 RCA missed Defect D. The /arcs/<slug>/close form has slots for demo_value,
+  decision, justification but on GET only pre-populates demo_value from anchor task's
+  ## Recommendation -> Suggested demo: field (web/blueprints/arcs.py:1318). prev_decision
+  and prev_justification are hardcoded empty strings on GET (line 1335). When agent
+  surfaces an arc for closure with a recommendation in hand, the operator faces an
+  empty form and must hand-type demo path + decision narrative — even though the same
+  agent could have written all of it. Tasks/inceptions don't have this gap: ## Recommendation
+  block renders, operator confirms or amends. The arc YAML has decision:/demo_evidence:
+  fields (currently set ONLY by fw arc close itself) — by design they could be agent-set
+  pre-handoff. Three viable approaches: (X) extend anchor task ## Recommendation parser
+  with Suggested decision: + Suggested justification: fields and wire form. (Y) Add
+  proposed_decision: / proposed_demo: fields to arc YAML schema. (Z) Hybrid — read
+  arc YAML fields if present, fall back to anchor task block.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [watchtower, arc-mechanics, ux, inception-rca]
 components: []
 related_tasks: [T-2347, T-2348, T-2349, T-2350]
 created: 2026-06-12T10:49:57Z
-last_update: 2026-06-12T10:55:44Z
+last_update: '2026-08-16T22:25:03Z'
 date_finished: 2026-06-12T10:55:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -22,6 +35,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-08-16T22:25:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2351: Arc close form pre-population — same mechanic as task/inception ## Recommendation block (Defect D from T-2347)

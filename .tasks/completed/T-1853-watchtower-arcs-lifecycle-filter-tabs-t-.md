@@ -17,7 +17,7 @@ components: [C-004, lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats,
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:04Z
-last_update: '2026-06-11T22:24:00Z'
+last_update: '2026-08-16T22:24:46Z'
 date_finished: 2026-05-16T22:26:31Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:24:00Z'
@@ -36,6 +36,24 @@ bvp_scores_proposed:
       (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
       D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 3
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=3 
+      (body:feedback-loop-closed); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

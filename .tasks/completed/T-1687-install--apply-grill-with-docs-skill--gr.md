@@ -9,12 +9,29 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [012-ArcSystem.md, C-004, agents/audit/completed-task-scan.py, agents/context/check-settings-edit.sh, agents/context/lib/safe-commands.sh, agents/handover/handover.sh, agents/task-create/create-task.sh, bin/fw, C-009, lib/arc.sh, lib/workflow_coverage.py, tests/playwright/test_arcs_renders_without_constituent_field.py, tests/playwright/test_landing_arc_cards.py, tests/unit/arc_abandon.bats, tests/unit/arc_create_no_constituent_tasks.bats, tests/unit/arc_lifecycle_state_machine.bats, tests/unit/audit_ctl013_skip_nested_audit.bats, tests/unit/audit_ctl028_completed_status_consistency.bats, tests/unit/audit_d10_html_comment_blindness.bats, tests/unit/audit_stale_arc_warning.bats, tests/unit/hook_check_settings_edit.bats, tests/unit/safe_commands_env_prefix.bats, tests/unit/test_cron_generate_shape.bats, tests/unit/test_g064_readiness.py, tests/unit/test_workflow_coverage.py, tools/g064-readiness.py, web/blueprints/arcs.py, web/templates/arcs_index.html]
+components: [012-ArcSystem.md, C-004, agents/audit/completed-task-scan.py, 
+      agents/context/check-settings-edit.sh, agents/context/lib/safe-commands.sh,
+  agents/handover/handover.sh, agents/task-create/create-task.sh, bin/fw, C-009, 
+      lib/arc.sh, lib/workflow_coverage.py, 
+      tests/playwright/test_arcs_renders_without_constituent_field.py, 
+      tests/playwright/test_landing_arc_cards.py, tests/unit/arc_abandon.bats, 
+      tests/unit/arc_create_no_constituent_tasks.bats, 
+      tests/unit/arc_lifecycle_state_machine.bats, 
+      tests/unit/audit_ctl013_skip_nested_audit.bats, 
+      tests/unit/audit_ctl028_completed_status_consistency.bats, 
+      tests/unit/audit_d10_html_comment_blindness.bats, 
+      tests/unit/audit_stale_arc_warning.bats, 
+      tests/unit/hook_check_settings_edit.bats, 
+      tests/unit/safe_commands_env_prefix.bats, 
+      tests/unit/test_cron_generate_shape.bats, 
+      tests/unit/test_g064_readiness.py, tests/unit/test_workflow_coverage.py, 
+      tools/g064-readiness.py, web/blueprints/arcs.py, 
+      web/templates/arcs_index.html]
 related_tasks: []
 created: 2026-05-02T19:15:25Z
-last_update: 2026-08-11T22:30:22Z
+last_update: '2026-08-16T22:24:41Z'
 date_finished: 2026-08-11T22:30:22Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -144,6 +161,23 @@ bvp_scores_proposed:
       D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

@@ -13,7 +13,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-28T17:36:56Z
-last_update: '2026-06-11T22:23:52Z'
+last_update: '2026-08-16T22:24:37Z'
 date_finished: 2026-04-28T18:06:13Z
 bvp_scores_proposed:
   - ts: '2026-06-11T22:23:52Z'
@@ -32,6 +32,23 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-16T22:24:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 4
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); 
+      F-AUTONOMY=4 (body:auto-promote-class-eligibility); F3=0 (no-signal); F1=0
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
