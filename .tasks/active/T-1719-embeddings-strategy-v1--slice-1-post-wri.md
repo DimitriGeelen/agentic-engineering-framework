@@ -219,7 +219,8 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 <!-- ACs locked at filing per T-1717 Recommendation. Do not modify
      without an Evolution log entry explaining what changed. -->
 
-- [ ] **A1** Post-write hook in `lib/learnings.sh add` + `update-task.sh
+- [~] **A1** (index_one() shipped + tested at 1.6s/42 chunks; hook wiring into
+  the two call sites remains) Post-write hook in `lib/learnings.sh add` + `update-task.sh
   --status work-completed` for arc-tagged tasks: triggers single-chunk
   embed + sqlite-vec insert. Latency <5s on the typical learning entry
   size. Bats test pins behavior + latency budget.

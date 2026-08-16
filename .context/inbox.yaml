@@ -3679,3 +3679,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-292
+  text: "T-1719 A1 partial: index_one() ships and is tested (42 chunks/1593ms, well inside the <5s budget; document ranks first for a query about its own content). REMAINING for A1: wire it into the two call sites. NOTE THE FILING IS WRONG — the AC names 'lib/learnings.sh add' but THAT FILE DOES NOT EXIST. The learning-add path must be located before wiring (candidates: agents/context/lib/, lib/learning.sh singular). Second call site is update-task.sh --status work-completed for arc-tagged tasks. Design constraint discovered while building: neither build_index() (hours) nor reindex_incremental() (copies the whole DB and os.replace()s it) can serve a post-write hook, and a naive live-DB write during a reindex lands on the pre-swap inode and is silently discarded — hence index_one takes the SAME advisory lock non-blocking and returns skipped=reindex-in-progress. Skipping is correct because the running reindex reads the file from disk anyway."
+  captured: 2026-08-16T13:57:13Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null
