@@ -113,11 +113,28 @@ profile, hook wrapper); `git config core.sharedRepository=group`;
 `StateDirectoryMode=0770` and the socket `chgrp`'d to the group.
 
 - **Pros:** standard Unix answer; no framework code changes; fixes rows 1-4, 11.
-- **Cons:** does **not** fix rows 5/6, and makes them worse in a specific way —
-  today a second principal gets a clean `EACCES`; group-writable, it gets a
-  *successful* write that silently discards the other's state. Setgid inheritance
-  also does not apply to files moved in from outside the tree, which is exactly
-  how the temp+`mv` aggregates are written.
+- **Cons:** does **not** fix rows 5/6. **Measured — see §5c.** The spike confirmed
+  the direction and then found something worse than this bullet originally
+  claimed: for row 6, A **does not even deliver the shared write it is trading
+  safety for.** `mktemp` hard-codes mode `0600` and `rename(2)` preserves it, so
+  the aggregate lands `0600` owned by whichever principal wrote last and the other
+  is locked out on its *next* write — whether or not the temp file was created
+  inside the setgid tree. Setgid sets the group correctly and the mode denies it;
+  `umask 0002` cannot help, because `mktemp` never offers a bit to clear.
+
+  The original wording of this bullet — "today a second principal gets a clean
+  `EACCES`" — was **overstated and is corrected in §5c**. It holds only for an
+  unprivileged principal writing *uncontended*. Under real concurrency 82% of
+  those failures are already torn reads, and when the second principal is `root`
+  (the actual AEF situation) today's behaviour is *already* the silent lost
+  update, because root bypasses DAC. A does not create the silent-loss mode; it
+  generalises an existing one to both directions. Still a strict worsening, but
+  not the clean loud→silent conversion this document first asserted.
+
+  **Scope note:** this verdict is about applying A to the *repo tree*. It says
+  nothing about **A-minimal** — `chgrp`+`chmod 0770` on `/var/lib/termlink/hub.sock`
+  — which is a socket, not a read-modify-write file, and has no lost-update shape
+  to worsen. A-minimal remains the correct unblock (row 1) and is unaffected.
 
 ### B. Per-principal state split — *framework*
 
@@ -198,6 +215,64 @@ to E, not a substitute.
   The failure mode is not an error — it is a second hub, a second copy of state,
   and messages that vanish. That cost was already paid once today.
 
+## 5c. Measured evidence (IW-2 spike, 2026-08-16)
+
+Full report: `docs/reports/T-3041-lost-update-spike.md`. Two real uids (`root`,
+`dimitri-mint-dev`), 200 iterations each, wall-clock barrier so the window is
+genuine contention, 4 replications. Every number below is measured on this host.
+
+| Exp | Shape | Config | Writes OK | Lost | Errors |
+|---|---|---|---:|---:|---|
+| E1 | in-place RMW (row 5) | group+setgid+umask | 50–216/400 | **file unparseable in 3 of 4 runs** | torn reads only, **0 `EACCES`** |
+| E2 | temp+`mv` (row 6) | group+setgid+umask | **400/400** | **exactly 200, every run** | **none** |
+| E3 | append-only JSONL (row 7) | *no group at all* | **400/400** | **0** | **none** |
+| E4b | in-place RMW, no group | root writes dimitri's file | 290/400 | 90 | **none — 0 `EACCES`** |
+| E4c | temp+`mv`, no group | root writes dimitri's file | 400/400 | **200** | **none**, then lockout |
+
+Four findings, in order of how much they change the recommendation:
+
+1. **E3 is the headline.** The append-only control was flawless with **no shared
+   group, no setgid, no umask, no lock** — 400/400 lines, zero torn, zero lost,
+   every line valid JSON. This is not an argument that E works; it is a
+   measurement that E *already works*, in-tree, today. Candidate E is not a
+   proposal to build something new. It is a proposal to apply the one shape the
+   framework has already proved.
+
+2. **Row 6's loss is silent, total, and exact.** 400/400 writes *succeed*. No
+   error, no corruption, a file that parses cleanly — and one principal's entire
+   200-write history simply absent. The `witness` map contained only the winner's
+   key; the loser left no trace at all. This is the worst possible failure shape:
+   indistinguishable from success at every observable surface.
+
+3. **The problem is not hypothetical and does not wait for Candidate A.** E4b and
+   E4c show today's un-grouped framework *already* losing 90 and 200 updates
+   silently, because root's DAC bypass means it never sees `EACCES` on anyone's
+   file. E4c then ends `0600 root:root` and locks the other principal out of every
+   subsequent write. **Row 6's ownership-flip lockout is current behaviour**, not
+   a side-effect of a change we are considering. Half the multi-uid matrix is
+   already silently lossy with zero configuration.
+
+4. **Root breaks the symmetry.** Any reasoning that treats "the second principal"
+   as interchangeable will mispredict half the cases. The failure matrix is
+   asymmetric because one principal bypasses the permission system entirely.
+
+**Honest limits.** The spike's harness fails loudly on a torn read; the real call
+sites do not — `agents/context/lib/pattern.sh` pipes through `awk`, which
+processes a truncated file and exits 0. So E1's error counts are an **upper bound
+on how loud the framework actually is**. Where the spike reports a parse error,
+the framework reports nothing. Separately, both principals here were root plus one
+unprivileged user; a two-*unprivileged*-principal case was not run (creating users
+exceeded the scratch-only constraint). Probes P2/P3 exercise the decisive
+group-mediated path directly, so the Candidate A verdict does not rest on the
+missing case — but the E4b/E4c asymmetry findings are specifically *about* root
+and do not generalise.
+
+**What this changes.** E moves from "the better-shaped candidate" to "the only
+candidate with a measured pass". A is now disqualified for rows 5/6 on evidence
+rather than argument, and disqualified twice over — it fails to prevent the loss
+*and* fails to grant the access. Row 5 is promoted from inferred to measured, and
+upgraded: it **corrupts**, it does not merely lose.
+
 ## 5b. The identity question underneath all of this
 
 Every candidate above treats the symptom. The cause is that **AEF has no concept
@@ -238,10 +313,21 @@ Row 7 is already multi-writer safe with no group, no lock and no rail — the go
 should be to make the dangerous set resemble row 7, not to make the filesystem
 tolerate it.
 
-A is the unblock and is cheap. B is the correctness fix and is the one that
-matters, because **A alone converts hard failures into silent ones**. Shipping A
-without B would be a net reduction in observability, which is the antithesis of
-Reliability (D2). That is the single most important sentence in this document.
+**Now confirmed by measurement (§5c), with one correction.** The IW-2 spike ran
+and A is disqualified for rows 5/6 on evidence: temp+`mv` under group+setgid
+silently discarded exactly 200 of 400 updates in every run, with 400/400 writes
+reporting success — and it did not even grant the shared write it was trading
+that safety for (`mktemp` hard-codes `0600`; `rename(2)` preserves it). The
+append-only control passed 400/400 with zero loss and **no group at all**.
+
+The correction is to this document's own claim. "A alone converts hard failures
+into silent ones" is too strong: E4b/E4c show the framework is *already* losing
+updates silently today, whenever root is the writer, because root bypasses DAC. A
+does not create that mode — it generalises it to both directions. Still a strict
+worsening, and A-full for the tree is still rejected; but the honest statement is
+that **we are not protecting a working system, we are fixing one that is already
+silently lossy in half the matrix.** That raises the urgency of E rather than
+lowering it.
 
 1. **A-minimal now** — group + socket + `/var/lib/termlink` mode. Unblocks Codex
    today. Deliberately *minimal*: enough to restore local hub access, not the
@@ -259,10 +345,11 @@ Reliability (D2). That is the single most important sentence in this document.
    less there is to detect drift in.
 6. **C** — file in the TermLink repo, referencing this artifact.
 
-**Gate on evidence before committing to the size of step 2.** The IW-3 inventory
-and the IW-2 spike are running now. If the spike shows zero lost updates under
-setgid, A becomes far more attractive and E can be scoped to the few genuinely
-contended files. If it shows what §5A predicts, E is not optional.
+**Evidence gate — half resolved.** The IW-2 spike has reported (§5c): it did *not*
+show zero lost updates, so the branch where A becomes attractive and E narrows to
+a few files is closed. **E is not optional.** The IW-3 inventory is still running;
+it sizes step 2 (how many files are in the dangerous set) but can no longer change
+its direction.
 
 Step 5 is what makes this antifragile rather than a one-time cleanup — but the
 better outcome is a design that needs less of it.

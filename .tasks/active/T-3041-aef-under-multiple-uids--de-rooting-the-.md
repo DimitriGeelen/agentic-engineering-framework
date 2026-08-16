@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-16T16:32:07Z
-last_update: 2026-08-16T16:34:21Z
+last_update: '2026-08-16T16:45:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -38,6 +38,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-16T16:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -80,9 +90,22 @@ bvp_scores_proposed:
 
 - **IW-2: Does a shared POSIX group + setgid + umask actually hold, or does it
   convert hard failures into silent lost updates?**
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: >-
+    Measured, not argued. docs/reports/T-3041-lost-update-spike.md — 2 real uids,
+    200 iterations each, 4 replications. It does NOT hold: temp+mv under
+    group+setgid lost exactly 200/400 updates every run with 400/400 writes
+    reporting success and zero errors; in-place RMW left the file structurally
+    unparseable in 3 of 4 runs; the append-only control passed 400/400 with no
+    group at all. Two corrections to my own framing, both recorded in artifact
+    §5c: (a) A does not even grant the shared write it trades safety for, because
+    mktemp hard-codes 0600 and rename(2) preserves it — the aggregate lands
+    0600 owned by the last writer and locks the other principal out; (b) the
+    "today it fails loudly" premise was overstated — E4b/E4c show the framework
+    already losing updates silently today whenever root is the writer, since root
+    bypasses DAC. A generalises an existing silent-loss mode rather than creating
+    one. Verdict: A rejected for rows 5/6 on evidence; E confirmed as the spine.
   <!-- The concern is specific, not vague: `.context/working/*` files that are
        rewritten wholesale via temp+mv are single-writer by construction. Today a
        second principal gets a clean EACCES. Group-writable, it gets a successful
@@ -218,9 +241,33 @@ Forced by evidence, not preference: a non-root Codex agent cannot reach the Term
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- **IW-2 spike (measured):** `docs/reports/T-3041-lost-update-spike.md` — 2 uids ×
+  200 iterations × 4 replications on this host. temp+`mv` under shared
+  group+setgid: **400/400 writes succeed, exactly 200 updates silently lost, zero
+  errors, file parses cleanly.** In-place read-modify-write: **unparseable in 3 of
+  4 runs.** Append-only control: **400/400, zero lost, with no group at all.**
+- **A disqualified twice over:** `mktemp` hard-codes `0600`, `rename(2)` preserves
+  it — so Candidate A does not prevent the loss *and* does not grant the shared
+  write it trades safety for. Setgid fixes the group; the mode denies it.
+- **Already broken today:** E4b/E4c — root writing another principal's file loses
+  90 and 200 updates respectively with **zero `EACCES`**, because root bypasses
+  DAC, then leaves the file `0600 root:root` and locks the other principal out.
+  The row-6 lockout is current behaviour, not a proposed change's side-effect.
+- **Two of my own claims corrected by the evidence**, recorded in artifact §5c:
+  the "clean `EACCES` today" premise (overstated — holds only uncontended, and not
+  at all when root is the writer) and "A converts loud failures to silent ones"
+  (it generalises an existing silent mode rather than creating it).
+- **Rival-hub fragmentation:** OBS-296 — three hub processes on this host, two
+  sharing `/var/lib/termlink`, because each uid that could not reach an existing
+  hub silently started its own.
+- **Socket ground truth:** `/var/lib/termlink/hub.sock` is `srwxr-xr-x root root`
+  — a filesystem fact surfacing as an RPC `Permission denied (os error 13)`,
+  which is why the peer misdiagnosed it as channel authorization (OBS-297).
+- **In-tree precedent for E:** `lib/outcome.py:backprop_outcome` documents the
+  `O_APPEND`-under-`PIPE_BUF` atomicity that makes row 7 safe with no rail.
+- **Identity collision observed live:** an auto-dispatcher (`origin:
+  systemd:unlabeled-unit`) spawned a worker onto T-1719 mid-edit; nothing in the
+  system could tell those were two principals with a converging write set (§5b).
 
 ## Decisions
 
