@@ -5,14 +5,14 @@ name: "handover generator embeds state by value — reference it instead (candid
 description: >
   handover generator embeds state by value — reference it instead (candidate F)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 target_blast_radius: 3   # agents/handover/handover.sh + section builders; single subsystem
 voi_score: 0.7           # settles 79% of corpus growth and the G-018 quality question
 tags: []
-components: []
+components: [agents/handover/handover.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-15T22:12:24Z
-last_update: 2026-08-15T23:08:43Z
-date_finished:
+last_update: 2026-08-16T06:49:43Z
+date_finished: 2026-08-16T06:49:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -353,13 +353,73 @@ embedding and attack the growth elsewhere. No measurement settles that.
 
 ## Decision
 
-<!-- Filled at completion of inception tasks via:
-     fw inception decide T-XXX go|no-go|defer --rationale "..."
+**Decision**: GO
 
-     For non-inception tasks this section is ignored. Kept in template
-     so `fw inception decide` (lib/inception.sh) finds the anchor heading
-     without auto-creating; T-1832 added auto-create as fallback for
-     legacy tasks lacking this section. -->
+**Rationale**: Recommendation: GO — option (3) digest-plus-reference, conditional on carrying per-task
+status, and scoped to the three dump sections only.
+
+(This replaces an auto-retrofitted DEFER stub whose stated promotion criterion was
+"re-surface when concrete spike data emerges". Spikes 11 and 12 are that data. The backstop
+did its job by flagging the gap; its placeholder content was never an assessment.)
+
+Rationale:
+
+The cost side is settled and large. 97.3% of a representative handover is state dumps, those
+dumps are byte-identical between consecutive handovers, and they are 82% of a 90.6 MB corpus
+whose total is growing on both terms at once (count 32 → 1,717, mean size 4.5 KB → 54.2 KB).
+A built digest reduces a real handover 14.6× with all 14 narrative sections byte-identical.
+
+The case against was offline readability — a referencing handover cannot be read without a
+live system, and the scenarios that matters for are disproportionately the ones handovers
+exist for. Spike 12 substantially weakens that objection for option (3) specifically.
+The digest preserves narrative in full, and narrative is what a cold reader actually needs:
+the probe arm given only the digest answered "what must you not do", "name a decision and
+its reasoning", and "what should you do first" with high confidence and correct quotations.
+What it loses is enumerated live state — a queue snapshot that is stale the moment it is
+written, and which every consumer would re-derive anyway. Referencing the part that goes
+stale and embedding the part that does not is the right split, not a compromise.
+
+Two conditions, both cheap, both worth doing regardless:
+
+1. The digest must carry per-task `Status`. Without it the probe's digest arm read 82
+   parked tasks as live work and stated one as in-progress with high confidence. Cost is
+   4,764 B for all 119 entries — 6.8% of a section that is 25% of the file.
+2. `tasks_active:` must mean active. This is the actual defect behind condition 1 and it
+   is wrong in the full handover too, merely survivable there because the dump below
+   contradicts it. Fixing it makes condition 1 unnecessary. (OBS-276.)
+
+I am not recommending (2) reference-everything — it discards the narrative value the probe
+just demonstrated — nor (4) delta-only, which is uncosted and whose failure mode (a chain
+where one broken link orphans everything after it) is worse than the problem.
+
+What I am NOT recommending, and why this is not a full GO on candidate F: IW-1 — is the
+handover's primary consumer a cold reader or a live session? — is untouched by all of this
+and is genuinely yours. My argument above assumes narrative is the cold-reader payload. If
+you think the enumerations are the payload, option (3) is wrong and the answer is to keep
+embedding and attack the growth elsewhere. No measurement settles that.
+
+Evidence:
+
+- Corpus: 0.5 → 133.6 MB, +62% in the last month, 79% handovers (T-3022 §Spike 9,
+  measured against HEAD after a stale-`master` error produced a false flat tail — L-608).
+- Redundancy: consecutive handovers byte-identical across the three dumps; 8 of 9
+  sampled pairs ≥96.3% identical, sustained March → August (T-3022 §Spike 10).
+- Digest built and measured: 273,761 → 18,762 B (6.9%), 14/14 narrative sections
+  byte-identical by md5 (§Spike 11). Script committed at
+  `docs/reports/T-3025-digest-spike.py` so the numbers are reproducible.
+- Dump content is mostly constant: 119/119 entries `Next step: See task file`; 119/119
+  `Blockers: None`; 17/119 `Last action: See git log` (§11b, §12).
+- Two-arm probe, zero parent context: neither arm confabulated across the elision; both
+  named the right command. Outputs committed at `docs/reports/T-3025-iw2-arm-{a,b}-.md`.
+- The reversal, stated against my own prior conclusion: §11c claimed the digest drops no
+  task identity and the trade is cheap. The probe showed the surviving carrier asserts a
+  false status. I had counted the bits without asking what depended on them. A single arm
+  would not have caught it.
+- Two defects surfaced that are independent of this decision: OBS-275 (handover reports
+  vs-master, not push state — the quantity its own discipline turns on) and OBS-276.
+  Both were raised unprompted by the probe arms.
+
+**Date**: 2026-08-16T06:49:43Z
 
 ## Updates
 
@@ -395,3 +455,100 @@ embedding and attack the growth elsewhere. No measurement settles that.
 ### 2026-08-15T22:23:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-08-16T06:49:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — option (3) digest-plus-reference, conditional on carrying per-task
+status, and scoped to the three dump sections only.
+
+(This replaces an auto-retrofitted DEFER stub whose stated promotion criterion was
+"re-surface when concrete spike data emerges". Spikes 11 and 12 are that data. The backstop
+did its job by flagging the gap; its placeholder content was never an assessment.)
+
+Rationale:
+
+The cost side is settled and large. 97.3% of a representative handover is state dumps, those
+dumps are byte-identical between consecutive handovers, and they are 82% of a 90.6 MB corpus
+whose total is growing on both terms at once (count 32 → 1,717, mean size 4.5 KB → 54.2 KB).
+A built digest reduces a real handover 14.6× with all 14 narrative sections byte-identical.
+
+The case against was offline readability — a referencing handover cannot be read without a
+live system, and the scenarios that matters for are disproportionately the ones handovers
+exist for. Spike 12 substantially weakens that objection for option (3) specifically.
+The digest preserves narrative in full, and narrative is what a cold reader actually needs:
+the probe arm given only the digest answered "what must you not do", "name a decision and
+its reasoning", and "what should you do first" with high confidence and correct quotations.
+What it loses is enumerated live state — a queue snapshot that is stale the moment it is
+written, and which every consumer would re-derive anyway. Referencing the part that goes
+stale and embedding the part that does not is the right split, not a compromise.
+
+Two conditions, both cheap, both worth doing regardless:
+
+1. The digest must carry per-task `Status`. Without it the probe's digest arm read 82
+   parked tasks as live work and stated one as in-progress with high confidence. Cost is
+   4,764 B for all 119 entries — 6.8% of a section that is 25% of the file.
+2. `tasks_active:` must mean active. This is the actual defect behind condition 1 and it
+   is wrong in the full handover too, merely survivable there because the dump below
+   contradicts it. Fixing it makes condition 1 unnecessary. (OBS-276.)
+
+I am not recommending (2) reference-everything — it discards the narrative value the probe
+just demonstrated — nor (4) delta-only, which is uncosted and whose failure mode (a chain
+where one broken link orphans everything after it) is worse than the problem.
+
+What I am NOT recommending, and why this is not a full GO on candidate F: IW-1 — is the
+handover's primary consumer a cold reader or a live session? — is untouched by all of this
+and is genuinely yours. My argument above assumes narrative is the cold-reader payload. If
+you think the enumerations are the payload, option (3) is wrong and the answer is to keep
+embedding and attack the growth elsewhere. No measurement settles that.
+
+Evidence:
+
+- Corpus: 0.5 → 133.6 MB, +62% in the last month, 79% handovers (T-3022 §Spike 9,
+  measured against HEAD after a stale-`master` error produced a false flat tail — L-608).
+- Redundancy: consecutive handovers byte-identical across the three dumps; 8 of 9
+  sampled pairs ≥96.3% identical, sustained March → August (T-3022 §Spike 10).
+- Digest built and measured: 273,761 → 18,762 B (6.9%), 14/14 narrative sections
+  byte-identical by md5 (§Spike 11). Script committed at
+  `docs/reports/T-3025-digest-spike.py` so the numbers are reproducible.
+- Dump content is mostly constant: 119/119 entries `Next step: See task file`; 119/119
+  `Blockers: None`; 17/119 `Last action: See git log` (§11b, §12).
+- Two-arm probe, zero parent context: neither arm confabulated across the elision; both
+  named the right command. Outputs committed at `docs/reports/T-3025-iw2-arm-{a,b}-.md`.
+- The reversal, stated against my own prior conclusion: §11c claimed the digest drops no
+  task identity and the trade is cheap. The probe showed the surviving carrier asserts a
+  false status. I had counted the bits without asking what depended on them. A single arm
+  would not have caught it.
+- Two defects surfaced that are independent of this decision: OBS-275 (handover reports
+  vs-master, not push state — the quantity its own discipline turns on) and OBS-276.
+  Both were raised unprompted by the probe arms.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-39ce79d4
+- **Timestamp:** 2026-08-16T06:49:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Option (3) is **built and measured** rather than estimated — `docs/reports/T-3025-digest-spike.py`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=docs/reports/T-3025-digest-spike.py in: Option (3) is **built and measured** rather than estimated — `docs/reports/T-3025-digest-spike.py``
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-95d6cc58
+- **Timestamp:** 2026-08-16T06:49:44Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3025-digest-spike.py` | file | ✓ pass |
+| `T-3022` | task | ✓ pass |
+
+### 2026-08-16T06:49:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

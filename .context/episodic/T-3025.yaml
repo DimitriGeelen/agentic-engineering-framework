@@ -1,0 +1,130 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3025: handover generator embeds state by value — reference it instead (candidate F)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T06:49:55Z
+# ============================================================================
+
+task_id: T-3025
+task_name: "handover generator embeds state by value — reference it instead (candidate F)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-15T22:12:24Z
+completed: 2026-08-16T06:49:43Z
+duration_days: 1
+updates_count: 9
+first_commit: 2026-08-16T00:16:04+02:00
+last_commit: 2026-08-16T01:13:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file candidate F as inception (measured, needs design decision); T-3024 recommendation; OBS-273 gate catch-22. research artifact + vendored copy refresh; handover S-2026-0816-0016. session handover S-2026-0816-0019 — learning sections filled, not left empty. spike 11 — build option (3) and measure what it costs. spike 12 — the two-arm probe answers IW-2 and reverses my spike-11 conclusion. real recommendation — GO on option (3), conditional, replacing the DEFER stub. real acceptance criteria replacing the template placeholders. Session handover S-2026-0816-0105. session handover S-2026-0816-0105 + vendored sync. post-close governance state — T-3026 episodic, audit, timestamps
+
+# Key outcomes
+outcomes:
+  - 'The four options (embed all / reference all / digest+reference / delta-only) are stated'
+  - 'Option (3) is **built and measured** rather than estimated — `docs/reports/T-3025-digest-spike.py`'
+  - 'IW-2 is answered empirically, not by argument: a two-arm probe with the unmodified'
+  - 'The probe''s disagreement with my own prior conclusion (§11c) is recorded **as a'
+  - 'Defects surfaced that are independent of this decision are filed separately and not'
+  - '`## Recommendation` states GO/NO-GO with rationale and evidence, and names explicitly'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/search_utils.py'
+  - '.context/audits/2026-08-16.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/episodic/T-3026.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0816-0016.md'
+  - '.context/handovers/S-2026-0816-0019.md'
+  - '.context/handovers/S-2026-0816-0105.md'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/T-3025-digest-spike.py'
+  - 'docs/reports/T-3025-handover-state-by-value.md'
+  - 'docs/reports/T-3025-iw2-arm-a-full.md'
+  - 'docs/reports/T-3025-iw2-arm-b-digest.md'
+  - '.tasks/active/T-3024-define-the-semantic-index-inclusion-set-.md'
+  - '.tasks/active/T-3025-handover-generator-embeds-state-by-value.md'
+  - '.tasks/completed/T-3026-handover-reports-vs-master-but-not-push-.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T00:16:04'
+    action: 'T-3025: file candidate F as inception (measured, needs design decision); T-3024 recommendation; OBS-273 gate catch-22'
+  - time: '2026-08-16T00:18:17'
+    action: 'T-3025: research artifact + vendored copy refresh; handover S-2026-0816-0016'
+  - time: '2026-08-16T00:25:13'
+    action: 'T-3025: session handover S-2026-0816-0019 — learning sections filled, not left empty'
+  - time: '2026-08-16T00:52:47'
+    action: 'T-3025: spike 11 — build option (3) and measure what it costs'
+  - time: '2026-08-16T00:55:12'
+    action: 'T-3025: spike 12 — the two-arm probe answers IW-2 and reverses my spike-11 conclusion'
+  - time: '2026-08-16T01:00:25'
+    action: 'T-3025: real recommendation — GO on option (3), conditional, replacing the DEFER stub'
+  - time: '2026-08-16T01:00:56'
+    action: 'T-3025: real acceptance criteria replacing the template placeholders'
+  - time: '2026-08-16T01:05:54'
+    action: 'T-3025: Session handover S-2026-0816-0105'
+  - time: '2026-08-16T01:08:35'
+    action: 'T-3025: session handover S-2026-0816-0105 + vendored sync'
+  - time: '2026-08-16T01:13:22'
+    action: 'T-3025: post-close governance state — T-3026 episodic, audit, timestamps'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 517 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 517
+  commits: 10
+  files_changed: 39
+  lines_added: 7899
+  lines_removed: 328
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3025-handover-generator-embeds-state-by-value.md
+generated_by: context-agent-hybrid

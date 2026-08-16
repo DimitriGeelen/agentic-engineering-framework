@@ -34248,3 +34248,119 @@ scan_id: R-403e6ac5
 task_id: T-3026
 payload:
   task_file: .tasks/active/T-3026-handover-reports-vs-master-but-not-push-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T06:49:44Z'
+scan_id: R-39ce79d4
+task_id: T-3025
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T06:49:44Z'
+scan_id: R-39ce79d4
+task_id: T-3025
+payload:
+  task_file: .tasks/active/T-3025-handover-generator-embeds-state-by-value.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-16T06:49:44Z'
+scan_id: RC-95d6cc58
+task_id: T-3025
+payload:
+  overall: CONFIRMED
+  claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-08-16T07:55:59Z'
+scan_id: R-845fe116
+task_id: T-3027
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T07:55:59Z'
+scan_id: R-845fe116
+task_id: T-3027
+payload:
+  task_file: .tasks/active/T-3027-handover-tasksactive-lists-non-active-ta.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T08:26:27Z'
+scan_id: R-f952158e
+task_id: T-3028
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T08:26:27Z'
+scan_id: R-f952158e
+task_id: T-3028
+payload:
+  task_file: .tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T08:39:20Z'
+scan_id: R-0ed71de8
+task_id: T-3028
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T08:39:20Z'
+scan_id: R-0ed71de8
+task_id: T-3028
+payload:
+  task_file: .tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T08:49:28Z'
+scan_id: R-ec68b6d7
+task_id: T-3029
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T08:49:28Z'
+scan_id: R-ec68b6d7
+task_id: T-3029
+payload:
+  task_file: .tasks/active/T-3029-t-3028-closed-as-full-complete-with-an-u.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T09:43:50Z'
+scan_id: R-2c6fc87f
+task_id: T-3030
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T09:43:50Z'
+scan_id: R-2c6fc87f
+task_id: T-3030
+payload:
+  task_file: .tasks/active/T-3030-dispatched-workers-run-in-the-live-check.md

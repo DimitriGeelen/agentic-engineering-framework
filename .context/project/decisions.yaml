@@ -3110,3 +3110,31 @@ decisions:
     date: 2026-08-15
     task: T-3022
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-447
+    decision: "record the dispatch's writes against the dispatch row"
+    scope: project
+    date: 2026-08-16
+    task: T-3030
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-448
+    decision: "snapshot `git status --porcelain` either side of the worker and"
+    scope: project
+    date: 2026-08-16
+    task: T-3030
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-449
+    decision: "a task whose own file is uncommitted is excluded unconditionally;"
+    scope: project
+    date: 2026-08-16
+    task: T-3030
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-450
+    decision: "exclude `.context/working/`, `.context/audits/`, `.context/monitors/`,"
+    scope: project
+    date: 2026-08-16
+    task: T-3030
+    rationale: "Auto-captured from task file on completion"
