@@ -1,0 +1,20 @@
+id: tests/unit/handover_task_classification.bats
+name: handover_task_classification
+type: script
+subsystem: unknown
+location: tests/unit/handover_task_classification.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-16
+created_by: unknown

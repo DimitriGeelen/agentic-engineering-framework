@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3027: handover tasks_active: lists non-active tasks — OBS-276, T-3025 GO condition 2
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T07:56:10Z
+# ============================================================================
+
+task_id: T-3027
+task_name: "handover tasks_active: lists non-active tasks — OBS-276, T-3025 GO condition 2"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T07:46:47Z
+completed: 2026-08-16T07:55:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T09:53:02+02:00
+last_commit: 2026-08-16T09:55:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Checkpoint handover S-2026-0816-0952. tasks_active: now means active, and the states it absorbed get their own fields
+
+# Key outcomes
+outcomes:
+  - '`tasks_active:` lists only tasks whose `status:` is in flight (`started-work` or `issues`); a `captured` or `work-completed` task in `.tasks/active/` does not appear in it'
+  - 'Information parity is preserved, not dropped: `tasks_parked:` (status `captured`) and `tasks_awaiting_review:` (status `work-completed`, still in `active/` — the partial-complete state) are emitted alongside it'
+  - 'Both emission sites are fixed — the full handover (`handover.sh:584`) and the checkpoint handover (`:188`) — so a checkpoint does not reintroduce the wrong claim'
+  - 'A task whose `status:` is missing or unreadable is classified as `tasks_unknown_status:` rather than silently counted as active (a parse failure must not read as a live-work assertion)'
+  - '`tests/unit/handover_task_classification.bats` builds a real `.tasks/active/` containing one task of each status and asserts each lands in exactly one bucket, with the union equal to the directory listing'
+  - 'The live generated handover shows the corrected split, and `tasks_active:` count matches `bin/fw task list --status started-work`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/AGENT.md'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/handover/AGENT.md'
+  - 'agents/handover/handover.sh'
+  - '.context/handovers/CHECKPOINT-S-2026-0816-0952.md'
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-3027-handover-tasksactive-lists-non-active-ta.md'
+  - 'tests/unit/handover_task_classification.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T09:53:02'
+    action: 'T-3027: Checkpoint handover S-2026-0816-0952'
+  - time: '2026-08-16T09:55:28'
+    action: 'T-3027: tasks_active: now means active, and the states it absorbed get their own fields'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 10
+  lines_added: 975
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3027-handover-tasksactive-lists-non-active-ta.md
+generated_by: context-agent-hybrid

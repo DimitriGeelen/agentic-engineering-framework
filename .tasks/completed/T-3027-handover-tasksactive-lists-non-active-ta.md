@@ -4,12 +4,12 @@ name: "handover tasks_active: lists non-active tasks — OBS-276, T-3025 GO cond
 description: >
   handover tasks_active: lists non-active tasks — OBS-276, T-3025 GO condition 2
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, tests/unit/handover_task_classification.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T07:46:47Z
-last_update: 2026-08-16T07:53:03Z
-date_finished: null
+last_update: 2026-08-16T07:55:50Z
+date_finished: 2026-08-16T07:55:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -309,3 +309,15 @@ live work.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3027-handover-tasksactive-lists-non-active-ta.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-845fe116
+- **Timestamp:** 2026-08-16T07:55:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-16T07:55:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

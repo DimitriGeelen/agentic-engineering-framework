@@ -3561,11 +3561,22 @@ observations:
   captured: 2026-08-15T22:53:33Z
   context_task: T-3025
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Shipped as T-3026 (closed 2026-08-16): the handover Branch line now carries push state (in sync / N not pushed / never pushed) alongside the vs-master figure, read from the local remote-tracking ref with no fetch. Pinned by tests/unit/handover_push_state.bats."
+  dismissed_at: 2026-08-16T07:56:32Z
   promoted_to: null
 - id: OBS-276
   text: "OBS: the handover frontmatter field 'tasks_active:' lists tasks that are not active. T-2977 appears in it while being status=captured, horizon=later. Across S-2026-0816-0019's Work in Progress section, 82 of 119 entries are 'captured' and only 37 are 'started-work' — the field mis-describes 69% of its own contents. Survivable in the full handover because the WIP dump immediately below carries per-task Status and contradicts it; NOT survivable if that dump is ever summarised or dropped. Demonstrated live: in the T-3025 IW-2 two-arm probe, the arm given only a digest answered 'T-2977 is in progress' with high confidence, citing tasks_active; the arm given the full handover correctly answered 'no, captured/later'. Fix the field name or the field contents. Origin: T-3025 spike 12, 2026-08-16."
   captured: 2026-08-15T22:54:51Z
+  context_task: T-3025
+  tags: []
+  status: dismissed
+  dismissed_reason: "Shipped as T-3027 (closed 2026-08-16): tasks_active: now classifies by status: rather than directory membership, and the absorbed states get named fields (tasks_parked, tasks_awaiting_review, tasks_unknown_status). Both emission sites go through one classifier; pinned by tests/unit/handover_task_classification.bats (10 tests, incl. partition + both-sites + live-corpus parity)."
+  dismissed_at: 2026-08-16T07:56:32Z
+  promoted_to: null
+- id: OBS-277
+  text: "OBS: OneDev (onedev.docker.ring20.geelenandcompany.com) began returning HTTP 403 at ~2026-08-16T01:15Z, server-level rather than credential-level: an anonymous GET of the bare root URL returns 403, and 'git ls-remote origin' (read-only) fails identically. Pushes with the same embedded credential succeeded minutes earlier in the same session, so this is not token rejection on the push path — it looks like the reverse proxy or the service itself. Impact contained: the github mirror accepted the same branch, so t2539-staging is durable at 97db849d1 == local HEAD, and only origin is behind by one commit. Action for operator: check the OneDev container / Traefik route; re-push origin when it returns. SECONDARY, independent of the outage: the origin remote URL embeds a plaintext access token in .git/config, so it appears in 'git remote -v' output, in any transcript that captures it, and in shell history. Recommend moving it to a credential helper and rotating the current token — it was surfaced in this session's output while diagnosing the 403. Origin: T-3025 session end, 2026-08-16."
+  captured: 2026-08-15T23:18:11Z
   context_task: T-3025
   tags: []
   status: pending
