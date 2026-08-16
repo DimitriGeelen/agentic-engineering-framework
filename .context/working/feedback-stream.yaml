@@ -34364,3 +34364,21 @@ scan_id: R-2c6fc87f
 task_id: T-3030
 payload:
   task_file: .tasks/active/T-3030-dispatched-workers-run-in-the-live-check.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T09:57:24Z'
+scan_id: R-d978be3f
+task_id: T-3031
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T09:57:24Z'
+scan_id: R-d978be3f
+task_id: T-3031
+payload:
+  task_file: .tasks/active/T-3031-the-indexed-corpus-after-the-handover-di.md

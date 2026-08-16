@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3031: the indexed corpus after the handover digest — measure what dominates now
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T09:57:36Z
+# ============================================================================
+
+task_id: T-3031
+task_name: "the indexed corpus after the handover digest — measure what dominates now"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T09:44:40Z
+completed: 2026-08-16T09:57:03Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T11:56:54+02:00
+last_commit: 2026-08-16T11:56:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the digest fixed the flow and left the stock — handovers are still 67.6%
+
+# Key outcomes
+outcomes:
+  - 'The current indexed corpus is measured by source class (handovers, task files, episodics, docs, reports, generated component docs, …) with per-class byte totals and share-of-total, written to `docs/reports/T-3031-corpus-after-digest.md`'
+  - 'The measurement is reproducible from a committed command or script, not a one-off shell pipeline that exists only in the transcript — a number nobody can regenerate is not a measurement'
+  - 'The pre-digest baseline (68% handovers / 79% of growth) is restated with its date and method, so the before/after is a comparison rather than two unrelated numbers'
+  - 'Growth is measured separately from size — the class that dominates the corpus today and the class that dominates its growth are named independently, since T-3028 showed they can be the same and future candidates may not be'
+  - 'The next reduction candidate is named with its measured size, its estimated reduction, and one sentence on whether the reduction is reversible (subtraction) or a migration — the T-3025 criterion that chose the digest over the 10× option'
+  - 'Any candidate rejected during the ranking is recorded with the measured reason, so the next session does not re-derive it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the digest fixed the flow and left the stock — handovers are still 67.6%'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-3031-corpus-after-digest.md'
+  - '.fabric/components/tools-measure_corpus_classes.yaml'
+  - '.tasks/active/T-3031-the-indexed-corpus-after-the-handover-di.md'
+  - 'tools/measure_corpus_classes.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T11:56:54'
+    action: 'T-3031: the digest fixed the flow and left the stock — handovers are still 67.6%'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 5
+  lines_added: 401
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3031-the-indexed-corpus-after-the-handover-di.md
+generated_by: context-agent-hybrid
