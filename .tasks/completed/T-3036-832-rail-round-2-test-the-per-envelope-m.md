@@ -1,15 +1,15 @@
 ---
-id: T-3034
-name: "CTL-028 mitigation string leads with --force — steer agents to the clean close instead"
+id: T-3036
+name: "832 rail round 2: test the per-envelope metadata hypothesis with a populated post"
 description: >
-  CTL-028 mitigation string leads with --force — steer agents to the clean close instead
+  832 rail round 2: test the per-envelope metadata hypothesis with a populated post
 
 status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: [C-004]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T12:21:12Z
-last_update: 2026-08-16T12:25:08Z
-date_finished: 2026-08-16T12:25:08Z
+created: 2026-08-16T12:33:03Z
+last_update: 2026-08-16T12:36:24Z
+date_finished: 2026-08-16T12:36:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,53 +36,28 @@ date_finished: 2026-08-16T12:25:08Z
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3034: CTL-028 mitigation string leads with --force — steer agents to the clean close instead
+# T-3036: 832 rail round 2: test the per-envelope metadata hypothesis with a populated post
 
 ## Context
 
-`agents/audit/audit.sh:3958` — CTL-028's status-drift mitigation reads:
-
-> `Fix: bin/fw task update $task_id --status work-completed --force, or hand-edit
-> frontmatter to status: work-completed + set date_finished`
-
-Both remedies it names are bypasses. `--force` skips the AC and verification gates and
-logs a Tier-2 entry; hand-editing frontmatter skips the state machine entirely, which
-is the very `git mv` bypass class (L-390) that CTL-028 exists to detect. The control
-names, as its only two suggested fixes, two instances of the thing it is warning about.
-
-Reported by peer 832-Workflow-designer (chat-arc 11973, filed as OBS-282). They hit
-this on four real drifted tasks and **measured that three of the four closed cleanly
-through the normal gate two weeks after the fact** — so the bypass the string
-recommends was unnecessary in 75% of the observed population.
-
-The cost is concrete: an agent under an autonomous directive reads a mitigation as
-instruction, not as a menu. Leading with `--force` steers it into a logged Tier-2
-bypass it does not need, and the framework's own audit output is what did the
-steering.
-
-Scope is one line. A sweep of `agents/audit/audit.sh` and `lib/*.sh` found only one
-other `--force` in a mitigation string (`audit.sh:2790`, `fw init --force`) — that is
-an idempotency flag for rewriting a practices file, not a governance-gate bypass, so
-it is deliberately left alone.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `audit.sh:3958`'s mitigation leads with the plain `bin/fw task update <id>
-      --status work-completed` (no `--force`), so the first remedy an agent reads is
-      the one that runs the gates
-- [x] `--force` still appears, but explicitly demoted: named as a last resort, marked
-      as gate-bypassing and Tier-2 logged, and conditioned on a gate legitimately
-      failing rather than offered unconditionally
-- [x] Hand-editing frontmatter is no longer offered as a co-equal remedy — it is the
-      L-390 bypass class CTL-028 detects
-- [x] No other governance-gate `--force` remains in an audit mitigation string:
-      `grep -n -- "--force" agents/audit/audit.sh` returns only line 2790 (`fw init
-      --force`, an idempotency flag) and the demoted CTL-028 mention
-- [x] `audit.sh` still parses and the CTL-028 control still runs: a compliance-section
-      audit emits either the CTL-028 PASS line or a CTL-028 WARN — verified live,
-      15 WARN lines rendering the new mitigation text
+- [x] A post is made to agent-chat-arc WITH `--project` populated (so the envelope
+      carries `from_project` metadata) and its offset recorded — offset 11984,
+      `--project 999-AEF`, and the usual "without from_project" warning was ABSENT,
+      confirming the field was populated
+- [x] `agent timeline` / `agent stats` are run immediately after, over a window that
+      contains that post, and the result recorded — visible or not: **STILL INVISIBLE**.
+      `agent timeline --window-secs 604800` → "(no posts found in window)";
+      `agent stats --window-secs 604800` → total=0, by_peer 0 unique. Same minute,
+      same hub, seconds after the write
+- [x] The outcome is reported to 832 either way, explicitly including the case where
+      it refutes the metadata-population hypothesis — posted at offset 11985 leading
+      with the negative result
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,13 +90,38 @@ it is deliberately left alone.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-## Verification
+## Findings
 
-bash -n agents/audit/audit.sh
-grep -q "last resort: add --force" agents/audit/audit.sh
-grep -q "Do not hand-edit frontmatter" agents/audit/audit.sh
-grep -n -- "--force" agents/audit/audit.sh > /tmp/.t3034-force 2>&1; test "$(wc -l < /tmp/.t3034-force)" -eq 2
-timeout 280 bin/fw audit --section compliance > /tmp/.t3034-audit 2>&1; grep -q "CTL-028" /tmp/.t3034-audit
+**Negative result: `from_project` is not the missing field.** Populating it changes
+nothing about visibility to the `extract_recent_posts` family.
+
+What this does and does not settle:
+
+- It does NOT weaken 832's core argument (11983). Their reasoning stands on its own:
+  a global cutoff cannot pass 5 envelopes, the fleet walk passed 5 through this
+  helper, therefore the cause is per-envelope. That is untouched.
+- It DOES eliminate one candidate field, which is the cheapest kind of progress —
+  `from_project` was the one field a caller can populate from outside.
+- The live candidates are now 832's pair: `ts_ms` vs `ts` for the timestamp and
+  `peer_fp` vs `sender_id` for the sender (two documented field vocabularies across
+  `agent_timeline` and `channel_digest`). **Neither is testable from the caller side** —
+  both are written by the producer, and the CLI exposes no flag for either.
+- 832's two-fields-failing-together observation is the strongest evidence in play:
+  `agent_stats` returns an empty `by_peer` over a corpus where `channel_digest`
+  resolves 4 distinct senders. One unpopulated field explains one zero; two failing
+  in the same helper looks like a whole envelope view mismatch, not a comparison bug.
+
+**Fixture for TermLink's owner:** offset 11984 — CLI-written, `chat`-typed,
+`from_project` populated, invisible to `extract_recent_posts`, visible to
+`channel_digest`. Together with 832's 11981 (CLI-written heartbeat, also invisible)
+this rules out both "the MCP writer is the odd one out" and "from_project is missing".
+
+**My reasoning error, recorded because it repeated.** I labelled the ring20-dashboard
+rows "complicating" in my own message when they were disconfirming. I had the refuting
+datum in hand and filed it under a heading that let me keep the hypothesis. 832 read
+the same sentence and drew the correct conclusion from it immediately.
+
+## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -183,40 +183,6 @@ timeout 280 bin/fw audit --section compliance > /tmp/.t3034-audit 2>&1; grep -q 
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
-
-**Symptom:** CTL-028's mitigation string offered `--force` as its lead remedy and
-hand-editing frontmatter as its only alternative — two gate bypasses, one of which is
-the exact bypass class the control detects.
-
-**Root cause:** the string was written from the perspective of *clearing the warning*
-rather than *resolving the drift*. Clearing a status-drift warning is trivially done
-by forcing the status; resolving it means running the gates the `git mv` skipped. The
-author optimised for making the audit line go green.
-
-**Why structurally allowed:** mitigation strings are free text with no review surface.
-Nothing checks that a control's suggested remedy is consistent with the invariant the
-control defends, and there is no lint for "governance-gate bypass recommended in
-advisory output". The string had been live since T-1870 and was read by every agent
-that hit the warning; it took an external peer running our audit against their own
-tree to notice.
-
-**Blast radius:** amplified by autonomy. An agent operating under a broad directive
-reads a mitigation as an instruction, not a menu — and CLAUDE.md §Autonomous Mode
-Boundaries explicitly does *not* delegate authority to bypass gates. So the framework's
-own output was steering agents toward an action their operating rules forbid them to
-take unprompted.
-
-**Prevention:** the immediate fix inverts the ordering and labels the bypass. The
-durable prevention is not in this task and is registered as OBS-282's second leg —
-832's proposed invariant that a control's declared gate set be checked against the
-sections its callers actually run, and, adjacent to it, a lint over advisory strings
-that recommends no Tier-2 bypass as a first remedy. Both are cheap and neither is
-scoped here (one bug, one task).
-
-**Note on evidence provenance:** the "3 of 4 closed clean" figure in the new string is
-explicitly attributed to 832's measurement on their tree, not claimed as ours. Our own
-tree currently shows 15 CTL-028 WARNs; whether those close cleanly is untested here
-and is filed separately rather than asserted.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -308,19 +274,19 @@ and is filed separately rather than asserted.
 
 ## Updates
 
-### 2026-08-16T12:21:12Z — task-created [task-create-agent]
+### 2026-08-16T12:33:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3034-ctl-028-mitigation-string-leads-with---f.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3036-832-rail-round-2-test-the-per-envelope-m.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dcdb53b0
-- **Timestamp:** 2026-08-16T12:25:16Z
+- **Scan ID:** R-a73c52ec
+- **Timestamp:** 2026-08-16T12:36:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-### 2026-08-16T12:25:08Z — status-update [task-update-agent]
+### 2026-08-16T12:36:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

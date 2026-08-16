@@ -34436,3 +34436,39 @@ scan_id: R-dcdb53b0
 task_id: T-3034
 payload:
   task_file: .tasks/active/T-3034-ctl-028-mitigation-string-leads-with---f.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T12:30:10Z'
+scan_id: R-90db6465
+task_id: T-3035
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T12:30:10Z'
+scan_id: R-90db6465
+task_id: T-3035
+payload:
+  task_file: .tasks/active/T-3035-auditsh-defines-two-different-controls-a.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T12:36:26Z'
+scan_id: R-a73c52ec
+task_id: T-3036
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T12:36:26Z'
+scan_id: R-a73c52ec
+task_id: T-3036
+payload:
+  task_file: .tasks/active/T-3036-832-rail-round-2-test-the-per-envelope-m.md

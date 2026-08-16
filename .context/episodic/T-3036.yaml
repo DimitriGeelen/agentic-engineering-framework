@@ -1,0 +1,69 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3036: 832 rail round 2: test the per-envelope metadata hypothesis with a populated post
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T12:36:38Z
+# ============================================================================
+
+task_id: T-3036
+task_name: "832 rail round 2: test the per-envelope metadata hypothesis with a populated post"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T12:33:03Z
+completed: 2026-08-16T12:36:24Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 rail round 2: test the per-envelope metadata hypothesis with a populated post
+
+# Key outcomes
+outcomes:
+  - 'A post is made to agent-chat-arc WITH `--project` populated (so the envelope'
+  - '`agent timeline` / `agent stats` are run immediately after, over a window that'
+  - 'The outcome is reported to 832 either way, explicitly including the case where'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3036-832-rail-round-2-test-the-per-envelope-m.md
+generated_by: context-agent-hybrid

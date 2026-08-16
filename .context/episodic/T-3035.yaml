@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3035: audit.sh defines two different controls as CTL-029 — resolve the id collision
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T12:30:31Z
+# ============================================================================
+
+task_id: T-3035
+task_name: "audit.sh defines two different controls as CTL-029 — resolve the id collision"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T12:26:04Z
+completed: 2026-08-16T12:30:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T14:29:53+02:00
+last_commit: 2026-08-16T14:29:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  two controls both called CTL-029 — the id stays with the one everything already points at
+
+# Key outcomes
+outcomes:
+  - 'The T-2055 completable-but-not-completed control (audit.sh:4002 block) retains'
+  - 'The T-1903 stuck-partial-complete control (audit.sh:3869 block) is renumbered to'
+  - 'The new id does not collide: a header scan over `audit.sh` finds no `CTL-NNN`'
+  - 'The renumbered control''s header records the former id and why the id stayed with'
+  - '`audit.sh` parses (`bash -n`) and both controls still run'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.context/audits/2026-08-16.yaml'
+  - '.context/episodic/T-3034.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3035-auditsh-defines-two-different-controls-a.md'
+  - '.tasks/completed/T-3034-ctl-028-mitigation-string-leads-with---f.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T14:29:53'
+    action: 'T-3035: two controls both called CTL-029 — the id stays with the one everything already points at'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 14
+  lines_added: 449
+  lines_removed: 40
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3035-auditsh-defines-two-different-controls-a.md
+generated_by: context-agent-hybrid
