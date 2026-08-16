@@ -201,11 +201,30 @@ in its own task — filed as an observation rather than absorbed here.
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] The trigger is identified and named in this task — cited by file:line, not inferred. See `## Trigger`. The AC's own premise ("spawned on `--status work-completed`") was wrong and is corrected there: the trigger is `resolver-loop.timer` on a 30-minute clock, and the close path's contribution was nulling the focus guard, not spawning anything.
 - [x] The concern is registered in `concerns.yaml` — **G-083** (high), `.context/project/concerns.yaml`, visible in `fw gaps`. Also updated **G-004**, which predicted this exact scenario in 2026-02 and whose `decision_trigger` fired here after six months of a `manual` trigger-check nobody ran.
-- [ ] A dispatched worker's writes are attributable after the fact: either it runs in its own worktree, or its dispatch id is recorded against the files it touched — decided and implemented, not left as a note
-- [ ] `.context/working/focus.yaml` is not silently mutated by a worker while an interactive session holds focus — either workers get their own focus slot or the write is refused
-- [ ] A regression test covers whichever mechanism ships, exercising the two-writer case rather than asserting a config value
+- [x] A dispatched worker's writes are attributable after the fact — **chose the dispatch-id record over the worktree**, implemented in `lib/spawn.py` (`_git_state` / `_writes_between`, bracketing the handler call) and surfaced by `fw resolver explain <id>`. Rationale in `## Decisions`.
+- [x] The single-slot focus field is no longer what separates the two writers — **the AC's premise was wrong and is corrected below**; the worker never wrote `focus.yaml`. Replaced the declaration with evidence: `lib/resolver.py` `_dirty_paths` / `_dirty_task_ids` / `_require_clean_tree`.
+- [x] A regression test covers the shipped mechanism, exercising the two-writer case — `tests/unit/t3030_two_writer_guard.bats`, 11 tests, all asserting against a **null focus** so nothing passes on the guard that already failed. Mutation-checked: neutering `_dirty_paths` turns tests 2-4 red while the negative controls stay green.
 
-### Human
+**AC #4 as filed said "focus.yaml is not silently mutated by a worker".** The
+worker's own `events.jsonl` refutes that: 41 bash commands, and the single
+focus reference is a `cat`. It read focus and never wrote it. `update-task.sh`
+nulled it. The AC was aimed at the wrong half of the mechanism, so it was
+re-scoped to the half that produced the incident rather than ticked against a
+fiction.
+
+- [ ] [REVIEW] The default is the tradeoff you want: unattended autonomy now declines to dispatch whenever the checkout carries uncommitted source
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw resolver pick --json > /tmp/on.json && FW_DISPATCH_REQUIRE_CLEAN_TREE=0 bin/fw resolver pick --json > /tmp/off.json && python3 -c "import json;a=json.load(open('/tmp/on.json'));b=json.load(open('/tmp/off.json'));print('guard ON eligible:',a.get('eligible'));print('guard OFF eligible:',b.get('eligible'))"`
+  2. Read the two lists. The difference is the work the loop will now decline to start while you have uncommitted changes.
+  **Expected:** You agree that "don't start a worker in a tree someone is editing" is worth the autonomy it costs. The per-task clause (never dispatch a task whose own file is uncommitted) is not negotiable and has no switch; only the tree-wide clause is being asked about here.
+  **If not:** `cd /opt/999-Agentic-Engineering-Framework && bin/fw config set FW_DISPATCH_REQUIRE_CLEAN_TREE 0` — the per-task clause stays on, and every declined pick is still named in the journal rather than skipped silently.
+
+  *Why this is yours and not mine:* you installed the loop as the deliberate "go
+  autonomous unattended" act (`deploy/resolver-loop.service` header). Changing
+  when it will and will not run is a change to that authorisation, not an
+  implementation detail — and with a permanently dirty checkout the default
+  costs you autonomy indefinitely. That is a call about how you want to work.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -297,6 +316,16 @@ in its own task — filed as an observation rather than absorbed here.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t3030_two_writer_guard.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2489_resolver_pick.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2491_resolver_loop.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2914_resolver_stall_guard.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2915_resolver_inflight_expiry.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m pytest tests/unit/test_resolver.py tests/unit/test_resolver_run.py -q > /tmp/.t3030-pytest.out 2>&1 && grep -q passed /tmp/.t3030-pytest.out
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+bin/fw gaps > /tmp/.t3030-gaps.out 2>&1 && grep -q "G-083" /tmp/.t3030-gaps.out
+bin/fw resolver explain 9dba824d-b938-4cb0-bc0b-6badeacc72b9 > /tmp/.t3030-explain.out 2>&1 && grep -q "worker_writes:" /tmp/.t3030-explain.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -312,6 +341,45 @@ in its own task — filed as an observation rather than absorbed here.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A systemd-dispatched worker and the interactive session edited the
+same governance gate (`agents/task-create/update-task.sh`) concurrently in the
+same working tree, uncommitted. Discovered only because the session happened to
+read the file before editing it and did not recognise its own task ID in a
+comment it had not written.
+
+**Root cause:** Mutual exclusion between the autonomous loop and the interactive
+session was implemented as a *declaration* — one advisory field, `focus.yaml`'s
+`current_task` — rather than as evidence or a lock. Declarations can be wrong,
+stale, or unset by a third party, and this one is unset by the framework itself:
+`update-task.sh:2044-2055` nulls it on every full completion. So the guard's
+weakest moment is the moment the session is most likely still working the task.
+
+**Why structurally allowed:** three compounding omissions.
+1. **The loop writes the shared tree by design** (`deploy/resolver-loop.service:39`
+   pins `WorkingDirectory` to MAIN) and the framework's own isolation primitive —
+   worktree + `fw integrate`, per CLAUDE.md §Trunk-Based Session Flow — was never
+   applied to the one writer class that most needs it.
+2. **No provenance.** Nothing recorded that a file was touched by a worker, so
+   the failure is invisible after the fact: `git status` shows one merged result.
+   The only evidence was a live process listing.
+3. **G-004 predicted this in 2026-02 and nothing surfaced it.** Its
+   `decision_trigger` was "first project where two agents need to work on the same
+   task" and its `trigger_check.type` was `manual` — a promise to remember. Its
+   `why_not_now` still read "only one agent exists (claude-code)", which stopped
+   being true when the autonomous loop shipped, with nothing watching for that.
+
+**Prevention (distinct from the fix):**
+- The guard now reads git rather than a field, so it cannot be nulled by code that
+  believes the work is done, and it holds for every task at once rather than one.
+- `worker_writes` on the dispatch row makes the two-writer case *detectable after
+  the fact* even if the guard is ever bypassed — the missing third leg in the
+  origin incident.
+- `tests/unit/t3030_two_writer_guard.bats` asserts against a null focus
+  specifically, so a future change that restores reliance on the declaration
+  fails rather than passes. Mutation-verified.
+- G-083 carries the residue (no true write isolation) in a register that outlives
+  this task file, per CLAUDE.md §When discovering structural flaws.
 
 ## Evolution
 
@@ -366,6 +434,45 @@ in its own task — filed as an observation rather than absorbed here.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** All five Agent ACs are done and the mechanism is demonstrated on
+live state rather than on fixtures. The one open question is not technical — it
+is whether the default tradeoff is the one you want for your unattended
+autonomy, which is why it is the single `[REVIEW]` AC. Two of this task's own
+filed premises turned out to be wrong when checked against evidence, and both
+corrections are recorded rather than quietly dropped; I would rather you see
+that than a clean narrative.
+
+**Evidence:**
+- **Trigger named, not inferred.** Dispatch `9dba824d`, session `2a9815a0`,
+  `origin: systemd:unlabeled-unit`; timer tick 08:33:56Z, envelope 08:34:00.595Z.
+  Every other tick that day logged `nothing to do`.
+- **Live demonstration, not a fixture.** While mid-edit on `lib/resolver.py`,
+  `fw resolver pick` reports 0 eligible with the guard on and
+  T-1719/T-1820/T-2171/T-2969 eligible with it off. Four workers would have been
+  dispatched into a tree I was editing.
+- **Tests bite.** 11/11 green in `t3030_two_writer_guard.bats`; mutation-checking
+  by neutering `_dirty_paths` turns tests 2-4 red while the four negative
+  controls stay green — so they are not passing vacuously.
+- **No regressions.** t2489, t2491, t2497, t2914, t2915 bats green; 42 pytest in
+  `test_resolver{,_run}.py` green.
+- **Provenance is honest about its own limits.** A missing git snapshot yields no
+  record rather than an empty one, and a run with the guard disabled is labelled
+  as correlation rather than attribution.
+- **Two corrections against my own filing.** The worker never wrote `focus.yaml`
+  (its `events.jsonl` shows one `cat`, no write) — `update-task.sh` did. And the
+  provenance oracle had to be git, not tool calls, because the worker created a
+  file with zero `Write` calls.
+- **Residue is registered, not implied closed.** G-083 records that true write
+  isolation still does not exist; worktree-per-dispatch is named as needing its
+  own inception, not folded in here.
+- **Three adjacent findings filed rather than absorbed** (one bug = one task):
+  OBS-279 (`fw gaps` hides `status: open` — 7 entries invisible), OBS-280
+  (installed resolver-loop unit still runs the superseded `--cooldown-min`),
+  OBS-281 (chat-arc write succeeds while read returns nothing, measured
+  same-second).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -376,6 +483,59 @@ in its own task — filed as an observation rather than absorbed here.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-08-16 — attribution instead of worktree isolation
+
+- **Chose:** record the dispatch's writes against the dispatch row
+  (`worker_writes` in `dispatches.jsonl`, surfaced by `fw resolver explain`),
+  and keep the worker in the main checkout.
+- **Why:** AC #3 offered either. A worktree is the stronger isolation but it is
+  a dispatcher redesign, which this task's scope fence excludes — the unit's
+  stated premise is running off MAIN with no host install, no crontab, no
+  registry entry (`deploy/resolver-loop.service:8-14`), and a worktree also
+  splits the `.context/` state that outcome back-prop reads and writes. The
+  combination shipped here gets most of the value: the picker refuses to start
+  a second writer, and if one ever starts anyway, the record says which files
+  were its.
+- **Rejected:** worktree-per-dispatch — right answer, wrong task; it needs its
+  own inception because landing an unattended worker's branch to master is an
+  authority question, not an implementation one.
+
+### 2026-08-16 — git state as the provenance oracle, not the worker's tool calls
+
+- **Chose:** snapshot `git status --porcelain` either side of the worker and
+  diff.
+- **Why:** measured, not assumed. The origin worker created
+  `tests/unit/ac_structure_close_gate.bats` with **40 Bash, 8 Edit and 0 Write**
+  calls, so scanning `tool_use` blocks for `file_path` would have reported that
+  file as touched by nobody. Redirections, heredocs, `sed -i`, `rm` and `git mv`
+  are invisible to tool names and visible to git.
+- **Rejected:** parsing `events.jsonl` tool calls — cheaper, and wrong on the
+  very file that made this incident worth writing up.
+
+### 2026-08-16 — two clauses, only one of them switchable
+
+- **Chose:** a task whose own file is uncommitted is excluded unconditionally;
+  uncommitted source anywhere excludes everything, but that clause honours
+  `FW_DISPATCH_REQUIRE_CLEAN_TREE=0`.
+- **Why:** the two claims have different strengths. "Do not dispatch a task
+  someone is editing" is not a judgement call. "Any uncommitted source means a
+  session is live" is a heuristic that costs autonomy on a permanently dirty
+  checkout, and that cost belongs to the operator (the Human AC asks).
+- **Rejected:** a single switch over both — it would let one config flag
+  reopen the exact hole this task closed.
+
+### 2026-08-16 — the churn list is the part that can silently break autonomy
+
+- **Chose:** exclude `.context/working/`, `.context/audits/`, `.context/monitors/`,
+  `.context/handovers/`, `.context/episodic/`, the JSONL ledgers,
+  `metrics-history.yaml`, `.agentic-framework/`, `docs/generated/`, `VERSION`.
+- **Why:** these are dirty on essentially every tick. Counting them would make
+  the tree read as permanently busy, and a permanently-excluded backlog logs as
+  `nothing to do — no eligible tasks`, which is indistinguishable from an empty
+  one. That is the same false-green shape as the guard being replaced, so the
+  fix would have reintroduced its failure mode in a new place. `_dirty_paths`
+  fails open on git errors for the same reason.
 
 ## Decision
 

@@ -1136,6 +1136,28 @@ def cmd_explain(args: argparse.Namespace) -> int:
             print(f"retryable:      {te['retryable']}")
         elif te.get("type") == "result" and "is_error" in te:
             print(f"is_error:       {te['is_error']}")
+    # T-3030: what this worker actually wrote. Absent on rows predating the
+    # field, and absent (rather than empty) when git was unreadable — see
+    # spawn._writes_between on why "nothing" and "could not look" must not
+    # render the same.
+    writes = found.get("worker_writes")
+    if writes is None:
+        print("worker_writes:  (not recorded — dispatch predates T-3030)")
+    else:
+        paths = writes.get("paths") or []
+        reverted = writes.get("reverted_paths") or []
+        guarded = writes.get("clean_tree_guard", True)
+        print(f"worker_writes:  {len(paths)} path(s) changed during the dispatch")
+        for path in paths:
+            print(f"  wrote:       {path}")
+        for path in reverted:
+            print(f"  reverted:    {path}")
+        if not guarded:
+            print(
+                "  NOTE:        FW_DISPATCH_REQUIRE_CLEAN_TREE was 0 for this "
+                "dispatch, so another writer may have been active in the same "
+                "tree; treat these paths as correlated, not attributed."
+            )
     print(f"blob_dir:       {found.get('blob_dir')}")
     blob_dir = PROJECT_ROOT / found.get("blob_dir", "")
     if blob_dir.is_dir():

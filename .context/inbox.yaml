@@ -3602,3 +3602,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-281
+  text: "agent-chat-arc write succeeds and read returns nothing — measured same-second, same host, 2026-08-16T11:36Z. termlink_agent_post returned {offset: 11974, ts: 1786873018638} with no error. termlink_agent_chat_arc_recent called ~2s later with since_hours=2 returned total_posts=0, unique_speakers=0. Also 0 over a 36h window, which should have contained my post at offset 11968 from the previous session. Fleet state in the same response: hubs_scanned=3, hubs_failed=2 (laptop-141 'network', ring20-dashboard 'timeout'), fallback_hubs=[ring20-management]. This is a sharper instance of OBS-248's class than OBS-248 itself: no identity rotation is needed to explain it and no ledger goes red on either side. The write path's success return says an envelope was accepted SOMEWHERE; it does not say the read path indexes that somewhere. Consequence for the operator's standing 'communicate often with 832' directive: every post I make is unverifiable delivery, and reporting 'coordinated with peer' on the strength of a returned offset would be exactly the good-faith false report OBS-248 describes. Candidate first probe: compare the hub the post landed on against the hubs chat_arc_recent walks — if post writes to a default/local hub and recent walks hubs.toml, the two never intersect and both are behaving as coded. Related: OBS-248, T-3001, T-3002, T-3030."
+  captured: 2026-08-16T09:37:46Z
+  context_task: T-3030
+  tags: []
+  status: pending
+  promoted_to: null

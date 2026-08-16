@@ -88,6 +88,81 @@ def _classify_status(terminal: Optional[Dict[str, Any]]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Worker write provenance (T-3030, G-083)
+# ---------------------------------------------------------------------------
+# A dispatched worker writes into the same checkout as any live session and
+# leaves no mark saying so. `git status` afterwards shows a merged result with
+# no indication two authors produced it, which is how a worker's unreviewed
+# edit to a completion gate nearly got committed under a human's authorship on
+# 2026-08-16.
+#
+# The oracle is git state, NOT the worker's own tool calls. That distinction is
+# load-bearing: in the origin incident the worker CREATED
+# tests/unit/ac_structure_close_gate.bats with zero Write tool calls — 40 Bash,
+# 8 Edit, 0 Write — so scanning tool_use blocks for file_path would have
+# reported the file as untouched by anyone. Redirections, heredocs, `sed -i`,
+# `rm` and `git mv` are all invisible to tool-name extraction and all visible
+# to git.
+#
+# Soundness comes from the picker's clean-tree guard (resolver.py
+# `_dirty_paths`): dispatch is refused while the tree carries hand-edited
+# changes, so paths that turn dirty across the dispatch window are the
+# worker's. Without that guard this would be correlation; with it, it is
+# attribution. If an operator sets FW_DISPATCH_REQUIRE_CLEAN_TREE=0 they trade
+# exactly that property away, which is why the field records the flag's state
+# alongside the paths rather than presenting the list as unconditional truth.
+
+
+def _git_state() -> Optional[Dict[str, str]]:
+    """path -> porcelain status code. None if git is unreadable (never guess)."""
+    import subprocess  # noqa: PLC0415 — only needed on the dispatch path
+
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(PROJECT_ROOT), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    state: Dict[str, str] = {}
+    for line in proc.stdout.splitlines():
+        if len(line) < 4:
+            continue
+        code, path = line[:2], line[3:].strip()
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        state[path.strip('"')] = code
+    return state
+
+
+def _writes_between(
+    before: Optional[Dict[str, str]], after: Optional[Dict[str, str]]
+) -> Optional[Dict[str, Any]]:
+    """Paths whose git state changed across the dispatch window.
+
+    Returns None when either snapshot is missing — an empty list would read as
+    "the worker wrote nothing", and a provenance record that cannot tell
+    "nothing happened" from "I could not look" is worse than none at all."""
+    if before is None or after is None:
+        return None
+    changed = sorted(
+        path for path, code in after.items() if before.get(path) != code
+    )
+    vanished = sorted(path for path in before if path not in after)
+    return {
+        "paths": changed,
+        "reverted_paths": vanished,
+        "clean_tree_guard": os.environ.get(
+            "FW_DISPATCH_REQUIRE_CLEAN_TREE", "1"
+        ).strip() != "0",
+    }
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 def spawn_dispatch(
@@ -121,8 +196,13 @@ def spawn_dispatch(
             f"valid set is in lib/resolver.py:VALID_WORKER_KINDS"
         )
 
+    # T-3030: bracket the worker so its writes are attributable after the fact.
+    tree_before = _git_state()
     outcome = handler(envelope, on_event)
     extra = {"events_count": outcome["events_count"]}
+    writes = _writes_between(tree_before, _git_state())
+    if writes is not None:
+        extra["worker_writes"] = writes
     # T-1777: persist terminal_event into dispatch row so `fw outcome read`
     # can surface the result without cracking open events.jsonl. Omitted when
     # None (e.g. timeout/crash mid-stream produced no terminal event).
