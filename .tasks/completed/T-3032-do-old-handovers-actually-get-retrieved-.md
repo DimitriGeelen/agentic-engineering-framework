@@ -5,12 +5,12 @@ name: "do old handovers actually get retrieved — recall evidence for the reten
 description: >
   do old handovers actually get retrieved — recall evidence for the retention window
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tools/probe_handover_recall.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T09:57:44Z
-last_update: '2026-08-16T10:00:16Z'
-date_finished:
+last_update: 2026-08-16T10:03:43Z
+date_finished: 2026-08-16T10:03:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -304,3 +304,20 @@ grep -q "173" docs/reports/T-3032-handover-recall-evidence.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3032-do-old-handovers-actually-get-retrieved-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fb516b1e
+- **Timestamp:** 2026-08-16T10:03:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — What recall telemetry actually exists is established first and stated plainly — `lib/recall-usage.sh` and any retrieval log are read and their real coverage reported, including "there is no usable dat
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/recall-usage.sh in: What recall telemetry actually exists is established first and stated plainly — `lib/recall-usage.sh` and any retrieval log are read and their real co`
+
+### 2026-08-16T10:03:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

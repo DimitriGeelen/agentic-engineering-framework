@@ -34382,3 +34382,21 @@ scan_id: R-d978be3f
 task_id: T-3031
 payload:
   task_file: .tasks/active/T-3031-the-indexed-corpus-after-the-handover-di.md
+---
+kind: scan_emitted
+timestamp: '2026-08-16T10:03:44Z'
+scan_id: R-fb516b1e
+task_id: T-3032
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-16T10:03:44Z'
+scan_id: R-fb516b1e
+task_id: T-3032
+payload:
+  task_file: .tasks/active/T-3032-do-old-handovers-actually-get-retrieved-.md

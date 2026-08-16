@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3032: do old handovers actually get retrieved — recall evidence for the retention window
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-16T10:03:56Z
+# ============================================================================
+
+task_id: T-3032
+task_name: "do old handovers actually get retrieved — recall evidence for the retention window"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T09:57:44Z
+completed: 2026-08-16T10:03:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-16T12:03:30+02:00
+last_commit: 2026-08-16T12:03:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  N=90 is off the table — the old handovers ARE the answer to session questions
+
+# Key outcomes
+outcomes:
+  - 'What recall telemetry actually exists is established first and stated plainly — `lib/recall-usage.sh` and any retrieval log are read and their real coverage reported, including "there is no usable data" if that is the answer'
+  - 'Retrieval of handover chunks is quantified by **age of the handover**, not just by class: the question is whether hits concentrate in recent files or spread across the archive, and a class-level count cannot answer it'
+  - 'If telemetry is absent or too thin to decide, that is reported as the finding and a direct probe is run instead — e.g. replaying representative `fw recall` queries against the current index and recording which handovers surface, with the queries written down so the probe is repeatable'
+  - 'The verdict is one of: retention window is SAFE at a named N, UNSAFE (with the retrieved-old-handover evidence), or UNDECIDABLE on current data (with what would decide it) — no fourth option, and no recommendation that leaves the choice open'
+  - 'Findings are written to `docs/reports/T-3032-handover-recall-evidence.md` with the commands used, so the next session can re-run rather than re-reason'
+  - 'The report states explicitly whether it is measuring what a *human/agent actually retrieved* or what a *replayed query would retrieve* — these are different claims and conflating them would launder a synthetic probe as usage evidence'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/T-3032-handover-recall-evidence.md'
+  - '.fabric/components/tools-probe_handover_recall.yaml'
+  - '.tasks/active/T-3032-do-old-handovers-actually-get-retrieved-.md'
+  - 'tools/probe_handover_recall.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T12:03:30'
+    action: 'T-3032: N=90 is off the table — the old handovers ARE the answer to session questions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 10
+  lines_added: 421
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3032-do-old-handovers-actually-get-retrieved-.md
+generated_by: context-agent-hybrid
