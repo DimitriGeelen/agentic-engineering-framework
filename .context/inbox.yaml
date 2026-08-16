@@ -3672,3 +3672,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-291
+  text: "PARALLELISM BLOCKER, hit live T-3037/T-1719 session: a TermLink-dispatched worker running 'fw work-on T-XXX' OVERWRITES THE PARENT SESSION'S FOCUS. Parent and worker share .context/working/focus.yaml — an unlisted, unavoidable converging write that no task declares as a component, so 'fw write-set check' cannot see it (it returned rc=2 undecidable for every pair tested). Consequence chain: worker claims its task -> parent focus flips to the worker's task -> if the worker's task has placeholder ACs, G-020 then BLOCKS THE PARENT on every Write AND every Bash (including read-only ls/cat/grep, the G-078 class). The parent is locked out of its own unrelated work by a worker it spawned. Recovery is 'bin/fw context focus T-PARENT' run bare, but it is racy — any later 'fw work-on' in any worker re-hijacks. This is THE structural blocker for the parallel-dispatch model: focus is per-project global state, not per-session. Candidate fixes: (1) per-session focus keyed by TERMLINK_SESSION/PPID, (2) fw work-on --no-focus for dispatched workers, (3) dispatch sets FW_SESSION_SCOPED_FOCUS=1 so workers write focus to a session-local path. Until fixed, cap parallel dispatch at workers whose tasks already carry real ACs, and re-assert parent focus after every dispatch."
+  captured: 2026-08-16T13:41:37Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null

@@ -14,10 +14,10 @@ description: >
   of orchestrator substrate — closes G-064 partially. Eats Evolution-gate dogfood
   (T-1718 Slice 1) from filing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [T-1717-implementation, G-064-closure-pilot, vertical-slice-1, 
       blocked-on-t-1717-go]
 components: []
@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: '2026-07-07T10:45:03Z'
+last_update: 2026-08-16T13:43:09Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -223,7 +223,7 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
   --status work-completed` for arc-tagged tasks: triggers single-chunk
   embed + sqlite-vec insert. Latency <5s on the typical learning entry
   size. Bats test pins behavior + latency budget.
-- [ ] **A2** `--happiness N` flag accepted on `fw task update`, range
+- [x] **A2** `--happiness N` flag accepted on `fw task update`, range
   [-5..-1, +1..+5], appends to `.context/working/happiness.jsonl`.
   Schema: `{task_id, ts, source: human|agent, value, optional_reason}`.
   Bats test covers valid range, invalid rejection, append-only.
@@ -363,3 +363,7 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 
 ### 2026-05-04T15:26:25Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+### 2026-08-16T13:36:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
