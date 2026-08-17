@@ -12,7 +12,7 @@ description: >
   at 7 commits across 4 failed sessions. The signal fired correctly every time and
   was correctly ignored six times.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T07:57:51Z
-last_update: '2026-08-17T08:00:17Z'
+last_update: 2026-08-17T08:10:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,14 +76,54 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-3062 leg 2. T-3062 fixed why the push failed (a 347s gate inside a 60s
+window). This fixes why nobody noticed for four sessions.
+
+Two defects, one shape — **a state that has no history reads the same at "not
+yet" and at "stuck".**
+
+1. **The caller cannot tell a killed gate from a refusing one.**
+   `handover.sh:_push_to_remotes` runs `timeout N git push`, and a timeout
+   (exit 124) and a genuine gate refusal (exit 1) both land in the same
+   `_push_failed=true` branch. A refusal is a *verdict*; a timeout is the
+   *absence* of one. T-2930/OBS-221 already drew exactly this distinction for
+   audit exit 75 — inside the audit, and never at the caller that bounds it.
+
+2. **The unpushed count is stateless.** T-3025's counter (`handover.sh:384`)
+   fired correctly in all four sessions, printing `⚠ N commit(s) NOT pushed`.
+   That line reads identically at one commit five minutes old and at seven
+   commits across four consecutive failed pushes. The signal was right every
+   time and was correctly ignored six times, because nothing in it said *this
+   has happened before*.
+
+The fix is memory: persist push outcomes, and let the count say how long it has
+been stuck and how many sessions it has survived.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A1. A push outcome is persisted across sessions — a failure records what
+      kind (killed / refused / other), when it first started failing, and how
+      many consecutive sessions it has failed.
+- [ ] A2. A successful push clears that state, and so does a manual push made
+      outside the handover: state that disagrees with `rev-list origin/<b>..HEAD`
+      self-heals rather than reporting a stuck push that is no longer stuck.
+      (Otherwise the escalation itself becomes the next thing people learn to
+      ignore.)
+- [ ] A3. The handover's unpushed line escalates on repeat — a second and later
+      consecutive failure reads visibly differently from a first, names the
+      elapsed time, and says what to run. One failure stays quiet: crying wolf
+      on the normal case is how the existing signal got tuned out.
+- [ ] A4. A killed push and a refused push produce different operator-facing
+      text, and the killed case names the gate cost as the thing to look at.
+- [ ] A5. `fw doctor` surfaces a stuck push, so the state is reachable
+      deliberately and not only at session end.
+- [ ] A6. Tests simulate the real failure — a recorded failure streak with
+      commits genuinely absent from the remote ref — and assert the escalation
+      fires. Including the negative: one failure does NOT escalate, and a
+      cleared state produces nothing.
+- [ ] A7. Every load-bearing assertion is mutation-tested: the mutant turns it
+      red, the unmutated suite is green (L-616).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,3 +313,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3063-a-killed-push-and-a-blocked-push-are-the.md
 - **Context:** Initial task creation
+
+### 2026-08-17T08:10:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -3161,6 +3161,28 @@ if len(rows) > 5:
         fi
     fi
 
+    # T-3063 (leg 2 of T-3062): stuck push — the handover's unpushed count is a
+    # snapshot and cannot distinguish "not pushed yet" from "has failed to push
+    # for four sessions". lib/push-state.sh keeps the streak; this is where an
+    # operator or agent can reach it deliberately, rather than only at session
+    # end when nobody is reading. Silent unless a streak of 2+ is live, and the
+    # read self-heals when the commits have since landed by any route.
+    if [ -f "$FRAMEWORK_ROOT/lib/push-state.sh" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+        . "$FRAMEWORK_ROOT/lib/push-state.sh"
+        local _ps_out _ps_n _ps_since _ps_kind _ps_un
+        _ps_out=$(fw_push_state_read "$PROJECT_ROOT" 2>/dev/null || true)
+        if [ -n "$_ps_out" ]; then
+            _ps_n=$(printf '%s\n' "$_ps_out" | grep -o 'failures=[0-9]*' | cut -d= -f2)
+            _ps_un=$(printf '%s\n' "$_ps_out" | grep -o 'unpushed=[^ ]*' | cut -d= -f2)
+            _ps_since=$(printf '%s\n' "$_ps_out" | grep -o 'since=[^ ]*' | cut -d= -f2)
+            _ps_kind=$(printf '%s\n' "$_ps_out" | grep -o 'kind=[^ ]*' | cut -d= -f2)
+            echo -e "  ${YELLOW}WARN${NC}  Push STUCK: failed $_ps_n consecutive session(s) since $_ps_since"
+            echo -e "         $_ps_un commit(s) exist only in this working copy (last failure: $_ps_kind)"
+            echo -e "         $(fw_push_state_advice "$_ps_kind")"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # T-2516 (T-2121 prong 3): untracked .tasks/ files — early-detection rail for
     # the active↔completed divergence class (T-2091), which masked an orphaned
     # untracked completion copy for ~7 days. Silent on a clean tree (OK line).

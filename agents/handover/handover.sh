@@ -128,16 +128,41 @@ _push_to_remotes() {
         fi
         if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
             echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
+            _push_kind="success"
         else
             _exit=$?
+            # T-3063: exit 124 is `timeout` killing the push, which means the
+            # pre-push gate never reached a verdict. That is categorically not
+            # the same event as a gate running to completion and refusing —
+            # one is the absence of an answer, the other is an answer. They
+            # shared this branch until now, which is why four sessions of
+            # killed pushes read exactly like four sessions of refused ones.
+            # Same distinction T-2930/OBS-221 drew for audit exit 75, applied
+            # at the caller that does the bounding.
             if [ "$_exit" -eq 124 ]; then
-                echo -e "  ${YELLOW}WARNING: Push to $remote_name timed out after ${_push_timeout}s (non-blocking, T-1277)${NC}" >&2
+                _push_kind="killed"
+                echo -e "  ${YELLOW}WARNING: Push to $remote_name was KILLED at ${_push_timeout}s — the pre-push gate did not finish, so NO verdict was produced (T-3063).${NC}" >&2
+                echo -e "  ${YELLOW}         This is not 'the gate refused you'. Measure it: time bin/fw audit --section structure${NC}" >&2
             else
-                echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
+                _push_kind="refused"
+                echo -e "  ${YELLOW}WARNING: Push to $remote_name was REFUSED (exit ${_exit}) — a gate or the remote said no; its message is above.${NC}" >&2
             fi
             _push_failed=true
         fi
     done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
+
+    # T-3063: remember the outcome. A success clears the streak; a failure
+    # extends it. Only the origin push is worth recording — mirrors are skipped
+    # above, so _push_kind reflects origin whenever origin was attempted.
+    if [ -f "$FRAMEWORK_ROOT/lib/push-state.sh" ]; then
+        . "$FRAMEWORK_ROOT/lib/push-state.sh"
+        if [ "$_push_failed" = true ]; then
+            fw_push_state_record "$PROJECT_ROOT" failure "${_push_kind:-unknown}" "${SESSION_ID:-}"
+        else
+            fw_push_state_record "$PROJECT_ROOT" success
+        fi
+    fi
+
     if [ "$_push_failed" = true ]; then
         echo -e "${YELLOW}Some pushes failed. Run 'git push' manually after resolving.${NC}"
     fi
@@ -393,7 +418,25 @@ if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
                 0)
                     BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE — in sync with \`origin/${_bd_branch}\`" ;;
                 *)
-                    BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE — **⚠ ${_ps_unpushed} commit(s) NOT pushed** to \`origin/${_bd_branch}\`" ;;
+                    BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE — **⚠ ${_ps_unpushed} commit(s) NOT pushed** to \`origin/${_bd_branch}\`"
+                    # T-3063: the count above is a snapshot and reads the same
+                    # at "not yet" as at "stuck for four sessions". Only the
+                    # streak can tell those apart, so when there is one, say
+                    # so here — this line is what SessionStart injects, and it
+                    # is the only place the next session is guaranteed to look.
+                    if [ -f "$FRAMEWORK_ROOT/lib/push-state.sh" ]; then
+                        . "$FRAMEWORK_ROOT/lib/push-state.sh"
+                        _ps_stuck=$(fw_push_state_read "$PROJECT_ROOT" 2>/dev/null || true)
+                        if [ -n "$_ps_stuck" ]; then
+                            _ps_n=$(printf '%s\n' "$_ps_stuck" | grep -o 'failures=[0-9]*' | cut -d= -f2)
+                            _ps_since=$(printf '%s\n' "$_ps_stuck" | grep -o 'since=[^ ]*' | cut -d= -f2)
+                            _ps_kind=$(printf '%s\n' "$_ps_stuck" | grep -o 'kind=[^ ]*' | cut -d= -f2)
+                            BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE
+
+**🛑 THE PUSH IS STUCK, not merely pending.** It has failed **${_ps_n} sessions in a row**, since \`${_ps_since}\`. Those ${_ps_unpushed} commits exist in exactly one place — this working copy. $(fw_push_state_advice "$_ps_kind")"
+                        fi
+                    fi
+                    ;;
             esac
         fi
         if printf '%s\n' "$_bd_out" | grep -q '^fork '; then
