@@ -126,6 +126,33 @@ are separate defects and get their own tasks (§Task Sizing: one bug = one task)
       assert per-port scoping in terms that were false for the `--port` path.
 
 ### Human
+
+- [ ] [REVIEW] Watchtower's buttons still work in your actual browser after a
+      restart, and you were not silently logged out of the instance you use.
+
+  Renaming a cookie slot is the one change that cannot be fully proven from the
+  command line: `curl` gets a fresh empty jar every time, so it can confirm which
+  name the server *offers* but never what your existing browser session does with
+  it. The live `:3000` instance keeps the name it already had (`FW_PORT` defaults
+  to 3000, so nothing moved for it) — this AC is here to confirm that reasoning
+  against a real browser rather than against my own argument.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` — open
+     that URL in the browser you normally use for Watchtower.
+  2. Click any button that changes state — an Approve on `/approvals`, or a
+     driver action on `/arcs/<slug>`.
+  3. If you also run a second instance started with `fw serve --port N`, open that
+     one too and click a state-changing button there.
+
+  **Expected:** the action completes. No "Session expired". No 403 toast. You are
+  not asked to re-authenticate on the instance you were already using.
+
+  **If not:** note which instance (port), whether you had an old tab open, and
+  whether a hard reload clears it — a one-time logout on a `--port` instance is
+  the intended consequence of the fix (its cookie name genuinely changed);
+  a persistent 403 on `:3000` is not, and means reopening this task.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -316,6 +343,37 @@ because that is true now and may not stay true.
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The defect is confirmed at the wire, the fix is confirmed at the
+wire, and the test that guards it has been shown to fail against the broken code
+in both directions it can break. What remains is the one thing a command line
+cannot reach — what a real browser with an existing cookie jar does — which is why
+there is a Human AC rather than a fourth verification line. The blast radius is
+small and bounded by inspection: `Config.PORT` has exactly two consumers in the
+whole tree, and the other one is the flag's own default, where reading the
+configured port is correct.
+
+**Evidence:**
+- Wire-level, pre-condition: `Config.PORT` = `FW_PORT`-or-3000 at import
+  (`web/config.py:80`); `--port` reached only `run()` (`web/app.py:476`).
+- Wire-level, post-fix: an instance serving `:3097` with `FW_PORT` unset emits
+  `Set-Cookie: fw_session_3097`. Before the fix that byte string was
+  `fw_session_3000` — the same slot as the live `:3000` instance.
+- `tests/unit/test_session_cookie_port.py` — 6 passed.
+- Mutation M1 (helper reverted to `Config.PORT`): 3 failed, including both
+  flag-specific cases. Mutation M2 (`main()`'s call deleted — a correct helper
+  wired nowhere, which is precisely the T-2278 shape): 1 failed, exactly the
+  wiring test. Neither mutant survived, and each was killed by the test written
+  for it.
+- Live `:3000` instance verified still serving throughout; the throwaway instance
+  was started with a direct `python3` invocation specifically so it could not
+  write the Watchtower triple-file and re-point later port lookups at itself.
+- Independent origin: reported by 832-Workflow-designer as item 3 of six upstream
+  findings, then re-verified here against our own source before anything was
+  changed. Their measurement (two instances, both `fw_session_3000`) and ours
+  agree.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
