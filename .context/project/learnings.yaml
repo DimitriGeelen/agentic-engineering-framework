@@ -4626,3 +4626,9 @@ X'` returning empty group."
   task: T-3050
   date: 2026-08-17
   context: Added via context agent
+- id: L-621
+  learning: "A gate that cannot finish inside the window bounding it does not block — it gets killed, and at the caller a killed gate and a refusing gate are usually the same branch. T-3062: pre-push audit grew to 347s against a 60s push timeout; four sessions read 'push failed' and none could tell the difference from 'audit refused'. When you bound a gate with a timeout, the timeout is 'gate cost + network', not a network budget, and the two numbers must be asserted against each other — each was independently plausible, only their relationship was wrong."
+  source: P-011
+  task: T-3062
+  date: 2026-08-17
+  context: Added via context agent

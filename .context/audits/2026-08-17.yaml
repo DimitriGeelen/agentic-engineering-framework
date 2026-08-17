@@ -1,8 +1,8 @@
-# Audit Results - 2026-08-17-0849
-timestamp: 2026-08-17T06:49:41Z
+# Audit Results - 2026-08-17-1001
+timestamp: 2026-08-17T08:01:23Z
 sections: "structure"
 summary:
-  pass: 32
+  pass: 30
   warn: 3
   fail: 0
 findings:
@@ -50,7 +50,7 @@ findings:
     check: "Fabric: 171/1001 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
-    check: "Fabric drift: 7 source file(s) have no fabric card"
+    check: "Fabric drift: 8 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
     check: "Fabric: 719 card(s) point at files no watch pattern covers"
@@ -60,13 +60,9 @@ findings:
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
   - level: PASS
-    check: "Secret scan: tracked tree clean"
-  - level: PASS
-    check: "Large-file gate: tracked tree clean"
-  - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
   - level: PASS
-    check: "Invariant suite: 57 structural invariant(s) green (tests/lint/)"
+    check: "Invariant suite: 62 structural invariant(s) green (tests/lint/)"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS

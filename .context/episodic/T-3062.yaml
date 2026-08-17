@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3062: pre-push audit outlasts every push window, so pushes die silently instead of being blocked
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T08:02:47Z
+# ============================================================================
+
+task_id: T-3062
+task_name: "pre-push audit outlasts every push window, so pushes die silently instead of being blocked"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T07:41:15Z
+completed: 2026-08-17T08:01:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T09:59:21+02:00
+last_commit: 2026-08-17T09:59:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the pre-push gate outgrew the window that bounds it
+
+# Key outcomes
+outcomes:
+  - 'A1. The wall-clock cost of the pre-push structure audit is measured **per'
+  - 'A2. The whole-tracked-tree scanners move out of the per-push horizon into'
+  - 'A3. The pre-push gate completes inside a stated budget on this repo, and'
+  - 'A4. That timing test refuses to pass on an audit that did not actually'
+  - 'A5. A static invariant in `tests/lint/` refuses a whole-tree scan inside'
+  - 'A6. The push timeout and the gate budget are asserted **against each'
+  - 'A7. Every load-bearing assertion above is mutation-tested — the mutant is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/bin/fw'
+  - 'agents/audit/audit.sh'
+  - 'agents/handover/handover.sh'
+  - '.tasks/active/T-3062-pre-push-audit-outlasts-every-push-windo.md'
+  - '.tasks/active/T-3063-a-killed-push-and-a-blocked-push-are-the.md'
+  - 'tests/lint/prepush-gate-budget.bats'
+  - 'tests/unit/t3062_prepush_runtime.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T09:59:21'
+    action: 'T-3062: the pre-push gate outgrew the window that bounds it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 9
+  lines_added: 1035
+  lines_removed: 66
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3062-pre-push-audit-outlasts-every-push-windo.md
+generated_by: context-agent-hybrid

@@ -1,18 +1,10 @@
 ---
-id: T-3063
-name: "a killed push and a blocked push are the same branch, and the unpushed count
-  has no memory"
+id: T-3061
+name: "audit rail: surface active tasks whose ACs are all satisfied but never closed"
 description: >
-  T-3062 leg 2. handover.sh bounds the push with timeout and routes BOTH the timeout
-  and a real gate refusal into one WARNING branch, so 'the gate refused you' and 'the
-  gate never finished' are indistinguishable to the caller — the same verdict-vs-absence-of-verdict
-  distinction T-2930 already drew for audit exit 75, applied inside the audit but
-  not at the caller that bounds it. Second half: the unpushed-commit counter (T-3025,
-  handover.sh:384) is stateless, so it reads identically at 1 commit mid-session and
-  at 7 commits across 4 failed sessions. The signal fired correctly every time and
-  was correctly ignored six times.
+  audit rail: surface active tasks whose ACs are all satisfied but never closed
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-17T07:57:51Z
-last_update: '2026-08-17T08:00:17Z'
+created: 2026-08-17T07:07:35Z
+last_update: '2026-08-17T07:15:14Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,7 +35,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-17T08:00:09Z'
+  - ts: '2026-08-17T07:15:09Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -53,11 +45,11 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-17T08:00:17Z'
+  - ts: '2026-08-17T07:15:14Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 3
       D4: 2
       F-RECALL: 0
@@ -65,14 +57,14 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3063: a killed push and a blocked push are the same branch, and the unpushed count has no memory
+# T-3061: audit rail: surface active tasks whose ACs are all satisfied but never closed
 
 ## Context
 
@@ -82,8 +74,41 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 — the audit sees the state.** `fw audit` emits a WARN naming active
+      tasks where status is `started-work`/`issues`, at least one Agent AC
+      exists, every Agent AC is ticked, and no Human AC is left unticked. The
+      WARN carries the count and the ids (capped, with an overflow note), plus
+      the report path for the full list.
+- [ ] **A2 — it proposes, it never closes.** The rail changes no task status,
+      ticks no box, and its message says so in words. A ticked checkbox is a
+      claim by the agent that wrote it, not evidence — CLAUDE.md forbids
+      batch-closing on exactly this basis. The mitigation line points at
+      `fw task verify` / per-task review, never at a bulk command.
+- [ ] **A3 — the two confidence classes are distinguished.** Tasks with a real
+      `## Verification` block (something mechanical would gate their close) are
+      separated from those without. Six of the seventeen found by T-3060 have an
+      empty Verification block; a rail that presents both as equally ready would
+      be inviting the unevidenced close it exists to prevent.
+- [ ] **A4 — the detector is not fooled by the template.** The task template
+      ships example ACs inside HTML comment blocks — the generic first/second
+      criterion pair, plus the worked `[REVIEW]` and `[REVIEWER]` samples.
+      Counting those would make every freshly-created task read as having
+      unsatisfied Human ACs, and the rail would be silent across the whole
+      corpus — a zero that looks like health.
+      (Noted while writing this AC: quoting the template's own sentinel string
+      verbatim here made the G-020 readiness gate refuse the task, because that
+      gate greps for the literal placeholder anywhere in the file rather than in
+      an unticked AC line. Filed as an observation — prose *about* a sentinel is
+      not a sentinel, and a gate that cannot tell the difference blocks exactly
+      the task that documents it.)
+- [ ] **A5 — WARN, never FAIL.** It does not block a push. This is a hygiene
+      signal about work already done, not a defect; failing the push on it would
+      punish the person who finished the work.
+- [ ] **A6 — pinned by test, both directions.** A fixture task that qualifies is
+      reported; a fixture with one unticked Agent AC, one with an unticked Human
+      AC, one with zero ACs, and one whose only unticked boxes are template
+      examples are each NOT reported. A mutation removing the detector turns a
+      distinct test red, with a positive control (L-616).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -269,7 +294,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-17T07:57:51Z — task-created [task-create-agent]
+### 2026-08-17T07:07:35Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3063-a-killed-push-and-a-blocked-push-are-the.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3061-audit-rail-surface-active-tasks-whose-ac.md
 - **Context:** Initial task creation
