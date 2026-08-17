@@ -1,8 +1,24 @@
 ---
 id: T-3070
-name: "Full fw audit cannot complete: single process-wide lock contends with cron section runs"
+name: "Full fw audit cannot complete: single process-wide lock contends with cron
+  section runs"
 description: >
-  A full (all-section) 'fw audit' run takes long enough that it never wins the shared .context/locks/audit.lock against structural-30m/traceability-hourly/observations-6h/oe-* cron jobs, which each acquire the SAME internal audit.sh lock regardless of --section (cron's own /var/lock/agentic-cron-*.lock files are per-section-group and don't prevent this). Confirmed independently twice on T-1719 (2026-08-17): first attempt exit 75 'another audit already running' (cron holding lock), second attempt (lock free at start) ran 590s under timeout and was killed mid-run (exit 124) before reaching the SUMMARY section — output stopped after EPISODIC MEMORY CHECKS with no verdict. This makes 'fw audit clean' unusable as a task Acceptance Criterion anywhere, and makes the pre-push audit gate (OBS-221/T-2930 area, agents/git/lib/hooks.sh:915) contend against cron with no Tier-2 escape, only Tier-0 --no-verify. Candidate fixes noted by prior investigation: (a) full-audit mode takes a distinct lock from per-section cron runs, (b) full-audit retries/waits across cron gaps instead of failing immediately, (c) full-audit runs sections that don't overlap with in-flight cron sections first. Root-caused in T-1719 Evolution log (2026-08-17 entries) and .context/inbox.yaml (OBS-221-adjacent entry, 'PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT PILEUP').
+  A full (all-section) 'fw audit' run takes long enough that it never wins the shared
+  .context/locks/audit.lock against structural-30m/traceability-hourly/observations-6h/oe-*
+  cron jobs, which each acquire the SAME internal audit.sh lock regardless of --section
+  (cron's own /var/lock/agentic-cron-*.lock files are per-section-group and don't
+  prevent this). Confirmed independently twice on T-1719 (2026-08-17): first attempt
+  exit 75 'another audit already running' (cron holding lock), second attempt (lock
+  free at start) ran 590s under timeout and was killed mid-run (exit 124) before reaching
+  the SUMMARY section — output stopped after EPISODIC MEMORY CHECKS with no verdict.
+  This makes 'fw audit clean' unusable as a task Acceptance Criterion anywhere, and
+  makes the pre-push audit gate (OBS-221/T-2930 area, agents/git/lib/hooks.sh:915)
+  contend against cron with no Tier-2 escape, only Tier-0 --no-verify. Candidate fixes
+  noted by prior investigation: (a) full-audit mode takes a distinct lock from per-section
+  cron runs, (b) full-audit retries/waits across cron gaps instead of failing immediately,
+  (c) full-audit runs sections that don't overlap with in-flight cron sections first.
+  Root-caused in T-1719 Evolution log (2026-08-17 entries) and .context/inbox.yaml
+  (OBS-221-adjacent entry, 'PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT PILEUP').
 
 status: captured
 workflow_type: build
@@ -22,8 +38,8 @@ related_tasks: [T-1719, T-2930, T-860, T-862]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T13:20:32Z
-last_update: 2026-08-17T13:20:32Z
-date_finished: null
+last_update: '2026-08-17T13:30:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +50,88 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-17T13:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-17T13:30:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3070: Full fw audit cannot complete: single process-wide lock contends with cron section runs
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Two candidate root causes, not yet disentangled by T-1719's three prior attempts:
+1. **Lock-acquisition contention** against cron section jobs sharing the same
+   `.context/locks/audit.lock`, sharpened by an actual **schedule collision**:
+   `full-daily` fires `0 8 * * *`, the same minute as `structural-30m`
+   (`*/30 * * * *`) and `traceability-hourly` (`0 * * * *`) — three cron jobs
+   racing for the same lock in the same minute is not bad luck, it's the
+   registry (`.context/cron-registry.yaml`).
+2. **Raw runtime**, independent of contention: `AUDIT_TIMEOUT` (`agents/audit/audit.sh:340`,
+   default 600s) may be too short for a full run regardless of who holds the
+   lock. T-1719's third attempt (uncontended lock, `timeout 590`) was still
+   inside `EPISODIC MEMORY CHECKS` — section 10 of 27 (`grep -n 'echo "=== '
+   agents/audit/audit.sh`) — when killed, with `WHOLE-TREE SCANS` alone
+   already measured at ~283s per the T-3062 comment at `audit.sh:2327-2341`.
+
+**Scope correction from filing:** the pre-push audit gate
+(`agents/git/lib/hooks.sh:910`, T-862) runs a **fast section subset**, not a
+full audit — production pushes are not blocked by full-run *runtime*, only by
+occasional brief lock contention that self-resolves on retry. The severity is
+lower than the original description implied; the primary blocked consumer is
+`fw audit clean` as a task AC (T-1719 A6/A6b), not the push path.
+
+**Diagnostic run in progress (2026-08-17T14:09:15Z):** launched a fully
+detached `fw audit` (`nohup ... & disown`, no external timeout, lock
+confirmed free at start) to get ground-truth timing before choosing a fix
+shape — PID 4115033, output at
+`.context/working/t1719-full-audit-diagnostic.log`. Before repeating this
+experiment, check whether that log reached `=== SUMMARY ===` and how long it
+took (`grep -c '^=== ' <log>` against the 27 section headers, or just diff
+mtime vs the `AUDIT REPORT` header timestamp).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Ground truth established: actual wall-clock time for an uncontended,
+  un-killed full `fw audit` run to reach `=== SUMMARY ===` (or confirmation it
+  never does within a generous bound, e.g. 2400s)
+- [ ] Root cause disentangled: confirm/refute whether `AUDIT_TIMEOUT=600s` alone
+  (independent of lock contention) is insufficient for a full run on this corpus
+- [ ] Fix implemented for at least one of: (a) cron schedule collision at
+  minute 0 in `.context/cron-registry.yaml` / `agents/audit/audit.sh` crontab
+  block, (b) distinct lock or larger timeout budget for full vs section-scoped
+  runs
+- [ ] `fw audit` (full run, no `--section`) completes and reaches
+  `=== SUMMARY ===` without external or internal timeout kill, verified live
+- [ ] Regression coverage for the fix; `fw doctor` clean re: cron registry sync
+  if `.context/cron-registry.yaml` is touched (CLAUDE.md cron-touching
+  verification rule)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

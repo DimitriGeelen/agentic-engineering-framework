@@ -467,6 +467,28 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
   full-audit mode vs per-section cron runs, retry/wait across cron gaps, or
   section-ordering that avoids the in-flight cron section first.
 
+### 2026-08-17 — A6b fourth attempt: stop re-running the experiment, home the fix to T-3070
+- **What changed:** A fourth redispatch round hit the same A6/A6b wall.
+  Re-running `fw audit` again would reproduce the same inconclusive result a
+  fourth time with no new information, so instead: (1) confirmed the pre-push
+  audit gate (`agents/git/lib/hooks.sh:910`) runs a fast section subset, not a
+  full audit — the earlier "makes the pre-push gate contend" framing in
+  T-3070's own description overstates severity, filed as a scope correction
+  there; (2) found the likely contention sharpener — `full-daily` cron fires
+  `0 8 * * *`, the same minute as `structural-30m` and `traceability-hourly`
+  — a real schedule collision, not just bad luck; (3) launched a fully
+  detached, un-timed-out `fw audit` run (`nohup`+`disown`, PID 4115033, log
+  `.context/working/t1719-full-audit-diagnostic.log`) to get ground-truth
+  full-run wall-clock time instead of guessing at a fix; (4) fleshed out
+  T-3070's Context and Agent ACs (were still template placeholders) with all
+  of the above so the fix has a real starting point.
+- **Plan impact:** none to Slice 1's code. A6b stays unticked — no new
+  evidence changes that verdict, only where the next step lives.
+- **Triggered:** none new — this entry updates T-3070 in place rather than
+  filing a sibling. **Next redispatch round: check
+  `.context/working/t1719-full-audit-diagnostic.log` for `=== SUMMARY ===`
+  before re-running `fw audit` again.**
+
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
   (`.context/project/workflows/ask.yaml`, `lib/ask.py:select_route()`), with a
