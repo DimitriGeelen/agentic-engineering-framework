@@ -4632,3 +4632,9 @@ X'` returning empty group."
   task: T-3062
   date: 2026-08-17
   context: Added via context agent
+- id: L-622
+  learning: "When a gate blocks on 'no verdict was produced' (lock contention, timeout, crash), that reasoning must propagate OUTWARD to every caller that can manufacture the condition — not just live inside the gate. T-2930 made audit exit 75 block rather than pass, correctly; the caller wrapping that same audit in 'timeout 60 git push' kept collapsing killed-gate and refused-gate into one branch for months. Ask: who else creates the verdict-less outcome this gate now refuses to treat as a pass?"
+  source: P-011
+  task: T-3063
+  date: 2026-08-17
+  context: Added via context agent

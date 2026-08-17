@@ -35163,3 +35163,39 @@ scan_id: R-e2e8e324
 task_id: T-3062
 payload:
   task_file: .tasks/active/T-3062-pre-push-audit-outlasts-every-push-windo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T08:25:54Z'
+scan_id: R-9d0e09c5
+task_id: T-1977
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T08:25:54Z'
+scan_id: R-9d0e09c5
+task_id: T-1977
+payload:
+  task_file: .tasks/active/T-1977-arc-scoped-driver-weight-sliders--t-1929.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T08:30:26Z'
+scan_id: R-7c615e30
+task_id: T-3063
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T08:30:26Z'
+scan_id: R-7c615e30
+task_id: T-3063
+payload:
+  task_file: .tasks/active/T-3063-a-killed-push-and-a-blocked-push-are-the.md

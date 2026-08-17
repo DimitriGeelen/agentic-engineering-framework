@@ -2,7 +2,7 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-08-05T22:37:37Z'
+last_run: '2026-08-17T08:26:55Z'
 baseline_count: 263
 current_count: 260
 gated_baseline: 4
@@ -36,10 +36,16 @@ findings:
   - termlink_agent_thread_size_dist
   tag_format_warnings:
   - bad: respawn=
+    count: 2
+    suggested: null
+    sample_sessions:
+    - pen-agent-systemd
+    - email-archive
+  - bad: fqdn=
     count: 1
     suggested: null
     sample_sessions:
-    - email-archive
+    - pen-agent-systemd
   auto_classified:
     mutators_ungated: []
     readonly_exempt:
@@ -47,7 +53,7 @@ findings:
     - termlink_channel_set_retention
     - termlink_channel_sweep
 apply_result: null
-sessions_scanned: 207
+sessions_scanned: 21
 sessions_probe_error: null
 warnings:
 - "NEW: 6 unclassified tool(s) (manual review needed \u2014 outside T-1761 convention\
@@ -58,7 +64,8 @@ warnings:
   termlink_agent_co_posters, termlink_agent_daily_volume, termlink_agent_engagement_rate,
   termlink_agent_msg_growth_rate, termlink_agent_peer_engagement, termlink_agent_post_streak,
   termlink_agent_silence_gap, termlink_agent_silent_senders, termlink_agent_thread_size_dist'
-- 'TAG-FORMAT-DRIFT: 1 non-canonical tag prefix(es) in live sessions: respawn=(1)'
+- 'TAG-FORMAT-DRIFT: 2 non-canonical tag prefix(es) in live sessions: respawn=(2),
+  fqdn=(1)'
 errors: []
 framework_findings:
   status: pass

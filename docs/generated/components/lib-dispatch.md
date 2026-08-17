@@ -18,14 +18,15 @@ Part of: Agentic Engineering Framework (T-517: SSH-based cross-machine comms)
 
 ### Framework Reference
 
-When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, etc.), follow these rules. Based on evidence from 96 tasks where 8 used sub-agents.
+**Default: dispatch the work to a TermLink worker. Executing it yourself is the
+exception you justify, not the default you fall into.**
 
-### Result Management Rules
+The parent session's context is the binding constraint on how much work a day
+holds. A TermLink worker costs zero parent context, survives compaction, and runs
+observably. Self-execution spends the one resource that cannot be replenished
+mid-session.
 
-**Content generators** (enrichment, file creation, report writing):
-- Sub-agent MUST write output to disk (Write tool), NOT return full content
-- Return only: file path + one-line summary (e.g., "Wrote .context/episodic/T-073.yaml — enriched from skeleton")
-- This prevents context explosion (T-073: 9 agents returning full YAML spiked context by 30K+ tokens)
+### The test — can you write the dispatch prompt without doing the work first?
 
 *(truncated — see CLAUDE.md for full section)*
 

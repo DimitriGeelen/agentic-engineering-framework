@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-17-1003
-timestamp: 2026-08-17T08:03:18Z
+# Audit Results - 2026-08-17-1027
+timestamp: 2026-08-17T08:27:44Z
 sections: "structure"
 summary:
   pass: 30
@@ -50,7 +50,7 @@ findings:
     check: "Fabric: 171/1001 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
-    check: "Fabric drift: 8 source file(s) have no fabric card"
+    check: "Fabric drift: 9 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
     check: "Fabric: 719 card(s) point at files no watch pattern covers"

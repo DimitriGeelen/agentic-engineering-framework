@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3063: a killed push and a blocked push are the same branch, and the unpushed count has no memory
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T08:30:39Z
+# ============================================================================
+
+task_id: T-3063
+task_name: "a killed push and a blocked push are the same branch, and the unpushed count has no memory"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T07:57:51Z
+completed: 2026-08-17T08:30:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-17T10:15:19+02:00
+last_commit: 2026-08-17T10:24:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the push signal remembers. singular unpushed count read wrong in the escalation line
+
+# Key outcomes
+outcomes:
+  - 'A1. A push outcome is persisted across sessions — a failure records what'
+  - 'A2. A successful push clears that state, and so does a manual push made'
+  - 'A3. The handover''s unpushed line escalates on repeat — a second and later'
+  - 'A4. A killed push and a refused push produce different operator-facing'
+  - 'A5. `fw doctor` surfaces a stuck push, so the state is reachable'
+  - 'A6. Tests simulate the real failure — a recorded failure streak with'
+  - 'A7. Every load-bearing assertion is mutation-tested: the mutant turns it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/push-state.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/handover/handover.sh'
+  - 'bin/fw'
+  - '.context/audits/2026-08-17.yaml'
+  - '.context/handovers/S-2026-0817-1020.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/consolidation-report.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.verify-queue-state.json'
+  - '.context/working/watchtower.log'
+  - 'lib/push-state.sh'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3063-a-killed-push-and-a-blocked-push-are-the.md'
+  - 'tests/unit/t3063_push_state.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T10:15:19'
+    action: 'T-3063: the push signal remembers'
+  - time: '2026-08-17T10:24:50'
+    action: 'T-3063: singular unpushed count read wrong in the escalation line'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 32 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 32
+  commits: 2
+  files_changed: 26
+  lines_added: 7889
+  lines_removed: 302
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3063-a-killed-push-and-a-blocked-push-are-the.md
+generated_by: context-agent-hybrid

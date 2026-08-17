@@ -6,8 +6,6 @@
 
 ## What It Does
 
-Walk up from CWD looking for .tasks/ — the canonical project marker
-
 ## Used By (4)
 
 | Component | Relationship | Description |

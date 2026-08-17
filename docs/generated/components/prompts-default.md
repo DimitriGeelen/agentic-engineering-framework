@@ -8,6 +8,20 @@
 
 Default Workflow Prompt
 
+### Framework Reference
+
+**Default: dispatch the work to a TermLink worker. Executing it yourself is the
+exception you justify, not the default you fall into.**
+
+The parent session's context is the binding constraint on how much work a day
+holds. A TermLink worker costs zero parent context, survives compaction, and runs
+observably. Self-execution spends the one resource that cannot be replenished
+mid-session.
+
+### The test — can you write the dispatch prompt without doing the work first?
+
+*(truncated — see CLAUDE.md for full section)*
+
 ## Used By (2)
 
 | Component | Relationship | Description |

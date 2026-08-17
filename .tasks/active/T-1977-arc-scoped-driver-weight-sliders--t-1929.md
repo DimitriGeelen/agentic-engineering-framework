@@ -292,14 +292,13 @@ out=$(bin/fw reviewer T-1977 2>&1); [[ "$out" == *"Overall:"*"PASS"* ]]
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1977-arc-scoped-driver-weight-sliders--t-1929.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f51d7ba3
-- **Timestamp:** 2026-05-21T16:04:03Z
+- **Scan ID:** R-9d0e09c5
+- **Timestamp:** 2026-08-17T08:25:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-21T16:03:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

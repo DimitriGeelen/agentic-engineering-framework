@@ -12,12 +12,12 @@ description: >
   at 7 commits across 4 failed sessions. The signal fired correctly every time and
   was correctly ignored six times.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T07:57:51Z
-last_update: 2026-08-17T08:10:09Z
-date_finished:
+last_update: 2026-08-17T08:30:18Z
+date_finished: 2026-08-17T08:30:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,28 +102,37 @@ been stuck and how many sessions it has survived.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A1. A push outcome is persisted across sessions — a failure records what
+- [x] A1. A push outcome is persisted across sessions — a failure records what
       kind (killed / refused / other), when it first started failing, and how
       many consecutive sessions it has failed.
-- [ ] A2. A successful push clears that state, and so does a manual push made
+- [x] A2. A successful push clears that state, and so does a manual push made
       outside the handover: state that disagrees with `rev-list origin/<b>..HEAD`
       self-heals rather than reporting a stuck push that is no longer stuck.
       (Otherwise the escalation itself becomes the next thing people learn to
       ignore.)
-- [ ] A3. The handover's unpushed line escalates on repeat — a second and later
+- [x] A3. The handover's unpushed line escalates on repeat — a second and later
       consecutive failure reads visibly differently from a first, names the
       elapsed time, and says what to run. One failure stays quiet: crying wolf
       on the normal case is how the existing signal got tuned out.
-- [ ] A4. A killed push and a refused push produce different operator-facing
+- [x] A4. A killed push and a refused push produce different operator-facing
       text, and the killed case names the gate cost as the thing to look at.
-- [ ] A5. `fw doctor` surfaces a stuck push, so the state is reachable
+- [x] A5. `fw doctor` surfaces a stuck push, so the state is reachable
       deliberately and not only at session end.
-- [ ] A6. Tests simulate the real failure — a recorded failure streak with
+- [x] A6. Tests simulate the real failure — a recorded failure streak with
       commits genuinely absent from the remote ref — and assert the escalation
       fires. Including the negative: one failure does NOT escalate, and a
       cleared state produces nothing.
-- [ ] A7. Every load-bearing assertion is mutation-tested: the mutant turns it
+- [x] A7. Every load-bearing assertion is mutation-tested: the mutant turns it
       red, the unmutated suite is green (L-616).
+
+**Verified live, not only in fixtures.** The mechanism demonstrated itself
+mid-task on a real failure: `fw handover` auto-committed and its push was
+refused on self-vendor drift, which extended a planted streak from 2 to 3 and
+flipped `kind` from `killed` to `refused` — and the advice correctly stopped
+telling me to go measure the gate, because in that case a gate *had* answered.
+`fw doctor` then rendered `WARN Push STUCK: failed 3 consecutive session(s)`,
+the handover rendered the 🛑 block, and a successful push cleared the state file
+with nothing having told push-state that the push succeeded.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -216,6 +225,18 @@ been stuck and how many sessions it has survived.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# A1-A7 — the streak, the quiet cases, the self-heal, killed-vs-refused wording,
+# and both consumer wirings. Guarded form (T-2738): a partial failure must not
+# pass on the presence of an "ok" line alone.
+out=$(bats tests/unit/t3063_push_state.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+# The escalation must stay behind a repeat threshold. Asserting the constant
+# directly, because a rail that fires on the first failure is the same
+# tuned-out signal this task replaces:
+grep -q 'if n < 2:' lib/push-state.sh
+# Both consumers still read the state (the lib is worthless unwired):
+grep -q 'fw_push_state_read "$PROJECT_ROOT"' agents/handover/handover.sh
+grep -q 'fw_push_state_read "$PROJECT_ROOT"' bin/fw
 
 ## RCA
 
@@ -232,6 +253,54 @@ been stuck and how many sessions it has survived.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom.** Seven commits sat unpushed across four sessions with a correct
+warning printed in every one of them.
+
+**Root cause.** Two states that differ only in history were represented by
+values that carry none.
+
+- `timeout N git push || WARNING` collapses exit 124 (the gate never finished —
+  *no verdict*) and exit 1 (a gate finished and refused — *a verdict*) into one
+  branch. The operator-facing consequence: "push failed" four times running, with
+  nothing indicating that the gate had never actually evaluated anything.
+- `rev-list origin/<b>..HEAD` is a count. Counts have no past. `⚠ 7 commit(s) NOT
+  pushed` is the correct answer both five minutes into normal work and four
+  sessions into a stuck push, and the reader has no way to tell which.
+
+**Why it was structurally allowed.** The framework had already reasoned its way
+to exactly this distinction and applied it one level too deep. T-2930/OBS-221
+established that audit exit 75 (lock contention) must BLOCK rather than pass,
+because *no verdict was produced* — and put that reasoning inside the audit. The
+caller that wraps the audit in a 60-second `timeout`, manufacturing the same
+verdict-less outcome on every invocation, was never revisited. The precedent
+existed; nothing propagated it outward to the callers that can produce the
+condition.
+
+The second half is a measurement problem masquerading as a display problem. A
+snapshot cannot escalate, and no amount of rewording the count fixes that — the
+information needed to distinguish the two states was never being retained
+anywhere, so no consumer could have surfaced it.
+
+**Prevention** (distinct from the fix):
+- `tests/unit/t3063_push_state.bats` — 14 tests, and the load-bearing ones are
+  the *quiet* cases: one failure must not escalate, a success must clear, a
+  manual push from anywhere must self-heal, a branch switch must not inherit a
+  streak. An escalation rail that fires on the ordinary case decays into the
+  same ignored signal it replaced, so those bounds are the deliverable as much
+  as the escalation is.
+- Five mutations, each shown to turn a specific assertion red — including one
+  that exposed a tautological assertion of my own (`first < last || first ==
+  last`, always true, which let an overwritten `first_failure_ts` pass). The
+  timestamps land in the same second without a deliberate `sleep 1`, so the
+  test could not fail; the mutant is what found it, not review.
+- `fw doctor` carries the state, so "is the push stuck" is answerable on demand
+  instead of only at session end, which is the moment nobody is reading.
+
+**Not a defect, worth recording:** `fw doctor` takes >200s on this repo. Noticed
+while verifying A5 and out of scope here — the T-3062 class (a surface nobody
+measures growing past the window its callers assume) applied to a different
+surface. Not filed as a task; it is one measurement away from being one.
 
 ## Evolution
 
@@ -316,3 +385,15 @@ been stuck and how many sessions it has survived.
 
 ### 2026-08-17T08:10:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7c615e30
+- **Timestamp:** 2026-08-17T08:30:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-17T08:30:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
