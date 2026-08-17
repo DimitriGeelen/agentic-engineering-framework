@@ -256,7 +256,7 @@ pickup_promote_deferred() {
             if [ "$dry_run" = true ]; then
                 echo -e "${CYAN}WOULD PROMOTE${NC}  $basename_f — blocker $blocking is complete"
             else
-                if mv "$f" "$PICKUP_INBOX/" 2>/dev/null; then
+                if pickup_move_preserving "$f" "$PICKUP_INBOX" >/dev/null; then
                     rm -f "$crumb"
                     echo -e "${GREEN}PROMOTE${NC} $basename_f — blocker $blocking shipped; back to inbox"
                 else
@@ -296,14 +296,56 @@ pickup_write_breadcrumb() {
     } > "$breadcrumb"
 }
 
+# --- Collision-safe moves (T-3052) ---
+
+# Move a pickup envelope into a pickup directory without ever overwriting a file
+# already there. Echoes the destination actually used; returns non-zero on
+# failure, so callers can branch instead of assuming the basename survived.
+#
+# Plain `mv` is silent on collision by design, which is the wrong default for a
+# directory whose filenames ARE identities (:566 — `${pickup_id}-${type}.yaml`).
+# A collision here means two envelopes were issued the same id; that is a bug
+# somewhere upstream, and the one thing that must not happen is losing the
+# evidence of it. Keep both, and say so.
+pickup_move_preserving() {
+    local src="$1" destdir="$2"
+
+    local base stem ext
+    base=$(basename "$src")
+    case "$base" in
+        *.yaml) stem="${base%.yaml}"; ext=".yaml" ;;
+        *.yml)  stem="${base%.yml}";  ext=".yml"  ;;
+        *)      stem="$base";         ext=""      ;;
+    esac
+
+    local dest="$destdir/$base"
+    if [ -e "$dest" ]; then
+        local n=1
+        while [ -e "$destdir/${stem}.dup-${n}${ext}" ]; do
+            n=$((n + 1))
+        done
+        dest="$destdir/${stem}.dup-${n}${ext}"
+        echo -e "${YELLOW}WARN${NC}    pickup id collision: ${base} already exists in $(basename "$destdir")/ — keeping both, filed the arriving one as $(basename "$dest")" >&2
+    fi
+
+    mv "$src" "$dest" 2>/dev/null || return 1
+    printf '%s\n' "$dest"
+}
+
 # --- ID generation ---
 
 pickup_next_id() {
     local max_id=0
 
-    # Scan inbox, processed, and rejected for highest P-NNN
+    # Scan every directory an envelope can occupy for the highest P-NNN.
+    #
+    # auto-deferred/ is not archive and must be counted (T-3052): :259 promotes
+    # its envelopes back into the inbox once their blocking task ships, so an id
+    # parked there is live work. Omitting it made the high-water mark too low,
+    # the next send reissued the id, and — filenames being identities — the
+    # arriving envelope overwrote the parked one.
     local dir
-    for dir in "$PICKUP_INBOX" "$PICKUP_PROCESSED" "$PICKUP_REJECTED"; do
+    for dir in "$PICKUP_INBOX" "$PICKUP_PROCESSED" "$PICKUP_REJECTED" "$PICKUP_AUTO_DEFERRED"; do
         [ -d "$dir" ] || continue
         local f
         for f in "$dir"/*.yaml "$dir"/*.yml; do
@@ -402,7 +444,7 @@ pickup_process_one() {
     if ! pickup_validate_envelope "$file"; then
         echo -e "${RED}REJECT${NC}  $basename_f — invalid envelope" >&2
         if [ "$dry_run" != true ]; then
-            mv "$file" "$PICKUP_REJECTED/" 2>/dev/null || true
+            pickup_move_preserving "$file" "$PICKUP_REJECTED" >/dev/null || true
         fi
         return 1
     fi
@@ -411,7 +453,7 @@ pickup_process_one() {
     if pickup_dedup_check "$file"; then
         echo -e "${YELLOW}DEDUP${NC}   $basename_f — seen within cooldown window"
         if [ "$dry_run" != true ]; then
-            mv "$file" "$PICKUP_REJECTED/" 2>/dev/null || true
+            pickup_move_preserving "$file" "$PICKUP_REJECTED" >/dev/null || true
         fi
         return 0
     fi
@@ -421,7 +463,7 @@ pickup_process_one() {
         echo -e "${YELLOW}AUTO-DEFER${NC}  $basename_f — source task already completed in this project"
         if [ "$dry_run" != true ]; then
             mkdir -p "$PICKUP_AUTO_DEFERRED"
-            mv "$file" "$PICKUP_AUTO_DEFERRED/" 2>/dev/null || true
+            pickup_move_preserving "$file" "$PICKUP_AUTO_DEFERRED" >/dev/null || true
         fi
         return 0
     fi
@@ -432,8 +474,13 @@ pickup_process_one() {
         echo -e "${YELLOW}AUTO-DEFER${NC}  $basename_f — triple collision with active $blocking_task"
         if [ "$dry_run" != true ]; then
             mkdir -p "$PICKUP_AUTO_DEFERRED"
-            if mv "$file" "$PICKUP_AUTO_DEFERRED/" 2>/dev/null; then
-                pickup_write_breadcrumb "$PICKUP_AUTO_DEFERRED/$basename_f" "$blocking_task" "triple-dedup"
+            local deferred_path
+            # The breadcrumb must name the file that actually landed — on a
+            # collision the helper renames, and a breadcrumb pointing at the
+            # pre-existing envelope would attribute one pickup's blocker to
+            # another (T-3052 A4).
+            if deferred_path=$(pickup_move_preserving "$file" "$PICKUP_AUTO_DEFERRED"); then
+                pickup_write_breadcrumb "$deferred_path" "$blocking_task" "triple-dedup"
             fi
         fi
         return 0
@@ -464,11 +511,14 @@ pickup_process_one() {
     pickup_record_dedup "$file"
 
     # Move to processed
-    mv "$file" "$PICKUP_PROCESSED/" 2>/dev/null || true
+    local processed_path
+    processed_path=$(pickup_move_preserving "$file" "$PICKUP_PROCESSED") || processed_path=""
 
     # T-1165: mirror envelope to channel bus (one-way, non-fatal).
     # Shell pickup stays portable — bridge silently no-ops on any failure.
-    local processed_path="$PICKUP_PROCESSED/$basename_f"
+    # processed_path comes from the move itself (T-3052 A4) — reconstructing it
+    # from basename_f assumed the name survived, so on a collision the bridge
+    # would have mirrored the envelope already sitting there instead of this one.
     local bridge="${FRAMEWORK_ROOT:-}/lib/pickup-channel-bridge.sh"
     # T-3051: gate on existence, invoke through `bash`. Gating on the exec bit
     # made this a no-op on every install derived from a git clone — git tracked

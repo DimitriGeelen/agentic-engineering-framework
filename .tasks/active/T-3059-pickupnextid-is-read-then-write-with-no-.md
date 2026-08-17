@@ -1,21 +1,16 @@
 ---
-id: T-3052
-name: "pickup_next_id ignores auto-deferred/, so a reissued id silently overwrites
-  a filed pickup"
+id: T-3059
+name: "pickup_next_id is read-then-write with no lock, so concurrent sends collide"
 description: >
-  From T-3047 triage M-23 (ring20-dashboard P-010, 2026-06-09). Gap A: lib/pickup.sh:306
-  scans inbox/processed/rejected only — PICKUP_AUTO_DEFERRED is declared at lib/pickup.sh:26
-  but absent from the allocator loop. Gap B: lib/pickup.sh:424 is a plain mv with
-  errors suppressed, no -i and no destination check, so the collision is silent. Two
-  cooperating gaps; one lost pickup per collision.
+  Split from T-3052. pickup_next_id (lib/pickup.sh) scans the four pickup directories for the highest P-NNN and returns max+1, then pickup_send writes the envelope. Between those two steps nothing holds a lock, so two concurrent 'fw pickup send' calls both read the same high-water mark and both issue the same id. Because an envelope filename IS its id (:566), they then aim at one inbox path. Distinct root cause from T-3052 (TOCTOU, not a missed directory), hence a separate task. T-3052 degraded the consequence from silent data loss to a visible dup-N file plus a WARN, so this is no longer a losing failure — but the id is still not unique. Likely fix: lib/keylock.sh exclusive() around read-allocate-write, same treatment OBS-308 proposes for audit.sh.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [upstream-pickup, T-3047-triage]
+tags: []
 components: []
-related_tasks: [T-3047]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -26,9 +21,9 @@ related_tasks: [T-3047]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T22:31:11Z
-last_update: 2026-08-17T06:10:40Z
-date_finished:
+created: 2026-08-17T06:23:38Z
+last_update: 2026-08-17T06:23:38Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,95 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-16T22:45:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-16T22:45:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3052: pickup_next_id ignores auto-deferred/, so a reissued id silently overwrites a filed pickup
+# T-3059: pickup_next_id is read-then-write with no lock, so concurrent sends collide
 
 ## Context
 
-An envelope's filename is its id: `lib/pickup.sh:566` builds
-`${pickup_id}-${pickup_type}.yaml`. So an id is not a label, it is a filesystem
-key — reissuing one aims two different envelopes at the same path.
-
-Two gaps have to line up, and each is harmless alone:
-
-- **Gap A — the allocator is blind to one of the four directories.**
-  `pickup_next_id` (`:306`) scans `inbox`, `processed`, `rejected`.
-  `PICKUP_AUTO_DEFERRED` is declared at `:26` and used at nine other sites, but
-  not here. An id parked in `auto-deferred/` is invisible to the high-water mark,
-  so the next `pickup send` reissues it. This is not a stale directory being
-  ignored: `:259` promotes envelopes back out of `auto-deferred/` into the inbox
-  when their blocking task ships, so those files are live work waiting on a
-  condition, not archive.
-
-- **Gap B — the move that lands them is a clobbering `mv` with errors dropped.**
-  `:424` and `:435` are `mv "$file" "$PICKUP_AUTO_DEFERRED/" 2>/dev/null || true`.
-  `mv` overwrites without asking, so when the reissued P-NNN is auto-deferred in
-  its turn it lands on top of the original. No error, no diff, no count change —
-  `fw pickup status` reports the same number of deferred envelopes before and
-  after, because one replaced one.
-
-Chain: envelope A gets P-007 → auto-deferred → allocator can't see it → envelope B
-is issued P-007 → B is auto-deferred → B's `mv` overwrites A. A is gone, and the
-only surface that would have shown it (the deferred count) is unchanged.
-
-Note the asymmetry that hid this: `processed/` and `rejected/` receive the same
-clobbering `mv`, and are safe **only** because the allocator scans them. Gap B is
-latent everywhere; Gap A decides where it fires.
-
-Out of scope, filed separately: `pickup_next_id` is also read-then-write with no
-lock, so two concurrent `pickup send` calls can both issue the same id regardless
-of this fix. That is a different root cause (TOCTOU, not a missed directory) and
-gets its own task per §Task Sizing: **T-3059**.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] **A1 — the allocator sees all four directories.** `pickup_next_id` counts
-      envelopes in `auto-deferred/`, so an id parked there is never reissued.
-- [x] **A2 — no pickup file is ever overwritten by a move.** A helper moves an
-      envelope into a pickup directory without clobbering: on collision it keeps
-      both, files the arriving one under a distinct name, and warns on stderr
-      naming both files. It echoes the destination it actually used.
-- [x] **A3 — every pickup-file move goes through it.** Both auto-defer sites, the
-      two reject sites, the processed site, and the auto-deferred→inbox promotion.
-      Gap B is latent at all of them; A1 only removes today's trigger.
-- [x] **A4 — callers that need the post-move path use the real one.** The
-      triple-dedup breadcrumb (`:436`) and the channel-bridge `processed_path`
-      (`:471`) currently reconstruct the destination by assuming the basename
-      survived. They read the helper's echoed path instead, so a renamed arrival
-      does not silently write a breadcrumb for, or mirror, the wrong file.
-- [x] **A5 — each fix is independently pinned by a mutation.** Reverting A1
-      alone, and reverting A2 alone, each turn a distinct test red; plus a
-      positive control (L-616) proving the harness can still tell pass from fail.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -221,11 +141,6 @@ gets its own task per §Task Sizing: **T-3059**.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(bats tests/unit/t3052_pickup_id_collision.bats 2>&1); echo "$out" | grep -q "^ok 14 " && ! echo "$out" | grep -q "^not ok"
-! grep -qE 'mv "\$(file|f)" "\$PICKUP_' lib/pickup.sh
-sed -n '/^pickup_next_id/,/^}/p' lib/pickup.sh > /tmp/.t3052-alloc.out && grep -q PICKUP_AUTO_DEFERRED /tmp/.t3052-alloc.out
-T=$(mktemp -d); mkdir -p "$T/.context/pickup"/{inbox,processed,rejected,auto-deferred}; printf 'pickup_id: "P-007"\nORIGINAL\n' > "$T/.context/pickup/auto-deferred/P-007-learning.yaml"; printf 'pickup_id: "P-007"\nARRIVING\n' > "$T/.context/pickup/inbox/P-007-learning.yaml"; PROJECT_ROOT="$T" bash -c 'source lib/pickup.sh; [ "$(pickup_next_id)" = "P-008" ] && pickup_move_preserving "$PICKUP_INBOX/P-007-learning.yaml" "$PICKUP_AUTO_DEFERRED" >/dev/null 2>&1' && grep -q ORIGINAL "$T/.context/pickup/auto-deferred/P-007-learning.yaml" && grep -q ARRIVING "$T/.context/pickup/auto-deferred/P-007-learning.dup-1.yaml"
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -241,61 +156,6 @@ T=$(mktemp -d); mkdir -p "$T/.context/pickup"/{inbox,processed,rejected,auto-def
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** a filed pickup disappears from `auto-deferred/` with no error, no
-log line, and no change in any count. `fw pickup status` reports the same number
-of deferred envelopes before and after, because one file replaced one file.
-
-**Root cause:** an envelope's id *is* its filename (`:566` —
-`${pickup_id}-${type}.yaml`), and the allocator that guarantees id uniqueness
-(`pickup_next_id`, `:306`) scanned three of the four directories an envelope can
-occupy. `auto-deferred/` was omitted. Ids parked there were reissued, and the
-reissued envelope's landing was a plain `mv`, which overwrites.
-
-**Why structurally allowed:** three things had to be true at once, and each is
-individually reasonable.
-
-1. **The omission looks like a scope decision, not a bug.** `auto-deferred/`
-   reads as an archive, and archives are the sort of thing an allocator skips.
-   It is not one — `:259` promotes envelopes back out of it into the inbox once
-   their blocking task ships, so those files are live work waiting on a
-   condition. Nothing in the code says so at the allocator; you have to already
-   know `promote-deferred` exists.
-2. **The failure erases its own evidence.** Every other pickup failure leaves
-   something behind — a rejected file, a FAIL line, a count that moved. This one
-   consumes exactly one file and produces exactly one file. There is no state in
-   which the system is visibly wrong, only a state in which something that used
-   to be there isn't, discoverable solely by someone who remembers filing it.
-3. **The safe directories made the dangerous one look safe.** `processed/` and
-   `rejected/` receive the same clobbering `mv` and have never lost anything —
-   not because the move is safe, but because the allocator scans them. Six sites
-   share one unsafe idiom and five are protected by an invariant that holds
-   somewhere else entirely. Reading any one of them tells you nothing.
-
-The deeper class: **a uniqueness guarantee is only as wide as the set the
-allocator enumerates, and nothing forces that set to match the set the consumers
-write into.** The four directory constants sit together at `:23-26`; the loop at
-`:306` lists three of them. That divergence is invisible at both ends.
-
-**Prevention** (distinct from the fix):
-
-- The allocator now enumerates all four, and the move can no longer clobber, so
-  the two gaps are closed independently — either one alone would have prevented
-  the loss, which is exactly why fixing only one is tempting and wrong.
-- `pickup_move_preserving` converts the class from silent to loud: any *future*
-  allocator gap now produces a `dup-N` file and a WARN naming both envelopes,
-  instead of a deletion. This is the part that survives the next omission.
-- Verification line 2 fails if any `mv "$file" "$PICKUP_*"` reappears, so the
-  unsafe idiom cannot be reintroduced by copy-paste at a seventh site.
-- Mutation tests pin A1, A2 and A4 *separately* (each with the positive control
-  L-616 requires), so a future change that quietly re-breaks one of them cannot
-  hide behind the other two still passing.
-
-**Not fixed here, filed as T-3059:** `pickup_next_id` is read-then-write with no
-lock, so two concurrent `pickup send` calls can still issue the same id. That is
-a different root cause (TOCTOU, not a missed directory) and the collision-safe
-move now degrades it from data loss to a visible `dup-1` — but it is a real
-remaining hole, not something this task closed.
 
 ## Evolution
 
@@ -373,19 +233,7 @@ remaining hole, not something this task closed.
 
 ## Updates
 
-### 2026-08-16T22:31:11Z — task-created [task-create-agent]
+### 2026-08-17T06:23:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3059-pickupnextid-is-read-then-write-with-no-.md
 - **Context:** Initial task creation
-
-### 2026-08-17T06:10:40Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-3a7d997e
-- **Timestamp:** 2026-08-17T06:25:20Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
