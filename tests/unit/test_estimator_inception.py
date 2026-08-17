@@ -107,10 +107,19 @@ def test_inception_target_blast_radius_clamped():
 
 
 def test_inception_missing_tbr_falls_back_to_components_count():
+    """T-3068: was `assert sc == 0`.
+
+    The fallback still happens — an inception with no `target_blast_radius` still
+    drops through to the component count. What changed is what that count reports
+    when there is nothing to count: an explicit unknown instead of the cheapest
+    value on the heaviest cost term. T-2189 identified this shape for inceptions and
+    fixed it by adding `target_blast_radius`; the same sentence was true of every
+    task with empty components, which is what T-3068 closes.
+    """
     sc, ev = estimator.score_blast_radius(
         {"workflow_type": "inception", "components": []}, "", []
     )
-    assert sc == 0
+    assert sc is None
     assert "no-components" in ev[0]
 
 
@@ -130,10 +139,15 @@ def test_inception_malformed_tbr_falls_back_to_components():
 
 
 def test_build_blast_radius_unchanged_regression():
-    """Build-task scoring path must be byte-identical pre/post T-2189."""
-    # Existing semantics: 0/1/3/5/7/9 ladder by component count.
+    """Build-task scoring path must be unchanged pre/post T-2189.
+
+    T-3068 changed exactly one row of this table: empty components now reports
+    unknown rather than 0. The rest of the ladder is untouched, which is what this
+    test is for — the T-3068 change had to be surgical, not a rewrite of the scale.
+    """
+    # Semantics: 1/3/5/7/9 ladder by component count; None when there is no count.
     cases = [
-        ({"workflow_type": "build", "components": []}, 0),
+        ({"workflow_type": "build", "components": []}, None),
         ({"workflow_type": "build", "components": ["a"]}, 1),
         ({"workflow_type": "build", "components": ["a", "b", "c"]}, 3),
         ({"workflow_type": "build", "components": ["a"] * 5}, 5),

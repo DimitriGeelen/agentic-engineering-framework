@@ -342,16 +342,40 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
         return 0
 
     bvp_vals = [r['bvp_norm'] for r in rows]
+    # Medians are taken over KNOWN costs only — an unknown-cost task must not shift
+    # the threshold that decides everyone else's quadrant (T-3068).
     cost_vals = [r['cost'] for r in rows if r['cost'] is not None]
     bvp_median = statistics.median(bvp_vals) if bvp_vals else 0.5
     cost_median = statistics.median(cost_vals) if cost_vals else 4.0
     for r in rows:
         r['quadrant'] = quadrant(r['bvp_norm'], r['cost'], bvp_median, cost_median)
 
+    # T-3068: say what the ranking could not place, and say it before the table
+    # rather than after — a quadrant filter that silently drops most of the corpus
+    # reads as complete coverage (CLAUDE.md §no silent caps). The cost axis leans
+    # 0.6 on blast_radius, and blast_radius is only derivable once `components:` is
+    # resolved, which happens at the work-completed transition — the very status
+    # this ranking excludes by default. So a large unknown count here is the
+    # expected state, not an anomaly, and the operator needs to see its size to
+    # know how much weight the quadrant split can carry.
+    _n_total = len(rows)
+    _n_unknown = sum(1 for r in rows if r['cost'] is None)
+    if _n_unknown:
+        _pct = 100.0 * _n_unknown / _n_total if _n_total else 0.0
+        print(f"NOTE: {_n_unknown}/{_n_total} task(s) ({_pct:.0f}%) have no known cost "
+              f"— blast_radius unmeasured, so no quadrant (COST/QUAD show '-').")
+        print(f"      Quadrant thresholds are computed over the {_n_total - _n_unknown} "
+              f"task(s) that do have one.")
+        print("      Cost becomes measurable once `components:` is resolved; see T-3068.")
+        print()
+
     if filter_quadrant:
         rows = [r for r in rows if r['quadrant'] == filter_quadrant]
         if not rows:
             print(f"No tasks match quadrant {filter_quadrant}.")
+            if _n_unknown:
+                print(f"  ({_n_unknown} of {_n_total} task(s) were unplaceable for want "
+                      f"of a cost — that is the likely reason, not an empty quadrant.)")
             return 0
 
     rows.sort(key=lambda r: r['bvp_norm'], reverse=True)

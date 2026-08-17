@@ -33,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:13:22Z
-last_update: 2026-08-07T20:30:12Z
-date_finished: null
+last_update: '2026-08-17T12:36:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,6 +54,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-17T12:36:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 7
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=7 (lines=179,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-07T20:30:12Z'

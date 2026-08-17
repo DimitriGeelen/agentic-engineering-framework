@@ -19,7 +19,7 @@ tags: [from-T-1066, termlink, benchmark, performance]
 components: []
 related_tasks: [T-1066, T-1641]
 created: 2026-05-01T10:45:22Z
-last_update: '2026-07-07T10:45:02Z'
+last_update: '2026-08-17T12:36:04Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -143,6 +143,15 @@ cost_estimate_proposed:
       effort: 5
     rationale: blast_radius=0 (no-signal); tier=1 (no-signal); effort=5 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-17T12:36:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 5
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=5 (lines=100,acs=3)
     rubric_sha: e4a00f38e801
 ---
 

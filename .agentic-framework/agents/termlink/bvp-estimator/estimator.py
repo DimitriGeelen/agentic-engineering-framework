@@ -2477,20 +2477,40 @@ COST_WORKFLOW_TIER = {
 }
 
 
-def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
-    """Heuristic: count `components:` entries → 0/1/3/5/7/9 scale.
+def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int | None, list[str]]:
+    """Heuristic: count `components:` entries → 1/3/5/7/9 scale, or None if unknown.
+
+    T-3068: returns **None, not 0**, when there is no component information.
+    `0` is the cheapest value on a term carrying weight 0.6 — more than the other
+    two cost terms combined — so scoring "the framework never recorded what this
+    touches" as 0 does not present as missing data, it presents as
+    *attractiveness*, and an HV/LC filter promotes on exactly that.
+
+    This is not a rare path. `components:` is populated at the `work-completed`
+    transition (update-task.sh resolves it from git history), and `fw bvp` excludes
+    work-completed by default (T-2223 — the rank answers "what should I work on
+    next"). Measured at the time of this change: of the 142 ranked tasks, **4 had
+    components**. So the term was unavailable for 97% of the population it ranked,
+    and unavailable meant cheapest.
+
+    Nothing is lost by giving up the 0 value: `n == 0` was the only route to it, so
+    a returned 0 has always meant "no information" rather than "touches nothing".
+    Now it says so. Recorded 0s already in frontmatter are deliberately NOT
+    reinterpreted — a stored 0 was a real (if wrong) estimate, and rewriting it
+    would destroy the evidence this change rests on.
 
     Components are explicit declarations of what the task touches; longer
-    lists imply wider blast radius. The 0/1/3/5/7/9 ladder is non-linear by
-    design — a component count of 7 vs 8 is rarely meaningful, but 0 vs 1
-    vs 5+ is.
+    lists imply wider blast radius. The 1/3/5/7/9 ladder is non-linear by
+    design — a component count of 7 vs 8 is rarely meaningful, but 1 vs 5+ is.
 
     T-2189 inception scoring exception: inceptions' `components:` is empty
-    by definition (the build doesn't exist yet), so the formula above
-    always returns 0 — making inceptions look artificially cheap. When
-    `workflow_type: inception`, prefer the `target_blast_radius` (T-2188
-    schema) frontmatter field. See 050-Inceptions.md §Scoring Exception
-    and policy/value-drivers.yaml §inception_scoring_exception.
+    by definition (the build doesn't exist yet), so the count below cannot
+    speak for them. When `workflow_type: inception`, prefer the
+    `target_blast_radius` (T-2188 schema) frontmatter field. See
+    050-Inceptions.md §Scoring Exception and policy/value-drivers.yaml
+    §inception_scoring_exception. T-3068 note: T-2189 identified this exact
+    shape one population earlier and repaired inceptions only — the same
+    sentence was true of the whole non-inception corpus, and nothing re-asked.
     """
     wf = (fm.get("workflow_type") or "").lower()
     if wf == "inception":
@@ -2506,9 +2526,9 @@ def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int, list[
 
     components = fm.get("components") or []
     if not isinstance(components, list):
-        return 0, ["→0 (components-malformed)"]
+        return None, ["→? (components-malformed)"]
     n = len([c for c in components if c])
-    if n == 0: return 0, ["→0 (no-components)"]
+    if n == 0: return None, ["→? (no-components-UNMEASURED-not-zero)"]
     if n == 1: return 1, ["→1 (single-component)"]
     if n <= 3: return 3, [f"→3 ({n}-components)"]
     if n <= 6: return 5, [f"→5 ({n}-components-medium-blast)"]
@@ -2559,6 +2579,12 @@ def estimate_cost(task_path: Path) -> dict:
     tier, tier_ev = score_tier(fm, body, tags)
     eff, eff_ev = score_effort(fm, body, tags)
 
+    # T-3068: `blast_radius: null` is emitted deliberately rather than dropped or
+    # defaulted. `compute_cost` (lib/bvp.sh) requires all three terms present and
+    # otherwise reports source='absent' — so a null here propagates as "no cost
+    # known" all the way to the COST/QUAD columns, instead of a composite quietly
+    # assembled from the 0.3 and 0.1 terms while the 0.6 one was never measured.
+    # A cost built on an unknown blast radius is unknown, not cheap.
     return {
         "cost_estimate": {"blast_radius": br, "tier": tier, "effort": eff},
         "evidence": {"blast_radius": br_ev, "tier": tier_ev, "effort": eff_ev},
@@ -2590,12 +2616,30 @@ def _cost_v2_delta_should_skip(proposed: dict, confirmed: dict | None) -> bool:
 
 
 def _cost_short_rationale(evidence: dict[str, list[str]]) -> str:
+    """Render `term=value (reason)` per cost component.
+
+    T-3068: this used to print `(no-signal)` for every term on every task. It
+    looked for evidence entries that do NOT start with the arrow, but all three
+    cost scorers return exactly one entry and it always starts with the arrow —
+    so the `signals` list was empty by construction, and the reason the scorer
+    had already computed was thrown away in favour of the words "no-signal".
+
+    Fixing it matters more now than it did: with blast_radius able to come back
+    unknown, the parenthetical is the only place the operator can see *why* a cost
+    is missing. `blast_radius=? (no-signal)` would say nothing;
+    `blast_radius=? (no-components-UNMEASURED-not-zero)` says what to do about it.
+    """
     parts = []
     for component, ev in evidence.items():
         arrow = next((e for e in ev if e.startswith("→")), "→?")
-        signals = [e for e in ev if not e.startswith("→")]
-        sig_str = ",".join(signals[:2]) if signals else "no-signal"
-        parts.append(f"{component}={arrow.split()[0][1:]} ({sig_str})")
+        head, _, tail = arrow.partition(" ")
+        value = head[1:] or "?"
+        # Prefer the scorer's own parenthetical; fall back to any non-arrow
+        # entries, which is the shape the original code assumed.
+        reason = tail.strip().strip("()") or ",".join(
+            e for e in ev if not e.startswith("→")
+        ) or "no-signal"
+        parts.append(f"{component}={value} ({reason})")
     return "; ".join(parts)
 
 

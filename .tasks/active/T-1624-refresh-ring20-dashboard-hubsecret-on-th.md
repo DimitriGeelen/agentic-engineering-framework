@@ -14,7 +14,7 @@ tags: [termlink, secret, fleet, security, from-g-045, t-1054-heal]
 components: []
 related_tasks: [T-1054, T-1055, T-1623]
 created: 2026-04-30T20:27:35Z
-last_update: '2026-07-07T10:45:02Z'
+last_update: '2026-08-17T12:36:04Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -140,6 +140,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-17T12:36:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 6
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=6 (lines=109,acs=4)
     rubric_sha: e4a00f38e801
 ---
 

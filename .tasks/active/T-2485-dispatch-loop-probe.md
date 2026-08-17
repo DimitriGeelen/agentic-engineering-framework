@@ -13,7 +13,7 @@ tags: [probe, throwaway, dispatch-test]
 components: []
 related_tasks: [T-2484]
 created: 2026-06-24T15:20:00Z
-last_update: '2026-07-08T08:15:04Z'
+last_update: '2026-08-17T12:36:08Z'
 date_finished:
 cost_estimate_proposed:
   - ts: '2026-07-07T08:00:05Z'
@@ -24,6 +24,15 @@ cost_estimate_proposed:
       effort: 1
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=1 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-17T12:36:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 1
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=1 (lines=27,acs=1)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-07-07T08:00:09Z'

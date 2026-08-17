@@ -1,8 +1,10 @@
 ---
-id: T-3061
-name: "audit rail: surface active tasks whose ACs are all satisfied but never closed"
+id: T-3068
+name: "The cost axis prices 'we never measured this' as 'cheapest', for 97% of the
+  tasks it ranks"
 description: >
-  audit rail: surface active tasks whose ACs are all satisfied but never closed
+  The cost axis prices 'we never measured this' as 'cheapest', for 97% of the tasks
+  it ranks
 
 status: started-work
 workflow_type: build
@@ -21,7 +23,7 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-17T07:07:35Z
+created: 2026-08-17T12:30:27Z
 last_update: '2026-08-17T12:36:11Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
@@ -35,15 +37,6 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-17T07:15:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
   - ts: '2026-08-17T12:36:11Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
@@ -51,73 +44,96 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=235,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-17T07:15:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
+      (workflow:build); effort=8 (lines=270,acs=8)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3061: audit rail: surface active tasks whose ACs are all satisfied but never closed
+# T-3068: The cost axis prices 'we never measured this' as 'cheapest', for 97% of the tasks it ranks
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The operator's standing instruction is to *"focus on HV/LC & HV/HC tasks and run
+BVP estimator regularly"*. This task is about the instrument that instruction names,
+and whether it can currently be steered by.
+
+**The measurement.** `score_blast_radius` derives cost from the count of
+`components:` entries — its own docstring says *"count `components:` entries →
+0/1/3/5/7/9 scale"*. Measured across `.tasks/active/`:
+
+| status | tasks | with `components:` |
+|---|---:|---:|
+| work-completed | 227 | 179 (79%) |
+| captured | 96 | **1** (1%) |
+| started-work | 46 | **3** (7%) |
+
+`components:` is populated **at the `work-completed` transition** — `update-task.sh`
+resolves it from git history and prints `Components: N resolved from git history`.
+And `fw bvp` **excludes work-completed by default** (T-2223, deliberately: *"the
+rank answers 'what should I work on next'"*).
+
+So the ranked population is 142 tasks, of which **4 have components — 2.8%**.
+
+Both design decisions are individually correct. Together they guarantee that the
+dominant input to the cost axis is unavailable for essentially every task the axis
+is used to rank. Cost is `0.6×blast_radius + 0.3×tier + 0.1×effort`: the missing
+term carries **weight 0.6**, more than the other two combined.
+
+**Why this is worse than a gap.** `blast_radius` returns `0` when it finds nothing,
+and `0` is the *cheapest* value on that scale. So "the framework never recorded
+what this touches" and "this touches nothing" are the same number, and the number
+is the most attractive one available. Measured: 292 of 344 estimates carry
+`blast_radius: 0` (85%); of the 144 tasks holding both components and an estimate,
+**118 still score 0** — including T-2529, whose 3 components include `web/app.py`, a
+73-edge node in the fabric.
+
+The consequence is not noise, it is **inverted signal**: an HV/LC filter selects
+preferentially for tasks whose blast radius was never measured. It does not present
+as missing data — it presents as *attractiveness*. The framing is 832's and it is
+the part of their report doing the most work for us; the population-exclusion
+mechanism above is ours and is what makes the effect near-total rather than partial.
+
+**Visible today.** `fw bvp --quadrant hv-lc --include-proposed` returns six rows
+whose COST column reads `1.4`, `1.4`, `1.4`, `1.4`, `1.4`, `1.4`; `hv-hc` returns
+rows at `3.6` tied at BVP 108. The quadrant split is not partitioning on cost — it
+is mostly partitioning on `workflow_type`, because the inception exception (T-2189)
+is one of the few paths that puts a non-zero number on the axis.
+
+**Scope fence.** This task makes the instrument honest: unknown must stop reading as
+cheapest, and the operator must be able to see how much of the ranking rests on
+absent data. It does **not** make the axis real — deriving blast radius for open
+tasks (from the fabric, from a task's own commits, or by populating `components:`
+before close) is the follow-up, and is a bigger change with its own design
+questions. Doing the honest half first is deliberate: right now the tool cannot
+tell us how badly it needs the second half, and after this it can.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 — the audit sees the state.** `fw audit` emits a WARN naming active
-      tasks where status is `started-work`/`issues`, at least one Agent AC
-      exists, every Agent AC is ticked, and no Human AC is left unticked. The
-      WARN carries the count and the ids (capped, with an overflow note), plus
-      the report path for the full list.
-- [ ] **A2 — it proposes, it never closes.** The rail changes no task status,
-      ticks no box, and its message says so in words. A ticked checkbox is a
-      claim by the agent that wrote it, not evidence — CLAUDE.md forbids
-      batch-closing on exactly this basis. The mitigation line points at
-      `fw task verify` / per-task review, never at a bulk command.
-- [ ] **A3 — the two confidence classes are distinguished.** Tasks with a real
-      `## Verification` block (something mechanical would gate their close) are
-      separated from those without. Six of the seventeen found by T-3060 have an
-      empty Verification block; a rail that presents both as equally ready would
-      be inviting the unevidenced close it exists to prevent.
-- [ ] **A4 — the detector is not fooled by the template.** The task template
-      ships example ACs inside HTML comment blocks — the generic first/second
-      criterion pair, plus the worked `[REVIEW]` and `[REVIEWER]` samples.
-      Counting those would make every freshly-created task read as having
-      unsatisfied Human ACs, and the rail would be silent across the whole
-      corpus — a zero that looks like health.
-      (Noted while writing this AC: quoting the template's own sentinel string
-      verbatim here made the G-020 readiness gate refuse the task, because that
-      gate greps for the literal placeholder anywhere in the file rather than in
-      an unticked AC line. Filed as an observation — prose *about* a sentinel is
-      not a sentinel, and a gate that cannot tell the difference blocks exactly
-      the task that documents it.)
-- [ ] **A5 — WARN, never FAIL.** It does not block a push. This is a hygiene
-      signal about work already done, not a defect; failing the push on it would
-      punish the person who finished the work.
-- [ ] **A6 — pinned by test, both directions.** A fixture task that qualifies is
-      reported; a fixture with one unticked Agent AC, one with an unticked Human
-      AC, one with zero ACs, and one whose only unticked boxes are template
-      examples are each NOT reported. A mutation removing the detector turns a
-      distinct test red, with a positive control (L-616).
+- [x] `blast_radius` distinguishes *unmeasured* from *zero*. A task with no
+      resolvable component information yields an explicit unknown, not `0`.
+- [x] The cost composite propagates unknown rather than substituting a number.
+      A cost built on an unknown blast radius is itself unknown — it must not be
+      silently completed from the two lighter terms.
+- [x] Quadrant medians are computed over **known** costs only. An unknown-cost task
+      must not shift the median that decides everyone else's quadrant, which is the
+      mechanism by which 97% of the corpus currently defines "low cost".
+      *(Pre-existing behaviour in `cmd_rank`, not a change — now commented, and the
+      NOTE line reports the denominator so it is observable rather than assumed.)*
+- [x] `fw bvp` and `fw bvp --quadrant` state how many tasks were excluded or
+      unranked for want of a cost, in the output itself. Per CLAUDE.md §no silent
+      caps: a bounded ranking that does not say what it dropped reads as complete
+      coverage.
+- [x] Existing frontmatter stays readable. 344 estimates carrying `blast_radius: 0`
+      already exist and must not be retroactively reinterpreted as unknown — a
+      recorded 0 was a real (if wrong) estimate, and rewriting history to mean
+      something else would destroy the evidence this task rests on.
+- [x] A regression test pins the inversion directly: a task with no components must
+      not sort as cheaper than one with a known small blast radius. Mutation result
+      recorded in Updates (L-616).
+- [x] The rationale renderer names the reason instead of `(no-signal)`. Not
+      cosmetic once blast_radius can be unknown: the parenthetical is the only place
+      the operator learns *why* a cost is missing, so `(no-signal)` would have made
+      the honest answer unactionable.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,6 +167,13 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t3068_unknown_cost.py -q > /tmp/.t3068 2>&1 && grep -q "7 passed" /tmp/.t3068
+# The literal that started this: no-components must not route to a number.
+! grep -q 'return 0, \["→0 (no-components)"\]' agents/termlink/bvp-estimator/estimator.py
+# The ranking must disclose its own denominator (§no silent caps).
+timeout 200 bin/fw bvp --include-proposed > /tmp/.t3068rank 2>&1 && grep -q "have no known cost" /tmp/.t3068rank
+grep -q "Quadrant thresholds are computed over" /tmp/.t3068rank
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -212,6 +235,58 @@ bvp_scores_proposed:
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
+
+**Symptom:** `fw bvp --quadrant hv-lc` returned six rows whose COST column all read
+`1.4`, and `hv-hc` returned rows tied at BVP `108`. The quadrant split looked like a
+cost partition and was mostly a `workflow_type` partition.
+
+**Root cause:** `score_blast_radius` returned `0` when it found no `components:`,
+and `0` is the cheapest value on the term carrying weight `0.6` — more than the
+other two cost terms combined. "Never measured" and "touches nothing" were the same
+number, and that number was the most attractive one available.
+
+**Why structurally allowed:** three independently-correct decisions composing into a
+guarantee.
+
+1. `components:` is resolved at the `work-completed` transition, from git history.
+   Correct: that is when the answer is knowable.
+2. `fw bvp` excludes `work-completed` by default (T-2223). Correct: the rank answers
+   "what should I work on next".
+3. `score_blast_radius` counts `components:`. Correct in isolation.
+
+Together: the axis's dominant input is available for exactly the population the
+ranking excludes, and absent for exactly the population it ranks. Measured 4 of 142.
+Nobody had to make a mistake for this to happen, which is why it survived — each
+piece is defensible on its own terms and the interaction is not visible from any
+one of them.
+
+The fourth reason it survived is the direction of the error. A cost that read too
+*high* would have been noticed the first time a cheap task was buried. Reading too
+*low* means the mistake surfaces as a recommendation — the tool confidently
+promoting the tasks it knows least about — and a recommendation is not something you
+audit, it is something you follow. T-2189 saw this exact shape one population
+earlier and repaired inceptions only; its own docstring describes the mechanism, and
+the same sentence was true of the whole non-inception corpus. Nothing re-asked.
+
+**Prevention:** `tests/unit/test_t3068_unknown_cost.py`, 7 tests. The load-bearing
+one asserts the *ordering property* rather than the sentinel value — an unmeasured
+task must not sort ahead of a measured cheap one — so a later change that
+reintroduces cheapness through a default, a coalesce, or a clamp still fails without
+having to literally write `0`. Mutation-checked: reverting the return to `0` killed
+4 tests including the ordering property; reverting the rationale renderer killed
+exactly the rationale test. Verification also greps for the original literal, and
+asserts the ranking prints its own denominator.
+
+What this does **not** prevent, stated plainly because the fix is easy to overread:
+the axis is now honest, not correct. 82% of the ranked corpus reports no cost at all,
+and the 26 tasks that do report one are almost entirely inceptions scored through the
+T-2189 `target_blast_radius` path — so "low cost" is currently a judgement relative
+to a population of inceptions. The ranking is no longer misleading; it is also not
+yet useful. Making it useful means deriving blast radius for open tasks, which is
+the follow-up named in the Scope Fence and is deliberately not attempted here. The
+honest half had to land first: before this change the tool could not report how much
+of its own output rested on absent data, and it now does — the 82% figure did not
+exist as an observable until the fix produced it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -303,7 +378,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-17T07:07:35Z — task-created [task-create-agent]
+### 2026-08-17T12:30:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3061-audit-rail-surface-active-tasks-whose-ac.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3068-the-cost-axis-prices-we-never-measured-t.md
 - **Context:** Initial task creation

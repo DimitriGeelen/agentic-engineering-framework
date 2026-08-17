@@ -543,10 +543,19 @@ def _write_task(tmp_path: Path, slug: str, fm_extra: str = "", body: str = "Body
     return f
 
 
-def test_score_blast_radius_zero_when_no_components():
+def test_score_blast_radius_unknown_when_no_components():
+    """T-3068: was `assert v == 0`.
+
+    This test pinned the defect rather than a requirement. Returning 0 for "no
+    component information" made unmeasured indistinguishable from touches-nothing on
+    a term weighted 0.6 — the cheapest value on the heaviest axis — so an HV/LC
+    filter promoted preferentially on absence of data. The contract is now an
+    explicit unknown. Renamed rather than edited in place so the change of meaning
+    is visible in the test name, not only in its body.
+    """
     fm = {"components": []}
     v, ev = estimator.score_blast_radius(fm, "", [])
-    assert v == 0
+    assert v is None
     assert any("no-components" in e for e in ev)
 
 
