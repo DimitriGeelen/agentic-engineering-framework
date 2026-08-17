@@ -433,7 +433,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
                             _ps_kind=$(printf '%s\n' "$_ps_stuck" | grep -o 'kind=[^ ]*' | cut -d= -f2)
                             BRANCH_DIVERGENCE="$BRANCH_DIVERGENCE
 
-**🛑 THE PUSH IS STUCK, not merely pending.** It has failed **${_ps_n} sessions in a row**, since \`${_ps_since}\`. Those ${_ps_unpushed} commits exist in exactly one place — this working copy. $(fw_push_state_advice "$_ps_kind")"
+**🛑 THE PUSH IS STUCK, not merely pending.** It has failed **${_ps_n} sessions in a row**, since \`${_ps_since}\`. Those ${_ps_unpushed} commit(s) exist in exactly one place — this working copy. $(fw_push_state_advice "$_ps_kind")"
                         fi
                     fi
                     ;;
