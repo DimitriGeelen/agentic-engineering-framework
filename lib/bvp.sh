@@ -1428,6 +1428,14 @@ USAGE:
                                   add free driver; --drop required when at cap=9 (M1)
   fw bvp driver --remove Dn --rationale "..."
                                   remove free driver (D1-D4 protected)
+  fw bvp estimate-cost T-<id> [--dry-run] [--json]
+  fw bvp estimate-cost all|sweep|determinism ...
+                                  propose cost_estimate per task (advisory, T-1935).
+                                  Populates the COST column this ranking sorts by —
+                                  without it every quadrant filter is blind. Was
+                                  omitted from this help for its whole existence
+                                  (T-3069), which is why the cost half of BVP read
+                                  as unbuilt. See `fw bvp estimate-cost --help`.
   fw bvp confirm T-<id> [--override Dn=N]... [--i-am-human|--from-watchtower]
                                   move bvp_scores_proposed → bvp_scores
                                   (sovereignty boundary, F7/D8, §ACD-gated)
