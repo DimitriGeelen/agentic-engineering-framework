@@ -335,11 +335,45 @@ case "$FILE_PATH" in
     */settings.json)
         # Only block if it's the Claude Code settings file
         if echo "$FILE_PATH" | grep -q '\.claude/settings\.json$'; then
+            # T-3050: name the sanctioned route. This refusal used to end at
+            # "requires human review" and offer no mechanism, so every agent that
+            # tripped it escalated to the operator for a JSON paste-in — for a
+            # capability that has shipped since T-1189. A gate with no exit is a
+            # gate people route around.
+            # Not `local` — this case block is at script top level, not in a
+            # function. Consumer projects have no bin/ at their root (T-1257),
+            # and the framework repo ALSO vendors itself at .agentic-framework/,
+            # so test for the framework repo FIRST or it advertises the consumer
+            # path to itself. FRAMEWORK.md + bin/fw at root is the discriminator.
+            if [ -f "$PROJECT_ROOT/FRAMEWORK.md" ] && [ -x "$PROJECT_ROOT/bin/fw" ]; then
+                _fw="bin/fw"
+            elif [ -x "$PROJECT_ROOT/.agentic-framework/bin/fw" ]; then
+                _fw=".agentic-framework/bin/fw"
+            else
+                _fw="fw"
+            fi
             echo "" >&2
-            echo "BLOCKED: Cannot modify .claude/settings.json — this controls enforcement hooks." >&2
+            echo "BLOCKED: Cannot hand-edit .claude/settings.json — it registers the enforcement hooks." >&2
             echo "" >&2
-            echo "Modifying this file could disable task gates, Tier 0 checks, and budget enforcement." >&2
-            echo "Changes to hook configuration require human review." >&2
+            echo "Editing it directly could disable task gates, Tier 0 checks, and budget enforcement," >&2
+            echo "and a hand-written entry is easy to get subtly wrong (bad event name, absolute path" >&2
+            echo "that breaks on the next machine, a duplicate that runs the hook twice)." >&2
+            echo "" >&2
+            echo "To ADD a hook, use the governed path — it is idempotent, validates the event name," >&2
+            echo "writes atomically, and survives regeneration by fw upgrade:" >&2
+            echo "" >&2
+            echo "  cd $PROJECT_ROOT && $_fw hook-enable --name <hook> --event PreToolUse --matcher 'Write|Edit'" >&2
+            echo "  cd $PROJECT_ROOT && $_fw hook-enable --script /abs/path/to/hook.sh --event PreToolUse --matcher 'Bash'" >&2
+            echo "" >&2
+            echo "  --name   for framework hooks under agents/context/;  --script for project-local ones." >&2
+            echo "  Add --dry-run first to print the resulting JSON without writing." >&2
+            echo "" >&2
+            echo "To REMOVE or REWIRE an existing hook, stop and ask the operator. That is a" >&2
+            echo "sovereignty decision, not a configuration change." >&2
+            echo "" >&2
+            echo "Scope note: B-005 covers Write/Edit on this path only. It does not read the file's" >&2
+            echo "content, so it cannot tell an addition from a deletion — which is why additions are" >&2
+            echo "routed through the CLI above rather than permitted here." >&2
             echo "" >&2
             echo "Policy: B-005 (Enforcement Config Protection)" >&2
             exit 2

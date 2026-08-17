@@ -35055,3 +35055,21 @@ scan_id: R-db019de2
 task_id: T-3052
 payload:
   task_file: .tasks/active/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:36:02Z'
+scan_id: R-ccc536c4
+task_id: T-3050
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:36:02Z'
+scan_id: R-ccc536c4
+task_id: T-3050
+payload:
+  task_file: .tasks/active/T-3050-b-005-settingsjson-gate-refuses-additive.md

@@ -3852,3 +3852,11 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-315
+  text: "B-005 (.claude/settings.json protection) covers Write/Edit only, and its own block message overclaims. The gate at agents/context/check-active-task.sh:334-348 matches tool_input.file_path, so it never sees a Bash command. Two supported paths write the gated file without B-005 involvement: (1) 'fw hook-enable' (bin/hook-enable.sh, T-1189) writes settings.json directly and its --script mode registers an arbitrary absolute path; (2) editing the generate_claude_code_config heredoc at lib/init.sh:928-1149 then running 'fw upgrade' (lib/upgrade.sh:1645) regenerates the file — the gate protects the artifact, not the generator, and the generator's source is unprotected. Neither path is a bug on its own; hook-enable is the sanctioned governed route and upgrade is how consumers converge. The defect is that the block message says 'Changes to hook configuration require human review', which is false for both. Same scope-boundary class CLAUDE.md already documents for Tier 0 ('the moment a command becomes a file, Tier 0 stops seeing it') — the danger is not the narrow reach, it is a control describing itself as wider than it is, because that gets it trusted past its reach. Fixing the message under T-3050; registering the reach here so enforcement-coverage assessments see it."
+  captured: 2026-08-17T06:32:02Z
+  context_task: T-3050
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

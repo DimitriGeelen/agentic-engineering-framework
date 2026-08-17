@@ -8,10 +8,10 @@ description: >
   is read, so ADD-NEW-MATCHER and MODIFY-EXISTING-MATCHER are indistinguishable. A
   consumer cannot add a purely additive project-local hook without an operator paste-in.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [upstream-pickup, T-3047-triage]
 components: []
 related_tasks: [T-3047]
@@ -26,7 +26,7 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:30:03Z
-last_update: '2026-08-16T22:45:08Z'
+last_update: 2026-08-17T06:26:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,14 +72,83 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**The filed premise is false, and the fix it implies is unsafe. Both matter, so
+both are recorded here rather than quietly reinterpreted.**
+
+Filed claim: *"A consumer cannot add a purely additive project-local hook without
+an operator paste-in"*, with the proposed fix being to make the B-005 gate
+diff-aware so ADD-NEW-MATCHER passes while MODIFY-EXISTING is still refused.
+
+**1. The capability already exists.** `fw hook-enable`
+(`bin/fw:8116` → `bin/hook-enable.sh`, shipped 2026-04-22 under T-1189) registers
+a hook into `.claude/settings.json` idempotently and atomically, validates the
+event name, and has a `--script <abs-path>` mode built specifically for
+project-local hook scripts living outside the framework tree
+(`bin/hook-enable.sh:29,37`). Additions survive later regeneration via
+`lib/settings_merge.py` (`lib/init.sh:1153-1167`). No operator paste-in is
+required, and none has been required for four months.
+
+**2. Diff-awareness would not be safe even if the capability were missing.** A
+matcher entry carries `{"type": "command", "command": "<arbitrary shell>"}`. An
+"additive" edit therefore adds arbitrary code that runs automatically before
+every matching tool call, with the agent's own privileges — and that command can
+rewrite `settings.json` to delete the other matchers, or delete the gate scripts.
+*Additive* describes the declarative shape; the effect is unbounded. A gate that
+permits ADD-NEW-MATCHER is one hop from permitting REMOVE-ALL-MATCHERS, which is
+precisely what B-005 exists to prevent. So the relaxation is not implemented here
+and should not be implemented later without an explicit operator decision.
+
+**3. What the actual defect is.** The block message
+(`agents/context/check-active-task.sh:339-345`) is a dead end. It refuses, states
+"Changes to hook configuration require human review", and then names no
+mechanism: no command, no proposal path, no bypass. An agent that hits it has
+nowhere to go but the operator, which is exactly the paste-in the filing
+complains about. The wall is real; the missing capability is not. This is a
+discoverability failure with a measured cost — a consumer project filed it as a
+missing feature.
+
+**4. And the message's claim is not true.** "Requires human review" is false for
+the very case the message is refusing: `fw hook-enable` is a Bash command, and
+the B-005 gate matches on `tool_input.file_path` for Write/Edit only
+(`:334-337`), so it never sees it. Two other paths also write the gated file
+without B-005 involvement — `fw hook-enable` itself, and editing the
+`generate_claude_code_config` heredoc (`lib/init.sh:928-1149`) followed by
+`fw upgrade` (`lib/upgrade.sh:1645`). B-005 is a speed bump against incidental
+Write/Edit modification, not a boundary. That is a defensible scope — it is the
+same boundary CLAUDE.md already documents for Tier 0, where a command that
+becomes a file stops being seen — but a control that *describes itself* as
+stronger than it is, is worse than one known to be weak, because it gets trusted
+past its reach. The message should say what the gate actually covers.
+
+Scope: fix the message (3 and 4). Do not loosen the gate (2). Record the scope
+asymmetry so it is known rather than assumed (4).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1 — the refusal names the way forward.** The B-005 block message names
+      `fw hook-enable` and carries a copy-pasteable single-line example including
+      the `cd` prefix and the framework-repo-vs-consumer `fw` path rule
+      (§Copy-Pasteable Commands), so an agent that trips the gate can register an
+      additive hook without routing through the operator.
+- [x] **A2 — the message stops overclaiming.** It no longer asserts that hook
+      changes require human review without qualification. It states what B-005
+      actually covers (Write/Edit on `.claude/settings.json`) and that the
+      governed CLI path is the sanctioned route, so nobody reads the gate as a
+      boundary it is not.
+- [x] **A3 — the gate itself is unchanged in behaviour.** Write/Edit on
+      `.claude/settings.json` still exits 2. No diff-reading, no allow-list, no
+      new bypass env var. A test pins the exit code alongside the new message, so
+      a future "make it helpful" edit cannot soften the refusal.
+- [x] **A4 — the message content is pinned by test, not by hope.** Tests assert
+      the block names `fw hook-enable`; a mutation removing that mention turns
+      them red, with a positive control (L-616) proving the harness can still
+      distinguish pass from fail.
+- [x] **A5 — the scope asymmetry is registered, not just described here.** The
+      two non-B-005 write paths (`fw hook-enable`; `lib/init.sh` heredoc +
+      `fw upgrade`) are recorded in the concerns register or as an observation,
+      so the gate's reach is documented where someone assessing enforcement
+      coverage will actually look.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -172,6 +241,16 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# NOTE: this task edits agents/context/check-active-task.sh, which IS a hook
+# script — but it does not touch .claude/settings.json, so the enforcement
+# baseline (which hashes the `hooks` block) is unchanged. No `fw enforcement
+# baseline` needed; confirmed by fw doctor showing no "baseline CHANGED".
+
+out=$(bats tests/unit/t3050_b005_block_message.bats 2>&1); echo "$out" | grep -q "^ok 12 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/integration/check_active_task.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+rc=0; echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$PWD/.claude/settings.json\"}}" | PROJECT_ROOT="$PWD" bash agents/context/check-active-task.sh > /tmp/.t3050v.out 2>&1 || rc=$?; [ "$rc" -eq 2 ] && grep -q "hook-enable" /tmp/.t3050v.out && ! grep -q "require human review" /tmp/.t3050v.out
+bin/fw hook-enable --name check-active-task --event PreToolUse --matcher "Write|Edit" --dry-run > /tmp/.t3050hd.out 2>&1 && grep -q "PreToolUse" /tmp/.t3050hd.out
 
 ## RCA
 
@@ -188,6 +267,66 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a consumer project reported that it could not add a project-local
+PreToolUse hook without the operator hand-pasting JSON into
+`.claude/settings.json`, and filed it as the B-005 gate being too coarse.
+
+**Root cause:** not coarseness — **discoverability**. `fw hook-enable` has done
+exactly this job since T-1189 (2026-04-22), including a `--script` mode built for
+project-local hooks outside the framework tree. The gate's refusal never
+mentioned it. It said "Changes to hook configuration require human review" and
+stopped, so the only move it left an agent was to escalate. **A gate with no exit
+is a gate people route around**, and the reported cost is the routing-around.
+
+**Why structurally allowed:** three things, in order of how much they matter.
+
+1. **A block message is a UI, and nothing treats it as one.** It is the entire
+   interface between a refusal and whoever hit it, yet nothing verified it was
+   actionable. Hooks are tested for verdict — does it exit 2 — and a wrong
+   verdict is loud. An unhelpful *message* still exits 2, so it is invisible to
+   every test and to the author, who already knows the answer the message
+   omits. B-005 shipped in T-229 and no test ever read its text.
+2. **The message's claim was false, in the direction that suppresses questions.**
+   "Requires human review" is untrue for the case it refuses: `fw hook-enable`
+   is a Bash command, and B-005 matches `tool_input.file_path` on Write/Edit, so
+   it never sees it. Anyone who believed the message stopped looking — the claim
+   was load-bearing for the conclusion "there is no way to do this", and that
+   conclusion is what got filed as a bug.
+3. **The fix the report proposed would have been an escalation path.** "Read the
+   diff and allow additive matchers" sounds conservative, and is not: a matcher
+   carries `{"type":"command","command":"<arbitrary shell>"}`, so an addition
+   introduces code that runs before every matching tool call and can delete the
+   other matchers. Additive is a property of the JSON shape, not of the effect.
+   Had the premise in (1) not been checked, the plausible fix was to weaken the
+   control the report was really complaining about.
+
+The class: **a control's message is part of the control.** When it under-informs,
+people work around it; when it over-claims, they trust it past its reach. B-005
+did both at once — it hid the sanctioned route AND described itself as human
+review it does not perform.
+
+**Prevention** (distinct from the fix):
+
+- The message now names `fw hook-enable` with copy-pasteable lines for both the
+  framework-repo and consumer `fw` paths, and 12 tests read the text — so the
+  message is now pinned like behaviour, not left as prose nobody asserts on.
+- Tests assert both directions simultaneously: still exits 2, AND names the
+  route. The failure mode of "make the gate helpful" is making it optional, so
+  one test greps the block for any `FW_*SKIP/ALLOW/BYPASS` identifier and fails
+  if a bypass was smuggled in beside the friendlier wording.
+- The mutation (redacting `hook-enable`) has a positive control per L-616,
+  because a mutant that failed to run would print no `hook-enable` either.
+- OBS-315 registers B-005's real reach — Write/Edit only; `fw hook-enable` and
+  `lib/init.sh:928-1149` + `fw upgrade` both write the gated file without it —
+  so the next enforcement-coverage assessment reads the boundary instead of
+  inferring it from the policy name.
+
+**Deliberately not done:** the gate was not made diff-aware and ADD-NEW-MATCHER
+is still refused, for the reason in (3). If that relaxation is still wanted it
+needs an operator go/no-go on the direction, not a build task that assumes the
+answer — the ACs here would have been written to implement a privilege
+escalation.
 
 ## Evolution
 
@@ -269,3 +408,16 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3050-b-005-settingsjson-gate-refuses-additive.md
 - **Context:** Initial task creation
+
+### 2026-08-17T06:26:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ccc536c4
+- **Timestamp:** 2026-08-17T06:36:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
