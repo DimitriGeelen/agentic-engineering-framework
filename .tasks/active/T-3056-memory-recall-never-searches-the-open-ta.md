@@ -8,10 +8,10 @@ description: >
   set with no third source and no .tasks/active/ read. Measured cost upstream: T-1390
   rediscovered as T-1537 25 days later with an accuracy regression.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [upstream-pickup, T-3047-triage]
 components: []
 related_tasks: [T-3047]
@@ -26,7 +26,7 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:33:16Z
-last_update: '2026-08-16T22:45:08Z'
+last_update: 2026-08-16T23:44:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,14 +72,85 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filed from T-3047 triage M-37 (ring20-management T-1540, 2026-08-04).
+
+`agents/context/lib/memory-recall.py:30-93` builds its corpus from exactly three
+files — `learnings.yaml`, `patterns.yaml`, `decisions.yaml` — and `recall()` at
+`:174-205` searches only that list. There is no fourth source and no read of
+`.tasks/active/`. So the two surfaces an agent actually sees at the start of work
+(`fw recall "<query>"`, and the *Related knowledge* block `fw context focus`
+prints via `agents/context/lib/focus.sh:153`) can only ever return knowledge
+harvested from **closed** work.
+
+The consequence is the one the upstream report measured: an open task already
+diagnosing the problem is invisible to the agent about to diagnose it again.
+Their instance was T-1390 rediscovered as T-1537 twenty-five days later, and the
+rediscovery came back *less* accurate than the original.
+
+There are 368 open tasks and 2677 closed ones here, so the missing corpus is not
+a rounding error — it is the entire in-flight half of the project's memory.
+
+Two traps this fix has to survive, and they pull in opposite directions:
+
+- **Self-match.** `fw context focus T-XXX` builds its query *from T-XXX's own
+  name and description* (`get_task_context()`, `:125-160`). Adding open tasks to
+  the corpus without excluding the subject means every focus call proudly recalls
+  the task you just focused on. It would look like the feature works.
+- **Crowding.** `recall()` returns a single ranked list capped at `limit` (5 by
+  default). 368 open tasks against ~600 knowledge items can take every slot, and
+  the failure is silent — the caller cannot tell "no learnings matched" from
+  "learnings matched but lost the ranking".
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1** `load_knowledge_items()` gains open tasks from `.tasks/active/T-*.md`
+  as a fourth item type (`task`), carrying id, name, and description so keyword
+  search can score them the same way it scores the other three.
+  → `load_open_tasks()`. Scoring ended up on the **name only** — see A3 for why
+  the description had to come out. 368 files in 0.56s, regex over the file head
+  rather than `yaml.safe_load`, because this is on the `fw context focus` path.
+- [x] **A2** A task is never recalled by a query derived from itself.
+  `fw context focus T-XXX` must not list T-XXX in its own *Related knowledge*
+  block. Verified against a real task, not only a fixture — this is the trap that
+  makes a broken fix look like a working one.
+  → `exclude_task` threaded from `--task`. Live check: `--task T-1794` returns
+  T-1795 and T-1792, not T-1794. Test 4 removes the exclusion and asserts the
+  self-match comes back; test 5 pins that the exclusion drops one task, not all.
+- [x] **A3** Open tasks cannot take every result slot. Either a cap on `task`-type
+  results or an equivalent mechanism, with the chosen limit stated and justified;
+  plus a measurement on the live corpus (368 active, 2677 completed) showing a
+  query with strong learning matches still returns learnings after the change.
+  → Two independent searches concatenated: memory keeps its own `limit`, open
+  tasks get `OPEN_TASK_SLOTS = 2` **on top**. Crowding is unreachable by
+  construction rather than by ranking, and test 7 pins the non-task line count
+  as unchanged when five matching tasks are added.
+  The harder half was relevance, and it took three measured passes — the write-up
+  is in Evolution. Final: name-only haystack, `DF_CEILING = 0.10`,
+  `OPEN_TASK_FLOOR = 4` → 22% of tasks get a hit, and the pairs scoring *exactly*
+  the floor are real (T-1773 "spawn-side dispatch driver" ↔ T-1774 "CLI
+  integration of spawn driver"). Test 10 pins the rate two-sided on the live
+  corpus, because 0% and 100% are both failures and neither is visible in code.
+- [x] **A4** The hybrid-search path (`search_hybrid`, `:96-109`) is handled
+  explicitly, not left to fall through. It filters on
+  `category == "Project Memory"` and maps results back by content-matching
+  against `items`; adding a source the vector index does not carry that category
+  for must either be wired in or documented as keyword-only, with the reason.
+  → Keyword-only, deliberately, reasoned in the `recall()` docstring. The
+  structural point is separate and mattered more: the old `recall()` **returned
+  early** when hybrid matched, so appending open tasks after it would have made
+  them invisible on the common path — the fix would have shipped as a no-op in
+  exactly the case it is needed. Hybrid is now `_recall_knowledge()`, and the
+  open-task leg runs unconditionally beside it.
+- [x] **A5** A regression test over a synthetic `PROJECT_ROOT` covers: an open
+  task is recalled by a matching query; the same task is NOT recalled when the
+  query is derived from itself (A2); a learning-only query is unchanged by the
+  new source (A3). Each assertion mutation-checked, and — per L-616 — with a
+  positive control proving the harness can distinguish a hit from a miss.
+  → `tests/unit/t3056_recall_open_tasks.bats`, 11 tests. Test 4 is the mutation
+  (self-exclusion removed → self-match returns). Test 2 is the L-616 positive
+  control. Tests 9 and 11 cover the two degenerate corpora (tiny, absent) that
+  the frequency cut and the directory read could each silently swallow.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -173,6 +244,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# 1. The regression suite: 11 tests, mutation + positive control + both
+#    degenerate corpora + the live-corpus two-sided rate bound. ~3s.
+out=$(bats tests/unit/t3056_recall_open_tasks.bats 2>&1); echo "$out" | grep -q '^ok 11 ' && ! echo "$out" | grep -q '^not ok'
+
+# 2. A2 on the live corpus, against whichever task happens to be first — the
+#    self-match must not come back for a real file with a real frontmatter shape.
+#    (`ls | head -1` here returns 141 under pipefail — head closes the pipe on 368
+#    filenames. `sed -n 1{...}p` reads to EOF. L-387, in a verification line.)
+tid=$(ls .tasks/active/T-*.md | sed -n '1s#.*/\(T-[0-9]*\)-.*#\1#p'); python3 agents/context/lib/memory-recall.py --task "$tid" --no-hybrid > /tmp/.t3056-self.out 2>&1 && ! grep -q "$tid" /tmp/.t3056-self.out
+
+# 3. The open-task leg is not behind the hybrid early-return (A4). If `recall`
+#    ever regains a `return` before the open-task search, this goes red.
+python3 -c "import re,sys; s=open('agents/context/lib/memory-recall.py').read(); b=s.split('def recall(')[1].split('def ')[0]; sys.exit(0 if b.index('search_open_tasks') > b.rindex('_recall_knowledge') else 1)"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -188,6 +273,59 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** an open task already diagnosing a problem is invisible to the agent
+about to diagnose it again. Upstream measured the cost: their T-1390 was
+rediscovered as T-1537 twenty-five days later, and the second attempt was less
+accurate than the first.
+
+**Root cause:** `memory-recall.py:load_knowledge_items()` builds its corpus from
+`learnings.yaml`, `patterns.yaml`, `decisions.yaml` and nothing else. All three
+are harvested at task *close*, so both recall surfaces — `fw recall` and the
+*Related knowledge* block `fw context focus` prints — could only ever see closed
+work. Here that is 2677 tasks visible and 368 invisible.
+
+**Why structurally allowed:** the module is named for what it reads, not for what
+it is asked. It is "project memory" (`.context/project/*.yaml`), and by that
+definition it was complete and correct — every one of its three sources was
+present and working. The question it is actually asked at `fw context focus` time
+is "has anyone looked at this already", and open tasks are the better answer to
+that question than any closed-task learning, because they are the ones nobody has
+finished thinking about. Nothing in the code or its tests encoded the second
+framing, so there was no place for the absence to show up. A missing *source* is
+invisible in a way a broken source is not: every test passes, output looks
+plausible, and the only symptom is a rediscovery weeks later that nobody connects
+back.
+
+**Prevention:** the fourth source plus
+`tests/unit/t3056_recall_open_tasks.bats`. The load-bearing test is #10, which
+pins the live-corpus hit rate *two-sided* (0% < rate < 35%). A one-sided test
+would have let the two opposite regressions through, and both are silent: a floor
+too high ships as a no-op indistinguishable from the original bug, a floor too low
+puts wrong answers on half of all focus calls.
+
+**Three near-misses in the build, each of which would have shipped looking fine:**
+
+1. **A dead code path.** `recall()` returned early when hybrid search matched, so
+   appending open tasks after it would have made them invisible on the common
+   path — a no-op in exactly the case the feature exists for. Split into
+   `_recall_knowledge()` with the open-task leg beside it, not after it.
+2. **Tokenizer/matcher disagreement.** The query was split on `[a-z0-9]+` (so
+   `do_drift` yields `drift`) but the haystack was searched with `\bdrift`, where
+   `_` is a word character and the match fails. T-3049's genuine relative scored 2
+   instead of 3 and fell under the floor. Invisible in the tuning measurement,
+   which used set intersection on *both* sides and so was self-consistent — the
+   measurement I used to pick the threshold could not see the bug in the code the
+   threshold was for.
+3. **A frequency cut that silences small projects.** `int(5 * 0.10) == 0` makes
+   the ceiling 1, so any word shared by two tasks is discarded and a fresh
+   consumer with a handful of open tasks gets nothing back, permanently. Found
+   while writing the fixtures, not while writing the code. `DF_MIN_CORPUS`.
+
+**What is not fixed.** Open-task recall is lexical only. Two tasks describing the
+same problem in different words will not match, and that is a plausible shape for
+the exact failure this addresses. The upgrade is a second hybrid call with its own
+category filter — noted in the `recall()` docstring, not attempted here.
 
 ## Evolution
 
@@ -269,3 +407,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md
 - **Context:** Initial task creation
+
+### 2026-08-16T23:44:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
