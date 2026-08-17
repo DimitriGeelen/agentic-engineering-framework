@@ -35109,3 +35109,21 @@ scan_id: R-d5105f16
 task_id: T-3049
 payload:
   task_file: .tasks/active/T-3049-fabric-drift-joins-https-card-locations-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:57:48Z'
+scan_id: R-26579e6a
+task_id: T-3042
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:57:48Z'
+scan_id: R-26579e6a
+task_id: T-3042
+payload:
+  task_file: .tasks/active/T-3042-updateoutcomerow-erases-concurrently-app.md

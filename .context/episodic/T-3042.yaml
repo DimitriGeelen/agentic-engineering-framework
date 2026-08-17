@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3042: update_outcome_row erases concurrently-appended dispatches.jsonl rows
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T06:58:02Z
+# ============================================================================
+
+task_id: T-3042
+task_name: "update_outcome_row erases concurrently-appended dispatches.jsonl rows"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T16:54:50Z
+completed: 2026-08-17T06:57:40Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-16T19:16:12+02:00
+last_commit: 2026-08-16T20:21:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the ledger rewriter erased rows a concurrent appender had just added. vendor the ledger lock so consumers get it too
+
+# Key outcomes
+outcomes:
+  - 'A regression test in `tests/unit/test_spawn.py` reproduces the race: a row'
+  - '`lib/spawn.py:update_outcome_row` takes an exclusive `fcntl.flock` on a'
+  - 'The appender at `lib/resolver.py:813` takes the **same** lock. Locking only'
+  - 'Lock acquisition is bounded (no indefinite block) and a timeout degrades'
+  - 'The lock file is created with a mode a future non-root principal can open'
+  - 'The four existing `test_update_outcome_row_*` tests stay green.'
+  - '`## RCA` answers the structural question: whether the ~24-site'
+  - 'The ledger format is unchanged. Append-only + derived view is T-3041''s'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/keylock.py'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/lib/spawn.py'
+  - '.agentic-framework/VERSION'
+  - '.fabric/components/lib-keylock-py.yaml'
+  - 'lib/keylock.py'
+  - 'lib/resolver.py'
+  - 'lib/spawn.py'
+  - '.tasks/active/T-3042-updateoutcomerow-erases-concurrently-app.md'
+  - 'tests/unit/test_spawn.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T19:16:12'
+    action: 'T-3042: the ledger rewriter erased rows a concurrent appender had just added'
+  - time: '2026-08-16T20:21:21'
+    action: 'T-3042: vendor the ledger lock so consumers get it too'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 842 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 842
+  commits: 2
+  files_changed: 10
+  lines_added: 846
+  lines_removed: 73
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3042-updateoutcomerow-erases-concurrently-app.md
+generated_by: context-agent-hybrid
