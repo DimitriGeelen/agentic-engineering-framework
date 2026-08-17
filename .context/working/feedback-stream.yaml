@@ -35127,3 +35127,21 @@ scan_id: R-26579e6a
 task_id: T-3042
 payload:
   task_file: .tasks/active/T-3042-updateoutcomerow-erases-concurrently-app.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T07:03:18Z'
+scan_id: R-31535260
+task_id: T-3060
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T07:03:18Z'
+scan_id: R-31535260
+task_id: T-3060
+payload:
+  task_file: .tasks/active/T-3060-sweep-active-tasks-for-fully-satisfied-b.md

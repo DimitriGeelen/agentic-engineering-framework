@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3060: sweep active tasks for fully-satisfied-but-unclosed state (OBS-316)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T07:03:30Z
+# ============================================================================
+
+task_id: T-3060
+task_name: "sweep active tasks for fully-satisfied-but-unclosed state (OBS-316)"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T06:58:44Z
+completed: 2026-08-17T07:03:16Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T09:01:45+02:00
+last_commit: 2026-08-17T09:03:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored VERSION. 17 of 43 in-flight tasks are finished but never closed
+
+# Key outcomes
+outcomes:
+  - '**A1 — the corpus is swept and the result is on disk.**'
+  - '**A2 — the criterion states its own limits.** The report says what it'
+  - '**A3 — no state is mutated by the sweep.** Read-only: no task closed, no'
+  - '**A4 — the finding is routed.** If the count is non-zero, the observation'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/working/.auto-restart-pending'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-3041-multi-uid-aef.md'
+  - 'docs/reports/T-3060-unclosed-satisfied-sweep.md'
+  - '.tasks/active/T-3060-sweep-active-tasks-for-fully-satisfied-b.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T09:01:45'
+    action: 'T-3060: refresh vendored VERSION'
+  - time: '2026-08-17T09:03:11'
+    action: 'T-3060: 17 of 43 in-flight tasks are finished but never closed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 17
+  lines_added: 497
+  lines_removed: 56
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3060-sweep-active-tasks-for-fully-satisfied-b.md
+generated_by: context-agent-hybrid
