@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: '2026-08-17T12:36:04Z'
+last_update: 2026-08-17T13:07:56Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -435,6 +435,37 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
 - **Triggered:** none filed yet — flagging here per the standing note two
   entries up ("a full audit that cannot finish inside any reasonable gate
   window is its own problem") rather than re-deriving it a third time.
+
+### 2026-08-17 — A6b third attempt: lock was free, still didn't finish
+- **What changed:** Re-ran the four `t1719_*.bats` files (37/37, unchanged —
+  fabric legs also re-verified: all 4 component cards present, drift report
+  generated clean). With `.context/locks/audit.lock` free at start (no cron
+  holding it), ran `timeout 590 bin/fw audit` — this time it acquired the lock
+  and produced real, growing output (Structure → Whole-tree → Task compliance
+  → Task quality → Git traceability → Corpus health → Enforcement → Learning
+  capture → Episodic memory, all PASS/WARN, zero FAIL), but `timeout` killed it
+  at 590s (exit 124) before it reached `=== SUMMARY ===` — the line the script
+  marks "always runs". No verdict was ever produced, same as the exit-75 and
+  exit-143 attempts, just via a third failure mode (plain runtime, no
+  contention this time).
+- **Finding:** this reconfirms the prior entry's diagnosis independently and
+  rules out "it was just contention" as the whole story — even an uncontended
+  full run does not fit inside a 10-minute window on this host. Everything
+  observed so far was PASS or WARN (fabric edge coverage, 9 unregistered
+  files, a missing `owner:` field on one task, uncommitted-changes WARN,
+  80 gate-bypass entries in 7 days) — no FAIL surfaced in ~590s of real
+  section output, which is the closest available evidence that the corpus
+  itself is not what's failing this AC; the runner's wall-clock is.
+- **Plan impact:** none to Slice 1's code, same as the prior entry. A6b stays
+  unticked — ticking on partial output with no SUMMARY would be exactly the
+  proxy-diverged-from-reality shape T-1831 C-4 exists to prevent, and now
+  there is direct evidence (not just theory) that "clean" was never actually
+  reached, not merely assumed.
+- **Triggered:** **T-3070** filed (this was the second flag without a task —
+  per the prior entry's own "third time" caveat, that's the trigger to stop
+  re-deriving and register). Candidate fixes captured there: distinct lock for
+  full-audit mode vs per-section cron runs, retry/wait across cron gaps, or
+  section-ordering that avoids the in-flight cron section first.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
