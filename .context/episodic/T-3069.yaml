@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3069: fw bvp estimate-cost is implemented but unlisted, and CLAUDE.md names a 'fw bvp rank' that does not exist
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T12:48:29Z
+# ============================================================================
+
+task_id: T-3069
+task_name: "fw bvp estimate-cost is implemented but unlisted, and CLAUDE.md names a 'fw bvp rank' that does not exist"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T12:43:50Z
+completed: 2026-08-17T12:47:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T14:47:34+02:00
+last_commit: 2026-08-17T14:47:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  estimate-cost becomes findable, and CLAUDE.md stops naming a verb that never existed
+
+# Key outcomes
+outcomes:
+  - '`fw bvp --help` lists `estimate-cost` with enough shape to use it without'
+  - '`CLAUDE.md` no longer names a `fw bvp rank` verb; the reference points at'
+  - 'Both claims are pinned by a test, so the next help-block edit that drops'
+  - 'No behaviour change to any verb — this is discoverability only, and the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/VERSION'
+  - 'CLAUDE.md'
+  - '.context/audits/2026-08-17.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-3069-fw-bvp-estimate-cost-is-implemented-but-.md'
+  - 'tests/lint/bvp-help-parity.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T14:47:34'
+    action: 'T-3069: estimate-cost becomes findable, and CLAUDE.md stops naming a verb that never existed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 18
+  lines_added: 431
+  lines_removed: 57
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3069-fw-bvp-estimate-cost-is-implemented-but-.md
+generated_by: context-agent-hybrid

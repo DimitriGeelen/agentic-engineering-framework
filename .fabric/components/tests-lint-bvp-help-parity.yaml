@@ -1,0 +1,20 @@
+id: tests/lint/bvp-help-parity.bats
+name: bvp-help-parity
+type: script
+subsystem: unknown
+location: tests/lint/bvp-help-parity.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-17
+created_by: unknown
