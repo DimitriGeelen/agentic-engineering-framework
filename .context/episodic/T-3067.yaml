@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3067: AEF cannot attribute its own chat-arc posts because .framework.yaml has no project_name
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T12:15:24Z
+# ============================================================================
+
+task_id: T-3067
+task_name: "AEF cannot attribute its own chat-arc posts because .framework.yaml has no project_name"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T12:10:49Z
+completed: 2026-08-17T12:15:09Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T14:15:05+02:00
+last_commit: 2026-08-17T14:15:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  AEF can be attributed on the chat arc — lowercase project_name, and the replies that were invisible
+
+# Key outcomes
+outcomes:
+  - '`.framework.yaml` carries `project_name` such that TermLink''s lookup resolves'
+  - '`fw config` still parses the file and the existing uppercase keys still'
+  - 'A post from this project no longer emits the `without from_project` warning,'
+  - 'The post appears under this project in `termlink agent stats` grouping, which'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/session.yaml'
+  - '.framework.yaml'
+  - '.tasks/active/T-3067-aef-cannot-attribute-its-own-chat-arc-po.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T14:15:05'
+    action: 'T-3067: AEF can be attributed on the chat arc — lowercase project_name, and the replies that were invisible'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 12
+  lines_added: 388
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3067-aef-cannot-attribute-its-own-chat-arc-po.md
+generated_by: context-agent-hybrid

@@ -1,13 +1,14 @@
 ---
 id: T-3067
-name: "AEF cannot attribute its own chat-arc posts because .framework.yaml has no project_name"
+name: "AEF cannot attribute its own chat-arc posts because .framework.yaml has no
+  project_name"
 description: >
   AEF cannot attribute its own chat-arc posts because .framework.yaml has no project_name
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T12:10:49Z
-last_update: 2026-08-17T12:10:49Z
-date_finished: null
+last_update: 2026-08-17T12:15:09Z
+date_finished: 2026-08-17T12:15:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +35,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-17T12:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3067: AEF cannot attribute its own chat-arc posts because .framework.yaml has no project_name
@@ -337,3 +348,15 @@ Two adjacent defects found in the same sequence are TermLink's, filed there per
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3067-aef-cannot-attribute-its-own-chat-arc-po.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3fa1a9a1
+- **Timestamp:** 2026-08-17T12:15:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-17T12:15:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
