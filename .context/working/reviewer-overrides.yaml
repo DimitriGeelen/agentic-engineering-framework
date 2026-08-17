@@ -1097,3 +1097,17 @@ overrides:
   expires_at: '2026-11-14T19:59:19Z'
   added_by: root
   added_at: '2026-08-16T19:59:19Z'
+- id: OV-b60aa1d5
+  task_id: T-3056
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "False positive. The detector anchors on Verification line 1 being a bats\
+    \ invocation, but three of the four lines drive real code: line 2 runs memory-recall.py\
+    \ against the LIVE .tasks/active corpus and asserts self-exclusion, line 3 is\
+    \ a structural read of the shipped source, and line 4 drives the full CLI end-to-end\
+    \ (bin/fw recall <live task name> | grep '(open task)'). The bats suite itself\
+    \ is not mock-only either \u2014 test 10 imports the real module and measures\
+    \ the live 368-task corpus. There is no mock anywhere in this task."
+  expires_at: '2026-11-15T06:03:55Z'
+  added_by: root
+  added_at: '2026-08-17T06:03:55Z'

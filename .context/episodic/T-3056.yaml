@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3056: memory-recall never searches the OPEN task corpus, so an existing open diagnosis is rediscovered at full cost
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T06:04:39Z
+# ============================================================================
+
+task_id: T-3056
+task_name: "memory-recall never searches the OPEN task corpus, so an existing open diagnosis is rediscovered at full cost"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:33:16Z
+completed: 2026-08-17T06:04:17Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-17T02:02:29+02:00
+last_commit: 2026-08-17T07:59:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  recall can see open tasks now, and the tuning is measured not guessed. vendor the open-task recall so consumers get it
+
+# Key outcomes
+outcomes:
+  - '**A1** `load_knowledge_items()` gains open tasks from `.tasks/active/T-*.md`'
+  - '**A2** A task is never recalled by a query derived from itself.'
+  - '**A3** Open tasks cannot take every result slot. Either a cap on `task`-type'
+  - '**A4** The hybrid-search path (`search_hybrid`, `:96-109`) is handled'
+  - '**A5** A regression test over a synthetic `PROJECT_ROOT` covers: an open'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/memory-recall.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/memory-recall.py'
+  - '.tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md'
+  - 'tests/unit/t3056_recall_open_tasks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T02:02:29'
+    action: 'T-3056: recall can see open tasks now, and the tuning is measured not guessed'
+  - time: '2026-08-17T07:59:15'
+    action: 'T-3056: vendor the open-task recall so consumers get it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 451 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upstream-pickup, T-3047-triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 451
+  commits: 2
+  files_changed: 5
+  lines_added: 801
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3056-memory-recall-never-searches-the-open-ta.md
+generated_by: context-agent-hybrid

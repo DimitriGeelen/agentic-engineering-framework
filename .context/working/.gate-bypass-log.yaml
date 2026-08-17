@@ -7013,3 +7013,38 @@ spawn.py, resolver.py and the new keylock.py carry the floc'
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'Inception decision: GO'
+- timestamp: '2026-08-16T23:44:28Z'
+  task: 'T-3028'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3053'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3053: vendor the multi-ref traceability fix so consumers get it
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>" '
+- timestamp: '2026-08-16T23:44:47Z'
+  task: 'T-3028'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3053'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+bin/fw work-on T-3056 2>&1 | tail -3
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3053: vendor the multi-ref traceability fix so consumers get it
+
+Co-Authored-By: Cl'
+- timestamp: '2026-08-16T23:45:20Z'
+  task: 'T-3056'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3053'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3053: vendor the multi-ref traceability fix so consumers get it
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>" '
+- timestamp: '2026-08-16T23:46:43Z'
+  task: 'T-3056'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3053'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3053: vendor the multi-ref traceability fix so consumers get it" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.co'

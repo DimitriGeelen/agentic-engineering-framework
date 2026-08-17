@@ -34893,3 +34893,111 @@ scan_id: R-5248ea96
 task_id: T-3058
 payload:
   task_file: .tasks/active/T-3058-vector-reindex-temp-files-are-git-stagea.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T00:02:40Z'
+scan_id: R-82b70394
+task_id: T-3056
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T00:02:40Z'
+scan_id: R-82b70394
+task_id: T-3056
+payload:
+  task_file: .tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T00:03:27Z'
+scan_id: R-497bd600
+task_id: T-3056
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T00:03:27Z'
+scan_id: R-497bd600
+task_id: T-3056
+payload:
+  task_file: .tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:03:32Z'
+scan_id: R-044dbde7
+task_id: T-3056
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:03:32Z'
+scan_id: R-044dbde7
+task_id: T-3056
+payload:
+  task_file: .tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:04:01Z'
+scan_id: R-dae11b4d
+task_id: T-3056
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:04:01Z'
+scan_id: R-dae11b4d
+task_id: T-3056
+payload:
+  task_file: .tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md
+---
+kind: override_applied
+timestamp: '2026-08-17T06:04:01Z'
+scan_id: R-dae11b4d
+task_id: T-3056
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:04:26Z'
+scan_id: R-357107d3
+task_id: T-3056
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:04:26Z'
+scan_id: R-357107d3
+task_id: T-3056
+payload:
+  task_file: .tasks/active/T-3056-memory-recall-never-searches-the-open-ta.md
+---
+kind: override_applied
+timestamp: '2026-08-17T06:04:26Z'
+scan_id: R-357107d3
+task_id: T-3056
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null

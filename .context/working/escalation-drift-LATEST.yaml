@@ -1,23 +1,25 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-16T03:23:02.219192+00:00
-corpus_total: 2656
-bug_class_total: 495
+generated: 2026-08-17T03:23:02.293062+00:00
+corpus_total: 2677
+bug_class_total: 492
 bug_class_pct: 18
-h1_flagged: 361
-h1_pct_of_bug_class: 72
-h2_repeat_patterns: 150
+h1_flagged: 360
+h1_pct_of_bug_class: 73
+h2_repeat_patterns: 152
 h3_flagged: 265
 h3_pct_of_bug_class: 53
-recent_30d_flagged: 19
+recent_30d_flagged: 21
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-100202-task-id-allocator-inflation--split-view-"
     name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emi"
+  - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
+    name: "Fix critical hook PROJECT_ROOT bug for external projects"
+  - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
+    name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
   - tid: "T-2580-testsweb-full-dir-run-has-8-order-depend"
     name: "tests/web full-dir run has 8 order-dependent failures (all inception decide/verd"
-  - tid: "T-2581-extractrecommendation-verdict-regex-lost"
-    name: "extract_recommendation verdict regex lost NO_GO underscore tolerance (T-1575 con"
   - tid: "T-2583-reviewer-skip-as-pass-detector-false-pos"
     name: "Reviewer skip-as-pass detector false-positive: it matches the RCA-template"
   - tid: "T-2612-handoff-jump-regression-uuid-form-corpus"
@@ -30,21 +32,19 @@ recent_sample:
     name: "Corpus squash burst RCA — operator delete-all+resave regressed task-lifecycle"
   - tid: "T-2676-fix-harvestsh-indent-assumption-greps-de"
     name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
-  - tid: "T-2677-fix-dead-audit-graduation-counter-learni"
-    name: "fix dead audit graduation counter (learnings >=20 branch never fires)"
 h2_top:
   - learning: "P-011"
-    task_count: 2040
+    task_count: 2101
   - learning: "L-387"
-    task_count: 1821
+    task_count: 1879
   - learning: "L-291"
-    task_count: 981
+    task_count: 1002
   - learning: "L-398"
-    task_count: 739
+    task_count: 758
   - learning: "P-010"
-    task_count: 391
+    task_count: 404
   - learning: "L-399"
-    task_count: 82
+    task_count: 85
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"

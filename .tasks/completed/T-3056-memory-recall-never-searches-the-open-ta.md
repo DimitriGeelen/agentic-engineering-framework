@@ -8,12 +8,12 @@ description: >
   set with no third source and no .tasks/active/ read. Measured cost upstream: T-1390
   rediscovered as T-1537 25 days later with an accuracy regression.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [upstream-pickup, T-3047-triage]
-components: []
+components: [tests/unit/t3056_recall_open_tasks.bats]
 related_tasks: [T-3047]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:33:16Z
-last_update: 2026-08-16T23:44:59Z
-date_finished:
+last_update: 2026-08-17T06:04:17Z
+date_finished: 2026-08-17T06:04:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -258,6 +258,13 @@ tid=$(ls .tasks/active/T-*.md | sed -n '1s#.*/\(T-[0-9]*\)-.*#\1#p'); python3 ag
 #    ever regains a `return` before the open-task search, this goes red.
 python3 -c "import re,sys; s=open('agents/context/lib/memory-recall.py').read(); b=s.split('def recall(')[1].split('def ')[0]; sys.exit(0 if b.index('search_open_tasks') > b.rindex('_recall_knowledge') else 1)"
 
+# 4. End-to-end through the real CLI, not the module: `fw recall` -> focus.sh's
+#    script -> open-task leg -> formatting. The query is an actual open task's own
+#    name, so it always clears the floor against itself no matter which tasks are
+#    open on the day this runs — the check cannot rot as the corpus turns over,
+#    and `--query` has no self-exclusion (that is `--task`'s job, line 2).
+q=$(sed -n 's/^name: *"\?\([^"]*\)"\?.*/\1/p' "$(ls .tasks/active/T-*.md | sed -n 1p)" | sed -n 1p); bin/fw recall "$q" > /tmp/.t3056-cli.out 2>&1 && grep -q "(open task)" /tmp/.t3056-cli.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -411,3 +418,18 @@ category filter — noted in the `recall()` docstring, not attempted here.
 ### 2026-08-16T23:44:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-357107d3
+- **Timestamp:** 2026-08-17T06:04:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
+
+### 2026-08-17T06:04:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -3845,3 +3845,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-314
+  text: "reviewer detector mock-only-integration fires on the PRESENCE of a bats line, not on the ABSENCE of a real-integration line. T-3056 has four Verification lines: one bats, one driving memory-recall.py against the live corpus, one structural source read, one driving the full CLI end-to-end (bin/fw recall). The detector still fired CONCERN. Same shape as T-3058, which needed the same manual override. Fix direction: make the predicate conjunctive — flag only when EVERY verification line is a test-runner invocation. Sibling class to T-3053's disjunctive/conjunctive confusion: one code shape, two opposite questions. Cost today is a 90-day override per task plus a reviewer round-trip; the real cost is that a genuine mock-only task becomes indistinguishable from these false ones."
+  captured: 2026-08-17T06:04:14Z
+  context_task: T-3056
+  tags: []
+  status: pending
+  promoted_to: null

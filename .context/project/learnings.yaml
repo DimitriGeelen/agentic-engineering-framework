@@ -4602,3 +4602,15 @@ X'` returning empty group."
   task: T-3053
   date: 2026-08-16
   context: Added via context agent
+- id: L-617
+  learning: "A tuning threshold is chosen by reading the MARGINAL pair, not the hit rate. T-3056 measured floors 3/4/5 for open-task recall: floor 3 gave a 50% hit rate, which looks healthy until you read what scored exactly 3 — 'systemd template' matched against 'PreToolUse hook'. Floor 4 gave 22% and its marginal pair was T-1773 against T-1774, consecutive slices of one driver. The rate tells you how often the feature fires; only the marginal pair tells you whether firing was any good. Corollary: bound the test on BOTH sides — 0% means the floor is too high and the feature shipped as a silent no-op, near-100% means it is too low and every call gets noise. Neither failure is visible in the code."
+  source: P-011
+  task: T-3056
+  date: 2026-08-17
+  context: Added via context agent
+- id: L-618
+  learning: "Tokenizer and matcher must be the same function, or a comparison silently under-matches. T-3056 tokenized the query with re.findall(r'[a-z0-9]+') — which splits on underscore, yielding 'drift' from 'do_drift' — but searched the haystack with a \\\\b anchor, where underscore IS a word character, so \\\\bdrift never matched inside do_drift. The genuine relative T-1842 scored 2 instead of 3 and fell under the floor. What makes this class dangerous: the TUNING measurement used set intersection on both sides and was perfectly self-consistent, so the defect was invisible to the very experiment run to validate the threshold. Rule: when you compare two texts, extract tokens from both with one shared helper; never let one side be regex-anchored and the other split."
+  source: P-011
+  task: T-3056
+  date: 2026-08-17
+  context: Added via context agent
