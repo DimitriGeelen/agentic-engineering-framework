@@ -13,6 +13,16 @@
 # Consumers stay off by default (no PROTECT_MASTER in their .framework.yaml = 0).
 # Inert until the guard is also deployed via `fw git install-hooks`.
 PROTECT_MASTER: 1
+# project_name (T-3067) — LOWERCASE ON PURPOSE. Every other key here is uppercase
+# because fw_config greps the key verbatim (see header). This one is not read by
+# fw_config at all: `termlink agent post|reply` resolve the poster's project from
+# `.framework.yaml::project_name`, lowercase, and finding nothing they post to
+# agent-chat-arc with no `from_project` — which is why AEF was absent from
+# `agent stats` project grouping while co-resident projects were not. Do not
+# "correct" the case to match its neighbours; that silently un-attributes this
+# project again, and the symptom is an absence, which nothing prompts you to look
+# for.
+project_name: 999-Agentic-Engineering-Framework
 INCEPTION_COMMIT_LIMIT: 15
 NTFY_URL: https://ntfy-ring20.docker.ring20.geelenandcompany.com
 RAIL_IDENTITY_FILE: .context/rail-identity.key

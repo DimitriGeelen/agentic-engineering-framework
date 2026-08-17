@@ -4638,3 +4638,9 @@ X'` returning empty group."
   task: T-3063
   date: 2026-08-17
   context: Added via context agent
+- id: L-623
+  learning: "A config value that resolves one source and stops is an assumption wearing a lookup: Config.PORT reads FW_PORT-or-3000 at import and is never updated by --port, so a port-derived cookie name was authoritative about what was configured and silent about what was running. Same class as the :3000 hard-code rule (T-1376) — the fix is to derive from the value that won, not the value that was consulted."
+  source: P-001
+  task: T-3065
+  date: 2026-08-17
+  context: Added via context agent
