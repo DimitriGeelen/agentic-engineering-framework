@@ -1631,7 +1631,7 @@ if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
     if [ "$fabric_cards" -gt 0 ]; then
         drift_result=$(python3 -c "
-import yaml, glob, os
+import yaml, glob, os, re
 
 PROJECT_ROOT = '$PROJECT_ROOT'
 FABRIC_DIR = os.path.join(PROJECT_ROOT, '.fabric')
@@ -1661,7 +1661,14 @@ for card_path in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
     with open(card_path) as f:
         data = yaml.safe_load(f)
     if data and data.get('location'):
-        if not os.path.exists(os.path.join(PROJECT_ROOT, data['location'])):
+        loc = data['location']
+        # T-3049: skip URL locations. Same fix as agents/fabric/lib/drift.sh —
+        # both sites answer 'is this card's file still there', and a hosted
+        # service has no file to be missing. They must agree, or the CLI and the
+        # daily audit report different orphan counts for one corpus.
+        if re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*://', loc):
+            continue
+        if not os.path.exists(os.path.join(PROJECT_ROOT, loc)):
             orphaned += 1
 
 print(f'{len(registered)} {orphaned}')

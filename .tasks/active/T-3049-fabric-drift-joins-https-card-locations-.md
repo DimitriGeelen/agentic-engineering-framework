@@ -10,10 +10,10 @@ description: >
   gitignore escape at drift.sh:76 does not catch it. Part 2 of the original report
   (depends_on under .agentic-framework/) is already fixed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [upstream-pickup, T-3047-triage]
 components: []
 related_tasks: [T-3047]
@@ -28,7 +28,7 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:29:29Z
-last_update: '2026-08-16T22:45:08Z'
+last_update: 2026-08-17T06:43:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,45 +74,77 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A card's `location:` is assumed to be a filesystem path. Two checks act on that
+assumption and neither tests it:
+
+- `agents/fabric/lib/drift.sh:59-64` — branches on `${loc:0:1} = "/"` (absolute,
+  T-1673 cross-repo cards) and otherwise joins onto `$PROJECT_ROOT`. So
+  `https://example.com/x` becomes `$PROJECT_ROOT/https://example.com/x`, fails
+  `[ ! -f ]`, and is printed as `(file missing)` forever.
+- `agents/audit/audit.sh:1664` — `os.path.join(PROJECT_ROOT, location)`, same
+  question, same wrong answer. `os.path.join` happens to handle the absolute case
+  correctly, so this site never needed T-1673's fix and never got its scrutiny.
+
+Neither the T-1673 absolute-path branch nor the T-2519 gitignore escape
+(`drift.sh:76`) catches a URL: the first tests only for a leading `/`, and
+`git check-ignore` on a URL string returns not-ignored, so the escape hatch
+passes it straight through to the warning.
+
+**Zero cards in this repo have a URL location** — verified by grep over
+`.fabric/components/*.yaml`. The bug is latent here and live in consumers:
+reported from ring20-management, where `saas-account` cards legitimately point at
+hosted services. That asymmetry is the reason it survived — the framework repo is
+where the check is exercised daily, and it is the one place the bug cannot fire.
+
+Third instance this session of one code shape at multiple sites answering the
+same question (cf. T-3053 first-ref-only, T-3052 clobbering `mv`). Fixing only
+the site named in the report would leave the audit reporting the count the CLI
+no longer reports.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1 — a URL location is not treated as a missing file.** A card whose
+      `location:` is `<scheme>://...` is excluded from the orphaned count and
+      from the `(file missing)` output. "Does this file still exist" is not a
+      question that has an answer for a URL, so the check declines it rather
+      than answering no.
+- [x] **A2 — both sites, not just the reported one.** `drift.sh` (the
+      `fw fabric drift` CLI) and `audit.sh` (the daily orphan count) agree.
+      Fixing one leaves the two surfaces reporting different numbers for the
+      same corpus, which is worse than both being wrong.
+- [x] **A3 — nothing else is loosened.** A genuinely deleted repo-relative file
+      still flags. An absolute path (T-1673 cross-repo cards) still resolves
+      unjoined. A gitignored missing file is still exempt (T-2519). A path that
+      merely *contains* a colon, or a malformed `http:/single-slash`, is still
+      treated as a path — the skip requires a real scheme separator.
+- [x] **A4 — pinned by mutation.** Removing the URL skip at each site turns a
+      distinct test red, with a positive control (L-616) proving the harness can
+      still tell a hit from a miss.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+- [ ] [REVIEW] Confirm the consumer-visible change in audit output is wanted.
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+  **Why you and not the agent:** this ships to every consumer project via
+  `.agentic-framework/`. Their next `fw audit` and `fw fabric drift` will report
+  a *lower* orphan count than the previous run, with no task explaining the drop
+  in their repo. That is the intended fix — the dropped entries were false
+  positives — but a count moving on its own is exactly the shape an operator is
+  trained to distrust, so it is worth you knowing before it lands.
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
+  **Steps:**
+  1. `bin/fw fabric drift`
+  2. Confirm the "Orphaned cards:" section is unchanged for this repo — it must
+     be, since zero cards here carry a URL location.
+  3. Decide whether consumers should be told, or whether a silently-correct count
+     is fine.
 
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+  **Expected:** no change in this repo's output; consumers with `saas-account`
+  cards stop seeing permanent `(file missing)` lines.
+
+  **If not:** if this repo's orphan output DID change, the skip is too broad —
+  revert `agents/fabric/lib/drift.sh` and `agents/audit/audit.sh` and re-open.
+
 
 ## Verification
 
@@ -175,6 +207,11 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t3049_fabric_url_location.bats 2>&1); echo "$out" | grep -q "^ok 11 " && ! echo "$out" | grep -q "^not ok"
+bin/fw fabric drift > /tmp/.t3049-real.out 2>&1 && ! grep -q "file missing" /tmp/.t3049-real.out
+grep -q 'a-zA-Z\]\*://\*) continue' agents/fabric/lib/drift.sh
+grep -qE "re\.match\(r'\^\[a-zA-Z\]\[a-zA-Z0-9\+\.-\]\*://', loc\)" agents/audit/audit.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -190,6 +227,57 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in consumer projects, fabric cards whose `location:` is a hosted
+service URL are reported `(file missing)` by `fw fabric drift` on every run, and
+counted as orphaned by the daily audit. Permanently — no action clears them.
+
+**Root cause:** both checks treat `location:` as a filesystem path without
+testing that it is one. `drift.sh:59-64` branches on a leading `/` and otherwise
+joins onto `$PROJECT_ROOT`, producing `$PROJECT_ROOT/https://host/path`;
+`audit.sh` does `os.path.join(PROJECT_ROOT, location)` for the same result. The
+check asks "does this file still exist" of something that is not a file, and a
+missing answer is scored as "no".
+
+**Why structurally allowed:**
+
+1. **The bug cannot fire where the check is exercised.** Zero cards in the
+   framework repo carry a URL location — verified by grep. The daily audit runs
+   here, the CLI is developed here, and here it is correct. Only consumers
+   registering `saas-account` cards see it. A check whose test corpus lacks the
+   failing shape is not being tested for that shape at all.
+2. **Two prior fixes made the branch *look* considered.** T-1673 added the
+   absolute-path branch; T-2519 added the gitignore escape. Reading `:56-78` you
+   see a location-resolution site that has been thought about twice, which reads
+   as coverage. Neither catches a URL: T-1673 tests only for a leading `/`, and
+   `git check-ignore` on a URL string returns not-ignored, so T-2519's escape
+   hands it straight to the warning. **Accumulated special cases are the shape
+   most likely to be mistaken for completeness.**
+3. **A false positive that never changes is quieter than one that flickers.** A
+   permanent `(file missing)` line becomes furniture; the operator learns to read
+   past it. Had it appeared intermittently it would have been chased.
+
+Third instance this session of one code shape at multiple sites answering the
+same question (T-3053 first-ref-only, T-3052 clobbering `mv`, this). The recurring
+lesson is not about paths — it is that **the report names the site where it was
+hit, and the sibling site is found only by looking for it.** Here the report named
+`drift.sh`; `audit.sh` was never mentioned, and fixing only the named one would
+have left the CLI and the daily audit disagreeing about one corpus.
+
+**Prevention** (distinct from the fix):
+
+- Both sites skip `<scheme>://` locations, so the CLI and audit counts agree.
+- The skip requires a real `://` separator, so a typo'd `http:/single-slash` is
+  still a broken path and still flags — the fix silences a category, not a
+  spelling.
+- 11 tests, four of which exist purely to prove nothing was loosened: a deleted
+  repo-relative file still flags at both sites, an absolute cross-repo path still
+  resolves, an existing file is still clean, and the single-slash typo still
+  flags.
+- Both skips are mutated separately with a positive control (L-616). That control
+  earned its place immediately: the first version of the drift harness exited 127
+  because `do_drift` is not named `do_fabric_drift`, and every URL assertion
+  "passed" on empty output. The control was the only test that failed.
 
 ## Evolution
 
@@ -217,32 +305,31 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The defect is confirmed at both sites by reading the code, and the
+fix is a narrow type check — a location with a `<scheme>://` separator is not a
+path, so the "does this file exist" question is declined rather than answered
+wrongly. Four of the eleven tests exist only to prove nothing was loosened, and
+the real corpus is unchanged (`fw fabric drift` output identical before and
+after, because zero cards here carry a URL location). The only judgment left is
+the cross-project one, which is why it is yours: consumers will see an orphan
+count drop with no local task explaining it.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+**Evidence:**
+- `agents/fabric/lib/drift.sh:59-64` joined `https://...` onto `$PROJECT_ROOT`;
+  `agents/audit/audit.sh` did the same via `os.path.join`. Both fixed; a test
+  mutates each skip separately and each turns a distinct test red.
+- Neither prior escape caught it: T-1673 tests only for a leading `/`, and
+  `git check-ignore` on a URL returns not-ignored, so T-2519 passed it through.
+- Regression guards green: deleted repo-relative file still flags at both sites,
+  absolute cross-repo path still resolves, existing file still clean, and a
+  malformed `http:/single-slash` is still treated as a path.
+- `bin/fw fabric drift` on this repo: exit 0, zero `file missing` lines, same as
+  before the change.
+- Reviewer: PASS, no findings. The one escalation is `cross-project-blast`, which
+  is the reason this is in front of you rather than closed.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
 
 ## Decisions
 
@@ -271,3 +358,20 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3049-fabric-drift-joins-https-card-locations-.md
 - **Context:** Initial task creation
+
+### 2026-08-17T06:43:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d5105f16
+- **Timestamp:** 2026-08-17T06:48:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-repo`

@@ -53,6 +53,18 @@ do_drift() {
         [ -f "$card" ] || continue
         local loc
         loc=$({ grep "^location:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^location: //')
+        # T-3049: a URL location is not a path, and "does this file exist" has no
+        # answer for it — so decline the question instead of answering no. Cards
+        # for hosted services (saas-account cards in consumer projects) carry
+        # https:// locations and were flagged (file missing) permanently.
+        # Neither existing escape catches it: the T-1673 branch below tests only
+        # for a leading /, and git check-ignore on a URL string returns
+        # not-ignored, so T-2519's exemption passes it through to the warning.
+        # Requires the full :// separator — a path containing a bare colon, or a
+        # malformed http:/single-slash, is still a path and still checked.
+        case "$loc" in
+            [a-zA-Z]*://*) continue ;;
+        esac
         # T-1673: handle absolute paths (cross-repo cards from T-1652) — don't
         # join with PROJECT_ROOT when the location is already absolute.
         local resolved
