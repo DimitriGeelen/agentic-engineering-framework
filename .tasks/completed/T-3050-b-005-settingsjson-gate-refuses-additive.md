@@ -8,12 +8,12 @@ description: >
   is read, so ADD-NEW-MATCHER and MODIFY-EXISTING-MATCHER are indistinguishable. A
   consumer cannot add a purely additive project-local hook without an operator paste-in.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [upstream-pickup, T-3047-triage]
-components: []
+components: [agents/context/check-active-task.sh, tests/unit/t3050_b005_block_message.bats]
 related_tasks: [T-3047]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: [T-3047]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T22:30:03Z
-last_update: 2026-08-17T06:26:35Z
-date_finished:
+last_update: 2026-08-17T06:36:29Z
+date_finished: 2026-08-17T06:36:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -415,9 +415,12 @@ escalation.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ccc536c4
-- **Timestamp:** 2026-08-17T06:36:02Z
+- **Scan ID:** R-5769a815
+- **Timestamp:** 2026-08-17T06:36:43Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-08-17T06:36:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

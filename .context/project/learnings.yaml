@@ -4620,3 +4620,9 @@ X'` returning empty group."
   task: T-3052
   date: 2026-08-17
   context: Added via context agent
+- id: L-620
+  learning: "A block message is a UI, and gates are never tested as one. A hook is tested for its verdict — does it exit 2 — and a wrong verdict is loud. An unhelpful MESSAGE still exits 2, so it is invisible to every test, and invisible to the author, who already knows the answer the message omits. B-005 shipped in T-229 and no test read its text for ~15 months; the refusal said 'Changes to hook configuration require human review' and named no mechanism, while fw hook-enable had done exactly that job since T-1189. A consumer project filed the resulting dead end as a missing feature. Two failure directions, both real: under-informing makes people route around the gate, over-claiming makes them trust it past its reach — B-005 did both at once. Rule: when a gate refuses, the message must name the sanctioned route; and when you fix one, pin the text by test, including a check that no bypass env var was smuggled in beside the friendlier wording, because the failure mode of making a gate helpful is making it optional."
+  source: P-002
+  task: T-3050
+  date: 2026-08-17
+  context: Added via context agent

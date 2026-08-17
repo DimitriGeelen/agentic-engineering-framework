@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3050: B-005 settings.json gate refuses additive PreToolUse matchers because it never reads the diff
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T06:36:56Z
+# ============================================================================
+
+task_id: T-3050
+task_name: "B-005 settings.json gate refuses additive PreToolUse matchers because it never reads the diff"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:30:03Z
+completed: 2026-08-17T06:36:29Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-17T08:36:16+02:00
+last_commit: 2026-08-17T08:36:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the B-005 gate had no exit, so people routed around it
+
+# Key outcomes
+outcomes:
+  - '**A1 — the refusal names the way forward.** The B-005 block message names'
+  - '**A2 — the message stops overclaiming.** It no longer asserts that hook'
+  - '**A3 — the gate itself is unchanged in behaviour.** Write/Edit on'
+  - '**A4 — the message content is pinned by test, not by hope.** Tests assert'
+  - '**A5 — the scope asymmetry is registered, not just described here.** The'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/check-active-task.sh'
+  - '.context/approvals/pending-17d4dd0baaec.yaml'
+  - '.context/approvals/pending-5c7923bd67b0.yaml'
+  - '.context/audits/2026-08-17.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/tests-unit-t3050_b005_block_message.yaml'
+  - '.tasks/active/T-3050-b-005-settingsjson-gate-refuses-additive.md'
+  - '.tasks/active/T-3059-pickupnextid-is-read-then-write-with-no-.md'
+  - 'tests/unit/t3050_b005_block_message.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T08:36:16'
+    action: 'T-3050: the B-005 gate had no exit, so people routed around it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 486 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upstream-pickup, T-3047-triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 486
+  commits: 1
+  files_changed: 22
+  lines_added: 506
+  lines_removed: 53
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3050-b-005-settingsjson-gate-refuses-additive.md
+generated_by: context-agent-hybrid
