@@ -1987,38 +1987,8 @@ if [ -f "$HOOK_THRESHOLD_HELPER" ] && [ -f "$HOOK_COUNTER_FILE" ]; then
     fi
 fi
 
-# T-1845: Audit-time secret-scan + large-file scan. These were both pre-commit
-# only, which misses: --no-verify bypasses, files committed before the hook
-# existed, hook installation drift on cron-run hosts. Audit-mode scan-tree
-# closes the gap — same shape as the cron registry sync check above (the gate
-# was wired but not measured at the audit horizon).
-SECRET_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
-if [ -x "$SECRET_SCANNER" ]; then
-    _ss_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$SECRET_SCANNER" scan-tree 2>&1)
-    _ss_rc=$?
-    if [ "$_ss_rc" -ne 0 ]; then
-        _ss_count=$(echo "$_ss_out" | grep -c "^  \[" || true)
-        fail "Secret scan: $_ss_count finding(s) in tracked tree (T-1844)" \
-             "$(echo "$_ss_out" | head -5)" \
-             "Remove the secret from source + history (filter-repo if already committed); allowlist false-positives in .secret-scan-allowlist"
-    else
-        pass "Secret scan: tracked tree clean"
-    fi
-fi
-
-LARGE_FILE_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
-if [ -x "$LARGE_FILE_SCANNER" ]; then
-    _lf_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$LARGE_FILE_SCANNER" scan-tree 2>&1)
-    _lf_rc=$?
-    if [ "$_lf_rc" -ne 0 ]; then
-        _lf_count=$(echo "$_lf_out" | grep -c "\[BLOCK\]" || true)
-        warn "Large-file gate: $_lf_count tracked file(s) above block threshold (T-1845)" \
-             "$(echo "$_lf_out" | head -5)" \
-             "Untrack + add to .gitignore, or allowlist if deliberate: git rm --cached <path> && echo <path> >> .gitignore"
-    else
-        pass "Large-file gate: tracked tree clean"
-    fi
-fi
+# T-3062: the T-1845 whole-tree scanners used to live here, inside `structure`.
+# They now live in SECTION 1b below. See that block for why.
 
 # T-2244: Self-vendor drift FAIL (F2 N×M daily-cron backstop). Mirrors
 # `bin/fw doctor` Check 2b (T-1434 + T-2243) and the pre-push gate
@@ -2340,6 +2310,75 @@ check_gitignore_register
 
 echo ""
 fi # end structure
+
+# ============================================
+# SECTION 1b: WHOLE-TREE SCANS
+# ============================================
+# T-1845: Audit-time secret-scan + large-file scan. These were both pre-commit
+# only, which misses: --no-verify bypasses, files committed before the hook
+# existed, hook installation drift on cron-run hosts. Audit-mode scan-tree
+# closes the gap — same shape as the cron registry sync check above (the gate
+# was wired but not measured at the audit horizon).
+#
+# T-3062: they belong to the DAILY horizon T-1845 named, and they were in
+# `structure`, which is the horizon the pre-push hook runs on every push. That
+# mismatch is why they are their own section now.
+#
+# Measured on this repo, `--section structure` before the split:
+#
+#   everything up to the hook-threshold check   51s
+#   secret scan   (scan-tree)                  188s
+#   large-file    (scan-tree)                   95s
+#   the remaining nine checks                   13s
+#   ------------------------------------------------
+#   total                                      347s
+#
+# The pre-push hook bounds a push at 60s (handover.sh `_push_timeout`), so the
+# gate could not finish inside the window it is given, on any path. Pushes were
+# not blocked — they were killed partway through, which looks the same from the
+# outside and reports nothing. Seven commits sat unpushed across four sessions.
+# The same 283s was also being paid every 30 minutes by the `structural-30m`
+# cron, which is where the audit lock contention in T-1719/OBS-221 came from.
+#
+# Scoping, so this stays honest: `should_run_section` is true for every section
+# when no `--section` filter is given, so a full audit (`fw audit --cron`, the
+# daily 08:00 job) still runs these. What changes is that a caller who asks for
+# `structure` by name no longer gets them. Coverage moves from every-30-minutes
+# to daily — which is the horizon T-1845 asked for in the first place. To run
+# them on demand: `fw audit --section tree`.
+if should_run_section "tree"; then
+echo "=== WHOLE-TREE SCANS ==="
+
+SECRET_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
+if [ -x "$SECRET_SCANNER" ]; then
+    _ss_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$SECRET_SCANNER" scan-tree 2>&1)
+    _ss_rc=$?
+    if [ "$_ss_rc" -ne 0 ]; then
+        _ss_count=$(echo "$_ss_out" | grep -c "^  \[" || true)
+        fail "Secret scan: $_ss_count finding(s) in tracked tree (T-1844)" \
+             "$(echo "$_ss_out" | head -5)" \
+             "Remove the secret from source + history (filter-repo if already committed); allowlist false-positives in .secret-scan-allowlist"
+    else
+        pass "Secret scan: tracked tree clean"
+    fi
+fi
+
+LARGE_FILE_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
+if [ -x "$LARGE_FILE_SCANNER" ]; then
+    _lf_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$LARGE_FILE_SCANNER" scan-tree 2>&1)
+    _lf_rc=$?
+    if [ "$_lf_rc" -ne 0 ]; then
+        _lf_count=$(echo "$_lf_out" | grep -c "\[BLOCK\]" || true)
+        warn "Large-file gate: $_lf_count tracked file(s) above block threshold (T-1845)" \
+             "$(echo "$_lf_out" | head -5)" \
+             "Untrack + add to .gitignore, or allowlist if deliberate: git rm --cached <path> && echo <path> >> .gitignore"
+    else
+        pass "Large-file gate: tracked tree clean"
+    fi
+fi
+
+echo ""
+fi # end tree
 
 # ============================================
 # SECTION 2: TASK COMPLIANCE CHECKS

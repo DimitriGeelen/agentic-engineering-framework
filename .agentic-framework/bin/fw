@@ -2298,6 +2298,43 @@ for e in d.get('errors',[])[:3]:
         local tl_version
         tl_version=$(termlink --version 2>/dev/null | head -1)
         echo -e "  ${GREEN}OK${NC}  TermLink ($tl_version)"
+
+        # T-3040: a topic that does not exist on the LOCAL hub REJECTS posts
+        # to it rather than queuing them — there is no client-side retry, so a
+        # missing topic silently discards every peer message sent to it. The
+        # outbound side self-heals via `channel post --ensure-topic` (T-1445),
+        # but that only creates the topic the SENDER targets; it cannot fix a
+        # topic missing on OUR hub before a peer posts to us. Check the
+        # well-known cross-project convention topics exist locally so this
+        # can be caught proactively instead of discovered months later
+        # (origin: framework:pickup was silently rejecting posts for months).
+        if _doctor_quick_skip "TermLink topic existence check"; then :; else
+        local _tl_expected_topics="framework:pickup broadcast:global broadcast-chat"
+        local _tl_topic_list _tl_missing_topics=""
+        _tl_topic_list=$(termlink channel list --json 2>/dev/null)
+        if [ -n "$_tl_topic_list" ]; then
+            local _tl_topic
+            for _tl_topic in $_tl_expected_topics; do
+                if ! echo "$_tl_topic_list" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(1)
+names = data if isinstance(data, list) else data.get('topics', data.get('items', []))
+names = [n.get('name', n) if isinstance(n, dict) else n for n in names]
+sys.exit(0 if '$_tl_topic' in names else 1)
+" 2>/dev/null; then
+                    _tl_missing_topics="$_tl_missing_topics $_tl_topic"
+                fi
+            done
+            if [ -n "$_tl_missing_topics" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  TermLink topic(s) missing on local hub:$_tl_missing_topics — peer posts to these are silently rejected, not queued"
+                echo "         Fix: termlink channel create <topic> --retention forever  (per missing topic)"
+                warnings=$((warnings + 1))
+            fi
+        fi
+        fi  # T-2452/F6-style --quick guard
     else
         _doctor_warn_host "TermLink not installed (cargo install termlink)"
     fi

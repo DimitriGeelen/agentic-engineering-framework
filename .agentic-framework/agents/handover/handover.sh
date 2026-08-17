@@ -93,7 +93,19 @@ _push_to_remotes() {
     echo ""
     echo -e "${CYAN}Pushing to remotes...${NC}"
     _push_failed=false
-    _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-60}"
+    # T-1277 set 60s to bound an UNREACHABLE remote. But the wall-clock this
+    # timeout actually has to cover is network + the pre-push hook, and the hook
+    # runs an audit: measured 347s before T-3062 split the whole-tree scanners
+    # out, ~59s after. At 60s the push was killed mid-gate every time — which is
+    # indistinguishable from a clean exit here, because a killed push and a
+    # blocked push both land in the same warning branch below. Seven commits sat
+    # unpushed across four sessions on exactly that.
+    #
+    # So the number is not a network budget, it is `gate cost + network`, and it
+    # needs real headroom above the gate or this returns the moment some check
+    # grows. tests/unit/t3062_push_timeout_budget.bats pins the relationship;
+    # it is the assertion, this comment is only the reason.
+    _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-300}"
     # T-1255 (G-007): When >1 remote is configured AND `origin` is one of them,
     # push ONLY to origin. Mirroring (e.g. github) is OneDev's job via
     # .onedev-buildspec.yml's PushRepository job. Pushing directly to mirror
