@@ -4614,3 +4614,9 @@ X'` returning empty group."
   task: T-3056
   date: 2026-08-17
   context: Added via context agent
+- id: L-619
+  learning: "A uniqueness guarantee is only as wide as the set the allocator enumerates, and nothing forces that set to match the set the consumers write into. T-3052: four pickup directories declared together at lib/pickup.sh:23-26; the id allocator's loop listed three. The divergence is invisible at both ends — the constants look complete, the loop looks deliberate. Second half, and the more useful half: five of six sites shared the same unsafe clobbering mv and had never lost anything, not because the move was safe but because the allocator scanned their directories. Sibling safety is not evidence of local safety when the protecting invariant lives in another function. When you find one unsafe idiom, fix the idiom at every site rather than only where it currently fires — otherwise the next omission upstream re-arms all of them at once."
+  source: P-002
+  task: T-3052
+  date: 2026-08-17
+  context: Added via context agent

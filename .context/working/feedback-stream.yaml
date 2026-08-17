@@ -35001,3 +35001,57 @@ payload:
   pattern_id: mock-only-integration
   ac_index: null
   ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:24:56Z'
+scan_id: R-506ab84d
+task_id: T-3052
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:24:56Z'
+scan_id: R-506ab84d
+task_id: T-3052
+payload:
+  task_file: .tasks/active/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:25:20Z'
+scan_id: R-3a7d997e
+task_id: T-3052
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:25:20Z'
+scan_id: R-3a7d997e
+task_id: T-3052
+payload:
+  task_file: .tasks/active/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T06:25:52Z'
+scan_id: R-db019de2
+task_id: T-3052
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T06:25:52Z'
+scan_id: R-db019de2
+task_id: T-3052
+payload:
+  task_file: .tasks/active/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md

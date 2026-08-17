@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3052: pickup_next_id ignores auto-deferred/, so a reissued id silently overwrites a filed pickup
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T06:26:06Z
+# ============================================================================
+
+task_id: T-3052
+task_name: "pickup_next_id ignores auto-deferred/, so a reissued id silently overwrites a filed pickup"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T22:31:11Z
+completed: 2026-08-17T06:25:48Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-17T08:25:33+02:00
+last_commit: 2026-08-17T08:25:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a pickup id is a filename, and the allocator was blind to one directory
+
+# Key outcomes
+outcomes:
+  - '**A1 — the allocator sees all four directories.** `pickup_next_id` counts'
+  - '**A2 — no pickup file is ever overwritten by a move.** A helper moves an'
+  - '**A3 — every pickup-file move goes through it.** Both auto-defer sites, the'
+  - '**A4 — callers that need the post-move path use the real one.** The'
+  - '**A5 — each fix is independently pinned by a mutation.** Reverting A1'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/pickup.sh'
+  - '.agentic-framework/VERSION'
+  - '.fabric/components/tests-unit-t3052_pickup_id_collision.yaml'
+  - '.fabric/components/tests-unit-t3056_recall_open_tasks.yaml'
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md'
+  - '.tasks/active/T-3059-pickupnextid-is-read-then-write-with-no-.md'
+  - 'tests/unit/t3052_pickup_id_collision.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T08:25:33'
+    action: 'T-3052: a pickup id is a filename, and the allocator was blind to one directory'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 474 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upstream-pickup, T-3047-triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 474
+  commits: 1
+  files_changed: 8
+  lines_added: 798
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3052-pickupnextid-ignores-auto-deferred-so-a-.md
+generated_by: context-agent-hybrid
