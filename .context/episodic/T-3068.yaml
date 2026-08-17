@@ -1,0 +1,224 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3068: The cost axis prices 'we never measured this' as 'cheapest', for 97% of the tasks it ranks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T12:41:30Z
+# ============================================================================
+
+task_id: T-3068
+task_name: "The cost axis prices 'we never measured this' as 'cheapest', for 97% of the tasks it ranks"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T12:30:27Z
+completed: 2026-08-17T12:40:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T14:40:23+02:00
+last_commit: 2026-08-17T14:40:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unmeasured blast radius stops pricing as cheapest, and the ranking says how much it cannot price
+
+# Key outcomes
+outcomes:
+  - '`blast_radius` distinguishes *unmeasured* from *zero*. A task with no'
+  - 'The cost composite propagates unknown rather than substituting a number.'
+  - 'Quadrant medians are computed over **known** costs only. An unknown-cost task'
+  - '`fw bvp` and `fw bvp --quadrant` state how many tasks were excluded or'
+  - 'Existing frontmatter stays readable. 344 estimates carrying `blast_radius: 0`'
+  - 'A regression test pins the inversion directly: a task with no components must'
+  - 'The rationale renderer names the reason instead of `(no-signal)`. Not'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/lib/bvp.sh'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-100201-reconcile-t-100196-session-on-master-wit.md'
+  - '.tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md'
+  - '.tasks/active/T-1274-memory-writes-claude-auto-memory-blocked.md'
+  - '.tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md'
+  - '.tasks/active/T-1624-refresh-ring20-dashboard-hubsecret-on-th.md'
+  - '.tasks/active/T-1636-orchestrator-routing-refactor-composite-.md'
+  - '.tasks/active/T-1637-multi-llm-routing-cost-aware-learning--w.md'
+  - '.tasks/active/T-1639-termlink-throughput-benchmark-for-govern.md'
+  - '.tasks/active/T-1684-g-064-consumer-2-orchestrator-daily-heal.md'
+  - '.tasks/active/T-1719-embeddings-strategy-v1--slice-1-post-wri.md'
+  - '.tasks/active/T-1737-slice-2-userpromptsubmit-hook--promptund.md'
+  - '.tasks/active/T-1742-spike-d-follow-up-re-run-qwen35-with---m.md'
+  - '.tasks/active/T-1820-joint-smoke-test-slice--v2-peer-consult-.md'
+  - '.tasks/active/T-1821-t-1820-follow-up-live-joint-smoke-demo-w.md'
+  - '.tasks/active/T-2001-enforce-executed-browser-test-on-interac.md'
+  - '.tasks/active/T-2014-root-cause-extensionless-imagemagick-exp.md'
+  - '.tasks/active/T-2083-inception-page-renders-in-122s--aggregat.md'
+  - '.tasks/active/T-2170-bvp-t-new-d-per-driver-watchtower-displa.md'
+  - '.tasks/active/T-2171-bvp-t-new-e-f-autonomy-activation-gate--.md'
+  - '.tasks/active/T-2172-bvp-t-new-b-f-recall-band-0-2-calibratio.md'
+  - '.tasks/active/T-2200-dispatch-aef-setup-worker-on-optfan-dash.md'
+  - '.tasks/active/T-2202-dispatch-aef-setup-worker-on-opt832-work.md'
+  - '.tasks/active/T-2205-t-2204-slice-b--pretooluse-writeedit-hoo.md'
+  - '.tasks/active/T-2219-t-2217-slice-1--widen-inception-decide-s.md'
+  - '.tasks/active/T-2220-t-2217-slice-2--playwright-contract-test.md'
+  - '.tasks/active/T-2221-cockpitpy-sibling-widening--apply-t-2219.md'
+  - '.tasks/active/T-2254-watchtower-arcsnew--arc-create-form-sibl.md'
+  - '.tasks/active/T-2268-arc-010-slice-3--hm-a-demo-agent-fresh-s.md'
+  - '.tasks/active/T-2269-arc-010-slice-4--watchtower-frontend-mig.md'
+  - '.tasks/active/T-2276-pickup-inception-recommendation-schema-e.md'
+  - '.tasks/active/T-2306-t-2305-go-implement-3-bvp-drivers-vpromp.md'
+  - '.tasks/active/T-2309-watchtower-inceptiontdecide-returns-opaq.md'
+  - '.tasks/active/T-2310-t-2309-slice-2-csrf-htmxjs-auto-refresh-.md'
+  - '.tasks/active/T-2311-t-2309-slice-3-investigate-script-text-l.md'
+  - '.tasks/active/T-2346-t-2170-slice-2--facet-axis-swap--playwri.md'
+  - '.tasks/active/T-2350-t-2347b-slice-b1--completionstats--resol.md'
+  - '.tasks/active/T-2353-auditsh-post-emit-hook--convert-warnfail.md'
+  - '.tasks/active/T-2354-bvp-estimator-scoreauditseverity-handler.md'
+  - '.tasks/active/T-2355-audit-emit-volume-safety-digest-mode-t-2.md'
+  - '.tasks/active/T-2386-assess-inception-research-artifact-backl.md'
+  - '.tasks/active/T-2410-check-active-task-hook-false-positives-b.md'
+  - '.tasks/active/T-2420-pretooluse-hook-detect--human-outside--a.md'
+  - '.tasks/active/T-2433-payload-mediation-os-sandbox-profile-emi.md'
+  - '.tasks/active/T-2434-payload-mediation-lock-1-acceptance-demo.md'
+  - '.tasks/active/T-2441-onboard-opt505-ring20-site-to-aef--boots.md'
+  - '.tasks/active/T-2470-reassess-active-task-gate-bash-safelist-.md'
+  - '.tasks/active/T-2485-dispatch-loop-probe.md'
+  - '.tasks/active/T-2496-deploy-doctor-slice-1-declare-policydepl.md'
+  - '.tasks/active/T-2513-fw-note-unknown-verb-silently-captures-t.md'
+  - '.tasks/active/T-2556-corpus-gap-no-diagram-kind-marker--docum.md'
+  - '.tasks/active/T-2585-document-workflow-t2584-ghost-target-ref.md'
+  - '.tasks/active/T-2607-fw-vendor-self---check-reports-in-sync-w.md'
+  - '.tasks/active/T-2657-fw-update-chicken-and-egg-old-dovendor-m.md'
+  - '.tasks/active/T-2661-self-vendor-root-data-class--patternless.md'
+  - '.tasks/active/T-2665-corpus-map-exception-handling-package-do.md'
+  - '.tasks/active/T-2666-corpus-map-task-creation-package-dogfood.md'
+  - '.tasks/active/T-2667-corpus-map-knowledge-leveling-package-do.md'
+  - '.tasks/active/T-2680-silent-zero-store-grep-detector-t-2679-s.md'
+  - '.tasks/active/T-2681-assumption-rail-registry--probe-runner-t.md'
+  - '.tasks/active/T-2698-config-registry-drift-2-keys-missing-fro.md'
+  - '.tasks/active/T-2699-fw-help-omits-21-router-commands-includi.md'
+  - '.tasks/active/T-2716-draft-the-arc-lifecycle--exit-workflow-m.md'
+  - '.tasks/active/T-2720-keystone-onboarding-set-contains-nothing.md'
+  - '.tasks/active/T-2721-keystone-escalation-ladder-trigger-deriv.md'
+  - '.tasks/active/T-2745-wire-pytest-testsunit-into-fw-test-and-c.md'
+  - '.tasks/active/T-2746-fw-auto-inits-a-project-in-pwd-on-any-no.md'
+  - '.tasks/active/T-2747-orchestrator-status-test-fixtures-seed-o.md'
+  - '.tasks/active/T-2748-find-the-cross-test-polluter-making-6-we.md'
+  - '.tasks/active/T-2749-fw-doctor-stray-root-marker-check-misses.md'
+  - '.tasks/active/T-2750-find-the-test-leaking-t-9999-testmd-to-f.md'
+  - '.tasks/active/T-2751-re-pin-isviewablepath-readmemd-assertion.md'
+  - '.tasks/active/T-2752-extend-renderpageguard-dictloader-stubs-.md'
+  - '.tasks/active/T-2753-arc-tag-idempotency-test-counts-audit-lo.md'
+  - '.tasks/active/T-2754-corpus-all-versions-census-pin-is-28-sto.md'
+  - '.tasks/active/T-2756-verify-whether-fw-upgrade-bootstrap-auto.md'
+  - '.tasks/active/T-2760-pickup---from-010-termlink.md'
+  - '.tasks/active/T-2767-vendor-the-pinned-designer-bundle-t-2757.md'
+  - '.tasks/active/T-2768-fix-not-synced-guidance-to-name-a-source.md'
+  - '.tasks/active/T-2772-t-2732-port-gate-is-blind-to-fwtestport3.md'
+  - '.tasks/active/T-2773-stale-read-only--live-weight-sliders-shi.md'
+  - '.tasks/active/T-2801-fw-init-is-not-atomic-and-its-debris-is-.md'
+  - '.tasks/active/T-2802-fw-watchtower-url-returns-httplocalhost3.md'
+  - '.tasks/active/T-2840-render-surface-gate-git-grep-is-unanchor.md'
+  - '.tasks/active/T-2859-fw-work-on-usage-text-advertises-a---typ.md'
+  - '.tasks/active/T-2861-fw-init-does-not-set-bgisolation-none-so.md'
+  - '.tasks/active/T-2871-corpus-depends-91-on-non-frozen-aefmeta-.md'
+  - '.tasks/active/T-2889-git-stash-classifies-safe-but-writes-the.md'
+  - '.tasks/active/T-2892-corpus-all-versions-census-pinned-at-32-.md'
+  - '.tasks/active/T-2894-port-3000-carrier-population-has-no-set-.md'
+  - '.tasks/active/T-2906-fw-context-status-reports-learnings-0-ag.md'
+  - '.tasks/active/T-2907-six-read-only-consumers-still-resolve-le.md'
+  - '.tasks/active/T-2913-in-repo-scripts-post-to-termlink-channel.md'
+  - '.tasks/active/T-2918-fw-peer-subscribe-uses-event-poll-sessio.md'
+  - '.tasks/active/T-2950-obs-238-audit-ctl-013-holds-a-third-copy.md'
+  - '.tasks/active/T-2955-fw-arc-tag-writes-the-deprecated-arcslug.md'
+  - '.tasks/active/T-2958-p-011-eval-substitutes-backticks-outside.md'
+  - '.tasks/active/T-2961-version-third-field-is-a-distance-not-a-.md'
+  - '.tasks/active/T-2962-knownext-membership-is-audited-by-refere.md'
+  - '.tasks/active/T-2969-draft-arc-with-all-constituents-complete.md'
+  - '.tasks/active/T-2977-designer-inspector-shows-no-per-node-not.md'
+  - '.tasks/active/T-2997-fw-doctor-claude-fw-drift-compares-route.md'
+  - '.tasks/active/T-2998-ctl-008-counts-git-generated-merge-subje.md'
+  - '.tasks/active/T-3040-peer-message-backlog-lost--local-hub-had.md'
+  - '.tasks/active/T-3043-rca-non-root-agent-cannot-use-termlink-h.md'
+  - '.tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md'
+  - '.tasks/active/T-3049-fabric-drift-joins-https-card-locations-.md'
+  - '.tasks/active/T-3055-watchtower-serves-via-the-werkzeug-dev-s.md'
+  - '.tasks/active/T-3057-watchtower-has-no-project-local-blueprin.md'
+  - '.tasks/active/T-3059-pickupnextid-is-read-then-write-with-no-.md'
+  - '.tasks/active/T-3061-audit-rail-surface-active-tasks-whose-ac.md'
+  - '.tasks/active/T-3064-workflow-designer-is-never-installed-by-.md'
+  - '.tasks/active/T-3066-approving-a-queued-bvp-driver-proposal-d.md'
+  - '.tasks/active/T-3068-the-cost-axis-prices-we-never-measured-t.md'
+  - '.tasks/active/T-332-submit-to-awesome-lists-awesome-ai-agent.md'
+  - '.tasks/active/T-334-execute-launch-sequence-rclaudeai-soft-l.md'
+  - '.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md'
+  - '.tasks/active/T-544-create-termlink-homebrew-tap-with-github.md'
+  - '.tasks/completed/T-100194-rca-host-working-branch-forked-198287-co.md'
+  - '.tasks/completed/T-100195-guard-trunk-divergence-fw-doctor-warn-on.md'
+  - '.tasks/completed/T-2411-claude-fw-startup-banner-show-project--b.md'
+  - '.tasks/completed/T-2486-fix-obs-087-exec-bit-fw-resolveroutcomep.md'
+  - '.tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md'
+  - '.tasks/completed/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md'
+  - '.tasks/completed/T-2491-wire-fw-resolver-pick-into-a-bounded-aut.md'
+  - '.tasks/completed/T-2492-dogfood-the-autonomous-pickerloop-live-p.md'
+  - '.tasks/completed/T-2493-land-orchestrator-autonomy-work-to-maste.md'
+  - '.tasks/completed/T-2495-ship-resolver-loop-systemd-timerservice-.md'
+  - '.tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md'
+  - '.tasks/completed/T-2498-fix-integrate-go-livesh-missing-exec-bit.md'
+  - '.tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md'
+  - '.tasks/completed/T-2853-fw-update-misroutes-a-git-based-global-i.md'
+  - 'tests/unit/test_bvp_estimator.py'
+  - 'tests/unit/test_estimator_inception.py'
+  - 'tests/unit/test_t3068_unknown_cost.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T14:40:23'
+    action: 'T-3068: unmeasured blast radius stops pricing as cheapest, and the ranking says how much it cannot price'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 149
+  lines_added: 2052
+  lines_removed: 200
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3068-the-cost-axis-prices-we-never-measured-t.md
+generated_by: context-agent-hybrid

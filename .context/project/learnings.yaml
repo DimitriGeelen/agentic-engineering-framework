@@ -4644,3 +4644,9 @@ X'` returning empty group."
   task: T-3065
   date: 2026-08-17
   context: Added via context agent
+- id: L-624
+  learning: "A cost/priority axis must distinguish 'unmeasured' from 'zero'. When the no-information value is also the most attractive value, the failure presents as a recommendation rather than as a gap — the tool confidently promotes what it knows least about, and a recommendation is followed, not audited. Check the direction of the error: reading too high gets noticed the first time a cheap task is buried; reading too low never does."
+  source: P-001
+  task: T-3068
+  date: 2026-08-17
+  context: Added via context agent

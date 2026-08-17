@@ -1,10 +1,10 @@
-audit-task-tools=26
+audit-task-tools=28
 
-check-project-boundary=156
-check-active-task=152
+check-project-boundary=158
+check-active-task=154
 check-onboarding-gate=25
 check-inception-decisions=26
-loop-detect=92
+loop-detect=94
 commit-cadence=26
 check-active-completed-dup=22
 check-arc-id=24
@@ -12,7 +12,7 @@ check-heredoc-cmd-sub=24
 check-inception-schema=24
 check-settings-edit=23
 check-human-ac-tick=22
-budget-gate=23
-checkpoint=22
-check-tier0=3
-error-watchdog=2
+budget-gate=25
+checkpoint=24
+check-tier0=5
+error-watchdog=4
