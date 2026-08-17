@@ -154,27 +154,54 @@ exclusion is not silent:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A proposal records what it intends to drop in a form that cannot be
+- [x] A proposal records what it intends to drop in a form that cannot be
       reallocated — not a bare slot id. Existing rows carrying only `drop:` remain
       readable (the file is append-only history; 100 rows already exist).
-- [ ] Approving a proposal whose `drop:` referent no longer denotes the same
+      → `_driver_propose` resolves `--drop F1` against the live register at propose
+      time and stores `drop_name`. Legacy rows still parse; the approve route
+      refuses them explicitly (409) rather than guessing.
+- [x] Approving a proposal whose `drop:` referent no longer denotes the same
       driver **refuses and changes nothing** — no driver deleted, no driver added,
       non-zero exit, and a message naming both what was proposed and what that id
       means now. Fail-safe, not best-effort: a partial apply here is a silently
       corrupted Sovereignty boundary.
-- [ ] The refusal is reachable from the Watchtower approve route, not only from
+      → Compared before any write; both names on the FIRST line so the refusal
+      survives the consumer's `splitlines()[0]` truncation.
+- [x] The refusal is reachable from the Watchtower approve route, not only from
       the CLI — that route is the one an operator actually clicks
-      (`web/blueprints/bvp.py:874`), and a guard wired to the CLI leg alone
+      (`web/blueprints/bvp.py`), and a guard wired to the CLI leg alone
       reproduces the producer/consumer split this session already fixed once in
       T-3065 (L-399).
-- [ ] Approving a proposal whose referent is unchanged still works, including the
+      → Driven through the real Flask route: 400 + register unchanged. Plus an
+      `ast`-based join test asserting every route that builds a `driver --add`
+      passes the pair, so a future third consumer cannot skip it silently.
+- [x] Approving a proposal whose referent is unchanged still works, including the
       at-cap add-one-drop-one path — the guard must not make the cap unusable.
-- [ ] A regression test reproduces the recycle sequence end-to-end (propose with a
+      → Both legs: bats fills a scratch register to cap 9 and displaces; the route
+      test approves an unmoved referent (200, driver swapped).
+- [x] A regression test reproduces the recycle sequence end-to-end (propose with a
       drop → that driver is removed by another route → the slot is reallocated to a
       different driver → approve) and fails against the current code. Mutation
       result recorded in Updates (L-616).
+      → 13 tests across two files; 6 mutants killed, each by the intended test.
 
 ### Human
+- [ ] [REVIEW] The refusal reads clearly where the operator actually meets it — in
+      the toast on `/bvp`, not in a terminal.
+  **Steps:**
+  1. Open http://192.168.10.107:3000/bvp in a browser and scroll to **BVP Driver Proposals**.
+  2. Do not click Approve on a live proposal (the register is at cap 9 and a real
+     approval would displace a real driver). Instead read the message shape below,
+     which is verbatim what the route returns for the guarded case:
+     `Approve failed: Error: --drop F1 no longer denotes 'V_ALPHA' — it now denotes 'V_DIFFERENT'; nothing was changed (T-3066).`
+  3. Judge it as the toast will render it: one line, no formatting, possibly
+     tag-stripped (832's item 2 reports `htmx-toast.js` strips content).
+  **Expected:** an operator who has just clicked Approve can tell, from that one
+  line alone, that nothing happened and why — without opening a terminal.
+  **If not:** say which part is unreadable. The fix is either shorter wording here
+  or widening the render (T-2219/T-2221 are the open tasks for that truncation
+  class); do not widen the guard.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -206,6 +233,24 @@ exclusion is not silent:
 -->
 
 ## Verification
+
+bats tests/unit/t3066_driver_drop_identity.bats > /tmp/.t3066a.out 2>&1 && grep -q "^ok 9 " /tmp/.t3066a.out && ! grep -q "^not ok" /tmp/.t3066a.out
+python3 -m pytest tests/unit/test_t3066_approve_route.py -q > /tmp/.t3066b.out 2>&1 && grep -q "4 passed" /tmp/.t3066b.out
+# the propose leg persists the referent, not just the slot it stood in
+grep -q "'drop_name': drop_name," lib/bvp.sh
+# both Watchtower legs that can delete a driver pass the pair (L-399 join)
+grep -q '"--drop", drop_id, "--drop-name", drop_name' web/blueprints/bvp.py
+grep -q '"--drop", proposal\["drop"\], "--drop-name", drop_name' web/blueprints/bvp.py
+# the pairing is documented where the operator/agent looks for it.
+# `|| true` because bare `fw bvp driver` prints usage and exits 2 by design; the
+# grep is the assertion. Without it the line's verdict depends on whether set -e
+# is suppressed by the gate's `if` wrapper — true today, but not something to
+# lean on (this line failed a `bash -c 'set -eo pipefail; …'` rehearsal).
+out=$(bin/fw bvp driver 2>&1 || true); echo "$out" | grep -q -- "--drop-name"
+# the refusal names BOTH drivers on line 1, so it survives splitlines()[0]
+grep -q "it now denotes" lib/bvp.sh
+# reviewer static scan — same `|| true` reasoning (CONCERN is a non-zero exit)
+out=$(bin/fw reviewer T-3066 2>&1 || true); echo "$out" | grep -q "Overall:"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -268,7 +313,57 @@ exclusion is not silent:
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+**Symptom.** Approving a queued driver proposal deletes whichever driver holds the
+proposed slot id at approval time. Reproduced end-to-end before the fix: a proposal
+filed to drop `V_ALPHA` (then `F1`), approved after `V_ALPHA` had been removed by
+another route and `F1` reallocated, deleted **`V_DIFFERENT`** — a driver created
+after the proposal was written — and **exited 0**, printing `dropped F1`. That
+message is literally true and completely misleading.
+
+**Root cause.** The proposal recorded *where its target was standing*, not *who it
+was*. `F1` is a slot: `_driver_add` allocates `F{n}` at the lowest free number, so
+vacating a slot hands that id to the next driver added. The stored id was
+dereferenced against the register at approval time — after the operator had agreed
+to the sentence it appeared in.
+
+**Why this is not a scoring bug.** `free_drivers` is a Sovereignty boundary; the
+whole point of propose → operator review is that the human sees what they are
+agreeing to. Here they agree to "add V_NEW, drop V_ALPHA" and the register performs
+"add V_NEW, drop V_DIFFERENT". That is **consent applied to the wrong object** —
+which is why it is fail-safe (refuse, change nothing) and not best-effort.
+
+**Why structurally allowed.** Three things, none wrong alone:
+1. Slot ids are *reused* (a reasonable allocator).
+2. A proposal is *stored* — it has a lifetime, so its referents can go stale.
+3. The stored referent was an id, and ids are the natural thing to store.
+Nothing in the codebase distinguished "identifier that is stable" from "identifier
+that is a recycled position", so the second was used where only the first is safe.
+The audit log had the same defect: `dropped: F1` is true of two different deletions.
+
+**Why it stayed invisible.** It exits 0 and prints a true sentence. Both the
+operator and the audit trail see success. The same *shape* as T-3068 from earlier
+today — the failure presents as a correct-looking outcome, so nothing prompts anyone
+to look. This one needed a peer project to notice: 832 measured their own register
+recycling `F1` and `F3` within minutes while a pending proposal held `drop=F1`.
+
+**Prevention** (distinct from the fix):
+- `--drop` now *requires* `--drop-name`. An optional identity check is one a caller
+  forgets, and a skipped guard is indistinguishable from a passing one (L-616).
+  Both stray-flag directions are refused; the second was found by probing the fix.
+- An `ast`-level join test asserts that **every** function building a
+  `driver --add` command passes the pair — so a third consumer added later cannot
+  silently bypass it (L-399 / T-2278: a guard wired to one leg reads exactly like a
+  guard wired to all of them).
+- Legacy rows (a `drop` with no `drop_name`) are refused with an actionable 409
+  rather than resolved late — the late resolve *is* the defect.
+- Both the refusal and the success line now name the driver, so the audit trail
+  distinguishes two deletions that previously looked identical.
+
+**Not fixed here** (named so the exclusion is not silent, §Task Sizing):
+`_driver_add` still has **no duplicate-name guard** — demonstrated accidentally
+while probing this fix, which produced two `V_DIFFERENT` rows in a scratch
+register. That matters more now that names are load-bearing for identity, so it is
+a real follow-up rather than a cosmetic one. (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -308,7 +403,38 @@ exclusion is not silent:
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
+**Recommendation:** GO
+
+**Rationale:** The defect was reproduced at the wire before the fix and is refused
+after it, on both the CLI leg and the Watchtower route an operator actually clicks.
+All five Agent ACs are verified by tests rather than by inspection, and each
+load-bearing edit was mutation-checked — six mutants, each killed by the test that
+should catch it. The one thing left is genuinely not mine to settle: whether the
+refusal reads clearly in the `/bvp` toast, where the route surfaces only the first
+line of it. That is why the first line was rewritten to carry both driver names —
+so the answer does not depend on the open truncation work (T-2219/T-2221).
+
+**Evidence:**
+- **Reproduced pre-fix:** proposal to drop `V_ALPHA` → approval deleted
+  `V_DIFFERENT` (a driver created after the proposal) → exit 0, `dropped F1`.
+- **Refused post-fix:** exit 1, register unchanged (`V_DIFFERENT` present, `V_NEW`
+  absent), message names both drivers.
+- **Live Flask route:** recycled slot → 400; legacy row without `drop_name` → 409;
+  unchanged referent → 200 with the drop applied. Register asserted after each.
+- **Join guarded:** `ast` test walks every function in `web/blueprints/bvp.py` that
+  builds a `driver --add` and requires `--drop-name`, with a positive control that
+  fails if no call site matches at all.
+- **Mutants killed (6/6):** identity comparison removed → recycle test; propose
+  stops recording the name → propose + recycle tests; route drops the flag → join +
+  route tests; pairing requirement removed → stray-flag test; legacy refusal removed
+  → legacy test; first line loses the second name → route test.
+- **13 tests green:** 9 bats + 4 pytest.
+- **Cap still usable:** scratch register filled to 9, add-one-drop-one succeeds.
+
+**Reachability, stated plainly:** 0 of 95 pending proposals on this register carry a
+`drop`, so nothing was silently corrupted here. What made this urgent is that we sit
+exactly at cap 9, where the code *requires* a drop — so the hazard was one approval
+away, not hypothetical. — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
 
@@ -362,3 +488,12 @@ exclusion is not silent:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3066-approving-a-queued-bvp-driver-proposal-d.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7202b15c
+- **Timestamp:** 2026-08-17T14:50:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
