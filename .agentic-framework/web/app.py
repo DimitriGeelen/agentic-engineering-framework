@@ -61,6 +61,30 @@ def _resolve_secret_key(project_root) -> tuple[str, str]:
     return key, "generated"
 
 
+def session_cookie_name(port) -> str:
+    """T-3065: the cookie slot is named for the port actually being served.
+
+    One definition of the naming rule, called from two places, because the port
+    is not knowable at the same moment in both. `create_app()` runs at import
+    (module-level `app` below) and can only see the environment; the `--port`
+    flag does not exist until `main()` parses it. T-2278 named the cookie from
+    `Config.PORT` alone, which reads FW_PORT-or-3000 once at import and is never
+    updated by the flag — so `fw serve --port 3012` served 3012 and emitted
+    `fw_session_3000`, colliding with a :3000 instance in the one slot the
+    scoping exists to split apart.
+    """
+    return f"fw_session_{port}"
+
+
+def apply_session_cookie_name(app, port) -> None:
+    """Re-scope an already-built app's cookie slot to its real listen port.
+
+    Safe to call any time before the first request — Flask reads
+    SESSION_COOKIE_NAME per-request, not at construction.
+    """
+    app.config["SESSION_COOKIE_NAME"] = session_cookie_name(port)
+
+
 def create_app() -> Flask:
     """Create and configure the Watchtower Flask application."""
     app = Flask(
@@ -86,7 +110,12 @@ def create_app() -> Flask:
     # cookie, breaking CSRF on every cross-tab POST (403 Forbidden).
     # Scoping the name by port allocates a distinct browser cookie slot
     # per instance.
-    app.config["SESSION_COOKIE_NAME"] = f"fw_session_{Config.PORT}"
+    #
+    # T-3065: this is the ENVIRONMENT-only default. `Config.PORT` is read once at
+    # import and knows nothing about `--port`, so this line alone was false for
+    # every flag-started instance. `main()` calls apply_session_cookie_name()
+    # with the resolved port; do not treat this line as the whole guarantee.
+    apply_session_cookie_name(app, Config.PORT)
 
     # -------------------------------------------------------------------
     # CSRF protection
@@ -474,6 +503,12 @@ def main():
 
     host = Config.HOST
     port = args.port
+
+    # T-3065: the flag is the last word on which port we serve, so it must also
+    # be the last word on which cookie slot we occupy. Without this the name is
+    # stuck at FW_PORT-or-3000 and two instances collide (see T-2278 comment in
+    # create_app). Must run before run(), which it does — nothing serves yet.
+    apply_session_cookie_name(app, port)
 
     def handle_sigint(sig, frame):
         print("\nShutting down Watchtower...")
