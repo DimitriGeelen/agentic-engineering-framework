@@ -710,9 +710,11 @@ def cmd_driver(args):
     if '--remove' in args:
         return _driver_remove(args)
     print("Usage: fw bvp driver --init [--force]", file=sys.stderr)
-    print("       fw bvp driver --add \"name\" --weight N --rationale \"...\"", file=sys.stderr)
-    print("       fw bvp driver --remove Dn --rationale \"...\" [--drop Dn]", file=sys.stderr)
-    print("       fw bvp driver --propose \"name\" --weight N --rationale \"...\" [--drop Dn] [--task T-XXX]", file=sys.stderr)
+    print("       fw bvp driver --add \"name\" --weight N --rationale \"...\" [--drop Fn --drop-name NAME]", file=sys.stderr)
+    # `--remove` takes no --drop; the old usage line said it did (same
+    # docs↔CLI divergence class as T-3069, fixed here incidentally).
+    print("       fw bvp driver --remove Fn --rationale \"...\"", file=sys.stderr)
+    print("       fw bvp driver --propose \"name\" --weight N --rationale \"...\" [--drop Fn] [--task T-XXX]", file=sys.stderr)
     return 2
 
 
@@ -971,10 +973,55 @@ def _driver_add(args):
             return 2
         drop_id = args[didx + 1]
 
+    # T-3066: --drop names a SLOT; --drop-name names the thing in it. Both are
+    # required together, and the pairing is checked against the live register
+    # before anything is written (see the drop block below).
+    drop_name = None
+    if '--drop-name' in args:
+        nidx = args.index('--drop-name')
+        if nidx + 1 >= len(args):
+            print("Error: --drop-name needs a driver name", file=sys.stderr)
+            return 2
+        drop_name = args[nidx + 1]
+
+    # T-3066: the pairing is REQUIRED, not optional-if-you-remember. A caller
+    # that passes only --drop is refused loudly rather than silently skipping
+    # the identity check — an optional guard is indistinguishable from an
+    # absent one at the call site, which is the L-399 / T-2278 shape this
+    # session has already paid for twice (T-3065, T-3069).
+    if drop_id and drop_name is None:
+        _cur = next((d.get('name') for d in free if d.get('id') == drop_id), None)
+        print(f"Error: --drop {drop_id} requires --drop-name <name> (T-3066).", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("  Driver ids are slots, not names: the allocator reuses the lowest free", file=sys.stderr)
+        print("  number, so an id recorded now can denote a different driver later.", file=sys.stderr)
+        print("  Naming the driver makes the deletion refuse instead of hitting whatever", file=sys.stderr)
+        print("  happens to occupy the slot at apply time.", file=sys.stderr)
+        print("", file=sys.stderr)
+        if _cur:
+            print(f"  {drop_id} currently denotes '{_cur}'. If that is what you mean:", file=sys.stderr)
+            print(f"    --drop {drop_id} --drop-name {_cur}", file=sys.stderr)
+        else:
+            print(f"  {drop_id} denotes nothing in free_drivers right now.", file=sys.stderr)
+        return 2
+
+    # T-3066: and the reverse — `--drop-name` alone is a caller who believes they
+    # are displacing a driver while nothing is displaced. Found by probing the
+    # fix: the stray flag was accepted and the add went through silently.
+    if drop_name is not None and not drop_id:
+        print(f"Error: --drop-name {drop_name!r} given without --drop <id> (T-3066).", file=sys.stderr)
+        print("  Nothing would have been dropped. Both flags travel together.", file=sys.stderr)
+        _slot = next((d.get('id') for d in free if d.get('name') == drop_name), None)
+        if _slot:
+            print(f"    --drop {_slot} --drop-name {drop_name}", file=sys.stderr)
+        else:
+            print(f"  No free driver is named '{drop_name}'.", file=sys.stderr)
+        return 2
+
     # M1: total cap = 9. If at cap, require --drop.
     if total >= 9 and not drop_id:
         print(f"Error: total drivers = {total} (cap = 9). Add-one-drop-one (M1):", file=sys.stderr)
-        print("  Provide --drop <existing-free-driver-id> to displace one.", file=sys.stderr)
+        print("  Provide --drop <existing-free-driver-id> --drop-name <its-name> to displace one.", file=sys.stderr)
         return 1
 
     # Allocate next id like F1, F2, … unless name matches existing slug pattern.
@@ -988,10 +1035,48 @@ def _driver_add(args):
         if drop_id.startswith('D'):
             print(f"Error: cannot drop protected driver {drop_id}", file=sys.stderr)
             return 1
-        free = [d for d in free if d.get('id') != drop_id]
-        if len(free) == len(policy.get('free_drivers') or []):
+        target = next((d for d in free if d.get('id') == drop_id), None)
+        if target is None:
             print(f"Error: --drop target {drop_id} not found in free_drivers", file=sys.stderr)
             return 1
+        # T-3066 fail-safe: refuse BEFORE any write when the slot's occupant is
+        # not the driver the caller named. Fail-safe rather than best-effort
+        # because a partial apply here is a silently corrupted Sovereignty
+        # boundary: the operator consented to "add X, drop Y" and the register
+        # would perform "add X, drop Z".
+        current_name = target.get('name')
+        if current_name != drop_name:
+            # BOTH names on the first line, deliberately. Every consumer that
+            # surfaces this refusal shows `err.splitlines()[0]` and nothing else
+            # (web/blueprints/bvp.py, both legs), so a first line that named only
+            # the proposed driver would tell the operator their approval failed
+            # without telling them what the slot now holds — which is the single
+            # fact the decision turns on. Widening those renders is open work
+            # (T-2219/T-2221); a message that survives truncation does not wait
+            # on it.
+            print(f"Error: --drop {drop_id} no longer denotes '{drop_name}' — it now denotes "
+                  f"'{current_name}'; nothing was changed (T-3066).", file=sys.stderr)
+            print("", file=sys.stderr)
+            # Padded so the two names line up under each other — the whole point
+            # of this message is that the operator can see they differ.
+            _label = f"{drop_id} now denotes:"
+            print(f"  {'asked to drop:'.ljust(len(_label))} {drop_name}", file=sys.stderr)
+            print(f"  {_label} {current_name}", file=sys.stderr)
+            print("", file=sys.stderr)
+            print("  Nothing was changed. Driver ids are recycled slots — the allocator", file=sys.stderr)
+            print("  reuses the lowest free number — so an id captured earlier can point", file=sys.stderr)
+            print(f"  at a driver nobody proposed dropping. Deleting '{current_name}' here", file=sys.stderr)
+            print("  would apply the operator's consent to the wrong object.", file=sys.stderr)
+            print("", file=sys.stderr)
+            moved = next((d.get('id') for d in free if d.get('name') == drop_name), None)
+            if moved:
+                print(f"  '{drop_name}' still exists, now at {moved}. To proceed against it:", file=sys.stderr)
+                print(f"    --drop {moved} --drop-name {drop_name}", file=sys.stderr)
+            else:
+                print(f"  No free driver named '{drop_name}' remains — it is already gone, so", file=sys.stderr)
+                print("  the drop is unnecessary. Re-file without --drop (or name a real target).", file=sys.stderr)
+            return 1
+        free = [d for d in free if d.get('id') != drop_id]
         policy['free_drivers'] = free
 
     new_entry = {'id': new_id, 'name': name, 'weight': weight, 'protected': False, 'rationale': rationale}
@@ -1007,12 +1092,15 @@ def _driver_add(args):
         'weight': weight,
         'rationale': rationale,
         'dropped': drop_id,
+        # T-3066: the slot id alone made the audit log unreadable after any
+        # reallocation — "dropped F1" is true of two different deletions.
+        'dropped_name': drop_name,
         'who': os.environ.get('USER', 'unknown'),
         'agent_session': bool(os.environ.get('CLAUDECODE')),
         'ts': _utc_now(),
     })
     if drop_id:
-        print(f"OK: added {new_id} '{name}' weight={weight}; dropped {drop_id} (M1 add-one-drop-one)")
+        print(f"OK: added {new_id} '{name}' weight={weight}; dropped {drop_id} '{drop_name}' (M1 add-one-drop-one)")
     else:
         print(f"OK: added {new_id} '{name}' weight={weight}")
     return 0
@@ -1069,6 +1157,27 @@ def _driver_propose(args):
         if didx + 1 < len(args):
             drop_id = args[didx + 1]
 
+    # T-3066: resolve the drop target's IDENTITY here, at propose time, and store
+    # it next to the slot id. This is the whole fix — the proposal is a sentence
+    # the operator will agree to later ("add X, drop Y"), and until now its second
+    # clause was resolved after they agreed, against a register that may have moved.
+    # A name cannot be reallocated; a slot number can, and ours are (F1/F2/F3 all
+    # hold named drivers today).
+    drop_name = None
+    if drop_id:
+        if drop_id.startswith('D'):
+            print(f"Error: cannot propose dropping protected driver {drop_id} (D1-D4 are immutable)", file=sys.stderr)
+            return 2
+        _, _policy = _load_policy_preserving()
+        _target = next((d for d in (_policy.get('free_drivers') or [])
+                        if d.get('id') == drop_id), None)
+        if _target is None:
+            print(f"Error: --drop target {drop_id} not found in free_drivers", file=sys.stderr)
+            print("  A proposal cannot record an intent that is already unresolvable;", file=sys.stderr)
+            print("  `fw bvp` lists the current free drivers and their ids.", file=sys.stderr)
+            return 2
+        drop_name = _target.get('name')
+
     task_id = None
     if '--task' in args:
         tidx = args.index('--task')
@@ -1085,6 +1194,11 @@ def _driver_propose(args):
         'weight': weight,
         'rationale': rationale,
         'drop': drop_id,
+        # T-3066: `drop` stays for readability and for the 100 append-only rows
+        # that predate this field; `drop_name` is the referent the approval is
+        # checked against. Rows with a `drop` but no `drop_name` are legacy and
+        # the approve route refuses them rather than guessing.
+        'drop_name': drop_name,
         'task': task_id,
         'author': f"{actor_prefix}:{os.environ.get('USER', 'unknown')}",
     }
@@ -1424,9 +1538,12 @@ USAGE:
                                   bootstrap policy/value-drivers.yaml from the framework
                                   template (T-2230, T-2229 Slice 1). Idempotent; --force
                                   overwrites. NOT §ACD-gated (first-write, not policy edit).
-  fw bvp driver --add "name" --weight N --rationale "..." [--drop Dn]
-                                  add free driver; --drop required when at cap=9 (M1)
-  fw bvp driver --remove Dn --rationale "..."
+  fw bvp driver --add "name" --weight N --rationale "..." [--drop Fn --drop-name NAME]
+                                  add free driver; a drop is required at cap=9 (M1), and
+                                  --drop-name is required with --drop: ids are recycled
+                                  slots, so the deletion is checked against the NAME and
+                                  refuses if the slot changed hands (T-3066)
+  fw bvp driver --remove Fn --rationale "..."
                                   remove free driver (D1-D4 protected)
   fw bvp estimate-cost T-<id> [--dry-run] [--json]
   fw bvp estimate-cost all|sweep|determinism ...

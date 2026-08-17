@@ -134,7 +134,19 @@ def analyse(path: Path) -> Optional[Dict[str, object]]:
         raw = path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return None
+    return analyse_text(raw, path)
 
+
+def analyse_text(raw: str, path: Optional[Path] = None) -> Optional[Dict[str, object]]:
+    """Same judgement as `analyse`, on content already in hand.
+
+    Split out for `agents/audit/active-task-scan.py`, which exists specifically to
+    read each task file exactly once (T-955 collapsed five bash loops into that one
+    pass). Handing it a path-taking API would have made it either re-read every
+    file or keep its own copy of this rule — it briefly did the latter, and a
+    second definition of "satisfied" is a divergence waiting to happen even while
+    the two agree, because only one of them has tests.
+    """
     status = _frontmatter_value(raw, "status")
     if status not in LIVE_STATUSES:
         return None
@@ -151,14 +163,15 @@ def analyse(path: Path) -> Optional[Dict[str, object]]:
         return None                      # awaiting the operator, correctly
 
     return {
-        "id": _frontmatter_value(raw, "id") or path.stem.split("-")[0],
+        # `path` is optional now, so the id falls back to frontmatter only.
+        "id": _frontmatter_value(raw, "id") or (path.stem.split("-")[0] if path else ""),
         "status": status,
         "workflow_type": _frontmatter_value(raw, "workflow_type"),
         "name": (_frontmatter_value(raw, "name") or "")[:60],
         "agent_acs": len(agent),
         "human_acs": len(human),
         "gated": has_real_verification(raw),
-        "path": str(path),
+        "path": str(path) if path else "",
     }
 
 

@@ -14,13 +14,21 @@ import os
 import re
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
+
+# T-3061: the unclosed-but-satisfied rule lives in lib/task_satisfaction.py — the
+# one definition, and the one with tests (tests/unit/test_task_satisfaction.py).
+# `parents[2]` is the framework root in both layouts: agents/audit/x.py in the
+# framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
+from task_satisfaction import analyse_text  # noqa: E402
 
 
 def scan_active_tasks(tasks_dir, reports_dir):
     active_dir = os.path.join(tasks_dir, "completed/../active").replace("completed/../", "")
     active_dir = os.path.join(tasks_dir, "active")
     if not os.path.isdir(active_dir):
-        return {"compliance": {}, "quality": {}, "research": {}, "ownership": {}, "review_queue": {}, "stats": {}}
+        return {"compliance": {}, "quality": {}, "research": {}, "ownership": {}, "review_queue": {}, "unclosed_satisfied": {}, "stats": {}}
 
     # Results
     compliance_issues = []  # Loop 1
@@ -28,6 +36,7 @@ def scan_active_tasks(tasks_dir, reports_dir):
     research_issues = []    # Loop 5
     ownership_issues = []   # Loop 9
     review_queue = []       # Loop 10
+    unclosed_satisfied = [] # Loop 11 (T-3061)
 
     total = 0
     valid_count = 0
@@ -177,6 +186,23 @@ def scan_active_tasks(tasks_dir, reports_dir):
                 if "docs/reports/" not in content:
                     research_issues.append({"id": task_id, "type": "unreferenced", "artifact": artifact_name})
 
+        # ============ Loop 11: Unclosed-but-satisfied (T-3061, OBS-316/317) ============
+        # The judgement is `lib/task_satisfaction.analyse_text` — imported, not
+        # restated. An earlier pass carried a second copy of the rule here; the two
+        # agreed on all 18 hits at the time, which is exactly why a divergence
+        # would have gone unnoticed later.
+        satisfied = analyse_text(content)
+        if satisfied:
+            unclosed_satisfied.append({
+                "id": task_id,
+                "status": status,
+                "workflow_type": workflow_type,
+                "name": fields.get("name", "").strip('"'),
+                "agent_ac_count": satisfied["agent_acs"],
+                "has_verification": satisfied["gated"],
+                "file": fname,
+            })
+
         # ============ Loop 9: CTL-025 Ownership ============
         if status == "work-completed":
             ownership_issues.append({"id": task_id, "owner": owner, "valid": owner == "human"})
@@ -217,6 +243,11 @@ def scan_active_tasks(tasks_dir, reports_dir):
         },
         "review_queue": {
             "tasks": review_queue,
+        },
+        "unclosed_satisfied": {
+            "tasks": unclosed_satisfied,
+            "count": len(unclosed_satisfied),
+            "no_verification_count": sum(1 for t in unclosed_satisfied if not t["has_verification"]),
         },
         "stats": {
             "total": total,

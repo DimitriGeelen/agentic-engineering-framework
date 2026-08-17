@@ -703,7 +703,17 @@ def bvp_driver_add():
         "--from-watchtower",
     ]
     if drop_id:
-        cmd.extend(["--drop", drop_id])
+        # T-3066: this route is present-tense — the operator is looking at the
+        # live register as they submit — so resolving the id to a name here is
+        # not the late dereference the guard exists for. The pair is still
+        # mandatory, because `--drop` alone is refused by the CLI (deliberately:
+        # an optional identity check is one a caller can forget).
+        drop_name = next(
+            (d.get("name") for d in (_load_policy().get("free_drivers") or [])
+             if d.get("id") == drop_id), None)
+        if drop_name is None:
+            return f"Cannot drop {drop_id}: no free driver holds that id.", 400
+        cmd.extend(["--drop", drop_id, "--drop-name", drop_name])
     try:
         result = subprocess.run(
             cmd, cwd=str(PROJECT_ROOT),
@@ -872,7 +882,21 @@ def bvp_driver_approve():
         "--from-watchtower",
     ]
     if proposal.get("drop"):
-        cmd.extend(["--drop", proposal["drop"]])
+        # T-3066: this is the route the hazard lives on — the proposal was written
+        # at one time and is being applied at another, so the stored slot id is
+        # passed with the stored NAME and the CLI refuses if they have come apart.
+        drop_name = proposal.get("drop_name")
+        if not drop_name:
+            # Legacy row (pre-T-3066): it records a slot but not what was in it,
+            # so what the operator agreed to is no longer recoverable. Refuse
+            # rather than apply an intent we cannot read.
+            return (
+                f"Proposal {proposal_id} predates drop-identity recording (T-3066): it "
+                f"names slot {proposal['drop']} but not which driver was in it, so the "
+                f"deletion cannot be verified. Reject it and re-file the proposal.",
+                409,
+            )
+        cmd.extend(["--drop", proposal["drop"], "--drop-name", drop_name])
     try:
         result = subprocess.run(
             cmd, cwd=str(PROJECT_ROOT),
