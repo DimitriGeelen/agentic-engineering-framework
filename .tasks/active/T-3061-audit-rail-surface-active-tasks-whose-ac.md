@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T07:07:35Z
-last_update: '2026-08-17T12:36:11Z'
+last_update: 2026-08-17T14:52:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,22 +83,22 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 — the audit sees the state.** `fw audit` emits a WARN naming active
+- [x] **A1 — the audit sees the state.** `fw audit` emits a WARN naming active
       tasks where status is `started-work`/`issues`, at least one Agent AC
       exists, every Agent AC is ticked, and no Human AC is left unticked. The
       WARN carries the count and the ids (capped, with an overflow note), plus
       the report path for the full list.
-- [ ] **A2 — it proposes, it never closes.** The rail changes no task status,
+- [x] **A2 — it proposes, it never closes.** The rail changes no task status,
       ticks no box, and its message says so in words. A ticked checkbox is a
       claim by the agent that wrote it, not evidence — CLAUDE.md forbids
       batch-closing on exactly this basis. The mitigation line points at
       `fw task verify` / per-task review, never at a bulk command.
-- [ ] **A3 — the two confidence classes are distinguished.** Tasks with a real
+- [x] **A3 — the two confidence classes are distinguished.** Tasks with a real
       `## Verification` block (something mechanical would gate their close) are
       separated from those without. Six of the seventeen found by T-3060 have an
       empty Verification block; a rail that presents both as equally ready would
       be inviting the unevidenced close it exists to prevent.
-- [ ] **A4 — the detector is not fooled by the template.** The task template
+- [x] **A4 — the detector is not fooled by the template.** The task template
       ships example ACs inside HTML comment blocks — the generic first/second
       criterion pair, plus the worked `[REVIEW]` and `[REVIEWER]` samples.
       Counting those would make every freshly-created task read as having
@@ -110,10 +110,10 @@ bvp_scores_proposed:
       an unticked AC line. Filed as an observation — prose *about* a sentinel is
       not a sentinel, and a gate that cannot tell the difference blocks exactly
       the task that documents it.)
-- [ ] **A5 — WARN, never FAIL.** It does not block a push. This is a hygiene
+- [x] **A5 — WARN, never FAIL.** It does not block a push. This is a hygiene
       signal about work already done, not a defect; failing the push on it would
       punish the person who finished the work.
-- [ ] **A6 — pinned by test, both directions.** A fixture task that qualifies is
+- [x] **A6 — pinned by test, both directions.** A fixture task that qualifies is
       reported; a fixture with one unticked Agent AC, one with an unticked Human
       AC, one with zero ACs, and one whose only unticked boxes are template
       examples are each NOT reported. A mutation removing the detector turns a
@@ -151,6 +151,18 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_task_satisfaction.py tests/unit/test_t3061_audit_wiring.py -q > /tmp/.t3061a.out 2>&1 && grep -q "20 passed" /tmp/.t3061a.out
+# the rail actually fires in the audit, with both confidence classes named
+out=$(bin/fw audit --sections quality 2>&1 || true); echo "$out" | grep -q "every Agent AC ticked and no Human AC outstanding"
+out=$(bin/fw audit --sections quality 2>&1 || true); echo "$out" | grep -q "empty ## Verification block"
+# A5: it warns, it does not fail
+out=$(bin/fw audit --sections quality 2>&1 || true); echo "$out" | grep -q "Fail: 0"
+# A2: mitigation points at per-task verification, never a bulk close
+out=$(bin/fw audit --sections quality 2>&1 || true); echo "$out" | grep -q "Candidates for close, not closures"
+# one definition of the rule: the scan imports it and does not restate it
+grep -q "from task_satisfaction import analyse_text" agents/audit/active-task-scan.py
+! grep -q "def classify_unclosed_satisfied" agents/audit/active-task-scan.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -281,6 +293,28 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-08-17 — one definition of "satisfied", not two that agree
+
+- **Chose:** `agents/audit/active-task-scan.py` imports
+  `lib/task_satisfaction.analyse_text`; the inline copy of the predicate was
+  deleted, and `analyse_text` was split out of `analyse` so the single-pass scan
+  (T-955) does not have to re-read every file to use it.
+- **Why:** the two implementations were found to agree on **18/18** live tasks,
+  which is the argument *for* removing one rather than against. Only
+  `lib/task_satisfaction.py` has tests; it was imported by nothing but its own
+  test, so the tested definition was the dead one and the live one was unpinned.
+  A helper wired nowhere reads exactly like a helper wired everywhere — the same
+  shape as T-2278, and the third instance of it in this session (T-3065, T-3066).
+  Divergence between the copies would have surfaced as a WARN quietly listing the
+  wrong tasks, which nothing prompts anyone to check.
+- **Rejected:** keeping both and adding a test that they agree — that pins the
+  symptom and leaves two places to edit. Also rejected: deleting
+  `lib/task_satisfaction.py` and keeping the inline copy, which would have thrown
+  away 15 tests to save one import line.
+- **Pinned by:** `tests/unit/test_t3061_audit_wiring.py` — the scan's verdict must
+  equal the library's (with a positive control, since two empty sets are equal),
+  and the inline helpers must not reappear.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
