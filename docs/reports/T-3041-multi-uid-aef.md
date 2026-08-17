@@ -337,6 +337,63 @@ entirely on journal mode and `busy_timeout`, neither of which is set in the code
 read. The recall-telemetry file was left unclassified with the note that *"the
 file name is not evidence"*. Those need runtime probes, not more static reading.
 
+## 5e. IW-1 answered — and it invalidates this document's own title
+
+**Operator, 2026-08-16 (verbatim):**
+
+> *"in teh end state some agents might run as root but not per see as
+> "principal" just because ist practical and tehy are isolated with elevated
+> right like foir isntance ring20 amanger"*
+
+Root stays as an **execution context**, not as an identity. Some agents will run
+as root because it is practical and they are isolated with elevated rights —
+ring20-manager being the concrete case.
+
+**This is a stronger answer than either branch the question anticipated.** IW-1
+offered "root stays a principal" or "no agent runs as root". The real answer is
+that **root was never a principal**, and neither is any other uid:
+
+> **uid ≠ principal. Several distinct principals will share uid 0.**
+
+Three consequences, in increasing order of how much they change the work.
+
+**1. Candidate A is now dead categorically, not just empirically.** §5c
+disqualified A on measurement — it loses updates and does not even grant the
+access it trades for. This is the deeper reason: POSIX can only distinguish
+*uids*. If several principals share uid 0, then no permission model built on
+uids and groups can tell them apart **even in principle**. A was answering a
+question the system does not ask. A-minimal survives untouched, because it is not
+an identity mechanism — it is one `chmod` on one socket.
+
+**2. The evidence was already in hand, and I misread it.** §5b cites this
+session's collision — an auto-dispatcher (`origin: systemd:unlabeled-unit`)
+spawning a worker onto T-1719 while a human session was mid-edit on the same
+files — as proof that AEF needs a principal model. **Both of those ran as root.**
+Same uid, two principals, converging write set, nothing able to tell them apart.
+The document is titled "under multiple uids" and the one live instance of the
+failure it describes is *same-uid*. The uid problem is a **symptom of the missing
+identity model, not its cause** — which is what the operator's answer says, and
+what the trigger bug obscured by arriving as a permission error.
+
+**3. IW-7 is promoted from deferred to load-bearing, and its scope is now
+determined.** It was deferred pending IW-1 for scope. IW-1 has now supplied it:
+the principal key **cannot be the uid**, so AEF must carry its own principal
+notion — there is no filesystem answer available to fall back on. Note that
+T-3038 already got this right by accident: it keyed focus isolation on *session*,
+not uid. That is the correct axis, and it is the working template.
+
+**What does not change: the recommendation.** E is append-only, and append-only
+does not care who writes — that property holds across uids, across containers,
+across principals sharing a uid, and across principals we have not invented yet.
+Choosing E over A on §5c's evidence turns out to have been robust to this answer
+arriving afterwards. B does change shape: "per-principal state" must be keyed on
+the principal identity of step 4, **not** on uid — so B now depends on step 4
+rather than running beside it.
+
+**Terminology note.** "multi-uid" in this document's title and throughout §1-§4 is
+a misnomer, kept because the artefact is cited by task and commit history. Read it
+as **multi-principal** everywhere. The uid case is one instance.
+
 ## 5b. The identity question underneath all of this
 
 Every candidate above treats the symptom. The cause is that **AEF has no concept
@@ -398,11 +455,15 @@ lowering it.
    full-tree chgrp, because A-full's value drops sharply once E lands.
 2. **E** — convert the dangerous set (shared + read-modify-write, per the IW-3
    inventory) to append-only + derived view. This is the spine.
-3. **B** — per-principal split for what is genuinely per-principal (focus,
-   counters, budget cache). Small once E has taken the shared aggregates out.
-   T-3038 is the working template.
-4. **Principal model (§5b)** — one identity spanning uid, `sender_id`, `origin`
-   and focus key. Its own slice; the piece most likely to be skipped.
+3. **Principal model (§5b, §5e)** — one identity spanning `sender_id`, `origin`,
+   the T-3038 focus key and the OS uid. **Promoted ahead of B by IW-1's answer**
+   (§5e): since several principals share uid 0, "per-principal" has no meaning
+   until there is a principal key, and it cannot be the uid. T-3038 keyed on
+   *session* rather than uid and is the working template. Still the piece most
+   likely to be skipped — and now the one that blocks the next step if it is.
+4. **B** — per-principal split for what is genuinely per-principal (focus,
+   counters, budget cache). Small once E has taken the shared aggregates out, but
+   it now **depends on step 3** rather than running beside it: it needs the key.
 5. **Rail** — `fw doctor` checks for whatever of A survives, plus an assertion
    that no *shared* aggregate is read-modify-write. Note that E shrinks this rail
    rather than needing it: the more of the dangerous set becomes append-only, the

@@ -3860,3 +3860,18 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-316
+  text: "Task hygiene gap: T-3042 had all 8 ACs ticked, both code legs shipped, and its regression test green — but sat in .tasks/active/ as started-work. Nothing surfaces 'fully-satisfied but unclosed'. A task in this state is invisible twice over: it inflates the 43-concurrent-started-work count that fw work-on warns about, and its learnings/episodic never generate, so the knowledge does not reach recall. Candidate rail: audit WARN for active tasks where every Agent AC is ticked, Verification passes, and no Human AC remains. Cheap to compute, and the 43 in-flight tasks are the corpus to run it against."
+  captured: 2026-08-17T06:58:21Z
+  context_task: T-3042
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-317
+  text: "MEASURED (T-3060, follow-up to OBS-316): 17 of the ~43 in-flight tasks are fully satisfied but unclosed — every Agent AC ticked, no Human AC outstanding, still sitting in .tasks/active/ as started-work. T-3042 was not an isolated slip, it is 1 of 17. IDs: T-801 T-802 T-803 T-1274 T-1542 T-1624 T-2200 T-2202 T-2410 T-2715 T-2745 T-2801 T-2802 T-2871 T-2876 T-2969 T-3043. Six have an empty Verification block (T-1624 T-2200 T-2202 T-2715 T-2876 T-3043) so nothing mechanical would gate their close — lower confidence, needs a read. Report: docs/reports/T-3060-unclosed-satisfied-sweep.md. This changes the argument for the proposed audit rail from one anecdote to a 40% rate, and it compounds: each unclosed task suppresses its own episodic and learnings, so the knowledge never reaches recall, AND it inflates the concurrent-started-work count that fw work-on warns about, making the warning itself noise. Caveat the rail must carry: a ticked box is a claim, not evidence — the rail should surface candidates for close, never close them."
+  captured: 2026-08-17T07:02:50Z
+  context_task: T-3060
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
