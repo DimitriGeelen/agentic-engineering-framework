@@ -35199,3 +35199,21 @@ scan_id: R-7c615e30
 task_id: T-3063
 payload:
   task_file: .tasks/active/T-3063-a-killed-push-and-a-blocked-push-are-the.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T12:04:19Z'
+scan_id: R-e8104d9f
+task_id: T-3065
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T12:04:19Z'
+scan_id: R-e8104d9f
+task_id: T-3065
+payload:
+  task_file: .tasks/active/T-3065-watchtower-session-cookie-is-named-for-f.md

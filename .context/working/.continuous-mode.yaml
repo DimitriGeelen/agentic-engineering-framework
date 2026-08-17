@@ -2,13 +2,13 @@ enabled: true
 max_iterations: 10
 tier_ceiling: 1
 expires_after_seconds: 86400
-current_iteration: 2
-last_resumed_at: '2026-08-17T07:35:56Z'
+current_iteration: 1
+last_resumed_at: '2026-08-17T10:52:05Z'
 last_directive_seen: 'arc-012 continuous-run is BUILD-COMPLETE. The minimum-viable
   self-driving loop
 
   has shipped and is live on master: the budget gauge (stdin transcript + worktree
 
   dir resolution), budget-critical -> auto'
-last_terminated_reason: expires_at 2026-06-17T00:00:00Z passed (now 2026-08-17T07:35:56Z)
-last_source: startup
+last_terminated_reason: expires_at 2026-06-17T00:00:00Z passed (now 2026-08-17T10:52:05Z)
+last_source: compact

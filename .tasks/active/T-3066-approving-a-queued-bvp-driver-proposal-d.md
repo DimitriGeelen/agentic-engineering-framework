@@ -1,16 +1,15 @@
 ---
-id: T-3065
-name: "Watchtower session cookie is named for FW_PORT, not the port it is actually
-  serving"
+id: T-3066
+name: "Approving a queued BVP driver proposal drops whichever driver holds that id today, not the one proposed"
 description: >
-  Watchtower session cookie is named for FW_PORT, not the port it is actually serving
+  Approving a queued BVP driver proposal drops whichever driver holds that id today, not the one proposed
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
-components: [tests/unit/test_session_cookie_port.py, web/app.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-17T11:55:05Z
-last_update: 2026-08-17T12:04:12Z
-date_finished: 2026-08-17T12:04:12Z
+created: 2026-08-17T12:04:59Z
+last_update: 2026-08-17T12:04:59Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,124 +34,107 @@ date_finished: 2026-08-17T12:04:12Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-17T12:00:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-17T12:00:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3065: Watchtower session cookie is named for FW_PORT, not the port it is actually serving
+# T-3066: Approving a queued BVP driver proposal drops whichever driver holds that id today, not the one proposed
 
 ## Context
 
 Reported upstream by the 832-Workflow-designer agent (thread
-`aef-upstream-findings-2026-08-16` on `agent-chat-arc`, item 3), verified
-independently against our own source before filing.
+`aef-upstream-findings-2026-08-16` on `agent-chat-arc`, item 1 — the one item they
+said they would not defer). Verified against our own source and our own register
+before filing; what follows separates what is true of the code from what is true
+of our data, because those differ.
 
-`web/app.py:89` names the session cookie after the port:
+**The code path.** A driver proposal is stored as a row in
+`.context/bvp-driver-proposals.jsonl` carrying a literal `drop:` id. On approval,
+`web/blueprints/bvp.py:874-875` passes that stored id through verbatim:
 
 ```python
-app.config["SESSION_COOKIE_NAME"] = f"fw_session_{Config.PORT}"
+if proposal.get("drop"):
+    cmd.extend(["--drop", proposal["drop"]])
 ```
 
-`Config.PORT` is `int(os.environ.get("FW_PORT", "3000"))` — a class attribute
-evaluated once at import (`web/config.py:80`). The `--port` flag is parsed into a
-local (`web/app.py:476`, `port = args.port`) and handed to `run(...)` only. It is
-never written back to `Config.PORT`. So an instance started as
-`fw serve --port 3012` with no `FW_PORT` in the environment **serves on 3012 and
-names its cookie `fw_session_3000`**.
+`_driver_add` then resolves it against the register **as it stands at approval
+time** (`lib/bvp.sh:963-970`): it filters `free_drivers` for an entry whose `id`
+equals `drop_id` and deletes it. Meanwhile ids are allocated to the lowest free
+slot (`lib/bvp.sh:955-961`):
 
-Two instances on one host then share a cookie slot, which is the exact collision
-the T-2278 comment above the line says this scoping prevents. Each app signs with
-its own `.fw-secret-key`, so neither can decode the other's cookie: the session
-reads empty, `_csrf_token` is `None`, and **every state-changing POST returns 403
-"Session expired"** — on a freshly loaded page, with no restart. 832 measured this
-between their `:3012` and a `:3000` instance; both emitted `fw_session_3000`.
+```python
+next_n = 1
+while f'F{next_n}' in free_ids:
+    next_n += 1
+new_id = f'F{next_n}'
+```
 
-Two things make this worse than an ordinary off-by-one:
+So `F1` is not a name, it is a **slot**, and slots are recycled the moment they are
+vacated. A proposal written when `F1` meant one driver, approved after `F1` was
+reallocated, deletes a driver nobody proposed deleting. There is no record in the
+proposal of what it *meant* to drop — only which slot that thing occupied at the
+time. 832 measured their register recycling `F1` and `F3` within minutes, with a
+pending proposal still holding `drop=F1`.
 
-1. **It presents as expiry, not as collision.** "Session expired" sends the
-   operator to reload and re-auth — the two actions that cannot help, because
-   nothing expired.
-2. **The guard vouches for itself.** Lines 82-88 are six lines of comment
-   asserting that per-port scoping is in place. In review, and in its own
-   docstring, the protection reads as present. This is the §Watchtower Port
-   failure class (T-1376, T-2732) on a new surface: a literal `3000` standing in
-   for a port that was resolved elsewhere. Our own CLAUDE.md rule against
-   hard-coding `:3000` exists because that literal was written 371 times across
-   277 tasks; the resolution order it mandates (triple-file → `fw config get
-   PORT` → 3000) is precisely what `Config.PORT` skips.
+**Our data, stated separately.** No pending proposal on this register carries a
+non-null `drop` — 0 of 95. So the hazard is not currently reachable here, and I am
+not going to describe it as if it were.
 
-Scope fence: this task fixes the cookie name only. 832's items 1, 2, 4, 5 and 6
-are separate defects and get their own tasks (§Task Sizing: one bug = one task).
+What makes it reachable is the cap. `policy/value-drivers.yaml` holds 5 free
+drivers (`F-RECALL`, `F-AUTONOMY`, `F3`, `F1`, `F2`) plus 4 protected = 9, and
+`lib/bvp.sh:950-952` is `if total >= 9 and not drop_id: error`. **We are exactly at
+the cap, which means the next proposal that gets approved is required to carry a
+drop.** The condition is one proposal away, not hypothetical. And three of our five
+free drivers already sit on recyclable numeric slots (`F1` = V_CONTEXT_FABRIC,
+`F2` = V_COMPONENT_FABRIC, `F3` = V_PROMPT_QUALITY), so the recycling is not a
+theoretical property of the allocator either — it is how our current register is
+addressed.
+
+**Why this class matters more than its blast radius.** The driver register is a
+Sovereignty boundary: `free_drivers` mutates only through human approval, and the
+whole point of `fw bvp driver propose` → operator review is that the human sees
+what they are agreeing to. Here the human agrees to a sentence ("add V_X, drop
+F1") whose second clause is resolved *after* they agree, against state that may
+have changed since it was written. The approval UI shows them the proposal; the
+register performs something else. That is not a scoring bug — it is consent
+applied to the wrong object.
+
+**Scope fence.** This task fixes the late-dereference only: an approval whose
+`drop:` referent no longer means what it meant at propose time must fail safe
+rather than delete. Two sibling defects found in the same read are deliberately
+NOT in scope (§Task Sizing: one bug = one task) and are named here so the
+exclusion is not silent:
+
+- `_driver_add` has **no duplicate-name guard** — nothing stops a second
+  `free_drivers` entry carrying an existing `name`. Confirmed by inspection at
+  `lib/bvp.sh:972-975`.
+- `.context/bvp-driver-proposals.jsonl` holds **92 test-residue rows** of 95
+  pending (`V_TEST_DRIVER`, `V_RACEY`, `V_AGENT_PROPOSED`, `V_TASK_REF`, each
+  repeated ~19×) — a test suite appending to production state, which also buries
+  any real proposal in the operator's queue.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] The session cookie name is derived from the port the instance is actually
-      serving on, so `fw serve --port N` (with no `FW_PORT` set) emits
-      `fw_session_N` and not `fw_session_3000`.
-- [x] `FW_PORT` and the default path are unchanged: with `FW_PORT=3007` and no
-      flag the name is `fw_session_3007`; with neither, `fw_session_3000`.
-- [x] A regression test pins the `--port` case specifically — the one the flag
-      parser silently dropped — and fails against the pre-fix code (mutation
-      check recorded in Updates, per L-616: a harness that passes on unfixed code
-      is indistinguishable from no test).
-- [x] The self-vouching comment at `web/app.py:82-88` is corrected: it must not
-      assert per-port scoping in terms that were false for the `--port` path.
+- [ ] A proposal records what it intends to drop in a form that cannot be
+      reallocated — not a bare slot id. Existing rows carrying only `drop:` remain
+      readable (the file is append-only history; 100 rows already exist).
+- [ ] Approving a proposal whose `drop:` referent no longer denotes the same
+      driver **refuses and changes nothing** — no driver deleted, no driver added,
+      non-zero exit, and a message naming both what was proposed and what that id
+      means now. Fail-safe, not best-effort: a partial apply here is a silently
+      corrupted Sovereignty boundary.
+- [ ] The refusal is reachable from the Watchtower approve route, not only from
+      the CLI — that route is the one an operator actually clicks
+      (`web/blueprints/bvp.py:874`), and a guard wired to the CLI leg alone
+      reproduces the producer/consumer split this session already fixed once in
+      T-3065 (L-399).
+- [ ] Approving a proposal whose referent is unchanged still works, including the
+      at-cap add-one-drop-one path — the guard must not make the cap unusable.
+- [ ] A regression test reproduces the recycle sequence end-to-end (propose with a
+      drop → that driver is removed by another route → the slot is reallocated to a
+      different driver → approve) and fails against the current code. Mutation
+      result recorded in Updates (L-616).
 
 ### Human
-
-- [ ] [REVIEW] Watchtower's buttons still work in your actual browser after a
-      restart, and you were not silently logged out of the instance you use.
-
-  Renaming a cookie slot is the one change that cannot be fully proven from the
-  command line: `curl` gets a fresh empty jar every time, so it can confirm which
-  name the server *offers* but never what your existing browser session does with
-  it. The live `:3000` instance keeps the name it already had (`FW_PORT` defaults
-  to 3000, so nothing moved for it) — this AC is here to confirm that reasoning
-  against a real browser rather than against my own argument.
-
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` — open
-     that URL in the browser you normally use for Watchtower.
-  2. Click any button that changes state — an Approve on `/approvals`, or a
-     driver action on `/arcs/<slug>`.
-  3. If you also run a second instance started with `fw serve --port N`, open that
-     one too and click a state-changing button there.
-
-  **Expected:** the action completes. No "Session expired". No 403 toast. You are
-  not asked to re-authenticate on the instance you were already using.
-
-  **If not:** note which instance (port), whether you had an old tab open, and
-  whether a hard reload clears it — a one-time logout on a `--port` instance is
-  the intended consequence of the fix (its cookie name genuinely changed);
-  a persistent 403 on `:3000` is not, and means reopening this task.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -184,13 +166,6 @@ are separate defects and get their own tasks (§Task Sizing: one bug = one task)
 -->
 
 ## Verification
-
-python3 -m pytest tests/unit/test_session_cookie_port.py -q > /tmp/.t3065 2>&1 && grep -q "6 passed" /tmp/.t3065
-# The naming rule must have exactly one definition. A second f-string reintroducing
-# Config.PORT is how this regresses, and it would read as correct in isolation.
-test "$(grep -c 'f"fw_session_{' web/app.py)" = "1"
-# The join main() owns: flag resolved, THEN cookie re-scoped.
-grep -q 'apply_session_cookie_name(app, port)' web/app.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -253,57 +228,6 @@ grep -q 'apply_session_cookie_name(app, port)' web/app.py
 
 ## RCA
 
-**Symptom:** every state-changing POST in Watchtower returns 403 "Session
-expired", on a freshly loaded page, with no restart — whenever a second instance
-runs on the same host. Measured by 832 between their `:3012` and a `:3000`
-instance; both emitted `fw_session_3000`.
-
-**Root cause:** `web/app.py` named the cookie from `Config.PORT`, which is
-`FW_PORT`-or-`3000` read once at import. The `--port` flag is parsed into a local
-and passed to `run()`; it was never written back. So the name tracked the
-*configured* port and the socket tracked the *requested* one, and the two diverge
-for every flag-started instance.
-
-**Why structurally allowed:** three things compounded.
-
-1. **T-2278 shipped a correct helper for one of its two callers.** The
-   environment path was right; the flag path had no line at all. This is the
-   producer/consumer split of L-399 in miniature — the guard existed, the second
-   entry point did not honour it.
-2. **The comment vouched for the guard.** Six lines above the defect assert that
-   per-port scoping allocates a distinct slot per instance. Anyone reviewing the
-   line reads the claim, not the coupling. `fw_session_{Config.PORT}` *looks*
-   port-scoped; that it is scoped to the wrong port is invisible without chasing
-   `Config.PORT` to `web/config.py:80`.
-3. **The failure names the wrong cause.** "Session expired" routes the operator
-   to reload and re-authenticate — the two responses that cannot work, because
-   nothing expired. A collision that presents as expiry cannot be diagnosed from
-   its own message, which is why it took a second project on the same host to
-   find it rather than us.
-
-The same shape is already written down: §Watchtower Port exists because `:3000`
-was hard-coded 371 times across 277 tasks, and its whole point is that the port
-must be *resolved*, never assumed. `Config.PORT` is that assumption wearing a
-config lookup — it consults `FW_PORT` and then stops, so it is authoritative about
-what was configured and silent about what is running. Both T-1376's false greens
-and this defect come from a value that names a port without having asked which
-port is live.
-
-**Prevention:** `tests/unit/test_session_cookie_port.py`, six tests. Five drive
-start-up in a clean subprocess (load-bearing: `Config.PORT` and the module-level
-`app` are both one-shot per interpreter, so an in-process test would keep passing
-after the coupling returned). The sixth asserts the join in `main()` — the leg the
-other five structurally cannot see, since they mirror `main()`'s ordering rather
-than running it. Mutation-checked both ways: reverting the helper to `Config.PORT`
-killed 3 tests including both flag cases; deleting `main()`'s call killed exactly
-the wiring test. Verification also pins that the naming rule has exactly one
-definition, since a second `f"fw_session_{...}"` is how this comes back.
-
-What this does *not* prevent: other values derived from `Config.PORT` drifting the
-same way. Today there are only two consumers (this one and the flag's own
-default), so the class is closed by inspection rather than by a rail — noted here
-because that is true now and may not stay true.
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -343,37 +267,6 @@ because that is true now and may not stay true.
 -->
 
 ## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** The defect is confirmed at the wire, the fix is confirmed at the
-wire, and the test that guards it has been shown to fail against the broken code
-in both directions it can break. What remains is the one thing a command line
-cannot reach — what a real browser with an existing cookie jar does — which is why
-there is a Human AC rather than a fourth verification line. The blast radius is
-small and bounded by inspection: `Config.PORT` has exactly two consumers in the
-whole tree, and the other one is the flag's own default, where reading the
-configured port is correct.
-
-**Evidence:**
-- Wire-level, pre-condition: `Config.PORT` = `FW_PORT`-or-3000 at import
-  (`web/config.py:80`); `--port` reached only `run()` (`web/app.py:476`).
-- Wire-level, post-fix: an instance serving `:3097` with `FW_PORT` unset emits
-  `Set-Cookie: fw_session_3097`. Before the fix that byte string was
-  `fw_session_3000` — the same slot as the live `:3000` instance.
-- `tests/unit/test_session_cookie_port.py` — 6 passed.
-- Mutation M1 (helper reverted to `Config.PORT`): 3 failed, including both
-  flag-specific cases. Mutation M2 (`main()`'s call deleted — a correct helper
-  wired nowhere, which is precisely the T-2278 shape): 1 failed, exactly the
-  wiring test. Neither mutant survived, and each was killed by the test written
-  for it.
-- Live `:3000` instance verified still serving throughout; the throwaway instance
-  was started with a direct `python3` invocation specifically so it could not
-  write the Watchtower triple-file and re-point later port lookups at itself.
-- Independent origin: reported by 832-Workflow-designer as item 3 of six upstream
-  findings, then re-verified here against our own source before anything was
-  changed. Their measurement (two instances, both `fw_session_3000`) and ours
-  agree.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -425,19 +318,7 @@ configured port is correct.
 
 ## Updates
 
-### 2026-08-17T11:55:05Z — task-created [task-create-agent]
+### 2026-08-17T12:04:59Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3065-watchtower-session-cookie-is-named-for-f.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3066-approving-a-queued-bvp-driver-proposal-d.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-e8104d9f
-- **Timestamp:** 2026-08-17T12:04:19Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-08-17T12:04:12Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
