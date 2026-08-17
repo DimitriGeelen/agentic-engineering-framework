@@ -197,7 +197,7 @@ Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance).
 | Context | `agents/context/` | Manage memory fabric | `fw context init` |
 | Healing | `agents/healing/` | Error recovery | `fw healing diagnose T-XXX` |
 | Resume | `agents/resume/` | Post-compaction recovery | `fw resume status` |
-| Observe | `agents/observe/` | Capture anomalies | `fw observe "description"` |
+| Observe | `agents/observe/` | Capture anomalies | `fw note "description"` |
 | Dispatch | `agents/dispatch/` | Sub-agent prompt templates | Read templates before dispatching |
 
 ## Session Protocols

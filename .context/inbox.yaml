@@ -3875,3 +3875,38 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-318
+  text: "G-020 readiness gate greps for the template placeholder string anywhere in the task file, not in an unticked AC line. Consequence: a task whose ACs legitimately QUOTE the placeholder — e.g. an AC specifying that a detector must ignore template example ACs — is refused as having placeholder ACs, with six real ACs written above the quote. Hit live on T-3061, whose whole subject is that exact class of false positive. Prose about a sentinel is not a sentinel. Fix direction: scope the match to lines that are themselves unticked AC checkboxes inside the Acceptance Criteria section, and exclude HTML comment blocks — the same scoping T-3061's own detector needs, so one predicate could serve both. Low severity (reword and move on) but it is a gate that is hardest to satisfy for the task most qualified to fix it."
+  captured: 2026-08-17T07:23:40Z
+  context_task: T-3061
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-319
+  text: "fw context add-learning emits invalid YAML for quoted/multiline input: agents/context/lib/learning.sh lines 72 and 84 do 'print \"  learning: \\\"\" learning \"\\\"\"' with no escaping — a learning string containing a double-quote or literal newline breaks the emitted YAML. Reported via recovered T-3040 peer message (ring20-manager, filed as G-121/T-919 on their side, framework:pickup offset 10, 2026-06-05). Still live as of 2026-08-17 — grep confirms unescaped print at those two lines."
+  captured: 2026-08-17T07:53:29Z
+  context_task: T-3040
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-320
+  text: "fw_hook_crash_trap (lib/config.sh:142) misclassifies a deliberate usage-error exit as a hook CRASH: the trap fires whenever exit code is not 0 and not 2, so a hook that uses exit 1 as a usage-error convention gets logged as 'HOOK CRASHED' in .context/working/.hook-crashes.log even though it behaved as designed. Reported via recovered T-3040 peer message (ring20-manager, filed as G-117/T-920 on their side, framework:pickup offset 11, 2026-06-05). Still live as of 2026-08-17."
+  captured: 2026-08-17T07:53:30Z
+  context_task: T-3040
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-321
+  text: "fw work-on has no sibling-check: it does not look for an existing active task with overlapping scope before creating a new one, so autonomous/cron callers that re-run the same trigger can spawn duplicate tasks for the same underlying work. Reported via recovered T-3040 peer message (ring20-manager, filed as G-118/T-920 on their side, framework:pickup offset 12, 2026-06-05; their concrete instance: T-775 supersession cleanup). Still open as of 2026-08-17 — no sibling/overlap check found in bin/fw or agents/task-create/."
+  captured: 2026-08-17T07:53:30Z
+  context_task: T-3040
+  tags: [enhancement]
+  status: pending
+  promoted_to: null
+- id: OBS-322
+  text: "bin/migrate-horizon-null-completed.sh cannot run in a vendored project: FRAMEWORK_ROOT defaults to the script's own parent dir and PROJECT_ROOT defaults to FRAMEWORK_ROOT (lines 23-24), so in vendored mode (FRAMEWORK_ROOT=<project>/.agentic-framework) it walks .agentic-framework/.tasks/completed instead of the consumer's own .tasks/completed — silently a no-op on the corpus it's meant to migrate. Sibling scripts hook-enable.sh and integrate-go-live.sh were already fixed for a DIFFERENT bug (exec-bit, OBS-090/T-2498) but this PROJECT_ROOT default was not part of that fix. Reported via recovered T-3040 peer message (ring20-manager, framework:pickup offset 16, 2026-08-10). Still live as of 2026-08-17 — grep confirms the same fallback."
+  captured: 2026-08-17T07:53:30Z
+  context_task: T-3040
+  tags: [bug]
+  status: pending
+  promoted_to: null

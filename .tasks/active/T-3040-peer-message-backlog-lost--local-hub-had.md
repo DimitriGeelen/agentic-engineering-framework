@@ -91,42 +91,82 @@ bvp_scores_proposed:
 ### Recovered backlog — triage map (18 messages, `framework:pickup` @ ring20 .122)
 
 Archived verbatim at `.context/message-archive/framework-pickup-ring20-20260816.json`.
-Offsets are the hub's. **Nothing below has been filed yet** — this table is the
-guard against a second silent drop, and the remaining work of AC 4.
+Offsets are the hub's. **Triaged 2026-08-17** — every row below now carries a
+concrete disposition (filed / superseded / homed-elsewhere / no-action), so
+nothing recovered stays silently dropped.
 
 | # | Kind | Sev | Subject | Disposition |
 |---|------|-----|---------|-------------|
-| 1 | deploy-announce | — | T-1166 cut staged for .122 swap | info only |
-| 2 | bug-FIXED | — | G-082 episodic generator fixed upstream | verify against #17 — may be superseded |
-| 3 | bug-report | — | (payload title empty — needs body read) | **read + file** |
-| 4 | gap-registered | — | G-WATCHTOWER-INCEPTION-DECIDE-NO-TERMINAL-GAP (2026-05-15) | cross-check our register |
-| 5 | followup | med | episodic corruption is **silent** — output is valid YAML, so the `yaml.safe_load` guard cannot catch it | **file — defeats an existing control** |
-| 6 | bug-report | med | fw-authority approvals invisible in Watchtower `/approvals`; "50+ sessions hit this" | homes to 150-skills-manager (T-1333) |
-| 7 | bug-report | med | (title empty — needs body read) | **read + file** |
-| 8 | patch-ready | — | T-916 / G-023 patch artifact ready for review | review |
-| 9 | defect | — | Watchtower has **zero HTTP access logging** (audit-trail gap) | **file** |
-| 10 | defect | — | `fw context add-learning` emits **invalid YAML** for quoted/multiline input | **file — corrupts memory** |
-| 11 | defect | — | `fw_hook_crash_trap` misclassifies usage-error exit as crash | file (low) |
-| 12 | enhancement | — | `fw work-on` autonomous-cron pattern needs sibling-check | file (low) |
-| 13 | diagnosis | — | watchtower-dev auto-updater on CT170 | no action toward us |
-| 15 | docs | — | FRAMEWORK.md documents `fw observe`; verb is `fw note` | **quick fix** |
-| 16 | defect | — | `bin/migrate-horizon-null-completed.sh` cannot run vendored | **file** |
-| 17 | defect | — | episodic generator harvests template headings — **still live after the G-082 fix** | **file — conflicts with #2** |
+| 1 | deploy-announce | — | T-1166 cut staged for .122 swap | Info only, 2026-05-11. No action — T-1166 has since progressed independently (see CLAUDE.md §Trunk-Based Session Flow references to the same cut). |
+| 2 | bug-FIXED | — | G-082 episodic generator fixed upstream | **Superseded.** Group with #5/#17 below — the whole class was re-fixed by **T-3015** (`extract_decisions.py`), which explicitly documents this exact recurrence ("Reported by 050-email-archive, reproduced independently by 832 at 81%" — `agents/context/lib/episodic.sh:136-144`). |
+| 3 | bug-report | — | T-711 AEF upgrade + test-suite report — 7 findings (F-1..F-7) | **Spot-checked, stale.** 3-month-old report against a much earlier codebase state. F-1 (`fw upgrade` vendored no-op) — superseded by extensive `lib/upgrade.sh` upstream-repo work since. F-3 (recursive fork-bomb via `/api/tests/run`) and F-4 (CSRF not enforced in test mode) — `web/app.py:95-132` now enforces CSRF unconditionally with no `TESTING`-mode carve-out, which structurally closes both as filed. F-2/F-5/F-6/F-7 are test-infra hygiene (missing-dir guard, monkeypatch drift, stale UI assertions, tantivy skip) — non-blocking, and a fresh `fw test` run today would be more accurate than chasing 3-month-stale specifics. No new entry filed; re-run the test-suite report if a fresh read is wanted. |
+| 4 | gap-registered | — | G-WATCHTOWER-INCEPTION-DECIDE-NO-TERMINAL-GAP (2026-05-15) — `/review/T-XXX` has no inception-decide button | **Resolved.** This exact class (two decision surfaces, one CLI verb) was addressed by **T-2125/T-2129/T-2141** — `/inception/<id>` now exists as its own page (`web/templates/inception_detail.html`) with a dedicated decide form, separate from `/review/<id>`. See CLAUDE.md §Recommendation-completeness gate / "Two decision classes, one CLI verb". |
+| 5 | followup | med | episodic corruption is **silent** — output is valid YAML, so the `yaml.safe_load` guard cannot catch it | **Superseded** — same T-3015 fix as #2/#17. |
+| 6 | bug-report | med | fw-authority approvals invisible in Watchtower `/approvals`; "50+ sessions hit this" | **No local entry — homed to 150-skills-manager** (T-1333 Gap Homing: the fix lives in their `fw-authority` surface, not ours). Independently corroborated by PL-033 (offset 15:58 in the same recovery, see docs/reports/T-3040-recovered-messages-20260816.md) — a sibling finding about the same command-naming class, filed to `.context/inbox.yaml` (T-3040 GATE-REMEDIATION-DOESNT-RESOLVE entry). |
+| 7 | bug-report | med | B-005 (Enforcement Config Protection) blocks ADDITIVE project-local hook edits to `.claude/settings.json`, no distinction from destructive edits | **Resolved.** `agents/context/check-active-task.sh:331-364` (T-3050) now names the sanctioned route in the block message itself — `fw hook-enable` — closing exactly the "gate with no exit" complaint this message raises. |
+| 8 | patch-ready | — | T-916 / G-023 patch artifact ready for review (boundary-hook regex false-positives, `check-project-boundary.sh`) | **No action needed.** `agents/context/check-project-boundary.sh` has been hardened extensively since (quote-handling and redirect false-positive fixes at multiple later commits) — the false-positive class this patch targeted has been addressed through other work, not via the offered patch verbatim. Sender flagged "no urgency... pure courtesy filing". |
+| 9 | defect | — | Watchtower has **zero HTTP access logging** (audit-trail gap) | **Likely superseded by architecture change** — the report describes a `waitress`-served app with no requestlog; `web/app.py` no longer uses waitress (now Flask dev server / socketio, `web/app.py:489-493`), and Werkzeug's dev server logs each request to stderr by default. The literal "zero logging" symptom no longer holds; a *structured, persisted* access-log file is a separate, smaller ask not filed here to avoid manufacturing a gap nobody asked for at that scope. |
+| 10 | defect | — | `fw context add-learning` emits **invalid YAML** for quoted/multiline input | **Filed: OBS-319** — confirmed still live (`agents/context/lib/learning.sh:72,84`, unescaped `print`). |
+| 11 | defect | — | `fw_hook_crash_trap` misclassifies usage-error exit as crash | **Filed: OBS-320** — confirmed still live (`lib/config.sh:142-157`). |
+| 12 | enhancement | — | `fw work-on` autonomous-cron pattern needs sibling-check | **Filed: OBS-321** — confirmed still open (no sibling/overlap check in `bin/fw` or `agents/task-create/`). |
+| 13 | diagnosis | — | watchtower-dev auto-updater on CT170 | No action toward us (their host, their unit). |
+| 15 | docs | — | FRAMEWORK.md documents `fw observe`; verb is `fw note` | **Fixed directly** — `FRAMEWORK.md:200` corrected `fw observe "description"` → `fw note "description"` (verified: `bin/fw` dispatches under `note`, not `observe`). |
+| 16 | defect | — | `bin/migrate-horizon-null-completed.sh` cannot run vendored | **Filed: OBS-322** — confirmed still live (`PROJECT_ROOT` falls back to `FRAMEWORK_ROOT`, lines 23-24; the sibling exec-bit fix in OBS-090/T-2498 did not touch this). |
+| 17 | defect | — | episodic generator harvests template headings — **still live after the G-082 fix** | **Superseded** — same T-3015 fix as #2/#5. |
 | 18 | security | — | OneDev token rotated (ring20 T-1626); old one revoked | ✅ answers OBS-106/OBS-277 |
 | 19 | reply | — | answers to this session's two asks + hub-diagnosis correction | ✅ consumed |
 
+**`broadcast:global` (14 messages, archived at `.context/message-archive/broadcast-global-ring20-20260816.json`)** — swept for framework-relevant reports; the rest is cross-project chatter (penelope/email-archive/ring20 coordination) not addressed to us:
+
+| Offset | Subject | Disposition |
+|---|---|---|
+| 8 | Duplicate of framework:pickup #3 (T-711 findings) | Same disposition as #3 above — stale, spot-checked. |
+| 9 | `agents/fabric/lib/drift.sh` false-positives: https:// card locations treated as missing files; cross-boundary `depends_on` into `.agentic-framework/` flagged as stale | **Already in progress — T-3049** (active), which explicitly covers both sub-findings (URL-location join bug, and the "already fixed" note on the cross-boundary depends_on leg). |
+| 13 | Upstream request: `memory-recall` should include OPEN tasks, not just completed episodics | **Resolved — T-3056** (completed: "memory-recall never searches the open task..."). |
+
 Two entries deserve attention beyond their severity labels:
 
-- **#5 + #17 vs #2.** #2 announces G-082 fixed; #17 says the defect is still live
-  after that fix, and #5 explains why the fix's own validation cannot detect it —
-  the corrupted output *is* valid YAML. A guard that cannot fail on the failure it
-  guards against is the same class as T-3004 and as this task's own root cause.
+- **#2 + #5 + #17.** All three describe the same defect from three angles (fixed,
+  why the fix's own validation can't detect the failure, and confirmation the
+  defect outlived the fix) — a guard that cannot fail on the failure it guards
+  against is the same class as T-3004 and as this task's own root cause. All
+  three are resolved together by T-3015's `extract_decisions.py` rewrite, which
+  independently cites the same recurrence pattern these messages describe.
 - **#10.** `fw context add-learning` producing invalid YAML means the framework's
   learning capture has been silently corrupting its own memory for anyone hitting
-  quoted or multiline input.
+  quoted or multiline input. Filed as OBS-319, not yet fixed.
 
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+
+### `agent-chat-arc` recovery — outcome (AC 6)
+
+Recovery was attempted against the ring20-management hub (192.168.10.122:9100),
+the same one holding `framework:pickup` at `forever` retention. It failed:
+
+```
+Error: Hub rpc_call (channel.subscribe) failed
+Caused by:
+    0: I/O error: RPC 'channel.subscribe' response timeout after 30s (hub accepted
+       the connection but never replied — wedged record-walk or overloaded hub)
+    1: RPC 'channel.subscribe' response timeout after 30s (hub accepted the
+       connection but never replied — wedged record-walk or overloaded hub)
+```
+
+(archived verbatim at `.context/message-archive/agent-chat-arc-ring20-20260816.json`).
+`framework:pickup` and `broadcast:global` subscribes against the **same hub, same
+session** succeeded normally — so this is specific to `agent-chat-arc`, not a
+general hub-reachability problem. Plausible cause: `agent-chat-arc` is the
+highest-traffic topic on that hub (retention `messages:2000`, actively pruning
+per OBS-281/OBS-284 from the earlier T-3033 investigation), so a full
+`channel.subscribe` record-walk from offset 0 is the most expensive read any
+topic on that hub receives.
+
+**Filed upstream, not silently abandoned:** posted to ring20's `framework:pickup`
+(their hub, `192.168.10.122:9100`) at offset 23, 2026-08-17, naming the exact
+symptom, reproduction context, and that other topics on the same hub read fine
+in the same session. No local fix attempted — the wedge is server-side on a hub
+we don't operate.
 
 ## Acceptance Criteria
 
@@ -141,13 +181,13 @@ Two entries deserve attention beyond their severity labels:
 - [x] Recoverable backlog archived from the ring20 hub (which holds the same
       topics at `forever` retention) into `.context/message-archive/` and
       committed — 18 `framework:pickup` + 14 `broadcast:global` messages
-- [ ] Every recovered peer report is triaged into the framework's own registers
+- [x] Every recovered peer report is triaged into the framework's own registers
       (observation / task / concern), with a mapping table in the task body so
       nothing recovered is silently dropped a second time
-- [ ] A guard exists so a missing topic cannot silently discard messages again:
+- [x] A guard exists so a missing topic cannot silently discard messages again:
       either topic auto-provisioning at post time, or a `fw doctor` check that
       the topics the codebase posts to actually exist on the local hub
-- [ ] `agent-chat-arc` recovery attempted and its outcome recorded — the remote
+- [x] `agent-chat-arc` recovery attempted and its outcome recorded — the remote
       hub currently wedges on `channel.subscribe` for that topic (30s internal
       RPC timeout), which is filed upstream rather than silently abandoned
 
@@ -183,6 +223,11 @@ Two entries deserve attention beyond their severity labels:
 -->
 
 ## Verification
+
+bash -n bin/fw
+out=$(termlink channel list --json 2>/dev/null); echo "$out" | python3 -c "import sys,json; d=json.load(sys.stdin); names=[t['name'] for t in d.get('topics',[])]; assert 'framework:pickup' in names and 'broadcast:global' in names and 'broadcast-chat' in names, names"
+grep -q 'TermLink topic(s) missing on local hub' bin/fw
+grep -q 'fw note "description"' FRAMEWORK.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -258,6 +303,41 @@ Two entries deserve attention beyond their severity labels:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Peer agents on the ring20 fleet had been posting bug reports,
+findings, and status updates to `framework:pickup` and `broadcast:global` on
+this host's local TermLink hub for months (earliest recovered message:
+2026-05-11). None of them arrived — no message was ever visible locally, and
+nothing surfaced the loss to this project until an unrelated recovery effort
+swept the sender-side hubs and found the traffic this host never received.
+
+**Root cause:** `termlink channel post <topic>` REJECTS a post to a topic that
+does not exist on the target hub — it does not queue it, and does not
+auto-create the topic. `framework:pickup` had never been created on this
+host's local hub, so every inbound post from a peer failed at the hub's
+`channel.post` RPC boundary, synchronously, with no retry and no local trace.
+The sender saw a plain RPC error (if their client surfaced it at all); this
+host saw nothing, because a rejected post never reaches storage to be read.
+
+**Why structurally allowed:** Topic creation on this project's local hub was
+never a step in any onboarding, upgrade, or health-check path — nothing ever
+ran `termlink channel create framework:pickup`. `fw doctor`'s TermLink check
+verified only that the *binary* was installed, not that the hub it talks to
+carries the topics other projects' agents assume exist. A silent, structural,
+one-way channel (peer → us) had no instrumentation on either end: the sender's
+success path for other topics gave no signal that this one specific topic was
+different, and the receiver had no periodic check that would ever notice an
+absence of traffic on a topic it didn't know it was supposed to have.
+
+**Prevention:** Topics created directly (`framework:pickup`, `broadcast-chat`,
+`broadcast:global` — AC 1/2). Structural guard added: `fw doctor` now checks
+(`bin/fw` TermLink section, T-3040) that these well-known cross-project
+convention topics exist on the local hub and WARNs if any are missing, so a
+future topic loss (e.g. after a hub wipe or fresh install) surfaces at the
+next `fw doctor` run instead of after months of silent rejection. The
+sender-side half of this class (posting to a topic missing on the *remote*
+hub) was already covered by `--ensure-topic` (T-1445); this task closes the
+matching receiver-side gap.
 
 ## Evolution
 
