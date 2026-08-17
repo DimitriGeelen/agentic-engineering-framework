@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-16T19:05:38Z
+last_update: 2026-08-17T07:06:50Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -396,6 +396,36 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
   `fw doctor` embed-reachability check that gives the condition a real surface.
   Duplicate of the already-filed `.context/inbox.yaml:3697` observation — which
   had sat unread, and is itself a datapoint for T-3044.
+
+### 2026-08-17 — A6b re-attempt: root cause of the unfinished audit is lock contention, not runtime
+- **What changed:** Re-ran the four `t1719_*.bats` files (37/37, unchanged) and
+  attempted `bin/fw audit` twice more. Both attempts exited immediately with
+  `Another audit is already running — exiting (no verdict produced)` (exit 75).
+  `ps` showed three root-owned `audit.sh --section structure` processes already
+  holding `.context/locks/audit.lock` continuously since 09:07, still alive
+  minutes later, low CPU, blocked on `pipe_read`/`do_wait` — a live cron audit,
+  not a hung zombie (checked `/proc/<pid>/wchan` + fd 200 → the lock file).
+- **Finding:** `agents/audit/audit.sh` takes one process-wide lock shared by
+  *every* invocation regardless of `--section`, while `.context/cron-registry.yaml`
+  schedules structural/traceability/observations/oe-* sections at 15-30 min
+  cadence. A full `fw audit` (all sections, serial) needs a continuous open
+  window longer than its own runtime to ever acquire the lock and finish —
+  which explains both this session's exit-143-after-10-min kills (T-3060-era
+  session) and today's instant exit-75 lock-contention losses. This is the
+  same class the code's own T-1162/T-866/T-1464 zombie-guard comments target,
+  but the guard prevents zombies, not contention between a full run and the
+  cron's own section runs.
+- **Plan impact:** none to Slice 1's code. A6b stays unticked — not a defect
+  in this slice's deliverables, but a pre-existing audit-runner scheduling gap
+  that a build-workflow dispatch turn (context-critical, no source-file writes
+  permitted) is the wrong shape to fix. Left for the next session/human to
+  either file as a task (candidate fix: full-audit cron/lock-aware retry, or a
+  dedicated lock separate from section runs) or accept `fw audit` as
+  practically unrunnable ad-hoc on this host and rely on the cron's per-section
+  coverage instead.
+- **Triggered:** none filed yet — flagging here per the standing note two
+  entries up ("a full audit that cannot finish inside any reasonable gate
+  window is its own problem") rather than re-deriving it a third time.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
