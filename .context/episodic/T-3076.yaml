@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3076: project-boundary hook exempts any command containing the word termlink, anywhere on the line
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T18:44:37Z
+# ============================================================================
+
+task_id: T-3076
+task_name: "project-boundary hook exempts any command containing the word termlink, anywhere on the line"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-18T18:23:37Z
+completed: 2026-08-18T18:43:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-18T20:27:05+02:00
+last_commit: 2026-08-18T20:43:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the gate held because I chose not to walk through it. narrow project-boundary TermLink exemption to segment + command position. pin the live dispatch path, not just the script
+
+# Key outcomes
+outcomes:
+  - '**A1 — segment scope.** The exemption applies to the command *segment* that'
+  - '**A2 — command position.** `termlink` is recognised only in command'
+  - '**A3 — the T-679 case still passes.** A `termlink pty inject <s> "cd'
+  - '**A4 — positive control on the test suite (L-616).** The suite asserts at'
+  - '**A5 — mutation-tested.** Reverting the segment-splitting to the current'
+  - '**A6 — L-021 is closed out, not duplicated.** The learning is updated to'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-18 — bare `&` counts as a segment separator'
+    chose: 'split on `;`, `&&`, `||`, `|`, newline **and** a bare `&`, with `&` ignored when it is part of a redirect (`2>&1`, `>&2`, `&>file`).'
+    rationale: '`termlink ping & cat /opt/other/.env` is the same hole as the `&&` form and the AC''s list would have left it open. Including `&` only ever *narrows* the exemption, so it cannot reintroduce the defect.'
+    alternatives_rejected: ['the literal AC list (`;`, `&&`, `||`, `|`, newline) — matches the words but ships a known-open sibling case.']
+  - decision: '2026-08-18 — an absolute out-of-project command path is never exempt'
+    chose: '`/opt/other/.agentic-framework/bin/fw termlink status` is NOT exempt, even though its command position is `fw termlink`.'
+    rationale: 'that is precisely the cross-project `fw` invocation Pattern 2 exists to block. Recognising `fw termlink` by basename alone would have re-opened it.'
+    alternatives_rejected: ['basename-only matching — simpler, but hands back a hole while closing another.']
+  - decision: '2026-08-18 — fail-closed on parse failure'
+    chose: '`_drop_termlink_segments` returns the command **unchanged** (nothing exempt, everything analysed) on any exception, and the bash gate has no short-circuit at all.'
+    rationale: 'the two error directions are not symmetric. A bug in this code costs a false block, which is loud and immediately reported by the agent it blocks. The inverse silently disables a structural gate for every session — the exact failure mode T-3076 exists to close.'
+    alternatives_rejected: ['`except: return blanked` or an early `exit 0` guard.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-project-boundary.sh'
+  - '.context/project/learnings.yaml'
+  - '.context/working/dispatch-prompts/T-3076.md'
+  - '.context/working/.hook-counter'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3076-project-boundary-hook-exempts-any-comman.md'
+  - 'tests/unit/t3076_boundary_termlink_segment_scope.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T20:27:05'
+    action: 'T-3076: the gate held because I chose not to walk through it'
+  - time: '2026-08-18T20:38:48'
+    action: 'T-3076: narrow project-boundary TermLink exemption to segment + command position'
+  - time: '2026-08-18T20:43:46'
+    action: 'T-3076: pin the live dispatch path, not just the script'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 3
+  files_changed: 8
+  lines_added: 755
+  lines_removed: 77
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3076-project-boundary-hook-exempts-any-comman.md
+generated_by: context-agent-hybrid

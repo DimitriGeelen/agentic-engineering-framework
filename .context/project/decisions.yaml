@@ -3208,3 +3208,24 @@ decisions:
     date: 2026-08-18
     task: T-3046
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-461
+    decision: "split on `;`, `&&`, `||`, `|`, newline **and** a bare `&`, with `&`"
+    scope: project
+    date: 2026-08-18
+    task: T-3076
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-462
+    decision: "`/opt/other/.agentic-framework/bin/fw termlink status` is NOT exempt,"
+    scope: project
+    date: 2026-08-18
+    task: T-3076
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-463
+    decision: "`_drop_termlink_segments` returns the command **unchanged** (nothing"
+    scope: project
+    date: 2026-08-18
+    task: T-3076
+    rationale: "Auto-captured from task file on completion"

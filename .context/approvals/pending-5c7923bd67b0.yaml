@@ -1,6 +1,0 @@
-command_hash: 5c7923bd67b06c93279d49c466301c57023822eec29c49e269063e47aecd973c
-command_preview: rm -rf /
-risk: 'RECURSIVE DELETE: Targets root filesystem (/)'
-status: pending
-timestamp: '2026-08-18T18:35:05Z'
-type: tier0

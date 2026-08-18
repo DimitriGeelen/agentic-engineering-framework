@@ -1,10 +1,16 @@
 ---
 id: T-3077
-name: "governance test suite leaves live Tier 0 approval requests in the operator queue"
+name: "governance test suite leaves live Tier 0 approval requests in the operator
+  queue"
 description: >
-  tests/governance/test_pretooluse_gates.bats runs the real check-tier0 hook against the real FRAMEWORK_ROOT. _tier0_isolate backs up .tier0-approval (the GRANTED file) but check-tier0.sh:463 writes .tier0-approval.pending plus .context/approvals/pending-<hash>.yaml, which the helper never touches. Result: rm -rf / and git push --force origin master appear as live PENDING entries on Watchtower /approvals. Operator saw them and asked. If approved, a genuine rm -rf / becomes pre-authorised.
+  tests/governance/test_pretooluse_gates.bats runs the real check-tier0 hook against
+  the real FRAMEWORK_ROOT. _tier0_isolate backs up .tier0-approval (the GRANTED file)
+  but check-tier0.sh:463 writes .tier0-approval.pending plus .context/approvals/pending-<hash>.yaml,
+  which the helper never touches. Result: rm -rf / and git push --force origin master
+  appear as live PENDING entries on Watchtower /approvals. Operator saw them and asked.
+  If approved, a genuine rm -rf / becomes pre-authorised.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:33:41Z
-last_update: 2026-08-18T18:33:41Z
-date_finished: null
+last_update: 2026-08-18T18:45:36Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +40,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-18T18:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=282,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-18T18:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3077: governance test suite leaves live Tier 0 approval requests in the operator queue
@@ -103,6 +137,42 @@ hash in `.tier0-approval` across all history, and zero `approved-*` files ever
 written. The gate never opened. That is the measured reassurance, and it is also
 the reason the defect survived — it has been harmless every time so far.
 
+### The fix was written down on 2026-04-24 and never applied
+
+This is the part that matters more than the bug. **L-256** (T-1428, 2026-04-24):
+
+> bats tests that invoke hooks writing to `.context/` (check-tier0.sh, observe,
+> handover) MUST export `PROJECT_ROOT=TEST_TEMP_DIR` in `setup()` — otherwise they
+> pollute the real project state. Same class as L-227 (observe.bats) and L-009
+> (handover.bats). **Discovered when T-1427's test leaked 3 real pending Tier 0
+> approvals into `.context/approvals/`.**
+>
+> `application: TBD`
+
+Same surface. Same artefact. Same count. Four months ago. The learning names the
+exact one-line fix, and `tests/governance/test_pretooluse_gates.bats` has no
+`setup()` and never exports `PROJECT_ROOT`. Verified applicable:
+`lib/paths.sh:39` guards derivation with `if [[ -z "${PROJECT_ROOT:-}" ]]`, so an
+env override is honoured — the prescription works as written.
+
+L-227 and L-009 make it three prior recordings of the class before this one.
+
+**And the file asserts the opposite of the truth.** Its header comment reads:
+
+    # State-dependent tests use save/restore for isolation. No mutating side effects.
+
+That sentence is why nobody re-checked. A reader looking for leak risk finds an
+explicit denial in the first twenty lines, written by someone who believed it.
+
+**The second-order finding, which is bigger than this task.** L-021 (T-1075) and
+L-256 (T-1428) are the same shape: a learning that names its own fix, marked
+`application: TBD`, left standing for months while the defect it describes stays
+live. Both surfaced in one session, by accident, because `fw work-on` printed them
+as "related knowledge" *after* the bug had already been rediscovered independently.
+A learning with a prescriptive fix and no application is a latent unfixed bug, and
+nothing in the framework distinguishes it from an observation. Not in scope here —
+recorded so it can be filed on its own evidence.
+
 ### Today's trigger
 
 The T-3076 dispatch prompt instructed the worker to run
@@ -126,8 +196,46 @@ Two structural omissions, and the second is the one that matters:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 — the suite leaves the live approvals surface byte-identical.** A guard
+      test snapshots `.context/approvals/` and `.context/working/.tier0-approval*`
+      before a full run of `tests/governance/test_pretooluse_gates.bats`, runs it,
+      and asserts the snapshot is unchanged. Asserted on content, not on a count —
+      a card that is created and deleted still passes a count check and still
+      appears on `/approvals` for the duration of the run.
+- [ ] **A2 — isolation by construction, not cleanup afterwards.** The hook under
+      test writes to a temporary root, so an interrupted or crashed run cannot
+      leave a card behind. A `teardown()` that deletes the card is NOT sufficient
+      and does not satisfy this AC: bats teardown does not run when the process is
+      killed, and the current helper already demonstrates that a cleanup naming
+      the wrong file looks identical to one that works.
+- [ ] **A3 — positive control, both directions (L-616).** The test asserts a
+      pending card IS written inside the sandbox (proving the hook still fired,
+      still blocked, and still filed its request) and is NOT written to the live
+      tree. Without the first half, A1 is satisfied by a test that has stopped
+      exercising the hook at all — two empty sets are equal.
+- [ ] **A4 — the sibling suites are surveyed and the result recorded.** L-256
+      (T-1428) names this class as covering more than one hook that writes into
+      `.context/` from tests. Enumerate which test files invoke such hooks against
+      the live tree, and record the finding in this task: fixed here if it is the
+      same helper, filed as its own task if not. Survey and record only — do not
+      fix unrelated suites here (one bug, one task).
+- [ ] **A5 — mutation-tested.** Reverting the isolation to the current
+      `_tier0_isolate`/`_tier0_restore` pair turns A1's guard test red; restoring
+      it turns it green. The flipped test names are recorded in `## Evolution`.
+- [ ] **A6 — L-256 is closed out or explicitly scoped, not duplicated.** If this
+      task closes the class L-256 describes, update it in place with `closed_by`.
+      If it closes only part, say which part and leave the rest open with what
+      remains. Do not file a second learning describing the same class — that is
+      the failure mode this task exists to break (L-021/T-1075 was the same shape
+      and cost four months).
+
+**Deliberately out of scope, filed separately** so this stays one deliverable:
+
+| Concern | Task |
+|---|---|
+| Cards assert "Agent blocked — requires your decision" for requests no agent made; no provenance on the card | T-3078 |
+| Nothing detects a Tier 0 request left sitting unanswered — three reached git unnoticed | T-3079 |
+| Watchtower grants a 1h TTL where the CLI grants 5m; the easier path to click is 12× more permissive | T-3080 |
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -317,3 +425,6 @@ Two structural omissions, and the second is the one that matters:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3077-governance-test-suite-leaves-live-tier-0.md
 - **Context:** Initial task creation
+
+### 2026-08-18T18:45:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

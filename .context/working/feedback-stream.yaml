@@ -35663,3 +35663,21 @@ scan_id: R-e2bef7fe
 task_id: T-3043
 payload:
   task_file: .tasks/active/T-3043-rca-non-root-agent-cannot-use-termlink-h.md
+---
+kind: scan_emitted
+timestamp: '2026-08-18T18:44:23Z'
+scan_id: R-a51b42d8
+task_id: T-3076
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T18:44:23Z'
+scan_id: R-a51b42d8
+task_id: T-3076
+payload:
+  task_file: .tasks/active/T-3076-project-boundary-hook-exempts-any-comman.md

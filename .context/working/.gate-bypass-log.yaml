@@ -7153,3 +7153,14 @@ s = open(p).read()
 old = """## Context
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->""'
+- timestamp: '2026-08-18T18:46:00Z'
+  task: 'T-3077'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3076'
+  command: 'python3 -c "
+import yaml
+d=yaml.safe_load(open(.context/project/learnings.yaml))
+ls=d if isinstance(d,list) else d.get(learnings,[])
+for e in ls:
+    if isinstance(e,dict) and e.get(id)==L-256'
