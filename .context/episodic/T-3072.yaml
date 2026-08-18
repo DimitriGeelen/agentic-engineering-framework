@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3072: Predicted blast radius for open tasks — can the cost axis be made real before work-completed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T18:29:32Z
+# ============================================================================
+
+task_id: T-3072
+task_name: "Predicted blast radius for open tasks — can the cost axis be made real before work-completed"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-18T09:20:41Z
+completed: 2026-08-18T12:11:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-18T11:25:29+02:00
+last_commit: 2026-08-18T14:12:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the cost axis has a pre-close signal — measured, biased high, and labelled. IW rationales now cite where the evidence lives, not just what it said. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3072-predicted-blast-radius.md'
+  - '.tasks/active/T-3072-predicted-blast-radius-for-open-tasks--c.md'
+  - '.tasks/completed/T-3072-predicted-blast-radius-for-open-tasks--c.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T11:25:29'
+    action: 'T-3072: the cost axis has a pre-close signal — measured, biased high, and labelled'
+  - time: '2026-08-18T11:26:25'
+    action: 'T-3072: IW rationales now cite where the evidence lives, not just what it said'
+  - time: '2026-08-18T14:12:08'
+    action: 'T-3072: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 170 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 170
+  commits: 3
+  files_changed: 3
+  lines_added: 580
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3072-predicted-blast-radius-for-open-tasks--c.md
+generated_by: context-agent-hybrid

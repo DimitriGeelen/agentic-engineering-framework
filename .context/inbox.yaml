@@ -3945,3 +3945,10 @@ observations:
   tags: [security]
   status: pending
   promoted_to: null
+- id: OBS-328
+  text: "Watchtower's inception-decide handler kills the command at 30s and returns HTTP 200 when the status transition already landed. Measured on T-3072, 2026-08-18 14:12:08: watchtower.log lines 1549-1551 read 'fw inception decide T-3072 timed out after 30s' / 'failed: primary_landed=True stdout= stderr=Command timed out' / 'POST /inception/T-3072/decide 200'. Consequences: (a) the operator saw success; (b) the task completed, moved to completed/, decision recorded, but the post-transition side effects were killed mid-run - T-3072 is the ONLY one of 2695 completed tasks with no episodic summary, measured by direct scan; (c) the only signal was the handover's advisory a full session later. Regenerating by hand works first time (exit 0, 2866 bytes), so the generator is fine - it was never invoked. Two defects: a 30s cap on a compound governance operation whose cost scales with git history, and a handler that KNOWS the command failed (primary_landed is the variable name) and answers 200 anyway. Prevention needs both: surface the partial failure to the operator, and an audit rail for completed-without-episodic that is cause-agnostic. NOT filed as a task yet - T-3076 holds focus with a live worker."
+  captured: 2026-08-18T18:30:52Z
+  context_task: T-3076
+  tags: []
+  status: pending
+  promoted_to: null
