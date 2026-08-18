@@ -257,7 +257,11 @@ two counts: `lib/doctor-hook-exercise.py:85` feeds every hook `input="{}"`, so c
 extracts no command and exits 0 before reaching any write; and a repeat run under a live
 sampler produced **zero sightings** across the whole run. Two other `claude -c` sessions
 were live on this checkout at the time — concurrent-actor contamination is the remaining
-explanation. Left unattributed rather than guessed. **The method caveat is the real
+explanation. Left unattributed rather than guessed. Coverage is partial and stated as such:
+the sampler watched tests 1-5 of 6 continuously for ~27 min with zero sightings, then the run
+was terminated because test 5 hung — every test in that suite shells out to `fw doctor`, which
+also hung when invoked directly here (`timeout 200 bin/fw doctor` → rc=124). That slowness is a
+separate observation, not investigated. **The method caveat is the real
 finding: on a shared checkout, "ran X, then saw a leak" is not attribution.**
 
 **Nothing filed as a follow-up task from this survey** — every other tier-0-touching suite
