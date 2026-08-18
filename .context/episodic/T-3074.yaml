@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3074: T-3061 shipped 13 passing detector tests that were never added to git
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T10:27:44Z
+# ============================================================================
+
+task_id: T-3074
+task_name: "T-3061 shipped 13 passing detector tests that were never added to git"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-18T10:24:07Z
+completed: 2026-08-18T10:27:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-18T12:25:39+02:00
+last_commit: 2026-08-18T12:27:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  an untracked test passes on one machine and nowhere else. a guard that caught itself before it was committed
+
+# Key outcomes
+outcomes:
+  - 'A1. Both bats files are tracked in git.'
+  - 'A2. Both suites pass against the current (post-refactor) code path — 8/8 and'
+  - 'A3. A guard exists against the recurrence class: a test file present on disk'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3074-t-3061-shipped-13-passing-detector-tests.md'
+  - 'tests/lint/no-untracked-test-files.bats'
+  - 'tests/unit/audit_unclosed_satisfied_warn.bats'
+  - 'tests/unit/t3061_unclosed_satisfied_scan.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T12:25:39'
+    action: 'T-3074: an untracked test passes on one machine and nowhere else'
+  - time: '2026-08-18T12:27:07'
+    action: 'T-3074: a guard that caught itself before it was committed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 4
+  lines_added: 787
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3074-t-3061-shipped-13-passing-detector-tests.md
+generated_by: context-agent-hybrid

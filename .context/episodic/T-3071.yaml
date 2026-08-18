@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3071: refresh vendored .agentic-framework for the T-3066 and T-3061 fixes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T15:16:33Z
+# ============================================================================
+
+task_id: T-3071
+task_name: "refresh vendored .agentic-framework for the T-3066 and T-3061 fixes"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T15:01:51Z
+completed: 2026-08-17T15:16:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T17:14:28+02:00
+last_commit: 2026-08-17T17:16:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vendor the T-3066 and T-3061 sources so consumers inherit the fixes. AC2 named the wrong tool — doctor does not report self-vendor state
+
+# Key outcomes
+outcomes:
+  - '`.agentic-framework/` carries this session''s changed sources — `lib/bvp.sh`,'
+  - 'The pre-push self-vendor gate (T-2240) passes without a bypass. The gate is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor the T-3066 and T-3061 sources so consumers inherit the fixes'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/active-task-scan.py'
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/task_satisfaction.py'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/bvp.py'
+  - '.tasks/active/T-3071-refresh-vendored-agentic-framework-for-t.md'
+  - '.tasks/completed/T-3061-audit-rail-surface-active-tasks-whose-ac.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T17:14:28'
+    action: 'T-3071: vendor the T-3066 and T-3061 sources so consumers inherit the fixes'
+  - time: '2026-08-17T17:16:17'
+    action: 'T-3071: AC2 named the wrong tool — doctor does not report self-vendor state'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 2
+  files_changed: 8
+  lines_added: 588
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3071-refresh-vendored-agentic-framework-for-t.md
+generated_by: context-agent-hybrid

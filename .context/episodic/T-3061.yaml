@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3061: audit rail: surface active tasks whose ACs are all satisfied but never closed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-17T15:00:23Z
+# ============================================================================
+
+task_id: T-3061
+task_name: "audit rail: surface active tasks whose ACs are all satisfied but never closed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-17T07:07:35Z
+completed: 2026-08-17T14:59:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-17T09:34:26+02:00
+last_commit: 2026-08-17T16:59:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  satisfied-but-unclosed detector + tests (harness fix: dedent no-op). the satisfied-but-unclosed rail, with one definition of the rule
+
+# Key outcomes
+outcomes:
+  - '**A1 — the audit sees the state.** `fw audit` emits a WARN naming active'
+  - '**A2 — it proposes, it never closes.** The rail changes no task status,'
+  - '**A3 — the two confidence classes are distinguished.** Tasks with a real'
+  - '**A4 — the detector is not fooled by the template.** The task template'
+  - '**A5 — WARN, never FAIL.** It does not block a push. This is a hygiene'
+  - '**A6 — pinned by test, both directions.** A fixture task that qualifies is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'satisfied-but-unclosed detector + tests (harness fix: dedent no-op)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-17 — one definition of "satisfied", not two that agree'
+    chose: '`agents/audit/active-task-scan.py` imports `lib/task_satisfaction.analyse_text`; the inline copy of the predicate was deleted, and `analyse_text` was split out of `analyse` so the single-pass scan (T-955) does not have to re-read every file to use it.'
+    rationale: 'the two implementations were found to agree on **18/18** live tasks, which is the argument *for* removing one rather than against. Only `lib/task_satisfaction.py` has tests; it was imported by nothing but its own test, so the tested definition was the dead one and the live one was unpinned. A helper wired nowhere reads exactly like a helper wired everywhere — the same shape as T-2278, and the third instance of it in this session (T-3065, T-3066). Divergence between the copies would have surfaced as a WARN quietly listing the wrong tasks, which nothing prompts anyone to check.'
+    alternatives_rejected: ['keeping both and adding a test that they agree — that pins the symptom and leaves two places to edit. Also rejected: deleting `lib/task_satisfaction.py` and keeping the inline copy, which would have thrown away 15 tests to save one import line. - **Pinned by:** `tests/unit/test_t3061_audit_wiring.py` — the scan''s verdict must equal the library''s (with a positive control, since two empty sets are equal), and the inline helpers must not reappear.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/task_satisfaction.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/active-task-scan.py'
+  - 'agents/audit/audit.sh'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - 'lib/task_satisfaction.py'
+  - '.tasks/active/T-3061-audit-rail-surface-active-tasks-whose-ac.md'
+  - 'tests/unit/test_t3061_audit_wiring.py'
+  - 'tests/unit/test_task_satisfaction.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T09:34:26'
+    action: 'T-3061: satisfied-but-unclosed detector + tests (harness fix: dedent no-op)'
+  - time: '2026-08-17T16:59:34'
+    action: 'T-3061: the satisfied-but-unclosed rail, with one definition of the rule'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 472 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 472
+  commits: 2
+  files_changed: 9
+  lines_added: 929
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3061-audit-rail-surface-active-tasks-whose-ac.md
+generated_by: context-agent-hybrid

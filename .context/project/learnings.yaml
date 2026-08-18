@@ -4650,3 +4650,9 @@ X'` returning empty group."
   task: T-3068
   date: 2026-08-17
   context: Added via context agent
+- id: L-625
+  learning: "Two implementations of one rule that AGREE are the dangerous case, not the safe one: T-3061 shipped lib/task_satisfaction.py (tested, imported by nothing but its own test) while agents/audit/active-task-scan.py carried an inline copy of the same predicate. They agreed on 18/18 live tasks, so nothing looked wrong — but the tested definition was the dead one, the live one was unpinned, and a later divergence would have surfaced only as a WARN quietly listing the wrong tasks. Agreement is the argument for deleting one copy, not for keeping both. Third instance of the wired-nowhere-reads-like-wired-everywhere shape in one session (T-3065, T-3066, T-3061); the counter is a test that compares the wiring's output to the library's, with a positive control, since two empty sets are also equal."
+  source: P-001
+  task: T-3061
+  date: 2026-08-17
+  context: Added via context agent

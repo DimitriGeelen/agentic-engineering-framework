@@ -2,12 +2,14 @@
 id: T-3074
 name: "T-3061 shipped 13 passing detector tests that were never added to git"
 description: >
-  Two bats files covering the unclosed-but-satisfied detector and its audit integration exist untracked on disk; they pass, they are not redundant with the tracked wiring test, and nothing runs them
+  Two bats files covering the unclosed-but-satisfied detector and its audit integration
+  exist untracked on disk; they pass, they are not redundant with the tracked wiring
+  test, and nothing runs them
 
-status: captured
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T10:24:07Z
-last_update: 2026-08-18T10:25:49Z
-date_finished: null
+last_update: 2026-08-18T10:27:31Z
+date_finished: 2026-08-18T10:27:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-18T10:27:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3074: T-3061 shipped 13 passing detector tests that were never added to git
@@ -276,3 +296,18 @@ timeout 300 bats tests/lint/no-untracked-test-files.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3074-t-3061-shipped-13-passing-detector-tests.md
 - **Context:** Initial task creation
+
+### 2026-08-18T10:27:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-af091e4c
+- **Timestamp:** 2026-08-18T10:27:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-18T10:27:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3064: Workflow Designer is never installed by onboarding — consumers get a SKIP, not a designer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T11:25:15Z
+# ============================================================================
+
+task_id: T-3064
+task_name: "Workflow Designer is never installed by onboarding — consumers get a SKIP, not a designer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-17T10:42:34Z
+completed: 2026-08-18T11:15:46Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-17T13:53:29+02:00
+last_commit: 2026-08-18T12:31:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  designer install is absent from onboarding, and absence renders as SKIP. a pin naming a build you do not have is a finding, not an exemption. onboarding ships the designer, not just the pin naming it. integrator pass — A5 ticked, and the blast-radius claim I got wrong corrected
+
+# Key outcomes
+outcomes:
+  - 'A1. The designer''s absence is a WARN, not a SKIP, in `fw doctor`. Absence'
+  - 'A2. Onboarding installs the designer — `fw init` and/or `fw setup` reach'
+  - 'A3. The sha256 verification and reject-on-mismatch behaviour is unchanged'
+  - 'A4. Offline / no-upstream is handled explicitly and visibly. Onboarding'
+  - 'A5. Consumers reach the designer at all — decide and implement whether the'
+  - 'A6. `tests/unit/upgrade_fresh_machine_simulation.bats` stays green — this'
+  - 'A7. Every load-bearing assertion is mutation-tested: the mutant turns it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-18 — A5: how the designer reaches a consumer'
+    chose: 'vendor the **single pinned build** through `fw vendor self` into `.agentic-framework/vendor/designer/`, and have onboarding install from that vendored copy. `fw designer sync --from-tag` stays the intake/refresh path in the framework repo, not a step in consumer onboarding.'
+    rationale: '- The declaration is *already* vendored and the artifact is not. `.agentic-framework/policy/designer-pin.yaml` exists in every consumer today; `.agentic-framework/vendor/` does not exist at all. So a consumer already carries a pin naming a file it was never given — this closes an existing gap rather than opening a new channel. - **Offline onboarding keeps working (A4).** 832-Workflow-designer lives on an internal OneDev. Fetch-at-onboarding would make every `fw init` depend on a remote the consumer may have no route or credentials to, and the failure would land at install time — the exact hang-or-silently-succeed shape A4 forbids. - **Provenance survives without the network (A3).** The sha256 is in the vendored pin, so the consumer verifies the bytes it actually received, locally. The stronger check (independent sha256 vs the MANIFEST *at the tag* AND the pin) still happens once, at intake in the framework repo, where the remote is reachable — verification is not weakened, it is performed where it can be.'
+    alternatives_rejected: ['vendoring `vendor/designer/` wholesale. That directory holds nine historical builds totalling ~7.7 MB, of which exactly one (0.8.0) is pinned. Only the pinned build ships; the rest are framework-repo history. - **Blast radius — I got this wrong, corrected 2026-08-18.** I wrote that A1''s SKIP→WARN would make every consumer start reporting a WARN before the vendoring reached them, and called that an accepted fleet-visible cost. It will not happen, and the reason matters: doctor resolves the pin as `${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}` (`bin/fw`), but a consumer''s pin lives at `.agentic-framework/policy/designer-pin.yaml`. The enclosing `if [ -f "$_dz_pin" ]` is therefore false in every consumer and the check does not run at all — verdict SKIP or WARN alike. **A1 is framework-repo-only.** Surfaced by the dispatched worker (bus R-001, item 3), verified against `bin/fw` directly rather than taken on report.']
+  - decision: '2026-08-18 — A4: what onboarding does when the designer cannot be installed'
+    chose: 'onboarding **never reaches the network**, and every outcome prints a line. `fw init` calls `fw designer install`, which reads the build out of the consumer''s own `.agentic-framework/vendor/designer/` and verifies its sha256 against the vendored pin. `fw designer sync --from-tag` — the one verb that contacts 832''s internal OneDev — is not reachable from any onboarding path.'
+    rationale: '"must not hang on an unreachable remote" is answered structurally rather than by a timeout, because there is no remote in the path to hang on. A timeout would still have to pick a number, and picking one wrong is how an install step becomes a two-minute stall on a machine with no route to 192.168.10.201. - **The other half, which is the one that actually needed deciding:** an absent vendored build must not read like success. `do_install` exits **5** (not 0) and names the artifact, the reason, and the fix; `fw_init_install_designer` renders that as a `⚠` line and a sha256 refusal as a `✗ REFUSED — nothing was installed` line, so "the step ran" and "the designer is installed" cannot be confused. - **Init is not failed by any of this.** A project without a designer is still a governed project; failing onboarding over an optional editor would be a worse trade than the one this task is fixing. What changed is that the absence is now *stated* at the moment it happens, instead of being discovered later as an error page at `/designer`.'
+    alternatives_rejected: ['hard-failing `fw init` on a missing designer. That converts an advisory gap into an onboarding blocker for every consumer whose framework copy predates this change.']
+  - decision: '2026-08-18 — Found during A2: designer-pin.yaml was not in the self-vendor set'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.8.0.html'
+  - 'agents/designer/designer.sh'
+  - 'bin/fw'
+  - 'docs/reports/T-3064-mutation-log.md'
+  - 'lib/init.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3064-workflow-designer-is-never-installed-by-.md'
+  - '.tasks/completed/T-3074-t-3061-shipped-13-passing-detector-tests.md'
+  - 'tests/unit/doctor_designer_pin_drift.bats'
+  - 'tests/unit/t3064_designer_onboarding_install.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-17T13:53:29'
+    action: 'T-3064: designer install is absent from onboarding, and absence renders as SKIP'
+  - time: '2026-08-18T11:58:06'
+    action: 'T-3064: a pin naming a build you do not have is a finding, not an exemption'
+  - time: '2026-08-18T12:24:44'
+    action: 'T-3064: onboarding ships the designer, not just the pin naming it'
+  - time: '2026-08-18T12:31:50'
+    action: 'T-3064: integrator pass — A5 ticked, and the blast-radius claim I got wrong corrected'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1473 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1473
+  commits: 4
+  files_changed: 14
+  lines_added: 11393
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3064-workflow-designer-is-never-installed-by-.md
+generated_by: context-agent-hybrid
