@@ -144,13 +144,33 @@ learnings:
   learning: All 373 Playwright tests pass (`fw test playwright`)
   source: P-001
   task: T-1073
-- application: TBD
-  context: 'Mined from episodic: Fix project boundary false positive — TermLink commands inside loops/pipes'
+- application: |-
+    CLOSED by T-3076 (2026-08-18) — the over-match this learning recorded is fixed,
+    not merely documented. agents/context/check-project-boundary.sh no longer
+    short-circuits the whole command line. The TermLink exemption is now applied per
+    shell segment (split on ';' '&&' '||' '|' '&' and newline, using the existing
+    _strip_quoted mask so separators inside quoted arguments never split), and only
+    when termlink / fw termlink sits in COMMAND position of that segment.
+    'grep termlink /opt/x' and 'termlink ping && cat /opt/x/.env' now block.
+    Pinned by tests/unit/t3076_boundary_termlink_segment_scope.bats. The T-679 reason
+    for the exemption (TermLink runs the command in a different process) is preserved
+    and regression-tested. Do NOT file a third learning for this class.
+  context: |-
+    Mined from episodic: Fix project boundary false positive — TermLink commands
+    inside loops/pipes. T-1075 widened the regex from start-anchored to
+    anywhere-on-line and recorded the resulting over-match here instead of fixing it.
+    T-3076 (OBS-327) is the second instance and therefore the trigger for a tooling
+    fix rather than a third learning (CLAUDE.md, Bug-Fix Learning Checkpoint).
   date: '2026-04-13'
   id: L-021
-  learning: TermLink exception matches commands containing `termlink` anywhere (not just at start)
+  learning: |-
+    TermLink exception matched commands containing `termlink` anywhere (not just at
+    the start): argument position counted as command position, and one exempt segment
+    exempted the entire line. CLOSED by T-3076 with a segment-scoped,
+    command-position-only exemption.
   source: P-001
   task: T-1075
+  closed_by: T-3076
 - application: TBD
   context: 'Mined from episodic: Fix shellcheck SC2034 false positive in healing diagnose.sh'
   date: '2026-04-13'

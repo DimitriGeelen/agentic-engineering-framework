@@ -102,7 +102,7 @@ assert_blocked_on() {
 
 @test "A1: exempt segment does not exempt a 'cd' sibling" {
     run run_hook "termlink ping && cd /opt/other-project"
-    assert_blocked_on "cd /opt/other-project"
+    assert_blocked_on "cd to /opt/other-project"
 }
 
 @test "A1: the exempt segment itself is still not analysed (no false block)" {
@@ -210,11 +210,13 @@ assert_blocked_on() {
 
 # ── Fail-closed direction ──
 
-@test "fail-closed: separators inside quotes do not split (no exemption leak)" {
-    # The '&&' here is quoted, so this is ONE segment whose command position is
-    # `cat` — not exempt, despite containing the word termlink downstream.
-    run run_hook "cat \"/opt/other-project/x && termlink\""
-    [ "$status" -eq 2 ]
+@test "fail-closed: a quoted separator does not split a segment open" {
+    # The '&&' is inside a quoted argument, so this stays ONE segment whose
+    # command position is `grep` — not exempt, despite the word termlink
+    # appearing after what looks like a separator. The outside path is
+    # unquoted, so it is still seen and still blocks.
+    run run_hook "grep \"a && termlink\" /opt/other-project/config"
+    assert_blocked_on "/opt/other-project/config"
 }
 
 @test "fail-closed: an unbalanced quote still reaches analysis" {

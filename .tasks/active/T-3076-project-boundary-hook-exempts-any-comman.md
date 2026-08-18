@@ -111,28 +111,28 @@ that true while narrowing what "exempt" covers.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 — segment scope.** The exemption applies to the command *segment* that
+- [x] **A1 — segment scope.** The exemption applies to the command *segment* that
       invokes TermLink, not to the whole line. Segments are split on `;`, `&&`,
       `||`, `|` and newline; non-exempt segments still go through boundary
       analysis. Pinned by a test where an exempt segment and a violating segment
       share one line.
-- [ ] **A2 — command position.** `termlink` is recognised only in command
+- [x] **A2 — command position.** `termlink` is recognised only in command
       position within its segment — first word, or first after a wrapper
       (`sudo`, `env VAR=v`, `timeout N`, `nohup`). `grep termlink /opt/other/x`
       is NOT exempt. `bin/fw termlink` and `fw termlink` keep working.
-- [ ] **A3 — the T-679 case still passes.** A `termlink pty inject <s> "cd
+- [x] **A3 — the T-679 case still passes.** A `termlink pty inject <s> "cd
       /opt/other && …"` style command, and the T-1075 loop form
       (`for n in …; do termlink pty inject … "cd /opt/$n && …"; done`), are both
       still exempt. Regression tests, not assertions in prose — this is the
       behaviour the exemption was created for and the fix must not cost it.
-- [ ] **A4 — positive control on the test suite (L-616).** The suite asserts at
+- [x] **A4 — positive control on the test suite (L-616).** The suite asserts at
       least one command IS exempted and at least one IS blocked. A predicate that
       matched nothing would satisfy every "not exempt" assertion while proving
       the gate is simply off.
-- [ ] **A5 — mutation-tested.** Reverting the segment-splitting to the current
+- [x] **A5 — mutation-tested.** Reverting the segment-splitting to the current
       whole-line `exit 0` turns the A1 test red; restoring it turns it green.
       Recorded in the task with which tests flipped.
-- [ ] **A6 — L-021 is closed out, not duplicated.** The learning is updated to
+- [x] **A6 — L-021 is closed out, not duplicated.** The learning is updated to
       record that the class was fixed here rather than a second learning being
       added describing the same over-match.
 
@@ -168,6 +168,21 @@ that true while narrowing what "exempt" covers.
 -->
 
 ## Verification
+
+bash -n agents/context/check-project-boundary.sh
+bats tests/unit/t3076_boundary_termlink_segment_scope.bats > /tmp/.t3076a.out 2>&1 && grep -q '^ok 31 ' /tmp/.t3076a.out && ! grep -q '^not ok' /tmp/.t3076a.out
+bats tests/unit/check_project_boundary.bats > /tmp/.t3076b.out 2>&1 && ! grep -q '^not ok' /tmp/.t3076b.out
+bats tests/unit/test_boundary_hook_arguments.bats > /tmp/.t3076c.out 2>&1 && ! grep -q '^not ok' /tmp/.t3076c.out
+bats tests/unit/t2920_boundary_heredoc_strip_order.bats > /tmp/.t3076d.out 2>&1 && ! grep -q '^not ok' /tmp/.t3076d.out
+bats tests/lint/no-bare-fw-in-gate-scripts.bats > /tmp/.t3076e.out 2>&1 && ! grep -q '^not ok' /tmp/.t3076e.out
+bats tests/lint/no-untracked-test-files.bats > /tmp/.t3076f.out 2>&1 && ! grep -q '^not ok' /tmp/.t3076f.out
+python3 -c "import yaml,sys; d=yaml.safe_load(open('.context/project/learnings.yaml')); ls=d if isinstance(d,list) else d.get('learnings',[]); e=[x for x in ls if isinstance(x,dict) and x.get('id')=='L-021']; sys.exit(0 if len(e)==1 and e[0].get('closed_by')=='T-3076' else 1)"
+git ls-files --error-unmatch tests/unit/t3076_boundary_termlink_segment_scope.bats
+# Pre-existing, NOT introduced here (verified against baseline before the change):
+#   tests/integration/check_project_boundary.bats  -> 27 ok / 1 not ok ("Bash redirect to /etc: blocked")
+#   tests/governance/test_pretooluse_gates.bats    -> 12 ok / 1 not ok ("check-active-task: blocks Write ...", a different hook)
+# Both fail identically before and after this change, so they are asserted as
+# unchanged rather than green.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -230,43 +245,96 @@ that true while narrowing what "exempt" covers.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** `agents/context/check-project-boundary.sh:136` exempted an entire Bash
+command line from the T-559 project-boundary gate whenever the regex
+`(^|\s|;|&&|\|)(termlink|bin/fw termlink|fw termlink)\s` matched anywhere on it.
+`grep termlink /opt/other-project/config` was exempt; so was
+`termlink ping && cat /opt/other-project/.env`.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause.** Two independent defects sharing one line of code:
+1. The regex tested for the *word* `termlink` bounded by whitespace/separators —
+   which is satisfied by argument position, not just command position.
+2. The verdict was line-scoped. The `;|&&|\|` alternation was added by T-1075 to
+   *find* termlink inside a compound command, but the `exit 0` it produced covered
+   every sibling segment, not the one that matched. Finding-scope and
+   verdict-scope were conflated.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+Both defects sat *before* the Python boundary analysis, so no pattern (cd, fw
+invocation, write redirect, read-side argument) ever ran on an exempt line.
+
+**Why structurally allowed.** T-1075 recorded the over-match as **L-021** — the
+consequence was written down and shipped as documentation. A learning is not a
+control: nothing re-read L-021 at the point the gate ran. The exemption also had
+no test asserting anything was *not* exempt, so the only coverage pointed at the
+permissive direction and every widening of the regex looked free. OBS-327 is the
+second instance, 4 months later; per §Bug-Fix Learning Checkpoint, a class hit
+twice is a tooling fix, not a third learning.
+
+**Prevention** (distinct from the fix):
+- `tests/unit/t3076_boundary_termlink_segment_scope.bats` — 31 tests, with both
+  directions asserted (A4 positive control: one command IS exempt, one IS blocked),
+  so a predicate that matched nothing can no longer satisfy the suite.
+- Test 31 greps the hook source for a line-scoped `termlink … exit 0` short-circuit
+  and fails if one reappears. This catches the *shape* of the regression, not only
+  the specific commands the segment splitter already handles.
+- L-021 updated in place with `closed_by: T-3076` and an explicit
+  "do not file a third learning for this class" note.
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-08-18 — segmentation belongs in Python, not bash
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** the task framing put the split in the bash gate (where the
+  `exit 0` lived), but the only quote-aware walker in the file is `_strip_quoted`,
+  which is Python and length-preserving. Writing a second quote-aware splitter in
+  bash is exactly the duplicate rule the task warns against. The exemption was
+  therefore moved *into* the Python analysis block: `_strip_quoted` produces the
+  quote-blanked mask, `_split_segments` finds separator offsets in that mask, and
+  `_drop_termlink_segments` blanks the exempt segments in the real command. Because
+  the mask preserves lengths, mask offsets index the original text directly — no
+  second parse, no re-derivation. `_strip_quoted` was reused **as-is**, unmodified.
+- **Plan impact:** the bash block became a comment explaining why no short-circuit
+  may live there. Strip order is now heredocs → drop-termlink-segments → quotes;
+  the T-2920 constraint (heredocs before quotes) is unchanged and still holds.
+- **Triggered:** two scope decisions recorded in `## Decisions` (bare `&` as a
+  separator; absolute out-of-project `fw` paths never exempt).
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-08-18 — mutation test showed the old regex was even leakier than assumed
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** under the mutant (whole-line `exit 0` restored) two A2 tests
+  stayed green — `echo termlink; cat /opt/…` and `ls -la /opt/…/termlink`. Both
+  survive only because the old regex required *trailing whitespace* after
+  `termlink`, so `termlink;` and end-of-line `termlink` missed. The hole was
+  whitespace-shaped, not intent-shaped: `echo termlink ; cat /opt/…` (one space
+  before the `;`) would have been exempt.
+- **Plan impact:** none — it confirms the fix is the right altitude. Recorded so
+  the next reader does not conclude those two cases were ever safe.
+- **Triggered:** nothing; noted in the mutation record below.
+
+**A5 mutation record.** Reverting to the whole-line `exit 0` (regex re-inserted
+above the Python block, everything else untouched) turned exactly these red:
+
+| # | Test |
+|---|------|
+| 3 | A1: exempt segment does not exempt an '&&' sibling |
+| 4 | A1: exempt segment does not exempt a ';' sibling |
+| 5 | A1: exempt segment does not exempt a '\|\|' sibling |
+| 6 | A1: exempt segment does not exempt a pipeline sibling |
+| 7 | A1: exempt segment does not exempt a background '&' sibling |
+| 8 | A1: exempt segment does not exempt a newline sibling |
+| 9 | A1: exempt segment does not exempt a 'cd' sibling |
+| 10 | A1: the exempt segment itself is still not analysed (no false block) |
+| 11 | A2: 'termlink' in argument position is NOT exempt |
+| 22 | A2: another project's absolute fw path is NOT exempt even with 'termlink' |
+| 31 | fail-closed: hook source has no line-scoped termlink short-circuit |
+
+11 of 31 flipped; the other 20 (all A3 T-679/T-1075 regressions, the A4 exempt-side
+positive control, and the wrapper cases) stayed green under both — correct, since
+those are the behaviour the exemption exists for and the mutant preserves it.
+No test outside this file flipped: `tests/integration/check_project_boundary.bats`
+kept its one pre-existing failure ("Bash redirect to /etc") in both states, and
+`tests/unit/test_boundary_hook_arguments.bats` stayed fully green in both.
+Restoring the fix returned all 31 to green.
 
 ## Recommendation
 
@@ -299,14 +367,35 @@ that true while narrowing what "exempt" covers.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-18 — bare `&` counts as a segment separator
+
+- **Chose:** split on `;`, `&&`, `||`, `|`, newline **and** a bare `&`, with `&`
+  ignored when it is part of a redirect (`2>&1`, `>&2`, `&>file`).
+- **Why:** `termlink ping & cat /opt/other/.env` is the same hole as the `&&` form
+  and the AC's list would have left it open. Including `&` only ever *narrows* the
+  exemption, so it cannot reintroduce the defect.
+- **Rejected:** the literal AC list (`;`, `&&`, `||`, `|`, newline) — matches the
+  words but ships a known-open sibling case.
+
+### 2026-08-18 — an absolute out-of-project command path is never exempt
+
+- **Chose:** `/opt/other/.agentic-framework/bin/fw termlink status` is NOT exempt,
+  even though its command position is `fw termlink`.
+- **Why:** that is precisely the cross-project `fw` invocation Pattern 2 exists to
+  block. Recognising `fw termlink` by basename alone would have re-opened it.
+- **Rejected:** basename-only matching — simpler, but hands back a hole while
+  closing another.
+
+### 2026-08-18 — fail-closed on parse failure
+
+- **Chose:** `_drop_termlink_segments` returns the command **unchanged** (nothing
+  exempt, everything analysed) on any exception, and the bash gate has no
+  short-circuit at all.
+- **Why:** the two error directions are not symmetric. A bug in this code costs a
+  false block, which is loud and immediately reported by the agent it blocks. The
+  inverse silently disables a structural gate for every session — the exact failure
+  mode T-3076 exists to close.
+- **Rejected:** `except: return blanked` or an early `exit 0` guard.
 
 ## Decision
 

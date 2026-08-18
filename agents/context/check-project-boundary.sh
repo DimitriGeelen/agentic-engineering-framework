@@ -127,15 +127,19 @@ except:
         exit 0
     fi
 
-    # TermLink exception: commands routed through termlink interact/pty/dispatch
-    # execute in a separate process, not in our shell. The cd inside the
-    # quoted argument targets the TermLink session, not the framework session.
-    # T-679: Boundary hook was blocking all TermLink cross-project operations.
-    # T-1075: Also match TermLink commands inside loops/pipes (not just at start).
-    #   e.g., `for n in ...; do termlink pty inject ... "cd /opt/$n && ..."`
-    if echo "$COMMAND" | grep -qE '(^|\s|;|&&|\|)(termlink|bin/fw termlink|fw termlink)\s'; then
-        exit 0
-    fi
+    # TermLink exception: SEE _drop_termlink_segments IN THE PYTHON BLOCK BELOW.
+    #
+    # T-679 created this exemption because `termlink interact|pty|dispatch` run
+    # the command in a DIFFERENT process — a `cd /opt/other` inside their quoted
+    # argument targets the TermLink session, not this shell, so analysing that
+    # text is a false positive. T-1075 widened it so loop/pipe forms matched.
+    #
+    # T-3076 removed the `exit 0` that used to live here. It returned before ANY
+    # boundary analysis, for the WHOLE line, on a regex that matched the word
+    # `termlink` in argument position too — so `grep termlink /opt/other/x` was
+    # exempt, and so was `termlink ping && cat /opt/other/.env`. The exemption is
+    # now applied per-segment, command-position only, inside the analysis itself.
+    # Do not reintroduce a line-scoped short-circuit here.
 
     # Detailed analysis: detect cd to another project + write operations
     export _BOUNDARY_CMD="$COMMAND"
@@ -250,7 +254,159 @@ def _strip_heredocs(s):
             break
     return ''.join(out)
 
+# T-3076: TermLink exemption — segment-scoped, command-position only.
+#
+# Replaces the whole-line `exit 0` that used to sit in the bash gate above.
+# That short-circuit returned before any analysis ran, on a regex that matched
+# the bare word `termlink` anywhere the shell allowed whitespace around it. Two
+# over-matches followed: the word in ARGUMENT position exempted the line
+# (`grep termlink /opt/other/x`), and ONE exempt segment exempted every sibling
+# segment (`termlink ping && cat /opt/other/.env`). Recorded as L-021 by T-1075
+# and left standing; T-3076 is the second instance, so it is fixed rather than
+# re-learned.
+#
+# What survives: the T-679 reason for the exemption. `termlink interact|pty|
+# dispatch` run in a different process, so a `cd /opt/other` inside their quoted
+# argument targets the TermLink session, not this shell. Those segments are
+# still exempt — only the segment that actually invokes TermLink is.
+#
+# Splitting reuses _strip_quoted rather than defining a second quote-aware
+# walker: the quote-blanked view it already produces is exactly the view in
+# which a separator inside a quoted argument is invisible. It is length-
+# preserving, so mask offsets index the real command directly.
+#
+# Fail-closed direction is explicit: _drop_termlink_segments returns the command
+# UNCHANGED (i.e. fully analysed, nothing exempt) on any parse failure. It must
+# never return early, and must never widen the exemption on error.
+
+_TL_WRAPPERS = frozenset({
+    'sudo', 'nohup', 'timeout', 'env', 'command', 'exec',
+    'time', 'stdbuf', 'nice', 'ionice',
+})
+# Shell keywords/openers that can precede a command inside a segment, e.g. the
+# `do` of the T-1075 loop form `for n in ...; do termlink pty inject ...`.
+_TL_KEYWORDS = frozenset({
+    'do', 'then', 'else', 'elif', 'if', 'while', 'until', '{', '(', '!',
+})
+_TL_ASSIGN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*=')
+_TL_DURATION = re.compile(r'^[0-9]+(\.[0-9]+)?[smhd]?$')
+
+
+def _split_segments(mask):
+    """Index ranges of shell segments in `mask` (a quote-blanked command).
+
+    Separators: newline, `;`, `|`, `||`, `&&`, and a bare `&`. A bare `&` is a
+    separator only when it is not part of a redirect (`2>&1`, `>&2`, `&>file`).
+    Because `mask` came from _strip_quoted, separators inside quoted arguments
+    have been blanked and cannot split — which is what keeps the T-679 form
+    `termlink pty inject s "cd /opt/other && make"` a single segment.
+    """
+    bounds = []
+    start = 0
+    i = 0
+    n = len(mask)
+    while i < n:
+        c = mask[i]
+        if c == '\n' or c == ';':
+            bounds.append((start, i))
+            i += 1
+            start = i
+            continue
+        if c == '|':
+            step = 2 if (i + 1 < n and mask[i + 1] == '|') else 1
+            bounds.append((start, i))
+            i += step
+            start = i
+            continue
+        if c == '&':
+            if i + 1 < n and mask[i + 1] == '&':
+                bounds.append((start, i))
+                i += 2
+                start = i
+                continue
+            prev = mask[i - 1] if i > 0 else ''
+            nxt = mask[i + 1] if i + 1 < n else ''
+            if prev in '<>' or nxt in '<>':
+                i += 1          # redirect, not a separator
+                continue
+            bounds.append((start, i))
+            i += 1
+            start = i
+            continue
+        i += 1
+    bounds.append((start, n))
+    return bounds
+
+
+def _segment_invokes_termlink(seg, root):
+    """True when `seg`'s COMMAND POSITION is a TermLink invocation.
+
+    Command position = first word of the segment, after skipping shell
+    keywords, `VAR=value` prefixes, and wrappers (`sudo`, `env VAR=v`,
+    `timeout N`, `nohup`, ...). Accepts `termlink`, `<path>/termlink`,
+    `fw termlink`, `bin/fw termlink`, `.agentic-framework/bin/fw termlink`.
+    Argument position never counts — that is the T-3076 defect.
+    """
+    toks = seg.split()
+    i = 0
+    while i < len(toks):
+        t = toks[i]
+        if t in _TL_KEYWORDS:
+            i += 1
+            continue
+        if _TL_ASSIGN.match(t):
+            i += 1
+            continue
+        if t.rsplit('/', 1)[-1] in _TL_WRAPPERS:
+            i += 1
+            while i < len(toks) and (toks[i].startswith('-')
+                                     or _TL_DURATION.match(toks[i])):
+                i += 1
+            continue
+        break
+    if i >= len(toks):
+        return False
+    cmd = toks[i]
+    # An absolute-path invocation from outside the project is never exempt:
+    # `/opt/other/.agentic-framework/bin/fw termlink ...` is precisely the
+    # cross-project fw call Pattern 2 exists to block.
+    if cmd.startswith('/') and not (cmd == root or cmd.startswith(root + '/')):
+        return False
+    base = cmd.rsplit('/', 1)[-1]
+    if base == 'termlink':
+        return True
+    if base == 'fw':
+        return i + 1 < len(toks) and toks[i + 1] == 'termlink'
+    return False
+
+
+def _drop_termlink_segments(cmd, root):
+    """Blank the segments that invoke TermLink; leave every other segment intact.
+
+    Length-preserving (spaces in, newlines kept) so the position-dependent
+    patterns downstream are unaffected. Returns `cmd` unchanged when nothing is
+    exempt AND when anything goes wrong — the fail-closed direction. A bug here
+    costs a false block; the inverse would silently disable the gate.
+    """
+    try:
+        mask = _strip_quoted(cmd)
+        out = list(cmd)
+        hit = False
+        for s, e in _split_segments(mask):
+            if s >= e:
+                continue
+            if _segment_invokes_termlink(mask[s:e], root):
+                hit = True
+                for k in range(s, e):
+                    if out[k] != '\n':
+                        out[k] = ' '
+        return ''.join(out) if hit else cmd
+    except Exception:
+        return cmd
+
+
 command = _strip_heredocs(command)   # T-2920: must precede _strip_quoted
+command = _drop_termlink_segments(command, project_root)   # T-3076
 command = _strip_quoted(command)
 
 # Pattern 1: cd to absolute path outside project root

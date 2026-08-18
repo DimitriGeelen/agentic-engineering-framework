@@ -1,18 +1,15 @@
-audit-task-tools=78
-ck-tier0=109
-budget-gate=129
+error-watchdog=4
 
-check-agent-dispatch=2
 check-rail-mcp-label=2
 check-dispatch=2
 check-fabric-new-file=2
 
-check-tier0=90
-checkpoint=42
-check-project-boundary=51
-check-active-task=56
-loop-detect=41
-error-watchdog=41
+check-tier0=99
+checkpoint=50
+check-project-boundary=60
+check-active-task=65
+loop-detect=49
+error-watchdog=44
 check-human-ac-tick=1
 check-active-completed-dup=1
 check-arc-id=1
@@ -22,3 +19,5 @@ check-inception-schema=1
 check-onboarding-gate=1
 commit-cadence=1
 check-settings-edit=1
+budget-gate=5
+audit-task-tools=3
