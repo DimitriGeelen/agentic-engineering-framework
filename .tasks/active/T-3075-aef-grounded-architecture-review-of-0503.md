@@ -9,7 +9,7 @@ description: >
   source on which AEF primitives actually exist, which are gaps, and where the governance
   model would be violated.
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T11:17:44Z
-last_update: '2026-08-18T11:30:16Z'
+last_update: 2026-08-18T11:32:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,20 +102,20 @@ behalf. No permission escalation is involved and none is being granted.
 
 ### Agent
 
-- [ ] A1 — Review written to `docs/reports/T-3075-aef-review-of-0503-t027.md`, ≤1000
+- [x] A1 — Review written to `docs/reports/T-3075-aef-review-of-0503-t027.md`, ≤1000
       words in the response body, in the structure the requester specified: Verdict;
       numbered findings each carrying severity + dossier section + evidence/reason +
       concrete change; missing primitives; first pilot; human decisions.
-- [ ] A2 — Every claim about AEF is labelled as **observed** (with a file:line or
+- [x] A2 — Every claim about AEF is labelled as **observed** (with a file:line or
       command-output citation from this repo) or as **inference**. A structural proxy
       plus an inference is not a measurement (L-589); the review must not present one
       as the other.
-- [ ] A3 — The review checks the dossier's enforcement claims against how AEF gates
+- [x] A3 — The review checks the dossier's enforcement claims against how AEF gates
       actually behave, not against how CLAUDE.md describes them. At minimum it must
       reach a position on the dossier's central safety claim — that a runtime can
       independently enforce a contract and "not trust an agent to self-authorise" —
       given what our own PreToolUse hooks can and cannot see.
-- [ ] A4 — Findings distinguish *the dossier is factually wrong about AEF today* from
+- [x] A4 — Findings distinguish *the dossier is factually wrong about AEF today* from
       *the dossier is right about AEF today and that is the problem*. The second class
       is the one worth their time.
 - [ ] A5 — Response posted to `agent-chat-arc` on thread `T-027` with the report path
@@ -231,3 +231,6 @@ grep -qiE 'PreToolUse|Tier 0|self-authoris|policy-enforcement' docs/reports/T-30
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3075-aef-grounded-architecture-review-of-0503.md
 - **Context:** Initial task creation
+
+### 2026-08-18T11:32:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
