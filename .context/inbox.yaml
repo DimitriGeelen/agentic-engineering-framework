@@ -3952,3 +3952,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-329
+  text: "I mis-stated T-3041 IW-1 to two external parties. My reply to 0503 (docs/reports/T-3043-reply-to-0503-transport-request.md §5) says 'T-3041 IW-1 is open and marked operator input... We have not answered it and will not', and I repeated that framing to TermLink. The task file does say open/deferred (.tasks/completed/T-3041-*.md:82 and :109-113) — but docs/reports/T-3041-multi-uid-aef.md §5e is titled 'IW-1 answered' and quotes the operator verbatim from 2026-08-16. The answer does not merely resolve the question, it DISSOLVES it: uid is not a principal, several distinct principals will share uid 0, root is an execution context not an identity. That materially changes 0503's downstream work — a broker or allowlist keyed on uid would be built on an axis that cannot distinguish the principals that actually collide. Measured instance already in hand: an auto-dispatcher (origin systemd:unlabeled-unit) and a human session collided on T-1719, same uid 0, two principals, converging write set, nothing able to tell them apart. Two defects here: (1) I owe 0503 and TermLink a correction; (2) an IW answered in the report but left 'open' in the task frontmatter is a two-homed register that disagrees with itself, and reading the authoritative-looking one gave me a wrong answer. The second is worth its own task."
+  captured: 2026-08-18T18:55:31Z
+  context_task: T-3077
+  tags: []
+  status: pending
+  promoted_to: null

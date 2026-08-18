@@ -1,18 +1,18 @@
-audit-task-tools=18
+audit-task-tools=32
 
 check-onboarding-gate=2
 commit-cadence=1
 check-settings-edit=2
-budget-gate=57
+budget-gate=82
 audit-task-tools=31
 check-inception-schema=1
 check-arc-id=1
 check-heredoc-cmd-sub=1
 check-inception-decisions=1
-check-project-boundary=30
-check-active-task=31
-loop-detect=26
-checkpoint=26
-check-tier0=29
+check-project-boundary=55
+check-active-task=65
+loop-detect=40
+checkpoint=40
+check-tier0=47
 post-compact-resume=1
-error-watchdog=17
+error-watchdog=30
