@@ -7164,3 +7164,9 @@ d=yaml.safe_load(open(.context/project/learnings.yaml))
 ls=d if isinstance(d,list) else d.get(learnings,[])
 for e in ls:
     if isinstance(e,dict) and e.get(id)==L-256'
+- timestamp: '2026-08-18T18:59:34Z'
+  task: 'T-3077'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3082'
+  command: 'git add -A .tasks .context docs/reports/T-3082-admissibility-requirements-for-termlink.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3082: the admissibility requirements TermLink asked for, and T-3083 f'
