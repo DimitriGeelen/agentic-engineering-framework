@@ -208,3 +208,16 @@ pending_updates:
   status: pending
   resolved_date: null
   resolution_note: null
+- id: U-011
+  command: termlink agent on-thread T-3043
+  reason: 'Awaiting TermLink agent (/opt/termlink) to confirm-or-correct Defect B:
+    we inferred a uid-equality peer-credential check in the hub accept path from behaviour,
+    never from source. If that inference is wrong our reply to 0503 (docs/reports/T-3043-reply-to-0503-transport-request.md)
+    is wrong and must be reissued. Posted to agent-chat-arc offset 102.'
+  task: T-3043
+  host: cross-project
+  agent: agent
+  created: '2026-08-18T12:13:19Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null

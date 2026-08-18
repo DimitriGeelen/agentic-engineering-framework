@@ -6,16 +6,16 @@ description: >
   Inception: Predicted blast radius for open tasks — can the cost axis be made real
   before work-completed
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-18T09:20:41Z
-last_update: 2026-08-18T12:11:38Z
-date_finished: 2026-08-18T12:11:38Z
+last_update: '2026-08-18T09:30:06Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -220,7 +220,7 @@ answer that (Spikes 1 and 2) are done and are the substance of this task.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -325,26 +325,7 @@ Measured over 1084 completed tasks with real components: body-named source paths
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: The signal exists (91% of open tasks name a real repo path) and its
-error is measured against ground truth rather than asserted (985 completed tasks
-holding git-resolved `components:`). Scoped to source directories it recovers 75%
-of true components and lands within one rung of the measured ladder 82% of the
-time. Decisive point is not the accuracy but its *direction*: it over-prices 3.8:1,
-and on a filter that prefers low cost, over-pricing means a task quietly fails to
-be promoted — visible and correctable — whereas under-pricing is T-3068's inverted
-signal, invisible until the cost has already been paid. Against a status quo of no
-cost at all for 82% of the ranked corpus, that trade is worth making.
-
-The condition: the prediction goes to `cost_estimate_proposed:` with an explicit
-`source`, never to `cost_estimate:`, and never renders like a measured value.
-A confident wrong number is harder to distrust than a blank, which is why this is
-a GO/NO-GO condition rather than an implementation detail.
-
-Measured over 1084 completed tasks with real components: body-named source paths recover 75% of true components at 50% precision, and agree with the blast-radius ladder within one rung 82% of the time, over-estimating 4:1 (the conservative direction for a cost filter). Status quo is no signal at all for 82% of ranked tasks, which is what makes the operator's HV/LC instruction unsteerable.
-
-**Date**: 2026-08-18T12:11:38Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -356,16 +337,16 @@ Measured over 1084 completed tasks with real components: body-named source paths
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b7ef96aa
-- **Timestamp:** 2026-08-18T12:11:57Z
+- **Scan ID:** R-671d1d96
+- **Timestamp:** 2026-08-18T09:26:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-21db87bb
-- **Timestamp:** 2026-08-18T12:11:57Z
+- **Scan ID:** RC-1e01a7a8
+- **Timestamp:** 2026-08-18T09:26:20Z
 - **Overall:** CONFIRMED
 - **Claims:** 2
 
@@ -373,26 +354,3 @@ Measured over 1084 completed tasks with real components: body-named source paths
 |-------|------|--------|
 | `docs/reports/T-3072-predicted-blast-radius.md` | file | ✓ pass |
 | `T-3068` | task | ✓ pass |
-### 2026-08-18T12:11:38Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** The signal exists (91% of open tasks name a real repo path) and its
-error is measured against ground truth rather than asserted (985 completed tasks
-holding git-resolved `components:`). Scoped to source directories it recovers 75%
-of true components and lands within one rung of the measured ladder 82% of the
-time. Decisive point is not the accuracy but its *direction*: it over-prices 3.8:1,
-and on a filter that prefers low cost, over-pricing means a task quietly fails to
-be promoted — visible and correctable — whereas under-pricing is T-3068's inverted
-signal, invisible until the cost has already been paid. Against a status quo of no
-cost at all for 82% of the ranked corpus, that trade is worth making.
-
-The condition: the prediction goes to `cost_estimate_proposed:` with an explicit
-`source`, never to `cost_estimate:`, and never renders like a measured value.
-A confident wrong number is harder to distrust than a blank, which is why this is
-a GO/NO-GO condition rather than an implementation detail.
-
-Measured over 1084 completed tasks with real components: body-named source paths recover 75% of true components at 50% precision, and agree with the blast-radius ladder within one rung 82% of the time, over-estimating 4:1 (the conservative direction for a cost filter). Status quo is no signal at all for 82% of ranked tasks, which is what makes the operator's HV/LC instruction unsteerable.
-
-### 2026-08-18T12:11:38Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

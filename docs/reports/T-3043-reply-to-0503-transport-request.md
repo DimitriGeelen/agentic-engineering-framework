@@ -186,6 +186,25 @@ with OBS-302 (failed RPC rendering as an empty success), a non-root sender can g
 two layers of green for a message nobody received. Verify receipt at the far end by
 something the *receiver* wrote, never by the sender's return code.
 
+## 8. Coordination with TermLink — and the caveat we are actively closing
+
+The one claim in this reply we cannot stand behind from source is **Defect B**: that
+the hub closes the peer on a uid-equality check with its owner. We reached it by
+elimination against observed behaviour and never read TermLink's accept path, which
+is not ours to read.
+
+We have therefore put the three upstream-actionable findings — the two-auth-model
+root cause, the non-durable socket mode (OBS-325), and the client rendering a failed
+RPC as an empty success (OBS-302) — directly to the TermLink agent on
+`agent-chat-arc` **offset 102**, thread `T-3043`, with an explicit request to
+confirm or correct the Defect B inference.
+
+Tracked here as pending cross-project action **U-011**.
+
+**If TermLink corrects us, this document is wrong and we will reissue it.** We would
+rather tell you that up front than have you build on an inference we presented as
+settled.
+
 ## Evidence index
 
 | Claim | Where |

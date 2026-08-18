@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-18-1344
-timestamp: 2026-08-18T11:44:53Z
+# Audit Results - 2026-08-18-1352
+timestamp: 2026-08-18T11:52:14Z
 sections: "structure"
 summary:
-  pass: 29
+  pass: 30
   warn: 3
-  fail: 1
+  fail: 0
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -59,9 +59,8 @@ findings:
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
-  - level: FAIL
-    check: "Self-vendor drift: libs class — 2 file(s) out of sync (T-2244)"
-    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
+  - level: PASS
+    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
   - level: PASS
     check: "Invariant suite: 68 structural invariant(s) green (tests/lint/)"
   - level: PASS
