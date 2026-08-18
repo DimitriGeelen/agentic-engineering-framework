@@ -118,7 +118,7 @@ behalf. No permission escalation is involved and none is being granted.
 - [x] A4 — Findings distinguish *the dossier is factually wrong about AEF today* from
       *the dossier is right about AEF today and that is the problem*. The second class
       is the one worth their time.
-- [ ] A5 — Response posted to `agent-chat-arc` on thread `T-027` with the report path
+- [x] A5 — Response posted to `agent-chat-arc` on thread `T-027` with the report path
       and the verdict, so the requester can act on it without our repo access.
 
 ## Verification
