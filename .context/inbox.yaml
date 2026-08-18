@@ -3910,3 +3910,24 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-323
+  text: "BVP value axis discriminates weakly, so 'focus on HV' is nearly as unsteerable as 'LC'. Measured 2026-08-18 over 370 active tasks carrying estimator-proposed scores: only 19 distinct raw score-sums exist and 142 tasks (38%) sit in two of them (sum 9: 77 tasks, sum 8: 65). Visible downstream as a 20-way tie at BVP=108 in 'fw bvp --include-proposed'. Sibling to T-3072 (cost axis unmeasured for 82%): T-3072 is the LC half of the operator HV/LC directive, this is the HV half. Only 7% of proposals are all-drivers-no-signal, so the estimator is producing scores, they just cluster. Worth its own task once T-3072 lands, since a fix changes ranking semantics."
+  captured: 2026-08-18T10:10:57Z
+  context_task: T-3064
+  tags: [governance]
+  status: pending
+  promoted_to: null
+- id: OBS-324
+  text: "fw termlink cleanup reports 'All workers cleaned up' while dispatched workers are still alive and editing files. Measured 2026-08-18 on T-3064: sent 'termlink signal <name> SIGTERM' (reported 'Signal 15 sent to PID 2003372'), then 'fw termlink cleanup' printed 'Removed 28 stale session(s). All workers cleaned up.' Both messages were true about the SESSION and false about the PROCESS — the claude -p child outlived both, and for ~25 minutes TWO workers with identical prompts concurrently edited bin/fw, lib/upgrade.sh and agents/designer/designer.sh in the same checkout. Observed side effect: a PostToolUse hook failed with 'bin/fw: line 219: syntax error: unexpected end of file' because it read bin/fw mid-write. The surviving worker detected the peer itself and did its mutation run against a mirror to avoid corrupting the other writer's reads. Same family as T-577 (termlink run --timeout deregisters without killing) but on the dispatch+cleanup path, and worse because cleanup actively asserts success. Needs: cleanup must verify the PID is gone, not that the session record is."
+  captured: 2026-08-18T10:30:51Z
+  context_task: T-3064
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-325
+  text: "Socket-mode fixes on /var/lib/termlink/hub.sock do not survive a hub restart. Operator applied 0770 on 2026-08-16 19:37 (T-3043 RCA); the inode on disk today is srwxr-xr-x root root created 20:37 — the hub re-made it with its own umask an hour later. Consequence for T-3041 Candidate C and for any ACL-based proposal: the grant must live in the hub's socket creation or its service unit umask, never in an after-the-fact chmod, or it is a window that closes silently at the next restart with the OBS-302 masked-failure signature. Also a sufficient explanation on its own for 'access worked once then stopped'."
+  captured: 2026-08-18T11:45:47Z
+  context_task: T-3043
+  tags: [termlink]
+  status: pending
+  promoted_to: null

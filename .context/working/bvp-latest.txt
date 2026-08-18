@@ -1,0 +1,149 @@
+NOTE: 116/143 task(s) (81%) have no known cost — blast_radius unmeasured, so no quadrant (COST/QUAD show '-').
+      Quadrant thresholds are computed over the 27 task(s) that do have one.
+      Cost becomes measurable once `components:` is resolved; see T-3068.
+
+TASK         BVP   NORM  COST   QUAD  SOURCE     NAME
+------------------------------------------------------------------------------------------------
+T-1719       116   0.43     -      -  proposed   Embeddings strategy V1 — Slice 1 (post-write hook 
+T-2667       111   0.41     -      -  proposed   corpus map: knowledge-leveling (package dogfood ca
+T-1265       108   0.40   3.6  hv-lc  proposed   Export docs section as PDF/DOCX/other formats
+T-1271       108   0.40   3.6  hv-lc  proposed   Cross-agent peer learning — 15-min TermLink reflec
+T-1309       108   0.40   3.6  hv-lc  proposed   Ship watchtower.service systemd template + make fw
+T-1611       108   0.40   3.6  hv-lc  proposed   Swap local Watchtower Werkzeug dev server for guni
+T-1685       108   0.40   3.6  hv-lc  proposed   fw audit refactor — first real consumer of the orc
+T-2137       108   0.40   3.7  hv-hc  proposed   Multi-option AC pattern — choice spawns child ince
+T-2321       108   0.40   3.6  hv-lc  proposed   Pickup: AEF→TermLink first-contact: T-2303 arc-011
+T-2323       108   0.40   3.7  hv-hc  proposed   AEF-IC-1: Yield-point granularity (substrate ADR §
+T-2668       108   0.40   3.6  hv-lc  proposed   guided-mode procedural enforcement (package Lock 6
+T-2669       108   0.40   3.6  hv-lc  proposed   audience lenses on corpus maps (package P1: functi
+T-2670       108   0.40   3.6  hv-lc  proposed   workflow fabric: queryable cross-map index (packag
+T-2715       108   0.40   3.8  hv-hc  proposed   first-run experience: why four green install surfa
+T-2770       108   0.40   3.6  hv-lc  proposed   should a read-only fw query auto-init and vendor i
+T-2876       108   0.40   3.7  hv-hc  proposed   Interpreter-mediated writes bypass the Bash task g
+T-2899       108   0.40   3.7  hv-hc  proposed   Should designer-stored maps carry producer provena
+T-2963       108   0.40   3.6  hv-lc  proposed   Seam design: a pinned designer drops every extensi
+T-3072       108   0.40   3.8  hv-hc  proposed   Predicted blast radius for open tasks — can the co
+T-550        108   0.40   3.7  hv-hc  proposed   Composition-based adapter pattern — evaluate for a
+T-558        108   0.40   3.7  hv-hc  proposed   Build task risk signal detection — PreToolUse gate
+T-682        108   0.40   3.6  hv-lc  proposed   TermLink product feedback — --working-dir flag for
+T-704        108   0.40   3.6  hv-lc  proposed   DAG federation for cross-machine knowledge graphs
+T-705        108   0.40   3.6  hv-lc  proposed   KCP integration — knowledge.yaml generation from f
+T-844        108   0.40   3.6  hv-lc  proposed   SSD evaluation — Simple Self-Distillation for code
+T-2202       105   0.39     -      -  proposed   dispatch AEF setup worker on /opt/832-Workflow-des
+T-2200       102   0.38     -      -  proposed   dispatch AEF setup worker on /opt/fan-dashboard
+T-2171       101   0.37     -      -  proposed   BVP T-NEW-E: F-AUTONOMY activation gate — uncommen
+T-3049        97   0.36     -      -  proposed   fabric drift joins https:// card locations onto PR
+T-3073        97   0.36     -      -  proposed   C-001 research-artefact check is blind to captured
+T-2268        94   0.35     -      -  proposed   arc-010 Slice 3 — HM-A demo agent: fresh-session M
+T-2353        92   0.34     -      -  proposed   audit.sh post-emit hook — convert WARN/FAIL to bug
+T-2354        92   0.34     -      -  proposed   BVP estimator score_audit_severity handler + audit
+T-3046        90   0.33     -      -  proposed   Message triage slice 1 — static msg_type router fo
+T-1820        87   0.32     -      -  proposed   joint smoke-test slice — v2 peer-consult end-to-en
+T-2969        85   0.31     -      -  proposed   draft arc with all constituents complete is report
+T-3070        85   0.31     -      -  proposed   Full fw audit cannot complete: single process-wide
+T-3043        83   0.31     -      -  proposed   RCA: non-root agent cannot use TermLink hub — sock
+T-2170        81   0.30     -      -  proposed   BVP T-NEW-D: per-driver Watchtower display — exten
+T-3040        81   0.30     -      -  proposed   peer message backlog lost — local hub had no frame
+T-2269        78   0.29     -      -  proposed   arc-010 Slice 4 — Watchtower frontend migration: o
+T-2556        78   0.29     -      -  proposed   corpus gap: no diagram-kind marker — documentation
+T-2420        77   0.29     -      -  proposed   PreToolUse hook: detect `### Human` outside `## Ac
+T-2801        76   0.28     -      -  proposed   fw init is not atomic and its debris is not fw-rec
+T-2410        75   0.28     -      -  proposed   check-active-task hook: false positives block legi
+T-3064        75   0.28     -      -  proposed   Workflow Designer is never installed by onboarding
+T-2802        72   0.27     -      -  proposed   fw watchtower url returns http://localhost:3000 fr
+T-100201      71   0.26     -      -  proposed   Reconcile T-100196 session-on-master with T-2394 m
+T-2666        71   0.26     -      -  proposed   corpus map: task-creation (package dogfood catalog
+T-2716        71   0.26     -      -  proposed   Draft the arc lifecycle + exit workflow map (pair-
+T-2871        71   0.26     -      -  proposed   corpus depends 91% on non-frozen aef:meta keys — n
+T-2977        69   0.26     -      -  proposed   designer inspector shows no per-node note — blocke
+T-2172        67   0.25     -      -  proposed   BVP T-NEW-B: F-RECALL band 0-2 calibration — data-
+T-2433        67   0.25     -      -  proposed   payload-mediation: OS sandbox profile emit/install
+T-2386        64   0.24     -      -  proposed   Assess inception research-artifact backlog (C-001)
+T-2665        64   0.24     -      -  proposed   corpus map: exception-handling (package dogfood ca
+T-1062        63   0.23     -      -  proposed   WezTerm task-aware terminal chrome via TermLink RP
+T-1624        62   0.23     -      -  proposed   Refresh ring20-dashboard hub.secret on this anchor
+T-2306        61   0.23     -      -  proposed   T-2305 GO: implement 3 BVP drivers (V_PROMPT_QUALI
+T-1542        60   0.22     -      -  proposed   fw upgrade from inside a consumer crashes at step 
+T-1639        60   0.22     -      -  proposed   TermLink: throughput benchmark for governance subs
+T-2760        60   0.22     -      -  proposed   Pickup: >- (from 010-termlink)
+T-2001        57   0.21     -      -  proposed   Enforce executed-browser test on interactive rende
+T-2745        57   0.21     -      -  proposed   Wire pytest tests/unit/ into fw test and CI (153 f
+T-2746        57   0.21     -      -  proposed   fw auto-inits a project in PWD on any non-TTY invo
+T-2747        57   0.21     -      -  proposed   Orchestrator status test fixtures seed only .conte
+T-2748        57   0.21     -      -  proposed   Find the cross-test polluter making 6 web tests fa
+T-2749        57   0.21     -      -  proposed   fw doctor stray-root-marker check misses /.tasks (
+T-2750        57   0.21     -      -  proposed   Find the test leaking T-9999-test.md to filesystem
+T-2751        57   0.21     -      -  proposed   Re-pin is_viewable_path README.md assertion to the
+T-2752        57   0.21     -      -  proposed   Extend render_page_guard DictLoader stubs with _br
+T-2753        57   0.21     -      -  proposed   arc-tag idempotency test counts audit-log mentions
+T-2754        57   0.21     -      -  proposed   Corpus all-versions census pin is 28, store grew t
+T-2756        57   0.21     -      -  proposed   Verify whether fw upgrade bootstrap auto-clone re-
+T-2767        57   0.21     -      -  proposed   vendor the pinned designer bundle (T-2757 GO slice
+T-2768        57   0.21     -      -  proposed   fix not-synced guidance to name a source + state L
+T-2772        57   0.21     -      -  proposed   T-2732 port gate is blind to FW_TEST_PORT=3000 (en
+T-2773        57   0.21     -      -  proposed   stale 'Read-only — live weight sliders ship in T-1
+T-2840        57   0.21     -      -  proposed   render-surface gate git-grep is unanchored, misatt
+T-2859        57   0.21     -      -  proposed   fw work-on usage text advertises a --type-less for
+T-2861        57   0.21     -      -  proposed   fw init does not set bgIsolation none, so Claude C
+T-2889        57   0.21     -      -  proposed   git stash classifies SAFE but writes the working t
+T-2892        57   0.21     -      -  proposed   corpus all-versions census pinned at 32 while the 
+T-2894        57   0.21     -      -  proposed   port-3000 carrier population has no set-level ratc
+T-2906        57   0.21     -      -  proposed   fw context status reports Learnings: 0 against a 6
+T-2907        57   0.21     -      -  proposed   Six read-only consumers still resolve learning ids
+T-2913        57   0.21     -      -  proposed   in-repo scripts post to termlink channel post dire
+T-2918        57   0.21     -      -  proposed   fw peer subscribe uses event poll <session> which 
+T-2950        57   0.21     -      -  proposed   OBS-238: audit CTL-013 holds a third copy of the v
+T-2955        57   0.21     -      -  proposed   fw arc tag writes the deprecated arc:<slug> tag fo
+T-2958        57   0.21     -      -  proposed   P-011 eval substitutes backticks outside single qu
+T-2961        57   0.21     -      -  proposed   VERSION third field is a distance, not a patch — T
+T-2962        57   0.21     -      -  proposed   _KNOWN_EXT membership is audited by reference coun
+T-2997        57   0.21     -      -  proposed   fw doctor claude-fw drift compares router against 
+T-2998        57   0.21     -      -  proposed   CTL-008 counts git-generated merge subjects as tas
+T-3055        57   0.21     -      -  proposed   Watchtower serves via the Werkzeug dev server unbo
+T-3057        57   0.21     -      -  proposed   Watchtower has no project-local blueprint extensio
+T-3059        57   0.21     -      -  proposed   pickup_next_id is read-then-write with no lock, so
+T-2309        55   0.20     -      -  proposed   Watchtower /inception/<T>/decide returns opaque 40
+T-1821        54   0.20     -      -  proposed   T-1820 follow-up: live joint-smoke demo when TermL
+T-2014        52   0.19     -      -  proposed   Root-cause: extensionless ImageMagick exports land
+T-2083        52   0.19     -      -  proposed   /inception page renders in 12.2s — aggregation per
+T-2220        52   0.19     -      -  proposed   T-2217 Slice 2 — Playwright contract test for ince
+T-2254        52   0.19     -      -  proposed   Watchtower /arcs/new — arc-create form (sibling to
+T-2276        52   0.19     -      -  proposed   Pickup: Inception Recommendation schema enforced o
+T-2310        52   0.19     -      -  proposed   T-2309 Slice 2: csrf-htmx.js auto-refresh on 403 —
+T-2311        52   0.19     -      -  proposed   T-2309 Slice 3: investigate <script> text-leak in 
+T-2346        52   0.19     -      -  proposed   T-2170 Slice 2 — facet axis-swap + Playwright pin
+T-2350        52   0.19     -      -  proposed   T-2347b Slice B1 — _completion_stats / _resolve_co
+T-2355        52   0.19     -      -  proposed   Audit emit volume-safety digest mode (T-2352 S3)
+T-2434        52   0.19     -      -  proposed   payload-mediation: Lock-1 acceptance demo (headlin
+T-2441        52   0.19     -      -  proposed   Onboard /opt/505-Ring20-Site to AEF + bootstrap re
+T-2470        52   0.19     -      -  proposed   Reassess active-task-gate Bash safelist (T-2054/T-
+T-2496        52   0.19     -      -  proposed   deploy-doctor slice 1: declare policy/deploy-topol
+T-2513        52   0.19     -      -  proposed   fw note <unknown-verb> silently captures the verb 
+T-2585        52   0.19     -      -  proposed   Document workflow 't2584-ghost-target' (referenced
+T-2607        52   0.19     -      -  proposed   fw vendor self --check reports 'in sync' while the
+T-2657        52   0.19     -      -  proposed   fw update chicken-and-egg: old do_vendor misses ne
+T-2661        52   0.19     -      -  proposed   self-vendor root-data class + patternless sim test
+T-2680        52   0.19     -      -  proposed   silent-zero store-grep detector (T-2679 Slice 1)
+T-2681        52   0.19     -      -  proposed   assumption-rail registry + probe runner (T-2679 Sl
+T-2698        52   0.19     -      -  proposed   config registry drift: 2 keys missing from Watchto
+T-2699        52   0.19     -      -  proposed   fw help omits 21 router commands including arc, co
+T-2720        52   0.19     -      -  proposed   Keystone: onboarding set contains nothing the agen
+T-2721        52   0.19     -      -  proposed   Keystone: escalation ladder trigger derived from w
+T-1737        49   0.18     -      -  proposed   Slice 2: UserPromptSubmit hook + $PROMPT_UNDER_TRI
+T-2219        45   0.17     -      -  proposed   T-2217 Slice 1 — widen inception decide side-effec
+T-1636        42   0.16     -      -  proposed   Orchestrator routing: refactor composite cache key
+T-1637        42   0.16     -      -  proposed   Multi-LLM routing: cost-aware learning — weight Ro
+T-1684        42   0.16     -      -  proposed   G-064 consumer #2: orchestrator daily health-check
+T-1742        42   0.16     -      -  proposed   Spike D follow-up: re-run qwen35 with --max-tokens
+T-2205        42   0.16     -      -  proposed   T-2204 Slice B — PreToolUse Write/Edit hook refuse
+T-2221        42   0.16     -      -  proposed   cockpit.py sibling widening — apply T-2219 escape+
+T-544         42   0.16     -      -  proposed   Create TermLink Homebrew tap with GitHub Actions b
+T-1274        39   0.14     -      -  proposed   Memory writes (claude auto-memory) blocked by onbo
+T-2485        28   0.10     -      -  proposed   dispatch loop probe (T-2484 spike 2)
+T-464         18   0.07     -      -  proposed   PR #6: feat: /capture skill + C-002 Exploratory Co
+T-801         18   0.07   3.2  lv-lc  proposed   fw costs CLI — token usage tracking from JSONL tra
+T-803         14   0.05   1.9  lv-lc  proposed   Landing page token widget — show current session t
+T-332         12   0.04     -      -  proposed   Submit to awesome lists (awesome-ai-agents, awesom
+T-334         12   0.04     -      -  proposed   Execute launch sequence: r/ClaudeAI soft launch → 
+T-449         12   0.04   4.6  lv-hc  proposed   Deep-dive articles 02-06: editing pass — strip fab
+T-802         12   0.04   2.0  lv-lc  proposed   Watchtower token dashboard — /costs page with sess

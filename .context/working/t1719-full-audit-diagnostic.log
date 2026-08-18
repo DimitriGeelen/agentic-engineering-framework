@@ -1,0 +1,73 @@
+=== AUDIT REPORT ===
+Timestamp: 2026-08-17T16:09:15+02:00
+Project: /opt/999-Agentic-Engineering-Framework
+
+=== STRUCTURE CHECKS ===
+[PASS] Tasks directory exists
+[PASS] Tasks/active directory exists
+[PASS] Tasks/completed directory exists
+[PASS] Tasks/templates directory exists
+[PASS] Task template exists
+[PASS] No duplicate task IDs across active/ and completed/
+[PASS] All 29 project YAML files parse correctly
+[PASS] All 17 arc anchor_task references resolve to existing tasks
+[PASS] All 12 onboarding-seed corpus references resolve to existing maps
+[PASS] All 8 corpus map(s) lint clean
+[PASS] Assessed 15 in-progress arc(s) with constituents; all had task commits within 30 days
+[INFO] free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F3: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F1: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F2: retire_when text present, no recognition heuristic — manual review
+[PASS] No inline arc:<slug> tag-only scans outside canonical lib (T-1881)
+[PASS] No PROJECT_ROOT resolution of framework-owned assets in web/ + lib/ Python (T-2648, OBS-097)
+[PASS] No stale-slice-references (L-417)
+[PASS] No GO-scope-not-propagated inception(s) (sibling to L-417)
+[PASS] Fabric: 1091 registered card(s)
+[WARN] Fabric: 174/1004 cards have no edges
+       Evidence: Graph coverage below target
+       Mitigation: Run: fw fabric enrich
+[WARN] Fabric drift: 9 source file(s) have no fabric card
+       Evidence: 9 unregistered files matching watch-patterns.yaml
+       Mitigation: Run: fw fabric scan
+[WARN] Fabric: 722 card(s) point at files no watch pattern covers
+       Evidence: The registry already treats these as components; drift checks cannot see them, so coverage is measured over a subset
+       Mitigation: Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components
+[PASS] Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+[PASS] Hook threshold: no hooks failing over threshold
+[PASS] Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)
+[PASS] Invariant suite: 65 structural invariant(s) green (tests/lint/)
+[PASS] Designer ghost registry: ghost↔task joins clean
+[PASS] Map conformance: aef-task-lifecycle matches its enforced machine
+[PASS] Map conformance: aef-inception-flow matches its enforced machine
+[PASS] Map conformance: aef-dispatch-loop matches its enforced machine
+[PASS] Map conformance: aef-audit-cron matches its enforced machine
+[PASS] Map conformance: aef-tier0-escalation matches its enforced machine
+
+=== WHOLE-TREE SCANS ===
+[PASS] Secret scan: tracked tree clean
+[PASS] Large-file gate: tracked tree clean
+
+=== TASK COMPLIANCE CHECKS ===
+[WARN] Task T-2720-keystone-onboarding-set-contains-nothing.md missing field: owner
+       Evidence: Compliance check failed
+       Mitigation: Fix missing field: owner in T-2720-keystone-onboarding-set-contains-nothing.md
+       369 of 370 tasks fully valid
+
+=== TASK QUALITY CHECKS ===
+[PASS] All active tasks meet quality thresholds
+
+=== GIT TRACEABILITY CHECKS ===
+[PASS] Git traceability: 99% (8297/8345 commits reference tasks)
+[WARN] Uncommitted changes present
+       Evidence: 14 real file(s) modified (9 session-state file(s) ignored)
+       Mitigation: Commit changes with task reference or stash
+[PASS] All commit task refs resolve to actual tasks
+
+=== CORPUS HEALTH ===
+[PASS] Corpus canaries: retrieval verified end to end
+=== ENFORCEMENT CHECKS ===
+[PASS] Bypass log exists
+[WARN] Gate-bypass log: 80 safety bypasses in last 7 days (+ 6 drift overrides)
+       Evidence: 984 total entries; safety-bypass-as-pattern signal
+       Mitigation: Review .context/working/.gate-bypass-log.yaml — investigate --skip-* / --scope-reduction-acknowledged callers
+[PASS] Commit-msg hook installed

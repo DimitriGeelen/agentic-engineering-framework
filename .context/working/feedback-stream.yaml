@@ -35271,3 +35271,234 @@ scan_id: R-e69e7961
 task_id: T-3069
 payload:
   task_file: .tasks/active/T-3069-fw-bvp-estimate-cost-is-implemented-but-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T13:36:34Z'
+scan_id: R-56d3d84b
+task_id: T-3046
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T13:36:34Z'
+scan_id: R-56d3d84b
+task_id: T-3046
+payload:
+  task_file: .tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md
+---
+kind: override_applied
+timestamp: '2026-08-17T13:36:34Z'
+scan_id: R-56d3d84b
+task_id: T-3046
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 3
+  ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-08-17T14:50:45Z'
+scan_id: R-7202b15c
+task_id: T-3066
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T14:50:45Z'
+scan_id: R-7202b15c
+task_id: T-3066
+payload:
+  task_file: .tasks/active/T-3066-approving-a-queued-bvp-driver-proposal-d.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T14:51:35Z'
+scan_id: R-3705969c
+task_id: T-3066
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T14:51:35Z'
+scan_id: R-3705969c
+task_id: T-3066
+payload:
+  task_file: .tasks/active/T-3066-approving-a-queued-bvp-driver-proposal-d.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T14:51:36Z'
+scan_id: R-21f83a2f
+task_id: T-3066
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T14:51:36Z'
+scan_id: R-21f83a2f
+task_id: T-3066
+payload:
+  task_file: .tasks/active/T-3066-approving-a-queued-bvp-driver-proposal-d.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T15:00:06Z'
+scan_id: R-c7ebaa38
+task_id: T-3061
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T15:00:06Z'
+scan_id: R-c7ebaa38
+task_id: T-3061
+payload:
+  task_file: .tasks/active/T-3061-audit-rail-surface-active-tasks-whose-ac.md
+---
+kind: scan_emitted
+timestamp: '2026-08-17T15:16:20Z'
+scan_id: R-a9c6f546
+task_id: T-3071
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-17T15:16:20Z'
+scan_id: R-a9c6f546
+task_id: T-3071
+payload:
+  task_file: .tasks/active/T-3071-refresh-vendored-agentic-framework-for-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-18T09:25:35Z'
+scan_id: R-4a2ab224
+task_id: T-3072
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T09:25:35Z'
+scan_id: R-4a2ab224
+task_id: T-3072
+payload:
+  task_file: .tasks/active/T-3072-predicted-blast-radius-for-open-tasks--c.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-18T09:25:35Z'
+scan_id: RC-62bd3722
+task_id: T-3072
+payload:
+  overall: CONFIRMED
+  claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-08-18T09:25:54Z'
+scan_id: R-49dbcee4
+task_id: T-3072
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T09:25:54Z'
+scan_id: R-49dbcee4
+task_id: T-3072
+payload:
+  task_file: .tasks/active/T-3072-predicted-blast-radius-for-open-tasks--c.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-18T09:25:54Z'
+scan_id: RC-5a08532e
+task_id: T-3072
+payload:
+  overall: CONFIRMED
+  claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-08-18T09:26:20Z'
+scan_id: R-671d1d96
+task_id: T-3072
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T09:26:20Z'
+scan_id: R-671d1d96
+task_id: T-3072
+payload:
+  task_file: .tasks/active/T-3072-predicted-blast-radius-for-open-tasks--c.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-18T09:26:20Z'
+scan_id: RC-1e01a7a8
+task_id: T-3072
+payload:
+  overall: CONFIRMED
+  claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-08-18T10:27:32Z'
+scan_id: R-af091e4c
+task_id: T-3074
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T10:27:32Z'
+scan_id: R-af091e4c
+task_id: T-3074
+payload:
+  task_file: .tasks/active/T-3074-t-3061-shipped-13-passing-detector-tests.md
+---
+kind: scan_emitted
+timestamp: '2026-08-18T11:25:02Z'
+scan_id: R-d7980951
+task_id: T-3064
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T11:25:02Z'
+scan_id: R-d7980951
+task_id: T-3064
+payload:
+  task_file: .tasks/active/T-3064-workflow-designer-is-never-installed-by-.md
