@@ -4,12 +4,12 @@ name: "Message triage slice 1 — static msg_type router for typed messages"
 description: >
   Message triage slice 1 — static msg_type router for typed messages
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/message_router.py, lib/write_set.py, tests/unit/t3046_message_router.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-16T19:47:40Z
-last_update: '2026-08-17T12:36:11Z'
-date_finished:
+last_update: 2026-08-18T14:08:36Z
+date_finished: 2026-08-18T14:08:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -496,8 +496,8 @@ silently — but it is fair to treat the inception's other numbers with the same
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-56d3d84b
-- **Timestamp:** 2026-08-17T13:36:34Z
+- **Scan ID:** R-63ced27d
+- **Timestamp:** 2026-08-18T14:08:44Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -505,3 +505,6 @@ silently — but it is fair to treat the inception's other numbers with the same
 
 - **Suppressed:** 1 (by override)
   - human-ac-mechanical-signal @ AC#3 (Human)
+
+### 2026-08-18T14:08:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -3180,3 +3180,31 @@ decisions:
     date: 2026-08-18
     task: T-3073
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-457
+    decision: "`key = sha256` of the canonicalised message dict; `(source_file, topic, offset)`"
+    scope: project
+    date: 2026-08-18
+    task: T-3046
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-458
+    decision: "`routed` / `surfaced` / `deferred` / `dropped`, where `deferred` means"
+    scope: project
+    date: 2026-08-18
+    task: T-3046
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-459
+    decision: "`handler` is a *name* in the ledger row. Nothing is executed, and no task is"
+    scope: project
+    date: 2026-08-18
+    task: T-3046
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-460
+    decision: "prefix-family rules + exact-match overrides, with an unknown-type hard error."
+    scope: project
+    date: 2026-08-18
+    task: T-3046
+    rationale: "Auto-captured from task file on completion"

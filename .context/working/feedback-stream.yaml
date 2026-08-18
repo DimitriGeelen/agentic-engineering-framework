@@ -35645,3 +35645,21 @@ payload:
   pattern_id: human-ac-mechanical-signal
   ac_index: 3
   ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-08-18T18:22:32Z'
+scan_id: R-e2bef7fe
+task_id: T-3043
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T18:22:32Z'
+scan_id: R-e2bef7fe
+task_id: T-3043
+payload:
+  task_file: .tasks/active/T-3043-rca-non-root-agent-cannot-use-termlink-h.md

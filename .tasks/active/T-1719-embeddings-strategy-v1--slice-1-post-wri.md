@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-17T13:07:56Z
+last_update: '2026-08-18T12:15:03Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -146,6 +146,25 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
       (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-18T12:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 1
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=1
+      (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
@@ -488,6 +507,35 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
   filing a sibling. **Next redispatch round: check
   `.context/working/t1719-full-audit-diagnostic.log` for `=== SUMMARY ===`
   before re-running `fw audit` again.**
+
+### 2026-08-18 — A6b fifth attempt: the detached run itself died, no SUMMARY, no re-run
+- **What changed:** Followed the prior entry's instruction and checked the
+  diagnostic log before doing anything else. Re-ran the four `t1719_*.bats`
+  files (37/37, unchanged) and the fabric-drift leg (4/4 cards present, report
+  clean) — both hold. The detached run (PID 4115033) is no longer a live
+  process, `.context/locks/audit.lock` is free, and the log never reached
+  `=== SUMMARY ===`: it stopped mid-`ENFORCEMENT CHECKS` at 16:18:17 (birth
+  16:09:15, ~9 minutes of real output) and has not grown since — roughly 22
+  hours of silence with no lock held and no process alive. Checked for an
+  external cause: `uptime -s` shows no reboot since 2026-08-13 (predates the
+  run), and `journalctl -k` in the run's window has zero OOM/killed-process
+  entries. So this is a fourth *distinct* failure mode after exit-75 (lock
+  contention), exit-124 (timeout mid-run), and "ran further but still no
+  SUMMARY" — this time the un-timed-out, disowned process died on its own
+  with no external kill signal on record and no verdict written.
+- **Plan impact:** none to Slice 1's code. A6b stays unticked. Per the
+  Error Escalation Ladder (max 3 hypotheses before escalating) this is well
+  past that bound across the four-attempt history — re-running `fw audit`
+  a sixth time from this dispatch turn would be the shotgun-debugging this
+  protocol exists to prevent, not a new hypothesis. A6/A6b's blocker is
+  T-3070's root cause (lock/timeout/schedule-collision in `audit.sh`
+  itself), which is out of T-1719's build scope to fix inline.
+- **Triggered:** none new — T-3070 already carries this class of finding as
+  its own AC #1 ("ground truth established... or confirmation it never does
+  within a generous bound"). This entry's evidence (a fully detached run
+  that neither completed nor was externally killed) is itself relevant
+  ground truth for that AC and should inform whoever picks up T-3070, not
+  spawn a sibling task here.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver

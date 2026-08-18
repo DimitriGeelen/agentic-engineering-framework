@@ -1,0 +1,121 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3043: RCA: non-root agent cannot use TermLink hub — socket mode, connect sequence, permission model
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T18:22:44Z
+# ============================================================================
+
+task_id: T-3043
+task_name: "RCA: non-root agent cannot use TermLink hub — socket mode, connect sequence, permission model"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-16T17:27:15Z
+completed: 2026-08-18T18:22:30Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-08-16T19:32:49+02:00
+last_commit: 2026-08-18T20:22:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — two stacked defects, and the chmod only clears the first. gate B narrowed to uid equality, and the client was hiding it. answering 0503's transport request with the work we already did. take the upstream half to TermLink, and flag what we inferred. upstream confirmed the inference from source, and corrected two of our claims
+
+# Key outcomes
+outcomes:
+  - 'RCA document exists at `docs/reports/T-3043-termlink-nonroot-rca.md` with a'
+  - 'The permission model is stated with the POSIX rule that explains it:'
+  - 'Root-vs-non-root asymmetry is demonstrated against the **same socket and'
+  - 'The three-hub split-brain state is documented with `ps`/`ss` evidence showing'
+  - 'Unresolved links are listed as OPEN with what would resolve each, not filled'
+  - 'G-019 section answers "why did the framework allow this" structurally — not'
+  - 'Every factual claim is traceable to a command in the evidence index.'
+  - 'Upstream vs local recommendations are separated per gap-homing (T-1333): the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-18.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-3041.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.auto-restart-pending'
+  - '.context/working/bvp-latest.txt'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/doctor-timing.err'
+  - '.context/working/doctor-timing.txt'
+  - '.context/working/doctor-trace.log'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/happiness.jsonl'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/pending-updates.yaml'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/t1719-full-audit-diagnostic.log'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/T-3043-reply-to-0503-transport-request.md'
+  - 'docs/reports/T-3043-termlink-nonroot-rca.md'
+  - '.tasks/active/T-3043-rca-non-root-agent-cannot-use-termlink-h.md'
+  - '.tasks/completed/T-3041-aef-under-multiple-uids--de-rooting-the-.md'
+  - '.tasks/completed/T-3072-predicted-blast-radius-for-open-tasks--c.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T19:32:49'
+    action: 'T-3043: RCA — two stacked defects, and the chmod only clears the first'
+  - time: '2026-08-16T19:39:10'
+    action: 'T-3043: gate B narrowed to uid equality, and the client was hiding it'
+  - time: '2026-08-18T13:46:00'
+    action: 'T-3043: answering 0503''s transport request with the work we already did'
+  - time: '2026-08-18T14:13:53'
+    action: 'T-3043: take the upstream half to TermLink, and flag what we inferred'
+  - time: '2026-08-18T20:22:25'
+    action: 'T-3043: upstream confirmed the inference from source, and corrected two of our claims'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 2935 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2935
+  commits: 5
+  files_changed: 37
+  lines_added: 35560
+  lines_removed: 401
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3043-rca-non-root-agent-cannot-use-termlink-h.md
+generated_by: context-agent-hybrid

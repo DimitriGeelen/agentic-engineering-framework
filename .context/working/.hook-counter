@@ -1,12 +1,12 @@
-audit-task-tools=13
+audit-task-tools=15
 ck-tier0=109
-budget-gate=51
-check-project-boundary=122
-check-active-task=119
-loop-detect=120
-error-watchdog=111
+budget-gate=53
+check-project-boundary=124
+check-active-task=121
+loop-detect=122
+error-watchdog=113
 audit-task-tools=73
-checkpoint=86
+checkpoint=88
 post-compact-resume=6
 check-active-completed-dup=2
 check-onboarding-gate=2
@@ -23,4 +23,4 @@ check-rail-mcp-label=1
 check-dispatch=1
 check-fabric-new-file=1
 
-check-tier0=13
+check-tier0=15
