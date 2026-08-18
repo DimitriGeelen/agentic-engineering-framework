@@ -4,10 +4,10 @@ name: "refresh vendored .agentic-framework after the T-3077 agents/ change"
 description: >
   refresh vendored .agentic-framework after the T-3077 agents/ change
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T19:40:28Z
-last_update: 2026-08-18T19:40:28Z
-date_finished: null
+last_update: 2026-08-18T19:44:24Z
+date_finished: 2026-08-18T19:44:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -46,9 +46,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/fw vendor self --dry-run` reports no remaining drift, so the pre-push self-vendor gate (T-2240) passes without `FW_SKIP_SELF_VENDOR_CHECK=1` and without `--no-verify`.
-- [ ] The refreshed `.agentic-framework/` files are committed, so consumers vendoring from origin inherit T-3077's `agents/context/check-project-boundary.sh` instead of the stale copy.
-- [ ] `git push` to origin succeeds, landing the commits the gate was holding.
+- [x] `bin/fw vendor self --dry-run` reports no remaining drift, so the pre-push self-vendor gate (T-2240) passes without `FW_SKIP_SELF_VENDOR_CHECK=1` and without `--no-verify`.
+- [x] The refreshed `.agentic-framework/` files are committed, so consumers vendoring from origin inherit T-3077's `agents/context/check-project-boundary.sh` instead of the stale copy.
+- [x] `git push` to origin succeeds, landing the commits the gate was holding.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -245,3 +245,20 @@ test -z "$(git status --porcelain .agentic-framework/)"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3085-refresh-vendored-agentic-framework-after.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b8c14e62
+- **Timestamp:** 2026-08-18T19:44:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **skip-as-pass** (severe, deterministic) @ Verification:line 2
+     - evidence: `bin/fw vendor self --dry-run > .context/working/.t3085-vendor.out 2>&1 && ! grep -q "would sync" .context/working/.t3085-vendor.out`
+
+### 2026-08-18T19:44:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

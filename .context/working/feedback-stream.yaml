@@ -35681,3 +35681,39 @@ scan_id: R-a51b42d8
 task_id: T-3076
 payload:
   task_file: .tasks/active/T-3076-project-boundary-hook-exempts-any-comman.md
+---
+kind: scan_emitted
+timestamp: '2026-08-18T19:39:26Z'
+scan_id: R-d7e6897b
+task_id: T-3077
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T19:39:26Z'
+scan_id: R-d7e6897b
+task_id: T-3077
+payload:
+  task_file: .tasks/active/T-3077-governance-test-suite-leaves-live-tier-0.md
+---
+kind: scan_emitted
+timestamp: '2026-08-18T19:44:27Z'
+scan_id: R-b8c14e62
+task_id: T-3085
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-18T19:44:27Z'
+scan_id: R-b8c14e62
+task_id: T-3085
+payload:
+  task_file: .tasks/active/T-3085-refresh-vendored-agentic-framework-after.md

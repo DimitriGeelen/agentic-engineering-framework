@@ -1,0 +1,14 @@
+1..13
+ok 1 block-plan-mode: blocks EnterPlanMode tool
+ok 2 block-task-tools: blocks TodoWrite
+ok 3 block-task-tools: blocks TaskCreate
+ok 4 block-task-tools: blocks TaskUpdate
+ok 5 check-active-task: blocks Write to source when no active task
+ok 6 check-active-task: ALLOWS Write to .context/ even without task
+ok 7 check-tier0: blocks 'git push --force' without approval
+ok 8 check-tier0: blocks 'rm -rf /' wildcard
+ok 9 check-tier0: ALLOWS benign commands (ls, echo)
+ok 10 check-agent-dispatch: blocks Agent dispatch above limit
+ok 11 check-project-boundary: blocks Write outside PROJECT_ROOT
+ok 12 check-project-boundary: ALLOWS Write inside PROJECT_ROOT
+ok 13 budget-gate: ALLOWS when no transcript path provided (fail-open path)

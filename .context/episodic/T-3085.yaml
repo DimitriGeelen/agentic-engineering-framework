@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3085: refresh vendored .agentic-framework after the T-3077 agents/ change
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T19:44:39Z
+# ============================================================================
+
+task_id: T-3085
+task_name: "refresh vendored .agentic-framework after the T-3077 agents/ change"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-18T19:40:28Z
+completed: 2026-08-18T19:44:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-18T21:42:58+02:00
+last_commit: 2026-08-18T21:42:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored .agentic-framework after the T-3077 agents/ change
+
+# Key outcomes
+outcomes:
+  - '`bin/fw vendor self --dry-run` reports no remaining drift, so the pre-push self-vendor gate (T-2240) passes without `FW_SKIP_SELF_VENDOR_CHECK=1` and without `--no-verify`.'
+  - 'The refreshed `.agentic-framework/` files are committed, so consumers vendoring from origin inherit T-3077''s `agents/context/check-project-boundary.sh` instead of the stale copy.'
+  - '`git push` to origin succeeds, landing the commits the gate was holding.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/VERSION'
+  - '.tasks/active/T-3085-refresh-vendored-agentic-framework-after.md'
+  - '.tasks/completed/T-3077-governance-test-suite-leaves-live-tier-0.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T21:42:58'
+    action: 'T-3085: refresh vendored .agentic-framework after the T-3077 agents/ change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 413
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3085-refresh-vendored-agentic-framework-after.md
+generated_by: context-agent-hybrid

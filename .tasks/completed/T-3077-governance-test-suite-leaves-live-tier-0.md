@@ -10,12 +10,12 @@ description: >
   appear as live PENDING entries on Watchtower /approvals. Operator saw them and asked.
   If approved, a genuine rm -rf / becomes pre-authorised.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/governance/test_pretooluse_gates.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:33:41Z
-last_update: 2026-08-18T18:48:25Z
-date_finished:
+last_update: 2026-08-18T19:39:12Z
+date_finished: 2026-08-18T19:39:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -552,3 +552,22 @@ expected to stay green. A1 is the mutation-sensitive assertion.
 
 ### 2026-08-18T18:45:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d7e6897b
+- **Timestamp:** 2026-08-18T19:39:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 4
+     - evidence: `bats tests/governance/test_pretooluse_gates.bats > .context/working/.t3077-gates.out 2>&1 || true`
+  2. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/governance/test_t3077_approvals_surface_isolation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-08-18T19:39:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

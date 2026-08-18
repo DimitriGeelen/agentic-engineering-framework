@@ -1,0 +1,120 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3077: governance test suite leaves live Tier 0 approval requests in the operator queue
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T19:39:41Z
+# ============================================================================
+
+task_id: T-3077
+task_name: "governance test suite leaves live Tier 0 approval requests in the operator queue"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-18T18:33:41Z
+completed: 2026-08-18T19:39:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-18T20:36:10+02:00
+last_commit: 2026-08-18T21:31:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the governance suite files real Tier 0 approval requests against the live queue. the fix was written down four months ago and marked application: TBD. dispatch prompt. carve out the three Tier 0 concerns and the one that is bigger than all of them. OBS-329 — I told two peers IW-1 was open; our own report answers it. sandbox the Tier 0 gate tests so they stop filing real approval requests. RCA, A4 survey, Evolution (mutation names + sandbox preconditions), ACs ticked. state A4 survey coverage limit (5/6 tests sampled, run terminated on hang)
+
+# Key outcomes
+outcomes:
+  - '**A1 — the suite leaves the live approvals surface byte-identical.** A guard'
+  - '**A2 — isolation by construction, not cleanup afterwards.** The hook under'
+  - '**A3 — positive control, both directions (L-616).** The test asserts a'
+  - '**A4 — the sibling suites are surveyed and the result recorded.** L-256'
+  - '**A5 — mutation-tested.** Reverting the isolation to the current'
+  - '**A6 — L-256 is closed out or explicitly scoped, not duplicated.** If this'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the fix was written down four months ago and marked application: TBD'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/approvals/pending-17d4dd0baaec.yaml'
+  - '.context/approvals/pending-5c7923bd67b0.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/episodic/T-3076.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/dispatch-prompts/T-3077.md'
+  - '.context/working/.doctor-profile.txt'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3076-project-boundary-hook-exempts-any-comman.md'
+  - '.tasks/active/T-3077-governance-test-suite-leaves-live-tier-0.md'
+  - '.tasks/active/T-3078-tier-0-approval-cards-carry-no-provenanc.md'
+  - '.tasks/active/T-3079-no-rail-detects-a-tier-0-approval-reques.md'
+  - '.tasks/active/T-3080-watchtower-tier-0-approval-grants-a-1h-t.md'
+  - '.tasks/active/T-3081-a-learning-that-prescribes-its-own-fix-a.md'
+  - '.tasks/completed/T-3076-project-boundary-hook-exempts-any-comman.md'
+  - 'tests/governance/test_pretooluse_gates.bats'
+  - 'tests/governance/test_t3077_approvals_surface_isolation.bats'
+  - 'tests/unit/t3076_boundary_termlink_segment_scope.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T20:36:10'
+    action: 'T-3077: the governance suite files real Tier 0 approval requests against the live queue'
+  - time: '2026-08-18T20:47:32'
+    action: 'T-3077: the fix was written down four months ago and marked application: TBD'
+  - time: '2026-08-18T20:48:15'
+    action: 'T-3077: dispatch prompt'
+  - time: '2026-08-18T20:53:07'
+    action: 'T-3077: carve out the three Tier 0 concerns and the one that is bigger than all of them'
+  - time: '2026-08-18T20:55:41'
+    action: 'T-3077: OBS-329 — I told two peers IW-1 was open; our own report answers it'
+  - time: '2026-08-18T21:16:47'
+    action: 'T-3077: sandbox the Tier 0 gate tests so they stop filing real approval requests'
+  - time: '2026-08-18T21:29:50'
+    action: 'T-3077: RCA, A4 survey, Evolution (mutation names + sandbox preconditions), ACs ticked'
+  - time: '2026-08-18T21:31:25'
+    action: 'T-3077: state A4 survey coverage limit (5/6 tests sampled, run terminated on hang)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 65
+  commits: 8
+  files_changed: 31
+  lines_added: 2808
+  lines_removed: 183
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3077-governance-test-suite-leaves-live-tier-0.md
+generated_by: context-agent-hybrid
