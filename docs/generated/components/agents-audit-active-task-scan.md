@@ -6,7 +6,10 @@
 
 ## What It Does
 
-Results
+T-3061: the unclosed-but-satisfied rule lives in lib/task_satisfaction.py — the
+one definition, and the one with tests (tests/unit/test_task_satisfaction.py).
+`parents[2]` is the framework root in both layouts: agents/audit/x.py in the
+framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
 
 ## Used By (7)
 

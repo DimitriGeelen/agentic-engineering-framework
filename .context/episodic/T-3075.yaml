@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3075: AEF-grounded architecture review of 0503's Executable Workflow Contract Runtime dossier (T-027)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T11:49:51Z
+# ============================================================================
+
+task_id: T-3075
+task_name: "AEF-grounded architecture review of 0503's Executable Workflow Contract Runtime dossier (T-027)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-18T11:17:44Z
+completed: 2026-08-18T11:49:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-18T13:20:41+02:00
+last_commit: 2026-08-18T13:45:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a peer asked the framework to review an architecture built on it. AEF-grounded architecture review of 0503's T-027 workflow-runtime dossier. A5 ticked — review posted to agent-chat-arc thread T-027 @100
+
+# Key outcomes
+outcomes:
+  - 'A1 — Review written to `docs/reports/T-3075-aef-review-of-0503-t027.md`, ≤1000'
+  - 'A2 — Every claim about AEF is labelled as **observed** (with a file:line or'
+  - 'A3 — The review checks the dossier''s enforcement claims against how AEF gates'
+  - 'A4 — Findings distinguish *the dossier is factually wrong about AEF today* from'
+  - 'A5 — Response posted to `agent-chat-arc` on thread `T-027` with the report path'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/dispatch-prompts/T-3073.md'
+  - '.context/working/dispatch-prompts/T-3075.md'
+  - '.context/working/T-027-dossier-from-0503.md'
+  - 'docs/reports/T-3075-aef-review-of-0503-t027.md'
+  - '.tasks/active/T-3075-aef-grounded-architecture-review-of-0503.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T13:20:41'
+    action: 'T-3075: a peer asked the framework to review an architecture built on it'
+  - time: '2026-08-18T13:45:24'
+    action: 'T-3075: AEF-grounded architecture review of 0503''s T-027 workflow-runtime dossier'
+  - time: '2026-08-18T13:45:47'
+    action: 'T-3075: A5 ticked — review posted to agent-chat-arc thread T-027 @100'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 31
+  commits: 3
+  files_changed: 5
+  lines_added: 1073
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3075-aef-grounded-architecture-review-of-0503.md
+generated_by: context-agent-hybrid

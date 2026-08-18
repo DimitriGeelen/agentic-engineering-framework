@@ -7120,3 +7120,11 @@ old=- [ ] A3. A guard exists against the recur'
   caller: 'check-active-task focus-drift'
   target: 'T-3073'
   command: 'FW_SWITCH_FOCUS=1 bin/fw context focus T-3073 >/dev/null 2>&1; timeout 900 bin/fw task update T-3073 --status work-completed > /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9'
+- timestamp: '2026-08-18T11:51:16Z'
+  task: 'T-3043'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3075'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/ docs/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-3075: closed — the review we gave a peer found two defects in us
+
+A1-A5 green, 5/5 verification. The rep'

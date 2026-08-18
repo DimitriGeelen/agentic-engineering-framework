@@ -3931,3 +3931,17 @@ observations:
   tags: [termlink]
   status: pending
   promoted_to: null
+- id: OBS-326
+  text: "resolver workflow_sha attests the committed blob, not the bytes that ran. lib/resolver.py:455 git_sha() calls 'git rev-parse HEAD:<path>', which succeeds for any TRACKED file regardless of worktree modification; the mtime-hash fallback at :475 only fires when rev-parse fails, i.e. when the path is untracked. So a tracked-but-modified workflow yields a dispatch row in .context/dispatches.jsonl attesting content that never executed, and it does so silently — the field is populated and looks authoritative. Found by the T-3075 review of 0503's dossier (their finding 2, class C2) and confirmed against source here. Matters beyond provenance: dispatches.jsonl is the ledger CLAUDE.md's own workflow_type outcome table is joined from, so the identity of what ran is unverifiable for any dispatch made from a dirty tree. Fix shape: hash the loaded bytes at load time and refuse when loaded != ratified."
+  captured: 2026-08-18T11:50:54Z
+  context_task: T-3043
+  tags: [dispatch]
+  status: pending
+  promoted_to: null
+- id: OBS-327
+  text: "check-project-boundary.sh:136 exempts the ENTIRE command line whenever a termlink token appears anywhere in it. The regex is '(^|\\s|;|&&|\\|)(termlink|bin/fw termlink|fw termlink)\\s' followed by a bare 'exit 0', so a compound line whose other clauses cd into another project and write there is exempted on the strength of an unrelated termlink call in the same line. Original intent (T-679, T-1075) was to let TermLink route cross-project work whose cd targets the remote session rather than our shell — sound, but implemented as a whole-line exemption rather than a per-clause one. Found by the T-3075 review (their finding 3) and confirmed at agents/context/check-project-boundary.sh:130-138. Fix shape: split on the same separators the regex already knows about and exempt only the clauses that are themselves termlink invocations."
+  captured: 2026-08-18T11:50:54Z
+  context_task: T-3043
+  tags: [security]
+  status: pending
+  promoted_to: null
