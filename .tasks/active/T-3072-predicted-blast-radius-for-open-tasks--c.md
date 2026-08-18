@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-18T09:20:41Z
-last_update: 2026-08-18T09:22:04Z
+last_update: 2026-08-18T09:25:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -108,21 +108,25 @@ have no way to know it was guessed.
   `components:` genuinely the only thing that knows?**
   confidence: 3
   disposition: answered
-  rationale: Spike 1 — 129 of 141 open tasks (91%) name at least one existing repo
-  path in their body; median 3 paths. The signal exists and is near-universal.
+  rationale: Spike 1 (docs/reports/T-3072-predicted-blast-radius.md §3) — 129 of 141
+  open tasks (91%) name at least one existing repo path in their body; median 3
+  paths. The signal exists and is near-universal.
 
 - **IW-2: How close is the body-path proxy to the truth, measured against tasks
   where the truth is known?**
   confidence: 3
   disposition: answered
-  rationale: Spike 2 over 985 completed tasks holding real `components:` — recall
-  0.75, precision 0.50, ladder agreement 36% exact / 82% within-one-rung, biased
-  high 421:112. Source-directory scoping is what lifts recall from 0.50 to 0.75.
+  rationale: Spike 2 (docs/reports/T-3072-predicted-blast-radius.md §4, three-variant
+  table) over 985 completed tasks holding real `components:` — recall 0.75, precision
+  0.50, ladder agreement 36% exact / 82% within-one-rung, biased high 421:112.
+  Source-directory scoping is what lifts recall from 0.50 to 0.75.
 
 - **IW-3: Is 36% exact / 82% within-one-rung good enough to steer by?**
   confidence: 2
   disposition: answered
-  rationale: Against the status quo the comparison is not 82% vs 100%, it is 82% vs
+  rationale: Argued in docs/reports/T-3072-predicted-blast-radius.md §6 (asymmetry of
+  the two error directions), against T-3068's origin finding. Against the status quo
+  the comparison is not 82% vs 100%, it is 82% vs
   *nothing at all* for 82% of the ranked corpus. The bias direction decides it: a
   proxy that over-prices declines to promote, which is the failure the operator can
   see and correct. Confidence 2 not 3 — this is a judgement about acceptable error,
@@ -132,9 +136,11 @@ have no way to know it was guessed.
   being confused?**
   confidence: 2
   disposition: answered
-  rationale: `cost_estimate` already carries a `source` field and `fw bvp` already
-  prints a SOURCE column, so the seam exists. The design commitment (Scope Fence)
-  is that predicted rows must be *visibly* distinct in every surface that shows a
+  rationale: `compute_cost` already returns a source alongside the three terms
+  (lib/bvp.sh:245) and `fw bvp`'s SOURCE column already renders one, so the seam
+  exists; see also docs/reports/T-3072-predicted-blast-radius.md §7 clause 2.
+  The design commitment (Scope Fence) is that predicted rows must be *visibly*
+  distinct in every surface that shows a
   cost, and that the NOTE line must report the predicted/measured split rather than
   disappearing once the unknown count drops. Unverified until built — this is the
   clause most likely to be got wrong, which is why it is an AC and not a detail.
@@ -318,3 +324,23 @@ Measured over 1084 completed tasks with real components: body-named source paths
 
 ### 2026-08-18T09:22:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-671d1d96
+- **Timestamp:** 2026-08-18T09:26:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-1e01a7a8
+- **Timestamp:** 2026-08-18T09:26:20Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3072-predicted-blast-radius.md` | file | ✓ pass |
+| `T-3068` | task | ✓ pass |
