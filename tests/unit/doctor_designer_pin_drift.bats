@@ -7,7 +7,7 @@
 # States:
 #   vendored sha256 == pin sha256           → OK    — t1
 #   vendored sha256 != pin sha256           → WARN  — t2
-#   vendored file absent (per pin path)     → SKIP  — t3
+#   vendored file absent (per pin path)     → WARN  — t3 (was SKIP until T-3064)
 #   pin present but missing sha256/path     → SKIP  — t4
 #
 # HERMETIC (T-2547): the pin drift check honors FW_DESIGNER_PIN_FILE. Each test points
@@ -55,8 +55,14 @@ yaml.safe_dump(d, open(p,'w'), sort_keys=False)
     [[ "$output" == *"fw designer sync --from"* ]]
 }
 
-@test "t3: vendored file absent per pin path → SKIP (no WARN)" {
-    # Point the TEMP pin's vendored_path at a nonexistent file → not-yet-vendored SKIP.
+@test "t3: vendored file absent per pin path → WARN (T-3064)" {
+    # Point the TEMP pin's vendored_path at a nonexistent file → pinned-but-absent.
+    #
+    # This test asserted SKIP until T-3064. That was the defect, not the contract: a
+    # pin naming a build the project does not have is actionable, and SKIP reads as
+    # "not applicable here" — so the serious state was quieter than mere pin drift.
+    # The pin's presence is the project saying it wants the designer; absence of the
+    # artifact is therefore a finding, not an exemption.
     python3 -c "
 import yaml
 p = '$PIN_TMP'
@@ -66,7 +72,20 @@ yaml.safe_dump(d, open(p,'w'), sort_keys=False)
 "
     cd "$FRAMEWORK_ROOT"
     run bin/fw doctor
-    [[ "$output" == *"designer not yet vendored"* ]]
+    [[ "$output" == *"designer pinned but not vendored"* ]]
+    # The verdict word on THAT line, not merely somewhere in the output. The whole
+    # point of T-3064 is which of SKIP/WARN this line carries, so the assertion has
+    # to be line-scoped: `$output == *WARN*designer pinned*` passes against a SKIP,
+    # because some earlier check in a ~40-line doctor run has almost always already
+    # printed a WARN. Verified by mutation — that weaker form let the SKIP mutant live.
+    local vline
+    vline=$(printf '%s\n' "$output" | sed 's/\x1b\[[0-9;]*m//g' | grep "designer pinned but not vendored")
+    [[ "$vline" == *"WARN"* ]]
+    [[ "$vline" != *"SKIP"* ]]
+    [[ "$output" != *"designer not yet vendored"* ]]
+    # Actionable: name the intake verb, since the operator reaching this line has a
+    # pin and no artifact and needs to know which command closes that gap.
+    [[ "$output" == *"fw designer sync --from-tag"* ]]
     [[ "$output" != *"designer vendored build drifted from pin"* ]]
 }
 

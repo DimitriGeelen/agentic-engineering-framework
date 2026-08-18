@@ -116,6 +116,16 @@ upstream MANIFEST at the same tag. Any onboarding step must go through
 rejection-on-mismatch behaviour. An onboarding step that installs an *unverified*
 designer is worse than no step.
 
+**Found while scoping (2026-08-18), in scope for A2.** `.agentic-framework/policy/designer-pin.yaml`
+is git-tracked in the vendored tree — committed by a wholesale resync under T-2992 —
+so consumers do receive the pin. But `designer-pin.yaml` is **not** in
+`_self_vendor_policy`'s explicit sync list (`lib/upgrade.sh:297`). The two copies are
+byte-identical today purely by accident of that one resync; the next pin bump will not
+propagate, and a consumer would then verify the correct artifact against a stale
+sha256 and refuse it. Failing closed is the safe direction, but the symptom is "the
+designer refuses to install" with no visible cause. The fix belongs with A2, since A2
+is what makes the vendored pin load-bearing.
+
 Related: arc-017 (`onboarding-curriculum`) owns the gated-set invariant — a task
 added to the gated onboarding set must be agent-clearable. Whatever this adds has
 to satisfy that, or sit outside the gate.
@@ -123,9 +133,14 @@ to satisfy that, or sit outside the gate.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A1. The designer's absence is a WARN, not a SKIP, in `fw doctor`. Absence
+- [x] A1. The designer's absence is a WARN, not a SKIP, in `fw doctor`. Absence
       and pin-drift are both real conditions; today the less serious one is the
       louder one.
+      *(bin/fw:1993 — WARN + actionable intake verb + warnings counter incremented.
+      `doctor_designer_pin_drift.bats` t3 rewritten to assert the verdict on that
+      line specifically; the first version asserted `*"WARN"*<message>*` over the
+      whole output and a SKIP mutant survived it, because an earlier doctor check
+      had already printed a WARN. Line-scoped form kills the mutant.)*
 - [ ] A2. Onboarding installs the designer — `fw init` and/or `fw setup` reach
       `fw designer sync` for a project that has none, and a freshly-onboarded
       project ends with the artifact present and sha256-verified against the pin.
@@ -188,6 +203,12 @@ to satisfy that, or sit outside the gate.
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
+# A1 — the pinned-but-absent state is a WARN, not a SKIP. Asserted through the real
+# doctor run rather than by grepping bin/fw, so the check has to actually reach that
+# branch. Filtered to t3: the sibling cases each spawn a full ~2-minute doctor run.
+bash -n bin/fw
+timeout 500 bats tests/unit/doctor_designer_pin_drift.bats --filter "t3"
+
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 #
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
@@ -310,6 +331,40 @@ to satisfy that, or sit outside the gate.
 -->
 
 ## Decisions
+
+### 2026-08-18 — A5: how the designer reaches a consumer
+
+- **Chose:** vendor the **single pinned build** through `fw vendor self` into
+  `.agentic-framework/vendor/designer/`, and have onboarding install from that
+  vendored copy. `fw designer sync --from-tag` stays the intake/refresh path in the
+  framework repo, not a step in consumer onboarding.
+- **Why:**
+  - The declaration is *already* vendored and the artifact is not.
+    `.agentic-framework/policy/designer-pin.yaml` exists in every consumer today;
+    `.agentic-framework/vendor/` does not exist at all. So a consumer already carries
+    a pin naming a file it was never given — this closes an existing gap rather than
+    opening a new channel.
+  - **Offline onboarding keeps working (A4).** 832-Workflow-designer lives on an
+    internal OneDev. Fetch-at-onboarding would make every `fw init` depend on a
+    remote the consumer may have no route or credentials to, and the failure would
+    land at install time — the exact hang-or-silently-succeed shape A4 forbids.
+  - **Provenance survives without the network (A3).** The sha256 is in the vendored
+    pin, so the consumer verifies the bytes it actually received, locally. The
+    stronger check (independent sha256 vs the MANIFEST *at the tag* AND the pin)
+    still happens once, at intake in the framework repo, where the remote is
+    reachable — verification is not weakened, it is performed where it can be.
+- **Rejected:** fetch-at-onboarding (`--from-tag` during `fw init`). Turns an
+  install-time network round-trip into a hard dependency for every consumer, and
+  puts the one path that *can* fail-open squarely in the path that must not.
+- **Rejected:** vendoring `vendor/designer/` wholesale. That directory holds nine
+  historical builds totalling ~7.7 MB, of which exactly one (0.8.0) is pinned. Only
+  the pinned build ships; the rest are framework-repo history.
+- **Blast radius accepted, deliberately:** with A1 changing SKIP→WARN, every consumer
+  that has the vendored pin and no artifact starts reporting a WARN from `fw doctor`
+  *before* this vendoring reaches them. That is a true statement about their state,
+  not a false alarm — but it is fleet-visible, and it is the reason A2/A5 belong in
+  the same task as A1 rather than being split off.
+
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

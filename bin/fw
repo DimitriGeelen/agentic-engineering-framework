@@ -1980,7 +1980,19 @@ else:
         if [ -z "$_dz_want" ] || [ -z "$_dz_vp" ]; then
             echo -e "  ${CYAN}SKIP${NC}  designer pin present but missing sha256/vendored_path"
         elif [ ! -f "$_dz_file" ]; then
-            echo -e "  ${CYAN}SKIP${NC}  designer not yet vendored — run: fw designer sync --from <build>"
+            # T-3064 A1: WARN, not SKIP. A pin that names a build the project does
+            # not have is an actionable condition, not an inapplicable check — the
+            # designer IS wanted here, that is what the pin says. SKIP reads as "not
+            # applicable to this project", so the state needing attention rendered as
+            # unremarkable while mere pin-drift (the *less* serious condition, below)
+            # got the louder verdict. Same false-green shape as T-3062.
+            #
+            # Consumers without a pin are unaffected: the enclosing `if [ -f "$_dz_pin" ]`
+            # means no pin ⇒ no check at all, so this WARN only reaches a project that
+            # has declared it wants the designer.
+            echo -e "  ${YELLOW}WARN${NC}  designer pinned but not vendored — /designer will render an error page"
+            echo -e "         Run: fw designer sync --from-tag   (or --from <build> for a delivered file)"
+            warnings=$((warnings + 1))
         else
             _dz_have=$(sha256sum "$_dz_file" 2>/dev/null | cut -d' ' -f1)
             if [ "$_dz_have" = "$_dz_want" ]; then
