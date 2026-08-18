@@ -7141,3 +7141,15 @@ The pre-push self-vendor gate caught this, which is the gate do'
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'Inception decision: GO'
+- timestamp: '2026-08-18T18:36:07Z'
+  task: 'T-3076'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3077'
+  command: 'python3 - <<PYEOF
+import glob
+p = glob.glob(".tasks/active/T-3077-*.md")[0]
+s = open(p).read()
+old = """## Context
+
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->""'

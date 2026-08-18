@@ -1,12 +1,10 @@
 ---
-id: T-3076
-name: "project-boundary hook exempts any command containing the word termlink, anywhere
-  on the line"
+id: T-3077
+name: "governance test suite leaves live Tier 0 approval requests in the operator queue"
 description: >
-  project-boundary hook exempts any command containing the word termlink, anywhere
-  on the line
+  tests/governance/test_pretooluse_gates.bats runs the real check-tier0 hook against the real FRAMEWORK_ROOT. _tier0_isolate backs up .tier0-approval (the GRANTED file) but check-tier0.sh:463 writes .tier0-approval.pending plus .context/approvals/pending-<hash>.yaml, which the helper never touches. Result: rm -rf / and git push --force origin master appear as live PENDING entries on Watchtower /approvals. Operator saw them and asked. If approved, a genuine rm -rf / becomes pre-authorised.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-18T18:23:37Z
-last_update: '2026-08-18T18:30:19Z'
-date_finished:
+created: 2026-08-18T18:33:41Z
+last_update: 2026-08-18T18:33:41Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,105 +34,100 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-18T18:30:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=259,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-18T18:30:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3076: project-boundary hook exempts any command containing the word termlink, anywhere on the line
+# T-3077: governance test suite leaves live Tier 0 approval requests in the operator queue
 
 ## Context
 
-`agents/context/check-project-boundary.sh:136` exempts a Bash command from the
-T-559 project-boundary gate when this matches:
+**Nothing destructive ran, and nothing was ever approved.** Both statements are
+measured below, not assumed. What leaked is a *request for permission*, which is a
+different object from the command it names — but it is a dangerous one to leave
+sitting in a queue with an Approve button next to it.
 
-    (^|\s|;|&&|\|)(termlink|bin/fw termlink|fw termlink)\s
+### What the operator saw
 
-Two independent over-matches follow, and the exemption is applied to the **whole
-command line** either way — `exit 0` returns before any boundary analysis runs:
+Watchtower `/approvals`, 2026-08-18T18:30:49Z, two live PENDING entries:
 
-1. **Argument position counts as command position.** `termlink` needs only to be
-   preceded by whitespace and followed by whitespace. So `grep termlink
-   /opt/other-project/config` is exempt, and so is `echo termlink; <anything>`.
-   The word need not invoke TermLink at all.
-2. **One exempt segment exempts every other segment.** `termlink ping && cat
-   /opt/other-project/.env` passes as a unit. The `&&` in the regex was added to
-   *find* termlink inside compound commands (T-1075), but the verdict it produces
-   still covers the entire line rather than the segment it matched.
+    RECURSIVE DELETE: Targets root filesystem (/)      rm -rf /
+    FORCE PUSH: Can overwrite remote commit history    git push --force origin master
 
-**Not a new discovery — this is the second recorded instance.** T-1075 widened the
-regex from start-anchored to anywhere-on-line so TermLink calls inside loops and
-pipes would be recognised, and recorded the over-match as **L-021**: *"TermLink
-exception matches commands containing `termlink` anywhere (not just at the start)."*
-The consequence was written down and left standing. Per CLAUDE.md
-§Bug-Fix Learning Checkpoint, a class hit twice is the trigger for a tooling fix
-rather than a third learning.
+### Mechanism
 
-**Observed this session (OBS-327).** The gate correctly blocked a read of
-`/opt/termlink` while I was investigating T-3043. Appending the word `termlink`
-anywhere on that line would have defeated it. I declined and filed the observation
-instead — which is exactly the wrong reliance for a structural gate: it held because
-the agent chose not to walk through the hole, not because the hole was closed.
+`tests/governance/test_pretooluse_gates.bats:112-129` proves the Tier 0 gate blocks
+these two commands. It does so correctly: the command is passed as a **JSON string
+on stdin** to the hook — `echo "$INPUT" | "$HOOK_BIN" hook check-tier0` — and the
+hook is asserted to exit 2. No shell ever receives the text. That part works.
 
-**Why the exemption exists and must survive** (T-679): commands routed through
-`termlink interact|pty|dispatch` execute in a *different* process. A `cd
-/opt/other` inside their quoted argument targets the TermLink session, not this
-shell, so boundary analysis on that text is a false positive. The fix must keep
-that true while narrowing what "exempt" covers.
+The leak is the hook's side effect. `agents/context/check-tier0.sh:463-470` writes
+**two** records when it blocks, so the operator can grant the request:
+
+    .context/working/.tier0-approval.pending          (hash + epoch + PENDING)
+    .context/approvals/pending-<hash12>.yaml          (the Watchtower card, T-611)
+
+The suite's isolation helper backs up neither:
+
+    _tier0_isolate()  → mv .context/working/.tier0-approval  $BACKUP
+    _tier0_restore()  → mv $BACKUP  .context/working/.tier0-approval
+
+`.tier0-approval` is the **granted** file. The two files the hook actually writes
+are untouched, so they land in the live project and stay there.
+
+### Severity — it is the Approve button, not the string
+
+A YAML file containing the text `rm -rf /` is inert. The hazard is that this card is
+wired to a real grant: approving it writes the command **hash** into
+`.context/working/.tier0-approval`, and `check-tier0.sh` admits any future command
+whose normalised text hashes to the same value. So an operator clearing what looks
+like queue noise would pre-authorise a genuine `rm -rf /` — and the next one would
+pass the gate silently, exactly once, with no further prompt.
+
+Confirmed the stored hash is that command verbatim:
+
+    printf '%s' 'rm -rf /' | sha256sum
+    → 5c7923bd67b06c93279d49c466301c57023822eec29c49e269063e47aecd973c
+    stored in .tier0-approval.pending: identical
+
+### How long, and whether it ever mattered
+
+Not a one-off. `git log --diff-filter=A -- '.context/approvals/pending-*'` shows 38
+such cards added over time, with the `rm -rf /` card added and **committed** on:
+
+    2026-04-30  3682caafb  T-077
+    2026-08-05  30f3752e0  T-2805
+    2026-08-17  f507c6ec2  T-3050
+    2026-08-18             (today, T-3076 worker — cleared)
+
+Nearly four months, four occurrences. **Never granted:** zero occurrences of that
+hash in `.tier0-approval` across all history, and zero `approved-*` files ever
+written. The gate never opened. That is the measured reassurance, and it is also
+the reason the defect survived — it has been harmless every time so far.
+
+### Today's trigger
+
+The T-3076 dispatch prompt instructed the worker to run
+`tests/governance/test_pretooluse_gates.bats` among the regression suites. Any run
+of that suite by anyone reproduces this.
+
+### Why the framework allowed it (G-019)
+
+Two structural omissions, and the second is the one that matters:
+
+1. **The test's isolation names the wrong file.** A helper called `_tier0_isolate`
+   reads as covering Tier 0 state; it covers one third of it. Nothing asserts that
+   the suite leaves the approvals surface as it found it.
+2. **Nothing detects a stale pending approval.** `fw doctor` and `fw audit` both
+   run daily and neither reports a Tier 0 request sitting unanswered in the queue.
+   Three of these were committed to git and none was noticed until an operator
+   happened to open `/approvals` and ask. A pending approval is a governance object
+   with an expiry expectation and no expiry check.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 — segment scope.** The exemption applies to the command *segment* that
-      invokes TermLink, not to the whole line. Segments are split on `;`, `&&`,
-      `||`, `|` and newline; non-exempt segments still go through boundary
-      analysis. Pinned by a test where an exempt segment and a violating segment
-      share one line.
-- [ ] **A2 — command position.** `termlink` is recognised only in command
-      position within its segment — first word, or first after a wrapper
-      (`sudo`, `env VAR=v`, `timeout N`, `nohup`). `grep termlink /opt/other/x`
-      is NOT exempt. `bin/fw termlink` and `fw termlink` keep working.
-- [ ] **A3 — the T-679 case still passes.** A `termlink pty inject <s> "cd
-      /opt/other && …"` style command, and the T-1075 loop form
-      (`for n in …; do termlink pty inject … "cd /opt/$n && …"; done`), are both
-      still exempt. Regression tests, not assertions in prose — this is the
-      behaviour the exemption was created for and the fix must not cost it.
-- [ ] **A4 — positive control on the test suite (L-616).** The suite asserts at
-      least one command IS exempted and at least one IS blocked. A predicate that
-      matched nothing would satisfy every "not exempt" assertion while proving
-      the gate is simply off.
-- [ ] **A5 — mutation-tested.** Reverting the segment-splitting to the current
-      whole-line `exit 0` turns the A1 test red; restoring it turns it green.
-      Recorded in the task with which tests flipped.
-- [ ] **A6 — L-021 is closed out, not duplicated.** The learning is updated to
-      record that the class was fixed here rather than a second learning being
-      added describing the same over-match.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,7 +313,7 @@ that true while narrowing what "exempt" covers.
 
 ## Updates
 
-### 2026-08-18T18:23:37Z — task-created [task-create-agent]
+### 2026-08-18T18:33:41Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3076-project-boundary-hook-exempts-any-comman.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3077-governance-test-suite-leaves-live-tier-0.md
 - **Context:** Initial task creation

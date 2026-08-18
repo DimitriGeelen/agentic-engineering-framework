@@ -1,0 +1,238 @@
+   0.00  +  0.00  [1mfw doctor[0m - Framework Health Check
+   0.00  +  0.00  
+   0.00  +  0.00    [0;32mOK[0m  Framework installation
+   0.00  +  0.00    [0;32mOK[0m  Active mode: framework-repo (/opt/999-Agentic-Engineering-Framework)
+   0.00  +  0.00    [0;36mSKIP[0m  .framework.yaml (running from framework repo)
+   1.27  +  1.27    [0;32mOK[0m  No vendored-source drift
+   1.27  +  0.00    [0;32mOK[0m  Task directories
+   1.27  +  0.00    [0;32mOK[0m  Context directory
+   1.28  +  0.01    [0;32mOK[0m  Git commit-msg hook
+   1.28  +  0.00    [0;32mOK[0m  Git pre-push hook
+  97.84  + 96.56    [0;36mINFO[0m  Large-file gate: 15 tracked file(s) above warn threshold (under block)
+  98.15  +  0.32    [0;32mOK[0m  Repo root: no untracked binary files
+  98.16  +  0.01    [0;32mOK[0m  Handover LATEST.md resolves to S-2026-0818-2009.md
+  98.17  +  0.01    [0;32mOK[0m  Last auto-handover succeeded (pre-compact handover)
+  98.34  +  0.17    [0;32mOK[0m  Hook path validation: 27 hooks, all portable
+ 102.39  +  4.04    [0;32mOK[0m  Hook exercise from /tmp: 23 PreToolUse/PostToolUse hook(s) resolve from foreign CWD
+ 102.39  +  0.00    [0;32mOK[0m  All agent scripts executable
+ 102.50  +  0.11    [0;32mOK[0m  Plugin task-awareness
+ 177.49  + 74.99    [0;32mOK[0m  Test infrastructure (bats installed, 4174 unit tests)
+ 177.49  +  0.00    [0;32mOK[0m  ShellCheck linter
+ 177.64  +  0.16    [0;32mOK[0m  No orphaned MCP processes
+ 177.74  +  0.10    [0;32mOK[0m  .mcp.json (5 MCP server(s) configured)
+ 177.83  +  0.09    [0;32mOK[0m  Playwright pip package (test runner)
+ 177.83  +  0.00    [0;32mOK[0m  Playwright MCP server (agent UI verification)
+ 177.83  +  0.00    [0;32mOK[0m  No global install at /root/.agentic-framework
+ 177.95  +  0.11    [0;32mOK[0m  status-transitions.yaml (8 transitions, no orphaned/unreachable states)
+ 178.12  +  0.17    [0;32mOK[0m  framework MCP 22 tools (gated: 6) — stopped (manifest ready; start: fw mcp start --background)
+ 179.13  +  1.00    [0;32mOK[0m  vector index: 0.0 days old (source: manifest)
+ 179.31  +  0.18    [1;33mWARN[0m  recall usage: 258 queries in 7d, 13 could not run
+ 179.31  +  0.00           The embed path failed mid-query. Check: fw doctor
+ 179.56  +  0.25    [0;32mOK[0m  designer vendored build matches pin (cab3c7518397...)
+ 179.66  +  0.10    [0;36mSKIP[0m  proxy-policy not installed (install is human/root — fw policy emit)
+ 179.69  +  0.03    [0;32mOK[0m  Watchtower running (http://192.168.10.107:3000, pid 533366)
+ 180.80  +  1.11    [1;33mWARN[0m  Watchtower process predates its own source (2 file(s) newer than pid 533366)
+ 180.80  +  0.00           - /opt/999-Agentic-Engineering-Framework/web/blueprints/bvp.py
+ 180.80  +  0.00           - /opt/999-Agentic-Engineering-Framework/web/app.py
+ 180.80  +  0.00           Every web/ change since it started is inert, including any awaiting [REVIEW].
+ 180.80  +  0.00           Run: bin/fw watchtower restart
+ 180.80  +  0.00    [0;32mOK[0m  Session supervised by claude-fw — budget auto-restart armed
+ 180.81  +  0.01    [1;33mWARN[0m  Installed claude-fw drifted from repo source — supervision export may be stale
+ 180.81  +  0.00           on PATH: /root/.local/bin/claude-fw
+ 180.81  +  0.00           repo:    /opt/999-Agentic-Engineering-Framework/bin/claude-fw
+ 180.81  +  0.00           Refresh: rm -f "/root/.local/bin/claude-fw" && cp "/opt/999-Agentic-Engineering-Framework/bin/claude-fw" "/root/.local/bin/claude-fw" && chmod +x "/root/.local/bin/claude-fw"
+ 180.81  +  0.00                    (rm -f first — a bare cp onto a symlink writes through it)
+ 180.81  +  0.00           Or:      curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+ 180.81  +  0.00           Then relaunch the session with: claude-fw
+ 180.91  +  0.10    [0;32mOK[0m  Hook configuration valid (27 hooks in 20 matchers across 4 events)
+ 254.97  + 74.05    [0;32mOK[0m  TermLink (termlink 0.11.1196)
+ 255.24  +  0.27    [1;33mWARN[0m  [host] pi not installed; workflows declaring worker_kind: pi will fail
+ 255.24  +  0.00           (host-level — handle from a session at that root)
+ 255.24  +  0.00           Install: npm install -g @badlogic/pi-mono  (or see github.com/badlogic/pi-mono)
+ 255.26  +  0.02    [1;33mWARN[0m  [host] litellm-proxy not reachable on http://localhost:4000; workflow(s) declaring ANTHROPIC_BASE_URL will fail
+ 255.26  +  0.00           (host-level — handle from a session at that root)
+ 255.26  +  0.00           Start: setsid nohup litellm --config .context/litellm-config.yaml --port 4000 >.context/working/litellm/proxy.log 2>&1 & (persist: sudo systemctl enable --now litellm-proxy — see deploy/litellm-proxy.service)
+ 255.27  +  0.02    [0;32mOK[0m  ollama reachable (http://192.168.10.107:11434)
+ 255.41  +  0.13    [0;32mOK[0m  embed endpoint reachable (http://192.168.10.107:11434)
+ 255.41  +  0.01    [0;32mOK[0m  TypeScript build (2 source(s))
+ 255.50  +  0.09    [0;32mOK[0m  Enforcement baseline intact
+ 265.06  +  9.56    [0;36mINFO[0m  Session tokens: 2.0B (10685 turns)
+ 268.66  +  3.60    [1;33mWARN[0m  Task debt: 18 stale tasks (no updates in 7+ days)
+ 268.66  +  0.00           Run: fw task stale
+ 268.78  +  0.12    [1;33mWARN[0m  Pending-updates registry: 7 unresolved entry(ies)
+ 268.78  +  0.00           Run: fw pending list
+ 268.78  +  0.00  
+ 268.78  +  0.00    [1mConsumer Projects[0m
+ 268.92  +  0.14    [1;33mWARN[0m  001-sprechloop (v1.6.252 vs v1.6.54 — relation undetermined, missing 9: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-human-ac-tick, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 268.92  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.252 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 268.92  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 268.92  +  0.00           Run: fw upgrade /opt/001-sprechloop
+ 269.02  +  0.10    [1;33mWARN[0m  002-Claude-Partner-Network (v1.6.354 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 269.02  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.354 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.02  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.02  +  0.00           Run: fw upgrade /opt/002-Claude-Partner-Network
+ 269.11  +  0.10    [1;33mWARN[0m  003-Vailliant-diagnosis (v1.6.259 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 269.11  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.259 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.11  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.11  +  0.00           Run: fw upgrade /opt/003-Vailliant-diagnosis
+ 269.27  +  0.15    [1;33mWARN[0m  0125-mehdi (v1.6.8 → v1.6.54, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 269.27  +  0.00           Run: fw upgrade /opt/0125-mehdi
+ 269.36  +  0.10    [1;33mWARN[0m  023-geelenandcompany.com (vdev vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 269.36  +  0.00           Cannot order these: no version_sha recorded and no tag vdev in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.36  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.36  +  0.00           Run: fw upgrade /opt/023-geelenandcompany.com
+ 269.47  +  0.11    [1;33mWARN[0m  025-WokrshopDesigner (v1.6.430 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 269.47  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.430 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.47  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.47  +  0.00           Run: fw upgrade /opt/025-WokrshopDesigner
+ 269.58  +  0.11    [1;33mWARN[0m  0501-opencode-playground (v1.6.80 vs v1.6.54 — relation undetermined)
+ 269.58  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.80 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.58  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.58  +  0.00           Run: fw upgrade /opt/0501-opencode-playground
+ 269.70  +  0.12    [1;33mWARN[0m  0502-gemnicli-playgorund (v1.6.145 vs v1.6.54 — relation undetermined)
+ 269.70  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.145 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.70  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.70  +  0.00           Run: fw upgrade /opt/0502-gemnicli-playgorund
+ 269.80  +  0.10    [1;33mWARN[0m  0503-codex-cli-playground (v1.6.212 vs v1.6.54 — relation undetermined)
+ 269.80  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.212 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.80  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.80  +  0.00           Run: fw upgrade /opt/0503-codex-cli-playground
+ 269.90  +  0.10    [1;33mWARN[0m  050-email-archive (v1.6.258 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 269.90  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.258 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 269.90  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 269.90  +  0.00           Run: fw upgrade /opt/050-email-archive
+ 270.01  +  0.10    [1;33mWARN[0m  051-Vinix24 (v1.6.252 vs v1.6.54 — relation undetermined, missing 9: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-human-ac-tick, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.01  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.252 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.01  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.01  +  0.00           Run: fw upgrade /opt/051-Vinix24
+ 270.11  +  0.10    [1;33mWARN[0m  052-KCP (v1.6.252 vs v1.6.54 — relation undetermined, missing 9: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-human-ac-tick, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.11  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.252 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.11  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.11  +  0.00           Run: fw upgrade /opt/052-KCP
+ 270.21  +  0.10    [1;33mWARN[0m  053-ntfy (v1.6.252 vs v1.6.54 — relation undetermined, missing 9: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-human-ac-tick, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.21  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.252 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.21  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.21  +  0.00           Run: fw upgrade /opt/053-ntfy
+ 270.32  +  0.10    [1;33mWARN[0m  054-CC-Community-Call (vdev vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.32  +  0.00           Cannot order these: no version_sha recorded and no tag vdev in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.32  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.32  +  0.00           Run: fw upgrade /opt/054-CC-Community-Call
+ 270.41  +  0.10    [1;33mWARN[0m  100-Video-riper-and-translation-app (v1.6.354 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.41  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.354 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.41  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.41  +  0.00           Run: fw upgrade /opt/100-Video-riper-and-translation-app
+ 270.58  +  0.17    [1;33mWARN[0m  1033-dialef-website-mlang (v1.6.8 → v1.6.54, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.58  +  0.00           Run: fw upgrade /opt/1033-dialef-website-mlang
+ 270.69  +  0.11    [1;33mWARN[0m  109-anche-payments (v1.6.694 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.69  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.694 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.69  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.69  +  0.00           Run: fw upgrade /opt/109-anche-payments
+ 270.79  +  0.10    [1;33mWARN[0m  117-android-game-player (v1.6.273 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.79  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.273 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.79  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.79  +  0.00           Run: fw upgrade /opt/117-android-game-player
+ 270.89  +  0.10    [1;33mWARN[0m  150-skills-manager (v1.6.252 vs v1.6.54 — relation undetermined, missing 9: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-human-ac-tick, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.89  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.252 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.89  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.89  +  0.00           Run: fw upgrade /opt/150-skills-manager
+ 270.99  +  0.10    [1;33mWARN[0m  160-new-project (v1.6.216 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 270.99  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.216 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 270.99  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 270.99  +  0.00           Run: fw upgrade /opt/160-new-project
+ 271.14  +  0.15    [1;33mWARN[0m  2026-Mehdi-demo (v1.6.8 → v1.6.54, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.14  +  0.00           Run: fw upgrade /opt/2026-Mehdi-demo
+ 271.23  +  0.10    [1;33mWARN[0m  3011-sonnenstall-antrag-bau (v1.6.369 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.23  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.369 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 271.23  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 271.23  +  0.00           Run: fw upgrade /opt/3011-sonnenstall-antrag-bau
+ 271.34  +  0.11    [1;33mWARN[0m  3021-Bilderkarte-tool-llm (v1.6.430 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.34  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.430 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 271.34  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 271.34  +  0.00           Run: fw upgrade /opt/3021-Bilderkarte-tool-llm
+ 271.46  +  0.12    [1;33mWARN[0m  501-personal-profile (v1.6.354 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.46  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.354 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 271.46  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 271.46  +  0.00           Run: fw upgrade /opt/501-personal-profile
+ 271.57  +  0.12    [1;33mWARN[0m  505-Ring20-Site (vdev vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.57  +  0.00           Cannot order these: no version_sha recorded and no tag vdev in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 271.57  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 271.57  +  0.00           Run: fw upgrade /opt/505-Ring20-Site
+ 271.68  +  0.10    [1;33mWARN[0m  832-Workflow-designer (v1.6.354 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.68  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.354 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 271.68  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 271.68  +  0.00           Run: fw upgrade /opt/832-Workflow-designer
+ 271.78  +  0.10    [1;33mWARN[0m  995_2021-kosten (v1.6.252 vs v1.6.54 — relation undetermined, missing 9: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-human-ac-tick, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.78  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.252 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 271.78  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 271.78  +  0.00           Run: fw upgrade /opt/995_2021-kosten
+ 271.87  +  0.10    [1;33mWARN[0m  agentic-engineering-framework (missing 2: check-onboarding-gate, check-rail-mcp-label)
+ 271.87  +  0.00           Run: fw upgrade /opt/agentic-engineering-framework
+ 271.98  +  0.11    [1;33mWARN[0m  fan-dashboard (vdev vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 271.98  +  0.00           Cannot order these: no version_sha recorded and no tag vdev in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 271.98  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 271.98  +  0.00           Run: fw upgrade /opt/fan-dashboard
+ 272.08  +  0.10    [1;33mWARN[0m  openclaw-evaluation (v1.6.252 vs v1.6.54 — relation undetermined, missing 9: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-human-ac-tick, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 272.08  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.252 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 272.08  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 272.08  +  0.00           Run: fw upgrade /opt/openclaw-evaluation
+ 272.18  +  0.10    [1;33mWARN[0m  termlink (v1.6.295 vs v1.6.54 — relation undetermined, missing 8: check-settings-edit, check-active-completed-dup, check-arc-id, check-heredoc-cmd-sub, check-inception-decisions, check-inception-schema, check-onboarding-gate, check-rail-mcp-label)
+ 272.18  +  0.00           Cannot order these: no version_sha recorded and no tag v1.6.295 in framework repo; VERSION is a resetting counter so string order cannot decide.
+ 272.18  +  0.00           Upgrade is NOT blocked on this — it records version_sha, making the next check decidable.
+ 272.18  +  0.00           Run: fw upgrade /opt/termlink
+ 272.30  +  0.11    [0;36mINFO[0m  Hook crash log: 21 historical entries (none today)
+ 272.31  +  0.01  
+ 272.31  +  0.00    [1mConfiguration Overrides[0m
+ 272.31  +  0.00    [0;36mSET[0m   FW_CLAUDE_FW_SUPERVISED=1
+ 272.31  +  0.00    [0;36mSET[0m   FW_NEXT_DIRECTIVE=arc-012 continuous-run is BUILD-COMPLETE. The minimum-viable self-driving loop
+ 272.31  +  0.00    [0;36mSET[0m   FW_ROUTED_FROM=/opt/999-Agentic-Engineering-Framework
+ 272.64  +  0.33    [0;32mOK[0m  Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+ 272.65  +  0.01  
+ 272.65  +  0.00    [1mAutonomous Dispatch[0m
+ 272.67  +  0.03    [0;32mLIVE[0m  systemd resolver-loop.timer is active — dispatching unattended every 30m
+ 272.81  +  0.14    [0;36mINFO[0m  cron entry resolver-loop-autonomous: paused
+ 273.91  +  1.10    [1;33mWARN[0m  4 task(s) stalled — dispatched repeatedly with zero advancement:
+ 273.98  +  0.07          T-1820  dispatches=31  outcomes=24  since=2026-08-11T16:28:47.370024+00:00
+ 273.98  +  0.00          T-2171  dispatches=38  outcomes=0  since=2026-08-11T11:57:58.169419+00:00
+ 273.98  +  0.00          T-2969  dispatches=6  outcomes=0  since=2026-08-13T16:30:06.009479+00:00
+ 273.98  +  0.00          T-3049  dispatches=5  outcomes=2  since=2026-08-17T07:06:52.358344+00:00
+ 273.99  +  0.01          Details: fw resolver stalled --json
+ 274.27  +  0.28    [1;33mWARN[0m  281 dispatch(es) latched stale — no terminal_event, worker presumed dead:
+ 274.34  +  0.07          T-1696  age=154422m  last_dispatch=2026-05-03T12:53:46.189702+00:00
+ 274.34  +  0.00          T-1697  age=154411m  last_dispatch=2026-05-03T13:04:57.614110+00:00
+ 274.34  +  0.00          T-1698  age=154406m  last_dispatch=2026-05-03T13:09:40.886220+00:00
+ 274.34  +  0.00          T-1733  age=151861m  last_dispatch=2026-05-05T07:34:38.100237+00:00
+ 274.34  +  0.00          T-1738  age=151852m  last_dispatch=2026-05-05T07:43:28.924656+00:00
+ 274.34  +  0.00          … and 276 more (oldest shown first)
+ 274.35  +  0.01          Details: fw resolver latched --json
+ 274.78  +  0.43    [1;33mWARN[0m  Doc drift: 11 fw subcommand(s) missing from CLAUDE.md Quick Reference
+ 274.78  +  0.00          Missing: bpmn corpus designer focus go-live index policy rail sessions triage verify-queue
+ 274.79  +  0.00    [0;32mOK[0m  bin/fw is the real CLI (9111 lines, not the shim)
+ 276.23  +  1.44    [1;33mWARN[0m  Mirror divergence: 7 ref(s) differ between origin and github (T-1591/T-1592)
+ 276.23  +  0.00           Investigate: diff <(git ls-remote origin) <(git ls-remote github)
+ 276.42  +  0.19    [0;32mOK[0m  Workflow schema: 9 file(s) lint clean
+ 276.56  +  0.15    [0;32mOK[0m  Worker-kinds parity (lib/workflow_lint.py ↔ lib/resolver.py): ['Task', 'TermLink', 'ollama-direct', 'ollama-loop', 'ollama-thin-loop', 'pi']
+ 278.08  +  1.51    [1;33mWARN[0m  Branch hygiene: 15 finding(s)
+ 278.08  +  0.00           behind-threshold audit-remediation-t2416 behind=1761 (threshold 50)
+ 278.08  +  0.00           merged-undeleted land-t100200-go
+ 278.08  +  0.00           behind-threshold learning/precompact-cleanup behind=7177 (threshold 50)
+ 278.08  +  0.00           merged-undeleted t100196-vendor-fix
+ 278.08  +  0.00           merged-undeleted t100199-close
+ 278.08  +  0.00           behind-threshold t2353-audit-emit-tasks behind=1761 (threshold 50)
+ 278.08  +  0.00           merged-undeleted t2416-fw-safe-mode-hook-timing
+ 278.08  +  0.00           diverged-fork t2417-fw-sessions ahead=58 behind=1728 (threshold 50)
+ 278.08  +  0.00           merged-undeleted t2510-audit-remediation
+ 278.08  +  0.00           behind-threshold t2511-warn-remediation behind=1432 (threshold 50)
+ 278.08  +  0.00           behind-threshold worktree-inception-gov-payload-mediation behind=1513 (threshold 50)
+ 278.08  +  0.00           behind-threshold worktree-rca-worktree-push-strand behind=1728 (threshold 50)
+ 278.08  +  0.00           … 3 more (full list: git branch --merged origin/master)
+ 278.08  +  0.00           Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back)
+ 278.09  +  0.00           [1;33mFORK[0m: a diverged-fork branch is BOTH ahead and behind — a go-live `git merge origin/master` will conflict. Reconcile now while small (merge origin/master INTO the branch and resolve, or reset if the unique commits already landed). Do NOT use `fw integrate` on a fork (one-way). See T-100195.
+ 278.13  +  0.04    [1;33mWARN[0m  Untracked task files: 1 under .tasks/{active,completed}/
+ 278.13  +  0.00           .tasks/active/T-3077-governance-test-suite-leaves-live-tier-0.md
+ 278.13  +  0.00           An untracked completion copy that never got committed is the T-2091 divergence class. Commit it (git add + fw git commit) or remove the orphan. See T-2121 prong 3.
+ 278.62  +  0.49    [0;32mOK[0m  No stale gauge-READY gaps
+ 278.62  +  0.00  
+ 278.62  +  0.00  [1mProject /opt/999-Agentic-Engineering-Framework:[0m 42 project warning(s), 0 failure(s)
+ 278.62  +  0.00    [0;36m↳ 2 host-level finding(s) excluded[0m (not about this project — handle from a session at that root)
+ 278.62  +  0.00  
+ 278.62  +  0.00  [1;33m44 warning(s) (2 host-level), no failures[0m
