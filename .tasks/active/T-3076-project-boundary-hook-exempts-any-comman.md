@@ -178,6 +178,13 @@ bats tests/lint/no-bare-fw-in-gate-scripts.bats > /tmp/.t3076e.out 2>&1 && ! gre
 bats tests/lint/no-untracked-test-files.bats > /tmp/.t3076f.out 2>&1 && ! grep -q '^not ok' /tmp/.t3076f.out
 python3 -c "import yaml,sys; d=yaml.safe_load(open('.context/project/learnings.yaml')); ls=d if isinstance(d,list) else d.get('learnings',[]); e=[x for x in ls if isinstance(x,dict) and x.get('id')=='L-021']; sys.exit(0 if len(e)==1 and e[0].get('closed_by')=='T-3076' else 1)"
 git ls-files --error-unmatch tests/unit/t3076_boundary_termlink_segment_scope.bats
+# Live dispatch path (T-3076 residual #4): the worker exercised the script directly.
+# These go through `bin/fw hook`, which is how Claude Code actually invokes it.
+# The hole must block and the two forms the exemption exists for must pass.
+printf '{"tool_name":"Bash","tool_input":{"command":"termlink ping && cat /opt/other-project/.env"}}' | bin/fw hook check-project-boundary > /tmp/.t3076g.out 2>&1; test $? -eq 2
+printf '{"tool_name":"Bash","tool_input":{"command":"grep termlink /opt/other-project/config"}}' | bin/fw hook check-project-boundary > /tmp/.t3076h.out 2>&1; test $? -eq 2
+printf '{"tool_name":"Bash","tool_input":{"command":"termlink pty inject s --enter \"cd /opt/other && make\""}}' | bin/fw hook check-project-boundary > /tmp/.t3076i.out 2>&1; test $? -eq 0
+printf '{"tool_name":"Bash","tool_input":{"command":"bin/fw termlink dispatch --project /opt/other --prompt x"}}' | bin/fw hook check-project-boundary > /tmp/.t3076j.out 2>&1; test $? -eq 0
 # Pre-existing, NOT introduced here (verified against baseline before the change):
 #   tests/integration/check_project_boundary.bats  -> 27 ok / 1 not ok ("Bash redirect to /etc: blocked")
 #   tests/governance/test_pretooluse_gates.bats    -> 12 ok / 1 not ok ("check-active-task: blocks Write ...", a different hook)
