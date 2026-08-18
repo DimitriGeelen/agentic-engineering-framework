@@ -7,7 +7,7 @@ description: >
   the operator to decide can sit in the queue with a verdict and no research artefact
   behind it
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T10:01:11Z
-last_update: '2026-08-18T10:15:15Z'
+last_update: 2026-08-18T11:32:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -118,19 +118,19 @@ deliverable; what the operator does with the six it surfaces is their call.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A1. The C-001 artefact check runs over inceptions that carry a substantive
+- [x] A1. The C-001 artefact check runs over inceptions that carry a substantive
       `## Recommendation`, regardless of `status:`. An inception asking for a
       decision is finished researching, whatever its status field says.
-- [ ] A2. Inceptions with neither a recommendation nor started-work status stay
+- [x] A2. Inceptions with neither a recommendation nor started-work status stay
       silent. A freshly captured inception that nobody has worked yet is not a
       violation, and making it one would train the operator to ignore the section.
-- [ ] A3. The widened rail is proven by a positive control, not by an empty set —
+- [x] A3. The widened rail is proven by a positive control, not by an empty set —
       the test asserts a known-missing case is reported *and* a known-satisfied case
       is not (L-616: two empty sets are equal).
-- [ ] A4. The count reported by `fw audit` distinguishes the two populations
+- [x] A4. The count reported by `fw audit` distinguishes the two populations
       (started-work vs recommendation-bearing), so widening the set does not silently
       inflate a number the operator has learned to read one way.
-- [ ] A5. Assertions are mutation-tested: revert the set-widening and the new test
+- [x] A5. Assertions are mutation-tested: revert the set-widening and the new test
       goes red; restore and it goes green.
 
 ### Human
@@ -165,6 +165,18 @@ deliverable; what the operator does with the six it surfaces is their call.
 -->
 
 ## Verification
+
+# T-3073 — the widened C-001 rail. Guarded-capture form (L-387): output is ~10
+# lines, far under the 64KB pipe buffer, and the `! grep -q '^not ok'` clause
+# supplies the verdict that `set -e` is suppressed from providing (T-2738).
+out=$(bats tests/unit/t3073_c001_recommendation_bearing_inceptions.bats 2>&1); echo "$out" | grep -q '^ok 10 ' && ! echo "$out" | grep -q '^not ok'
+# The scan and the audit section both still parse.
+python3 -c "import ast; ast.parse(open('agents/audit/active-task-scan.py').read())"
+bash -n agents/audit/audit.sh
+# The widened set actually runs over the live corpus and reports both populations.
+python3 -c "import json,subprocess;d=json.loads(subprocess.check_output(['python3','agents/audit/active-task-scan.py','.tasks','docs/reports']))['research'];assert d['inception_recommendation']>0;assert 'c001_missing_started' in d and 'c001_missing_recommendation' in d"
+# Existing single-pass-scan consumers unaffected.
+out=$(bats tests/unit/t3061_unclosed_satisfied_scan.bats tests/unit/audit_scan.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -347,3 +359,6 @@ deliverable; what the operator does with the six it surfaces is their call.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3073-c-001-research-artefact-check-is-blind-t.md
 - **Context:** Initial task creation
+
+### 2026-08-18T11:31:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -3455,18 +3455,29 @@ fi # end research
 if should_run_section "oe-research"; then
 echo "=== RESEARCH PERSISTENCE OE CHECKS ==="
 
-# C-001 OE: Active inception tasks with started-work should have docs/reports/ artifact (T-955: uses scan)
+# C-001 OE: Inceptions being WORKED (started-work) or being DECIDED (carrying a
+# substantive ## Recommendation) should have a docs/reports/ artifact.
+# T-955: uses the single-pass scan. T-3073: set widened from started-work-only to
+# include recommendation-bearing inceptions at any status — an inception asking the
+# operator for a go/no-go has finished researching, whatever its status field says.
+# The two populations are counted and reported separately so widening the set does
+# not silently inflate a number the operator has learned to read one way.
 c001_missing=0
 if [ -n "$ACTIVE_SCAN" ]; then
-    while IFS='|' read -r task_id issue_type artifact_name; do
+    while IFS='|' read -r task_id issue_type issue_reason artifact_name; do
         [ -z "$task_id" ] && continue
+        if [ "$issue_reason" = "recommendation" ]; then
+            _c001_population="awaiting decision — carries a substantive ## Recommendation, so research is finished"
+        else
+            _c001_population="in progress — status started-work"
+        fi
         if [ "$issue_type" = "missing" ]; then
-            warn "C-001: Inception $task_id has no research artifact in docs/reports/" \
-                 "Active inception task without persisted research" \
+            warn "C-001: Inception $task_id ($issue_reason) has no research artifact in docs/reports/" \
+                 "Inception $_c001_population, with no persisted research" \
                  "Create docs/reports/${task_id}-*.md — the thinking trail IS the artifact"
             c001_missing=$((c001_missing + 1))
         elif [ "$issue_type" = "unreferenced" ]; then
-            warn "C-001: Inception $task_id has artifact but task doesn't reference it" \
+            warn "C-001: Inception $task_id ($issue_reason) has artifact but task doesn't reference it" \
                  "$artifact_name exists but not linked in task Updates" \
                  "Add artifact reference to ## Updates section of $task_id"
         fi
@@ -3474,17 +3485,29 @@ if [ -n "$ACTIVE_SCAN" ]; then
 import sys, json
 data = json.load(sys.stdin)
 for item in data['research']['issues']:
-    print(f\"{item['id']}|{item['type']}|{item.get('artifact','')}\")
+    print(f\"{item['id']}|{item['type']}|{item.get('reason','started-work')}|{item.get('artifact','')}\")
 " 2>/dev/null)
 fi
 
+# Population breakdown — printed whether or not anything is missing, so the
+# operator can always see WHICH set produced the number (T-3073 A4).
+_c001_counts=$(echo "$ACTIVE_SCAN" | python3 -c "
+import sys, json
+r = json.load(sys.stdin).get('research', {})
+print('%d|%d|%d|%d' % (
+    r.get('inception_active', 0), r.get('c001_missing_started', 0),
+    r.get('inception_recommendation', 0), r.get('c001_missing_recommendation', 0)))
+" 2>/dev/null || echo "0|0|0|0")
+IFS='|' read -r _c001_n_started _c001_miss_started _c001_n_rec _c001_miss_rec <<< "$_c001_counts"
+
 if [ "$c001_missing" -eq 0 ]; then
-    inception_active=$(echo "$ACTIVE_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin)['research']['inception_active'])" 2>/dev/null || echo "0")
-    if [ "$inception_active" -gt 0 ]; then
-        pass "C-001: All $inception_active active inceptions have research artifacts"
+    if [ $((_c001_n_started + _c001_n_rec)) -gt 0 ]; then
+        pass "C-001: All inceptions have research artifacts — $_c001_n_started started-work, $_c001_n_rec awaiting decision"
     else
         pass "C-001: No active inception tasks to check"
     fi
+else
+    info "C-001 population breakdown: $_c001_miss_started/$_c001_n_started started-work missing an artefact, $_c001_miss_rec/$_c001_n_rec awaiting-decision missing an artefact"
 fi
 
 # C-002 OE: Check commit-msg hook has research artifact check installed
