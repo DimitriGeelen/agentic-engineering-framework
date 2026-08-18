@@ -480,6 +480,19 @@ do_vendor() {
         if [ -e "$vendor_source/FRAMEWORK.md" ]; then
             echo -e "  ${GREEN}+${NC} FRAMEWORK.md (last — completeness sentinel)"
         fi
+        # T-3064: also not in includes[] — one file out of vendor/designer/,
+        # named by the pin. Listed for the same reason FRAMEWORK.md is: a dry run
+        # that omits a real run's writes is a dry run nobody can plan from.
+        if [ -f "$vendor_source/policy/designer-pin.yaml" ]; then
+            local _vdd_line _vdd_rel
+            _vdd_line="$(grep -E '^vendored_path:' "$vendor_source/policy/designer-pin.yaml" 2>/dev/null | head -1 || true)"
+            _vdd_rel="${_vdd_line#vendored_path:}"
+            _vdd_rel="${_vdd_rel%%#*}"
+            _vdd_rel="$(printf '%s' "$_vdd_rel" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//')"
+            if [ -n "$_vdd_rel" ] && [ -f "$vendor_source/$_vdd_rel" ]; then
+                echo -e "  ${GREEN}+${NC} $_vdd_rel (pinned designer build)"
+            fi
+        fi
         echo ""
         echo "Would exclude: .git, .context, .tasks/{active,completed}, .fabric, install.sh"
         echo ""
@@ -547,6 +560,60 @@ do_vendor() {
             echo -e "  ${YELLOW}⊘${NC} $item (not found, skipping)"
         fi
     done
+
+    # T-3064 (A2/A5): ship the ONE pinned Workflow Designer build.
+    #
+    # Not an includes[] entry, because `vendor/` is not a directory a consumer
+    # should receive: it holds nine historical builds (~7.7 MB) of which exactly
+    # one is pinned. The pinned name comes from policy/designer-pin.yaml — which
+    # the `policy` include above has just copied — so a pin bump retargets this
+    # by itself.
+    #
+    # Before this, a consumer received the DECLARATION and not the ARTIFACT: the
+    # vendored pin named a file that was never in the copy, so `/designer`
+    # rendered an error page in every consumer that ever onboarded. `fw init`
+    # installs from what lands here (lib/init.sh, same task) — a local copy with
+    # a local sha256 check, no network, so onboarding cannot hang on 832's
+    # internal OneDev being unreachable (A4).
+    #
+    # The four lines that read the pin are inlined rather than sourced from
+    # lib/upgrade.sh's `_designer_pin_vendored_path`. A defensive `source … ||
+    # true` here would fail SILENTLY on a fresh machine and take the designer
+    # with it — reintroducing, in the fix, the exact class this task exists to
+    # close. Reading one YAML scalar two ways is the cheaper risk.
+    local _vd_pin="$vendor_source/policy/designer-pin.yaml"
+    if [ -f "$_vd_pin" ]; then
+        local _vd_line _vd_rel
+        _vd_line="$(grep -E '^vendored_path:' "$_vd_pin" 2>/dev/null | head -1 || true)"
+        _vd_rel="${_vd_line#vendored_path:}"
+        _vd_rel="${_vd_rel%%#*}"
+        _vd_rel="$(printf '%s' "$_vd_rel" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//')"
+        if [ -n "$_vd_rel" ] && [ -f "$vendor_source/$_vd_rel" ]; then
+            mkdir -p "$(dirname "$dest/$_vd_rel")"
+            # rm first: the vendored copy is 0444 (never edited in place — same
+            # contract `fw designer sync` installs under), so cp over it fails.
+            rm -f "$dest/$_vd_rel"
+            cp "$vendor_source/$_vd_rel" "$dest/$_vd_rel"
+            chmod 0444 "$dest/$_vd_rel"
+            echo -e "  ${GREEN}✓${NC} $_vd_rel (pinned designer build)"
+            # Drop superseded builds. The copy above adds the pinned build;
+            # nothing removes the one it replaced, so a consumer re-vendored
+            # across a pin bump would carry both (~900 KB each) with only one of
+            # them named by the pin. Mirrors the prune in
+            # lib/upgrade.sh:_self_vendor_designer, for the same reason.
+            local _vd_old
+            for _vd_old in "$(dirname "$dest/$_vd_rel")"/aef-workflow-designer-*.html; do
+                [ -f "$_vd_old" ] || continue
+                if [ "$_vd_old" = "$dest/$_vd_rel" ]; then
+                    continue
+                fi
+                rm -f "$_vd_old"
+                echo -e "  ${GREEN}✓${NC} pruned superseded designer build $(basename "$_vd_old")"
+            done
+        elif [ -n "$_vd_rel" ]; then
+            echo -e "  ${YELLOW}⊘${NC} $_vd_rel (pinned designer build absent at source — run: fw designer sync --from-tag)"
+        fi
+    fi
 
     # Create VERSION file
     echo "$FW_VERSION" > "$dest/VERSION"
@@ -8048,6 +8115,7 @@ PYSEARCH
                 echo "  - .agentic-framework/bin/                 ← bin/fw             (T-2264)"
                 echo "  - .agentic-framework/agents/              ← agents/**/*.{sh,py} (T-2266)"
                 echo "  - .agentic-framework/web/                 ← web/**/*.{sh,py}    (T-2267)"
+                echo "  - .agentic-framework/vendor/designer/     ← the ONE pinned build   (T-3064)"
                 echo ""
                 echo "T-1217 / T-2078 §F2 / T-2095 V1-D / T-2241. Extracted from do_upgrade so it can be"
                 echo "invoked explicitly (cron, pre-push, manual) without firing the full upgrade flow."
@@ -8091,6 +8159,11 @@ PYSEARCH
                 _self_vendor_agents "$_vs_dry"
                 # T-2267: web/ drift class (6th class).
                 _self_vendor_web "$_vs_dry"
+                # T-3064: pinned Workflow Designer build (8th class). Inside the
+                # CHECKED set, unlike VERSION below: the artifact only changes at
+                # a pin bump, so a gate on it is satisfiable — clear it once with
+                # `fw vendor self` and it stays clear until the next re-pin.
+                _self_vendor_designer "$_vs_dry"
                 # T-2793 (OBS-151): VERSION — the copy's own identity, which the
                 # six content classes never covered.
                 #

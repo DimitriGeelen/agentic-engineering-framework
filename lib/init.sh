@@ -4,6 +4,51 @@
 # Creates the directory structure, config files, and git hooks needed
 # for a project to use the framework.
 
+# T-3064 (A2/A4): install the pinned Workflow Designer build into a
+# freshly-onboarded project.
+#
+# Before this, a consumer received policy/designer-pin.yaml — a declaration naming
+# an artifact — and never the artifact, so /designer rendered an error page in
+# every project but this repo. `fw designer install` copies the build that ships
+# inside .agentic-framework/ and verifies its sha256 against that same vendored pin
+# before installing it read-only (T-2521's check, unchanged — see the A3 note in
+# agents/designer/designer.sh:do_install).
+#
+# A4 — no network and no hang: the bytes are already on disk, `--from-tag` (the
+# one path that reaches 832's internal OneDev) is not reachable from here, and
+# every outcome prints a line. Init is never failed by this step — a project
+# without a designer is still a governed project — but it is never SILENT about
+# it either, which is the half that was missing.
+#
+# Inputs: $1 — target project dir
+# Return: 0 always (advisory step)
+fw_init_install_designer() {
+    local target_dir="$1"
+    local fw_bin="$target_dir/.agentic-framework/bin/fw"
+    [ -x "$fw_bin" ] || return 0
+
+    local out rc=0
+    out=$(PROJECT_ROOT="$target_dir" "$fw_bin" designer install 2>&1) || rc=$?
+    case "$rc" in
+        0)
+            echo -e "  ${GREEN}✓${NC}  Workflow Designer installed (sha256 verified against pin)"
+            ;;
+        1)
+            # Verification refused the bytes. Nothing was installed — say so in
+            # those words, because "designer step ran" and "designer installed"
+            # must not read the same.
+            echo -e "  ${RED}✗${NC}   Workflow Designer REFUSED — vendored build failed sha256 verification"
+            echo -e "       Nothing was installed. The vendored copy does not match the pin:"
+            echo "$out" | sed 's/^/       /'
+            ;;
+        *)
+            echo -e "  ${YELLOW}⚠${NC}   Workflow Designer not installed — /designer will render an error page"
+            echo "$out" | sed 's/^/       /'
+            ;;
+    esac
+    return 0
+}
+
 do_init() {
     local target_dir=""
     local provider="generic"
@@ -537,6 +582,13 @@ CYAML
             fi
         fi
     fi
+
+    # --- Workflow Designer (T-3064) ---
+    # Extracted into a function so the wiring is reachable by a test without
+    # standing up a whole `fw init`: the defect this closes is that NOTHING in any
+    # onboarding path installed the designer, and a step nothing exercises is how
+    # that happens again.
+    fw_init_install_designer "$target_dir"
 
     # --- Activate governance: initialize session context (T-002) ---
     # F5 (T-2444): route through the project's vendored fw — the SAME entry

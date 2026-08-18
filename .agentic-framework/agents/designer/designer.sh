@@ -17,6 +17,10 @@
 #                                      Tag defaults to the pin's `source_tag`. --dry-run verifies the
 #                                      tag's self-consistency and reports pin-match without installing
 #                                      (works against any historical tag).
+#   fw designer install                Install the pinned build from the VENDORED copy that ships
+#                                      inside .agentic-framework/ — the ONBOARDING path (T-3064).
+#                                      Purely local: no network, same sha256-vs-pin verification
+#                                      and same reject-on-mismatch as `sync --from`.
 #   fw designer url                    Print the served Watchtower URL for the designer
 #
 # Boundary (T-559): both intake paths handle only frozen published bytes. --from takes a
@@ -90,6 +94,13 @@ _install_readonly() {
     local src="$1" vpath
     vpath="$(_vendored_abs)"
     mkdir -p "$(dirname "$vpath")"
+    # T-3064: clear an existing target first. It was installed 0444, and neither
+    # `install` nor `cp` can write over a read-only file, so re-installing the
+    # same version (repairing a corrupted local copy) failed on the fallback too.
+    # AFTER verification, never before: the caller has already matched these bytes
+    # against the pin, so this only ever removes a file about to be replaced by a
+    # verified one.
+    rm -f "$vpath" 2>/dev/null || true
     # install read-only (AC5): the vendored copy is never edited in place.
     install -m 0444 "$src" "$vpath" 2>/dev/null || { cp -f "$src" "$vpath" && chmod 0444 "$vpath"; }
     echo "${_c_grn}✓ vendored${_c_off} $(_pin_get version) → ${vpath#"$PROJECT_ROOT"/} (sha256 verified, read-only)"
@@ -128,6 +139,57 @@ do_sync() {
         return 1
     fi
     _install_readonly "$src"
+}
+
+# T-3064 (A2/A4/A5): install the pinned build from the VENDORED copy — the path
+# onboarding takes. `fw init` calls this against a freshly vendored consumer, so
+# it is what decides whether a newly-onboarded project has a designer or a pin
+# naming a file that was never delivered.
+#
+# Reads FRAMEWORK_ROOT (the vendored .agentic-framework/ in a consumer), writes
+# PROJECT_ROOT — the two are the SAME directory only in the framework repo, where
+# the already-installed branch below returns first.
+#
+# A3 — verification is not re-implemented here. Once the source file is located,
+# this delegates to `do_sync --from`, so the sha256-vs-pin comparison and the
+# refusal on mismatch are literally the same lines the delivered-artifact path
+# has always run. A new call path cannot weaken a check it does not own.
+#
+# A4 — no network, ever. The bytes are already on disk because `fw vendor` put
+# them there; `--from-tag` (which does reach 832's internal OneDev) stays the
+# framework-repo intake verb and is NOT reachable from onboarding. So there is no
+# remote to hang on, and the absent-source case below exits NON-ZERO with a named
+# cause rather than returning success over a project with no designer.
+#
+# Exit codes: 0 installed or already present · 1 sha256 mismatch (refused)
+#             3 pin incomplete · 5 no vendored build to install from
+do_install() {
+    local rel vpath src expected
+    rel="$(_pin_get vendored_path)" || rel=""
+    [ -n "$rel" ] || { echo "${_c_red}pin has no vendored_path — cannot install${_c_off}" >&2; return 3; }
+    expected="$(_pin_get sha256)" || expected=""
+    [ -n "$expected" ] || { echo "${_c_red}pin has no sha256 — refusing to install an unverifiable build${_c_off}" >&2; return 3; }
+    vpath="$PROJECT_ROOT/$rel"
+
+    if [ -f "$vpath" ] && [ "$(_sha256 "$vpath")" = "$expected" ]; then
+        echo "${_c_grn}✓ designer already installed${_c_off} $(_pin_get version) → ${rel} (sha256 matches pin)"
+        return 0
+    fi
+
+    src="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/$rel"
+    if [ ! -f "$src" ]; then
+        # LOUD and specific. The failure this whole task exists to close was a
+        # quiet one — a check that read as inapplicable — so the absent-source
+        # case names the file, the reason, and the verb that fixes it.
+        echo "${_c_yel}designer NOT installed${_c_off} — the pin names ${rel}, but no vendored build is present at:" >&2
+        echo "  ${src}" >&2
+        echo "  → this framework copy was vendored before the designer shipped with it." >&2
+        echo "  → refresh it (fw upgrade), or in the framework repo: fw designer sync --from-tag" >&2
+        return 5
+    fi
+
+    # Same verification path as the delivered-artifact flow (A3).
+    do_sync --from "$src"
 }
 
 # Pull-at-tag intake (T-247/D-335, T-2616). Fetch artifact + MANIFEST at the
@@ -332,10 +394,11 @@ case "$cmd" in
     status)  do_status "$@" ;;
     path)    do_path "$@" ;;
     sync)    do_sync "$@" ;;
+    install) do_install "$@" ;;
     url)     do_url "$@" ;;
     draft)   do_draft "$@" ;;
     -h|--help|help)
-        sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        sed -n '2,29p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
         ;;
-    *) echo "unknown verb: $cmd (try: status|path|sync|url|draft)" >&2; exit 2 ;;
+    *) echo "unknown verb: $cmd (try: status|path|sync|install|url|draft)" >&2; exit 2 ;;
 esac

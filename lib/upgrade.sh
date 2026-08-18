@@ -293,7 +293,17 @@ _self_vendor_policy() {
     # T-2329 (termlink): anti-patterns.yaml + escalation-patterns.yaml are the two
     # catalogues static_scan.py loads — omitting them left the reviewer's inputs
     # out of the vendored mirror (reviewer silently disabled in consumers).
-    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml; do
+    # T-3064 (found while scoping A2, not original scope): designer-pin.yaml was
+    # ALREADY git-tracked at .agentic-framework/policy/ — committed by a wholesale
+    # resync under T-2992 — but was never in this list. The two copies were
+    # byte-identical purely by accident of that one resync, so the next pin bump
+    # would have moved policy/designer-pin.yaml and left the vendored copy behind.
+    # A consumer would then verify the CORRECT artifact against a STALE sha256 and
+    # refuse it. Failing closed is the safe direction, but the symptom is "the
+    # designer refuses to install" with no visible cause. Load-bearing from A2
+    # onward, because A2 is what makes the vendored pin the thing consumers verify
+    # against. Parity pinned by tests/unit/t3064_self_vendor_designer.bats.
+    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml designer-pin.yaml; do
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue
@@ -581,6 +591,118 @@ _self_vendor_version() {
         else
             cp "$_svv_src" "$_svv_dst"
             echo -e "  ${GREEN}Self-vendor:${NC} synced VERSION ($(tr -d '\n' < "$_svv_src")) to .agentic-framework/"
+        fi
+    fi
+    return 0
+}
+
+# T-3064: read `vendored_path:` out of a designer pin without a YAML parser.
+#
+# grep/sed rather than python3 on purpose: the only other caller is do_vendor in
+# bin/fw, which must work on a fresh machine carrying nothing beyond bash and
+# coreutils (§Consumer-Facing Command Hygiene, T-1633). That caller inlines the
+# same four lines rather than sourcing this file — see the note at its use site
+# for why a shared definition was rejected there.
+#
+# Capture-then-strip, never `grep | sed` on a live producer (L-387).
+#
+# Inputs:  $1 — path to a designer-pin.yaml
+# Output:  the relative artifact path, or nothing when the key is absent
+# Return:  0 always (absence is a valid answer, not an error)
+_designer_pin_vendored_path() {
+    local _dpv_pin="$1" _dpv_line
+    _dpv_line="$(grep -E '^vendored_path:' "$_dpv_pin" 2>/dev/null | head -1 || true)"
+    [ -n "$_dpv_line" ] || return 0
+    _dpv_line="${_dpv_line#vendored_path:}"
+    _dpv_line="${_dpv_line%%#*}"
+    printf '%s' "$_dpv_line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//'
+    return 0
+}
+
+# T-3064 (A2/A5): self-vendor the SINGLE PINNED Workflow Designer build from
+# FRAMEWORK_ROOT/vendor/designer/<pinned> into .agentic-framework/vendor/designer/.
+# Eighth sibling of _self_vendor_libs (T-2095) / _templates (T-2241) / _policy
+# (T-2263) / _shim (T-2264) / _agents (T-2266) / _web (T-2267) / _version (T-2793)
+# — same shape, same dry-run/real-run wording split, so the T-2240 pre-push gate's
+# `would sync` regex catches this class through the same one match.
+#
+# ONE FILE, NOT THE DIRECTORY. vendor/designer/ holds nine historical builds
+# (~7.7 MB) of which exactly one is pinned; vendoring the directory would put the
+# framework repo's release history into every consumer. The pinned name is read
+# from policy/designer-pin.yaml `vendored_path:`, so a pin bump retargets the sync
+# by itself — and the superseded build is pruned from the vendored tree rather
+# than left to accumulate.
+#
+# Why the artifact is vendored at all (the A5 decision, recorded in T-3064's
+# `## Decisions`): the DECLARATION was already vendored and the ARTIFACT was not,
+# so every consumer carried a pin naming a file it had never been given.
+# Fetch-at-onboarding was rejected — 832-Workflow-designer lives on an internal
+# OneDev a consumer may have no route or credentials to, which would put a network
+# round-trip in the one path that must not fail open (A4).
+#
+# Inputs:
+#   $1 — dry_run ("true" / "false"). When "true", computes what WOULD sync
+#        without copying files.
+# Return:
+#   0 — sync completed (or nothing to sync, or consumer-skip)
+_self_vendor_designer() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    local _svd_pin="$FRAMEWORK_ROOT/policy/designer-pin.yaml"
+    # Consumer-safety mirror of the siblings: a consumer's vendored copy has no
+    # nested .agentic-framework/, so this is the early exit there.
+    [ -d "$_self_vendor" ] || return 0
+    [ -f "$_svd_pin" ] || return 0
+    local _svd_rel
+    _svd_rel="$(_designer_pin_vendored_path "$_svd_pin")"
+    [ -n "$_svd_rel" ] || return 0
+    local _svd_src="$FRAMEWORK_ROOT/$_svd_rel"
+    local _svd_dst="$_self_vendor/$_svd_rel"
+    # No source artifact: nothing to sync, and NOT this helper's job to report it.
+    # `fw doctor` already WARNs on pinned-but-absent (T-3064 A1) at the surface an
+    # operator reads; a second voice here would fire on every vendor run.
+    [ -f "$_svd_src" ] || return 0
+
+    local _svd_updated=0 _svd_pruned=0 _svd_dir _svd_old
+    _svd_dir="$(dirname "$_svd_dst")"
+
+    if [ ! -f "$_svd_dst" ] || ! cmp -s "$_svd_src" "$_svd_dst"; then
+        if [ "$dry_run" != true ]; then
+            [ -d "$_svd_dir" ] || mkdir -p "$_svd_dir"
+            # rm first: the vendored copy is installed 0444 (never edited in
+            # place, same contract as `fw designer sync`), so cp over it fails.
+            rm -f "$_svd_dst"
+            cp "$_svd_src" "$_svd_dst"
+            chmod 0444 "$_svd_dst"
+        fi
+        _svd_updated=1
+    fi
+
+    # Prune superseded builds so a pin bump does not leave the old artifact
+    # behind — a vendored tree that accumulates one ~900 KB build per release is
+    # the directory-vendoring outcome arriving slowly.
+    if [ -d "$_svd_dir" ]; then
+        for _svd_old in "$_svd_dir"/aef-workflow-designer-*.html; do
+            [ -f "$_svd_old" ] || continue
+            # `[ a = b ] && continue` would be an AND-list evaluating to 1 on the
+            # common (non-matching) branch, and this file is sourced into bin/fw's
+            # `set -e` — which would abort the whole vendor run on the first
+            # superseded build it found. Explicit if, deliberately.
+            if [ "$_svd_old" = "$_svd_dst" ]; then
+                continue
+            fi
+            [ "$dry_run" = true ] || rm -f "$_svd_old"
+            _svd_pruned=$((_svd_pruned + 1))
+        done
+    fi
+
+    if [ "$_svd_updated" -gt 0 ] || [ "$_svd_pruned" -gt 0 ]; then
+        local _svd_what="$_svd_updated file(s)"
+        [ "$_svd_pruned" -gt 0 ] && _svd_what="$_svd_what + $_svd_pruned superseded"
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svd_what to .agentic-framework/$(dirname "$_svd_rel")/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svd_what to .agentic-framework/$(dirname "$_svd_rel")/"
         fi
     fi
     return 0
@@ -1003,6 +1125,10 @@ do_upgrade() {
         # under the audit drift-scan shape). Same *.sh + *.py filter; templates
         # and static assets stay untouched (out-of-scope per audit's filter).
         _self_vendor_web "$dry_run"
+        # T-3064: sibling sync — pinned Workflow Designer build. Outside the
+        # audit drift-scan shape (that scans {bin,lib,agents,web} only), so this
+        # class is carried by `fw vendor self --check` and its own bats file.
+        _self_vendor_designer "$dry_run"
     fi
 
     local project_name

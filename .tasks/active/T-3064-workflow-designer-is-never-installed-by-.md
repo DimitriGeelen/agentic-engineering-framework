@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T10:42:34Z
-last_update: '2026-08-17T12:36:11Z'
+last_update: 2026-08-18T09:59:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -141,27 +141,53 @@ to satisfy that, or sit outside the gate.
       line specifically; the first version asserted `*"WARN"*<message>*` over the
       whole output and a SKIP mutant survived it, because an earlier doctor check
       had already printed a WARN. Line-scoped form kills the mutant.)*
-- [ ] A2. Onboarding installs the designer — `fw init` and/or `fw setup` reach
+- [x] A2. Onboarding installs the designer — `fw init` and/or `fw setup` reach
       `fw designer sync` for a project that has none, and a freshly-onboarded
       project ends with the artifact present and sha256-verified against the pin.
-- [ ] A3. The sha256 verification and reject-on-mismatch behaviour is unchanged
+      *(`fw vendor` ships the ONE pinned build — bin/fw:do_vendor; `fw vendor self`
+      keeps `.agentic-framework/vendor/designer/` fresh — lib/upgrade.sh:_self_vendor_designer;
+      `fw init` installs from it — lib/init.sh:fw_init_install_designer →
+      `fw designer install` (agents/designer/designer.sh:do_install). Proven e2e:
+      `fw init /tmp/t3064-e2e` ends with the artifact at PROJECT_ROOT and
+      `fw designer status` reporting PRESENT ✓ sha256 matches pin. Note the path is
+      `fw designer install`, NOT `fw designer sync` as the AC text guessed — sync's
+      two modes are a delivered file and a network pull-at-tag; neither is what a
+      consumer has. install reuses sync's verification, see A3.)*
+- [x] A3. The sha256 verification and reject-on-mismatch behaviour is unchanged
       by the new call path. Proven by a deliberate mismatch that must still be
       refused — not by asserting the happy path.
-- [ ] A4. Offline / no-upstream is handled explicitly and visibly. Onboarding
+      *(do_install does not re-implement verification — once it has located the
+      vendored source it delegates to `do_sync --from`, so the comparison and the
+      refusal are the same lines T-2521 shipped. t4/t5 in
+      `tests/unit/t3064_designer_onboarding_install.bats` corrupt the vendored
+      artifact and assert exit 1, the MISMATCH verdict LINE, and that nothing was
+      written to the project. Mutant M4 — swap `do_sync --from` for a direct
+      `_install_readonly` — turns both red.)*
+- [x] A4. Offline / no-upstream is handled explicitly and visibly. Onboarding
       must not hang on an unreachable 832 remote, and must not silently finish
       claiming success with no artifact installed. State which behaviour was
       chosen and why in `## Decisions`.
+      *(Chosen: onboarding never touches the network at all — see the A4 decision
+      below. t6 asserts the absent-build case exits 5, writes nothing, and prints a
+      line naming the artifact; mutants M5 (return 0) and M5b (drop the path from
+      the message) each turn it red.)*
 - [ ] A5. Consumers reach the designer at all — decide and implement whether the
       artifact ships through `fw vendor self` into `.agentic-framework/` or is
       fetched per-project at onboarding, and record the reasoning. These have
       different blast radii (repo size and sha-provenance vs network dependency
       at install time); the choice is the deliverable, not an implementation
       detail.
-- [ ] A6. `tests/unit/upgrade_fresh_machine_simulation.bats` stays green — this
+- [x] A6. `tests/unit/upgrade_fresh_machine_simulation.bats` stays green — this
       touches `fw init`/`fw upgrade`, which is exactly the consumer-facing
       hygiene rule (T-1633).
-- [ ] A7. Every load-bearing assertion is mutation-tested: the mutant turns it
+      *(11/11 green after the change.)*
+- [x] A7. Every load-bearing assertion is mutation-tested: the mutant turns it
       red, the unmutated suite is green (L-616).
+      *(10 mutants, each killed, one per load-bearing assertion — log at
+      `docs/reports/T-3064-mutation-log.md`. Run against a MIRROR of the tree, not
+      the tree, and the driver refuses to report a mutant that failed to apply or
+      was a no-op as "survived" — a mutation run that silently applies nothing is
+      the same false-green shape this task is about.)*
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -208,6 +234,20 @@ to satisfy that, or sit outside the gate.
 # branch. Filtered to t3: the sibling cases each spawn a full ~2-minute doctor run.
 bash -n bin/fw
 timeout 500 bats tests/unit/doctor_designer_pin_drift.bats --filter "t3"
+
+# A2/A3/A4/A7 — the onboarding install path: the pinned build reaches the vendored
+# tree, install verifies it against the vendored pin, a corrupted build is REFUSED
+# with nothing written, an absent build exits non-zero and says so, and the two
+# live pin copies have not diverged. Guarded per T-2738: a bats run that prints
+# "3 failed, 8 passed" satisfies a bare pass-marker grep, so the absence of any
+# `not ok` is asserted too.
+bash -n lib/upgrade.sh
+bash -n agents/designer/designer.sh
+out=$(bats tests/unit/t3064_designer_onboarding_install.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+
+# A6 — consumer-facing hygiene (T-1633). Same guard; ~3 min, it stands up real
+# consumers against a real file:// upstream.
+out=$(timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 #
@@ -364,6 +404,54 @@ timeout 500 bats tests/unit/doctor_designer_pin_drift.bats --filter "t3"
   *before* this vendoring reaches them. That is a true statement about their state,
   not a false alarm — but it is fleet-visible, and it is the reason A2/A5 belong in
   the same task as A1 rather than being split off.
+
+
+### 2026-08-18 — A4: what onboarding does when the designer cannot be installed
+
+- **Chose:** onboarding **never reaches the network**, and every outcome prints a
+  line. `fw init` calls `fw designer install`, which reads the build out of the
+  consumer's own `.agentic-framework/vendor/designer/` and verifies its sha256
+  against the vendored pin. `fw designer sync --from-tag` — the one verb that
+  contacts 832's internal OneDev — is not reachable from any onboarding path.
+- **Why:** "must not hang on an unreachable remote" is answered structurally
+  rather than by a timeout, because there is no remote in the path to hang on. A
+  timeout would still have to pick a number, and picking one wrong is how an
+  install step becomes a two-minute stall on a machine with no route to 192.168.10.201.
+- **The other half, which is the one that actually needed deciding:** an absent
+  vendored build must not read like success. `do_install` exits **5** (not 0) and
+  names the artifact, the reason, and the fix; `fw_init_install_designer` renders
+  that as a `⚠` line and a sha256 refusal as a `✗ REFUSED — nothing was installed`
+  line, so "the step ran" and "the designer is installed" cannot be confused.
+- **Init is not failed by any of this.** A project without a designer is still a
+  governed project; failing onboarding over an optional editor would be a worse
+  trade than the one this task is fixing. What changed is that the absence is now
+  *stated* at the moment it happens, instead of being discovered later as an error
+  page at `/designer`.
+- **Rejected:** fetch-on-miss (try the vendored copy, fall back to `--from-tag`).
+  It reintroduces the network dependency for exactly the consumers least likely to
+  have the route, and it makes the failure mode timing-dependent — the worst kind
+  to reproduce.
+- **Rejected:** hard-failing `fw init` on a missing designer. That converts an
+  advisory gap into an onboarding blocker for every consumer whose framework copy
+  predates this change.
+
+### 2026-08-18 — Found during A2: designer-pin.yaml was not in the self-vendor set
+
+- **Not original scope.** `.agentic-framework/policy/designer-pin.yaml` is
+  git-tracked (wholesale resync under T-2992), so consumers do receive the pin —
+  but `designer-pin.yaml` was absent from `_self_vendor_policy`'s explicit list
+  (`lib/upgrade.sh`). The two copies were byte-identical purely by accident of that
+  one resync.
+- **Why it had to be fixed here:** A2 is what makes the vendored pin load-bearing.
+  Before A2 a stale vendored pin was inert; after A2 it is the thing a consumer
+  verifies received bytes against. The next pin bump would have moved
+  `policy/designer-pin.yaml`, left the vendored copy behind, and made every
+  consumer reject the correct artifact against a stale sha256. Failing closed is
+  the safe direction — the symptom would have been "the designer refuses to
+  install" with no visible cause.
+- **Fix:** added to the sync list; parity pinned by t9 (helper syncs it) and t10
+  (the two live copies are identical) in
+  `tests/unit/t3064_designer_onboarding_install.bats`. Mutants M6 and M8 kill them.
 
 
 <!-- Record decisions ONLY when choosing between alternatives.
