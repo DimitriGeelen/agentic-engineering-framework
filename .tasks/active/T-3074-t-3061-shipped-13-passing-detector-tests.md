@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T10:24:07Z
-last_update: 2026-08-18T10:24:07Z
+last_update: 2026-08-18T10:25:49Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,9 +73,16 @@ evidence of coverage exists on one machine and nowhere else.
 - [x] A1. Both bats files are tracked in git.
 - [x] A2. Both suites pass against the current (post-refactor) code path — 8/8 and
       5/5, run 2026-08-18.
-- [ ] A3. A guard exists against the recurrence class: a test file present on disk
+- [x] A3. A guard exists against the recurrence class: a test file present on disk
       but absent from git is reported, so the next dispatched worker that writes
       tests without adding them is caught rather than trusted.
+      *(`tests/lint/no-untracked-test-files.bats` — 3 tests. It caught itself on
+      first run, before it was added, which is the cheapest possible demonstration
+      that it detects rather than asserts. Carries a positive control on the
+      collection predicate — an empty offender list is otherwise indistinguishable
+      from a blind one — and a negative control proving `git status` reports a
+      freshly-created untracked test file, so the query in the main assertion is
+      known to be capable of returning something.)*
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -89,6 +96,7 @@ evidence of coverage exists on one machine and nowhere else.
      verification genuinely needs human taste (tone, feel, layout rhythm).
 python3 -c "import subprocess,sys; out=subprocess.run(['git','ls-files','tests/unit/t3061_unclosed_satisfied_scan.bats','tests/unit/audit_unclosed_satisfied_warn.bats'],capture_output=True,text=True).stdout.split(); sys.exit(0 if len(out)==2 else 1)"
 timeout 300 bats tests/unit/t3061_unclosed_satisfied_scan.bats
+timeout 300 bats tests/lint/no-untracked-test-files.bats
 
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
