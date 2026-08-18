@@ -213,7 +213,7 @@ Two structural omissions, and the second is the one that matters:
       still blocked, and still filed its request) and is NOT written to the live
       tree. Without the first half, A1 is satisfied by a test that has stopped
       exercising the hook at all — two empty sets are equal.
-- [ ] **A4 — the sibling suites are surveyed and the result recorded.** L-256
+- [x] **A4 — the sibling suites are surveyed and the result recorded.** L-256
       (T-1428) names this class as covering more than one hook that writes into
       `.context/` from tests. Enumerate which test files invoke such hooks against
       the live tree, and record the finding in this task: fixed here if it is the
@@ -228,6 +228,44 @@ Two structural omissions, and the second is the one that matters:
       remains. Do not file a second learning describing the same class — that is
       the failure mode this task exists to break (L-021/T-1075 was the same shape
       and cost four months).
+
+#### A4 — survey: which other test files run `.context/`-writing hooks against the live tree
+
+Method: (1) grep `tests/` for invocations of the PreToolUse hooks and `check-tier0.sh`;
+(2) for each candidate, check whether it exports `PROJECT_ROOT`; (3) **run it and watch
+the live approvals surface**, because the grep answers "does it look isolated", not "does
+it leak". Only (3) is evidence.
+
+| Test file | Exports PROJECT_ROOT | Ran → live surface |
+|---|---|---|
+| `tests/governance/test_pretooluse_gates.bats` | **no (was)** → yes (T-3077) | **LEAKED** → clean |
+| `tests/integration/check_tier0.bats` | yes (5) | clean |
+| `tests/unit/check_tier0_comment_stripping.bats` | yes | clean |
+| `tests/unit/tier0_hash_normalization.bats` | yes | clean |
+| `tests/unit/tier0_idempotency.bats` | yes | clean |
+| `tests/unit/tier0_scope_boundary.bats` | yes | clean |
+| `tests/unit/focus_drift_gate.bats` | yes | clean |
+| `tests/unit/arc_id_validation_guard.bats` | yes | clean |
+| `tests/integration/fw_hook.bats` | no | clean (dispatcher-shape assertions; no blocking payload) |
+| `tests/unit/doctor_hook_exercise.bats` | no | see note — **not reproduced**, attribution retracted |
+| `tests/e2e/gates-test.sh`, `tests/e2e/tier-a/test-tier0.sh` | yes (5 / 8) | not run (e2e, out of scope) |
+
+**`doctor_hook_exercise.bats` note — recorded because a first pass got it wrong.** A run
+of that suite was followed by two live cards whose hashes were exactly the gates suite's
+two commands (`17d4dd0baaec`, `5c7923bd67b0`). Attributing them to that suite was wrong on
+two counts: `lib/doctor-hook-exercise.py:85` feeds every hook `input="{}"`, so check-tier0
+extracts no command and exits 0 before reaching any write; and a repeat run under a live
+sampler produced **zero sightings** across the whole run. Two other `claude -c` sessions
+were live on this checkout at the time — concurrent-actor contamination is the remaining
+explanation. Left unattributed rather than guessed. **The method caveat is the real
+finding: on a shared checkout, "ran X, then saw a leak" is not attribution.**
+
+**Nothing filed as a follow-up task from this survey** — every other tier-0-touching suite
+already isolates, and the one suspect did not reproduce. What is worth a task is not on
+this axis: `tests/governance/test_pretooluse_gates.bats:99-128` overwrites the **live**
+`.context/working/focus.yaml` for the duration of two tests and restores it afterwards —
+cleanup, not isolation, so a killed run leaves the operator's focus emptied. Same class as
+this bug (A2), different artefact, and untouched here per one-bug-one-task.
 
 **Deliberately out of scope, filed separately** so this stays one deliverable:
 
@@ -278,7 +316,8 @@ grep -q "^ok 7 check-tier0: blocks" .context/working/.t3077-gates.out
 grep -q "^ok 8 check-tier0: blocks" .context/working/.t3077-gates.out
 grep -q "^ok 9 check-tier0: ALLOWS benign" .context/working/.t3077-gates.out
 # The live surface is clean after the run.
-bin/fw tier0 status 2>&1 | grep -q "No pending blocks or approvals"
+# L-387: redirect-then-grep — `fw tier0 status | grep -q` takes SIGPIPE and returns 141 with the line present.
+bin/fw tier0 status > .context/working/.t3077-tier0.out 2>&1 && grep -q "No pending blocks or approvals" .context/working/.t3077-tier0.out
 # The GRANTED file is never created by a test run.
 test ! -e .context/working/.tier0-approval
 
