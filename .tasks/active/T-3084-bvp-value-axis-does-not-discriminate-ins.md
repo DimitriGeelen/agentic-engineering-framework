@@ -1,18 +1,8 @@
 ---
-id: T-3081
-name: "a learning that prescribes its own fix and sits at application TBD is a latent
-  unfixed bug"
+id: T-3084
+name: "BVP value axis does not discriminate inside the quadrant it recommends"
 description: >
-  L-021 (T-1075, project-boundary termlink over-match) and L-256 (T-1428, bats tests
-  leaking real Tier 0 approvals into .context/) each name the exact fix, each marked
-  application: TBD, each left live for four months while the defect they describe
-  kept firing. Both surfaced only because fw work-on printed them as related knowledge
-  AFTER the bug had been independently rediscovered — the learning system's recall
-  is retrospective, so it confirms a rediscovery instead of preventing one. Nothing
-  distinguishes a prescriptive learning from an observational one, so nothing can
-  surface the unapplied ones. Open question: can 'prescribes a fix' be recognised
-  from the corpus well enough to build an actionable rail, or does it need an author-time
-  field?
+  Measured 2026-08-18 on 145 ranked tasks with estimator-proposed scores: 37 distinct BVP values, but the top three buckets hold 89 of 145 (61%) — 41 at 57, 25 at 52, 23 at 108. Worse than lumpy: 'fw bvp --include-proposed --quadrant hv-lc' returns 16 tasks ALL at exactly 108, so within the quadrant the standing operator directive names, BVP supplies no ordering at all and the list falls back to task-id order. OBS-323 has the deeper corpus measurement (370 active tasks, only 19 distinct raw score-sums, 142 of them in two buckets) and correctly predicted the 20-way tie at 108 before it was observed. Sibling to T-3072, which is the LC half of the same directive; this is the HV half. Only 7% of proposals are all-drivers-no-signal, so the estimator is producing scores — they cluster. Candidates to weigh: re-weight the four global drivers, widen the per-driver 0-5 rubric so adjacent tasks separate, score relatively within a cohort instead of absolutely, or accept flatness and rank by cost alone inside a coarse value band.
 
 status: captured
 workflow_type: inception
@@ -21,9 +11,9 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-08-18T18:51:57Z
-last_update: '2026-08-18T19:00:19Z'
-date_finished:
+created: 2026-08-18T19:02:48Z
+last_update: 2026-08-18T19:02:48Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -32,36 +22,9 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
-cost_estimate_proposed:
-  - ts: '2026-08-18T19:00:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 6
-    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
-      (workflow:inception); effort=6 (lines=112,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-18T19:00:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
-      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3081: a learning that prescribes its own fix and sits at application TBD is a latent unfixed bug
+# T-3084: BVP value axis does not discriminate inside the quadrant it recommends
 
 ## Problem Statement
 
@@ -151,7 +114,7 @@ bvp_scores_proposed:
 
 **Recommendation:** GO
 
-**Rationale:** Two instances found by accident in one session, both with measured four-month dwell times and both closed today only because the bug was independently rediscovered. L-021 (T-1075) and L-256 (T-1428) each name their own fix and each sit at application: TBD. The problem is evidenced; what is open is the mechanism — whether 'this learning prescribes a fix' is mechanically recognisable from the corpus or needs an author-time field. That is a design question worth one inception, not a build.
+**Rationale:** OBS-323 measured the flatness and set its own trigger — 'worth its own task once T-3072 lands' — and T-3072 reached GO on 2026-08-18, so the condition is met. The new datum that makes it urgent rather than merely known: the tie is not spread across the corpus, it IS the recommended quadrant. All 16 hv-lc tasks carry BVP 108 exactly, so ranking inside the quadrant the operator is told to prioritise returns an arbitrary order. This is an inception because the fix changes ranking semantics for every consumer (fw bvp, auto-promote, Watchtower), and the choice between re-weighting drivers, widening the 0-5 rubric, and scoring relatively rather than absolutely is a real design decision, not an implementation detail.
 
 ## Decisions
 

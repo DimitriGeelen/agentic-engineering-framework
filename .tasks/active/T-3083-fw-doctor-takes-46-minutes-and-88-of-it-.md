@@ -2,7 +2,17 @@
 id: T-3083
 name: "fw doctor takes 4.6 minutes and 88% of it is three checks"
 description: >
-  Measured 2026-08-18 with per-line timestamps (.context/working/.doctor-profile.txt): total 278.6s. Large-file gate 96.6s, test-infrastructure check 75.0s (counts 4174 unit tests), TermLink check 74.0s. Those three are 245.6s = 88%. Everything else together is under 33s. Two reasons this matters beyond wall-clock: (1) fw doctor appears in many tasks' ## Verification blocks and in cron, so it is in the close path; a 4.6-minute gate is one people route around. (2) 74s for a version check is not slow, it is a timeout being hit — that is a correctness signal, not a performance one, and worth diagnosing before optimising. NOTE this corrects an earlier claim of mine that the web smoke loop dominated; measured, smoke was 50.8s of 241s = 21%, and in this run it does not appear above 2s at all. Profiling method: bash -x does not work because bin/fw re-execs; timestamping stdout per line does.
+  Measured 2026-08-18 with per-line timestamps (.context/working/.doctor-profile.txt):
+  total 278.6s. Large-file gate 96.6s, test-infrastructure check 75.0s (counts 4174
+  unit tests), TermLink check 74.0s. Those three are 245.6s = 88%. Everything else
+  together is under 33s. Two reasons this matters beyond wall-clock: (1) fw doctor
+  appears in many tasks' ## Verification blocks and in cron, so it is in the close
+  path; a 4.6-minute gate is one people route around. (2) 74s for a version check
+  is not slow, it is a timeout being hit — that is a correctness signal, not a performance
+  one, and worth diagnosing before optimising. NOTE this corrects an earlier claim
+  of mine that the web smoke loop dominated; measured, smoke was 50.8s of 241s = 21%,
+  and in this run it does not appear above 2s at all. Profiling method: bash -x does
+  not work because bin/fw re-execs; timestamping stdout per line does.
 
 status: captured
 workflow_type: refactor
@@ -22,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:58:26Z
-last_update: 2026-08-18T18:58:26Z
-date_finished: null
+last_update: '2026-08-18T19:00:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +44,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-18T19:00:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-18T19:00:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3083: fw doctor takes 4.6 minutes and 88% of it is three checks
