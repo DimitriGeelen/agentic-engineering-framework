@@ -3173,3 +3173,10 @@ decisions:
     date: 2026-08-18
     task: T-3064
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-456
+    decision: "cheap Python pre-filter in the scan, authoritative confirmation by"
+    scope: project
+    date: 2026-08-18
+    task: T-3073
+    rationale: "Auto-captured from task file on completion"

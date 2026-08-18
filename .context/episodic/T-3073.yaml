@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3073: C-001 research-artefact check is blind to captured inceptions that already carry a recommendation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-18T11:48:50Z
+# ============================================================================
+
+task_id: T-3073
+task_name: "C-001 research-artefact check is blind to captured inceptions that already carry a recommendation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-18T10:01:11Z
+completed: 2026-08-18T11:48:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-18T12:03:10+02:00
+last_commit: 2026-08-18T13:45:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the C-001 rail watches inceptions being worked, not inceptions being decided. the C-001 rail now watches inceptions being decided, not just worked
+
+# Key outcomes
+outcomes:
+  - 'A1. The C-001 artefact check runs over inceptions that carry a substantive'
+  - 'A2. Inceptions with neither a recommendation nor started-work status stay'
+  - 'A3. The widened rail is proven by a positive control, not by an empty set —'
+  - 'A4. The count reported by `fw audit` distinguishes the two populations'
+  - 'A5. Assertions are mutation-tested: revert the set-widening and the new test'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-18 — where the "substantive recommendation" predicate lives'
+    chose: 'cheap Python pre-filter in the scan, authoritative confirmation by shelling out to the existing `audit_inception_recommendation` (`lib/task-audit.sh:117`) once per *candidate*.'
+    rationale: 'that bash function is the definition of "substantive recommendation" everywhere else — `fw inception decide`, `fw task review`, `fw task review-batch` all gate on it, and it carries three separate hard-won fixes (T-1528 heading termination, T-1510 bulleted form, T-1746 emphasised verdict). Re-expressing it in Python would create a second definition of the same rule, which is precisely what T-3061 was opened to remove: two implementations that agree are the dangerous case, because agreement is indistinguishable from correctness right up until it isn''t, and only one of them has tests. - **Why not shell out per task:** `agents/audit/active-task-scan.py` exists to read each of ~130 task files exactly once (T-955 collapsed five bash loops into it). A subprocess per task would undo that. Hence the split: Python cheaply narrows to inceptions that *look* like they carry a recommendation, bash decides. Candidates are single digits today (6), so the subprocess cost is bounded by the answer, not by the corpus.'
+    alternatives_rejected: ['porting the predicate to Python and having the bash function call the port. Correct in the long run and probably where this ends up, but it puts a rewrite in the path of `fw inception decide` — a gate with three regression fixes in it — to serve an audit WARN. Wrong order of risk. If the port happens it should be its own task, with the gate''s tests as the acceptance criterion.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/active-task-scan.py'
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/tests-unit-t3073_c001_recommendation_bearing_inceptions.yaml'
+  - '.tasks/active/T-3073-c-001-research-artefact-check-is-blind-t.md'
+  - 'tests/unit/t3073_c001_recommendation_bearing_inceptions.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T12:03:10'
+    action: 'T-3073: the C-001 rail watches inceptions being worked, not inceptions being decided'
+  - time: '2026-08-18T13:45:06'
+    action: 'T-3073: the C-001 rail now watches inceptions being decided, not just worked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 107 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 107
+  commits: 2
+  files_changed: 5
+  lines_added: 803
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3073-c-001-research-artefact-check-is-blind-t.md
+generated_by: context-agent-hybrid

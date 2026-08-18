@@ -45,7 +45,7 @@ nothing mechanical would gate their close.
 | T-2969 | started-work | build | draft arc with all constituents complete is reported... | 5 | yes |
 | T-3040 | started-work | build | peer message backlog lost — local hub had no framewo... | 6 | yes |
 | T-3043 | started-work | build | RCA: non-root agent cannot use TermLink hub — socket... | 8 | **no** |
-| T-3061 | started-work | build | audit rail: surface active tasks whose ACs are all s... | 6 | yes |
+| T-3064 | started-work | build | Workflow Designer is never installed by onboarding —... | 7 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |

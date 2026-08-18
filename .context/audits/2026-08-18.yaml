@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-17-1952
-timestamp: 2026-08-17T17:52:29Z
+# Audit Results - 2026-08-18-1344
+timestamp: 2026-08-18T11:44:53Z
 sections: "structure"
 summary:
-  pass: 30
+  pass: 29
   warn: 3
-  fail: 0
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -45,24 +45,25 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 1091 registered card(s)"
+    check: "Fabric: 1092 registered card(s)"
   - level: WARN
-    check: "Fabric: 174/1004 cards have no edges"
+    check: "Fabric: 175/1005 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 9 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 722 card(s) point at files no watch pattern covers"
+    check: "Fabric: 723 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 2 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
   - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: PASS
-    check: "Invariant suite: 65 structural invariant(s) green (tests/lint/)"
+    check: "Invariant suite: 68 structural invariant(s) green (tests/lint/)"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS
