@@ -2006,7 +2006,21 @@ learnings:
   task: T-1428
   date: 2026-04-24
   context: Added via context agent
-  application: TBD
+  application: "T-3077 (2026-08-18) applied the prescription to tests/governance/test_pretooluse_gates.bats
+    — the last suite still running check-tier0 against the live PROJECT_ROOT. Two additions the
+    original prescription does not state, both measured in T-3077, both required or the export is
+    a no-op: (1) the sandbox root MUST contain a .tasks/ or .framework.yaml marker, because bin/fw's
+    _project_root_is_stale() re-resolves a markerless dir back to the live project and the card
+    leaks anyway; (2) it MUST contain .context/working/, because check-tier0.sh writes
+    ${APPROVAL_FILE}.pending with a bare redirect and no mkdir -p. Guard:
+    tests/governance/test_t3077_approvals_surface_isolation.bats holds the suite to the invariant
+    by sampling the LIVE approvals surface throughout the run, so a create-then-delete is caught too.
+    STILL OPEN — this closes the check-tier0 leg only: the observe leg was closed separately (L-227,
+    T-943, observe.bats sandboxes PROJECT_ROOT); the handover leg is mitigated by save/restore of
+    LATEST.md (L-228, T-944), which is cleanup rather than isolation-by-construction and was NOT
+    re-verified by T-3077. T-3077's A4 survey also found tests/unit/doctor_hook_exercise.bats
+    filing live Tier 0 cards — attribution unconfirmed at time of writing, filed for its own task."
+  closed_by: T-3077 (check-tier0 leg only — observe closed by T-943, handover leg still unverified)
 - id: L-257
   learning: "When modifying framework source (lib/*.sh, agents/**/*.sh), always sync the vendored copy in .agentic-framework/. Prior session updated lib/subscribe-learnings-from-bus.sh T-1217→T-1219 but the vendored copy stayed on v1 (untracked). Consumers pulling via fw upgrade would have received the bugged version. Sync-and-stage should be part of the same commit as the source change."
   source: P-001
