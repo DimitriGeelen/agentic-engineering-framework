@@ -12,6 +12,7 @@ T-955: Merge loops 1/2/5/9/10 into single-pass Python scan.
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +23,58 @@ from pathlib import Path
 # framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 from task_satisfaction import analyse_text  # noqa: E402
+
+_FRAMEWORK_ROOT = Path(__file__).resolve().parents[2]
+
+# T-3073: cheap Python pre-filter for "this inception looks like it carries a
+# substantive ## Recommendation". Deliberately a SUPERSET of the authoritative
+# bash predicate `audit_inception_recommendation` (lib/task-audit.sh):
+#   * it does not restrict the search to the ## Recommendation section, and
+#   * its comment-stripper removes only the span between <!-- and -->, where
+#     bash drops whole lines,
+# so anything bash would accept, this accepts too. False positives are fine —
+# bash decides. False negatives would be invisible, hence the superset rule.
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+_RECOMMENDATION_RE = re.compile(
+    r"^[ \t]*[-*]?[ \t]*\*\*Recommendation:\*\*[ \t]*\*{0,2}[A-Za-z]",
+    re.MULTILINE,
+)
+
+
+def _looks_recommendation_bearing(content):
+    """Cheap in-process pre-filter — no subprocess, no file re-read."""
+    if "## Recommendation" not in content:
+        return False
+    return bool(_RECOMMENDATION_RE.search(_HTML_COMMENT_RE.sub("", content)))
+
+
+def _has_substantive_recommendation(task_path):
+    """Authoritative confirmation — the one definition, in bash.
+
+    Shells out to `audit_inception_recommendation` (lib/task-audit.sh:117), the
+    same predicate `fw inception decide`, `fw task review` and `fw task
+    review-batch` gate on. It carries three regression fixes (T-1528 heading
+    termination, T-1510 bulleted form, T-1746 emphasised verdict); re-expressing
+    it in Python would create a second definition of the same rule, which is
+    what T-3061 was opened to remove.
+
+    Called once per *candidate*, never per task — T-955 built this scan to read
+    each of ~130 files exactly once and a subprocess per task would undo that.
+    """
+    lib = _FRAMEWORK_ROOT / "lib" / "task-audit.sh"
+    if not lib.is_file():
+        # Degraded: predicate unavailable. Stay silent rather than guess — a
+        # second guess here is the thing the Decisions section rules out.
+        return False
+    try:
+        rc = subprocess.run(
+            ["bash", "-c", 'source "$1" && audit_inception_recommendation "$2"',
+             "_", str(lib), str(task_path)],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20,
+        ).returncode
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return rc == 0
 
 
 def scan_active_tasks(tasks_dir, reports_dir):
@@ -42,7 +95,10 @@ def scan_active_tasks(tasks_dir, reports_dir):
     valid_count = 0
     quality_issue_count = 0
     c001_missing = 0
+    c001_missing_started = 0
+    c001_missing_recommendation = 0
     inception_active = 0
+    inception_recommendation = 0
 
     required_fields = ["id", "name", "description", "status", "workflow_type", "owner", "created", "last_update"]
     valid_statuses = {"captured", "refined", "started-work", "issues", "blocked", "work-completed"}
@@ -166,25 +222,49 @@ def scan_active_tasks(tasks_dir, reports_dir):
             quality_issues.append({"id": task_id, "issue": "unfilled placeholder in Context section", "file": fname})
             quality_issue_count += 1
 
-        # ============ Loop 5: C-001 Research (active inceptions) ============
-        if workflow_type == "inception" and status == "started-work":
-            inception_active += 1
-            has_artifact = False
-            artifact_name = ""
+        # ============ Loop 5: C-001 Research (inceptions being worked OR decided) ============
+        # T-3073: the set was `status == "started-work"`, which is the population
+        # being *worked*. C-001's failure mode lands on the population being
+        # *decided*: an inception carrying a substantive `## Recommendation` has
+        # by definition finished researching — it is asking the operator for a
+        # go/no-go — and nothing forces a status change to file one, so five of
+        # the six pending decisions measured on 2026-08-18 were still `captured`
+        # and invisible to this rail. L-539's shape: check the SET, not just the
+        # predicate.
+        #
+        # Two populations, tracked separately so widening the set does not
+        # silently inflate a count the operator reads one way (A4).
+        if workflow_type == "inception":
+            reason = ""
+            if status == "started-work":
+                inception_active += 1
+                reason = "started-work"
+            elif _looks_recommendation_bearing(content) and _has_substantive_recommendation(fpath):
+                # Pre-filter narrows in-process; bash confirms once per candidate.
+                inception_recommendation += 1
+                reason = "recommendation"
 
-            for rb in report_basenames:
-                if task_id.lower() in rb:
-                    has_artifact = True
-                    artifact_name = rb
-                    break
+            if reason:
+                has_artifact = False
+                artifact_name = ""
 
-            if not has_artifact:
-                research_issues.append({"id": task_id, "type": "missing"})
-                c001_missing += 1
-            else:
-                # Check if referenced in task
-                if "docs/reports/" not in content:
-                    research_issues.append({"id": task_id, "type": "unreferenced", "artifact": artifact_name})
+                for rb in report_basenames:
+                    if task_id.lower() in rb:
+                        has_artifact = True
+                        artifact_name = rb
+                        break
+
+                if not has_artifact:
+                    research_issues.append({"id": task_id, "type": "missing", "reason": reason})
+                    c001_missing += 1
+                    if reason == "started-work":
+                        c001_missing_started += 1
+                    else:
+                        c001_missing_recommendation += 1
+                else:
+                    # Check if referenced in task
+                    if "docs/reports/" not in content:
+                        research_issues.append({"id": task_id, "type": "unreferenced", "reason": reason, "artifact": artifact_name})
 
         # ============ Loop 11: Unclosed-but-satisfied (T-3061, OBS-316/317) ============
         # The judgement is `lib/task_satisfaction.analyse_text` — imported, not
@@ -236,7 +316,14 @@ def scan_active_tasks(tasks_dir, reports_dir):
         "research": {
             "issues": research_issues,
             "c001_missing": c001_missing,
+            # T-3073: the two populations, reported separately (A4).
+            # inception_active  = inceptions with status started-work (being worked)
+            # inception_recommendation = inceptions carrying a substantive
+            #   ## Recommendation but NOT started-work (being decided)
+            "c001_missing_started": c001_missing_started,
+            "c001_missing_recommendation": c001_missing_recommendation,
             "inception_active": inception_active,
+            "inception_recommendation": inception_recommendation,
         },
         "ownership": {
             "issues": ownership_issues,
