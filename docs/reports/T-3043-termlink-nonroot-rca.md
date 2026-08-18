@@ -279,6 +279,62 @@ rather than absent, but the claim that closes it is a read of the TermLink accep
 path, which is out of scope here per gap-homing (T-1333). Recorded as narrowed,
 not as resolved.
 
+#### 4.2a RESOLVED — confirmed from source by the TermLink agent, 2026-08-18
+
+Closed the same day, not by us reading their source but by asking. Put to the
+TermLink agent on `agent-chat-arc` offset 102; answered at offset 105 (their task
+T-2791) with citations:
+
+```
+server.rs:743   let owner_uid = libc::getuid()
+server.rs:766   decide_unix_peer(PeerCredentials::from_tokio_stream(&stream), owner_uid)
+                Reject => warn + refuse + continue
+server.rs:813   same-uid => PermissionScope::Execute
+tests    :1929  same uid accepts
+         :1944  different uid rejects
+         :1959  cred-extraction failure rejects (fail-closed, their T-2448)
+```
+
+Their words: *"You inferred a peer-credential check on uid equality with the hub
+owner. That is exactly what it is."* All four eliminations in the table above held.
+`connect(2)` succeeds because the kernel reads only the inode mode; the hub then
+reads `SO_PEERCRED` and drops any peer whose uid is not its own.
+
+**Two things this changes, both of which we had wrong:**
+
+1. **`SO_PEERCRED` is already there** — since their T-1407, made fail-closed by
+   T-2448. Our §7 recommendation to "add `SO_PEERCRED`" was a no-op and actively
+   misleading; it would have sent an implementer to an existing line. The finding
+   sharpens rather than dissolves: the hub identifies its peer precisely, and
+   `peer_uid == owner_uid` **is the entire policy** — no allowlist, no principal
+   table, no policy surface. One uid admissible, every other refused, nothing
+   between. The gap is a policy surface, not a syscall.
+2. **Our ECONNRESET observation is version-dated.** Their T-2772 replaced the bare
+   `continue` with a structured `AUTH_DENIED` envelope written to the refused party;
+   the comment at `server.rs:783-789` names our exact symptom as what it fixed. But
+   T-2772 sits among 338 commits on a branch never merged to `main`, and
+   `/opt/termlink` serves `main`.
+
+| | Version | Behaviour |
+|---|---|---|
+| What we measured | 0.11.693 (`/usr/local/bin/termlink`, per T-1438 heartbeat) | silent reset, nothing written |
+| Their working tree | 0.11.1537 | structured `AUTH_DENIED` |
+| **What this host runs** | **`main`** | **without T-2772** |
+
+So the observation is accurate for the binary anyone here would hit, and inaccurate
+against current upstream source. Both halves matter: reproduce it and you see it;
+read their source and you do not. **Our share of that** — we reported observed
+behaviour without recording the binary's version, leaving the upstream agent to
+establish the dating for us. Captured as **L-626**: the version stamp is part of the
+evidence, not metadata about it.
+
+**Also disqualifies option 1 a second time, independently.** `server.rs:813` grants
+every admitted Unix peer full `PermissionScope::Execute`, and `hub.secret` is no
+better because the client mints its own scope from it (`auth.rs:453`). A "narrow
+socket ACL" is not narrow — there is no narrow grant available to give. Our own
+rejection was on measured lost updates; theirs is on scope. Neither depends on the
+other.
+
 ### 4.3 The client masks the failure — a finding, not a footnote
 
 Discovered while testing 4.2, and it changes how this whole incident reads.
@@ -318,6 +374,25 @@ evidence available, and the evidence available was misleading by construction.
 Same false-green class as the port-3000 verification lines (CLAUDE.md §Watchtower
 Port): a check that cannot fail is indistinguishable from one that passes.
 Registered as **OBS-302**; homed upstream per T-1333.
+
+**Mechanism, supplied upstream 2026-08-18 (their T-2791) — one line.**
+`discovery.rs:81-87` `all_sessions_dirs()` filters `.filter(|d| d.is_dir())`,
+doc-commented as avoiding noisy `read_dir` errors. `Path::is_dir()` returns **false
+on EACCES**, so to uid 1000 a `0700` root-owned runtime dir is indistinguishable
+from one that does not exist. With `TERMLINK_RUNTIME_DIR` set, `all_runtime_dirs()`
+returns exactly that dir (`discovery.rs:44-47`, exclusive override), the filter
+drops it, zero sessions are probed, and `events.rs:1220-1230` prints the bare
+`No event topics found.` with `Ok(())`.
+
+**The structured surface is worse than the human one.** Their partial-inventory
+fields count *probe* failures, not *discovery* failures, so JSON mode emits
+`{"ok":true,"total_topics":0,"sessions_probed":0,"sessions_skipped":0}` — a positive
+assertion that the inventory is complete and empty. Anything automated against that
+surface is told with more confidence than a human is told. Fix in progress upstream
+under T-2791.
+
+This is the sharpest available statement of the false-green class: the same call
+returns a *more* trustworthy-looking answer the *more* machine-readable it gets.
 
 ---
 
@@ -396,16 +471,25 @@ Ordered by whether they can be done here.
 
 ### Upstream (TermLink repo — gap-homing T-1333)
 
-4. **Authorize local clients by identity, not by inode mode.** `SO_PEERCRED` at
-   accept, or drop the Unix socket and have local clients use loopback TCP with the
-   same HMAC the fleet already uses. Either removes gate ②'s uid-coupling *and*
-   gate ③'s asymmetry. This is Candidate C in T-3041.
+4. **Give the accept path a policy surface.** *(Corrected 2026-08-18 — see §4.2a.
+   The original wording, "`SO_PEERCRED` at accept", was wrong: it is already there,
+   `server.rs:767`, since their T-1407.)* The hub identifies its peer exactly right
+   and then has one predicate to apply — `peer_uid == owner_uid`. What is missing is
+   an allowlist / principal table, i.e. somewhere for the answer "which uids are
+   admissible" to be *expressed*. Alternatively drop the Unix socket and have local
+   clients use loopback TCP with the same HMAC the fleet already uses, which reuses a
+   policy surface that already exists instead of inventing one — now the stronger of
+   the two. Either removes gate ②'s uid-coupling *and* gate ③'s asymmetry. This is
+   Candidate C in T-3041.
 5. **Refuse to steal an owned runtime directory.** `hub start` should detect a live
    hub via `hub.pid` and either attach or fail loudly. Silent takeover is what made
    §1.1 possible.
 6. **Audit rejected peers.** A dropped connection should produce a record carrying
    the peer's uid/pid and the reason. Without it the hub's log actively misleads
-   during exactly the failure it should explain.
+   during exactly the failure it should explain. *(Partially addressed upstream
+   already: their T-2772 writes a structured `AUTH_DENIED` envelope to the refused
+   party. It is on an unmerged branch, so it is not in what this host runs — §4.2a.
+   The recommendation stands for the audit **log**, which T-2772 does not touch.)*
 
 ### Operator, immediate
 

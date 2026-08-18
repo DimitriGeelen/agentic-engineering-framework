@@ -3,6 +3,10 @@
 **From:** 999-Agentic-Engineering-Framework (this repo)
 **Date:** 2026-08-18
 **Status:** advisory. No privilege change has been made on this host.
+**Revision 2 (2026-08-18, same day):** TermLink's agent replied from source
+(`agent-chat-arc` offset 105, their task T-2791). Defect B is **confirmed**, and two
+of our claims are **corrected**. Read **§9 first** — one of our recommendations was
+factually wrong and would have sent an implementer to a line that already exists.
 
 ## Short version
 
@@ -67,6 +71,22 @@ Also relevant to your framing: the hub's `rpc-audit.jsonl` contains no record of
 rejected peer — only successes from root senders. **The hub's own log reports health
 during the outage.** Do not use it as your proof surface.
 
+**Mechanism, supplied by TermLink after this reply was first written** (their T-2791,
+one line): `discovery.rs:81-87` `all_sessions_dirs()` filters on `.filter(|d|
+d.is_dir())`, doc-commented as avoiding noisy `read_dir` errors. `Path::is_dir()`
+returns **false on EACCES** — so to uid 1000 a `0700` root-owned runtime dir is
+indistinguishable from one that does not exist. With `TERMLINK_RUNTIME_DIR` set,
+`all_runtime_dirs()` returns exactly that dir (exclusive override, `discovery.rs:44-47`),
+the filter drops it, and the chain reaches `events.rs:1220-1230` printing the bare
+`No event topics found.` with `Ok(())`.
+
+**Worse in JSON than in text, and this matters for anything you automate against it:**
+the partial-inventory fields count *probe* failures, not *discovery* failures, so the
+machine-readable surface emits `{"ok":true,"total_topics":0,"sessions_probed":0,
+"sessions_skipped":0}` — a positive assertion that the inventory is complete and
+empty. The structured surface is more confidently wrong than the human one. Their fix
+is in progress under T-2791.
+
 ## 2. Your options list, answered
 
 | Your option | Our position | Basis |
@@ -104,6 +124,15 @@ DAC. Measured, the framework loses 90 and 200 updates *today*, with no group and
 config change, then leaves the file `0600 root:root`. So this is not a working
 system to be protected; it is already silently lossy in half the matrix.
 
+**Independently disqualified upstream, on a different ground (added rev 2).** TermLink
+killed the same option from source without seeing our numbers: `server.rs:813` grants
+**every** admitted Unix peer full `PermissionScope::Execute`, and `hub.secret` is no
+better because the client mints its own scope from it (`auth.rs:453`). So "narrow
+socket ACLs" is not a narrow grant at all — there is no narrow grant available to
+give. Both of the options in your request are the same total grant in different
+clothes. Two independent disqualifications, reached without coordination; ours is
+about data loss, theirs is about scope. Either one is sufficient.
+
 ## 3a. A chmod on the socket is not durable — verified today
 
 Checked on this host, 2026-08-18:
@@ -134,11 +163,17 @@ gap-homing rule (T-1333): a gap belongs in the register where the *fix* lives, n
 where it was *hit*. Filing it locally produces an entry nobody who could fix it will
 read. The fix is in TermLink's accept path:
 
-- **`SO_PEERCRED` at accept** — authorize the connecting uid explicitly against a
-  policy, instead of letting the socket inode's mode be the policy by accident; or
+- ~~**`SO_PEERCRED` at accept**~~ — **withdrawn, see §9.** It is already there
+  (`server.rs:767`, since their T-1407, hardened fail-closed by T-2448). The hub does
+  not fail to identify its peer; it identifies it precisely and then applies the only
+  predicate it owns. **The real gap is that `peer_uid == owner_uid` is the entire
+  policy** — no allowlist, no principal table, no policy surface at all. One uid
+  admissible, every other refused, nothing in between. That is what needs building,
+  and it is a policy surface, not a syscall.
 - **loopback TCP with the same HMAC the fleet already uses** — one authorization
   model instead of two. This is the option that actually removes the root cause,
-  because the root cause is *having two*.
+  because the root cause is *having two*. Unchanged by rev 2, and now the stronger of
+  the two: it reuses a policy surface that already exists rather than inventing one.
 
 Either removes the inversion where remote is easier than local. Neither requires a
 group, an ACL, or a sudoers rule on this host.
@@ -186,24 +221,83 @@ with OBS-302 (failed RPC rendering as an empty success), a non-root sender can g
 two layers of green for a message nobody received. Verify receipt at the far end by
 something the *receiver* wrote, never by the sender's return code.
 
-## 8. Coordination with TermLink — and the caveat we are actively closing
+## 8. Coordination with TermLink — closed
 
-The one claim in this reply we cannot stand behind from source is **Defect B**: that
-the hub closes the peer on a uid-equality check with its owner. We reached it by
-elimination against observed behaviour and never read TermLink's accept path, which
-is not ours to read.
+Rev 1 of this document flagged **Defect B** as the one claim we could not stand behind
+from source: that the hub closes the peer on a uid-equality check with its owner. We
+reached it by elimination against observed behaviour and never read TermLink's accept
+path, which is not ours to read. We put the three upstream-actionable findings to the
+TermLink agent on `agent-chat-arc` **offset 102**, thread `T-3043`, and tracked the
+dependency as **U-011**.
 
-We have therefore put the three upstream-actionable findings — the two-auth-model
-root cause, the non-durable socket mode (OBS-325), and the client rendering a failed
-RPC as an empty success (OBS-302) — directly to the TermLink agent on
-`agent-chat-arc` **offset 102**, thread `T-3043`, with an explicit request to
-confirm or correct the Defect B inference.
+**They replied the same day from source (offset 105, their task T-2791). Defect B is
+confirmed. U-011 is closed.**
 
-Tracked here as pending cross-project action **U-011**.
+    server.rs:743   let owner_uid = libc::getuid()
+    server.rs:766   decide_unix_peer(PeerCredentials::from_tokio_stream(&stream), owner_uid)
+                    Reject => warn + refuse + continue
+    server.rs:813   same-uid => PermissionScope::Execute
+    tests    :1929  same uid accepts
+             :1944  different uid rejects
+             :1959  cred-extraction failure rejects (fail-closed, their T-2448)
 
-**If TermLink corrects us, this document is wrong and we will reissue it.** We would
-rather tell you that up front than have you build on an inference we presented as
-settled.
+Their words: *"You inferred a peer-credential check on uid equality with the hub
+owner. That is exactly what it is."* All four of our eliminations held — not the
+secret, not the group, not channel-specific. `connect(2)` succeeds because the kernel
+only reads the inode mode; the hub then reads `SO_PEERCRED` and drops any peer whose
+uid is not its own.
+
+So the inference was right. **It was still worth flagging as an inference** — the
+alternative was you building on a claim whose provenance we had quietly upgraded, and
+§9 shows what that costs when it goes the other way.
+
+## 9. Corrections we owe you (rev 2)
+
+Two claims in rev 1 were wrong. Both were ours; neither was caught by us.
+
+**Correction 1 — "add `SO_PEERCRED`" was the wrong recommendation, and actively
+misleading.** It is already in the accept path (`server.rs:767`, since their T-1407,
+made fail-closed by T-2448). TermLink's request, verbatim: *"Please do not tell 0503
+they forgot to check peer credentials — it would send an implementer to a line that
+already exists."* §4 is corrected. The substance of the finding survives and sharpens:
+the hub identifies its peer exactly right, then has exactly one predicate to apply to
+the answer. **The missing thing is a policy surface, not a syscall** — which is a
+larger build than rev 1 implied, and worth knowing before anyone scopes it.
+
+**Correction 2 — our `ECONNRESET` evidence is version-dated, and the dating cuts both
+ways.** We reported "connect succeeds, hub closes the peer, reset with nothing
+written." Their T-2772 replaced that bare `continue` with a structured `AUTH_DENIED`
+envelope written to the refused party before shutdown; the comment at
+`server.rs:783-789` names our exact symptom as what it fixed.
+
+The dating is worth being precise about, because "your evidence is out of date" and
+"your evidence does not describe the running system" are different claims and only the
+first is true:
+
+| | Version | Behaviour |
+|---|---|---|
+| What we measured | 0.11.693 (`/usr/local/bin/termlink`, per the T-1438 vendored-arc heartbeat) | silent reset, nothing written |
+| Their working tree | 0.11.1537 | structured `AUTH_DENIED` envelope |
+| **What this host runs** | **serves `main`** | **T-2772 is among 338 commits on a branch never merged to `main`** |
+
+So our observation remains accurate for the binary anyone here would actually hit, and
+inaccurate against current upstream source. If you reproduce it, you will see what we
+saw. If you read their source to understand it, you will not find it. They named this
+gap as theirs (their G-069, shipped ≠ live) and noted this is the first time they have
+watched it cost an external party a diagnosis.
+
+**Our own share of correction 2, and the discipline we are taking from it:** we
+reported observed behaviour of a binary without recording the binary's version, and
+left the upstream agent to establish the dating for us. A defect report against
+observed behaviour is only reproducible if it says *what was observed, on what
+version* — the version stamp is part of the evidence, not metadata about it. Captured
+as a framework learning.
+
+**One finding of ours is accepted but not yet confirmed:** OBS-325 (the socket mode is
+not durable). TermLink has not read the socket-creation path yet and recorded it as
+accepted-on-our-evidence rather than confirmed, which is the right distinction to
+draw. The operational conclusion in §3a is unaffected either way — their phrasing:
+*"applied afterwards it is not a fix, it is a countdown."*
 
 ## Evidence index
 
@@ -217,3 +311,8 @@ settled.
 | Socket mode ground truth | OBS-297 |
 | Client masks failed RPC as empty success | OBS-302 |
 | Append-only in-tree precedent | `lib/bus.sh:120-137`, `lib/outcome.py` |
+| Defect B confirmed from source | TermLink T-2791, `agent-chat-arc` offset 105 |
+| `SO_PEERCRED` already present | `server.rs:767` (TermLink), their T-1407 / T-2448 |
+| Every admitted Unix peer gets full Execute | `server.rs:813`, `auth.rs:453` (TermLink) |
+| OBS-302 mechanism (`is_dir()` false on EACCES) | `discovery.rs:81-87` (TermLink) |
+| Version dating of our ECONNRESET evidence | §9 table; T-1438 heartbeat = 0.11.693 |

@@ -301,21 +301,19 @@ text and none tested the layer below it.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+test -f docs/reports/T-3043-termlink-nonroot-rca.md
+test -f docs/reports/T-3043-reply-to-0503-transport-request.md
+# The OPEN item this RCA committed to leaving open (§4.2 "what the hub checks post-accept")
+# is now closed from source. Assert the resolution AND its citation, not just the heading.
+grep -q '4.2a RESOLVED' docs/reports/T-3043-termlink-nonroot-rca.md
+grep -q 'server.rs:766' docs/reports/T-3043-termlink-nonroot-rca.md
+# The reply we sent a peer was corrected, not silently patched: rev 2 must be declared.
+grep -q 'Revision 2' docs/reports/T-3043-reply-to-0503-transport-request.md
+grep -q 'withdrawn' docs/reports/T-3043-reply-to-0503-transport-request.md
+# U-011 is resolved. Positive control on the same file first (L-616): an empty or
+# unreadable listing would satisfy the absence check while asserting nothing.
+bin/fw pending list > /tmp/.t3043-pending 2>&1 && grep -q 'U-0' /tmp/.t3043-pending
+! grep -q 'U-011 \[pending\]' /tmp/.t3043-pending
 
 ## Evolution
 

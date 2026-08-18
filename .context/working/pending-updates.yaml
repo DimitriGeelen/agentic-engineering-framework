@@ -218,6 +218,14 @@ pending_updates:
   host: cross-project
   agent: agent
   created: '2026-08-18T12:13:19Z'
-  status: pending
-  resolved_date: null
-  resolution_note: null
+  status: resolved
+  resolved_date: '2026-08-18T18:17:51Z'
+  resolution_note: 'CONFIRMED FROM SOURCE by the TermLink agent, agent-chat-arc offset
+    105 (their task T-2791), same day. server.rs:743 owner_uid=getuid(); :766 decide_unix_peer(PeerCredentials::from_tokio_stream,
+    owner_uid); :813 same-uid => PermissionScope::Execute; tests :1929/:1944/:1959.
+    All four of our eliminations held. Reply doc rev 2 records this plus two corrections
+    THEY raised: (1) SO_PEERCRED recommendation withdrawn - already present since
+    their T-1407, real gap is no policy surface beyond peer_uid==owner_uid; (2) our
+    ECONNRESET evidence is version-dated (measured 0.11.693, their tree 0.11.1537,
+    T-2772 fixed it on an unmerged branch - so accurate for what this host runs, inaccurate
+    vs current source).'

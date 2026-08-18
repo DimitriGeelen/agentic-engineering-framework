@@ -4656,3 +4656,9 @@ X'` returning empty group."
   task: T-3061
   date: 2026-08-17
   context: Added via context agent
+- id: L-626
+  learning: "When reporting observed behaviour of an external artefact upstream, record the artefact's VERSION as part of the evidence, not as metadata about it. T-3043 reported a TermLink ECONNRESET symptom accurately; the upstream agent had to establish that we measured 0.11.693 while their tree was 0.11.1537 and the fix (their T-2772) sat on an unmerged branch. Without the version stamp, 'your evidence is out of date' and 'your evidence does not describe the running system' are indistinguishable — and only the second would have invalidated the report. A behaviour report without a version is not reproducible."
+  source: P-001
+  task: T-3043
+  date: 2026-08-18
+  context: Added via context agent
