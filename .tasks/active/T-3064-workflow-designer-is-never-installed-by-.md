@@ -171,7 +171,7 @@ to satisfy that, or sit outside the gate.
       below. t6 asserts the absent-build case exits 5, writes nothing, and prints a
       line naming the artifact; mutants M5 (return 0) and M5b (drop the path from
       the message) each turn it red.)*
-- [ ] A5. Consumers reach the designer at all — decide and implement whether the
+- [x] A5. Consumers reach the designer at all — decide and implement whether the
       artifact ships through `fw vendor self` into `.agentic-framework/` or is
       fetched per-project at onboarding, and record the reasoning. These have
       different blast radii (repo size and sha-provenance vs network dependency
@@ -188,6 +188,33 @@ to satisfy that, or sit outside the gate.
       the tree, and the driver refuses to report a mutant that failed to apply or
       was a no-op as "survived" — a mutation run that silently applies nothing is
       the same false-green shape this task is about.)*
+
+**Integrator evidence (verified independently, not taken on the worker's report — 2026-08-18):**
+
+- `tests/unit/t3064_designer_onboarding_install.bats` — 14/14 green on a re-run
+  from this session. t4/t5 cover the refusal path (corrupted vendored build → exit
+  1, MISMATCH named, nothing left in the project), t8 idempotence, t12–t14 the
+  three distinct `fw init` renderings (installed-and-verified / refused / absent).
+- A3 holds structurally rather than by re-assertion: `do_install` delegates to
+  `do_sync --from`, so the sha256 comparison and its refusal are the lines T-2521
+  shipped, not a second copy of them.
+- A4 has no network anywhere in the onboarding path — the install reads the
+  vendored copy. There is nothing to hang on and nothing to fail open.
+- A5 is settled by the `## Decisions` entry above and implemented in the same
+  change: `fw vendor` ships the one pinned build, `_self_vendor_designer` keeps
+  `.agentic-framework/vendor/designer/` fresh, `fw designer install` installs it.
+  Vendored artifact verified by hand: sha256 `cab3c751…0935`, matches the pin.
+- A7: `docs/reports/T-3064-mutation-log.md` records 13 mutants, 13 killed. Spot-checked
+  one independently — M6 (drop `designer-pin.yaml` from `_self_vendor_policy`'s sync
+  list) reproduced live and killed t9; `lib/upgrade.sh` restored afterwards. The log
+  also records the driver initially reporting three mutants as *survived* when they
+  had never applied: a suite green because nothing was mutated is indistinguishable,
+  in the driver's output, from a suite green because the assertion is weak. The
+  driver now exits 2 unless the file provably changed — this task's own failure
+  class, caught inside its own verification.
+- The pin-drift defect found while scoping is fixed in the same change:
+  `designer-pin.yaml` now appears in `_self_vendor_policy`'s sync list
+  (`lib/upgrade.sh:306`), pinned by t9 and t10.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -399,11 +426,23 @@ out=$(timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); e
 - **Rejected:** vendoring `vendor/designer/` wholesale. That directory holds nine
   historical builds totalling ~7.7 MB, of which exactly one (0.8.0) is pinned. Only
   the pinned build ships; the rest are framework-repo history.
-- **Blast radius accepted, deliberately:** with A1 changing SKIP→WARN, every consumer
-  that has the vendored pin and no artifact starts reporting a WARN from `fw doctor`
-  *before* this vendoring reaches them. That is a true statement about their state,
-  not a false alarm — but it is fleet-visible, and it is the reason A2/A5 belong in
-  the same task as A1 rather than being split off.
+- **Blast radius — I got this wrong, corrected 2026-08-18.** I wrote that A1's
+  SKIP→WARN would make every consumer start reporting a WARN before the vendoring
+  reached them, and called that an accepted fleet-visible cost. It will not happen,
+  and the reason matters: doctor resolves the pin as
+  `${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}` (`bin/fw`), but a
+  consumer's pin lives at `.agentic-framework/policy/designer-pin.yaml`. The
+  enclosing `if [ -f "$_dz_pin" ]` is therefore false in every consumer and the check
+  does not run at all — verdict SKIP or WARN alike. **A1 is framework-repo-only.**
+  Surfaced by the dispatched worker (bus R-001, item 3), verified against `bin/fw`
+  directly rather than taken on report.
+
+  So the honest statement is the inverse of what I wrote: the condition A1 was
+  written to make loud is precisely the condition consumers are in, and they are the
+  one population that cannot see it. Not in scope here — the fix means editing the
+  doctor block this dispatch deliberately fenced off — but it is the difference
+  between "the rail is louder" and "the rail is louder where it was never quiet".
+  Its own task.
 
 
 ### 2026-08-18 — A4: what onboarding does when the designer cannot be installed
