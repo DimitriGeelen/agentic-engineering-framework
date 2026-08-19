@@ -3224,9 +3224,14 @@ if len(rows) > 5:
             echo -e "  ${YELLOW}WARN${NC}  Branch hygiene: $_bh_count finding(s)"
             while IFS= read -r _bl; do
                 echo -e "         $_bl"
-            done < <(printf '%s\n' "$_bh_out" | head -12)
+            done < <(printf '%s\n' "$_bh_out" | fw_branch_hygiene_head 12)
             if [ "$_bh_count" -gt 12 ]; then
-                echo -e "         … $((_bh_count - 12)) more (full list: git branch --merged origin/master)"
+                # T-3092: the shown lines are class-representative, not the first
+                # 12 — a positional cap hid every remote finding on this repo. The
+                # representative is the FIRST of its class, not the worst, so the
+                # full list has to be reachable and `git branch --merged` does not
+                # show remote strands at all.
+                echo -e "         … $((_bh_count - 12)) more (full list: bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .')"
             fi
             echo -e "         Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back)"
             if printf '%s\n' "$_bh_out" | grep -q '^diverged-fork '; then

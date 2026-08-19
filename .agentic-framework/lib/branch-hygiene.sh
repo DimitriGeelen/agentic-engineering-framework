@@ -30,6 +30,14 @@
 #                                                already-merged branch
 #   remote-contained origin/<branch>             remote ref fully contained in
 #                                                TARGET (ahead:0 — deletable)
+#   remote-unlanded origin/<branch> ahead=<n>    remote ref carrying <n> commits
+#                                                that are NOT in TARGET. Judged
+#                                                independently of any local branch
+#                                                of the same name — the two can be
+#                                                in opposite states (T-3092).
+#                                                Excludes the current branch's own
+#                                                upstream: that is where you are
+#                                                standing, not a strand.
 #
 # Origin: T-100139 inception measured 29 merged-but-undeleted branches and live
 # strands 215-248 commits behind master, all invisible. C1 (T-100142) deletes
@@ -100,17 +108,71 @@ fw_branch_hygiene() {
         esac
     done < <(git -C "$repo" worktree list --porcelain 2>/dev/null)
 
-    # ── remote refs fully contained in TARGET (ahead:0) ──
+    # ── remote refs: contained (deletable) vs carrying unlanded commits ──
+    #
+    # T-3092. This loop originally asked one question — "which remote refs can I
+    # delete?" — and emitted nothing for the complement. A remote ref carrying
+    # UNLANDED commits matched no arm: not reported as risky, not reported at all.
+    #
+    # The live miss that produced this fix: origin/t2416-fw-safe-mode-hook-timing
+    # held 202 unlanded commits — two test files, five research artefacts and six
+    # unread .pickup/ messages that existed nowhere else — and was invisible here,
+    # while its LOCAL namesake (an ancestor of origin/master) was reported
+    # `merged-undeleted`. Same name, opposite states. An operator reading the scan
+    # concluded t2416 was landed and deletable. Local and remote are judged
+    # independently on purpose: neither verdict may suppress the other.
+    #
+    # The current branch's own upstream is excluded. It is not a strand — it is
+    # where you are standing, fw_branch_divergence below reports it in detail, and
+    # a permanent WARN for your own working branch is exactly the noise that
+    # trains people to stop reading this section.
+    local remote_ahead upstream=""
+    upstream=$(git -C "$repo" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || echo "")
     while IFS= read -r br; do
         [ -z "$br" ] && continue
         case "$br" in origin/master|origin/HEAD*) continue ;; esac
-        ahead=$(git -C "$repo" rev-list --count "$target..refs/remotes/$br" 2>/dev/null || echo 1)
-        if [ "${ahead:-1}" = "0" ]; then
+        [ -n "$upstream" ] && [ "$br" = "$upstream" ] && continue
+        # An empty sentinel, not the old `|| echo 1`. That fallback was harmless
+        # while ahead!=0 was the silent case; now that it emits, a failed rev-list
+        # would manufacture a finding out of an error. Stay silent instead.
+        remote_ahead=$(git -C "$repo" rev-list --count "$target..refs/remotes/$br" 2>/dev/null || echo "")
+        [ -z "$remote_ahead" ] && continue
+        if [ "$remote_ahead" = "0" ]; then
             echo "remote-contained $br"
+        else
+            echo "remote-unlanded $br ahead=$remote_ahead"
         fi
     done < <(git -C "$repo" for-each-ref --format='%(refname:short)' refs/remotes/origin/)
 
     return 0
+}
+
+# ── T-3092: class-representative truncation for callers with a display cap ──
+#
+# fw_doctor prints at most 12 findings. That cap was positional (`head -12`), and
+# the emission order is local branches → worktrees → remote refs, so on a repo
+# with 12+ local findings the remote classes were cut off ENTIRELY. On this repo
+# at the time of writing: 19 findings, and 0 of the 4 `remote-unlanded` lines
+# survived the cap. A finding class that is always truncated has not shipped.
+#
+# Reads findings on stdin, writes at most $1 of them to stdout: first one line
+# per distinct class (so every class that fired is visible), then the remainder
+# in original order until the cap. Fewer findings than the cap passes through
+# unchanged. Order within the output is not contractual; coverage is.
+fw_branch_hygiene_head() {
+    local cap="${1:-12}"
+    awk -v cap="$cap" '
+        { line[NR] = $0; cls[NR] = $1 }
+        END {
+            n = 0
+            for (i = 1; i <= NR; i++) {
+                if (!(cls[i] in seen) && n < cap) { seen[cls[i]] = 1; pick[i] = 1; n++ }
+            }
+            for (i = 1; i <= NR; i++) {
+                if (!pick[i] && n < cap) { pick[i] = 1; n++ }
+            }
+            for (i = 1; i <= NR; i++) if (pick[i]) print line[i]
+        }'
 }
 
 # ── T-100144 (C3 of T-100139): divergence summary for handover ──
