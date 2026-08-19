@@ -9,12 +9,12 @@ description: >
   is the safe direction but changes operator workflow (retry window), so it is the
   operator's call.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-tier0.sh, bin/fw, lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:50:46Z
-last_update: '2026-08-19T19:15:13Z'
-date_finished:
+last_update: 2026-08-19T20:07:26Z
+date_finished: 2026-08-19T20:07:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,30 +117,49 @@ why the operator-visible wording is in scope.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 — one resolved TTL, not two literals.** Both approval legs read their window
+- [x] **A1 — one resolved TTL, not two literals.** Both approval legs read their window
       from a single resolution point in `check-tier0.sh`. Neither `300` nor `3600` survives
       as a bare literal at the two decision sites (`:256` and `:307`).
-- [ ] **A2 — default parity, measured at the hook.** With no TTL env var set, a Watchtower
+- [x] **A2 — default parity, measured at the hook.** With no TTL env var set, a Watchtower
       grant stamped older than the unified window is refused: the hook exits 2 and the
       command stays blocked. This is asserted against the real `bin/fw hook check-tier0`
       with a fixture `resolved-<hash>.yaml`, not against a re-implementation of the maths.
-- [ ] **A3 — positive control, both directions (L-616).** The same fixture with a
+- [x] **A3 — positive control, both directions (L-616).** The same fixture with a
       `responded_at` *inside* the window is admitted (exit 0). Without this, an
       always-blocking hook and a correctly-expiring one are indistinguishable — two empty
       sets are equal.
-- [ ] **A4 — the existing override still works.** `TIER0_WATCHTOWER_TTL` set explicitly is
+- [x] **A4 — the existing override still works.** `TIER0_WATCHTOWER_TTL` set explicitly is
       still honoured, so any operator or test that pins it keeps working; the resolution
       order is stated in the file where it resolves.
-- [ ] **A5 — the operator is told the same window on both paths.** `fw tier0 approve`'s
+- [x] **A5 — the operator is told the same window on both paths.** `fw tier0 approve`'s
       expiry line and the Watchtower approve surface quote the resolved value rather than a
       hard-coded "5 minutes" / "1 hour", so the two cannot drift apart again in prose after
       they have been unified in code.
-- [ ] **A6 — the knob is in the config registry.** The TTL key is defined in
+- [x] **A6 — the knob is in the config registry.** The TTL key is defined in
       `lib/config.sh` `FW_CONFIG_REGISTRY`, so `fw config list` and Watchtower `/config`
       surface it. CLAUDE.md forbids naming an `FW_` key the registry does not define, and
       `tests/lint/config-registry-parity.bats` enforces that direction.
 
 ### Human
+- [ ] [REVIEW] The new `TIER0_APPROVAL_TTL` row reads correctly on Watchtower `/config`
+
+      **Steps:**
+      1. `bin/fw watchtower url` — open the URL it prints, then go to `/config`
+      2. Find the `TIER0_APPROVAL_TTL` row (it is the last entry in the registry table)
+      3. Read its description at your normal browser width
+
+      **Expected:** the row shows default `300`, and the description is legible without
+      horizontal scrolling or mid-word wrapping. It is the longest description in the table,
+      so it is the one most likely to break the column. The sentence that must survive intact
+      is "NOT the pending-request staleness window" — if that clause is truncated or wrapped
+      into illegibility, the row actively misleads, because the two clocks it distinguishes
+      are exactly what an operator would otherwise conflate.
+
+      **If not:** note which part is unreadable and at what width. The fix is to shorten the
+      description in BOTH `lib/config.sh` and `web/blueprints/config.py` — they are held
+      identical by `tests/lint/config-registry-parity.bats`, so changing one alone turns the
+      invariant suite red and blocks the next push.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -172,6 +191,31 @@ why the operator-visible wording is in scope.
 -->
 
 ## Verification
+
+# The grant-TTL regression suite: both legs, both directions, legacy override, and the
+# T-3077 live-surface invariant. L-387: redirect then grep, never pipe into grep -q.
+bats tests/unit/tier0_grant_ttl.bats > .context/working/.t3080-bats.out 2>&1
+grep -q "^ok 10 " .context/working/.t3080-bats.out && ! grep -q "^not ok" .context/working/.t3080-bats.out
+
+# A1: neither TTL literal survives at a decision site. The only 300 is the registry
+# default in lib/config.sh; check-tier0.sh must reach it through one resolved variable.
+test "$(grep -c 'AGE.*-lt.*300\b' agents/context/check-tier0.sh)" -eq 0
+test "$(grep -c 'TIER0_WATCHTOWER_TTL:-3600' agents/context/check-tier0.sh)" -eq 0
+grep -q 'APPROVAL_TTL=' agents/context/check-tier0.sh
+
+# A6: the key is in the registry and in every parity surface (34 == 34, not 34 vs 33).
+bin/fw test invariants > .context/working/.t3080-inv.out 2>&1 || true
+grep -q "^ok 4 lib/config.sh and web/blueprints/config.py have the same config keys" .context/working/.t3080-inv.out
+grep -q "^ok 6 config registry key count matches across sources" .context/working/.t3080-inv.out
+
+# A5: both operator-facing surfaces quote the resolved window, not a hard-coded phrase.
+bin/fw approvals help > .context/working/.t3080-help.out 2>&1
+grep -q "300s (5 minutes)" .context/working/.t3080-help.out
+
+# The live Tier 0 surface is clean after all of the above.
+bin/fw tier0 status > .context/working/.t3080-tier0.out 2>&1
+grep -q "No pending blocks or approvals" .context/working/.t3080-tier0.out
+
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -274,6 +318,40 @@ why the operator-visible wording is in scope.
 
 ## Recommendation
 
+**Recommendation:** GO
+
+**Rationale:** The change is in the safe direction and is now measured rather than argued.
+The Watchtower approval button granted a destructive command a 3600s pre-authorisation
+where the typed CLI granted 300s — the easier action to take by accident carried the longer
+window. Both legs now resolve one value from one point, defaulting to 300s. The only thing
+left for a human is whether one table row reads well, which cannot be settled by grep.
+
+Worth being explicit about what this does and does not fix. It removes 11/12ths of the
+*duration* of the hazard the operator raised; it does not remove the hazard. Approving still
+writes a command hash that admits any command hashing to it. Provenance on the card (T-3078)
+and a rail for stale pending requests (T-3079) are the other two legs and remain open.
+
+**Evidence:**
+- `bats tests/unit/tier0_grant_ttl.bats` — 10/10 green: both legs expire at the same age,
+  both admit inside the window (L-616 positive controls), the legacy `TIER0_WATCHTOWER_TTL`
+  override still widens it, and the suite leaves the live approvals surface untouched.
+- Mutation test: reverting the Watchtower leg to `${TIER0_WATCHTOWER_TTL:-3600}` flipped
+  exactly tests 1, 3 and 6 red and left the other seven green — the suite discriminates this
+  defect rather than failing wholesale. `check-tier0.sh` restored byte-identical to HEAD.
+- `## Verification` — 12/12 passed at the close gate, including that neither `300` nor
+  `3600` survives as a literal at either decision site.
+- `fw test invariants` — config-registry parity green again (34 keys on both surfaces; it
+  was 34 vs 33 and blocking the pre-push audit until this task's A6 landed).
+- `curl $(bin/fw watchtower url)/config` — 200, 88,457 bytes, contains `TIER0_APPROVAL_TTL`.
+- `bin/fw tier0 status` — clean, no pending blocks or approvals.
+
+**Note on how this task went:** the dispatched worker that produced the original change died
+before committing, and its uncommitted tree carried four separate defects — a backtick fork
+bomb that OOM'd the host four times (T-3086), a call to an undefined function that broke
+`fw tier0 approve` (T-3087), the registry parity break above, and the complete absence of the
+tests it was asked to write. Every one would have been caught by executing the file once.
+
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -303,6 +381,45 @@ why the operator-visible wording is in scope.
 
 ## Decisions
 
+### Unify at 300, not at some middle value
+Tightening the loose leg is the only direction that cannot make things worse. A grant is a
+live pre-authorisation for a destructive command, and the click is the easier action to
+take by accident than the typed command — so the click must carry the shorter window, not
+the longer. Any value above 300 would have loosened the CLI leg to buy convenience on the
+Watchtower leg, which inverts the safety argument the task was filed on.
+
+### Keep TIER0_WATCHTOWER_TTL working, but only when explicitly set
+Removing the legacy name would break any operator or test pinning it, for no safety gain —
+an explicit pin is a deliberate act, not an accident. It now sits ahead of the registry
+default in the resolution order and is exercised by test 7, so the override is a tested
+contract rather than dead compatibility code.
+
+### Do not touch web/blueprints/approvals.py EXPIRY_SECONDS
+There are two clocks in this subsystem and only one is in scope. `EXPIRY_SECONDS` governs
+how long a *pending request* stays offerable in the operator's queue; dropping it to 300
+would expire a request filed six minutes ago and leave the operator unable to act on their
+own queue. Stale pending requests are T-3079. The distinction is written into
+check-tier0.sh at the resolution point so the next person does not collapse them.
+
+### Fixture is `git push --force origin master`, not `rm -rf /`
+These tests file real grant records. A fixture reading `rm -rf /` in a log or a stray file
+is alarming to whoever finds it — which is precisely what happened when the governance
+suite leaked such a card onto the live Watchtower queue for four months (T-3077). Any
+Tier 0 pattern exercises the same code path, so there is no coverage cost.
+
+### Mutation test — measured, not asserted
+Reverting the Watchtower leg to `${TIER0_WATCHTOWER_TTL:-3600}` and re-running flipped
+exactly three tests red, and the right three:
+
+    not ok 1  Watchtower grant older than the window is refused
+    not ok 3  Watchtower grant at 1800s is refused — the old 3600 default is gone
+    not ok 6  both legs expire at the same age — parity, not two windows
+
+Tests 2, 4, 5, 7, 8, 9, 10 stayed green, which is the part that matters: the suite
+discriminates *this* defect rather than failing wholesale. `agents/context/check-tier0.sh`
+was restored from backup and verified byte-identical to HEAD afterwards.
+
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -331,3 +448,20 @@ why the operator-visible wording is in scope.
 
 ### 2026-08-18T19:51:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-38b75050
+- **Timestamp:** 2026-08-19T20:08:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 13
+     - evidence: `bin/fw test invariants > .context/working/.t3080-inv.out 2>&1 || true`
+
+### 2026-08-19T20:07:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
