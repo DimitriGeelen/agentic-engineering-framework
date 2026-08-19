@@ -494,8 +494,27 @@ echo "$COMMAND_HASH $(date +%s) PENDING" > "${APPROVAL_FILE}.pending"
 APPROVAL_DIR="${APPROVAL_DIR:-$PROJECT_ROOT/.context/approvals}"
 mkdir -p "$APPROVAL_DIR" 2>/dev/null
 APPROVAL_YAML="$APPROVAL_DIR/pending-${COMMAND_HASH:0:12}.yaml"
-T0_RISK="$DESCRIPTION" T0_CMD="$COMMAND" T0_HASH="$COMMAND_HASH" python3 -c "
-import yaml, sys, os
+T0_RISK="$DESCRIPTION" T0_CMD="$COMMAND" T0_HASH="$COMMAND_HASH" T0_ROOT="$PROJECT_ROOT" T0_FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 -c "
+import yaml, sys, os, subprocess
+
+# ── Provenance (T-3078) ─────────────────────────────────────────────────────
+# Derived in lib/tier0_origin.py, not here: the classification needs its own
+# tests, and logic embedded in a shell heredoc can only be exercised by running
+# the hook — which under bats always looks like a test, so the agent and human
+# branches were unreachable. See that module's docstring for why provenance is
+# derived from the process ancestry rather than declared by a caller flag.
+#
+# Import failure degrades to {'kind': 'unknown'} and the card is still written.
+# Provenance explains the block; the card IS the block. Never let the
+# explanation break the enforcement.
+def _origin():
+    try:
+        sys.path.insert(0, os.environ.get('T0_FRAMEWORK_ROOT', '') + '/lib')
+        import tier0_origin
+        return tier0_origin.derive(os.environ.get('T0_ROOT', ''))
+    except Exception:
+        return {'kind': 'unknown'}
+
 data = {
     'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
     'type': 'tier0',
@@ -503,6 +522,7 @@ data = {
     'command_preview': os.environ.get('T0_CMD', '')[:200],
     'command_hash': os.environ.get('T0_HASH', ''),
     'status': 'pending',
+    'origin': _origin(),
 }
 # T-100191: same-dir temp + os.replace — atomic create; the approval consumer
 # (fw tier0 approve / Watchtower) must never read a half-written file.

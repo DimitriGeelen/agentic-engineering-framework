@@ -55,16 +55,41 @@
 {% if pending_tier0 %}
 <div class="section-header">
     <h3>Tier 0 Approvals</h3>
-    <small>Agent blocked — requires your decision</small>
+    {# T-3078: derived from the cards actually pending. This used to be the
+       literal "Agent blocked — requires your decision" for every card, which was
+       false for every card T-3077's test suite filed against the live queue. #}
+    <small>{% if tier0_origin_summary %}{{ tier0_origin_summary }} — requires your decision{% else %}Requires your decision{% endif %}</small>
 </div>
 {% for item in pending_tier0 %}
-<div class="approval-card {{ item.status }}">
+{% set _o = item.origin or {} %}
+{% set _kind = _o.kind if _o.kind in ('agent', 'test', 'human') else 'unknown' %}
+<div class="approval-card {{ item.status }}" data-origin-kind="{{ _kind }}">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="approval-risk">{{ item.risk }}</div>
         <span class="status-badge badge-{{ item.status }}">{{ item.status }}</span>
     </div>
     <div class="approval-meta">{{ item.timestamp or '' }}</div>
     <div class="approval-command">{{ item.command_preview }}</div>
+
+    {# T-3078: origin — what asked, from where, on whose behalf. Approving is a
+       judgement about intent, and intent is what the card used to omit. #}
+    <div class="approval-origin" style="font-size:0.78rem; color:var(--pico-muted-color); margin:0.4rem 0 0; display:flex; gap:0.4rem; align-items:baseline; flex-wrap:wrap;">
+        <span class="origin-badge" data-kind="{{ _kind }}"
+              style="padding:0.1rem 0.4rem; border-radius:3px; font-weight:700; font-size:0.68rem; letter-spacing:0.04em; text-transform:uppercase;
+              {% if _kind == 'agent' %}background:var(--wt-warn); color:#1a1a1a;
+              {% elif _kind == 'test' %}background:var(--wt-muted); color:#fff;
+              {% elif _kind == 'human' %}background:var(--wt-success); color:#fff;
+              {% else %}background:var(--wt-danger); color:#fff;{% endif %}"
+              title="Derived from the process ancestry and working tree — not self-reported">{{ _kind }}</span>
+        {% if _kind == 'unknown' %}
+        <span>No provenance recorded — this card predates origin capture (T-3078), or derivation failed. Treat with the same suspicion as an unsigned request.</span>
+        {% else %}
+        {% if _o.task %}<span>task <a href="/tasks/{{ _o.task }}">{{ _o.task }}</a></span>{% endif %}
+        {% if _o.sandbox %}<span title="PROJECT_ROOT is a throwaway tree — no .git, or under a temp dir">sandbox tree</span>{% endif %}
+        {% if _o.ancestry %}<span title="Process chain that reached the gate">via {{ _o.ancestry[:3] | join(' ← ') }}</span>{% endif %}
+        {% if _o.project_root %}<span style="opacity:0.7;">{{ _o.project_root }}</span>{% endif %}
+        {% endif %}
+    </div>
 
     {% if item.status == 'pending' %}
     <form hx-post="/api/approvals/decide" hx-target="#result-{{ loop.index }}" hx-swap="innerHTML">

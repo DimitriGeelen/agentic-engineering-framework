@@ -107,6 +107,48 @@ def _load_pending_approvals():
     return approvals
 
 
+# T-3078: how a Tier 0 origin is described to the operator. Keyed by the `kind`
+# derived in agents/context/check-tier0.sh; anything unrecognised — including a
+# card written before provenance existed — falls through to "unknown origin"
+# rather than being presented as an agent request.
+_ORIGIN_LABELS = {
+    "agent": ("agent request", "agent requests"),
+    "test": ("test artefact", "test artefacts"),
+    "human": ("shell command", "shell commands"),
+    "unknown": ("unknown origin", "unknown origin"),
+}
+
+
+def _tier0_origin_summary(approvals) -> str:
+    """Describe what is actually pending, instead of asserting an agent asked.
+
+    The section subtitle used to read "Agent blocked — requires your decision"
+    unconditionally. That was a literal in the template, and it was false for
+    every card T-3077's governance suite filed against the live queue — the
+    operator saw `rm -rf /` attributed to a blocked agent that never existed.
+    Returns "" when nothing is pending, so the caller can omit the clause.
+    """
+    counts: dict[str, int] = {}
+    for a in approvals:
+        if a.get("status") != "pending":
+            continue
+        origin = a.get("origin")
+        kind = (origin or {}).get("kind") or "unknown"
+        if kind not in _ORIGIN_LABELS:
+            kind = "unknown"
+        counts[kind] = counts.get(kind, 0) + 1
+    if not counts:
+        return ""
+    parts = []
+    for kind in ("agent", "test", "human", "unknown"):
+        n = counts.get(kind)
+        if not n:
+            continue
+        singular, plural = _ORIGIN_LABELS[kind]
+        parts.append(f"{n} {singular if n == 1 else plural}")
+    return ", ".join(parts)
+
+
 def _load_resolved_approvals():
     """Load recently resolved (approved/rejected) approvals."""
     resolved = []
@@ -503,6 +545,7 @@ def _build_approvals_context(expand_overflow: bool = False):
     bvp_proposals = _load_proposals()
 
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
+    tier0_origin_summary = _tier0_origin_summary(pending_tier0)  # T-3078
     go_count = len(pending_go)
     ac_count = sum(
         sum(1 for ac in t["human_acs"] if not ac["checked"])
@@ -530,6 +573,7 @@ def _build_approvals_context(expand_overflow: bool = False):
         bvp_proposals=bvp_proposals,
         bvp_proposal_count=bvp_proposal_count,
         tier0_count=tier0_count,
+        tier0_origin_summary=tier0_origin_summary,  # T-3078
         go_count=go_count,
         ac_count=ac_count,
         ac_task_count=len(pending_acs),
