@@ -1,10 +1,8 @@
 ---
-id: T-3088
-name: "mirror_default_branch falls back to the current branch, so the github mirror
-  has compared two different branches since 2026-08-14"
+id: T-3092
+name: "branch-hygiene scan is blind to remote refs carrying unlanded commits (OBS-331)"
 description: >
-  mirror_default_branch falls back to the current branch, so the github mirror has
-  compared two different branches since 2026-08-14
+  branch-hygiene scan is blind to remote refs carrying unlanded commits (OBS-331)
 
 status: started-work
 workflow_type: build
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-19T19:38:28Z
-last_update: 2026-08-19T22:15:28Z
-date_finished:
+created: 2026-08-19T23:16:57Z
+last_update: 2026-08-19T23:16:57Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,99 +34,44 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-19T19:45:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=268,acs=7)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-19T19:45:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 2
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=2 
-      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
-      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
-      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3088: mirror_default_branch falls back to the current branch, so the github mirror has compared two different branches since 2026-08-14
+# T-3092: branch-hygiene scan is blind to remote refs carrying unlanded commits (OBS-331)
 
 ## Context
 
-`fw mirror sync` has reported `github: DIVERGED` on every run since
-**2026-08-14T15:45:02Z** — roughly 480 consecutive refusals over five days — while GitHub
-and OneDev have in fact been byte-identical on `master` the entire time
-(`10663c1d43b78fa19942248e399989a63b5c7f4e` on both).
+`fw_branch_hygiene` (`lib/branch-hygiene.sh`) walks remote refs and emits exactly one
+class for them: `remote-contained` — ahead=0, fully landed, safe to delete. A remote ref
+carrying **unlanded** commits matches no branch of that logic and is emitted as nothing.
+It is not reported as risky; it is not reported at all.
 
-The two values it compares come from different branches:
+Live instance, found during the T-3091 stranded-branch triage:
 
-- `origin_head` (`lib/mirror.sh:126`, `:156`) = `git ls-remote origin HEAD` -> origin's
-  **default branch**, i.e. `master` -> `10663c1d`.
-- `branch` (`lib/mirror.sh:141`, `:171`) = `mirror_default_branch()`, which reads
-  `refs/remotes/origin/HEAD` — **not set in this checkout**
-  (`fatal: ref refs/remotes/origin/HEAD is not a symbolic ref`) — and then falls back to
-  *the local current branch*, `t2539-staging`.
+| Ref | State | What the scan says |
+|---|---|---|
+| `origin/t2416-fw-safe-mode-hook-timing` | **202 unlanded commits**, 6 SALVAGE + 15 NEW-FILE rows | *nothing* |
+| `t2416-fw-safe-mode-hook-timing` (local) | ancestor of origin/master, fully landed | `merged-undeleted` |
 
-`mirror_sync_one` then fetches `refs/heads/t2539-staging` from github (`9cf2eb6f`) and asks
-whether it is an ancestor of origin's **master**. It is not, and never will be: they are
-different branches. The `merge-base --is-ancestor` test fails, the function takes the
-`diverged` path, logs the event and refuses. Deterministic, not intermittent.
+Same name, remote 204 ahead of local. An operator reading the scan concludes t2416 is
+landed and deletable. The local half is; the remote half holds `tests/unit/liveness_watchdog.bats`,
+`tests/unit/test_task_cache_t100140.py`, five research artifacts and six unprocessed
+`.pickup/` messages that exist nowhere else.
 
-The fallback itself is the defect. `mirror_default_branch()`'s contract is "resolve the
-default branch **on origin**"; substituting the local current branch answers a different
-question and silently makes the caller compare unrelated refs. When `refs/remotes/origin/HEAD`
-is absent the honest answers are to query the remote (`git ls-remote --symref origin HEAD`)
-or to fail loudly — not to guess with whatever branch the operator happens to be standing on.
+The local-branch arm already has the right shape — `merged-undeleted` / `behind-threshold` /
+`diverged-fork`. The remote arm was written for the narrow question "which remote refs can I
+delete?" and never grew the complement.
 
-**Why nobody noticed for five days:** it fails in the safe direction. `diverged` refuses to
-push and asks for a human, which is exactly what a *real* divergence should do, so the log
-line is indistinguishable from correct behaviour. T-1829 added push-stderr capture precisely
-so a recurring mirror stall would be diagnosable from the log alone — but that captures
-`push-failed`, and this path never reaches a push. Sibling to T-1828's 7-hour silent stall,
-one branch earlier in the same function.
-
-**Separate, and not this task's problem:** `master` itself last moved on 2026-08-14
-(`10663c1d`). The working branch is 338 commits ahead of it and 0 behind. That is why
-github.com *looks* stale, and it is an operator decision about landing to trunk (T-100201),
-not a mirror defect. Fixing this task will not move `master`.
+Filed as OBS-331 (urgent). Evidence: `docs/reports/T-3091-branch-manifest.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 — `mirror_default_branch` answers the question it is named for.** With
-      `refs/remotes/origin/HEAD` absent, it resolves origin's real default branch (e.g. via
-      `git ls-remote --symref origin HEAD`) rather than substituting the local current
-      branch. If it genuinely cannot resolve one, it fails loudly instead of guessing.
-- [ ] **A2 — the two compared values come from the same branch.** `origin_head` and the ref
-      fetched from the mirror are read for one and the same branch name; asserted by a test
-      that drives `mirror_sync_one` with the local checkout on a non-default branch — the
-      exact condition that has been live since 2026-08-14.
-- [ ] **A3 — `fw mirror status` reports in-sync for the current real state.** Both remotes
-      are at `10663c1d` on master today, so the correct verdict is in-sync, not DIVERGED.
-      Run before and after; the before-state is the bug reproducing.
-- [ ] **A4 — positive control (L-616).** A genuinely diverged mirror still reports
-      `diverged` and still refuses to push. Without this, a change that merely stops
-      reporting divergence is indistinguishable from one that fixes the comparison.
-- [ ] **A5 — the silent-refusal class is made visible.** A mirror stuck in `diverged` for
-      more than N consecutive runs surfaces somewhere the operator reads (`fw doctor`), so
-      the next instance of "fails in the safe direction, forever" is not found five days
-      later by someone asking why GitHub looks old.
+- [ ] `fw_branch_hygiene` emits a class for a remote ref that is NOT contained in the target — carrying the ref name and its unlanded-commit count
+- [ ] Running the scan on this repo names `origin/t2416-fw-safe-mode-hook-timing` with a non-zero unlanded count
+- [ ] A remote ref whose local namesake is landed is still reported on its own merits — the local `merged-undeleted` verdict must not suppress the remote finding (this is the exact t2416 confusion)
+- [ ] `remote-contained` still fires for genuinely-contained remote refs — regression guard, since the new arm shares the same loop
+- [ ] Bats coverage in `tests/unit/` builds a sandbox repo with three remote refs (contained / unlanded / unlanded-with-landed-local-namesake) and asserts the emitted class for each
+- [ ] Mutation check recorded in Decisions: with the new arm disabled the new tests go red, and with it enabled the pre-existing branch-hygiene tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -162,21 +105,6 @@ not a mirror defect. Fixing this task will not move `master`.
 -->
 
 ## Verification
-
-# The helper must not answer with the local current branch when origin/HEAD is absent.
-# Reproduces the live condition: this checkout sits on a non-default branch and has no
-# refs/remotes/origin/HEAD. L-387: redirect then grep, never pipe into grep -q.
-bash -c 'source lib/mirror.sh; mirror_default_branch' > .context/working/.t3088-branch.out 2>&1
-grep -qx "master" .context/working/.t3088-branch.out
-
-# The mirror's verdict must match observable reality (both remotes on master).
-bin/fw mirror status > .context/working/.t3088-status.out 2>&1
-grep -q "in sync" .context/working/.t3088-status.out && ! grep -q "DIVERGED" .context/working/.t3088-status.out
-
-# Regression test for the comparison itself.
-bats tests/unit/mirror_default_branch.bats > .context/working/.t3088-bats.out 2>&1
-grep -q "^ok 1 " .context/working/.t3088-bats.out && ! grep -q "^not ok" .context/working/.t3088-bats.out
-
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -329,7 +257,7 @@ grep -q "^ok 1 " .context/working/.t3088-bats.out && ! grep -q "^not ok" .contex
 
 ## Updates
 
-### 2026-08-19T19:38:28Z — task-created [task-create-agent]
+### 2026-08-19T23:16:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3088-mirrordefaultbranch-falls-back-to-the-cu.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md
 - **Context:** Initial task creation
