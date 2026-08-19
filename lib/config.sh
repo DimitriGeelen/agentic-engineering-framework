@@ -113,6 +113,36 @@ fw_config() {
     echo "$default"
 }
 
+# _fw_humanize_seconds SECONDS
+# Render a duration in seconds as a short human phrase, for prose that quotes a
+# resolved config window alongside the raw number (T-3087). Called by the Tier 0
+# grant-window messages in bin/fw (tier0 approve, approvals help), both of which
+# source this file first.
+#
+# Non-numeric or empty input echoes back unchanged: these are message strings, so
+# a surprising value should surface in the text, never abort the command.
+#   300 -> "5 minutes"   3600 -> "1 hour"   90 -> "1 minute 30 seconds"
+_fw_humanize_seconds() {
+    local total="${1:-}"
+    if ! [[ "$total" =~ ^[0-9]+$ ]]; then
+        echo "$total"
+        return
+    fi
+
+    local unit count parts=""
+    for unit in "86400:day" "3600:hour" "60:minute" "1:second"; do
+        local secs="${unit%%:*}" name="${unit##*:}"
+        count=$(( total / secs ))
+        if [ "$count" -gt 0 ]; then
+            [ "$count" -gt 1 ] && name="${name}s"
+            parts="${parts}${parts:+ }${count} ${name}"
+            total=$(( total - count * secs ))
+        fi
+    done
+
+    echo "${parts:-0 seconds}"
+}
+
 # fw_config_int KEY DEFAULT [EXPLICIT_VALUE]
 # Same as fw_config but validates the result is a non-negative integer.
 # Falls back to DEFAULT on invalid input.
