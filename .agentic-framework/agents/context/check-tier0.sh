@@ -206,6 +206,35 @@ fi
 # ── Destructive pattern detected ──
 DESCRIPTION="${MATCH_RESULT#BLOCKED|}"
 
+# ── Grant TTL — ONE resolution point for BOTH approval legs (T-3080) ─────────
+# Resolved here, below the fast-path keyword filter, so a safe command never
+# pays for it; both decision sites below read APPROVAL_TTL and nothing else.
+#
+# Resolution order (stated once, here, and nowhere else):
+#   1. TIER0_WATCHTOWER_TTL   legacy env override — honoured only when EXPLICITLY
+#                             set, so any operator or test pinning it keeps working
+#   2. FW_TIER0_APPROVAL_TTL  env, then TIER0_APPROVAL_TTL in .framework.yaml
+#                             (fw_config tiers 2-3; registry entry in lib/config.sh)
+#   3. 300                    registry default
+#
+# Why 300 and not 3600: before T-3080 the CLI leg carried a bare `300` literal
+# and the Watchtower leg defaulted to 3600, so the path that takes one CLICK
+# pre-authorised a destructive command for 12x as long as the path that takes a
+# TYPED command. Approving does not run the command — it writes the command's
+# hash into a grant file, and this hook then admits any command hashing to that
+# value, once. A misclick on a card reading `rm -rf /` therefore leaves a live
+# pre-authorisation for a genuine `rm -rf /` for the whole window. A misclick is
+# the easier mistake to make, so it must carry the SHORTER window. Unified at
+# the tight leg; the direction is always tighten-the-loose, never loosen-the-tight.
+#
+# This is the GRANT clock: how long an approval, once given, admits the command.
+# It is NOT the request-staleness clock — how long a *pending* card stays
+# offerable in the operator's queue (web/blueprints/approvals.py EXPIRY_SECONDS,
+# `fw approvals pending|expire`). Do not collapse the two: a 300s staleness
+# window would expire a request filed six minutes ago and the operator could no
+# longer act on their own queue. T-3079 owns that leg.
+APPROVAL_TTL="${TIER0_WATCHTOWER_TTL:-$(fw_config_int TIER0_APPROVAL_TTL)}"
+
 # Compute command hash for approval matching.
 # T-1500: normalize whitespace before hashing so an agent regenerating the
 # blocked command for retry (with reflowed args, extra spaces, trailing
@@ -253,7 +282,7 @@ if [ -f "$APPROVAL_FILE" ]; then
 
     if [ "$APPROVAL_HASH" = "$COMMAND_HASH" ]; then
         AGE=$((CURRENT_TIME - ${APPROVAL_TIME:-0}))
-        if [ "$AGE" -lt 300 ]; then
+        if [ "$AGE" -lt "$APPROVAL_TTL" ]; then
             # Valid approval — consume it and allow
             rm -f "$APPROVAL_FILE"
             # T-1508: write idempotency sentinel so duplicate hook firings
@@ -304,11 +333,10 @@ fi
 
 # ── Check for Watchtower approval in .context/approvals/ (T-612) ──
 APPROVAL_DIR="$PROJECT_ROOT/.context/approvals"
-WATCHTOWER_TTL="${TIER0_WATCHTOWER_TTL:-3600}"  # Default 1 hour
 RESOLVED_FILE="$APPROVAL_DIR/resolved-${COMMAND_HASH:0:12}.yaml"
 
 if [ -f "$RESOLVED_FILE" ]; then
-    WT_RESULT=$(T0_RESOLVED="$RESOLVED_FILE" T0_TTL="$WATCHTOWER_TTL" T0_HASH="$COMMAND_HASH" python3 -c "
+    WT_RESULT=$(T0_RESOLVED="$RESOLVED_FILE" T0_TTL="$APPROVAL_TTL" T0_HASH="$COMMAND_HASH" python3 -c "
 import yaml, time, os, sys
 
 resolved_file = os.environ['T0_RESOLVED']

@@ -113,6 +113,36 @@ fw_config() {
     echo "$default"
 }
 
+# _fw_humanize_seconds SECONDS
+# Render a duration in seconds as a short human phrase, for prose that quotes a
+# resolved config window alongside the raw number (T-3087). Called by the Tier 0
+# grant-window messages in bin/fw (tier0 approve, approvals help), both of which
+# source this file first.
+#
+# Non-numeric or empty input echoes back unchanged: these are message strings, so
+# a surprising value should surface in the text, never abort the command.
+#   300 -> "5 minutes"   3600 -> "1 hour"   90 -> "1 minute 30 seconds"
+_fw_humanize_seconds() {
+    local total="${1:-}"
+    if ! [[ "$total" =~ ^[0-9]+$ ]]; then
+        echo "$total"
+        return
+    fi
+
+    local unit count parts=""
+    for unit in "86400:day" "3600:hour" "60:minute" "1:second"; do
+        local secs="${unit%%:*}" name="${unit##*:}"
+        count=$(( total / secs ))
+        if [ "$count" -gt 0 ]; then
+            [ "$count" -gt 1 ] && name="${name}s"
+            parts="${parts}${parts:+ }${count} ${name}"
+            total=$(( total - count * secs ))
+        fi
+    done
+
+    echo "${parts:-0 seconds}"
+}
+
 # fw_config_int KEY DEFAULT [EXPLICIT_VALUE]
 # Same as fw_config but validates the result is a non-negative integer.
 # Falls back to DEFAULT on invalid input.
@@ -236,6 +266,15 @@ FW_CONFIG_REGISTRY=(
     # first, and reversible by construction, is the whole point of the ordering.
     "HANDOVER_DIGEST|1|Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028."
     "HANDOVER_DIGEST_TOP_N|5|How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028."
+    # T-3080. ONE window for BOTH Tier 0 approval legs. Before this the CLI leg
+    # (check-tier0.sh, `fw tier0 approve` grant) carried a bare 300 literal and
+    # the Watchtower leg defaulted to 3600 via TIER0_WATCHTOWER_TTL — so the path
+    # that takes one click pre-authorised a destructive command for 12x as long
+    # as the path that takes a typed command. A misclick is the easier mistake to
+    # make, so it must carry the SHORTER window; unified at the tight leg, 300.
+    # This is the GRANT clock, not the request-staleness clock (how long a pending
+    # card stays offerable: web/blueprints/approvals.py EXPIRY_SECONDS, T-3079).
+    "TIER0_APPROVAL_TTL|300|Seconds a granted Tier 0 approval admits the command, for BOTH the 'fw tier0 approve' and Watchtower legs (agents/context/check-tier0.sh). Legacy TIER0_WATCHTOWER_TTL still wins when explicitly set. NOT the pending-request staleness window. T-3080."
 )
 
 # fw_config_registry — Print all known settings with current values
