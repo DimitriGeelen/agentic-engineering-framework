@@ -50,6 +50,7 @@ SETTINGS = [
     ("INDEX_HANDOVERS", "1", "Include .context/handovers/ in the semantic index (web/search_utils.py:collect_files). 0 excludes them: ~90MB / 1,710 files leave fw ask, fw recall, /search and the RAG path. Reversible; deletes nothing. T-3024"),
     ("HANDOVER_DIGEST", "1", "Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028"),
     ("HANDOVER_DIGEST_TOP_N", "5", "How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028"),
+    ("TIER0_APPROVAL_TTL", "300", "Seconds a granted Tier 0 approval admits the command, for BOTH the 'fw tier0 approve' and Watchtower legs (agents/context/check-tier0.sh). Legacy TIER0_WATCHTOWER_TTL still wins when explicitly set. NOT the pending-request staleness window. T-3080"),
 ]
 
 
