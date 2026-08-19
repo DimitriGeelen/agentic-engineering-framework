@@ -1,0 +1,20 @@
+id: tests/web/test_approvals_origin.py
+name: test_approvals_origin
+type: script
+subsystem: unknown
+location: tests/web/test_approvals_origin.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-19
+created_by: unknown

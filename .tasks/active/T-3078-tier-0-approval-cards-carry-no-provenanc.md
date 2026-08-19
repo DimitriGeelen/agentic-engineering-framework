@@ -11,7 +11,7 @@ description: >
   so it cannot be forgotten. Origin: operator opened /approvals 2026-08-18 and asked
   why rm -rf / was there.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:48:45Z
-last_update: '2026-08-18T19:00:18Z'
+last_update: 2026-08-19T21:56:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,106 +75,92 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Watchtower `/approvals` renders every Tier 0 card under one fixed subtitle:
+
+```html
+<small>Agent blocked — requires your decision</small>
+```
+
+`web/templates/_approvals_content.html:58`. It is a literal, not a derived fact.
+Every card gets it, whatever produced the card.
+
+Two consequences, both hit live.
+
+**1. The subtitle can be false.** T-3077's governance suite ran the real hook
+against the live `PROJECT_ROOT` and filed genuine cards — including one reading
+`RECURSIVE DELETE: Targets root filesystem (/)` for `rm -rf /`. No agent was
+blocked; a test was. The operator opened `/approvals` on 2026-08-18, saw a card
+asserting an agent had tried to delete the root filesystem, and asked why. The
+assertion was untrue and the surface had no way to know it.
+
+**2. Even for real cards the operator cannot judge.** A card records hash,
+preview, risk, timestamp, status — and nothing about *origin*. Which session,
+which task, which process, which working tree. Approving is a decision about
+intent, and intent is exactly what the card omits.
+
+**The design constraint, and why it is the whole point:** provenance must be
+**derived from facts the caller cannot forget to supply** — the invoking process
+and its ancestry, the focus task, the resolved `PROJECT_ROOT`. A `--is-a-test`
+flag would have to be remembered by whoever writes the next test suite, and
+T-3077 is the proof that it would not be: that suite did not set out to file
+real cards, it simply never considered that it would. A flag encodes the
+author's intent; the ancestry encodes what actually happened.
+
+**Scope fence:** this task makes the card carry and display truthful origin. It
+does not change who may approve, the grant TTL (T-3080, done), or the staleness
+of unanswered requests (T-3079).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The pending card YAML written by `agents/context/check-tier0.sh` carries an
+      `origin:` block with, at minimum: the process ancestry that reached the
+      hook, the resolved `PROJECT_ROOT`, the focus task if any, and a derived
+      `kind`.
+- [x] `origin.kind` is DERIVED, never passed in: a card filed from a bats/pytest
+      ancestry resolves to `test`, one filed under an agent session resolves to
+      `agent`, one filed from a plain interactive shell resolves to `human`.
+      No caller supplies it and no caller can suppress it.
+- [x] A card filed against a sandbox `PROJECT_ROOT` (a test's throwaway tree) is
+      distinguishable from one filed against the live project, by recorded fact
+      rather than by the sandbox remembering to announce itself.
+- [x] Watchtower `/approvals` renders the origin on each Tier 0 card, and the
+      section subtitle is derived per-card rather than asserting "Agent blocked"
+      unconditionally.
+- [x] A card that predates this change (no `origin:` key) still renders, and is
+      labelled as unknown origin rather than silently presented as agent-blocked.
+      Backward compatibility is asserted by test, not by inspection.
+- [x] Tests run against a sandbox `PROJECT_ROOT` under `$BATS_TEST_TMPDIR` and
+      file no card on the live queue (T-3077 isolation-by-construction), and the
+      suite proves that by asserting the live approvals dir is untouched.
+- [x] The test suite is mutation-checked: reverting the derivation makes the
+      origin-specific tests red while the controls stay green.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+- [ ] [REVIEW] The origin line reads clearly on a real card and gives you what
+      you need to judge an approval.
+  **Steps:**
+  1. Open the approvals queue: `http://192.168.10.107:3000/approvals`
+  2. If no Tier 0 card is pending, that is the expected steady state. A card
+     appears the next time any agent trips the gate; check the wording then.
+  3. Read the origin line on the card.
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+  **Expected:** You can tell at a glance whether a real agent session asked, and
+  which task it was working, without opening a terminal.
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+  **If not:** Say which field is missing or which wording misleads.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -c 'set -eo pipefail; bash -n agents/context/check-tier0.sh'
+bash -c 'set -eo pipefail; python3 -c "import ast; ast.parse(open(\"lib/tier0_origin.py\").read())"'
+bash -c 'set -eo pipefail; python3 -c "import ast; ast.parse(open(\"web/blueprints/approvals.py\").read())"'
+out=$(bats tests/unit/tier0_card_provenance.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/tier0_grant_ttl.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/governance/test_pretooluse_gates.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m pytest tests/unit/test_tier0_origin.py -q > /tmp/.t3078a.out 2>&1 && grep -q passed /tmp/.t3078a.out
+python3 -m pytest tests/web/test_approvals_origin.py -q > /tmp/.t3078b.out 2>&1 && grep -q passed /tmp/.t3078b.out
+curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t3078c.html && ! grep -q "Agent blocked" /tmp/.t3078c.html
 
 ## RCA
 
@@ -266,9 +252,135 @@ bvp_scores_proposed:
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## RCA
+
+**Symptom:** The operator opened Watchtower `/approvals` on 2026-08-18 and found
+a card reading `RECURSIVE DELETE: Targets root filesystem (/)` presented under
+"Agent blocked — requires your decision", with an Approve button. No agent had
+asked. The card came from T-3077's governance suite running the real hook
+against the live `PROJECT_ROOT`.
+
+**Root cause:** two independent omissions that compose into a false statement.
+
+1. The pending card recorded no origin — hash, preview, risk, timestamp,
+   status, and nothing about what produced it.
+2. The template asserted an origin anyway. `Agent blocked — requires your
+   decision` was a literal in `_approvals_content.html`, applied unconditionally.
+
+Neither is a bug alone. Together the surface makes a specific claim about every
+card while holding no evidence for any of them.
+
+**Why structurally allowed:** the claim was in HTML, not in code. No Python path
+referenced the string, so no test could plausibly have covered it, and no
+reviewer reading the blueprint would encounter it. A false assertion in a
+template is invisible to everything except a person looking at the page — which
+is exactly how it was eventually found.
+
+**Prevention:** origin is now derived from facts the caller cannot forget to
+supply (process ancestry, shape of `PROJECT_ROOT`), never declared by a flag. A
+missing `origin:` renders as an explicit "no provenance recorded" warning rather
+than defaulting to agent — pinned by
+`test_a_card_with_no_origin_key_is_unknown_not_agent`, which goes red under
+exactly the mutation that would reintroduce the original claim. A separate test
+greps the template itself for the literal, since that is where it lived.
+
+## Decisions
+
+### 2026-08-20 — derived provenance, not a declared flag
+
+- **Chose:** Infer origin from the process ancestry and the shape of
+  `PROJECT_ROOT`.
+- **Why:** A `--is-a-test` flag would not have prevented T-3077. That suite did
+  not ignore a marker; it never considered that it was filing anything at all. A
+  flag records what the author was thinking about, and the author was not
+  thinking about this. The ancestry records what happened regardless.
+- **Rejected:** An opt-in marker for test harnesses.
+
+### 2026-08-20 — the logic moved out of the shell heredoc, and that is what found the bug
+
+- **Chose:** Extract to `lib/tier0_origin.py` with a pure `classify()`.
+- **Why:** While it lived inline in `check-tier0.sh` the classification could
+  only be exercised by running the hook — and every hook run from bats
+  classifies as `test`, so the `agent` and `human` branches were unreachable. A
+  harness that biases its own result cannot test the branches it biases away.
+- **What it immediately caught:** with the branches finally reachable, the
+  `bats` marker turned out to be matching against `ps -o comm=`, which reports
+  `bash` for every hop of a bats run. **The marker had never once fired.**
+  `kind=test` was being carried entirely by the sandbox check, and nothing was
+  red. Fixed by matching on full command lines while still storing only `comm`
+  on the card — argv can carry tokens and secrets, and a card is a surface an
+  operator reads.
+- **Rejected:** Leaving it inline and testing through the hook.
+
+### 2026-08-20 — two mutation passes caught two inert tests of my own
+
+- **Chose:** Mutate every leg and require the right tests to go red.
+- **Why:** Both suites were fully green while asserting less than they claimed.
+  `test_derive_classifies_a_real_bats_run_as_test` passed `/nonexistent` as the
+  project root, which made `sandbox` True and masked the ancestry entirely — it
+  survived the comm-only mutation untouched. Fixed by pointing it at the real
+  checkout so `is_sandbox()` is False and the ancestry is the only thing that
+  can produce `test`. A sibling error in T-3090's suite the same session used
+  bare `! cmd` in non-final position, which `set -e` ignores.
+- **Rejected:** Treating a green suite as evidence. It is evidence only once a
+  mutation shows which tests discriminate.
+
+**Mutations run, and what each turned red:**
+
+| Mutation | Expected red | Observed |
+|---|---|---|
+| A — match markers on `comm` only | derive-classifies-pytest-run | 1 failed, 19 passed |
+| B — drop the temp-dir clause of `is_sandbox` | git-dir-under-temp-is-sandbox | 1 failed, 19 passed |
+| C — legacy cards default to `agent` | 3 origin/summary tests | 3 failed, 9 passed |
+| D — restore the literal subtitle | template-grep + page-render | 2 failed, 10 passed |
+
+Controls stayed green under all four, so no suite is failing wholesale. Source
+files verified byte-identical to pre-mutation state afterwards.
+
+### 2026-08-20 — sandbox outranks the agent signal
+
+- **Chose:** A card filed against a throwaway tree is `test`, even when an agent
+  session filed it.
+- **Why:** That combination is not hypothetical — it is exactly T-3077, where a
+  real agent session ran a suite that filed real cards. Those are test
+  artefacts, not agent requests, and labelling them as requests is the original
+  bug in new wording.
+- **Rejected:** Letting `CLAUDECODE=1` win.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The surface no longer asserts anything it cannot evidence, and
+every card now carries what an operator needs to judge it. The one Human AC is
+a wording/legibility check on the rendered origin line — taste, not correctness.
+
+**Evidence:**
+- The literal `Agent blocked — requires your decision` is gone from the template
+  and absent from the live `/approvals` response (HTTP 200, grep returns 0).
+- Cards carry `origin:` with kind, ancestry, project_root, sandbox, task,
+  session — derived, with no caller-supplied input anywhere in the path.
+- Legacy cards (no `origin:`) render as "no provenance recorded", not as agent
+  requests. This is the compatibility case that matters: every card written
+  before today is one.
+- 9/9 bats + 20/20 pytest + 12/12 web green; T-3080's 10/10 and the governance
+  suite 13/13 unaffected.
+- Four mutations, each turning the intended tests red and leaving controls
+  green.
+- Two inert tests of my own were found by that mutation pass and are recorded
+  above rather than silently corrected.
+
+**What this does NOT do:** it does not change who may approve, the grant TTL
+(T-3080), or the staleness of unanswered requests (T-3079, still open). The
+window during which an approved hash admits a destructive command is unchanged.
+
+
 ## Updates
 
 ### 2026-08-18T18:48:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3078-tier-0-approval-cards-carry-no-provenanc.md
 - **Context:** Initial task creation
+
+### 2026-08-19T21:56:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
