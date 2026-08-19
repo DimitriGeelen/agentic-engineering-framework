@@ -3229,3 +3229,31 @@ decisions:
     date: 2026-08-18
     task: T-3076
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-464
+    decision: "Fix the missing pathspec at `git commit`, after grepping the whole"
+    scope: project
+    date: 2026-08-19
+    task: T-3090
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-465
+    decision: "Route every refutation through a `_refute_in_head` helper that uses"
+    scope: project
+    date: 2026-08-19
+    task: T-3090
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-466
+    decision: "Keep the `git add` in both handover legs, and pin the requirement"
+    scope: project
+    date: 2026-08-19
+    task: T-3090
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-467
+    decision: "`--cleanup=verbatim` as the flag-passthrough fixture."
+    scope: project
+    date: 2026-08-19
+    task: T-3090
+    rationale: "Auto-captured from task file on completion"

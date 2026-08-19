@@ -1,1 +1,4 @@
+
+FABRIC: 1 new file(s) without component cards: tests/lint/no-backticks-in-quoted-strings.bats
+  Register: bin/fw fabric register <path>
   WARNING: Push to origin was REFUSED (exit 1) — a gate or the remote said no; its message is above.

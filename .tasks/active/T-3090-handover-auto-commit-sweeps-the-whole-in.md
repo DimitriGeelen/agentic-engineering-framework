@@ -6,16 +6,16 @@ description: >
   handover auto-commit sweeps the whole index, absorbing another session's staged
   work
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, git, handover, concurrency]
-components: []
+components: [agents/git/lib/commit.sh, agents/handover/handover.sh, tests/unit/handover_commit_scope.bats]
 related_tasks: [T-3089, T-3028]
 created: 2026-08-19T21:41:28Z
-last_update: '2026-08-19T21:45:13Z'
-date_finished:
+last_update: 2026-08-19T21:52:38Z
+date_finished: 2026-08-19T21:52:38Z
 cost_estimate_proposed:
   - ts: '2026-08-19T21:45:07Z'
     estimator: bvp-estimator-v1-heuristic
@@ -252,3 +252,15 @@ survivable. That is an operator call, which is why it is the one Human AC.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fd76e3d9
+- **Timestamp:** 2026-08-19T21:52:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-19T21:52:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

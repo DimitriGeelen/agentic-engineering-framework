@@ -7178,3 +7178,19 @@ for e in ls:
   command: 'git add -A .tasks .context && FW_SWITCH_FOCUS=1 git commit -q -m "T-3084: the BVP tie is not spread across the corpus, it is the recommended quadrant
 
 Ran the estimator as instructed and the ranking c'
+- timestamp: '2026-08-19T20:09:09Z'
+  task: 'T-3088'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3080'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-3080: the grant TTL is one window for both approval legs, with the tests the worker never wrote
+
+The Watchtower Approve button granted a destructive command 3600s'
+- timestamp: '2026-08-19T20:09:26Z'
+  task: 'T-3088'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3080'
+  command: 'git add .fabric/components/tests-unit-tier0_grant_ttl.yaml && FW_SWITCH_FOCUS=1 git commit -q -m "T-3080: fabric card for tests/unit/tier0_grant_ttl.bats
+
+Co-Authored-By: Claude Opus 5 <noreply@anthro'

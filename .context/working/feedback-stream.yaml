@@ -35717,3 +35717,93 @@ scan_id: R-b8c14e62
 task_id: T-3085
 payload:
   task_file: .tasks/active/T-3085-refresh-vendored-agentic-framework-after.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T05:01:23Z'
+scan_id: R-6d66bbde
+task_id: T-1893
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T05:01:23Z'
+scan_id: R-6d66bbde
+task_id: T-1893
+payload:
+  task_file: .tasks/completed/T-1893-arc-005-closure-demo-evidence-capture-g-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T19:37:25Z'
+scan_id: R-b72c7d28
+task_id: T-3087
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T19:37:25Z'
+scan_id: R-b72c7d28
+task_id: T-3087
+payload:
+  task_file: .tasks/active/T-3087-add-missing-fwhumanizeseconds-helper-bre.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T19:38:12Z'
+scan_id: R-341098db
+task_id: T-3086
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T19:38:12Z'
+scan_id: R-341098db
+task_id: T-3086
+payload:
+  task_file: .tasks/active/T-3086-fix-fork-bomb-backticks-in-configsh-regi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T20:08:10Z'
+scan_id: R-38b75050
+task_id: T-3080
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T20:08:10Z'
+scan_id: R-38b75050
+task_id: T-3080
+payload:
+  task_file: .tasks/active/T-3080-watchtower-tier-0-approval-grants-a-1h-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T21:52:45Z'
+scan_id: R-fd76e3d9
+task_id: T-3090
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T21:52:45Z'
+scan_id: R-fd76e3d9
+task_id: T-3090
+payload:
+  task_file: .tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md

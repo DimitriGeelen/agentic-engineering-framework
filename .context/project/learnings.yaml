@@ -4696,3 +4696,9 @@ X'` returning empty group."
   task: T-3043
   date: 2026-08-18
   context: Added via context agent
+- id: L-627
+  learning: "Backticks inside a DOUBLE-QUOTED bash string are command substitution, not Markdown. In lib/config.sh the registry entry \"...the `fw tier0 approve` leg...\" made every source of config.sh exec fw, a self-replicating fork bomb that OOM-crashed the host 4x in 22h. Use single quotes for command names in quoted strings; grep for backticks on non-comment lines."
+  source: P-001
+  task: T-3086
+  date: 2026-08-19
+  context: Added via context agent
