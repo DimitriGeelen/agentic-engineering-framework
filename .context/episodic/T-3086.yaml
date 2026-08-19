@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3086: Fix fork bomb: backticks in config.sh registry string
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-19T19:38:22Z
+# ============================================================================
+
+task_id: T-3086
+task_name: "Fix fork bomb: backticks in config.sh registry string"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-19T19:27:47Z
+completed: 2026-08-19T19:38:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-19T21:33:41+02:00
+last_commit: 2026-08-19T21:33:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the fork bomb was never committed — provenance corrected, RCA, config.sh de-fanged
+
+# Key outcomes
+outcomes:
+  - 'Backticks removed from `lib/config.sh` registry entry (replaced with single quotes)'
+  - 'No backticks remain on any non-comment line of `lib/config.sh` — each one is a'
+  - '`bash -n lib/config.sh` passes'
+  - 'Sourcing `lib/config.sh` inside a bounded cgroup (TasksMax=30) spawns no `fw`'
+  - '`fw work-on` / `fw audit` run without process explosion'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-tier0.sh'
+  - 'bin/fw'
+  - '.context/working/dispatch-prompts/T-3080.md'
+  - 'lib/config.sh'
+  - '.tasks/active/T-3080-watchtower-tier-0-approval-grants-a-1h-t.md'
+  - '.tasks/active/T-3086-fix-fork-bomb-backticks-in-configsh-regi.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-19T21:33:41'
+    action: 'T-3086: the fork bomb was never committed — provenance corrected, RCA, config.sh de-fanged'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 7
+  lines_added: 491
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3086-fix-fork-bomb-backticks-in-configsh-regi.md
+generated_by: context-agent-hybrid

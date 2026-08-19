@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3087: Add missing _fw_humanize_seconds helper (breaks fw tier0 approve/status)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-19T19:37:35Z
+# ============================================================================
+
+task_id: T-3087
+task_name: "Add missing _fw_humanize_seconds helper (breaks fw tier0 approve/status)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-19T19:33:38Z
+completed: 2026-08-19T19:37:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-19T21:37:19+02:00
+last_commit: 2026-08-19T21:37:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  define _fw_humanize_seconds — the fork bomb was masking a 127 in fw tier0 approve
+
+# Key outcomes
+outcomes:
+  - '`_fw_humanize_seconds` defined in `lib/config.sh`'
+  - '`bash -n lib/config.sh` passes'
+  - 'Formats correctly: 300 -> "5 minutes", 3600 -> "1 hour", 90 -> "1 minute 30 seconds", 1 -> "1 second"'
+  - 'Singular/plural handled; multi-unit composes (90061 -> "1 day 1 hour 1 minute 1 second")'
+  - 'Non-numeric input passes through unchanged; empty input does not error'
+  - '`fw tier0 approve` reaches its own logic instead of exiting 127'
+  - '`fw tier0 status` runs clean'
+  - '`fw approvals help` prints "300s (5 minutes)"'
+  - 'approve success branch prints "expires in 5 minutes (300s)" (verified in isolated PROJECT_ROOT)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/config.sh'
+  - '.tasks/active/T-3087-add-missing-fwhumanizeseconds-helper-bre.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-19T21:37:19'
+    action: 'T-3087: define _fw_humanize_seconds — the fork bomb was masking a 127 in fw tier0 approve'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 259
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3087-add-missing-fwhumanizeseconds-helper-bre.md
+generated_by: context-agent-hybrid
