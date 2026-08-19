@@ -1,0 +1,83 @@
+[1m=== Bats Invariant Tests (tests/lint/) ===[0m
+1..73
+ok 1 T-3069: every estimate-cost subverb the dispatcher accepts is mentioned in bvp --help
+ok 2 T-3069: estimate-cost is still dispatched, so the help entry is not aspirational
+ok 3 T-3069: CLAUDE.md does not name a bvp verb the dispatcher would reject
+ok 4 lib/config.sh and web/blueprints/config.py have the same config keys
+ok 5 CLAUDE.md references no config key that lib/config.sh does not define
+ok 6 config registry key count matches across sources
+ok 7 every top-level router command appears in show_help
+ok 8 show_help references only existing router commands
+ok 9 hook paths: every framework hook command uses ${CLAUDE_PROJECT_DIR}, not a hardcoded absolute path
+ok 10 hook paths: settings.json declares a plausible number of framework hooks
+ok 11 hook paths: project-local --script registrations are not flagged (no false positive)
+ok 12 inception.sh uses exact match for ## Decision section
+ok 13 inception.sh does not use startswith for Decision section
+ok 14 no backticks inside double-quoted python3 -c blocks (bash would run them)
+ok 15 negative control: the scanner detects a planted backtick
+ok 16 negative control: scanner does NOT flag deliberate $() interpolation
+ok 17 no legacy backticks in tracked bash sources (SC2006)
+ok 18 FW_CONFIG_REGISTRY entries contain no shell-expanding syntax
+ok 19 negative control: scanner flags a planted backtick in a registry entry
+ok 20 negative control: scanner does NOT flag a backtick in a comment
+ok 21 negative control: shellcheck rule catches the T-3086 shape end to end
+ok 22 detector distinguishes a command from prose about a command
+ok 23 update-task.sh has no bare fw in echo statements
+ok 24 check-tier0.sh uses _watchtower_url for approval URL
+ok 25 check-tier0.sh uses _emit_user_command for CLI fallback
+ok 26 hooks.sh commit-msg hook sources paths.sh
+ok 27 hooks.sh inception gate uses _emit_user_command
+ok 28 hooks.sh install output uses _emit_user_command
+ok 29 handover.sh terminal output uses _emit_user_command
+ok 30 check-active-task.sh has no bare fw in block messages
+ok 31 checkpoint.sh has no bare fw in guidance messages
+ok 32 budget-gate.sh has no bare fw in block messages
+ok 33 check-agent-dispatch.sh has no bare fw in block messages
+ok 34 check-project-boundary.sh has no bare fw in block messages
+ok 35 init.sh has no bare fw in welcome messages
+ok 36 lib/ does not pass --force to update-task.sh
+ok 37 agents/ does not pass --force to update-task.sh (except the deprecated alias definition)
+ok 38 lib/inception.sh uses --skip-sovereignty not --force
+ok 39 every tests/<dir>/ with collectable test files is referenced by bin/fw
+ok 40 the standalone web branch and the all-suite name the same pytest targets
+ok 41 the invariants branch actually reaches bats
+not ok 42 every collectable test file under tests/ is tracked by git
+# (in test file tests/lint/no-untracked-test-files.bats, line 59)
+#   `false' failed
+# Test files a runner would collect, absent from git:
+#   tests/lint/no-backticks-in-quoted-strings.bats
+#   tests/unit/tier0_grant_ttl.bats
+#
+# They pass where they were written and nowhere else. Either 'git add'
+# them, or record the exclusion in .gitignore so the choice is visible.
+ok 43 the collection predicate matches real test files (positive control)
+ok 44 the guard reads git, not the filesystem (negative control)
+ok 45 T-3062: the structure section's boundaries are still findable
+ok 46 T-3062: no whole-tree scan runs inside the per-push structure section
+ok 47 T-3062: the tree section exists and still holds both scanners
+ok 48 T-3062: the push timeout leaves headroom above the pre-push gate
+ok 49 T-3062: the pre-push hook runs a scoped section, not the full audit
+ok 50 every fw command prescribed in a block message is allowed by budget-gate
+ok 51 the classifier is still locatable and still wired into budget-gate.sh
+ok 52 the prescribed-command check fails loudly if the classifier goes missing
+ok 53 lib/review.sh sources watchtower.sh, not config.sh for port
+ok 54 lib/review.sh uses _watchtower_url, not inline detection
+ok 55 lib/verify-acs.sh uses _watchtower_url
+ok 56 lib/watchtower.sh exists with _watchtower_url function
+ok 57 no inline fw_config PORT 3000 in review or verify-acs
+ok 58 lib/upgrade.sh does not have its own agent_dirs enumeration
+ok 59 lib/upgrade.sh calls do_vendor for vendored script sync
+ok 60 lib/upgrade.sh step 4b span is bounded, not run-to-EOF
+ok 61 lib/upgrade.sh step 4b delegates to do_vendor
+ok 62 lib/upgrade.sh step 4b does not copy files itself
+ok 63 lib/upgrade.sh step 4b comment references T-1157 collapse
+ok 64 lib/update.sh does not have its own includes array
+ok 65 lib/update.sh calls do_vendor for vendored file sync
+ok 66 lib/upgrade.sh has self-vendor step for .agentic-framework
+ok 67 lib/upgrade.sh self-vendor derives its file set, not a hardcoded list
+ok 68 lib/upgrade.sh self-vendor targets .agentic-framework
+ok 69 T-3000: the file-redirect form appears before the capture-then-grep form
+ok 70 T-3000: the block does not label a conditionally-safe form 'Safe pattern'
+ok 71 T-3000: the size bound is adjacent to the form it qualifies
+ok 72 T-3000: every rule the block accumulated is still stated
+ok 73 T-3000: every origin citation survives, so each rule stays traceable

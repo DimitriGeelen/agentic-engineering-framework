@@ -1,0 +1,15 @@
+[1mfw approvals[0m — Approval queue management (T-612)
+
+Subcommands:
+  pending    Show outstanding approval requests
+  status     Show recent approval history (approved/rejected/expired)
+  expire     Manually expire stale pending approvals (TTL: 1hr)
+
+Approvals are created when check-tier0.sh blocks a destructive command.
+They can be approved via 'fw tier0 approve' (CLI) or via Watchtower web UI.
+
+Environment:
+  Granted approvals admit the command for 300s (5 minutes) — currently resolved value.
+    FW_TIER0_APPROVAL_TTL / 'fw config set TIER0_APPROVAL_TTL <s>'  sets it (both legs, CLI and Watchtower).
+    TIER0_WATCHTOWER_TTL                                            legacy override, still honoured when set explicitly.
+  This is the GRANT window, not the pending-request staleness window.

@@ -35807,3 +35807,21 @@ scan_id: R-fd76e3d9
 task_id: T-3090
 payload:
   task_file: .tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T22:14:31Z'
+scan_id: R-fc4ff558
+task_id: T-3078
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T22:14:31Z'
+scan_id: R-fc4ff558
+task_id: T-3078
+payload:
+  task_file: .tasks/active/T-3078-tier-0-approval-cards-carry-no-provenanc.md

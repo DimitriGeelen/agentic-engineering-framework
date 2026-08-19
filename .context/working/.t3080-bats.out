@@ -1,0 +1,11 @@
+1..10
+ok 1 T-3080: Watchtower grant older than the window is refused
+ok 2 T-3080: Watchtower grant inside the window is admitted (positive control, L-616)
+ok 3 T-3080: Watchtower grant at 1800s is refused — the old 3600 default is gone
+ok 4 T-3080: CLI grant older than the window is refused
+ok 5 T-3080: CLI grant inside the window is admitted (positive control, L-616)
+ok 6 T-3080: both legs expire at the same age — parity, not two windows
+ok 7 T-3080: TIER0_WATCHTOWER_TTL set explicitly still widens the window
+ok 8 T-3080: with no grant at all, the destructive command is blocked
+ok 9 T-3080: a benign command is allowed (positive control on the gate itself)
+ok 10 T-3080: the live approvals surface is untouched by this suite

@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="en"
+      data-theme="light"
+      data-wt-palette="stone"
+      data-wt-type="inter"
+      data-wt-density="compact"
+      data-wt-nav="topbar">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="ee56aa0ab75dcde53aeb65af5d8ef3b82df3fc305bafbccdb5c3cb53509d4b3e">
+    <title>Watchtower — Agentic Engineering Framework</title>
+    <script>
+        (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
+    </script>
+    <link rel="stylesheet" href="/static/pico.min.css">
+    <!-- arc-007 S0 (T-1991): foundation tokens + Pico-bridge. MUST load after pico. -->
+    <link rel="stylesheet" href="/static/css/foundations.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/inter-400.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/inter-600.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/geist-400.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/geist-600.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/plex-400.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/plex-600.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/manrope-400.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/manrope-600.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/newsreader-400.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/newsreader-600.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/jetbrainsmono-400.woff2">
+    <script src="/static/htmx.min.js"></script>
+    <script src="/static/htmx-ext-sse.js"></script>
+    <script src="/static/csrf-htmx.js"></script>
+    <script src="/static/htmx-toast.js"></script>
+    <link rel="stylesheet" href="/static/highlight-github-dark.min.css">
+    <script src="/static/highlight.min.js"></script>
+    <script src="/static/marked.min.js"></script>
+    <script src="/static/purify.min.js"></script>
+    <style>
+        /* ── Nav ─────────────────────────────────────────────── */
+        nav.site-nav {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--pico-muted-border-color);
+            background: var(--pico-card-background-color);
+        }
+        nav.site-nav > ul {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        nav.site-nav .brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-right: 1rem;
+            text-decoration: none;
+            color: var(--pico-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        nav.site-nav .brand img {
+            height: 1.4rem;
+            width: auto;
+        }
+        nav.site-nav .brand:hover { text-decoration: none; opacity: 0.85; }
+        nav.site-nav .spacer { flex: 1; }
+
+        /* Dropdown overrides for horizontal nav */
+        nav.site-nav details.dropdown { margin: 0; padding: 0; }
+        nav.site-nav details.dropdown > summary {
+            padding: 0.4rem 0.75rem;
+            margin: 0;
+            font-size: 0.925rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: var(--pico-color);
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav details.dropdown > summary:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown.active-group > summary {
+            color: var(--pico-primary);
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown ul { min-width: 10rem; }
+        nav.site-nav details.dropdown ul li a {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.75rem;
+            display: block;
+            text-decoration: none;
+            color: var(--pico-color);
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav details.dropdown ul li a:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown ul li a[aria-current="page"] {
+            color: var(--pico-primary);
+            font-weight: 600;
+        }
+        /* Subsection label inside a grouped dropdown (T-2008, arc-007 S2a) */
+        nav.site-nav details.dropdown ul li.nav-subsection-label {
+            font-family: var(--wt-font-mono, monospace);
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--pico-muted-color);
+            padding: 0.55rem 0.75rem 0.2rem;
+            pointer-events: none;
+            user-select: none;
+        }
+        nav.site-nav details.dropdown ul li.nav-subsection-label:first-child { padding-top: 0.25rem; }
+
+        /* Search + settings icon links (share styling) */
+        nav.site-nav .nav-search a,
+        nav.site-nav .nav-settings a {
+            display: flex; align-items: center;
+            padding: 0.4rem 0.6rem;
+            text-decoration: none;
+            color: var(--wt-text);
+            border-radius: var(--pico-border-radius);
+            font-size: 0.925rem;
+        }
+        nav.site-nav .nav-search a:hover,
+        nav.site-nav .nav-settings a:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav .nav-search svg,
+        nav.site-nav .nav-settings svg {
+            width: 1rem; height: 1rem;
+            stroke: currentColor; stroke-width: 2; fill: none;
+        }
+
+        /* Project docs link */
+        nav.site-nav .nav-docs a {
+            padding: 0.4rem 0.75rem;
+            text-decoration: none;
+            color: var(--pico-color);
+            font-size: 0.925rem;
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav .nav-docs a:hover {
+            background: var(--pico-primary-focus);
+        }
+
+        /* ── Ambient Status Strip ────────────────────────────── */
+        .ambient-strip {
+            background: var(--pico-card-background-color);
+            border-bottom: 1px solid var(--pico-muted-border-color);
+            padding: 0.25rem 1rem;
+            font-size: 0.775rem;
+            color: var(--pico-muted-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .ambient-strip .sep { color: var(--pico-muted-border-color); }
+        .ambient-strip .audit-pass { color: #2e7d32; font-weight: 600; }
+        .ambient-strip .audit-warn { color: #e8a317; font-weight: 600; }
+        .ambient-strip .audit-fail { color: #c62828; font-weight: 600; }
+
+        /* ── Mobile nav toggle ───────────────────────────────── */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            padding: 0.4rem;
+            cursor: pointer;
+            color: var(--pico-color);
+            margin: 0;
+            line-height: 1;
+        }
+        .nav-toggle svg { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2.5; fill: none; }
+
+        /* ── Content and footer ──────────────────────────────── */
+        main { min-height: 60vh; }
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { margin-bottom: 0.25rem; }
+        .page-header p { color: var(--pico-muted-color); }
+        .coming-soon {
+            text-align: center; padding: 3rem 1rem;
+            border: 2px dashed var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius); margin-top: 1.5rem;
+        }
+        .coming-soon h3 { color: var(--pico-muted-color); }
+        /* ── Breadcrumb (T-2009, arc-007 S2b) ───────────────── */
+        nav.wt-breadcrumb {
+            /* override Pico's default nav { justify-content: space-between } */
+            display: flex; justify-content: flex-start;
+            align-items: center; flex-wrap: wrap; gap: 0.4rem;
+            font-family: var(--wt-font-mono, monospace);
+            font-size: 0.72rem; letter-spacing: 0.02em;
+            color: var(--pico-muted-color);
+            margin-bottom: 1rem;
+        }
+        nav.wt-breadcrumb > * { margin: 0; padding: 0; }
+        nav.wt-breadcrumb a { color: var(--pico-muted-color); text-decoration: none; }
+        nav.wt-breadcrumb a:hover { color: var(--pico-primary); text-decoration: underline; }
+        nav.wt-breadcrumb [aria-current="page"] { color: var(--pico-color); font-weight: 600; }
+        nav.wt-breadcrumb .wt-breadcrumb-sep { color: var(--pico-muted-border-color); }
+        /* ── Pinned pages (T-2010, arc-007 S2c) ─────────────── */
+        /* Star toggle in the breadcrumb bar */
+        nav.wt-breadcrumb .wt-breadcrumb-spacer { flex: 1; }
+        .wt-pin-toggle {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            background: none; border: 1px solid var(--pico-muted-border-color);
+            border-radius: 999px; padding: 0.1rem 0.5rem; margin: 0;
+            font-family: var(--wt-font-mono, monospace); font-size: 0.7rem;
+            color: var(--pico-muted-color); cursor: pointer; width: auto; line-height: 1.5;
+        }
+        .wt-pin-toggle:hover {
+            color: var(--pico-primary); border-color: var(--pico-primary);
+            background: var(--pico-primary-focus);
+        }
+        .wt-pin-toggle.pinned { color: var(--pico-primary); border-color: var(--pico-primary); }
+        /* Pinned strip in the top nav */
+        nav.site-nav .nav-pins { display: inline-flex; align-items: center; gap: 0.2rem; }
+        nav.site-nav .nav-pins:not(:empty) { margin-right: 0.4rem; }
+        nav.site-nav .nav-pin {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.3rem 0.55rem; font-size: 0.82rem; text-decoration: none;
+            color: var(--pico-color); border-radius: var(--pico-border-radius);
+            background: var(--pico-primary-focus); white-space: nowrap;
+        }
+        nav.site-nav .nav-pin:hover { opacity: 0.82; text-decoration: none; }
+        nav.site-nav .nav-pin .nav-pin-star { color: var(--pico-primary); font-size: 0.78rem; line-height: 1; }
+
+        /* ── Nav layouts (T-2011, arc-007 S2d) ──────────────────
+           Three layouts share ONE DOM, switched via the html[data-wt-nav]
+           attribute (mirrors the S0 data-wt-* axes). Default = topbar (the
+           horizontal bar above). Sidebar + rail are desktop affordances —
+           below 769px every layout falls back to the hamburger (mobile rules
+           further down still apply). Group icons render only in the rail. */
+        nav.site-nav details.dropdown > summary { display: inline-flex; align-items: center; gap: 0.35rem; }
+        nav.site-nav .nav-group-icon { display: none; width: 1.1rem; height: 1.1rem; stroke: currentColor; stroke-width: 2; fill: none; }
+
+        @media (min-width: 769px) {
+            /* ── Layout B: persistent left sidebar ──────────────── */
+            html[data-wt-nav="sidebar"] nav.site-nav {
+                position: fixed; top: 0; left: 0; bottom: 0; width: 232px;
+                z-index: 100; overflow-y: auto; overflow-x: hidden;
+                border-right: 1px solid var(--pico-muted-border-color); border-bottom: none;
+                padding: 0.75rem 0.6rem;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul { flex-direction: column; align-items: stretch; gap: 0.1rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li { width: 100%; }
+            html[data-wt-nav="sidebar"] nav.site-nav .brand { margin: 0 0 0.6rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav .spacer { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown { width: 100%; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown > summary { width: 100%; }
+            /* groups render as in-place accordions (collapsed until clicked) —
+               this is why the 16-item Govern list is no longer a flat wall */
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown ul {
+                position: static; box-shadow: none; border: none; min-width: 0;
+                margin: 0; padding: 0.1rem 0 0.2rem 0.7rem; background: transparent;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav .nav-pins { flex-direction: column; align-items: stretch; gap: 0.1rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav .nav-pin { width: 100%; }
+            /* T-2033 F2: offset content via body padding (not margin-left on full-width
+               children). margin-left on a width:100% block pushes it off-screen by the
+               margin width → a permanent horizontal scrollbar. padding-left on the
+               (border-box) body shrinks the content area instead, so no overflow. The
+               fixed nav sits in the padding gutter, unaffected. */
+            html[data-wt-nav="sidebar"] body { padding-left: 232px; }
+            /* T-2033 F2 residual: percentage-width content can round 1-2px past the
+               padded box, leaving a hair-line horizontal scroll. Clip on the ROOT
+               (not body — body clip leaves the document scroller free) removes it with
+               no visible scrollbar. Vertical scroll is untouched; intentional wide
+               content (tables) scrolls in its own .table-responsive wrapper. */
+            html[data-wt-nav="sidebar"],
+            html[data-wt-nav="rail"] { overflow-x: clip; }
+            /* T-2033 F3: drop the mobile-only hamburger row and the empty pins row —
+               on desktop they reserve ~56px each in the column (158px of dead space
+               under the logo). NOTE: split into single-level :has rules — :has() may
+               NOT be nested inside :has(), and one invalid selector drops the whole
+               grouped rule. Pins are hidden by default in the column, then re-shown
+               only when an actual pin exists. */
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(> .nav-toggle),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(> .nav-toggle) { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(> .nav-pins),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(> .nav-pins) { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(.nav-pin),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(.nav-pin) { display: block; }
+            /* T-2033 F5: make the sidebar accordion sub-items reliably clickable.
+               Two pre-existing faults compounded: (1) Pico's `nav ul{display:flex}`
+               overrides the native <details> collapse, so a CLOSED group's <ul> stayed
+               displayed (in a 0-height/content-hidden limbo) instead of cleanly hidden;
+               (2) the <summary>'s hit area extends ~50px past its 40px box (a Pico
+               dropdown artifact), so it swallowed clicks on the OPEN sub-links beneath
+               it — clicks toggled the group instead of routing. Fix: drive display off
+               [open] explicitly, and lift the open list into its own stacking context
+               above the summary so the <a> is the hit target. Proven: a real pointer
+               click on a sub-item now navigates (was intercepted by the summary). */
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown:not([open]) > ul { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown[open] > ul {
+                display: flex; flex-direction: column;
+                position: relative; z-index: 2;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown > summary { position: relative; z-index: 1; }
+
+            /* ── Layout C: slim icon rail + group flyouts ───────── */
+            html[data-wt-nav="rail"] nav.site-nav {
+                position: fixed; top: 0; left: 0; bottom: 0; width: 60px;
+                z-index: 100;
+                /* T-2033 F1: must be `overflow: visible` so the group flyouts (absolute,
+                   left:56px) escape the 60px rail. The previous `overflow-y:auto;
+                   overflow-x:visible` was a no-op: per CSS spec overflow-x is FORCED to
+                   compute as `auto` when overflow-y is non-visible — so every flyout was
+                   clipped to nothing (the "subitems not wired" bug). The rail holds only
+                   ~9 icons (≤400px), well within any desktop height, so dropping the
+                   scroll container is safe. */
+                overflow: visible;
+                border-right: 1px solid var(--pico-muted-border-color); border-bottom: none;
+                padding: 0.6rem 0;
+            }
+            html[data-wt-nav="rail"] nav.site-nav > ul { flex-direction: column; align-items: center; gap: 0.2rem; }
+            html[data-wt-nav="rail"] nav.site-nav .brand { margin: 0 0 0.6rem; font-size: 0; }  /* hide brand text, keep logo img */
+            html[data-wt-nav="rail"] nav.site-nav .spacer { display: none; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-group-label { display: none; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-group-icon { display: inline-block; }
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown > summary {
+                justify-content: center; width: 40px; height: 40px; padding: 0;
+            }
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown > summary::after { display: none; }  /* drop the ▾ marker */
+            /* groups open as flyout menus to the right of the rail */
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown ul {
+                position: absolute; left: 56px; top: auto; min-width: 12rem;
+                box-shadow: 0 4px 14px rgba(0,0,0,.16);
+            }
+            html[data-wt-nav="rail"] nav.site-nav .nav-docs a { padding: 0.4rem 0.3rem; font-size: 0.78rem; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pins { flex-direction: column; align-items: center; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pin { padding: 0.3rem; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pin .nav-pin-star ~ * { display: none; }  /* star only, drop label in rail */
+            /* T-2033 F2: offset via body padding, not margin-left (see sidebar note). */
+            html[data-wt-nav="rail"] body { padding-left: 60px; }
+        }
+        footer.site-footer {
+            text-align: center; padding: 1.5rem 0;
+            color: var(--pico-muted-color); font-size: 0.875rem;
+            border-top: 1px solid var(--pico-muted-border-color); margin-top: 2rem;
+        }
+
+        /* ── Table scroll on mobile ─────────────────────────── */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ── Mobile breakpoint (<768px) ─────────────────────── */
+        @media (max-width: 768px) {
+            /* Nav: show hamburger, stack items vertically */
+            .nav-toggle { display: block; }
+            nav.site-nav > ul { flex-wrap: wrap; }
+            nav.site-nav .nav-items { display: none; width: 100%; }
+            nav.site-nav .nav-items.open { display: contents; }
+            nav.site-nav .spacer { display: none; }
+            nav.site-nav details.dropdown { width: 100%; }
+            nav.site-nav details.dropdown > summary { padding: 0.5rem 0.75rem; }
+            nav.site-nav .nav-docs,
+            nav.site-nav .nav-search { width: auto; }
+
+            /* Ambient strip: smaller, wrappable */
+            .ambient-strip { font-size: 0.7rem; gap: 0.4rem; padding: 0.2rem 0.75rem; }
+
+            /* 3-col grids → 1-col */
+            [style*="grid-template-columns: repeat(3"] { grid-template-columns: 1fr !important; }
+        }
+
+        /* ── Phone breakpoint (<576px) ──────────────────────── */
+        @media (max-width: 576px) {
+            /* Form rows stack */
+            .form-row, .grid { grid-template-columns: 1fr !important; }
+
+            /* Page header tighter */
+            .page-header { margin-bottom: 1rem; }
+            .page-header h1 { font-size: 1.3rem; }
+
+            /* Ambient strip: hide less important items */
+            .ambient-strip .sep:nth-child(n+4),
+            .ambient-strip > span:nth-child(n+5):not(:last-child) { display: none; }
+        }
+
+        /* T-1765: Pico CSS sets `code, kbd { display: inline-block }` which
+           causes long inline paths/commands to drop atomically to the next
+           line when they don't fit (instead of flowing/breaking with text).
+           User-perceived "cutoff" — the path looks broken away from its
+           sentence. Override globally for prose contexts so backticked paths
+           in task bodies, recommendations, evidence lists, AC steps, etc.
+           flow naturally. The `<pre><code>` source-file viewer is unaffected
+           because the `<pre>` keeps its own block layout. */
+        article code,
+        .task-body code,
+        .ac-detail code,
+        .rec-rationale code,
+        .rec-evidence code,
+        .recommendation-block code,
+        .evidence-list code,
+        .markdown-content code,
+        td code,
+        li code {
+            display: inline;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+        /* Source-file viewer: `<pre>` wraps `<code>`. Restore inline-block on
+           the inner code so Pygments token spans don't collapse weirdly. */
+        pre > code,
+        .codehilite code {
+            display: inline-block;
+            overflow-wrap: normal;
+            word-break: normal;
+        }
+
+        /* ── Utility classes ──────────────────────────────── */
+        /* Text */
+        .text-muted { color: var(--pico-muted-color); }
+        .text-success { color: #2e7d32; }
+        .text-danger { color: #c62828; }
+        .text-warning { color: #e8a317; }
+        .italic { font-style: italic; }
+        .font-bold { font-weight: 700; }
+        .text-center { text-align: center; }
+
+        /* Font sizes */
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.85rem; }
+        .text-base { font-size: 0.875rem; }
+        .text-lg { font-size: 1.1rem; }
+        .text-xl { font-size: 1.5rem; }
+
+        /* Layout */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; align-items: center; }
+        .inline-flex-center { margin: 0; padding: 0; display: inline-flex; align-items: center; }
+        .inline-reset { margin: 0; padding: 0; display: inline; }
+        .hidden { display: none; }
+        .flex-1 { flex: 1; }
+
+        /* Spacing */
+        .gap-xs { gap: 0.25rem; }
+        .gap-sm { gap: 0.35rem; }
+        .gap-md { gap: 0.5rem; }
+        .gap-lg { gap: 0.75rem; }
+        .m-0 { margin: 0; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 1.5rem; }
+        .mt-3 { margin-top: 2rem; }
+        .p-1 { padding: 1rem; }
+
+        /* Components */
+        .btn-sm { width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0; }
+
+        /* T-1909: arc-membership badge — surfaced wherever a task is rendered. */
+        .arc-badge {
+            /* T-1968 v2: Playwright check showed v1 (color: var(--pico-color))
+               resolved to the Pico LINK color inside <a> (the badge is an <a>),
+               not the page text color — still produced dark-blue-on-dark-slate.
+               Real fix: --pico-secondary-inverse (white) — the actual contrast
+               partner of --pico-secondary-background. Same color as the
+               existing :hover rule, so rest and hover match in legibility. */
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            background: var(--pico-secondary-background);
+            color: var(--pico-secondary-inverse);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            border: 1px solid var(--pico-muted-border-color);
+            white-space: nowrap;
+        }
+        .arc-badge:hover {
+            background: var(--pico-secondary);
+            color: var(--pico-secondary-inverse);
+            text-decoration: none;
+        }
+
+        /* T-1982: BVP_norm chip — surfaced on /tasks listing cards + list. */
+        .bvp-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            background: var(--pico-muted-background, #e8e8e8);
+            color: var(--pico-color);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            border: 1px solid var(--pico-muted-border-color);
+            white-space: nowrap;
+            margin-left: 0.25rem;
+        }
+        .bvp-badge:hover {
+            background: var(--pico-secondary-background);
+            text-decoration: none;
+        }
+        .bvp-badge-proposed em {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body hx-boost="true" hx-target="#content" hx-swap="innerHTML">
+
+    <!-- Navigation -->
+    <nav class="site-nav container-fluid">
+        <ul>
+            <li>
+                <a href="/" class="brand"
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true"><img src="/static/logo.png" alt="Logo">Watchtower</a>
+            </li>
+
+            <li>
+                <button class="nav-toggle" onclick="wtToggleNav()" aria-label="Toggle navigation">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+            </li><li><span id="wt-pins" class="nav-pins">
+</span></li><span class="nav-items">
+            
+            <li>
+                <details class="dropdown">
+                    <summary title="Work">
+                        <svg class="nav-group-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        <span class="nav-group-label">Work</span>
+                    </summary>
+                    <ul dir="ltr">
+                        <li>
+                            <a href="/tasks"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Tasks</a>
+                        </li><li>
+                            <a href="/arcs"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Arcs</a>
+                        </li><li>
+                            <a href="/bvp"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">BVP</a>
+                        </li><li>
+                            <a href="/inception"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Inception</a>
+                        </li><li>
+                            <a href="/assumptions"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Assumptions</a>
+                        </li><li>
+                            <a href="/timeline"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Timeline</a>
+                        </li><li>
+                            <a href="/prompts"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Prompts</a>
+                        </li>
+                    </ul>
+                </details>
+            </li>
+            
+            <li>
+                <details class="dropdown">
+                    <summary title="Knowledge">
+                        <svg class="nav-group-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span class="nav-group-label">Knowledge</span>
+                    </summary>
+                    <ul dir="ltr">
+                        <li>
+                            <a href="/learnings"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Learnings</a>
+                        </li><li>
+                            <a href="/graduation"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Graduation</a>
+                        </li><li>
+                            <a href="/patterns"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Patterns</a>
+                        </li><li>
+                            <a href="/decisions"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Decisions</a>
+                        </li>
+                    </ul>
+                </details>
+            </li>
+            
+            <li>
+                <details class="dropdown">
+                    <summary title="Architecture">
+                        <svg class="nav-group-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                        <span class="nav-group-label">Architecture</span>
+                    </summary>
+                    <ul dir="ltr">
+                        <li>
+                            <a href="/fabric"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Fabric</a>
+                        </li><li>
+                            <a href="/fabric/graph"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Explorer</a>
+                        </li><li>
+                            <a href="/designer"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Designer</a>
+                        </li><li>
+                            <a href="/terminal"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Terminal</a>
+                        </li><li>
+                            <a href="/sessions"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Sessions</a>
+                        </li>
+                    </ul>
+                </details>
+            </li>
+            
+            <li>
+                <details class="dropdown active-group">
+                    <summary title="Govern">
+                        <svg class="nav-group-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span class="nav-group-label">Govern</span>
+                    </summary>
+                    <ul dir="ltr">
+                        <li class="nav-subsection-label">Approvals &amp; Decisions</li>
+                        <li>
+                            <a href="/approvals"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Approvals</a>
+                        </li><li>
+                            <a href="/directives"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Directives</a>
+                        </li><li>
+                            <a href="/pending"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Pending</a>
+                        </li><li class="nav-subsection-label">Enforcement</li>
+                        <li>
+                            <a href="/enforcement"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Enforcement</a>
+                        </li><li>
+                            <a href="/hooks"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Hooks</a>
+                        </li><li>
+                            <a href="/reviewer/audit"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Reviewer Audit</a>
+                        </li><li>
+                            <a href="/reviewer/overrides"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Reviewer Overrides</a>
+                        </li><li class="nav-subsection-label">Health</li>
+                        <li>
+                            <a href="/risks"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Risks</a>
+                        </li><li>
+                            <a href="/gaps"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Gaps</a>
+                        </li><li>
+                            <a href="/quality"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Quality</a>
+                        </li><li>
+                            <a href="/discoveries"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Discoveries</a>
+                        </li><li>
+                            <a href="/escalation-drift"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Escalation Drift</a>
+                        </li><li>
+                            <a href="/embeddings"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Embeddings</a>
+                        </li><li class="nav-subsection-label">Operations</li>
+                        <li>
+                            <a href="/metrics"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Metrics</a>
+                        </li><li>
+                            <a href="/costs"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Costs</a>
+                        </li><li>
+                            <a href="/config"
+                               aria-current="page"
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Config</a>
+                        </li><li>
+                            <a href="/cron"
+                               
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Cron</a>
+                        </li>
+                    </ul>
+                </details>
+            </li>
+            
+
+            <li class="spacer"></li>
+
+            <li class="nav-docs">
+                <a href="/project"
+                   
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Docs</a>
+            </li>
+
+            <li class="nav-search">
+                <a href="/search" title="Search or jump  (⌘K)"
+                   data-palette-open
+                   >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
+                    </svg>
+                </a>
+            </li>
+
+            <li class="nav-settings">
+                <a href="/settings/appearance" title="Settings — appearance"
+                   >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </a>
+            </li>
+
+            <li>
+                <button class="theme-toggle" onclick="wtToggleTheme()" aria-label="Toggle dark mode"
+                        title="Toggle dark mode" style="background:none;border:none;padding:0.4rem;cursor:pointer;color:var(--wt-text);line-height:1;font-size:1.1rem;">
+                    <span class="theme-icon-light" style="display:none;">&#9790;</span>
+                    <span class="theme-icon-dark" style="display:none;">&#9728;</span>
+                </button>
+            </li>
+            </span>
+
+        </ul>
+    </nav>
+
+    <!-- Ambient Status Strip -->
+    
+    <div class="ambient-strip container-fluid">
+        <span>T-3080</span>
+        <span class="sep">|</span>
+        <span>Session: 1d ago</span>
+        <span class="sep">|</span>
+        <span>Audit:
+            <span class="audit-fail">FAIL</span>
+            
+        </span>
+        <span class="sep">|</span>
+        <span><strong>376</strong> items need attention</span>
+        <span style="flex:1"></span>
+        <span title="/opt/999-Agentic-Engineering-Framework" style="opacity:0.7"><strong>999-Agentic-Engineering-Framework</strong></span>
+    </div>
+    
+
+    <!-- Toast container -->
+    <div id="toast-container" style="position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;"></div>
+
+    <!-- Main Content -->
+    <main class="container" id="content">
+        
+        
+
+<nav class="wt-breadcrumb" aria-label="Breadcrumb"><span>Govern</span><span class="wt-breadcrumb-sep" aria-hidden="true">›</span><span aria-current="page">Config</span><span class="wt-breadcrumb-spacer"></span>
+<button type="button"
+        class="wt-pin-toggle"
+        hx-post="/settings/pins/toggle"
+        hx-vals='{"endpoint": "config.config_page"}'
+        hx-target="this" hx-swap="outerHTML"
+        aria-pressed="false"
+        title="Pin this page to the nav bar">
+  <span aria-hidden="true">☆</span>
+  <span class="wt-pin-label">Pin</span>
+</button></nav>
+<style>
+    .config-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .config-summary { grid-template-columns: 1fr; }
+    }
+    .config-card { text-align: center; }
+    .config-card .config-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .config-card .config-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .source-badge {
+        display: inline-block;
+        padding: 0.15em 0.5em;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .source-default {
+        background: var(--pico-muted-border-color);
+        color: var(--pico-muted-color);
+    }
+    .source-env {
+        background: #1565c0;
+        color: #fff;
+    }
+    .source-file {
+        background: #2e7d32;
+        color: #fff;
+    }
+    .warning-text {
+        color: #f57c00;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .config-table code {
+        font-size: 0.85rem;
+    }
+    .config-help {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .config-help h4 { margin-top: 0; }
+    .config-help pre {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+        margin: 0.5rem 0;
+    }
+</style>
+
+
+<article style="margin-bottom: 1.5rem; padding: 1rem;">
+    <h4 style="margin-top: 0;">Project</h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        
+        <div>
+            <small style="color: var(--pico-muted-color); text-transform: uppercase;">project_name</small>
+            <div><strong>999-Agentic-Engineering-Framework</strong></div>
+        </div>
+        
+    </div>
+</article>
+
+
+<div class="config-summary">
+    <article class="config-card">
+        <div class="config-value">34</div>
+        <div class="config-label">Settings</div>
+    </article>
+    <article class="config-card">
+        <div class="config-value" style="color: #1565c0;">
+            3
+        </div>
+        <div class="config-label">Overrides</div>
+    </article>
+    <article class="config-card">
+        <div class="config-value" >
+            0
+        </div>
+        <div class="config-label">Warnings</div>
+    </article>
+</div>
+
+<figure>
+    <table class="config-table">
+        <thead>
+            <tr>
+                <th>Env Var</th>
+                <th>Current</th>
+                <th>Default</th>
+                <th>Source</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td><code>FW_CONTEXT_WINDOW</code></td>
+                <td>
+                    <strong>300000</strong>
+                    
+                </td>
+                <td><code>300000</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Context window size for budget enforcement (tokens)</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_PORT</code></td>
+                <td>
+                    <strong>3000</strong>
+                    
+                </td>
+                <td><code>3000</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Watchtower web UI listen port</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_RAIL_IDENTITY_FILE</code></td>
+                <td>
+                    <strong>.context/rail-identity.key</strong>
+                    
+                </td>
+                <td><code></code></td>
+                <td>
+                    <span class="source-badge source-file">file</span>
+                </td>
+                <td>Project-owned termlink signing identity for outbound rail posts (T-2904). Empty = sign as host key, which is indistinguishable from co-resident agents. Created on first use.</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_RAIL_PROJECT_LABEL</code></td>
+                <td>
+                    <strong></strong>
+                    
+                </td>
+                <td><code></code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Canonical from_project label attached to outbound rail posts (T-2905). Empty = derived from the project directory name, normalised. Emitted, never typed at a call site.</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_DISPATCH_LIMIT</code></td>
+                <td>
+                    <strong>2</strong>
+                    
+                </td>
+                <td><code>2</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Agent tool dispatches before TermLink gate triggers</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_BUDGET_RECHECK_INTERVAL</code></td>
+                <td>
+                    <strong>5</strong>
+                    
+                </td>
+                <td><code>5</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Re-read transcript every N tool calls</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_BUDGET_STATUS_MAX_AGE</code></td>
+                <td>
+                    <strong>90</strong>
+                    
+                </td>
+                <td><code>90</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Max seconds before cached budget status is stale</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_TOKEN_CHECK_INTERVAL</code></td>
+                <td>
+                    <strong>5</strong>
+                    
+                </td>
+                <td><code>5</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Check token usage every N tool calls</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_HANDOVER_COOLDOWN</code></td>
+                <td>
+                    <strong>600</strong>
+                    
+                </td>
+                <td><code>600</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Seconds between auto-handover triggers</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_STALE_TASK_DAYS</code></td>
+                <td>
+                    <strong>7</strong>
+                    
+                </td>
+                <td><code>7</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Days before a task is flagged stale</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_MAX_RESTARTS</code></td>
+                <td>
+                    <strong>5</strong>
+                    
+                </td>
+                <td><code>5</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Max consecutive auto-restarts</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_SAFE_MODE</code></td>
+                <td>
+                    <strong>0</strong>
+                    
+                </td>
+                <td><code>0</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Bypass task gate (escape hatch)</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_CALL_WARN</code></td>
+                <td>
+                    <strong>40</strong>
+                    
+                </td>
+                <td><code>40</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Tool-call count threshold for warn level (fallback)</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_CALL_URGENT</code></td>
+                <td>
+                    <strong>60</strong>
+                    
+                </td>
+                <td><code>60</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Tool-call count threshold for urgent level (fallback)</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_CALL_CRITICAL</code></td>
+                <td>
+                    <strong>80</strong>
+                    
+                </td>
+                <td><code>80</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Tool-call count threshold for critical level (fallback)</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_BASH_TIMEOUT</code></td>
+                <td>
+                    <strong>300000</strong>
+                    
+                </td>
+                <td><code>300000</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Default Bash tool timeout in milliseconds</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_KEYLOCK_TIMEOUT</code></td>
+                <td>
+                    <strong>300</strong>
+                    
+                </td>
+                <td><code>300</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Per-key lock stale cleanup timeout in seconds</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_TERMLINK_WORKER_TIMEOUT</code></td>
+                <td>
+                    <strong>600</strong>
+                    
+                </td>
+                <td><code>600</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>TermLink worker execution timeout in seconds</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_HANDOVER_DEDUP_COOLDOWN</code></td>
+                <td>
+                    <strong>300</strong>
+                    
+                </td>
+                <td><code>300</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Seconds between duplicate handover detection</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_INCEPTION_COMMIT_LIMIT</code></td>
+                <td>
+                    <strong>15</strong>
+                    
+                </td>
+                <td><code>2</code></td>
+                <td>
+                    <span class="source-badge source-file">file</span>
+                </td>
+                <td>Max exploration commits before inception decision gate</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_CONSUMER_SCAN_DIRS</code></td>
+                <td>
+                    <strong>/opt</strong>
+                    
+                </td>
+                <td><code>/opt</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Colon-separated directories to scan for consumer projects</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_NTFY_URL</code></td>
+                <td>
+                    <strong>https://ntfy-ring20.docker.ring20.geelenandcompany.com</strong>
+                    
+                </td>
+                <td><code></code></td>
+                <td>
+                    <span class="source-badge source-file">file</span>
+                </td>
+                <td>ntfy server base URL for push notifications (empty = dispatcher default; each install sets its own instance, no host-local fallback; T-2439)</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_DISPATCH_MODEL_DEFAULT</code></td>
+                <td>
+                    <strong></strong>
+                    
+                </td>
+                <td><code></code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Default LLM model for fw termlink dispatch when --model omitted (e.g. sonnet, haiku, opus); T-1643/W3</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_ARC_COMPLETION_THRESHOLD</code></td>
+                <td>
+                    <strong>0.80</strong>
+                    
+                </td>
+                <td><code>0.80</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Ratio of completed children at which fw audit warns an in-progress arc (G-062 mechanism #2); T-1656</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_BRANCH_BEHIND_WARN</code></td>
+                <td>
+                    <strong>50</strong>
+                    
+                </td>
+                <td><code>50</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Commits-behind-origin/master threshold for the branch-hygiene WARN and handover merge-back nudge; T-100143/T-100144</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_STALE_ARC_DAYS</code></td>
+                <td>
+                    <strong>30</strong>
+                    
+                </td>
+                <td><code>30</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale; T-1855</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_RETIRE_WHEN_ADVISORY</code></td>
+                <td>
+                    <strong>1</strong>
+                    
+                </td>
+                <td><code>1</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Enable the audit retire_when advisory rail for free drivers; 0 silences the section; T-2169</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_GITIGNORE_REGISTER_ADVISORY</code></td>
+                <td>
+                    <strong>1</strong>
+                    
+                </td>
+                <td><code>1</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it; T-2994</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_INDEX_STALE_DAYS</code></td>
+                <td>
+                    <strong>7</strong>
+                    
+                </td>
+                <td><code>7</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Days before fw doctor WARNs that the vector index is stale, measured from the corpus manifest&#39;s build time; T-3013</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_RECALL_USAGE_DAYS</code></td>
+                <td>
+                    <strong>7</strong>
+                    
+                </td>
+                <td><code>7</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Window fw doctor looks back over for semantic-recall queries; zero rows in the window WARNs — the G-064 zero-consumer signal; T-3019</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_INDEX_HANDOVERS</code></td>
+                <td>
+                    <strong>1</strong>
+                    
+                </td>
+                <td><code>1</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Include .context/handovers/ in the semantic index (web/search_utils.py:collect_files). 0 excludes them: ~90MB / 1,710 files leave fw ask, fw recall, /search and the RAG path. Reversible; deletes nothing. T-3024</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_HANDOVER_DIGEST</code></td>
+                <td>
+                    <strong>1</strong>
+                    
+                </td>
+                <td><code>1</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_HANDOVER_DIGEST_TOP_N</code></td>
+                <td>
+                    <strong>5</strong>
+                    
+                </td>
+                <td><code>5</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028</td>
+            </tr>
+            
+            <tr>
+                <td><code>FW_TIER0_APPROVAL_TTL</code></td>
+                <td>
+                    <strong>300</strong>
+                    
+                </td>
+                <td><code>300</code></td>
+                <td>
+                    <span class="source-badge source-default">default</span>
+                </td>
+                <td>Seconds a granted Tier 0 approval admits the command, for BOTH the &#39;fw tier0 approve&#39; and Watchtower legs (agents/context/check-tier0.sh). Legacy TIER0_WATCHTOWER_TTL still wins when explicitly set. NOT the pending-request staleness window. T-3080</td>
+            </tr>
+            
+        </tbody>
+    </table>
+</figure>
+
+
+<h4>Custom Settings <small style="color: var(--pico-muted-color);">(.framework.yaml)</small></h4>
+<figure>
+    <table>
+        <thead>
+            <tr><th>Key</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td><code>PROTECT_MASTER</code></td>
+                <td><strong>1</strong></td>
+            </tr>
+            
+        </tbody>
+    </table>
+</figure>
+
+
+<div class="config-help">
+    <h4>How to override</h4>
+    <p>Resolution order: explicit CLI flag &gt; <code>FW_*</code> env var &gt; <code>.framework.yaml</code> &gt; default.</p>
+    <pre>
+# Persistent (per-project) — recommended
+fw config set PORT 4000
+fw config set CONTEXT_WINDOW 500000
+
+# Per-session (env var)
+export FW_CONTEXT_WINDOW=1000000
+
+# In systemd service
+Environment=FW_PORT=5050</pre>
+    <p>Run <code>fw doctor</code> to validate overrides and check for out-of-range values.</p>
+</div>
+
+    </main>
+
+    <!-- ⌘K Command Palette (T-2012, arc-007 S6a) — lives in the shell so the
+         document-level keydown listener survives htmx #content swaps. -->
+    <script type="application/json" id="wt-nav-items">[{"group": "Work", "label": "Tasks", "url": "/tasks"}, {"group": "Work", "label": "Arcs", "url": "/arcs"}, {"group": "Work", "label": "BVP", "url": "/bvp"}, {"group": "Work", "label": "Inception", "url": "/inception"}, {"group": "Work", "label": "Assumptions", "url": "/assumptions"}, {"group": "Work", "label": "Timeline", "url": "/timeline"}, {"group": "Work", "label": "Prompts", "url": "/prompts"}, {"group": "Knowledge", "label": "Learnings", "url": "/learnings"}, {"group": "Knowledge", "label": "Graduation", "url": "/graduation"}, {"group": "Knowledge", "label": "Patterns", "url": "/patterns"}, {"group": "Knowledge", "label": "Decisions", "url": "/decisions"}, {"group": "Architecture", "label": "Fabric", "url": "/fabric"}, {"group": "Architecture", "label": "Explorer", "url": "/fabric/graph"}, {"group": "Architecture", "label": "Designer", "url": "/designer"}, {"group": "Architecture", "label": "Terminal", "url": "/terminal"}, {"group": "Architecture", "label": "Sessions", "url": "/sessions"}, {"group": "Govern", "label": "Approvals", "url": "/approvals"}, {"group": "Govern", "label": "Directives", "url": "/directives"}, {"group": "Govern", "label": "Pending", "url": "/pending"}, {"group": "Govern", "label": "Enforcement", "url": "/enforcement"}, {"group": "Govern", "label": "Hooks", "url": "/hooks"}, {"group": "Govern", "label": "Reviewer Audit", "url": "/reviewer/audit"}, {"group": "Govern", "label": "Reviewer Overrides", "url": "/reviewer/overrides"}, {"group": "Govern", "label": "Risks", "url": "/risks"}, {"group": "Govern", "label": "Gaps", "url": "/gaps"}, {"group": "Govern", "label": "Quality", "url": "/quality"}, {"group": "Govern", "label": "Discoveries", "url": "/discoveries"}, {"group": "Govern", "label": "Escalation Drift", "url": "/escalation-drift"}, {"group": "Govern", "label": "Embeddings", "url": "/embeddings"}, {"group": "Govern", "label": "Metrics", "url": "/metrics"}, {"group": "Govern", "label": "Costs", "url": "/costs"}, {"group": "Govern", "label": "Config", "url": "/config"}, {"group": "Govern", "label": "Cron", "url": "/cron"}]</script>
+    <div id="wt-command-palette" class="wt-palette" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Command palette">
+        <div class="wt-palette-backdrop" data-palette-close></div>
+        <div class="wt-palette-box" role="document">
+            <input id="wt-palette-input" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="Search or jump to…  (Esc to close)" aria-label="Search or jump to a page" />
+            <ul id="wt-palette-results" class="wt-palette-results" role="listbox"></ul>
+        </div>
+    </div>
+    <script src="/static/command-palette.js" defer></script>
+
+    <!-- ? Keyboard-shortcuts overlay (T-2013, arc-007 S6b) — shell-level, like the
+         palette, so its listener survives htmx swaps. Static cheat-sheet (no backend). -->
+    <div id="wt-shortcuts-overlay" class="wt-shortcuts" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+        <div class="wt-shortcuts-backdrop" data-shortcuts-close></div>
+        <div class="wt-shortcuts-box" role="document">
+            <h3 class="wt-shortcuts-title">Keyboard shortcuts</h3>
+            <dl class="wt-shortcuts-list">
+                <div><dt><kbd>⌘</kbd><kbd>K</kbd> <span class="wt-kbd-alt">/ <kbd>Ctrl</kbd><kbd>K</kbd></span></dt><dd>Open command palette — search or jump to any page</dd></div>
+                <div><dt><kbd>?</kbd></dt><dd>Show this shortcuts overlay</dd></div>
+                <div><dt><kbd>Esc</kbd></dt><dd>Close the palette or this overlay</dd></div>
+                <div><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>Move the highlighted result in the palette</dd></div>
+                <div><dt><kbd>Enter</kbd></dt><dd>Jump to / open the highlighted result</dd></div>
+            </dl>
+            <p class="wt-shortcuts-hint">Press <kbd>Esc</kbd> to close</p>
+        </div>
+    </div>
+    <script src="/static/shortcuts-overlay.js" defer></script>
+
+    <!-- Slide-in task side panel (T-2015, arc-007 S4a) — shell-level, like the
+         palette/overlay, so its open/dock/Esc listeners survive htmx #content
+         swaps. Clicking a task card/row on /tasks loads the lean read fragment
+         (/tasks/<id>/panel) into #wt-task-panel-body. Initial dock from prefs
+         (wt_panel_dock) is applied server-side so it never flashes the wrong dock. -->
+    <div id="wt-task-panel" class="wt-task-panel dock-right" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Task detail">
+        <div class="wt-task-panel-backdrop" data-task-panel-close></div>
+        <div class="wt-task-panel-box" role="document">
+            <div class="wt-task-panel-dockbar">
+                <div class="wt-task-panel-docks" role="group" aria-label="Dock position">
+                    <button type="button" class="wt-dock-btn" data-dock="left"   title="Dock left"        aria-label="Dock left">&#9612;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="right"  title="Dock right"       aria-label="Dock right">&#9616;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="bottom" title="Dock bottom"      aria-label="Dock bottom">&#9620;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="full"   title="Fullscreen"       aria-label="Fullscreen">&#9633;</button>
+                </div>
+                <button type="button" class="wt-task-panel-x" data-task-panel-close title="Close (Esc)" aria-label="Close panel">&times;</button>
+            </div>
+            <div id="wt-task-panel-body" class="wt-task-panel-body" aria-live="polite">
+                <p class="muted" style="padding:1rem;">Loading…</p>
+            </div>
+        </div>
+    </div>
+    <script src="/static/task-panel.js" defer></script>
+
+    
+    <div id="wt-bulk-bar" class="wt-bulk-bar" hidden aria-hidden="true" role="region" aria-label="Bulk actions">
+        <span id="wt-bulk-count" class="wt-bulk-count">0 selected</span>
+        <span class="wt-bulk-label">Set horizon:</span>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="now">Now</button>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="next">Next</button>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="later">Later</button>
+        <button type="button" class="wt-bulk-clear" data-bulk-clear title="Clear selection">Clear</button>
+    </div>
+    <script src="/static/bulk-actions.js" defer></script>
+    
+    <script src="/static/kanban-drag.js" defer></script>
+
+    <!-- Footer -->
+    <footer class="site-footer container">
+        Watchtower v1.6.766-74-g45c3b3aa0 &mdash; Agentic Engineering Framework
+        <br><span style="font-size:0.8rem">Found a framework bug? <code style="font-size:0.75rem;user-select:all">fw upstream report --title "..." --attach-doctor</code></span>
+    </footer>
+
+    <style>
+        /* ── Toast notifications ──────────────────────────────── */
+        .wt-toast {
+            pointer-events: auto;
+            padding: 0.5rem 1rem;
+            border-radius: var(--pico-border-radius);
+            font-size: 0.85rem;
+            max-width: 22rem;
+            animation: toast-in 0.2s ease-out;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .wt-toast.success { background: #1b5e20; color: #fff; }
+        .wt-toast.error   { background: #c62828; color: #fff; }
+        .wt-toast.info    { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+        @keyframes toast-in { from { opacity: 0; transform: translateX(1rem); } to { opacity: 1; transform: none; } }
+        @keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateX(1rem); } }
+        /* ── Saving indicator ─────────────────────────────────── */
+        .wt-saving { opacity: 0.5; pointer-events: none; }
+        .wt-saving::after {
+            content: " ...";
+            animation: blink 1s steps(3, end) infinite;
+        }
+        @keyframes blink { to { opacity: 0.3; } }
+        /* ── ⌘K Command Palette (T-2012, arc-007 S6a) ─────────── */
+        .wt-palette[hidden] { display: none; }
+        .wt-palette {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding-top: 12vh;
+        }
+        .wt-palette-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            animation: wt-palette-fade 0.12s ease-out;
+        }
+        .wt-palette-box {
+            position: relative; width: min(92vw, 580px);
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            border: 1px solid var(--pico-card-border-color, var(--pico-muted-border-color));
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            overflow: hidden;
+            animation: wt-palette-pop 0.12s ease-out;
+        }
+        #wt-palette-input {
+            width: 100%; margin: 0; border: 0; border-radius: 0;
+            padding: 1rem 1.1rem; font-size: 1.05rem; line-height: 1.3;
+            background: transparent; color: var(--pico-color);
+            border-bottom: 1px solid var(--pico-muted-border-color);
+        }
+        #wt-palette-input:focus { outline: none; box-shadow: none; }
+        .wt-palette-results { list-style: none; margin: 0; padding: 0.35rem; max-height: 52vh; overflow-y: auto; }
+        .wt-palette-results li {
+            display: flex; align-items: baseline; gap: 0.6rem;
+            padding: 0.55rem 0.75rem; border-radius: 8px; cursor: pointer;
+            font-size: 0.92rem; color: var(--pico-color);
+        }
+        .wt-palette-results li[aria-selected="true"],
+        .wt-palette-results li:hover { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+        .wt-palette-results li .wt-palette-group { margin-left: auto; font-size: 0.72rem; opacity: 0.6; }
+        .wt-palette-results li[aria-selected="true"] .wt-palette-group { opacity: 0.85; }
+        .wt-palette-results li.wt-palette-search { font-style: italic; opacity: 0.95; }
+        .wt-palette-empty { padding: 0.75rem; font-size: 0.85rem; opacity: 0.6; text-align: center; }
+        @keyframes wt-palette-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes wt-palette-pop  { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        /* ── ? Keyboard-shortcuts overlay (T-2013, arc-007 S6b) ─── */
+        .wt-shortcuts[hidden] { display: none; }
+        .wt-shortcuts {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .wt-shortcuts-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            animation: wt-palette-fade 0.12s ease-out;
+        }
+        .wt-shortcuts-box {
+            position: relative; width: min(92vw, 460px);
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            border: 1px solid var(--pico-card-border-color, var(--pico-muted-border-color));
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            padding: 1.1rem 1.3rem 1rem;
+            animation: wt-palette-pop 0.12s ease-out;
+        }
+        .wt-shortcuts-title { margin: 0 0 0.8rem; font-size: 1.05rem; }
+        .wt-shortcuts-list { margin: 0; display: grid; gap: 0.55rem; }
+        .wt-shortcuts-list > div { display: flex; align-items: baseline; gap: 1rem; }
+        .wt-shortcuts-list dt { flex: 0 0 auto; min-width: 6.5rem; }
+        .wt-shortcuts-list dd { margin: 0; font-size: 0.9rem; opacity: 0.9; }
+        .wt-shortcuts kbd {
+            display: inline-block; padding: 0.1rem 0.4rem; margin: 0 0.1rem;
+            font-size: 0.78rem; font-family: var(--pico-font-family, monospace);
+            line-height: 1.4; color: var(--pico-color);
+            background: var(--pico-code-background-color, rgba(127,127,127,0.15));
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 5px; box-shadow: 0 1px 0 var(--pico-muted-border-color);
+        }
+        .wt-shortcuts .wt-kbd-alt { font-size: 0.78rem; opacity: 0.6; }
+        .wt-shortcuts-hint { margin: 0.9rem 0 0; font-size: 0.78rem; opacity: 0.55; text-align: right; }
+
+        /* ── Slide-in task side panel (T-2015, arc-007 S4a) ───── */
+        .wt-task-panel[hidden] { display: none; }
+        .wt-task-panel { position: fixed; inset: 0; z-index: 1090; }
+        .wt-task-panel-backdrop {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.32);
+            animation: wt-panel-fade 0.15s ease-out;
+        }
+        @keyframes wt-panel-fade { from { opacity: 0; } to { opacity: 1; } }
+        .wt-task-panel-box {
+            position: absolute; display: flex; flex-direction: column;
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            box-shadow: 0 0 40px rgba(0,0,0,0.28);
+            border: 1px solid var(--pico-muted-border-color);
+        }
+        /* Dock positions — class on the container, box positioned per dock. */
+        .wt-task-panel.dock-right .wt-task-panel-box {
+            top: 0; bottom: 0; right: 0; width: min(46rem, 92vw);
+            border-right: none; animation: wt-panel-in-right 0.2s ease-out;
+        }
+        .wt-task-panel.dock-left .wt-task-panel-box {
+            top: 0; bottom: 0; left: 0; width: min(46rem, 92vw);
+            border-left: none; animation: wt-panel-in-left 0.2s ease-out;
+        }
+        .wt-task-panel.dock-bottom .wt-task-panel-box {
+            left: 0; right: 0; bottom: 0; height: min(70vh, 44rem);
+            border-bottom: none; animation: wt-panel-in-bottom 0.2s ease-out;
+        }
+        .wt-task-panel.dock-full .wt-task-panel-box {
+            inset: 2.5vh 2.5vw; width: auto; height: auto; border-radius: 0.6rem;
+            animation: wt-panel-fade 0.15s ease-out;
+        }
+        @keyframes wt-panel-in-right  { from { transform: translateX(100%); } to { transform: none; } }
+        @keyframes wt-panel-in-left   { from { transform: translateX(-100%); } to { transform: none; } }
+        @keyframes wt-panel-in-bottom { from { transform: translateY(100%); } to { transform: none; } }
+        .wt-task-panel-dockbar {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--pico-muted-border-color);
+            background: var(--pico-background-color); flex: 0 0 auto;
+        }
+        .wt-task-panel-docks { display: flex; gap: 0.15rem; }
+        .wt-dock-btn, .wt-task-panel-x {
+            background: transparent; border: 1px solid transparent; cursor: pointer;
+            color: var(--pico-muted-color); padding: 0.15rem 0.45rem; margin: 0;
+            font-size: 0.95rem; line-height: 1.2; border-radius: 5px; width: auto;
+        }
+        .wt-dock-btn:hover, .wt-task-panel-x:hover {
+            background: var(--pico-code-background-color, rgba(127,127,127,0.15));
+            color: var(--pico-color);
+        }
+        .wt-task-panel.dock-left  .wt-dock-btn[data-dock="left"],
+        .wt-task-panel.dock-right .wt-dock-btn[data-dock="right"],
+        .wt-task-panel.dock-bottom .wt-dock-btn[data-dock="bottom"],
+        .wt-task-panel.dock-full  .wt-dock-btn[data-dock="full"] {
+            background: var(--pico-primary); color: var(--pico-primary-inverse);
+            border-color: var(--pico-primary);
+        }
+        .wt-task-panel-x { margin-left: auto; font-size: 1.3rem; }
+        .wt-task-panel-body { flex: 1 1 auto; overflow-y: auto; padding: 1.1rem 1.4rem; }
+        .wt-task-panel-titlebar { display: flex; align-items: baseline; gap: 0.75rem; }
+        .wt-task-panel-id { font-family: monospace; font-weight: 600; color: var(--pico-primary); }
+        .wt-task-panel-fullpage { margin-left: auto; font-size: 0.8rem; white-space: nowrap; }
+        .wt-task-panel-name { margin: 0.2rem 0 0.9rem; font-size: 1.25rem; line-height: 1.3; }
+        .wt-task-panel-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 1rem; margin: 0 0 1rem; }
+        .wt-task-panel-meta > div { display: flex; gap: 0.5rem; align-items: baseline; }
+        .wt-task-panel-meta dt { flex: 0 0 4.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--pico-muted-color); margin: 0; }
+        .wt-task-panel-meta dd { margin: 0; font-size: 0.9rem; }
+        /* S4b (T-2017): inline-edit cells in the panel meta grid */
+        .wt-task-panel-meta dd.wt-panel-edit-cell { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .wt-task-panel-meta .wt-panel-edit-cell form { margin: 0; }
+        .wt-task-panel-meta .wt-panel-edit-cell select { margin: 0; padding: 0.1rem 1.4rem 0.1rem 0.4rem; font-size: 0.85rem; height: auto; min-height: 0; width: auto; }
+        .wt-panel-edit-result { font-size: 0.75rem; color: var(--pico-muted-color); }
+        .wt-task-panel-detail section { margin: 1.1rem 0; }
+        .wt-task-panel-detail h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+        .wt-task-panel-acs .ac-list { list-style: none; padding-left: 0; margin: 0; }
+        .wt-task-panel-acs .ac-list li { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.2rem 0; font-size: 0.88rem; }
+        .wt-ac-box {
+            flex: 0 0 auto; width: 1.05rem; height: 1.05rem; margin-top: 0.1rem;
+            border: 1px solid var(--pico-muted-border-color); border-radius: 3px;
+            text-align: center; line-height: 1rem; font-size: 0.8rem;
+        }
+        .wt-ac-box-checked { background: #10b981; border-color: #10b981; color: #fff; }
+        .wt-task-panel-acs .ac-checked { text-decoration: line-through; color: var(--pico-muted-color); }
+
+        /* arc-007 S4e/S6c (T-2018): bulk multi-select + floating action bar */
+        .wt-bulk-select { flex: 0 0 auto; margin: 0; cursor: pointer; }
+        .wt-bulk-bar {
+            position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+            z-index: 1000; display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.85rem; border-radius: 999px;
+            background: var(--pico-card-background-color, #1f2430);
+            border: 1px solid var(--pico-muted-border-color);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35); font-size: 0.85rem;
+            animation: wt-bulk-rise 0.18s ease-out;
+        }
+        .wt-bulk-bar[hidden] { display: none; }
+        @keyframes wt-bulk-rise { from { opacity: 0; transform: translate(-50%, 0.5rem); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .wt-bulk-count { font-weight: 600; }
+        .wt-bulk-label { color: var(--pico-muted-color); }
+        .wt-bulk-btn, .wt-bulk-clear {
+            margin: 0; padding: 0.2rem 0.7rem; font-size: 0.82rem; line-height: 1.3;
+            border-radius: 999px; width: auto; height: auto; cursor: pointer;
+        }
+        .wt-bulk-clear { background: transparent; border: 1px solid var(--pico-muted-border-color); color: var(--pico-muted-color); }
+
+        /* arc-007 S4d (T-2019): kanban drag-to-reorder (cross-column status change) */
+        .kanban-card[draggable="true"] { cursor: grab; }
+        .kanban-card.kanban-dragging { opacity: 0.45; cursor: grabbing; }
+        .kanban-column.kanban-drop-target {
+            outline: 2px dashed var(--pico-primary, #7aa2f7);
+            outline-offset: -4px;
+            background: color-mix(in srgb, var(--pico-primary, #7aa2f7) 8%, transparent);
+        }
+    </style>
+
+    <script>
+        /* ── UI helpers (T-429/H3) ───────────────────────────── */
+        function wtShowAll(el) {
+            var section = el.closest('.wt-section') || el.parentElement;
+            section.querySelectorAll('.wt-card-hidden, .docs-overflow').forEach(function(e) { e.style.display = 'block'; });
+            el.style.display = 'none';
+        }
+        function wtDismissCard(el) { var card = el.closest('.wt-card'); if (card) card.style.display = 'none'; }
+        function wtToggleNav() { document.querySelector('.nav-items').classList.toggle('open'); }
+
+        /* ── Toast notification helper ────────────────────────── */
+        function showToast(msg, type) {
+            type = type || 'info';
+            var container = document.getElementById('toast-container');
+            var toast = document.createElement('div');
+            toast.className = 'wt-toast ' + type;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.style.animation = 'toast-out 0.3s ease-in forwards';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 3000);
+        }
+
+        /* ── htmx error handling → toast ─────────────────────── */
+        // Listeners moved to web/static/htmx-toast.js (T-2074) so standalone
+        // templates (review.html — see L-269/L-316) get the same handlers.
+        // The inline showToast() above stays for non-htmx callers; htmx-toast.js
+        // detects window.showToast and re-uses it rather than redefining.
+
+        /* ── Loading state on htmx forms ─────────────────────── */
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            var el = evt.detail.elt;
+            if (el && el.closest && el.closest('form')) {
+                el.closest('form').classList.add('wt-saving');
+            }
+        });
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            var el = evt.detail.elt;
+            if (el && el.closest && el.closest('form')) {
+                el.closest('form').classList.remove('wt-saving');
+            }
+        });
+
+        // CSRF listener + fetchWithCsrf moved to web/static/csrf-htmx.js (T-1453)
+        // so standalone templates (review.html) can share the same code.
+
+        // Update active nav after htmx navigation
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            document.querySelectorAll('nav.site-nav [aria-current]').forEach(function(el) {
+                el.removeAttribute('aria-current');
+            });
+            document.querySelectorAll('nav.site-nav .active-group').forEach(function(el) {
+                el.classList.remove('active-group');
+            });
+
+            var path = window.location.pathname;
+            document.querySelectorAll('nav.site-nav a').forEach(function(link) {
+                var href = link.getAttribute('href');
+                if (href === path || (path === '/' && href === '/')) {
+                    link.setAttribute('aria-current', 'page');
+                    var dropdown = link.closest('details.dropdown');
+                    if (dropdown) dropdown.classList.add('active-group');
+                }
+            });
+
+            // Close open dropdowns after navigation
+            document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
+                d.removeAttribute('open');
+            });
+
+            // Update page title
+            var h1 = document.querySelector('.page-header h1, .wt-header h1');
+            if (h1) document.title = h1.textContent.trim() + ' — Agentic Engineering Framework';
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
+                if (!d.contains(event.target)) d.removeAttribute('open');
+            });
+        });
+
+        // Close mobile nav after clicking a link
+        document.querySelectorAll('.nav-items a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                var navItems = document.querySelector('.nav-items');
+                if (navItems) navItems.classList.remove('open');
+            });
+        });
+
+        // Wrap bare tables in .table-responsive for horizontal scroll
+        document.body.addEventListener('htmx:afterSwap', function() {
+            document.querySelectorAll('#content table:not(.table-responsive table)').forEach(function(table) {
+                if (!table.parentElement.classList.contains('table-responsive')) {
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'table-responsive';
+                    table.parentNode.insertBefore(wrapper, table);
+                    wrapper.appendChild(table);
+                }
+            });
+        });
+        // Initial wrap on page load
+        document.querySelectorAll('#content table').forEach(function(table) {
+            if (!table.parentElement.classList.contains('table-responsive')) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'table-responsive';
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            }
+        });
+
+        // Highlight.js: initial highlight + re-highlight after htmx swaps
+        hljs.highlightAll();
+        document.body.addEventListener('htmx:afterSwap', function() {
+            document.querySelectorAll('pre code.hljs, pre code[class*="language-"]').forEach(function(block) {
+                delete block.dataset.highlighted;
+                hljs.highlightElement(block);
+            });
+        });
+
+        // Theme toggle
+        function wtUpdateThemeIcons() {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            var lightIcon = document.querySelector('.theme-icon-light');
+            var darkIcon = document.querySelector('.theme-icon-dark');
+            if (lightIcon) lightIcon.style.display = isDark ? 'none' : 'inline';
+            if (darkIcon) darkIcon.style.display = isDark ? 'inline' : 'none';
+        }
+        function wtToggleTheme() {
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('wt-theme', next);
+            wtUpdateThemeIcons();
+        }
+        wtUpdateThemeIcons();
+    </script>
+</body>
+</html>

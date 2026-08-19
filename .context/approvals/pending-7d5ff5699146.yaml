@@ -1,0 +1,8 @@
+command_hash: 7d5ff56991464fb580153861b1e1707a69fed806ef33709f16c0488d222621e2
+command_preview: cd /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad
+  && rm -rf g2 && mkdir g2 && cd g2 && git init -q . && git config user.email t@t
+  && git config us
+risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+status: pending
+timestamp: '2026-08-19T21:47:23Z'
+type: tier0

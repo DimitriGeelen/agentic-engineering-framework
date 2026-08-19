@@ -11,12 +11,12 @@ description: >
   so it cannot be forgotten. Origin: operator opened /approvals 2026-08-18 and asked
   why rm -rf / was there.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-tier0.sh, lib/tier0_origin.py, tests/unit/test_tier0_origin.py, tests/unit/tier0_card_provenance.bats, tests/web/test_approvals_origin.py, web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:48:45Z
-last_update: 2026-08-19T21:56:52Z
-date_finished:
+last_update: 2026-08-19T22:13:53Z
+date_finished: 2026-08-19T22:13:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -202,35 +202,6 @@ curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t3078c.html && ! grep -q 
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## Recommendation
-
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
-
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
-
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -384,3 +355,15 @@ window during which an approved hash admits a destructive command is unchanged.
 
 ### 2026-08-19T21:56:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fc4ff558
+- **Timestamp:** 2026-08-19T22:14:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-19T22:13:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
