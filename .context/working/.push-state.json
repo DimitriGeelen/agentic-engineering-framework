@@ -1,8 +1,0 @@
-{
-  "branch": "t2539-staging",
-  "consecutive_failures": 2,
-  "first_failure_ts": "2026-08-18T19:09:31Z",
-  "last_failure_kind": "refused",
-  "last_failure_ts": "2026-08-19T21:35:12Z",
-  "last_session": "S-2026-0819-2334"
-}

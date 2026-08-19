@@ -4702,3 +4702,27 @@ X'` returning empty group."
   task: T-3086
   date: 2026-08-19
   context: Added via context agent
+- id: L-628
+  learning: "A bare '! cmd' assertion in NON-FINAL position inside a bats test body is INERT: bats runs the body under set -e, and set -e ignores the status of any command inverted with '!'. Only the FINAL line of a body is checked (there bats uses the body's return value). Measured 2026-08-19 on T-3090: a leak assertion using this shape stayed GREEN under a mutation that disabled the fix entirely, with a trailing positive control carrying the whole test. Route refutations through an explicit helper: if cmd; then echo LEAK >&2; return 1; fi. Sibling of L-387 (pipefail/SIGPIPE) and L-616 (two empty sets are equal) — all three are assertions that look like they check something and do not."
+  source: P-011
+  task: T-3090
+  date: 2026-08-19
+  context: Added via context agent
+- id: L-629
+  learning: "Process-ancestry detection must match on FULL COMMAND LINES (ps -o args=), never on ps -o comm=. comm reports the interpreter, so every hop of a bats run comes back as 'bash' — a 'bats' marker matched against comm never fires. Found 2026-08-20 in T-3078: the marker had never once fired in production; kind=test was carried entirely by an unrelated sandbox check and nothing was red. Corollary for provenance surfaces: match on args but STORE only comm, because argv can carry tokens and secrets and the card is read by a human. Second corollary: logic embedded in a shell heredoc can only be exercised by running its host, and a harness that biases its own result (every hook run from bats classifies as 'test') cannot test the branches it biases away — extract to an importable module so the branches are reachable."
+  source: P-011
+  task: T-3078
+  date: 2026-08-19
+  context: Added via context agent
+- id: L-630
+  learning: "A finding class that is always truncated has not shipped. T-3092 added a 'remote-unlanded' class to fw_branch_hygiene, and it was correct at the library level while reaching the operator 0 times out of 4 — fw doctor capped output with a positional 'head -12' and remote findings are emitted last, behind 12 local ones. Detection and display are one deliverable: when adding a finding class to a rail that caps its output, verify the new class survives the cap on a repo that is already at the cap, and make truncation class-representative rather than positional."
+  source: P-011
+  task: T-3092
+  date: 2026-08-19
+  context: Added via context agent
+- id: L-631
+  learning: "Mutation testing catches inert tests, including your own. T-3092 mutation B (restoring an old error-fallback) stayed green, revealing that the test claiming to cover the rev-list-failure path asserted nothing: 'git for-each-ref' drops broken refs before the loop sees them, so the ref never arrived and the guard was never exercised. The test passed for a reason unrelated to its name. Rule: when a mutation you expect to be red comes back green, the defect is in the test, not the mutation — investigate before moving on. Sibling to L-387 (pipefail) and the T-3090 inert-negation class."
+  source: P-011
+  task: T-3092
+  date: 2026-08-19
+  context: Added via context agent

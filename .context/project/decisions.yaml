@@ -3257,3 +3257,45 @@ decisions:
     date: 2026-08-19
     task: T-3090
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-468
+    decision: "Reclassify all three \"dead by zero code commits\" branches as KEEP, and delete only refs proven dead by patch-id."
+    scope: project
+    date: 2026-08-19
+    task: T-3091
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-469
+    decision: "`git cherry HEAD <ref>` reporting zero unlanded commits is the sole criterion for calling a ref dead."
+    scope: project
+    date: 2026-08-19
+    task: T-3091
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-470
+    decision: "For each file a branch changed since its fork point, take the branch's added non-blank lines and count how many appear verbatim in HEAD's copy. All present → LANDED; none → SALVAGE; some → PARTIAL; file missing on HEAD → NEW-FILE."
+    scope: project
+    date: 2026-08-19
+    task: T-3091
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-471
+    decision: "Report `remote-unlanded origin/X` on its own evidence even when local `X` is landed and reported `merged-undeleted`."
+    scope: project
+    date: 2026-08-19
+    task: T-3092
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-472
+    decision: "Skip the remote ref that the current checkout tracks."
+    scope: project
+    date: 2026-08-19
+    task: T-3092
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-473
+    decision: "`fw_branch_hygiene_head` — one line per distinct class first, then fill to the cap."
+    scope: project
+    date: 2026-08-19
+    task: T-3092
+    rationale: "Auto-captured from task file on completion"

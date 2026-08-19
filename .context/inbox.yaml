@@ -3959,3 +3959,20 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-330
+  text: "T-3079 evidence: 'fw tier0' has only approve|status — there is NO withdraw/deny verb. An agent that files a pending card by accident (e.g. a sandbox command containing --no-verify) cannot retract it; the card sits on the operator's /approvals queue offering to approve a command nobody wants run. Hit live 2026-08-20 during T-3078 work. The stale-request rail T-3079 scopes is half a fix without a way to clear what it detects — consider a sibling task for 'fw tier0 withdraw'. Note also two clocks: grant TTL (300s, T-3080) vs request staleness (EXPIRY_SECONDS=3600, web/blueprints/approvals.py:42); an expired card is invisible to Watchtower but 'fw tier0 status' still reports 'A command is waiting for approval' indefinitely."
+  captured: 2026-08-19T22:17:49Z
+  context_task: T-3088
+  tags: [tier0]
+  status: pending
+  promoted_to: null
+- id: OBS-331
+  text: "GAP: branch-hygiene scan has a remote-ref blind spot. fw_branch_hygiene (lib/branch-hygiene.sh) classifies remote refs only as 'remote-contained' (ahead=0, deletable). A remote branch carrying UNLANDED commits has no class and is silently omitted. Live instance: origin/t2416-fw-safe-mode-hook-timing holds 202 unlanded commits (17 touching code) and is invisible to the scan, while its local namesake t2416-fw-safe-mode-hook-timing IS an ancestor of origin/master and is reported 'merged-undeleted'. An operator reading the scan concludes t2416 is landed and deletable when 204 commits of it are not landed. Remote is 204 ahead of local under the same name. Found while triaging 15 stranded branches during the t2539-staging land review."
+  captured: 2026-08-19T22:48:47Z
+  context_task: T-3088
+  tags: [branch-hygiene]
+  status: dismissed
+  dismissed_reason: "Fixed by T-3092: remote-unlanded class added, class-representative truncation so it reaches doctor output, 15/15 bats green, mutation-verified"
+  dismissed_at: 2026-08-19T23:51:14Z
+  promoted_to: null
+  urgent: true

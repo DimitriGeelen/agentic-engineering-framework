@@ -35825,3 +35825,75 @@ scan_id: R-fc4ff558
 task_id: T-3078
 payload:
   task_file: .tasks/active/T-3078-tier-0-approval-cards-carry-no-provenanc.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T23:16:32Z'
+scan_id: R-1277c77a
+task_id: T-3091
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T23:16:32Z'
+scan_id: R-1277c77a
+task_id: T-3091
+payload:
+  task_file: .tasks/active/T-3091-prune-dead-branch-refs-and-produce-a-sal.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T23:39:49Z'
+scan_id: R-23c76f8e
+task_id: T-3092
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T23:39:49Z'
+scan_id: R-23c76f8e
+task_id: T-3092
+payload:
+  task_file: .tasks/active/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T23:44:20Z'
+scan_id: R-989ff821
+task_id: T-3092
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T23:44:20Z'
+scan_id: R-989ff821
+task_id: T-3092
+payload:
+  task_file: .tasks/active/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-19T23:50:56Z'
+scan_id: R-054041ad
+task_id: T-3092
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-19T23:50:56Z'
+scan_id: R-054041ad
+task_id: T-3092
+payload:
+  task_file: .tasks/active/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md

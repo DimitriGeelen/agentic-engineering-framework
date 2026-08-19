@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3092: branch-hygiene scan is blind to remote refs carrying unlanded commits (OBS-331)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-19T23:51:07Z
+# ============================================================================
+
+task_id: T-3092
+task_name: "branch-hygiene scan is blind to remote refs carrying unlanded commits (OBS-331)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-19T23:16:57Z
+completed: 2026-08-19T23:46:37Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-20T01:18:47+02:00
+last_commit: 2026-08-20T01:44:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture T-3091 close-state; open follow-up for the OBS-331 hygiene blind spot. branch-hygiene reports remote refs carrying unlanded commits; truncation stops hiding them. refresh vendored copies for the branch-hygiene remote-ref changes
+
+# Key outcomes
+outcomes:
+  - '`fw_branch_hygiene` emits a class for a remote ref that is NOT contained in the target — carrying the ref name and its unlanded-commit count'
+  - 'Running the scan on this repo names `origin/t2416-fw-safe-mode-hook-timing` with a non-zero unlanded count'
+  - 'A remote ref whose local namesake is landed is still reported on its own merits — the local `merged-undeleted` verdict must not suppress the remote finding (this is the exact t2416 confusion)'
+  - '`remote-contained` still fires for genuinely-contained remote refs — regression guard, since the new arm shares the same loop'
+  - 'Bats coverage in `tests/unit/` builds a sandbox repo with three remote refs (contained / unlanded / unlanded-with-landed-local-namesake) and asserts the emitted class for each'
+  - 'Mutation check recorded in Decisions: with the new arm disabled the new tests go red, and with it enabled the pre-existing branch-hygiene tests stay green'
+  - 'The finding is actually reachable in `fw doctor` output — a positional 12-line cap was hiding every remote class behind the 12 local findings on this repo (0 of 4 shown); truncation is now class-representative via `fw_branch_hygiene_head`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-20 — local and remote are judged independently, neither suppresses the other'
+    chose: 'Report `remote-unlanded origin/X` on its own evidence even when local `X` is landed and reported `merged-undeleted`.'
+    rationale: 'That combination IS the bug. `t2416-fw-safe-mode-hook-timing` was landed locally and 204 commits unlanded remotely; the scan showed only the local half, so the ref read as deletable while holding two test files, five research artifacts and six unread `.pickup/` messages that exist nowhere else. Suppressing one verdict with the other reproduces the failure with extra steps.'
+    alternatives_rejected: ['Deduplicating by branch name. It looks tidier and it is exactly what hid the strand.']
+  - decision: '2026-08-20 — the current branch''s upstream is excluded'
+    chose: 'Skip the remote ref that the current checkout tracks.'
+    rationale: 'It is not a strand — it is where you are standing, and `fw_branch_divergence` already reports it in detail for the handover. On this repo it would emit a permanent finding for `origin/t2539-staging` (354 ahead) on every doctor run. A rail that always fires on your own working branch is the noise that trains people to skip the section — which is how `behind-threshold` reached 1761 unread.'
+    alternatives_rejected: ['Reporting everything. Honest but self-defeating; the value of this rail is that its lines are all actionable.']
+  - decision: '2026-08-20 — mutation results, including one that revealed my own inert test'
+  - decision: '2026-08-20 — truncation had to change or the fix would not have shipped'
+    chose: '`fw_branch_hygiene_head` — one line per distinct class first, then fill to the cap.'
+    rationale: '`fw doctor` capped output with `head -12`, and emission order is local → worktree → remote. This repo has 19 findings of which 12 are local, so **0 of 4 `remote-unlanded` lines survived the cap**. Verified before and after. The scan would have been "fixed" while the operator''s view was byte-identical.'
+    alternatives_rejected: ['Raising the cap. It defers the same failure to the next busy repo, and the cap exists because 19 lines of WARN is already at the edge of readable. - **Known limit, stated rather than hidden:** the representative is the *first* line of its class, not the worst — `origin/t2416 ahead=204` is still behind `origin/learning/precompact-cleanup ahead=1` in the shown set. Coverage is guaranteed; ranking is not. The "… N more" hint therefore names a command that prints the full list, and that command was run to confirm it works before being written into the output.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3088-mirrordefaultbranch-falls-back-to-the-cu.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3091-prune-dead-branch-refs-and-produce-a-sal.md'
+  - '.tasks/active/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md'
+  - 'tests/unit/t100143_branch_hygiene.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T01:18:47'
+    action: 'T-3092: capture T-3091 close-state; open follow-up for the OBS-331 hygiene blind spot'
+  - time: '2026-08-20T01:44:25'
+    action: 'T-3092: branch-hygiene reports remote refs carrying unlanded commits; truncation stops hiding them'
+  - time: '2026-08-20T01:44:39'
+    action: 'T-3092: refresh vendored copies for the branch-hygiene remote-ref changes'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 29
+  commits: 3
+  files_changed: 11
+  lines_added: 707
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md
+generated_by: context-agent-hybrid
