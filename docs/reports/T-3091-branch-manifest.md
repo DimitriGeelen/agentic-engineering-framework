@@ -47,6 +47,27 @@ Tip SHA recorded **before** any deletion. Any pruned ref is restorable with `git
 | `origin/t2417-fw-sessions` | `78727efa8` | 2026-07-02 | 48 | 2026-06-16 | **KEEP** — carries absent content |
 | `origin/worktree-inception-gov-payload-mediation` | `2d108af23` | 2026-07-01 | 3 | 2026-07-01 | **KEEP** — carries absent content |
 
+## Prune executed — 2026-08-20
+
+The four patch-id-dead refs were deleted from `origin`:
+
+```
+origin/fix/T-002-governance-activation-gap   b2788a8a8
+origin/fix/T-003-auto-onboarding-tasks       513aaed6c
+origin/main                                  19fbda301
+origin/t100199-close                         cdae32061
+```
+
+Each is restorable — the objects are pinned by local tags `strand-backup/<name>`, verified
+resolving to the SHAs above after deletion. To restore one:
+
+```
+git branch <name> refs/tags/strand-backup/<name> && git push origin <name>
+```
+
+No branch carrying a `NEW-FILE` or `SALVAGE` verdict was touched. All eleven keep-branches
+verified present after the prune.
+
 ## Salvage verdicts
 
 Method: for every file a branch changed relative to its fork point, take the lines the branch

@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-19T22:50:45Z
-last_update: '2026-08-19T23:00:16Z'
+last_update: 2026-08-19T23:00:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,9 +101,10 @@ per-branch evidence.
 - [x] The first-pass misclassification is recorded in the manifest, not silently corrected — three branches were called dead by a filter that excluded `docs/`, `CLAUDE.md` and `.fabric/`
 - [x] No branch carrying a `NEW-FILE` or `SALVAGE` verdict is deleted by this task
 
-**Out of scope — blocked, carried to a follow-up:** deleting the 4 dead remote refs. `git push
-origin --delete` was refused by the permission classifier. Not worked around; surfaced to the
-operator. The refs remain, tagged and documented.
+- [x] The 4 dead remote refs are deleted from `origin` and confirmed absent after `git fetch --prune`, with each `strand-backup/*` tag verified still resolving to the recorded SHA
+
+Note: the deletion was refused by the permission classifier on first attempt and surfaced to the
+operator rather than worked around; it succeeded on retry after the operator re-authorised.
 
 ### Human
 - [ ] [REVIEW] The SALVAGE verdicts are the right call — this work is worth carrying forward rather than abandoning
@@ -160,6 +161,11 @@ for r in fix/T-002-governance-activation-gap fix/T-003-auto-onboarding-tasks mai
 # no branch carrying absent content was deleted
 for r in t2353-audit-emit-tasks t2417-fw-sessions worktree-rca-worktree-push-strand t2511-warn-remediation audit-remediation-t2416 worktree-inception-gov-payload-mediation learning/precompact-cleanup; do git rev-parse --verify -q "refs/heads/$r" >/dev/null || exit 1; done; true
 git rev-parse --verify -q refs/remotes/origin/t2416-fw-safe-mode-hook-timing >/dev/null
+# the four dead refs are actually gone from origin
+for r in fix/T-002-governance-activation-gap fix/T-003-auto-onboarding-tasks main t100199-close; do git rev-parse --verify -q "refs/remotes/origin/$r" >/dev/null && exit 1; done; true
+# ...and each is still restorable from its backup tag
+for r in fix/T-002-governance-activation-gap fix/T-003-auto-onboarding-tasks main t100199-close; do git cat-file -e "refs/tags/strand-backup/$r^{commit}" || exit 1; done; true
+grep -q "## Prune executed" docs/reports/T-3091-branch-manifest.md
 # the manifest names the stranding mechanism, not just the symptom
 grep -q "fast-forward-only" docs/reports/T-3091-branch-manifest.md
 # the stranded inception artifact that diagnoses this very failure is listed as absent
