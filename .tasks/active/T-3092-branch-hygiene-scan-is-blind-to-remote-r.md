@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-19T23:16:57Z
-last_update: 2026-08-19T23:16:57Z
-date_finished: null
+last_update: '2026-08-19T23:30:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-19T23:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=226,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-19T23:30:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3092: branch-hygiene scan is blind to remote refs carrying unlanded commits (OBS-331)
@@ -66,12 +94,13 @@ Filed as OBS-331 (urgent). Evidence: `docs/reports/T-3091-branch-manifest.md`.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw_branch_hygiene` emits a class for a remote ref that is NOT contained in the target — carrying the ref name and its unlanded-commit count
-- [ ] Running the scan on this repo names `origin/t2416-fw-safe-mode-hook-timing` with a non-zero unlanded count
-- [ ] A remote ref whose local namesake is landed is still reported on its own merits — the local `merged-undeleted` verdict must not suppress the remote finding (this is the exact t2416 confusion)
-- [ ] `remote-contained` still fires for genuinely-contained remote refs — regression guard, since the new arm shares the same loop
-- [ ] Bats coverage in `tests/unit/` builds a sandbox repo with three remote refs (contained / unlanded / unlanded-with-landed-local-namesake) and asserts the emitted class for each
-- [ ] Mutation check recorded in Decisions: with the new arm disabled the new tests go red, and with it enabled the pre-existing branch-hygiene tests stay green
+- [x] `fw_branch_hygiene` emits a class for a remote ref that is NOT contained in the target — carrying the ref name and its unlanded-commit count
+- [x] Running the scan on this repo names `origin/t2416-fw-safe-mode-hook-timing` with a non-zero unlanded count
+- [x] A remote ref whose local namesake is landed is still reported on its own merits — the local `merged-undeleted` verdict must not suppress the remote finding (this is the exact t2416 confusion)
+- [x] `remote-contained` still fires for genuinely-contained remote refs — regression guard, since the new arm shares the same loop
+- [x] Bats coverage in `tests/unit/` builds a sandbox repo with three remote refs (contained / unlanded / unlanded-with-landed-local-namesake) and asserts the emitted class for each
+- [x] Mutation check recorded in Decisions: with the new arm disabled the new tests go red, and with it enabled the pre-existing branch-hygiene tests stay green
+- [x] The finding is actually reachable in `fw doctor` output — a positional 12-line cap was hiding every remote class behind the 12 local findings on this repo (0 of 4 shown); truncation is now class-representative via `fw_branch_hygiene_head`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -105,6 +134,25 @@ Filed as OBS-331 (urgent). Evidence: `docs/reports/T-3091-branch-manifest.md`.
 -->
 
 ## Verification
+
+bats tests/unit/t100143_branch_hygiene.bats > /tmp/.t3092-bats 2>&1 && grep -q '^ok 15' /tmp/.t3092-bats && ! grep -q '^not ok' /tmp/.t3092-bats
+bash -n lib/branch-hygiene.sh
+bash -n bin/fw
+# the live miss this task exists for: the 204-commit remote strand must now be named
+bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .' > /tmp/.t3092-scan 2>/dev/null && grep -qE '^remote-unlanded origin/t2416-fw-safe-mode-hook-timing ahead=[0-9]+$' /tmp/.t3092-scan
+# ...and its landed local namesake must still report independently
+grep -q '^merged-undeleted t2416-fw-safe-mode-hook-timing$' /tmp/.t3092-scan
+# the contained class must not have been swallowed by the new arm
+grep -q '^remote-contained ' /tmp/.t3092-scan
+# doctor must actually SHOW a remote finding, not truncate it away
+timeout 300 bin/fw doctor > /tmp/.t3092-doc 2>&1; grep -q 'remote-unlanded' /tmp/.t3092-doc
+# the command doctor prints for the operator must be the one that actually works:
+# extract it from bin/fw verbatim, run it, and require it to reproduce the full scan
+grep -o "bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .'" bin/fw > /tmp/.t3092-cmd
+test -s /tmp/.t3092-cmd
+bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .' > /tmp/.t3092-hint 2>/dev/null && test "$(grep -c . /tmp/.t3092-hint)" -eq "$(grep -c . /tmp/.t3092-scan)" && test "$(grep -c . /tmp/.t3092-hint)" -gt 12
+# structural invariants stay green
+bats tests/lint/ > /tmp/.t3092-lint 2>&1 && ! grep -q '^not ok' /tmp/.t3092-lint
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -167,19 +215,21 @@ Filed as OBS-331 (urgent). Evidence: `docs/reports/T-3091-branch-manifest.md`.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `origin/t2416-fw-safe-mode-hook-timing` held 204 commits absent from master — including `tests/unit/liveness_watchdog.bats`, `tests/unit/test_task_cache_t100140.py`, five research artifacts and six unread `.pickup/` messages — and `fw doctor`'s branch-hygiene section said nothing about it. Meanwhile the *local* branch of the same name, an ancestor of `origin/master`, was reported `merged-undeleted`, i.e. landed and safe to delete.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** The remote-ref loop in `lib/branch-hygiene.sh` had exactly one arm — `if ahead == 0 → remote-contained`. There was no `else`. A remote ref carrying unlanded commits matched nothing and was emitted as nothing: not reported as low-priority, not reported as risky, *absent*.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The loop was written to answer one question — "which remote refs can I delete?" — and that question only needs the contained case. The local-branch loop above it grew three classes over two tasks (`merged-undeleted`, then `behind-threshold`, then `diverged-fork` in T-100195) because each new failure mode was hit on a *local* branch. Nothing forced the remote arm to grow the complement, and its silence was indistinguishable from a clean result. The existing test even encoded the gap as intent: *"ahead remote silent"*.
+
+A second, independent layer of the same class: `fw doctor` truncated findings positionally with `head -12`, and remote findings are emitted last. On this repo — 19 findings, 12 of them local — a correct `remote-unlanded` line would still have reached the operator's screen 0 times out of 4. The scan and its display had to be fixed together or the fix would have been invisible.
+
+**Prevention:**
+- `remote-unlanded origin/<branch> ahead=<n>` now fires for the complement, judged independently of any local branch of the same name (pinned by test 9, which goes red if a landed local verdict suppresses the remote one).
+- `fw_branch_hygiene_head` makes truncation class-representative, so a finding class can no longer be hidden by volume in another class (pinned by test 13, plus test 14 which demonstrates the old positional cap dropping it).
+- The stale test name asserting `ahead remote silent` is corrected, so the gap is no longer documented as intended behaviour.
+- Mutation-tested in both directions: five mutations, four red as required; the fifth (B) stayed green and exposed an inert test of my own, which was rewritten to claim only what it verifies. Recorded in Decisions.
+
+**Not prevented by this task:** nothing consumes these findings. `behind-threshold` has been firing at 1400–7100 commits over a threshold of 50 for months with no action taken, and this change adds four more WARN lines to that same unread section. Detection was never the missing piece — escalation is. That is a separate task, not a claim to have made here.
 
 ## Evolution
 
@@ -236,6 +286,41 @@ Filed as OBS-331 (urgent). Evidence: `docs/reports/T-3091-branch-manifest.md`.
 
 ## Decisions
 
+### 2026-08-20 — local and remote are judged independently, neither suppresses the other
+
+- **Chose:** Report `remote-unlanded origin/X` on its own evidence even when local `X` is landed and reported `merged-undeleted`.
+- **Why:** That combination IS the bug. `t2416-fw-safe-mode-hook-timing` was landed locally and 204 commits unlanded remotely; the scan showed only the local half, so the ref read as deletable while holding two test files, five research artifacts and six unread `.pickup/` messages that exist nowhere else. Suppressing one verdict with the other reproduces the failure with extra steps.
+- **Rejected:** Deduplicating by branch name. It looks tidier and it is exactly what hid the strand.
+
+### 2026-08-20 — the current branch's upstream is excluded
+
+- **Chose:** Skip the remote ref that the current checkout tracks.
+- **Why:** It is not a strand — it is where you are standing, and `fw_branch_divergence` already reports it in detail for the handover. On this repo it would emit a permanent finding for `origin/t2539-staging` (354 ahead) on every doctor run. A rail that always fires on your own working branch is the noise that trains people to skip the section — which is how `behind-threshold` reached 1761 unread.
+- **Rejected:** Reporting everything. Honest but self-defeating; the value of this rail is that its lines are all actionable.
+
+### 2026-08-20 — mutation results, including one that revealed my own inert test
+
+| Mutation | Expected | Observed |
+|---|---|---|
+| A — delete the `remote-unlanded` arm | red | **2 red** (7, 9) |
+| B — restore the old `\|\| echo 1` error fallback | red | **0 red** — see below |
+| C — let a landed local namesake suppress the remote finding | red | **1 red** (9) |
+| D — drop the upstream exclusion | red | **1 red** (10) |
+| E — revert the head helper to a positional `head -n` | red | **1 red** (13) |
+| control (pristine) | green | 15/15 green, file byte-identical after every restore |
+
+- **B is the one worth reading.** It stayed green, which means the test claiming to cover the sentinel asserted nothing. Investigating: `git for-each-ref` *drops broken refs before the loop can see them* (`warning: ignoring broken ref`, row omitted), and a ref pointing at a non-commit counts as 0 rather than erroring. The rev-list-failure path is therefore unreachable through this loop, and my test passed because the ref never arrived — not because the guard worked.
+- **Kept the sentinel anyway** (`|| echo ""` + skip, rather than `|| echo 1`): the old fallback meant "not contained", which was the *silent* case; now that case emits, so the same fallback would manufacture a finding out of an error. It is correct defensive code with no currently-reachable trigger, and the comment says so rather than implying coverage.
+- **Rewrote the test** to pin the guarantee that IS real and reachable: a corrupt ref yields silence, not a phantom strand. Its claim now matches what it tests.
+
+### 2026-08-20 — truncation had to change or the fix would not have shipped
+
+- **Chose:** `fw_branch_hygiene_head` — one line per distinct class first, then fill to the cap.
+- **Why:** `fw doctor` capped output with `head -12`, and emission order is local → worktree → remote. This repo has 19 findings of which 12 are local, so **0 of 4 `remote-unlanded` lines survived the cap**. Verified before and after. The scan would have been "fixed" while the operator's view was byte-identical.
+- **Rejected:** Raising the cap. It defers the same failure to the next busy repo, and the cap exists because 19 lines of WARN is already at the edge of readable.
+- **Known limit, stated rather than hidden:** the representative is the *first* line of its class, not the worst — `origin/t2416 ahead=204` is still behind `origin/learning/precompact-cleanup ahead=1` in the shown set. Coverage is guaranteed; ranking is not. The "… N more" hint therefore names a command that prints the full list, and that command was run to confirm it works before being written into the output.
+
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -261,3 +346,12 @@ Filed as OBS-331 (urgent). Evidence: `docs/reports/T-3091-branch-manifest.md`.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-989ff821
+- **Timestamp:** 2026-08-19T23:44:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
