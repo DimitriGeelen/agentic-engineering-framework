@@ -329,7 +329,10 @@ CHECKPOINT_EOF
         fi
         if [ -n "$GIT_AGENT" ]; then
             git -C "$PROJECT_ROOT" add "$HANDOVER_FILE"
-            PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Checkpoint handover $SESSION_ID"
+            # T-3090: scope the commit by pathspec, not by the add. The add
+            # bounds the index; without `--` the commit takes the WHOLE index,
+            # including a concurrent session's staged-but-uncommitted work.
+            PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Checkpoint handover $SESSION_ID" -- "$HANDOVER_FILE"
             # T-2588: push immediately — checkpoints exist to survive session
             # death, so a checkpoint commit stranded locally defeats the point.
             _push_to_remotes
@@ -1420,8 +1423,14 @@ if [ "$AUTO_COMMIT" = true ]; then
         # Stage handover files
         git -C "$PROJECT_ROOT" add "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
 
-        # Commit via git agent
-        PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
+        # Commit via git agent — pathspec-scoped (T-3090).
+        #
+        # The `git add` above bounds STAGING only. Before T-3090 this commit had
+        # no pathspec, so it took the whole index: on 2026-08-19 it swept two
+        # files belonging to a concurrent session's T-3089 into d3d3e49db and
+        # emptied that session's index mid-compose. The `--` below is what makes
+        # the narrow add above actually mean what it looks like it means.
+        PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID" -- "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
 
         # Push to all remotes (T-1144: prevent unpushed commit accumulation)
         # T-1277: bound the push so an unreachable remote (e.g. onedev behind a
