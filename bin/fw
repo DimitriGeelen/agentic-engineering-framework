@@ -6362,6 +6362,13 @@ DEPLOYEOF
         # Tier 0 enforcement — approve or inspect blocked commands
         tier0_subcmd="${1:-}"
         shift || true
+        # T-3080: quote the RESOLVED grant window, never a hard-coded number.
+        # Same resolution order as agents/context/check-tier0.sh (which states it
+        # in full): TIER0_WATCHTOWER_TTL explicit > FW_TIER0_APPROVAL_TTL / config
+        # > registry default. Prose that restates a literal is prose that drifts.
+        source "$FRAMEWORK_ROOT/lib/config.sh"
+        TIER0_TTL_RESOLVED="${TIER0_WATCHTOWER_TTL:-$(fw_config_int TIER0_APPROVAL_TTL)}"
+        TIER0_TTL_HUMAN=$(_fw_humanize_seconds "$TIER0_TTL_RESOLVED")
         case "$tier0_subcmd" in
             approve)
                 PENDING_FILE="$PROJECT_ROOT/.context/working/.tier0-approval.pending"
@@ -6377,7 +6384,7 @@ DEPLOYEOF
                 echo -e "  Approving command with hash: ${CYAN}${PENDING_HASH:0:16}...${NC}"
                 echo ""
                 echo -e "  ${YELLOW}This allows a blocked destructive command to execute once.${NC}"
-                echo -e "  The approval expires in 5 minutes and is logged for audit."
+                echo -e "  The approval expires in ${TIER0_TTL_HUMAN} (${TIER0_TTL_RESOLVED}s) and is logged for audit."
                 echo ""
                 # Write the approval (hash + current timestamp)
                 echo "$PENDING_HASH $(date +%s)" > "$APPROVAL_FILE"
@@ -6614,8 +6621,14 @@ print('0')
                 echo "Approvals are created when check-tier0.sh blocks a destructive command."
                 echo "They can be approved via 'fw tier0 approve' (CLI) or via Watchtower web UI."
                 echo ""
+                # T-3080: quote the resolved grant window, not a literal.
+                source "$FRAMEWORK_ROOT/lib/config.sh"
+                _t0_ttl="${TIER0_WATCHTOWER_TTL:-$(fw_config_int TIER0_APPROVAL_TTL)}"
                 echo "Environment:"
-                echo "  TIER0_WATCHTOWER_TTL  Approval TTL in seconds (default: 3600)"
+                echo "  Granted approvals admit the command for ${_t0_ttl}s ($(_fw_humanize_seconds "$_t0_ttl")) — currently resolved value."
+                echo "    FW_TIER0_APPROVAL_TTL / 'fw config set TIER0_APPROVAL_TTL <s>'  sets it (both legs, CLI and Watchtower)."
+                echo "    TIER0_WATCHTOWER_TTL                                            legacy override, still honoured when set explicitly."
+                echo "  This is the GRANT window, not the pending-request staleness window."
                 ;;
             *)
                 echo -e "${RED}Unknown approvals subcommand: $approvals_subcmd${NC}"

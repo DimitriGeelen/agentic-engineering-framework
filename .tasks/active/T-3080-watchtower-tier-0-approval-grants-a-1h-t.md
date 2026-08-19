@@ -9,7 +9,7 @@ description: >
   is the safe direction but changes operator workflow (retry window), so it is the
   operator's call.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:50:46Z
-last_update: '2026-08-18T19:00:19Z'
+last_update: '2026-08-19T19:15:13Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,20 +67,78 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-19T19:15:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3080: Watchtower Tier 0 approval grants a 1h TTL where the CLI grants 5m
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`check-tier0.sh` has two independent approval legs and each carries its own TTL literal:
+
+| Leg | Site | Window | Configurable |
+|---|---|---:|---|
+| CLI — `fw tier0 approve` writes `.context/working/.tier0-approval` | `check-tier0.sh:256` `if [ "$AGE" -lt 300 ]` | 300s | no — bare literal |
+| Watchtower — Approve button writes `.context/approvals/resolved-<hash12>.yaml` | `check-tier0.sh:307` `WATCHTOWER_TTL="${TIER0_WATCHTOWER_TTL:-3600}"` | 3600s | yes |
+
+So the path that takes one click is **12× more permissive** than the path that takes a
+typed command, and nothing states the asymmetry. That inverts the intent: a click is the
+easier action to take by accident, so it should carry the *shorter* window, not the longer.
+
+This matters because of what an approval actually is. Approving does not run the command —
+it writes the command's hash into a grant file, and `check-tier0.sh` then admits **any**
+command whose whitespace-normalised text hashes to that value, once. A misclick on a card
+reading `rm -rf /` therefore leaves a live pre-authorisation for a genuine `rm -rf /` for
+however long the window lasts. Shrinking 3600 → 300 does not remove that hazard; it removes
+11/12ths of its duration, which is the cheap part of the fix. Provenance on the card
+(T-3078) and a stale-request rail (T-3079) are the other two legs and are separate tasks.
+
+Direction of the fix is the safe one (tighten the loose leg, do not loosen the tight one),
+so it needs no operator decision to *start* — but the retry window does change, which is
+why the operator-visible wording is in scope.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 — one resolved TTL, not two literals.** Both approval legs read their window
+      from a single resolution point in `check-tier0.sh`. Neither `300` nor `3600` survives
+      as a bare literal at the two decision sites (`:256` and `:307`).
+- [ ] **A2 — default parity, measured at the hook.** With no TTL env var set, a Watchtower
+      grant stamped older than the unified window is refused: the hook exits 2 and the
+      command stays blocked. This is asserted against the real `bin/fw hook check-tier0`
+      with a fixture `resolved-<hash>.yaml`, not against a re-implementation of the maths.
+- [ ] **A3 — positive control, both directions (L-616).** The same fixture with a
+      `responded_at` *inside* the window is admitted (exit 0). Without this, an
+      always-blocking hook and a correctly-expiring one are indistinguishable — two empty
+      sets are equal.
+- [ ] **A4 — the existing override still works.** `TIER0_WATCHTOWER_TTL` set explicitly is
+      still honoured, so any operator or test that pins it keeps working; the resolution
+      order is stated in the file where it resolves.
+- [ ] **A5 — the operator is told the same window on both paths.** `fw tier0 approve`'s
+      expiry line and the Watchtower approve surface quote the resolved value rather than a
+      hard-coded "5 minutes" / "1 hour", so the two cannot drift apart again in prose after
+      they have been unified in code.
+- [ ] **A6 — the knob is in the config registry.** The TTL key is defined in
+      `lib/config.sh` `FW_CONFIG_REGISTRY`, so `fw config list` and Watchtower `/config`
+      surface it. CLAUDE.md forbids naming an `FW_` key the registry does not define, and
+      `tests/lint/config-registry-parity.bats` enforces that direction.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -270,3 +328,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3080-watchtower-tier-0-approval-grants-a-1h-t.md
 - **Context:** Initial task creation
+
+### 2026-08-18T19:51:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

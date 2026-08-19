@@ -236,6 +236,15 @@ FW_CONFIG_REGISTRY=(
     # first, and reversible by construction, is the whole point of the ordering.
     "HANDOVER_DIGEST|1|Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028."
     "HANDOVER_DIGEST_TOP_N|5|How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028."
+    # T-3080. ONE window for BOTH Tier 0 approval legs. Before this the CLI leg
+    # (check-tier0.sh, `fw tier0 approve` grant) carried a bare 300 literal and
+    # the Watchtower leg defaulted to 3600 via TIER0_WATCHTOWER_TTL — so the path
+    # that takes one click pre-authorised a destructive command for 12x as long
+    # as the path that takes a typed command. A misclick is the easier mistake to
+    # make, so it must carry the SHORTER window; unified at the tight leg, 300.
+    # This is the GRANT clock, not the request-staleness clock (how long a pending
+    # card stays offerable: web/blueprints/approvals.py EXPIRY_SECONDS, T-3079).
+    "TIER0_APPROVAL_TTL|300|Seconds a granted Tier 0 approval admits the command, for BOTH the 'fw tier0 approve' and Watchtower legs (agents/context/check-tier0.sh). Legacy TIER0_WATCHTOWER_TTL still wins when explicitly set. NOT the pending-request staleness window. T-3080."
 )
 
 # fw_config_registry — Print all known settings with current values
