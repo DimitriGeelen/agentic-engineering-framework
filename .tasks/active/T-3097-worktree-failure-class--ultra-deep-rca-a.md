@@ -165,15 +165,15 @@ recurrence.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -284,7 +284,11 @@ Filed at the start of the investigation: the evidence base (errors log, peer RCA
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
+
+**Date**: 2026-08-20T08:05:21Z
 
 ## Updates
 
@@ -306,3 +310,8 @@ Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface wh
 
 <!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
 
+
+### 2026-08-20T08:05:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
