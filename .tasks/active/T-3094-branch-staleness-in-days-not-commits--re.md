@@ -106,6 +106,24 @@ Evidence: `docs/reports/T-3093-branch-hygiene-escalation.md` F3.
 - [x] The live scan's finding count is accounted for branch by branch — **not** assumed to drop. Measured before building: every judged branch here is 43–170 days untouched, so all seven staleness findings are TRUE and the count stays at seven. This slice prevents future false positives; it does not clean up present ones, and an AC that demanded a drop would have been satisfiable only by breaking the detector
 
 ### Human
+
+- [ ] [REVIEW] The `BRANCH_STALE_DAYS` row on Watchtower `/config` reads correctly next to its siblings
+
+  **Steps:**
+  1. `bin/fw watchtower url` — open the printed URL and append `/config`
+  2. Find `BRANCH_STALE_DAYS` (it sits directly under `STALE_ARC_DAYS`)
+  3. Read the row and its description alongside `STALE_ARC_DAYS` and `BRANCH_BEHIND_WARN`
+
+  **Expected:** the row renders in the same shape as its neighbours (key / default `30` /
+  description, no wrap break, no truncated description, no stray markup), and the description
+  makes it clear *without reading the code* that this setting gates `BRANCH_BEHIND_WARN` rather
+  than replacing it.
+
+  **If not:** note which of the two is wrong — layout (a rendering fix in
+  `web/blueprints/config.py`) or wording (the description string, mirrored in
+  `lib/config.sh:246` and `web/blueprints/config.py:46` — both must change together or
+  `tests/lint/config-registry-parity.bats` goes red).
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -378,8 +396,8 @@ only by breaking the detector.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1962d246
-- **Timestamp:** 2026-08-20T00:41:19Z
+- **Scan ID:** R-8c5270bd
+- **Timestamp:** 2026-08-20T00:42:07Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
