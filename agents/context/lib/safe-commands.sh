@@ -177,6 +177,96 @@ _fw_single_command_is_safe() {
         cmd="${BASH_REMATCH[1]}"
     done
 
+    # T-3096: strip TRANSPARENT WRAPPERS and judge the command they wrap.
+    #
+    # `timeout 30 termlink agent inbox` extracts base `timeout`, matches no arm, and
+    # reads unsafe — so wrapping any allowed command in a timeout gated it. This is the
+    # THIRD recorded instance of one class: a positional token reader meeting a prefix
+    # nobody taught it about. The other two are named directly above (T-1908 env-var
+    # prefixes) and at :117 (T-2988 grouping punctuation). Adding `timeout` to the
+    # allowlist as if it were a command would have been the fourth patch of a symptom;
+    # a wrapper is not a command, it is a prefix, and prefixes belong in a stripper.
+    #
+    # This is strictly SAFER than an allowlist entry would have been, and it closes a
+    # pre-existing hole rather than opening one: `env` sat in Category 5 as
+    # unconditionally safe, so `env ./anything.sh` classified safe on the strength of
+    # the word `env`. After stripping, the same line is judged on `./anything.sh` —
+    # which no arm matches, so it gates. Measured both ways in the task's Decisions.
+    #
+    # Every failure direction here is toward BLOCKING. An option we do not recognise, a
+    # missing duration, an empty remainder, or a wrapper whose own argument grammar does
+    # not match leaves `cmd` untouched, so the base stays the wrapper name, which no arm
+    # matches. `xargs` is deliberately NOT a wrapper: its command is assembled from stdin
+    # at runtime, so there is nothing static to judge.
+    local _wprev=""
+    while [ "$cmd" != "$_wprev" ]; do
+        _wprev="$cmd"
+        local _wbase _wrest _wtok _wnext
+        _wbase=$(printf '%s' "$cmd" | awk '{print $1}' | sed 's|.*/||')
+        case "$_wbase" in
+            timeout|nohup|nice|stdbuf|command|env|flock) ;;
+            *) break ;;
+        esac
+        # `command -v X` / `command -V X` do not RUN X, they print where it lives —
+        # read-only, and Category 3 already answers for them. Stripping would hand the
+        # judge `X` itself, so `command -v git` would be decided as if it were `git`
+        # with no sub-verb, and gate. Leave the wrapper in place for the query forms.
+        if [ "$_wbase" = "command" ] && [[ "${cmd#*[[:space:]]}" == -[vV]* ]]; then
+            break
+        fi
+        _wrest="${cmd#*[[:space:]]}"
+        [ "$_wrest" = "$cmd" ] && break     # bare wrapper, no wrapped command
+        _wrest="${_wrest#"${_wrest%%[![:space:]]*}"}"
+        [ -z "$_wrest" ] && break
+
+        # 1. the wrapper's own options, including the ones that consume a value.
+        while [[ "$_wrest" == -* ]]; do
+            _wtok=$(printf '%s' "$_wrest" | awk '{print $1}')
+            _wnext="${_wrest#*[[:space:]]}"
+            [ "$_wnext" = "$_wrest" ] && { _wrest=""; break; }
+            _wrest="${_wnext#"${_wnext%%[![:space:]]*}"}"
+            # Value-taking options are per-wrapper, not global: `-n` is nice's
+            # adjustment (takes a value) and flock's --nonblock (takes none). A global
+            # list would make `flock -n /tmp/l true` eat the lock path as -n's value,
+            # then eat `true` as flock's positional, and gate a safe line.
+            case "$_wbase:$_wtok" in
+                timeout:-s|timeout:--signal|timeout:-k|timeout:--kill-after|\
+                nice:-n|nice:--adjustment|\
+                stdbuf:-i|stdbuf:-o|stdbuf:-e|stdbuf:--input|stdbuf:--output|stdbuf:--error|\
+                flock:-w|flock:--wait|flock:-E|flock:--conflict-exit-code)
+                    # consumes the following token as its value
+                    _wnext="${_wrest#*[[:space:]]}"
+                    [ "$_wnext" = "$_wrest" ] && { _wrest=""; break; }
+                    _wrest="${_wnext#"${_wnext%%[![:space:]]*}"}"
+                    ;;
+            esac
+        done
+        [ -z "$_wrest" ] && break
+
+        # 2. the wrapper's own positional argument, where it has one.
+        case "$_wbase" in
+            timeout)
+                _wtok=$(printf '%s' "$_wrest" | awk '{print $1}')
+                [[ "$_wtok" =~ ^[0-9]+(\.[0-9]+)?[smhd]?$ ]] || break
+                _wnext="${_wrest#*[[:space:]]}"
+                [ "$_wnext" = "$_wrest" ] && break
+                _wrest="${_wnext#"${_wnext%%[![:space:]]*}"}"
+                ;;
+            flock)
+                # the lock path — any single non-option token
+                _wnext="${_wrest#*[[:space:]]}"
+                [ "$_wnext" = "$_wrest" ] && break
+                _wrest="${_wnext#"${_wnext%%[![:space:]]*}"}"
+                ;;
+        esac
+        [ -z "$_wrest" ] && break
+        cmd="$_wrest"
+        # `env`'s K=V assignments are re-stripped by re-entering the T-1908 loop.
+        while [[ "$cmd" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
+            cmd="${BASH_REMATCH[1]}"
+        done
+    done
+
     # Extract the base command (first word, strip path).
     # Callers must pass a SINGLE command — is_bash_safe_command splits compound
     # commands into segments before reaching here (T-2834). The previous version
@@ -251,6 +341,116 @@ _fw_single_command_is_safe() {
         # Category 3: Searching
         grep|rg|find|which|where|type|command)
             return 0
+            ;;
+
+        # Category 2b (T-3096): stdout-only text filters.
+        #
+        # None of these can write anywhere except through a redirect, and a redirect is
+        # judged by has_bash_write_pattern against the WHOLE original command line
+        # BEFORE this function is consulted (check-active-task.sh :220). So the safety
+        # argument is not "these tools are harmless" — it is that their only write route
+        # is already gated one layer up, which is the same argument the T-2887 comment
+        # on the echo branch makes.
+        #
+        # `awk` is here despite having a write form (`{print > "f"}`): that form needs a
+        # literal `>`, which the outer redirect scan sees whether or not it sits inside
+        # quotes. Verified in the task's Decisions rather than assumed.
+        #
+        # `sed` is here despite `sed -i`: has_bash_write_pattern carries a dedicated
+        # `\bsed\b.*-i` rule (:430), so in-place edits never reach this arm. Same
+        # verified-not-assumed treatment. `yq` is deliberately EXCLUDED for the mirror
+        # reason — yq v4's `-i` writes in place and NO rule catches it.
+        #
+        # Derived, not remembered (T-2888 precedent): the set is the read-only bases
+        # appearing in this repo's own .sh/.py/.bats and task verification lines that
+        # measured GATED. `xargs` is excluded — it runs a command assembled at runtime.
+        # `bats`, `make`, `python3 <file>` and `./script.sh` are excluded on the Tier 0
+        # scope boundary (CLAUDE.md §Enforcement Tiers, T-2742): a file's contents are
+        # not visible to a command-string scan, so executing one is never provably read-only.
+        sed|awk|sort|uniq|cut|tr|nl|od|paste|join|fold|expand|unexpand|rev|comm|cmp|diff|colordiff|column|jq|seq|base64|md5sum|sha1sum|sha256sum|cksum|strings|xxd|tput|zcat|gunzip)
+            return 0
+            ;;
+
+        # Category 3b (T-3096): read-only process / system inspection.
+        # Verb-scoped where the tool has both forms; omitted entirely where it does not
+        # (`kill`, `ip`, `mount` and friends are NOT here — `ip addr` reads but `ip link
+        # set` writes, and a verb-level split there is wider than this task measured).
+        pgrep|pidof|getent|journalctl|dmesg|tty|logname|groups|locale|ulimit)
+            return 0
+            ;;
+        systemctl)
+            local sc_sub
+            sc_sub=$(echo "$cmd" | awk '{print $2}')
+            case "$sc_sub" in
+                status|show|is-active|is-enabled|is-failed|list-units|list-timers|list-unit-files|cat)
+                    return 0
+                    ;;
+            esac
+            ;;
+
+        # Category 4b (T-3096): TermLink read verbs, scoped exactly like git and fw.
+        #
+        # The mutating half is the larger half and stays gated: inject, spawn, dispatch,
+        # exec, run, interact, signal, clean, send, post, reply, react, emit, register,
+        # deregister, tag, resize, kv set/del, hub start/stop/restart, remote inject/exec,
+        # file send, token create, channel create/claim/release. CLAUDE.md's own
+        # cross-agent protocol table turns on that read/write split, so encoding it here
+        # keeps one boundary rather than two that can disagree (L-399).
+        termlink)
+            local tl_sub tl_sub2
+            tl_sub=$(echo "$cmd" | awk '{print $2}')
+            tl_sub2=$(echo "$cmd" | awk '{print $3}')
+            case "$tl_sub" in
+                list|status|discover|overview|whoami|info|version|help|topics|output|doctor|events|ping)
+                    return 0
+                    ;;
+                agent)
+                    case "$tl_sub2" in
+                        inbox|unread|recent|history|thread|threads|search|peers|identity|\
+                        who_is|who-is|describe|info|help|stats|overview|mentions|digest|\
+                        state|timeline|dms|listeners|presence_now|active_now)
+                            return 0
+                            ;;
+                    esac
+                    ;;
+                channel)
+                    case "$tl_sub2" in
+                        list|info|members|search|thread|threads|unread|state|pinned|\
+                        digest|snippet|receipts|describe|claims)
+                            return 0
+                            ;;
+                    esac
+                    ;;
+                remote)
+                    # remote list/ping are network reads; remote inject/exec are not.
+                    case "$tl_sub2" in
+                        list|ping|doctor)
+                            return 0
+                            ;;
+                    esac
+                    ;;
+                kv)
+                    case "$tl_sub2" in
+                        get|list)
+                            return 0
+                            ;;
+                    esac
+                    ;;
+                hub)
+                    case "$tl_sub2" in
+                        status|probe|fingerprint)
+                            return 0
+                            ;;
+                    esac
+                    ;;
+                fleet)
+                    case "$tl_sub2" in
+                        status|history|doctor|verify)
+                            return 0
+                            ;;
+                    esac
+                    ;;
+            esac
             ;;
 
         # Category 4: FW diagnostics

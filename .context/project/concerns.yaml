@@ -3085,3 +3085,50 @@ concerns:
     view at all. Using the accurate-sounding word would have filed this gap into the
     blind spot it describes. The invisibility itself is a separate defect and is
     captured as an observation rather than absorbed here.'
+- id: G-084
+  type: gap
+  title: Bash task gate reports "you modified a file" for read-only commands it merely
+    does not recognise
+  description: 'The Bash arm of check-active-task.sh asks two questions in order: does
+    the command match a write pattern (has_bash_write_pattern), and is its base command
+    on an enumerated allowlist (is_bash_safe_command, ~50 names). When the first answers
+    NO and the second answers NO, the command is gated and the agent is told it attempted
+    a modification — "Cannot modify files under a completed task" (P-002) or "Build tasks
+    require real acceptance criteria before editing source files" (G-020). Measured in one
+    session: `sed -n RANGE file`, `timeout 30 termlink agent inbox | head`, and
+    `./agents/context/checkpoint.sh status | tail -5` were all blocked this way. None
+    writes; has_bash_write_pattern returns false for all three.
+
+    The enumeration itself is load-bearing and must stay — has_bash_write_pattern is a
+    syntactic scan and cannot see that `./build.sh` or `python3 deploy.py` writes, the
+    same scope boundary Tier 0 has (T-2742). The gap is that (a) the list is grown one
+    entry per incident rather than derived (its own comments name eleven such incidents:
+    T-1908, T-2052, T-2054, T-2410, T-2462, T-2834, T-2878, T-2887, T-2888, T-2936,
+    T-2988), and T-2888 already established derivation as the fix but applied it only to
+    git sub-verbs; and (b) nothing forces the block MESSAGE to distinguish "this writes"
+    from "this is unrecognised", so a false positive presents as an accusation with a
+    remedy aimed at a problem the agent does not have.
+
+    Why it is a gap and not just a bug: an agent that is told it modified a file when it
+    did not learns that the gate''s stated contract is unreliable, and routes around it.
+    That is the T-1890 / L-399 failure shape, and it costs the gate its authority on the
+    occasions it is right.
+
+    '
+  spec_reference: CLAUDE.md §Enforcement Tiers (Tier 0 scope boundary, T-2742); §Hook
+    Bypass Contract Parity (L-399, T-1890)
+  severity: medium
+  decision_trigger: 'A Bash block message asserts a modification while
+    has_bash_write_pattern returns false for the same command string — or an agent is
+    observed working around the gate (direct-invoke, re-spelling, --no-verify) after a
+    read-only command was gated.
+
+    '
+  trigger_check:
+    type: manual
+    hint: 'source agents/context/lib/safe-commands.sh; has_bash_write_pattern "$CMD" ||
+      is_bash_safe_command "$CMD" — if both are false the block message will be a false
+      accusation.'
+  status: watching
+  detected_in: T-3096
+  observed: 2026-08-20

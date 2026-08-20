@@ -14,16 +14,16 @@ description: >
   from the corpus well enough to build an actionable rail, or does it need an author-time
   field?
 
-status: work-completed
+status: captured
 workflow_type: inception
 owner: agent
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-18T18:51:57Z
-last_update: 2026-08-20T01:12:40Z
-date_finished: 2026-08-20T01:12:40Z
+last_update: '2026-08-18T19:00:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -109,15 +109,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -166,51 +166,9 @@ bvp_scores_proposed:
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale: Two instances found by accident in one session, both with measured four-month dwell times and both closed today only because the bug was independently rediscovered. L-021 (T-1075) and L-256 (T-1428) each name their own fix and each sit at application: TBD. The problem is evidenced; what is open is the mechanism — whether 'this learning prescribes a fix' is mechanically recognisable from the corpus or needs an author-time field. That is a design question worth one inception, not a build.
-
-**Date**: 2026-08-20T01:12:39Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
-
-### 2026-08-20T01:12:39Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale: Two instances found by accident in one session, both with measured four-month dwell times and both closed today only because the bug was independently rediscovered. L-021 (T-1075) and L-256 (T-1428) each name their own fix and each sit at application: TBD. The problem is evidenced; what is open is the mechanism — whether 'this learning prescribes a fix' is mechanically recognisable from the corpus or needs an author-time field. That is a design question worth one inception, not a build.
-
-### 2026-08-20T01:12:39Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Reason:** Inception decision in progress
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-70ab2119
-- **Timestamp:** 2026-08-20T01:12:41Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-a3605fcd
-- **Timestamp:** 2026-08-20T01:12:41Z
-- **Overall:** CONFIRMED
-- **Claims:** 2
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-1075` | task | ✓ pass |
-| `T-1428` | task | ✓ pass |
-
-### 2026-08-20T01:12:40Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO
