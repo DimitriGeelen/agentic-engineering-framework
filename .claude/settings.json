@@ -89,6 +89,10 @@
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-onboarding-gate"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-worktree-governance-write"
           }
         ]
       },

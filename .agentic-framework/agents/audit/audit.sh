@@ -1517,114 +1517,205 @@ fi
 # T-2096 (OBS-036, sibling to L-417/T-1975): GO-scope-not-propagated scan.
 # Forwards-pointing companion to the L-417 detector above. L-417 catches
 # satellite text claiming "ships in T-NNNN" where T-NNNN is already
-# completed (backwards staleness). This detector catches the inverse:
-# completed inceptions whose Recommendation/Decision claim sub-tasks
-# were filed, but related_tasks: [] AND no other task back-references
-# the inception in their own related_tasks. The GO scope was promised
-# but never actually propagated — humans following the breadcrumbs
-# find a dead-end.
+# completed (backwards staleness). This detector catches the inverse: a
+# completed inception that recorded a GO and then propagated nothing — no
+# related_tasks:, nobody back-referencing it, no build task declaring it via
+# unlocks_inception_decision:. The GO scope was approved but never became
+# work; humans following the breadcrumbs find a dead-end.
 # Origin: T-2078 (May-29) — Recommendation said "V1 build slices (filed on GO)"
 # but related_tasks: [] and the V1-a/b/c/d slices did not exist until T-2091's
-# G-052 sweep backfilled them as T-2092..T-2095. WARN (not FAIL) until
-# FP rate is measured.
-go_scope_unprop_count=0
-go_scope_unprop_evidence=""
-# T-2298: single python3 pre-scan (was per-completed-task grep fan-out — ~1500
-# completed tasks × 3-4 greps + cross-file grep per survivor = 30-60s wall-clock).
-# Pass 1: find candidate inceptions (workflow_type=inception + claim phrase +
-# empty/absent related_tasks). Pass 2: build set of ALL t_ids referenced inline
-# in any task's related_tasks: line — O(M+N) instead of original O(M*N) per-
-# candidate cross-file scan. Skips T-Test-* sentinels (T-2228 parity).
-go_scope_unprop_list=$(python3 -c "
+# G-052 sweep backfilled them as T-2092..T-2095. WARN (not FAIL): a finding is
+# "somebody should triage this", and the standing backlog is pre-existing debt,
+# not a regression.
+#
+# T-3099: the candidate gate is STRUCTURAL. It was a regex over prose --
+#   CLAIM_RE = r'filed on GO|sub-tasks (filed|created)|build slices (filed|created)
+#               |child tasks (filed|spun off)'
+# -- which measured 2 matches across 444 completed inceptions, 0 of which
+# survived the related_tasks filter. The candidate set was empty by
+# construction, so every PASS this check ever printed was vacuous. A rail keyed
+# to how an author phrased a promise is silent exactly when the author writes
+# carefully: an inverse correlation with the thing being measured. T-2822 --
+# whose unbuilt keystone slice kept the worktree class alive for two weeks past
+# its own approval -- says "each is a separate build slice", which the regex
+# does not match. See docs/reports/T-3097-worktree-rca.md IW-4.
+# There is no vocabulary anywhere in the predicate now: GO recorded, no
+# related_tasks, no back-reference, no unlocks_inception_decision.
+#
+# T-2298 (preserved): single python3 pre-scan, O(M+N). Pass 1 walks completed/
+# once to find candidates; pass 2 walks active/+completed/ once to build the set
+# of every task id referenced by a related_tasks: line or an
+# unlocks_inception_decision: entry. The original per-candidate grep fan-out
+# (~1500 completed tasks x 3-4 greps + a cross-file grep per survivor) took
+# 30-60s wall-clock. Skips T-Test-* sentinels (T-2228 parity).
+GO_SCOPE_REPORT_DIR="$AUDITS_DIR/go-scope-unpropagated"
+mkdir -p "$GO_SCOPE_REPORT_DIR" 2>/dev/null || true
+GO_SCOPE_REPORT_PATH="$GO_SCOPE_REPORT_DIR/LATEST.md"
+go_scope_summary=$(python3 -c "
 import os, re
+
 project_root = '$PROJECT_ROOT'
+report_path = '$GO_SCOPE_REPORT_PATH'
 completed_dir = os.path.join(project_root, '.tasks', 'completed')
 active_dir = os.path.join(project_root, '.tasks', 'active')
 
 WORKFLOW_RE = re.compile(r'^workflow_type: inception\$', re.M)
-CLAIM_RE = re.compile(r'filed on GO|sub-tasks (filed|created)|build slices (filed|created)|child tasks (filed|spun off)', re.I)
+# Structural GO marker: the field 'fw inception decide' writes into ## Decision.
+# Anchored on the field, so NO-GO / DEFER / SUPERSEDED cannot match, and no
+# prose phrasing is consulted.
+GO_RE = re.compile(r'^\*\*Decision\*\*:[ \t]*GO\b', re.M)
 EMPTY_RT_RE = re.compile(r'^related_tasks: \[\]', re.M)
 HAS_RT_RE = re.compile(r'^related_tasks:', re.M)
 ID_RE = re.compile(r'^(T-\d+)')
 INLINE_RT_LINE_RE = re.compile(r'^related_tasks:.*\bT-\d+\b.*\$', re.M)
+# Inline list form plus the indented block form both occur in the corpus.
+UNLOCKS_RE = re.compile(r'^unlocks_inception_decision:.*(?:\n[ \t]+-.*)*', re.M)
 TID_RE = re.compile(r'\bT-\d+\b')
 
-# Pass 1: candidate inceptions
-candidates = []  # (path, t_id)
-if os.path.isdir(completed_dir):
+
+def task_files(d):
+    if not os.path.isdir(d):
+        return
     try:
-        names = os.listdir(completed_dir)
+        names = sorted(os.listdir(d))
     except OSError:
-        names = []
+        return
     for fn in names:
         if not (fn.startswith('T-') and fn.endswith('.md')):
             continue
         if fn.startswith('T-Test-'):
             continue
-        path = os.path.join(completed_dir, fn)
+        path = os.path.join(d, fn)
         try:
             with open(path) as f:
                 content = f.read()
         except Exception:
-            continue
-        if not WORKFLOW_RE.search(content):
-            continue
-        if not CLAIM_RE.search(content):
-            continue
-        # related_tasks: must be empty (\`[]\`) OR absent
-        if EMPTY_RT_RE.search(content):
-            pass
-        elif not HAS_RT_RE.search(content):
-            pass
-        else:
             continue
         m = ID_RE.match(fn)
         if not m:
             continue
-        candidates.append((path, m.group(1)))
+        yield path, fn, m.group(1), content
 
-# Pass 2: collect ALL t_ids appearing inline in any task's related_tasks: line.
-referenced_ids = set()
-for tdir in (active_dir, completed_dir):
-    if not os.path.isdir(tdir):
-        continue
-    try:
-        names = os.listdir(tdir)
-    except OSError:
-        continue
-    for fn in names:
-        if not (fn.startswith('T-') and fn.endswith('.md')):
-            continue
-        if fn.startswith('T-Test-'):
-            continue
-        path = os.path.join(tdir, fn)
-        try:
-            with open(path) as f:
-                content = f.read()
-        except Exception:
-            continue
-        for m in INLINE_RT_LINE_RE.finditer(content):
-            for tid_match in TID_RE.finditer(m.group(0)):
-                referenced_ids.add(tid_match.group(0))
 
-# Emit candidates that are NOT back-referenced
-for path, t_id in candidates:
-    if t_id not in referenced_ids:
-        print(path)
+def no_related_tasks(content):
+    if EMPTY_RT_RE.search(content):
+        return True
+    return not HAS_RT_RE.search(content)
+
+
+# Pass 1: walk completed/ once. Count the population actually examined, and
+# collect the structural candidates.
+total_inceptions = 0
+go_inceptions = 0
+candidates = []   # (t_id, path)
+completed_cache = []
+for path, fn, t_id, content in task_files(completed_dir):
+    completed_cache.append((t_id, content))
+    if not WORKFLOW_RE.search(content):
+        continue
+    total_inceptions += 1
+    if not GO_RE.search(content):
+        continue
+    go_inceptions += 1
+    if no_related_tasks(content):
+        candidates.append((t_id, path))
+
+# Pass 2: walk active/ once and reuse the completed/ read from pass 1. Collect
+# every task id referenced by a related_tasks: line or an
+# unlocks_inception_decision: entry. Self-references do not count as
+# propagation.
+referenced = set()
+
+
+def harvest(owner_id, content):
+    for m in INLINE_RT_LINE_RE.finditer(content):
+        for tm in TID_RE.finditer(m.group(0)):
+            if tm.group(0) != owner_id:
+                referenced.add(tm.group(0))
+    for m in UNLOCKS_RE.finditer(content):
+        for tm in TID_RE.finditer(m.group(0)):
+            if tm.group(0) != owner_id:
+                referenced.add(tm.group(0))
+
+
+for t_id, content in completed_cache:
+    harvest(t_id, content)
+for path, fn, t_id, content in task_files(active_dir):
+    harvest(t_id, content)
+
+findings = [(t_id, path) for t_id, path in candidates if t_id not in referenced]
+
+
+def id_key(pair):
+    return int(pair[0].split('-')[1])
+
+
+findings.sort(key=id_key, reverse=True)
+
+lines = []
+lines.append('# GO-scope-not-propagated inceptions')
+lines.append('')
+lines.append('Generated by fw audit (T-2096, structural predicate since T-3099).')
+lines.append('Read-only: no task is closed, no status changed, no box ticked.')
+lines.append('')
+lines.append('## Criterion (structural — no prose is consulted)')
+lines.append('')
+lines.append('A completed task qualifies when ALL of:')
+lines.append('')
+lines.append('1. workflow_type: inception')
+lines.append('2. the ## Decision block records a GO')
+lines.append('3. related_tasks: is empty or absent')
+lines.append('4. no task in active/ or completed/ names it on a related_tasks: line')
+lines.append('5. no task declares unlocks_inception_decision: pointing at it')
+lines.append('')
+lines.append('## Population examined')
+lines.append('')
+lines.append('- completed inceptions: ' + str(total_inceptions))
+lines.append('- with a GO recorded:   ' + str(go_inceptions))
+lines.append('- findings:             ' + str(len(findings)))
+lines.append('')
+lines.append('These are candidates for triage, not confirmed abandoned decisions:')
+lines.append('some may have shipped work that was simply never linked back. Deciding')
+lines.append('which is which is the judgement this check exists to force.')
+lines.append('')
+lines.append('## Findings (most recent first)')
+lines.append('')
+if findings:
+    for t_id, path in findings:
+        lines.append('- ' + t_id + ' — ' + os.path.relpath(path, project_root))
+else:
+    lines.append('_None._')
+
+try:
+    with open(report_path, 'w') as f:
+        f.write('\n'.join(lines) + '\n')
+except Exception:
+    pass
+
+sample = ', '.join(t_id for t_id, _ in findings[:5])
+overflow = len(findings) - min(5, len(findings))
+if overflow > 0:
+    sample += ' (+' + str(overflow) + ' more)'
+print('|'.join([str(total_inceptions), str(go_inceptions), str(len(findings)), sample]))
 " 2>/dev/null)
 
-while IFS= read -r task_file; do
-    [ -z "$task_file" ] && continue
-    go_scope_unprop_count=$((go_scope_unprop_count + 1))
-    go_scope_unprop_evidence="$go_scope_unprop_evidence$task_file\n"
-done <<< "$go_scope_unprop_list"
-if [ "$go_scope_unprop_count" -eq 0 ]; then
-    pass "No GO-scope-not-propagated inception(s) (sibling to L-417)"
+if [ -z "$go_scope_summary" ]; then
+    # A scan that did not evaluate must not read as a scan that found nothing —
+    # that is the exact defect T-3099 removed from this check.
+    warn "GO-scope-not-propagated scan did not evaluate (pre-scan produced no summary)" \
+         "python3 pre-scan over $PROJECT_ROOT/.tasks returned empty" \
+         "Run the pre-scan without 2>/dev/null to see the error; the check asserts nothing until it does"
 else
-    warn "Found $go_scope_unprop_count GO-scope-not-propagated inception(s) — Recommendation claims sub-tasks were filed but related_tasks:[] and no task back-references" \
-         "$(printf '%b' "$go_scope_unprop_evidence" | head -5)" \
-         "Backfill related_tasks: in the inception OR file the promised siblings (origin: T-2078, T-2091; sibling to L-417/T-1975)"
+    IFS='|' read -r _gs_inceptions _gs_go _gs_count _gs_sample <<< "$go_scope_summary"
+    if [ "${_gs_count:-0}" -eq 0 ]; then
+        pass "No GO-scope-not-propagated inception(s) — examined ${_gs_go:-0} GO-recorded completed inception(s) of ${_gs_inceptions:-0} (sibling to L-417)"
+    else
+        warn "Found $_gs_count GO-scope-not-propagated inception(s) of ${_gs_go:-0} GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision" \
+             "$_gs_sample" \
+             "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat $GO_SCOPE_REPORT_PATH (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
+    fi
 fi
+# end GO-scope-not-propagated scan (T-3099)
 
 # Fabric drift detection (T-212 — component topology integrity)
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then

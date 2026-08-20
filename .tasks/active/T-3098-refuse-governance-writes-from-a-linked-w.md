@@ -286,6 +286,71 @@ for five weeks.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-20 — Detection reuses `fw_is_linked_worktree`, not a re-implementation
+
+- **Chose:** source `lib/paths.sh` and call `fw_is_linked_worktree "$cwd"`; the hook
+  contains no git-dir comparison of its own.
+- **Why:** duplicating the primitive is the exact producer/consumer split (L-399) this
+  defect class is about — two copies drift and one of them fails open silently. Mutation
+  M3 below shows what the alternative buys.
+- **Rejected:** a `.claude/worktrees` substring test. That is a naming convention, not an
+  invariant; `git worktree add` anywhere else is undetected.
+
+### 2026-08-20 — Bash hook, not Python
+
+- **Chose:** a single bash file, `agents/context/check-worktree-governance-write.sh`.
+- **Why:** the detection primitive is bash (`lib/paths.sh`), and the sibling Python hooks
+  all exist because they parse YAML frontmatter. This hook parses none. One `python3 -c`
+  pass handles the stdin JSON and path normalisation, matching `check-active-task.sh`.
+- **Rejected:** a `.py` + `.sh` wrapper pair — it would have forced a second copy of the
+  worktree test in Python, which is the thing above.
+
+### 2026-08-20 — Governance-path filter is anchored to the worktree toplevel
+
+- **Chose:** block only paths under `<worktree-toplevel>/.context/` or `/.tasks/`, resolved
+  absolute (relative `file_path` is joined against the call's `cwd`).
+- **Why:** a bare `*/.tasks/*` glob would refuse an **absolute write into the main
+  checkout's** `.tasks/` issued from a worktree shell — which is precisely the move the
+  block message tells the agent to make. Pinned by the test
+  "absolute write into the MAIN checkout's .tasks/ is allowed".
+- **Residual, deliberate:** the gate keys on `cwd`, per the AC. A write from a main-checkout
+  `cwd` to an absolute path inside a sibling worktree's `.context/` is not refused. Left
+  as-is rather than widened, because widening changes the predicate the ACs specify.
+
+### 2026-08-20 — Bypass logs only when it actually bypassed a refusal
+
+- **Chose:** the `FW_ALLOW_WORKTREE_GOVERNANCE_WRITE=1` branch sits *after* the worktree
+  and path tests, so a bypass entry is written only for calls that would otherwise have
+  been blocked. Entry records `file`, `worktree` and `main_checkout`.
+- **Why:** AC #5 — the register has to answer "does any real workflow need this?". If the
+  env var is exported for a whole session, logging every governance write from the main
+  checkout would bury the signal under noise from calls that were never gated.
+- **Not honouring `FW_SAFE_MODE`:** that hatch disables the *task* gate. This gate has its
+  own named bypass; folding it into `FW_SAFE_MODE` would make worktree divergence
+  invisible whenever safe mode is on.
+
+### 2026-08-20 — Mutation check (AC #8)
+
+Each mutation applied to the hook in place, full suite re-run, then reverted. Baseline
+is **14/14 passing**.
+
+| Mutation | Tests turned red |
+|---|---|
+| **M1** — invert the worktree test (`\|\| exit 0` → `&& exit 0`) | **#8 "main checkout: write to .tasks/ is allowed"** and **#9 "main checkout: write to .context/ is allowed"** — the AC-named signal — plus #1-#5, #11, #12, #14 (10 red total) |
+| **M2** — drop the path filter (`*) exit 0` → match everything) | **#6 "linked worktree: write to lib/ is allowed"** — the AC-named signal — plus #7 "absolute write into the MAIN checkout's .tasks/ is allowed" (2 red) |
+| **M3** — swap `fw_is_linked_worktree` for a `.claude/worktrees` substring test | #1-#5, #11, #14 (7 red). The fixture is a real `git worktree add` under `mktemp`, so a convention-based test sees nothing. This is the AC #1 claim made falsifiable rather than asserted. |
+
+M2's blast radius is 2, not 1: dropping the filter also breaks the "correct move" the block
+message recommends, which is the more interesting failure of the two.
+
+### 2026-08-20 — Not done here, by instruction
+
+Hook registration in `.claude/settings.json` and `bin/fw enforcement baseline` (AC #6) are
+left to the parent session — that write converges with other work in flight. The hook
+resolves correctly through the dispatcher already: `bin/fw hook
+check-worktree-governance-write` returns 0 on a main-checkout payload.
+
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
