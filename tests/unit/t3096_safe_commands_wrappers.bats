@@ -181,3 +181,51 @@ setup() {
     run is_bash_safe_command "./agents/context/checkpoint.sh status 2>&1 | tail -5"
     [ "$status" -ne 0 ]
 }
+
+# --- 5. the block message names the real reason ----------------------------------
+#
+# The predicate above decides WHETHER to gate. These pin what the agent is TOLD when it
+# does — which is the half of G-084 that costs the gate its credibility. Extracted from
+# the hook rather than duplicated, so a message rewritten in check-active-task.sh cannot
+# leave these passing against a stale copy.
+
+_load_msg_fns() {
+    eval "$(sed -n '/^_bash_gate_reason() {/,/^}/p' "$FRAMEWORK_ROOT/agents/context/check-active-task.sh")"
+    eval "$(sed -n '/^_blocked_subject() {/,/^}/p' "$FRAMEWORK_ROOT/agents/context/check-active-task.sh")"
+}
+
+@test "message: a genuine write is reported as a write" {
+    _load_msg_fns
+    BASH_CMD="echo hi > /etc/passwd"
+    run _blocked_subject
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "matches a file-write pattern"
+}
+
+@test "message: a read-only command is NOT reported as a modification" {
+    _load_msg_fns
+    BASH_CMD="./agents/context/checkpoint.sh status 2>&1 | tail -5"
+    run _blocked_subject
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "writes nothing the gate can detect"
+    # the accusation must be absent, not merely accompanied by a correction
+    if echo "$output" | grep -qi "matches a file-write pattern"; then
+        echo "LEAK: read-only command reported as a write:"; echo "$output"; return 1
+    fi
+}
+
+@test "message: the unrecognised SEGMENT of a chain is named" {
+    _load_msg_fns
+    BASH_CMD="cat f; ./deploy.sh; ls"
+    run _blocked_subject
+    [ "$status" -eq 0 ]
+    # Inspect only the line that names the offender — line 1 legitimately echoes the
+    # whole command back, so grepping the full output cannot tell the two apart.
+    local named
+    named=$(echo "$output" | grep 'is not on the read-only allowlist')
+    echo "$named" | grep -q '"./deploy.sh"'
+    # naming the whole command line instead of the segment would be the easy wrong fix
+    if echo "$named" | grep -q 'cat f'; then
+        echo "LEAK: named the whole line, not the offending segment:"; echo "$named"; return 1
+    fi
+}
