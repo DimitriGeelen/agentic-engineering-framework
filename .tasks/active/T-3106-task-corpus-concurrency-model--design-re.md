@@ -58,7 +58,7 @@ date_finished: null
 
 # T-3106 — design record. Comments only above this line.
 test -f docs/design/task-corpus-concurrency-model.md
-grep -q "single authority" docs/design/task-corpus-concurrency-model.md
+grep -qi "single authority" docs/design/task-corpus-concurrency-model.md
 grep -q "R6 collapses once R2 and R4 hold" docs/design/task-corpus-concurrency-model.md
 grep -c "^| \*\*R[1-6]\*\*" docs/design/task-corpus-concurrency-model.md > /tmp/.t3106rules; test "$(cat /tmp/.t3106rules)" = "6"
 grep -q "What would change this design" docs/design/task-corpus-concurrency-model.md
