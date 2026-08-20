@@ -175,15 +175,21 @@ created *before* the fix existed.
 
 | Leg | What it does | What it does **not** reach |
 |---|---|---|
-| **L1** — corpus guard in the shared `pre-commit` | refuses a commit touching `.tasks/` when `--git-common-dir` ≠ `--git-dir`. Version-independent; reaches pre-existing and stale replicas | uncommitted writes; a repo that overrides `core.hooksPath` |
+| **L1** — corpus guard in the shared `pre-commit` ✅ T-3110 | refuses a commit touching `.tasks/` when `--git-common-dir` ≠ `--git-dir`. Version-independent; reaches pre-existing and stale replicas | uncommitted writes; a repo that overrides `core.hooksPath` |
 | **L2** — re-exec redirection | `bin/fw` detects a linked worktree and re-execs the **authority's** `bin/fw`, fixing stale-replica-code and allocation in one move | worktrees whose checkout predates the redirect — future-facing only |
-| **L3** — worktrees as a drift subject | `fw doctor` audits 31 *consumers* for missing hooks and **zero worktrees**. Same predicate, new subject (the T-3101 shape) | nothing, once shipped — but it reports, it does not prevent |
+| **L3** — worktrees as a drift subject ✅ T-3112 | `fw doctor` audited 31 *consumers* for missing hooks and **zero worktrees**. Same predicate, new subject (the T-3101 shape) — the comparison moved to `lib/hook-parity.sh` and `bin/fw` now holds zero copies of it | nothing, once shipped — but it reports, it does not prevent |
 | **L4** — loud vendored propagation | `fw upgrade` names which of a project's worktrees are behind; doctor says it unprompted | a project that never runs `fw upgrade` at all |
 
 **L1 is the keystone** because it is the only leg with no version precondition.
 L2 is the *complete* fix but only for replicas created after it ships. L3 and L4
 make the gap visible rather than closing it — which is worth having, since the gap
 was invisible for the seven weeks that produced T-2505, T-2506 and T-2428.
+
+**What L3 found on its first run** (T-3112, 2026-08-20): four of four linked
+worktrees in this repo had drifted from the authority's hook set, and the hook
+missing from all four was `check-worktree-governance-write` — the one whose
+absence is the mechanism behind the three incidents above. The gap was not
+hypothetical and it was not small.
 
 ### The honest limits
 
