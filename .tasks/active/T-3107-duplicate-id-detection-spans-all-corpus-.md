@@ -184,7 +184,9 @@ test -x agents/audit/audit.sh
 # the check reads the single shared corpus definition (T-3104), not a second one
 grep -q "fw_task_view_dirs" agents/audit/audit.sh
 # identity is created:, NOT content hash — content hash yields 2744 findings, created: yields 3
-grep -q "identity differs by created:" agents/audit/audit.sh
+grep -q "identity differs by" agents/audit/audit.sh
+# and that the discriminator really is created: with a filename-slug fallback, not content
+grep -q "'created:' if by_created else 'filename slug'" agents/audit/audit.sh
 # verdicts route through the T-3105 set-reporting helpers
 grep -qE "^pass_over\(\)" agents/audit/audit.sh
 # suite green
