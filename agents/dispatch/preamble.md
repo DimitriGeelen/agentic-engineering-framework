@@ -101,6 +101,29 @@ bin/fw task update T-XXX --status work-completed && \
   FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-XXX: work-completed transition"
 ```
 
+**If you are running inside a linked worktree, this commit will be REFUSED** — and
+correctly so. The task corpus is a registry with global invariants; a worktree holds
+a read-only *replica* of it, and a `.tasks/` commit from a replica is how T-2505,
+T-2506 and T-2428 were each minted twice (T-3110, R7 in
+`docs/design/task-corpus-concurrency-model.md`). The refusal is the gate working, not
+a bug to route around.
+
+Do this instead — stage and commit the corpus delta **at the authority**, which the
+block message names for you:
+
+```bash
+AUTH=$(git rev-parse --path-format=absolute --git-common-dir)/..
+git -C "$AUTH" add .tasks/active/T-XXX-*.md && \
+  FW_SWITCH_FOCUS=1 git -C "$AUTH" commit -m "T-XXX: work-completed transition"
+```
+
+Your *source* commits are unaffected — commit those from the worktree exactly as
+before, then `fw integrate` as normal. Only `.tasks/` is guarded.
+
+`FW_ALLOW_WORKTREE_CORPUS_COMMIT=1` exists as a last resort and writes a Tier-2 entry
+to the bypass log. Reach for the authority-side commit first; a bypass here recreates
+the divergence the gate exists to prevent.
+
 Origin: T-1985 (G-066 prong 2 worker) and T-1951 (G-066 prong 3 worker) both shipped
 clean slice commits, ran the transition, then exited — leaving the frontmatter
 delta uncommitted. The pattern will recur across every TermLink-dispatched worker

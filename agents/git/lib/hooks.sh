@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.11"
+COMMIT_MSG_HOOK_VERSION="1.12"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -102,7 +102,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.11
+# VERSION=1.12
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -337,10 +337,11 @@ HOOK_EOF
     # scanning to agents/git/lib/secret-scan.sh and fails the commit on hit.
     cat > "$pre_commit_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-commit hook - Master-merge-only guard (T-2396) + Secret Scan (T-1844)
+# pre-commit hook - Master-merge-only guard (T-2396) + task-corpus guard (T-3110)
+#                   + Secret Scan (T-1844)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.2
+# VERSION=1.3
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -363,6 +364,60 @@ fi
 MASTER_GUARD="$FRAMEWORK_ROOT/agents/git/lib/master-guard.sh"
 if [ -f "$MASTER_GUARD" ]; then
     PROJECT_ROOT="$PROJECT_ROOT" bash "$MASTER_GUARD" check || exit 1
+fi
+
+# FW-HOOK-BLOCK: t3110-corpus-guard
+# T-3110 (R7 leg L1, docs/design/task-corpus-concurrency-model.md): task-corpus
+# commit guard. Refuses a commit that stages any path under `.tasks/` when the
+# commit is made from a LINKED WORKTREE. Silent otherwise; source-only commits
+# from a worktree are the normal supported flow and are untouched.
+#
+# RESOLVED FROM THE AUTHORITY, DELIBERATELY NOT FROM $FRAMEWORK_ROOT.
+# Every other scanner in this hook resolves off `git rev-parse --show-toplevel`,
+# which in a linked worktree IS the worktree — i.e. the replica's own tracked,
+# possibly months-stale copy. That is precisely the circularity R7 describes: the
+# replica supplying the code meant to constrain the replica. `.git/hooks` is the
+# one anchor that does not fork, so this block walks back to the main checkout
+# via --git-common-dir and loads the guard from there. Do not "simplify" it to
+# match its siblings; that silently deletes the only version-independent leg.
+_fw_gcd=$(git rev-parse --git-common-dir 2>/dev/null)
+case "$_fw_gcd" in
+    "") ;;
+    /*) ;;
+    *)  _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;;
+esac
+AUTHORITY_ROOT=""
+[ -n "$_fw_gcd" ] && AUTHORITY_ROOT=$(cd "$(dirname "$_fw_gcd")" 2>/dev/null && pwd)
+
+CORPUS_GUARD=""
+if [ -n "$AUTHORITY_ROOT" ]; then
+    for _cand in "$AUTHORITY_ROOT/agents/git/lib/worktree-corpus-guard.sh" \
+                 "$AUTHORITY_ROOT/.agentic-framework/agents/git/lib/worktree-corpus-guard.sh"; do
+        if [ -f "$_cand" ]; then CORPUS_GUARD="$_cand"; break; fi
+    done
+    if [ -z "$CORPUS_GUARD" ] && [ -f "$AUTHORITY_ROOT/.framework.yaml" ]; then
+        _afp=$(grep "^framework_path:" "$AUTHORITY_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+        if [ -n "$_afp" ] && [ -f "$_afp/agents/git/lib/worktree-corpus-guard.sh" ]; then
+            CORPUS_GUARD="$_afp/agents/git/lib/worktree-corpus-guard.sh"
+        fi
+    fi
+fi
+if [ -n "$CORPUS_GUARD" ]; then
+    # T-2061 bash-invoke pattern: gate on -f, run via `bash`, so a vendored copy
+    # that landed without +x still runs.
+    PROJECT_ROOT="$PROJECT_ROOT" FW_AUTHORITY_ROOT="$AUTHORITY_ROOT" \
+        bash "$CORPUS_GUARD" scan-staged || exit 1
+elif [ -n "$AUTHORITY_ROOT" ] && [ "$AUTHORITY_ROOT" != "$PROJECT_ROOT" ] && [ -d "$AUTHORITY_ROOT/.tasks" ]; then
+    # Degrade to ALLOW — a guard that failed closed on its own missing dependency
+    # would block every commit in the repo. But not SILENTLY (T-2647: a control
+    # that no-ops is indistinguishable from one that passed), and only where it
+    # could have mattered: a linked worktree of a repo that has a task corpus.
+    # The main checkout and every worktree-free consumer print nothing, ever.
+    echo "WARNING: task-corpus commit guard is NOT running (T-3110) — not found at:" >&2
+    echo "  $AUTHORITY_ROOT/agents/git/lib/worktree-corpus-guard.sh" >&2
+    echo "Commits touching .tasks/ from this worktree are unguarded." >&2
+    echo "Fix at the authority: cd $AUTHORITY_ROOT && bin/fw upgrade" >&2
+    echo "  (framework repo: bin/fw vendor self)" >&2
 fi
 
 SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"

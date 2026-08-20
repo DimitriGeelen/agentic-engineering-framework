@@ -2,12 +2,16 @@
 id: T-3110
 name: "L1: corpus guard in the shared pre-commit hook (R7 keystone)"
 description: >
-  R7 keystone. Refuse a commit touching .tasks/ when --git-common-dir differs from --git-dir. Lives in the shared .git/hooks/pre-commit, so it fires in every linked worktree regardless of that worktree's framework version — the only leg with no version precondition. Limits: commit-time not write-time; assumes core.hooksPath is not overridden. See docs/design/task-corpus-concurrency-model.md R7.
+  R7 keystone. Refuse a commit touching .tasks/ when --git-common-dir differs from
+  --git-dir. Lives in the shared .git/hooks/pre-commit, so it fires in every linked
+  worktree regardless of that worktree's framework version — the only leg with no
+  version precondition. Limits: commit-time not write-time; assumes core.hooksPath
+  is not overridden. See docs/design/task-corpus-concurrency-model.md R7.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T17:34:41Z
-last_update: 2026-08-20T17:34:41Z
-date_finished: null
+last_update: 2026-08-20T17:53:35Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-20T17:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-20T17:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3110: L1: corpus guard in the shared pre-commit hook (R7 keystone)
@@ -46,8 +78,16 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The shared `pre-commit` hook refuses a commit that stages any path under `.tasks/` when the commit is being made from a **linked worktree** (`git rev-parse --git-common-dir` ≠ `--git-dir`), and is silent otherwise
+- [x] The predicate lives in a sourced library function, not inline in the hook body, so `fw doctor`/audit can read the same predicate later (one predicate, many surfaces — the T-3101 shape)
+- [x] The block message names the authority path, the staged `.tasks/` paths, and the bypass mechanism explicitly; an agent that trips it can unblock itself without asking the operator
+- [x] A bypass exists as an **env-var prefix** (`FW_ALLOW_WORKTREE_CORPUS_COMMIT=1`), not a flag — `git commit` rejects unknown options, so a flag contract would be unhonourable (L-399 / T-1890 producer-consumer parity)
+- [x] Every agent-initiated bypass writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`
+- [x] Commits from the **main checkout** touching `.tasks/` are completely unaffected — verified by an explicit test, since this is the path every normal session takes
+- [x] Source-file commits from a worktree are unaffected; only `.tasks/` is guarded
+- [x] `fw git install-hooks` installs it, and re-running install is idempotent (no duplicated block in the hook body)
+- [x] `tests/unit/t3110_worktree_corpus_commit_guard.bats` covers: main-checkout `.tasks/` commit allowed; worktree `.tasks/` commit refused; worktree source-only commit allowed; worktree mixed commit refused and names the `.tasks/` paths; env bypass permits and logs; re-install is idempotent
+- [x] Three one-line mutations each kill ≥1 test (named), or are proven equivalent; mutations reverted
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +180,26 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+
+# T-3110 — R7 keystone: corpus guard in the shared pre-commit hook
+bash -n agents/git/lib/worktree-corpus-guard.sh
+bash -n .git/hooks/pre-commit
+# the hook and the guard library must stay executable
+test -x .git/hooks/pre-commit
+test -x agents/git/lib/worktree-corpus-guard.sh
+# the predicate is a sourced library, not inline hook code (AC 2)
+grep -q "fw_worktree_corpus_commit_refused" agents/git/lib/worktree-corpus-guard.sh
+# detection delegates to lib/paths.sh, it is not a path-substring test
+grep -q "fw_is_linked_worktree" agents/git/lib/worktree-corpus-guard.sh
+# the guard resolves from the AUTHORITY common dir, never the replica checkout
+grep -q "git-common-dir" agents/git/lib/worktree-corpus-guard.sh
+# env-var bypass, not a flag (git rejects unknown options) — L-399 parity
+grep -q "FW_ALLOW_WORKTREE_CORPUS_COMMIT" agents/git/lib/worktree-corpus-guard.sh
+# the dispatch preamble no longer instructs workers to do what this gate refuses
+grep -q "this commit will be REFUSED" agents/dispatch/preamble.md
+# suite green
+bats tests/unit/t3110_worktree_corpus_commit_guard.bats > /tmp/.t3110.out 2>&1 && grep -q "^ok 22" /tmp/.t3110.out
 
 ## RCA
 
@@ -237,3 +297,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3110-l1-corpus-guard-in-the-shared-pre-commit.md
 - **Context:** Initial task creation
+
+### 2026-08-20T17:53:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
