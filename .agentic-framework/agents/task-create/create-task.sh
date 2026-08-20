@@ -241,18 +241,12 @@ fi
 # snapshot of .tasks/ — possibly behind the main checkout — so scanning ONE
 # view computes a stale max and mints a duplicate ID (the T-100200 dup class).
 # generate_id therefore union-scans the .tasks/ of EVERY worktree of the repo
-# that owns TASKS_DIR. Falls back to the local view alone when TASKS_DIR is
-# not inside a git repo (test harness, non-git consumers).
-_task_view_dirs() {
-    local base wt
-    base="$(cd "$(dirname "$TASKS_DIR")" 2>/dev/null && pwd)"
-    if [ -n "$base" ] && git -C "$base" rev-parse --git-dir >/dev/null 2>&1; then
-        while IFS= read -r wt; do
-            [ -d "$wt/.tasks" ] && printf '%s\n' "$wt/.tasks"
-        done < <(git -C "$base" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p')
-    fi
-    printf '%s\n' "$TASKS_DIR"
-}
+# that owns TASKS_DIR.
+#
+# T-3104: `_task_view_dirs` was lifted out of this file — it now lives as
+# `fw_task_view_dirs` in lib/paths.sh (sourced at the top of this script), so
+# the ID allocator and the audit duplicate-ID check share ONE definition of the
+# corpus view set. Read the contract and the L-506-leg-2 rationale there.
 
 generate_id() {
     local gap_threshold="${FW_ID_QUARANTINE_GAP:-1000}"
@@ -265,7 +259,7 @@ generate_id() {
             # Use 10# to force base-10 interpretation (avoids octal issues with 008, 009)
             [ -n "$id" ] && ids+=("$((10#$id))")
         done
-    done < <(_task_view_dirs | sort -u)
+    done < <(fw_task_view_dirs)
     shopt -u nullglob
 
     if [ "${#ids[@]}" -eq 0 ]; then

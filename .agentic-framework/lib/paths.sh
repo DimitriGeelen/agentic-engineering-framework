@@ -271,6 +271,60 @@ fw_is_linked_worktree() {
     [ "$gd" != "$gcd" ]
 }
 
+# fw_task_view_dirs — enumerate every `.tasks/` VIEW of the task corpus (T-3104).
+#
+# A git worktree checks out its own snapshot of `.tasks/`, possibly behind (or
+# ahead of) the main checkout. So "the task corpus" is not one directory — it is
+# the UNION of every worktree's `.tasks/`. Any consumer that reasons about the
+# corpus as a whole (ID allocation, duplicate-ID detection) must scan all views,
+# or it will be blind to whatever the other views hold.
+#
+# WHY THIS EXISTS — split-view ID collision (L-506 leg 2, origin T-100202,
+# 2026-07-21): an allocator computing max+1 over ONE view reads a stale max and
+# mints an ID another view already used. That is not hypothetical — T-2505,
+# T-2506 and T-2428 were each minted twice on 2026-07-01 across two worktrees.
+#
+# CONTRACT:
+#   - Emits one absolute `.tasks/` path per line.
+#   - Worktrees with no `.tasks/` directory are skipped (nothing to scan).
+#   - `$TASKS_DIR` (the local view) is ALWAYS emitted, even when it is not a
+#     directory and even when it does not appear in `git worktree list`. This is
+#     the load-bearing guarantee: a symlinked or otherwise non-matching local
+#     path must never fall out of the corpus.
+#   - Non-git fallback: when `$TASKS_DIR`'s parent is not inside a git repo
+#     (test harnesses, non-git consumers), the local view alone is returned —
+#     no crash, no stderr.
+#   - Output is DE-DUPLICATED, first-occurrence order preserved. Pre-lift the
+#     local view was emitted twice (once from `git worktree list`, once from the
+#     trailing append); the sole consumer piped through `sort -u`, so this
+#     changes the multiset, never the SET — see docs/reports/T-3104-*.md.
+#
+# NOT THE SAME QUESTION AS `_wt_is_ignorable_path` (lib/worktree.sh). That
+# predicate classifies `.tasks/` as a DELIVERABLE — a worktree whose only change
+# is under `.tasks/` has real work that must land before teardown. Here `.tasks/`
+# is CORPUS — a view to read IDs out of. Two callers, two correct answers. Do not
+# "unify" them; they would produce a bug in whichever direction you collapsed.
+fw_task_view_dirs() {
+    local base wt v seen
+    local -a views=()
+
+    base="$(cd "$(dirname "$TASKS_DIR")" 2>/dev/null && pwd)"
+    if [ -n "$base" ] && git -C "$base" rev-parse --git-dir >/dev/null 2>&1; then
+        while IFS= read -r wt; do
+            [ -d "$wt/.tasks" ] && views+=("$wt/.tasks")
+        done < <(git -C "$base" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p')
+    fi
+    # Unconditional — the local view is in the corpus whether or not git named it.
+    views+=("$TASKS_DIR")
+
+    seen=$'\n'
+    for v in "${views[@]}"; do
+        case "$seen" in *$'\n'"$v"$'\n'*) continue ;; esac
+        seen="${seen}${v}"$'\n'
+        printf '%s\n' "$v"
+    done
+}
+
 # Context-aware fw command path (T-1102/T-1143)
 # Returns the right form for copy-pasteable commands shown to users:
 #   - Framework repo: bin/fw
