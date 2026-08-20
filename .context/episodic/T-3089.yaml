@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3089: Lint: forbid backticks in quoted bash strings (T-3086 bug class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T18:40:02Z
+# ============================================================================
+
+task_id: T-3089
+task_name: "Lint: forbid backticks in quoted bash strings (T-3086 bug class)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-19T19:44:38Z
+completed: 2026-08-20T18:39:18Z
+duration_days: 1
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Lint: forbid backticks in quoted bash strings (T-3086 bug class)
+
+# Key outcomes
+outcomes:
+  - 'tests/lint/no-backticks-in-quoted-strings.bats exists and all 5 tests pass'
+  - 'SC2006 guard scans tracked bash sources by shebang, excluding .agentic-framework/ and worktrees/'
+  - 'Guard fails loudly (exit 3) rather than silently passing if no files match — not vacuous'
+  - 'Registry assertion flags backticks, `$(` and `${` in FW_CONFIG_REGISTRY descriptions'
+  - 'Negative control: a planted backtick in a registry entry IS flagged'
+  - 'Negative control: a backtick inside a comment is NOT flagged (no false positive)'
+  - 'Negative control: shellcheck catches the exact T-3086 shape end to end'
+  - 'Zero pre-existing violations in the tree (guard is enforceable immediately)'
+  - 'SEE-ALSO comment cross-references tests/lint/config-registry-parity.bats'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1374 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1374
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3089-lint-forbid-backticks-in-quoted-bash-str.md
+generated_by: context-agent-hybrid

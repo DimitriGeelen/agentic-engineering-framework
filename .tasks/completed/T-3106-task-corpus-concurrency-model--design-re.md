@@ -4,10 +4,10 @@ name: "Task corpus concurrency model — design record and business rules"
 description: >
   The task corpus is a registry with global invariants (IDs unique across all space and time, one authoritative status per task) stored in a filesystem that supports branching. Registries cannot fork and merge; source can. Records the design pattern (single authority, many read replicas, globally serialised allocation, scope-declaring verification) and the six business rules R1-R6, with their implementation status and the tasks that shipped each.
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: claude-code
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T12:52:11Z
-last_update: 2026-08-20T12:52:11Z
-date_finished: null
+last_update: 2026-08-20T12:55:02Z
+date_finished: 2026-08-20T12:55:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -160,3 +160,15 @@ grep -q "_wt_is_ignorable_path" docs/design/task-corpus-concurrency-model.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3106-task-corpus-concurrency-model--design-re.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-597330ed
+- **Timestamp:** 2026-08-20T12:55:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-20T12:55:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

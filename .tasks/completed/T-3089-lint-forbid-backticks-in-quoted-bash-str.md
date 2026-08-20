@@ -4,12 +4,12 @@ name: "Lint: forbid backticks in quoted bash strings (T-3086 bug class)"
 description: >
   Lint: forbid backticks in quoted bash strings (T-3086 bug class)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/commit.sh, agents/handover/handover.sh, tests/unit/handover_commit_scope.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-19T19:44:38Z
-last_update: '2026-08-19T20:00:15Z'
-date_finished:
+last_update: 2026-08-20T18:39:18Z
+date_finished: 2026-08-20T18:39:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -108,19 +108,53 @@ bats tests/lint/no-backticks-in-quoted-strings.bats
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** The host hard-crashed via kernel OOM four times in 22 hours. Each crash
+was preceded by thousands of `fw tier0 approve` processes accumulating — 2,135 live at
+10.52 GB (96% of all RSS) in the final dump, 10,412 distinct PIDs across the storm.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Backticks inside a **double-quoted** bash string are command
+substitution, not Markdown. `lib/config.sh` carried a prose description reading
+"...for BOTH the \`fw tier0 approve\` and Watchtower legs" as a double-quoted element
+of the `FW_CONFIG_REGISTRY` array. A top-level array literal is evaluated when the file
+is **sourced**, and `bin/fw` sources `lib/config.sh` on every invocation — so every
+`fw` command executed `fw tier0 approve`, which sourced `lib/config.sh` again.
+Self-replicating, ~150 procs/sec, unbounded.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Three independent gaps had to line up.
+1. The guard for this exact defect class existed — `tests/lint/no-backticks-in-inline-python.bats`
+   (T-2707) — but was scoped only to double-quoted `python3 -c "..."` blocks. A backtick
+   in a plain bash string was unguarded. The framework had already paid for this lesson
+   once and generalised it too narrowly.
+2. `tests/lint/config-registry-parity.bats` does check `FW_CONFIG_REGISTRY`, but only
+   key *names and counts* across config.sh / config.py / CLAUDE.md. An entry can be in
+   perfect parity across all three surfaces and still fork-bomb on source. Nothing
+   asserted that a description is inert.
+3. The authoring worker never sourced or executed the file it edited. The same
+   uncommitted tree carried four defects (this bomb, an undefined `_fw_humanize_seconds`,
+   a registry parity break, and specified-but-never-written tests) — every one of which a
+   single execution would have caught.
+
+Aggravating: the line never reached a commit. It lived only in the working tree, which
+is production for anything `bin/fw` sources. Pre-push gates, origin, the GitHub mirror
+and all 74 `lib/config.sh` copies on this host were clean throughout — so no
+commit-scoped or push-scoped control could ever have fired.
+
+**Prevention:** `tests/lint/no-backticks-in-quoted-strings.bats` (this task). Two
+assertions plus three negative controls:
+- shellcheck SC2006 across all tracked bash sources, selected by shebang. A real shell
+  parser, not a hand-rolled scanner — the first draft of this guard was a bash state
+  machine and false-positived 25 times on apostrophes-in-comments, heredocs and Python
+  files carrying a `.sh` extension (L-527: a false-positive guard gets ignored).
+- A pure-Python assertion that registry descriptions contain no backtick, `$(` or `${`
+  — all three expand on source, and runs without a shellcheck dependency so the
+  high-value half is never skipped.
+- Negative controls prove non-vacuity: planted backtick IS flagged, comment backtick is
+  NOT, and shellcheck catches the exact T-3086 shape end to end. The SC2006 sweep exits
+  3 if its file list is ever empty, so it cannot silently go green.
+Cross-referenced with `config-registry-parity.bats` in the header so the next person
+touching the registry finds both halves. Learning L-627 records the bug class.
+
+Verified at closure: 0 of 74 `lib/config.sh` copies on this host carry the bug class.
 
 ## Evolution
 
@@ -202,3 +236,25 @@ bats tests/lint/no-backticks-in-quoted-strings.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3089-lint-forbid-backticks-in-quoted-bash-str.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-926e6290
+- **Timestamp:** 2026-08-20T18:39:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#9 (Agent)** — SEE-ALSO comment cross-references tests/lint/config-registry-parity.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/lint/config-registry-parity.bats in: SEE-ALSO comment cross-references tests/lint/config-registry-parity.bats`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/lint/no-backticks-in-quoted-strings.bats`
+
+### 2026-08-20T18:39:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
