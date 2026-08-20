@@ -54,39 +54,14 @@ fw_hook_parity_delta() {
     [ -f "$authority" ] || { printf 'parse-error\n'; return 0; }
     [ -f "$replica" ]   || { printf 'absent\n'; return 0; }
 
-    FW_HP_AUTHORITY="$authority" FW_HP_REPLICA="$replica" python3 -c "
-import json, os, sys
-
-def extract_hooks(path):
-    hooks = set()
-    try:
-        with open(path) as f:
-            data = json.load(f)
-        for event, entries in (data.get('hooks') or {}).items():
-            for entry in entries:
-                for hook in entry.get('hooks', []):
-                    cmd = hook.get('command', '')
-                    if 'fw hook' in cmd:
-                        name = cmd.split('fw hook ')[-1].strip()
-                    else:
-                        name = cmd.strip().split('/')[-1]
-                    hooks.add((event, name))
-    except (json.JSONDecodeError, FileNotFoundError, AttributeError, TypeError):
-        return None
-    return hooks
-
-auth = extract_hooks(os.environ['FW_HP_AUTHORITY'])
-repl = extract_hooks(os.environ['FW_HP_REPLICA'])
-if auth is None or repl is None:
-    print('parse-error')
-    sys.exit(0)
-missing = auth - repl
-if missing:
-    names = ', '.join(n for _, n in sorted(missing))
-    print('missing %d: %s' % (len(missing), names))
-else:
-    print('ok %d/%d' % (len(repl), len(auth)))
-" 2>/dev/null || printf 'parse-error\n'
+    # The predicate itself lives in lib/hook_parity.py — see its module docstring
+    # for why it is python and not inlined here. Resolved relative to THIS file,
+    # not $FRAMEWORK_ROOT: in a linked worktree FRAMEWORK_ROOT points at the
+    # replica, which is precisely the checkout whose code we must not trust.
+    local _self_dir
+    _self_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+    python3 "$_self_dir/hook_parity.py" delta "$authority" "$replica" 2>/dev/null \
+        || printf 'parse-error\n'
 }
 
 # ── fw_hook_parity_authority_root [dir] ──────────────────────────────────────
