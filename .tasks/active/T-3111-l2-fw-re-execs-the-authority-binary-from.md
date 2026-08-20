@@ -7,10 +7,10 @@ description: >
   move. Future-facing only: a worktree needs the redirect already in its checkout.
   See docs/design/task-corpus-concurrency-model.md R7.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T17:35:42Z
-last_update: '2026-08-20T17:45:14Z'
+last_update: 2026-08-20T22:26:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,14 +71,60 @@ bvp_scores_proposed:
 
 ## Context
 
+### HANDOVER — exact next command (2026-08-21, budget-forced, mid-leg)
+
+L1/L3/L4 are landed and closed. L2 is the last R7 leg. Nothing has been edited
+for it yet — this task is `started-work` with focus set, and no source change
+exists. Start clean.
+
+```
+cd /opt/999-Agentic-Engineering-Framework && bin/fw work-on T-3111
+```
+
+Then write real ACs BEFORE touching `bin/fw` — G-020 blocks Bash under this task
+until the placeholder ACs are replaced, and the Edit tool is the only way to make
+that first edit (the Bash gate refuses its own unblocking write).
+
+**What L2 is.** `bin/fw` detects it is running inside a linked worktree and
+re-execs the *authority's* `bin/fw` instead of the replica's. That fixes stale
+replica code and ID allocation in one move. It is the only *complete* fix in R7 —
+and it reaches only worktrees created after it ships, which is why L1 (the shared
+pre-commit hook) was the keystone.
+
+**Reuse, do not re-derive.** These already exist and are landed:
+- `lib/paths.sh:fw_is_linked_worktree` — the detection predicate.
+- `lib/hook-parity.sh:fw_hook_parity_authority_root` — resolves the authority via
+  `--git-common-dir`. Use it. Do NOT resolve from `$FRAMEWORK_ROOT`: in a linked
+  worktree that points at the replica, which is the checkout whose code must not
+  be trusted.
+
+**The two hazards, both real:**
+1. **Re-exec loops.** The authority's `bin/fw` must not bounce back. Guard with an
+   env sentinel (`FW_REEXEC_DEPTH` or similar) set before `exec`, checked first.
+2. **`FRAMEWORK_ROOT` inheritance.** T-2845 measured this exact trap in
+   `_t2094_emit_doctor_advisory`: `fw` honours an inherited `FRAMEWORK_ROOT` over
+   its own location, so re-execing the authority binary while a replica-scoped
+   `FRAMEWORK_ROOT` is still exported puts the authority back into the replica's
+   world and the output is byte-identical to having changed nothing. **The binary
+   and `FRAMEWORK_ROOT` must move together.** Read that comment before writing the
+   exec.
+
+**Do not re-verify L1/L3/L4.** They are landed at `b3adc805a` on origin/master,
+origin/t2539-staging and github/master.
+
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `bin/fw`, when invoked from a linked worktree, re-execs the authority's `bin/fw` with the same argv, using `lib/paths.sh:fw_is_linked_worktree` for detection and `lib/hook-parity.sh:fw_hook_parity_authority_root` for resolution — no new detector, no `$FRAMEWORK_ROOT`-based resolution.
+- [ ] The re-exec exports `FRAMEWORK_ROOT` scoped to the authority in the same step as the `exec`. Binary and root move together (T-2845 measured that inheriting the replica's `FRAMEWORK_ROOT` makes the redirect byte-identical to doing nothing).
+- [ ] An env sentinel prevents re-exec loops: the authority's `bin/fw` sees it set and never bounces back, at any nesting depth.
+- [ ] Invocation from the main checkout is completely unaffected — no exec, no sentinel, no measurable change in behaviour or output.
+- [ ] An escape hatch (`FW_NO_REEXEC=1`) skips the redirect and is logged Tier-2, for the case where an operator genuinely needs the replica's own binary.
+- [ ] `bin/fw --version` (or an equivalent cheap probe) run from a linked worktree reports the AUTHORITY's version, not the replica's — the observable proof the redirect fired.
+- [ ] `tests/unit/t3111_worktree_reexec.bats` covers: redirect fires from a linked worktree, does not fire from the main checkout, loop guard holds, `FRAMEWORK_ROOT` lands on the authority, escape hatch works, and argv survives intact including args with spaces.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -268,3 +314,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3111-l2-fw-re-execs-the-authority-binary-from.md
 - **Context:** Initial task creation
+
+### 2026-08-20T22:26:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
