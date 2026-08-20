@@ -36,6 +36,11 @@ setup() {
 }
 
 @test "live branch behind threshold surfaces; under threshold silent" {
+    # T-3094: this test commits seconds before asserting, so the recency gate would
+    # correctly suppress it. FW_BRANCH_STALE_DAYS=0 isolates the BEHIND threshold,
+    # which is what this test is actually about — the recency boundary has its own
+    # coverage below. Kept rather than deleted: the behind-count still decides
+    # WHICH stale branches surface, it just no longer decides ON ITS OWN.
     # branch with unique commit (unmerged), then advance master by 3
     git -C "$CLONE" checkout -qb live-feat
     echo lf > lf.txt && git -C "$CLONE" add lf.txt && git -C "$CLONE" commit -qm lf
@@ -45,13 +50,13 @@ setup() {
     done
     git -C "$CLONE" push -q origin master
     # threshold 2 → behind=3 fires
-    FW_BRANCH_BEHIND_WARN=2 run fw_branch_hygiene "$CLONE"
+    FW_BRANCH_BEHIND_WARN=2 FW_BRANCH_STALE_DAYS=0 run fw_branch_hygiene "$CLONE"
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "^behind-threshold live-feat behind=3 (threshold 2)$"
+    echo "$output" | grep -q "^behind-threshold live-feat behind=3 days=0 (threshold 2)$"
     # threshold 5 → behind=3 silent
-    FW_BRANCH_BEHIND_WARN=5 run fw_branch_hygiene "$CLONE"
+    FW_BRANCH_BEHIND_WARN=5 FW_BRANCH_STALE_DAYS=0 run fw_branch_hygiene "$CLONE"
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "behind-threshold"
+    _refute_line "behind-threshold"
 }
 
 @test "worktree on merged branch surfaces with path and branch" {
@@ -246,4 +251,113 @@ _refute_line() {
     run bash -c "source '$REPO_ROOT/lib/branch-hygiene.sh'; printf '%s' '$input' | fw_branch_hygiene_head 5"
     [ "$status" -eq 0 ]
     [ "$(echo "$output" | grep -c .)" -eq 5 ]
+}
+
+# ── T-3094 (T-3093 slice 1): staleness measured in days, not commits ────────
+#
+# The behind-count answers "how much happened elsewhere". On the origin repo
+# origin/master moves ~41 commits/day and 88% of that is governance churn, so the
+# 50-commit threshold trips in ~1.2 days — every healthy branch became a finding
+# by the next morning. That false-positive rate is why the section went unread.
+# Recency gates the staleness classes; the counts stay on the line because they
+# are what tell the operator whether a strand is still landable.
+
+@test "T-3094: a branch committed to recently is silent however far behind" {
+    git -C "$CLONE" checkout -qb fresh-feat
+    echo ff > ff.txt && git -C "$CLONE" add ff.txt && git -C "$CLONE" commit -qm ff
+    git -C "$CLONE" checkout -q master
+    for i in 1 2 3 4 5; do echo "m$i" >> f.txt && git -C "$CLONE" commit -qam "m$i"; done
+    git -C "$CLONE" push -q origin master
+
+    # behind=5 > threshold 2, but the branch was committed to seconds ago
+    FW_BRANCH_BEHIND_WARN=2 FW_BRANCH_STALE_DAYS=30 run fw_branch_hygiene "$CLONE"
+    [ "$status" -eq 0 ]
+    _refute_line "fresh-feat"
+}
+
+@test "T-3094: control — the same branch DOES fire once recency is not required" {
+    # Without this, the test above is satisfied by any bug that drops the branch
+    # entirely (wrong ref path, broken loop). This proves the branch is otherwise
+    # a finding and that recency is the only thing suppressing it.
+    git -C "$CLONE" checkout -qb fresh-feat
+    echo ff > ff.txt && git -C "$CLONE" add ff.txt && git -C "$CLONE" commit -qm ff
+    git -C "$CLONE" checkout -q master
+    for i in 1 2 3 4 5; do echo "m$i" >> f.txt && git -C "$CLONE" commit -qam "m$i"; done
+    git -C "$CLONE" push -q origin master
+
+    FW_BRANCH_BEHIND_WARN=2 FW_BRANCH_STALE_DAYS=0 run fw_branch_hygiene "$CLONE"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q '^behind-threshold fresh-feat behind=5 days=0 (threshold 2)$'
+}
+
+@test "T-3094: an untouched branch still surfaces, with days on the line" {
+    git -C "$CLONE" checkout -qb old-feat
+    # commit dated 90 days ago
+    GIT_AUTHOR_DATE="$(date -d '90 days ago' +%s) +0000" \
+    GIT_COMMITTER_DATE="$(date -d '90 days ago' +%s) +0000" \
+        git -C "$CLONE" commit -q --allow-empty -m stale
+    git -C "$CLONE" checkout -q master
+    for i in 1 2 3; do echo "m$i" >> f.txt && git -C "$CLONE" commit -qam "m$i"; done
+    git -C "$CLONE" push -q origin master
+
+    FW_BRANCH_BEHIND_WARN=2 FW_BRANCH_STALE_DAYS=30 run fw_branch_hygiene "$CLONE"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qE '^behind-threshold old-feat behind=3 days=(89|90|91) \(threshold 2\)$'
+}
+
+@test "T-3094: the threshold is a boundary, not a suggestion" {
+    git -C "$CLONE" checkout -qb edge-feat
+    GIT_AUTHOR_DATE="$(date -d '10 days ago' +%s) +0000" \
+    GIT_COMMITTER_DATE="$(date -d '10 days ago' +%s) +0000" \
+        git -C "$CLONE" commit -q --allow-empty -m edge
+    git -C "$CLONE" checkout -q master
+    for i in 1 2 3; do echo "m$i" >> f.txt && git -C "$CLONE" commit -qam "m$i"; done
+    git -C "$CLONE" push -q origin master
+
+    # 10 days old, threshold 11 → under, silent
+    FW_BRANCH_BEHIND_WARN=2 FW_BRANCH_STALE_DAYS=11 run fw_branch_hygiene "$CLONE"
+    [ "$status" -eq 0 ]
+    _refute_line "edge-feat"
+    # threshold 10 → at the boundary, fires
+    FW_BRANCH_BEHIND_WARN=2 FW_BRANCH_STALE_DAYS=10 run fw_branch_hygiene "$CLONE"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q '^behind-threshold edge-feat '
+}
+
+@test "T-3094: recency does not touch the non-staleness classes" {
+    # merged-undeleted, remote-contained and remote-unlanded are not staleness
+    # judgements — a freshly-merged branch is still undeleted, and a remote ref
+    # committed to this morning still holds unlanded work.
+    git -C "$CLONE" branch merged-fresh HEAD~1
+    git -C "$CLONE" push -q origin "HEAD~1:refs/heads/contained-fresh"
+    git -C "$CLONE" checkout -qb unlanded-fresh
+    echo u > u.txt && git -C "$CLONE" add u.txt && git -C "$CLONE" commit -qm u
+    git -C "$CLONE" push -q origin unlanded-fresh
+    git -C "$CLONE" checkout -q master
+    git -C "$CLONE" branch -q -D unlanded-fresh
+    git -C "$CLONE" fetch -q origin
+
+    FW_BRANCH_STALE_DAYS=30 run fw_branch_hygiene "$CLONE"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q '^merged-undeleted merged-fresh$'
+    echo "$output" | grep -q '^remote-contained origin/contained-fresh$'
+    echo "$output" | grep -q '^remote-unlanded origin/unlanded-fresh ahead=1$'
+}
+
+@test "T-3094: the date helper returns empty for a ref it cannot date" {
+    # Contract test for _bh_days_since_commit, not for the caller.
+    #
+    # The caller treats an empty result as STALE (fail loud, `-n "$_days" &&`) so a
+    # branch is never silently exempted by a date lookup failure. That choice is
+    # NOT covered by a caller-level test and mutating it to fail-silent leaves the
+    # suite green — because the loop only ever passes `refs/heads/$br` for a ref it
+    # just enumerated, so the empty case is unreachable from there. Documented
+    # rather than papered over; same shape as the T-3092 sentinel.
+    run bash -c "source '$REPO_ROOT/lib/branch-hygiene.sh'; _bh_days_since_commit '$CLONE' 'refs/heads/does-not-exist'"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+    # and a real ref does yield a number, so the empty result means something
+    run bash -c "source '$REPO_ROOT/lib/branch-hygiene.sh'; _bh_days_since_commit '$CLONE' 'refs/heads/master'"
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ ^[0-9]+$ ]]
 }

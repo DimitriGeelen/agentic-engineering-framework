@@ -11,13 +11,18 @@
 #
 # Finding classes (one token-prefixed line each):
 #   merged-undeleted <branch>                    local branch tip contained in TARGET
-#   behind-threshold <branch> behind=<n> (threshold <t>)
+#   behind-threshold <branch> behind=<n> days=<d> (threshold <t>)
 #                                                live (unmerged) branch more than
 #                                                FW_BRANCH_BEHIND_WARN (default 50)
-#                                                commits behind TARGET, and NOT
-#                                                ahead (pure lag — land with
-#                                                `fw integrate run`)
-#   diverged-fork <branch> ahead=<a> behind=<b> (threshold <t>)
+#                                                commits behind TARGET, NOT ahead
+#                                                (pure lag — land with `fw integrate
+#                                                run`), AND untouched for at least
+#                                                FW_BRANCH_STALE_DAYS days (T-3094).
+#                                                Both conditions are required: the
+#                                                behind-count alone crosses 50 in
+#                                                ~1.2 days on a busy repo and fires
+#                                                on every healthy branch.
+#   diverged-fork <branch> ahead=<a> behind=<b> days=<d> (threshold <t>)
 #                                                live branch ahead of TARGET by MORE
 #                                                than the threshold AND behind by more
 #                                                than the threshold — a genuine
@@ -49,9 +54,25 @@
 # made a go-live `git merge origin/master` explode into 100+ conflicts. The
 # `diverged-fork` class separates the two so the WARN can name the right remedy.
 
+# T-3094 (T-3093 slice 1): days since the last commit ON a ref, or "" if unknown.
+# Staleness has to be measured on the branch, not on the target. The behind-count
+# answers "how much happened elsewhere", which on this repo is ~41 commits/day and
+# 88% governance churn — it crosses a 50-commit threshold in ~1.2 days and fires on
+# every healthy branch. "Nobody has touched this in N days" is the question that
+# actually separates a strand from work in progress. Same unit and default as
+# FW_STALE_ARC_DAYS (T-1855).
+_bh_days_since_commit() {
+    local repo="$1" ref="$2" last now
+    last=$(git -C "$repo" log -1 --format=%ct "$ref" 2>/dev/null) || return 0
+    [ -z "$last" ] && return 0
+    now=$(date +%s 2>/dev/null) || return 0
+    echo $(( (now - last) / 86400 ))
+}
+
 fw_branch_hygiene() {
     local repo="${1:-.}"
     local behind_warn="${FW_BRANCH_BEHIND_WARN:-50}"
+    local stale_days="${FW_BRANCH_STALE_DAYS:-30}"
 
     local target
     if git -C "$repo" rev-parse --verify -q origin/master >/dev/null 2>&1; then
@@ -72,6 +93,16 @@ fw_branch_hygiene() {
         else
             behind=$(git -C "$repo" rev-list --count "refs/heads/$br..$target" 2>/dev/null || echo 0)
             ahead=$(git -C "$repo" rev-list --count "$target..refs/heads/$br" 2>/dev/null || echo 0)
+            # T-3094: a branch someone is actively working on is not a strand,
+            # however far behind it has fallen. Recency gates BOTH staleness
+            # classes; an unknown date (shallow clone, broken ref) is treated as
+            # stale so the rail fails loud rather than silent.
+            local _days
+            _days=$(_bh_days_since_commit "$repo" "refs/heads/$br")
+            if [ -n "$_days" ] && [ "$_days" -lt "$stale_days" ]; then
+                continue
+            fi
+            local _dtag="days=${_days:-unknown}"
             if [ "${behind:-0}" -gt "$behind_warn" ] && [ "${ahead:-0}" -gt "$behind_warn" ]; then
                 # Bidirectional fork (T-100195): BOTH directions past threshold.
                 # An unmerged branch behind master always has >=1 unique commit
@@ -81,10 +112,10 @@ fw_branch_hygiene() {
                 # ALSO substantially ahead: a `git merge` conflicts and even a
                 # one-way `fw integrate` cannot absorb what master has. Distinct
                 # finding so the WARN names the reconcile-while-small remedy.
-                echo "diverged-fork $br ahead=$ahead behind=$behind (threshold $behind_warn)"
+                echo "diverged-fork $br ahead=$ahead behind=$behind $_dtag (threshold $behind_warn)"
             elif [ "${behind:-0}" -gt "$behind_warn" ]; then
                 # Pure lag (small ahead): landable with a one-way `fw integrate`.
-                echo "behind-threshold $br behind=$behind (threshold $behind_warn)"
+                echo "behind-threshold $br behind=$behind $_dtag (threshold $behind_warn)"
             fi
         fi
     done < <(git -C "$repo" for-each-ref --format='%(refname:short)' refs/heads/)
