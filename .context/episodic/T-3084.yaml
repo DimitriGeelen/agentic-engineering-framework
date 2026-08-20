@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3084: BVP value axis does not discriminate inside the quadrant it recommends
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T01:13:00Z
+# ============================================================================
+
+task_id: T-3084
+task_name: "BVP value axis does not discriminate inside the quadrant it recommends"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-18T19:02:48Z
+completed: 2026-08-20T01:12:49Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-08-18T21:04:02+02:00
+last_commit: 2026-08-18T21:04:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the BVP tie is not spread across the corpus, it is the recommended quadrant
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3078-tier-0-approval-cards-carry-no-provenanc.md'
+  - '.tasks/active/T-3079-no-rail-detects-a-tier-0-approval-reques.md'
+  - '.tasks/active/T-3080-watchtower-tier-0-approval-grants-a-1h-t.md'
+  - '.tasks/active/T-3081-a-learning-that-prescribes-its-own-fix-a.md'
+  - '.tasks/active/T-3082-state-the-aef-side-of-the-admissibility-.md'
+  - '.tasks/active/T-3083-fw-doctor-takes-46-minutes-and-88-of-it-.md'
+  - '.tasks/active/T-3084-bvp-value-axis-does-not-discriminate-ins.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-18T21:04:02'
+    action: 'T-3084: the BVP tie is not spread across the corpus, it is the recommended quadrant'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1810 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1810
+  commits: 1
+  files_changed: 14
+  lines_added: 434
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3084-bvp-value-axis-does-not-discriminate-ins.md
+generated_by: context-agent-hybrid
