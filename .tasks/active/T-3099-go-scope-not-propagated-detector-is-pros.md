@@ -286,6 +286,80 @@ carefully — an inverse correlation with the thing being measured.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-20 — Structural predicate replaces the claim-phrase gate
+
+- **Chose:** candidate = completed task with `workflow_type: inception` + a GO recorded in
+  `## Decision` (`^\*\*Decision\*\*:\s*GO\b`) + `related_tasks:` empty/absent + not named on
+  any task's `related_tasks:` line + not named by any `unlocks_inception_decision:` entry.
+  No vocabulary anywhere in the predicate.
+- **Why:** `**Decision**: GO` is a field written by `fw inception decide`, not prose an author
+  composes, so it cannot drift with phrasing. Corpus check on the 444 completed inceptions:
+  `GO` 345, `NO-GO` 22, `DEFER` 26+8 variants, `SUPERSEDED` 2, absent 38 — the marker is
+  present and unambiguous, and the anchor makes `NO-GO` unmatchable.
+- **Rejected:** widening the regex (same failure class, one vocabulary generation later);
+  requiring a `## Recommendation` that "names slices" (still prose, and the RCA's conservative
+  54 was derived that way — it under-counts by design).
+
+### 2026-08-20 — Before/after candidate counts (real run, live corpus)
+
+Both blocks extracted from `agents/audit/audit.sh` and evaluated against stub
+`pass`/`warn`/`fail` with `PROJECT_ROOT` = this repo (audit.sh's global lock makes a
+whole-audit run unusable as an assertion surface — same reason as T-3095).
+
+| | old (claim-phrase gate, `git show HEAD`) | new (structural) |
+|---|---|---|
+| completed tasks scanned | 2705 | 2705 |
+| `workflow_type: inception` | 444 | 444 |
+| GO recorded | n/a (not consulted) | 347 |
+| survive candidate gate | 2 (`T-2078`, `T-2118`) | 178 |
+| survive `related_tasks` filter | **0** | 178 |
+| emitted | `[PASS] No GO-scope-not-propagated inception(s)` | `[WARN] Found 178 … of 347 GO-recorded completed inception(s) examined` |
+| wall-clock | 1.06s | 0.97s |
+
+The old PASS was vacuous: the candidate set was empty by construction, so it asserted that a
+set nothing could enter was empty. T-2822 is now finding #48 of 178, ordered most-recent-first.
+
+**178, not the RCA's 54.** §IW-4's 54 applied two extra conservative filters ("names slices in
+prose", "would not have matched the regex") to bound the claim it was making. Both are
+vocabulary, so neither survives AC #1. 178 is what the structural predicate actually yields;
+they are triage candidates, not 178 confirmed abandoned decisions, and the report file says so.
+
+### 2026-08-20 — Bounded output
+
+Evidence line carries a count + the 5 most recent ids + `(+N more)`. Full list is written to
+`.context/audits/go-scope-unpropagated/LATEST.md` and named in the mitigation as
+`cat <path>` — mirroring the `unclosed-satisfied/LATEST.md` precedent at `audit.sh:2538`.
+178 WARN lines would have trained people to skip the section, reproducing the blindness in a
+different form.
+
+- **Also chose:** an empty pre-scan summary emits WARN ("scan did not evaluate"), not PASS.
+  The `2>/dev/null` on the python3 call would otherwise convert any breakage into a green
+  line — the exact defect being removed.
+
+### 2026-08-20 — Mutation check (AC #7)
+
+Restored `CLAIM_RE` as an additional candidate filter (the two-line mutation: re-add the regex,
+re-add `if not CLAIM_RE.search(content): continue` in pass 1), re-ran the suite, reverted.
+
+- **Red:** test 1 `prose the old regex missed: GO'd inception with no propagation is detected`
+  — the named prose fixture, as AC #7 requires.
+- Also red, as collateral (all three assert on the WARN the prose fixture produces): test 7
+  `severity is WARN, never FAIL`, test 8 `output is bounded`, test 9 `full list is reachable by
+  a named command`.
+- Green before mutation: 12/12. Green after revert: 12/12. Under mutation: 8/12.
+
+Test 1 additionally asserts the *old* regex does not match its own fixture, so it cannot pass
+for the wrong reason.
+
+### 2026-08-20 — T-2298 two-pass structure preserved
+
+Kept the single `python3 -c` pre-scan: pass 1 walks `completed/` once (counting the examined
+population and collecting candidates, caching contents), pass 2 walks `active/` once and reuses
+the pass-1 cache to build the referenced-id set. Still O(M+N); measured 0.97s vs the old 1.06s.
+Test 12 pins it by asserting exactly one `python3 -c` in the block and no `grep` over
+`.tasks/{active,completed}` — the 30-60s fan-out T-2298 removed. Self-references are excluded
+from the referenced-id set: a task naming itself is not propagation.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:

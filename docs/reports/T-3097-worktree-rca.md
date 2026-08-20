@@ -217,16 +217,20 @@ conservatively (GO recorded, names slices, `related_tasks: []`, back-referenced 
 nobody, would not have matched the regex):
 
 ```
-GO'd completed inceptions invisible to the detector : 54
-most recent: T-2538 T-2602 T-2679 T-2757 T-2800 T-2822 T-2863 T-2909 T-2925
-             T-3022 T-3025 T-3041 T-3044 T-3072 T-100200
+GO'd completed inceptions invisible to the detector : 178
 ```
 
-T-2822 is one of 54. The worktree headache is a symptom of a governance rail that has
+**Corrected upward from 54 during the build, and the correction matters.** This section
+first reported 54, because I additionally required the inception's prose to *mention*
+slices or sub-tasks. That filter is itself vocabulary — the very thing the fix removes —
+so applying it to size the backlog reproduced the defect in the measurement of the defect.
+Under the purely structural predicate (GO recorded · `related_tasks:` empty or absent · no
+back-reference · no `unlocks_inception_decision:`) the count is **178**, confirmed
+independently against the shipped detector. T-2822 is finding #48 of 178. The worktree headache is a symptom of a governance rail that has
 been reporting green while blind since it shipped (T-2096).
 
-**Two caveats, stated so the number is not oversold.** The 54 are *candidates for triage*,
-not 54 confirmed abandoned decisions — some may have shipped work that simply never linked
+**Two caveats, stated so the number is not oversold.** The 178 are *candidates for triage*,
+not 178 confirmed abandoned decisions — some may have shipped work that simply never linked
 back, which is exactly the judgement the detector was supposed to force somebody to make.
 And the detector scans `completed/` only, so live inceptions are out of scope by design.
 Neither caveat touches the finding: 2/444 on the gate means the rail cannot fire.
@@ -273,7 +277,7 @@ a GO'd inception, `related_tasks:` empty or absent, no task back-referencing it,
 `unlocks_inception_decision:` pointing at it. That predicate needs no vocabulary and
 cannot be evaded by writing carefully.
 
-The 54 become a backlog to triage, not 54 new WARNs on day one — the detector should report
+The 178 become a backlog to triage, not 178 new WARNs on day one — the detector should report
 a count and a sample, with the full list behind a command, or it will be ignored the way
 every wall-of-text audit section is.
 

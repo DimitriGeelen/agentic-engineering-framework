@@ -293,3 +293,16 @@ Filed at the start of the investigation: the evidence base (errors log, peer RCA
 
 ### 2026-08-20T07:04:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:**
+
+Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
+
+**Evidence:**
+
+<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
+
