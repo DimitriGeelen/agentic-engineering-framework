@@ -1262,6 +1262,11 @@ do_doctor() {
     # run prints 'command not found' twice and the consumer checks silently
     # no-op (empty loop is indistinguishable from "no consumers").
     source "$FRAMEWORK_ROOT/lib/config.sh"
+    # T-3112: fw_hook_parity_delta / fw_hook_parity_linked_worktrees — shared by
+    # the Consumer Projects loop and the Worktrees audit below (same predicate,
+    # two subjects). Same reason as the source above: an unsourced function makes
+    # the check silently no-op, which reads exactly like a clean bill of health.
+    source "$FRAMEWORK_ROOT/lib/hook-parity.sh"
 
     echo -e "${BOLD}fw doctor${NC} - Framework Health Check"
     if [ "$quick_mode" = "1" ]; then
@@ -2671,34 +2676,10 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
             local consumer_settings="$consumer_dir/.claude/settings.json"
             local hook_info="ok"
             if [ -f "$consumer_settings" ] && [ -f "$fw_settings_file" ]; then
-                hook_info=$(FW_FILE="$fw_settings_file" CONSUMER_FILE="$consumer_settings" python3 -c "
-import json, os
-def extract_hooks(path):
-    hooks = set()
-    try:
-        with open(path) as f:
-            data = json.load(f)
-        for event, entries in data.get('hooks', {}).items():
-            for entry in entries:
-                for hook in entry.get('hooks', []):
-                    cmd = hook.get('command', '')
-                    if 'fw hook' in cmd:
-                        name = cmd.split('fw hook ')[-1].strip()
-                    else:
-                        name = cmd.strip().split('/')[-1]
-                    hooks.add((event, name))
-    except (json.JSONDecodeError, FileNotFoundError):
-        pass
-    return hooks
-fw_hooks = extract_hooks(os.environ['FW_FILE'])
-consumer_hooks = extract_hooks(os.environ['CONSUMER_FILE'])
-missing = fw_hooks - consumer_hooks
-if missing:
-    names = ', '.join(n for _, n in sorted(missing))
-    print(f'missing {len(missing)}: {names}')
-else:
-    print(f'ok {len(consumer_hooks)}/{len(fw_hooks)}')
-" 2>/dev/null || echo "parse-error")
+                # T-3112: predicate lives in lib/hook-parity.sh — the worktree
+                # audit below asks the identical question of a different subject,
+                # and two inline copies would drift independently.
+                hook_info=$(fw_hook_parity_delta "$fw_settings_file" "$consumer_settings")
             fi
             # Report (T-1838: asymmetric remediation for consumer-ahead case)
             if [ "$version_ok" = true ] && [[ "$hook_info" == ok* ]]; then
@@ -2753,6 +2734,81 @@ else:
             echo -e "  ${CYAN}SKIP${NC}  No consumer projects found in /opt"
         elif [ "$consumer_issues" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  All $consumer_count consumer(s) current"
+        fi
+    fi
+
+    # Check: Linked-worktree enforcement parity (T-3112, R7 leg 3)
+    #
+    # The Consumer Projects loop above asks "does this replica carry the hooks
+    # the authority carries?" of vendored consumers. A linked worktree is the
+    # same shape of replica and was asked nothing — for the seven weeks that
+    # produced the T-2505 / T-2506 / T-2428 duplicate-ID incidents, the framework
+    # could not see that its own worktrees were running six-week-old enforcement.
+    #
+    # Deliberately NOT gated on FRAMEWORK_ROOT = PROJECT_ROOT (unlike the
+    # consumer loop): worktree drift is a property of any project that uses
+    # worktrees, and consumers use them too.
+    #
+    # This leg REPORTS the drift. It does not close it — L2 (T-3111) redirects
+    # the binary and L4 (T-3113) names stale worktrees at upgrade time.
+    local wt_authority wt_auth_settings
+    wt_authority=$(fw_hook_parity_authority_root "$PROJECT_ROOT" 2>/dev/null || true)
+    echo ""
+    echo -e "  ${BOLD}Worktrees${NC}"
+    if [ -z "$wt_authority" ]; then
+        # T-3105: unenumerable set is a WARN, never a silent pass. "Not a git
+        # repo" is a legitimate state, but it is a state in which this check
+        # proves nothing — say so rather than printing an OK it did not earn.
+        echo -e "  ${YELLOW}WARN${NC}  Cannot enumerate worktrees — $PROJECT_ROOT is not a git repository"
+        echo -e "         Enforcement parity across worktrees is UNCHECKED, not clean."
+        warnings=$((warnings + 1))
+    else
+        wt_auth_settings="$wt_authority/.claude/settings.json"
+        local wt_list wt_count=0 wt_issues=0
+        if ! wt_list=$(fw_hook_parity_linked_worktrees "$PROJECT_ROOT" 2>/dev/null); then
+            echo -e "  ${YELLOW}WARN${NC}  git worktree list failed — worktree set unenumerable"
+            echo -e "         Enforcement parity across worktrees is UNCHECKED, not clean."
+            warnings=$((warnings + 1))
+        elif [ ! -f "$wt_auth_settings" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Authority has no .claude/settings.json ($wt_auth_settings)"
+            echo -e "         Nothing to compare replicas against — parity UNCHECKED."
+            warnings=$((warnings + 1))
+        else
+            local wt wname wdelta
+            while IFS= read -r wt; do
+                [ -n "$wt" ] || continue
+                wt_count=$((wt_count + 1))
+                wname=$(basename "$wt")
+                wdelta=$(fw_hook_parity_delta "$wt_auth_settings" "$wt/.claude/settings.json")
+                case "$wdelta" in
+                    ok*)
+                        echo -e "  ${GREEN}OK${NC}  $wname (${wdelta#ok } hooks)"
+                        ;;
+                    absent)
+                        echo -e "  ${YELLOW}WARN${NC}  $wname (settings absent — no .claude/settings.json)"
+                        echo -e "         This worktree enforces NOTHING. Path: $wt"
+                        warnings=$((warnings + 1))
+                        wt_issues=$((wt_issues + 1))
+                        ;;
+                    *)
+                        echo -e "  ${YELLOW}WARN${NC}  $wname ($wdelta)"
+                        echo -e "         Path: $wt"
+                        warnings=$((warnings + 1))
+                        wt_issues=$((wt_issues + 1))
+                        ;;
+                esac
+            done < <(printf '%s\n' "$wt_list")
+
+            # T-3105 set-reporting: every branch below states the size of the set
+            # actually examined. An empty set is stated, not passed over.
+            if [ "$wt_count" -eq 0 ]; then
+                echo -e "  ${CYAN}SKIP${NC}  No linked worktrees — examined 0 linked worktree(s)"
+            elif [ "$wt_issues" -eq 0 ]; then
+                echo -e "  ${GREEN}OK${NC}  Enforcement parity clean — examined $wt_count linked worktree(s)"
+            else
+                echo -e "         $wt_issues of $wt_count linked worktree(s) drifted from the authority's hook set."
+                echo -e "         Refresh: fw upgrade <worktree-path>, or land and remove the worktree."
+            fi
         fi
     fi
 
