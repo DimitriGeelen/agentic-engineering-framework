@@ -4726,3 +4726,9 @@ X'` returning empty group."
   task: T-3092
   date: 2026-08-19
   context: Added via context agent
+- id: L-632
+  learning: "A ## Verification line must never shell out to `fw audit`: audit takes a global lock and the --status work-completed path runs its own audit, so the line races the command evaluating it and fails deterministically at the only moment it matters. Extract the block under test and evaluate it directly instead. Found by the gate on T-3095 after both lines passed by hand seconds earlier."
+  source: P-011
+  task: T-3095
+  date: 2026-08-20
+  context: Added via context agent

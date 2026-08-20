@@ -12,22 +12,9 @@ setup() {
     FIX="$BATS_TEST_TMPDIR/fix"
     ORIGIN="$FIX/origin.git"
     CLONE="$FIX/clone"
-    RUNNER="$BATS_TEST_TMPDIR/run-block.sh"
     mkdir -p "$FIX"
 
-    cat > "$RUNNER" <<'SH'
-#!/usr/bin/env bash
-REPO_ROOT="$1"; PROJECT_ROOT="$2"; FRAMEWORK_ROOT="$REPO_ROOT"
-PASS_COUNT=0; WARN_COUNT=0; FAIL_COUNT=0
-pass() { echo "PASS|$1"; PASS_COUNT=$((PASS_COUNT + 1)); }
-info() { echo "INFO|$1"; PASS_COUNT=$((PASS_COUNT + 1)); }
-warn() { echo "WARN|$1"; echo "EVIDENCE|$2"; echo "MITIGATION|$3"; WARN_COUNT=$((WARN_COUNT + 1)); }
-fail() { echo "FAIL|$1"; FAIL_COUNT=$((FAIL_COUNT + 1)); }
-eval "$(sed -n '/^fw_is_linked_worktree() {/,/^}/p' "$REPO_ROOT/lib/paths.sh")"
-eval "$(sed -n '/^_bh_lib="\$FRAMEWORK_ROOT\/lib\/branch-hygiene\.sh"$/,/^fi$/p' "$REPO_ROOT/agents/audit/audit.sh")"
-echo "COUNTS|pass=$PASS_COUNT|warn=$WARN_COUNT|fail=$FAIL_COUNT"
-SH
-    chmod +x "$RUNNER"
+    RUNNER="$REPO_ROOT/tests/helpers/audit-branch-hygiene-block.sh"
 
     git init --bare -q -b master "$ORIGIN"
     git clone -q "$ORIGIN" "$CLONE" 2>/dev/null

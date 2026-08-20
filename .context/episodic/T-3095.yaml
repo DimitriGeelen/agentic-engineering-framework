@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3095: Promote branch-hygiene findings to the audit cron (T-3093 slice 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T07:02:11Z
+# ============================================================================
+
+task_id: T-3095
+task_name: "Promote branch-hygiene findings to the audit cron (T-3093 slice 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-20T00:56:39Z
+completed: 2026-08-20T07:01:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-20T09:00:02+02:00
+last_commit: 2026-08-20T09:00:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  promote branch hygiene onto the audit cron (T-3093 slice 2)
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` sources `lib/branch-hygiene.sh` and **calls**'
+  - 'Findings surface at **WARN**, never FAIL and never blocking. T-3093 explicitly ruled'
+  - 'Output is bounded and **class-representative** — reuse `fw_branch_hygiene_head`'
+  - 'Linked worktrees are skipped with INFO, not WARN — branch hygiene is a'
+  - 'A repository with no findings emits a positive OK line, not silence — an absent'
+  - 'The audit''s own exit code is unchanged by branch-hygiene findings alone: a repo'
+  - 'Bats coverage in `tests/unit/` for: findings present → WARN emitted with counts,'
+  - 'Mutation check recorded in Decisions: removing the audit call turns the'
+  - 'The live audit is run and its branch-hygiene section reproduced verbatim in'
+  - 'A repo with **no master lineage** is INFO-skipped, not reported clean. Added during'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-20 — Call the library, do not mirror it'
+    chose: '`audit.sh` sources `lib/branch-hygiene.sh` and calls `fw_branch_hygiene` / `fw_branch_hygiene_head`. Zero classification logic in audit; the only place audit reads a class token is the `grep -q ''^diverged-fork ''` that routes the remedy.'
+    rationale: 'the precedent this slice follows (`bin/fw doctor` → audit cron drift, T-1771/T-1942/T-1943) mirrored doctor''s logic instead of calling it, and that second copy is the L-399 producer/consumer split — one side gets fixed, the other silently doesn''t. Branch hygiene has a single library entry point, so there is no excuse for a copy.'
+    alternatives_rejected: ['re-implementing the scan inline for "audit independence". The independence is illusory: two copies of a predicate do not cross-check each other, they diverge.']
+  - decision: '2026-08-20 — A check that could not run must not report as clean'
+    chose: 'three distinct non-finding outcomes, not one. Linked worktree → INFO skip; no master lineage → INFO skip; genuinely tidy repo → PASS.'
+    rationale: '`fw_branch_hygiene` is silent in all three cases, so at the call site they are indistinguishable. `bin/fw doctor` collapses the last two and prints "Branch hygiene clean" on a repo it never judged. That is the false-green class this framework has hit repeatedly (T-2732''s port-3000 verification lines, OBS-185, the fabric coverage expander at audit.sh:1791) — a silent instrument reporting as a silent result.'
+    alternatives_rejected: ['mirroring doctor''s two-state form for parity. Parity with a defect is not parity worth having; the divergence is documented here instead, and doctor''s own version is a candidate follow-up rather than a blocker for this slice.']
+  - decision: '2026-08-20 — WARN, never FAIL; INFO for worktrees'
+    chose: 'the block can reach `warn`, `pass` and `info`, and cannot reach `fail` on any input. Audit''s exit code is therefore 1 (warnings) on a repo whose only issue is stale branches, never 2.'
+    rationale: 'T-3093 explicitly ruled out a blocking gate and per-strand auto-filing. Both act on a signal whose false-positive rate was fixed only one slice ago (T-3094 moved the trigger from behind-count to recency), and both are far harder to walk back than a WARN. The linked-worktree INFO follows the content-vs-environment classification from L-486 / T-2437: a worktree derives a different branch set, so every finding there is a worktree artefact, not content drift.'
+    alternatives_rejected: ['FAIL on `diverged-fork` specifically, on the grounds that T-100194''s fork cost 100+ conflicts. Tempting and wrong: the fork class is the newest and least-measured of the six, and a FAIL blocks pushes. It gets a distinct *remedy string* instead, which carries the same information at zero blast radius.']
+  - decision: '2026-08-20 — Mutation results (AC #8)'
+  - decision: '2026-08-20 — Live audit section, reproduced verbatim (AC #9)'
+  - decision: '2026-08-20 — A verification line may not run `fw audit` (found by the gate, not by me)'
+    chose: 'extract the shipped block into `tests/helpers/audit-branch-hygiene-block.sh` and have both the bats suite and the verification line evaluate that. Same source text, no lock, and the duplicate runner the bats file had been writing into its own tmpdir is gone with it. - **Worth generalising:** the audit correctly failed loud rather than emitting an empty verdict, which is the only reason this was visible at all — a lock that exited 0 with no output would have passed the gate while asserting nothing. That is the same false-green shape as T-2732''s port-3000 lines. Captured as a learning.'
+    alternatives_rejected: ['`--skip-verification`. The lines were wrong; the gate was right.']
+  - decision: '2026-08-20 — Resolve the full-list command against FRAMEWORK_ROOT, not `lib/`'
+    chose: 'the mitigation string embeds absolute paths — `source "/opt/…/lib/branch-hygiene.sh"; fw_branch_hygiene "/opt/…"`.'
+    rationale: 'doctor emits the relative form `source lib/branch-hygiene.sh`, which only works from the framework repo root. In a consumer project the library is at `.agentic-framework/lib/`, and the audit that printed the line runs on cron from an unknown cwd. A copy-pasteable command that silently depends on cwd is the T-609/T-1257 class this framework has corrected twice.'
+    alternatives_rejected: ['copying doctor''s relative form for parity — same reasoning as the false-green decision above.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-3095-promote-branch-hygiene-findings-to-the-a.md'
+  - 'tests/unit/t3095_audit_branch_hygiene.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T09:00:02'
+    action: 'T-3095: promote branch hygiene onto the audit cron (T-3093 slice 2)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 365 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 365
+  commits: 1
+  files_changed: 4
+  lines_added: 429
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3095-promote-branch-hygiene-findings-to-the-a.md
+generated_by: context-agent-hybrid
