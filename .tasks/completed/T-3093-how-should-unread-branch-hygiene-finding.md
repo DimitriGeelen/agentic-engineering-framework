@@ -4,16 +4,16 @@ name: "How should unread branch-hygiene findings escalate?"
 description: >
   Inception: How should unread branch-hygiene findings escalate?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-19T23:57:54Z
-last_update: 2026-08-20T00:01:04Z
-date_finished:
+last_update: 2026-08-20T00:16:24Z
+date_finished: 2026-08-20T00:16:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -150,15 +150,15 @@ the `remote-unlanded` class (T-3092, shipped).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -246,7 +246,35 @@ false-positive rate has not been fixed yet, and both are hard to walk back.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The filing-time rationale said "the detection rail works; nothing consumes it". The
+first half turned out to be wrong, and that inverts the plan.
+
+Nothing consumes it — confirmed. `fw_branch_hygiene` has exactly one caller
+(`bin/fw:3221`), `fw doctor` appears on **zero** cron lines, and neither `audit.sh`
+nor `handover.sh` calls it. The rail shipped 2026-07-04; the oldest strand forked
+2026-03-01. It has never had an automatic surface.
+
+But the signal is also not yet true. `origin/master` moves at **~41 commits/day**, so
+the 50-commit threshold is crossed in **~1.2 days** — every healthy in-progress branch
+is a "finding" by the next morning. And **88%** of that movement (2266 of 2577 commits
+since 2026-06-01) touches nothing outside `.context/` and `.tasks/`: the counter
+deciding whether your branch is stale is driven almost entirely by handovers.
+
+So "put it on the cron" — the slice I expected to recommend — would flood the daily
+audit with false positives and burn the signal for good. The unit has to be fixed
+first: days-since-last-commit, following `FW_STALE_ARC_DAYS` (T-1855), which is the
+same problem already solved elsewhere in this framework. All four real strands sat
+untouched for weeks to months, so a time-based rule catches every one while staying
+silent on a branch you committed to this morning.
+
+Sequence: **(1) recalibrate to time → (2) promote to the audit cron via a direct call,
+following the documented doctor→audit precedent → (3) only then consider a handover
+nudge.** No blocking gate, no auto-filed tasks: both act on a signal whose
+false-positive rate has not been fixed yet, and both are hard to walk back.
+
+**Date**: 2026-08-20T00:16:23Z
 
 ## Updates
 
@@ -258,16 +286,16 @@ false-positive rate has not been fixed yet, and both are hard to walk back.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-faab3931
-- **Timestamp:** 2026-08-20T00:03:55Z
+- **Scan ID:** R-fb503eb2
+- **Timestamp:** 2026-08-20T00:16:25Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-ed185c3c
-- **Timestamp:** 2026-08-20T00:03:55Z
+- **Scan ID:** RC-977c474c
+- **Timestamp:** 2026-08-20T00:16:25Z
 - **Overall:** CONFIRMED
 - **Claims:** 7
 
@@ -280,3 +308,35 @@ false-positive rate has not been fixed yet, and both are hard to walk back.
 | `T-1942` | task | ✓ pass |
 | `T-1943` | task | ✓ pass |
 | `T-2505` | task | ✓ pass |
+### 2026-08-20T00:16:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The filing-time rationale said "the detection rail works; nothing consumes it". The
+first half turned out to be wrong, and that inverts the plan.
+
+Nothing consumes it — confirmed. `fw_branch_hygiene` has exactly one caller
+(`bin/fw:3221`), `fw doctor` appears on **zero** cron lines, and neither `audit.sh`
+nor `handover.sh` calls it. The rail shipped 2026-07-04; the oldest strand forked
+2026-03-01. It has never had an automatic surface.
+
+But the signal is also not yet true. `origin/master` moves at **~41 commits/day**, so
+the 50-commit threshold is crossed in **~1.2 days** — every healthy in-progress branch
+is a "finding" by the next morning. And **88%** of that movement (2266 of 2577 commits
+since 2026-06-01) touches nothing outside `.context/` and `.tasks/`: the counter
+deciding whether your branch is stale is driven almost entirely by handovers.
+
+So "put it on the cron" — the slice I expected to recommend — would flood the daily
+audit with false positives and burn the signal for good. The unit has to be fixed
+first: days-since-last-commit, following `FW_STALE_ARC_DAYS` (T-1855), which is the
+same problem already solved elsewhere in this framework. All four real strands sat
+untouched for weeks to months, so a time-based rule catches every one while staying
+silent on a branch you committed to this morning.
+
+Sequence: **(1) recalibrate to time → (2) promote to the audit cron via a direct call,
+following the documented doctor→audit precedent → (3) only then consider a handover
+nudge.** No blocking gate, no auto-filed tasks: both act on a signal whose
+false-positive rate has not been fixed yet, and both are hard to walk back.
+
+### 2026-08-20T00:16:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
