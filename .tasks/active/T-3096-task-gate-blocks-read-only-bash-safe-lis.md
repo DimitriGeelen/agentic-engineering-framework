@@ -140,6 +140,35 @@ Two further defects visible in the same code:
       and removing the message split turns the message test red
 
 ### Human
+
+- [ ] [REVIEW] The widened read-only set is an acceptable blast-radius trade for this repo and its consumers
+
+  **Why you and not the agent:** this loosens a security predicate, and it ships to every
+  consumer project through `.agentic-framework/` vendoring. The agent can prove the tests
+  pass and the differential is accounted for; it cannot rule that the *trade* is worth it.
+  That is a sovereignty call (CLAUDE.md §AC Classification Guidance, criterion 4).
+
+  **Steps:**
+  1. `git show 715737171 --stat && git show a87b86a99 --stat`
+  2. Read `## Decisions` D-2 (what was gated), D-4 (what was deliberately NOT adopted) and
+     D-6 (the 65 / 17 differential, both buckets enumerated in full) in this task file
+  3. Skim the derived evidence: `docs/reports/T-3096-fw-verb-classification.md` — the
+     `## Deliberately excluded` section is the one that matters, it lists the 20 MIXED
+     and 4 UNKNOWN pairs that stayed gated
+  4. Decide on the one judgement the agent flagged as yours: **stdout-only filters**
+     (`sed`, `awk`, `sort`, `jq`, `diff`, …) are now allowed on the argument that their
+     only write route is a redirect, and redirects are caught one layer up by
+     `has_bash_write_pattern`. That argument is sound for the forms tested. It rests on
+     `has_bash_write_pattern` staying correct — a single regression there now widens
+     further than it used to.
+
+  **Expected:** you agree the trade is right, or you name a specific entry to pull back
+  (each is a one-line `case` arm in `agents/context/lib/safe-commands.sh`).
+
+  **If not:** say which entry and why; removing one is a one-line edit plus flipping its
+  test from `-eq 0` to `-ne 0`. The wrapper stripper and the block-message split are
+  separable from the filter set — they can stay even if the filters come out.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -255,32 +284,53 @@ reset the clock on the same silent decay.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The eight agent ACs and all twelve Verification lines pass, 30 new tests are
+green, all five pre-existing safe-command suites stay green, and four mutations go red.
+What is left is a single judgement I should not make on my own: this loosens a security
+predicate and ships to every consumer through vendoring.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+The defect is real and was measured, not inferred. 50 of 52 read-only shapes this repo's
+own tooling uses classified GATED, and 92 of 120 READ `fw` pairs were unreachable —
+including `fw watchtower url`, which CLAUDE.md prescribes as *the* way to avoid
+hard-coding port 3000. A rule that has been violated 371 times across 277 tasks had its
+sanctioned alternative refused by a different gate.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
+I want to be explicit about what this does and does not fix, because the framing matters
+for the review. Widening the allowlist stops *some* false positives. It cannot stop all of
+them: executing a script is not provably read-only from a command string, and that is the
+Tier 0 scope boundary, not an oversight. The half that is fixed unconditionally is the
+**message** — a Bash block no longer claims a modification when no write pattern matched,
+and it names which segment of a chain was unrecognised. That is what makes the next
+occurrence diagnosable instead of invisible, and it is why I would keep leg 2 even if you
+pull entries out of leg 1.
 
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+Two things I deliberately did not do, both toward gating: I excluded `orchestrator improve`
+although the derivation classified it READ (a stub that prints is a temporary property, not
+a contract), and I narrowed nothing that was previously allowed even where the derivation
+proposed it — narrowing `integrate` or `resume` would re-open a deadlock this file has been
+patched four times to close. Both exclusions are pinned by tests so they are not quietly
+reversed later.
+
+**Evidence:**
+- `tests/unit/t3096_safe_commands_wrappers.bats` — 30/30, every relaxation paired with a
+  negative that must stay red (`termlink inject`, `fw config set`, `env ./x.sh`, `yq -i`,
+  script execution, `fw reviewer T-XXX`)
+- Pre-existing suites green: `context_safe_commands` (48), `safe_commands_chain` (21),
+  `safe_commands_env_prefix` (10), `test_safe_commands_git_commit` (12),
+  `drift_gate_not_shadowed_by_safelist` (11)
+- Mutations I/J/K/L all red (Decisions D-7), including one near-miss where my own guard
+  tripped on correct output and was fixed rather than loosened
+- Differential over 20,222 corpus lines with **both** non-trivial buckets enumerated in
+  full, not sampled — 65 GATED→SAFE all real verification lines, 17 SAFE→GATED all English
+  prose (Decisions D-6)
+- Derived evidence with file:line per verdict: `docs/reports/T-3096-fw-verb-classification.md`
+- A pre-existing hole closed, not opened: `env ./anything.sh` used to classify SAFE on the
+  strength of the word `env`
+- G-084 registered in `.context/project/concerns.yaml` **before** the fix, with a
+  `trigger_check` naming the exact predicate pair, so the next instance is recognised
+  rather than re-derived
 
 ## Decisions
 
