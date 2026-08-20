@@ -351,75 +351,188 @@ _wt_remove_resolve() {
     return 1
 }
 
-# _wt_is_regenerable_path <relpath> -> 0 (true) when <relpath> is machine-local
-# state that is safe to discard (recreated by hooks/runtime on next use), 1
-# otherwise.
+# _wt_is_governance_path <relpath> -> 0 (true) when <relpath> is framework
+# governance state, 1 otherwise.
 #
-# T-2831 -- the allowlist is deliberately narrow and exact-match, not "anything
-# under .context/working/". `.context/working/feedback-stream.yaml` sits in that
-# directory but is a content register (T-1985 sovereignty log of human overrides)
-# -- measured live holding real, non-regenerable decisions. A directory-prefix
-# rule would have classified it regenerable and let --force discard it silently,
-# which is the exact failure mode OBS-179 nearly shipped (T-2828 origin note).
-# Every path NOT explicitly listed here -- including unrecognised files inside
-# .context/working/ -- is treated as content and refused. Fail-safe, not fail-open.
-_wt_is_regenerable_path() {
-    local p="$1"
-    case "$p" in
-        .context/working/*-counter|.context/working/.loop-detect.json| \
-        .context/working/.pre-compact.*|.context/working/session.yaml| \
-        .context/working/focus.yaml)
-            return 0 ;;
-        *)
-            return 1 ;;
+# T-3102 / T-2822 -- governance state (.context/**, .tasks/**) is TRACKED
+# content, so every linked worktree carries a FORK of it, and hooks firing in
+# the MAIN session mutate that fork independently of anything the worktree's
+# own work did. Measured on the four live worktrees at T-3102 time: 26/23,
+# 5/4, 2/1, 17/15 dirty/governance. The dirt is not the worktree's work; it is
+# ambient drift.
+#
+# T-2822's adopted GO settles what that dirt is WORTH: governance state inside
+# a linked worktree is NON-AUTHORITATIVE BY CONSTRUCTION -- master is the
+# authority, and the worktree's copy is a stale branch of it that nothing ever
+# reads back. Discarding it loses nothing that master does not already hold.
+#
+# SUPERSEDES T-2831's regenerable-vs-content split for governance paths.
+# T-2831 refused `.tasks/**`, `.context/project/decisions.yaml` and
+# `.context/working/feedback-stream.yaml` UNCONDITIONALLY on the theory that
+# they were irreplaceable content. Under T-2822 that theory is wrong for the
+# worktree copy specifically -- the authoritative copy is on master and is
+# untouched by this removal. What T-2831 was actually protecting -- "never
+# silently discard uncommitted work" -- survives intact below as the SOURCE
+# class, which is still refused unconditionally, --force included.
+#
+# The prefix rule is deliberate here, where T-2831's exact-match allowlist was
+# deliberate there: T-2831 needed narrowness because it was deciding whether a
+# file was regenerable (a per-file property). T-3102 decides whether a file is
+# authoritative in THIS working copy (a per-directory property -- the whole
+# governance tree is non-authoritative in a worktree, uniformly).
+#
+# NOTE (T-3102 correction): this predicate no longer decides on its own whether
+# dirt blocks removal -- see _wt_is_discardable_dirt below. It survives because
+# the discard SUMMARY still distinguishes governance dirt (non-authoritative
+# fork) from vendored/generated dirt (regenerable), and those are different
+# sentences to say to an operator.
+_wt_is_governance_path() {
+    case "$1" in
+        .context/*|.tasks/*) return 0 ;;
+        *) return 1 ;;
     esac
 }
 
+# _wt_is_discardable_dirt <relpath> -> 0 (true) when a dirty <relpath> inside a
+# linked worktree can be discarded on removal without losing work.
+#
+# T-3102 CORRECTION. The first cut of this task classed only `.context/**` and
+# `.tasks/**` as discardable. That basis was too narrow to be operational: the
+# read-only dry run found all four live worktrees still refused, every one of
+# them on a dirty `VERSION`, two of them also on `.agentic-framework/**` and
+# `lib/ts/dist/**`. The fix removed governance dirt as a CAUSE of refusal and
+# unblocked nothing.
+#
+# The right set already existed. `_wt_is_ignorable_path` (defined further down,
+# for `fw worktree gc`) enumerates exactly "vendored, generated, or
+# session-local churn" -- content that is not work. We REUSE it rather than
+# restate it: a second copy of that pattern list is precisely the drift bug this
+# task exists to fix. (Definition order is irrelevant -- the whole file is
+# sourced before any call, so the forward reference resolves.)
+#
+# Two deltas, both deliberate:
+#
+#   + .tasks/*   is discardable HERE but is NOT added to
+#                _wt_is_ignorable_path. gc calls that function for LANDING
+#                decisions ("did this branch's work reach master?"), and there a
+#                `.tasks/` file IS a deliverable -- sweeping it into gc's
+#                ignorable set would let gc reclaim a branch whose only real
+#                content was a task file. The dirt caller asks a different
+#                question ("would discarding this working copy lose anything?"),
+#                and under T-2822 the answer for `.tasks/` is no: master holds
+#                the authoritative copy. TWO CALLERS, TWO CORRECT ANSWERS. Do
+#                not "unify" them -- unifying them is the bug.
+#
+#   - .fabric/*  is ignorable for gc but is NOT discardable here. Sanity-checked
+#                at T-3102 rather than assumed: `fw fabric scan` SKIPS cards that
+#                already exist (agents/fabric/lib/register.sh:203,331) -- it only
+#                creates missing ones. So a MODIFIED card is not regenerable, and
+#                cards carry hand-authored prose (`purpose:`, `standalone_reason:`
+#                citing task ids). Discarding a dirty card would silently destroy
+#                that. It stays ignorable for gc, where the question is "is a
+#                changed card a deliverable?" (no), but blocking here, where the
+#                question is "would discarding it lose content?" (yes). None of
+#                the four live worktrees carries `.fabric/` dirt, so excluding it
+#                costs nothing operationally and keeps the guard honest.
+#
+# The other classes WERE checked, not assumed:
+#   .context/*            non-authoritative fork; master is the authority (T-2822)
+#   .agentic-framework/*  vendored copy of this repo's own source, rewritten
+#                         wholesale by `fw vendor self` (bin/fw:_self_vendor)
+#   VERSION               derived from FW_VERSION in bin/fw, restamped by
+#                         `fw version sync` (lib/version.sh:298)
+#   lib/ts/dist/*         build output of lib/ts/src (`npm run build` ->
+#                         lib/ts/../build.sh)
+#   *.budget-status|*.hook-counter|*.tool-counter|*.loop-detect.json
+#                         session-local counters, rewritten on next tool call
+_wt_is_discardable_dirt() {
+    case "$1" in
+        .fabric/*) return 1 ;;   # see above -- fabric scan will not regenerate it
+        .tasks/*)  return 0 ;;   # see above -- deliberately NOT in the gc set
+    esac
+    _wt_is_ignorable_path "$1"
+}
+
+# _wt_porcelain_path <porcelain-line> -> echoes the working-tree path.
+# Handles rename/copy records (`R  old -> new`) by taking the destination, and
+# strips git's quoting for paths with unusual characters.
+_wt_porcelain_path() {
+    local path="${1:3}"
+    case "$path" in
+        *' -> '*) path="${path##* -> }" ;;
+    esac
+    # git quotes paths containing specials; drop the wrapping quotes so the
+    # classification sees `.context/x`, not `".context/x"`.
+    case "$path" in
+        '"'*'"') path="${path:1:${#path}-2}" ;;
+    esac
+    printf '%s' "$path"
+}
+
 # _wt_dirty_summary <worktree_path> -> classifies `git status --porcelain` for
-# the worktree into regenerable machine-local state vs content registers.
-# Prints a human-readable report. Return codes:
+# the worktree into discardable dirt vs real work. Prints a human-readable report.
+#
+# THE RULE (T-3102, corrected):
+#     blocking dirt = a dirty path that is NOT _wt_is_discardable_dirt
+# and _wt_is_discardable_dirt is _wt_is_ignorable_path (gc's vendored/generated/
+# session-local set) plus `.tasks/*`, minus `.fabric/*`. See that function for
+# why each delta exists and why the two callers must NOT be unified.
+#
+# Return codes:
 #   0 = clean (nothing dirty)
-#   1 = at least one content-register path is dirty (names files + diffstat --
-#       this is the case --force must NEVER bypass, T-2831 AC3)
-#   2 = dirty, but ONLY regenerable machine-local state (names the safe remedy)
+#   1 = at least one SOURCE path is dirty -- names the specific paths (capped),
+#       refused unconditionally, --force included (T-2831 AC3, preserved)
+#   2 = dirty, but ONLY discardable paths -- safe to discard on removal
 _wt_dirty_summary() {
     local wt_path="$1"
-    local -a content=() regen=()
-    local line code path
+    local -a source=() gov=() gen=()
+    local line path
     while IFS= read -r line; do
         [ -z "$line" ] && continue
-        code="${line:0:2}"
-        path="${line:3}"
-        if _wt_is_regenerable_path "$path"; then
-            regen+=("$path")
+        path="$(_wt_porcelain_path "$line")"
+        if ! _wt_is_discardable_dirt "$path"; then
+            source+=("$path")
+        elif _wt_is_governance_path "$path"; then
+            # discardable AND governance -- "non-authoritative fork" (T-2822)
+            gov+=("$path")
         else
-            content+=("$code:$path")
+            # discardable AND vendored/generated/session-local -- "regenerable"
+            gen+=("$path")
         fi
     done < <(git -C "$wt_path" status --porcelain --untracked-files=all 2>/dev/null)
 
-    if [ "${#content[@]}" -eq 0 ] && [ "${#regen[@]}" -eq 0 ]; then
+    if [ "${#source[@]}" -eq 0 ] && [ "${#gov[@]}" -eq 0 ] && [ "${#gen[@]}" -eq 0 ]; then
         return 0
     fi
 
-    if [ "${#content[@]}" -gt 0 ]; then
-        echo "${#content[@]} content-register file(s) dirty in $wt_path -- NOT regenerable:"
-        local entry code path lines_n
-        for entry in "${content[@]}"; do
-            code="${entry%%:*}"
-            path="${entry#*:}"
-            if [ "$code" = "??" ]; then
-                lines_n="$(wc -l < "$wt_path/$path" 2>/dev/null | tr -d ' ')"
-                echo "  $path (untracked, ${lines_n:-0} line(s))"
-            else
-                git -C "$wt_path" diff --stat HEAD -- "$path" 2>/dev/null | sed 's/^/  /'
-            fi
+    # Source wins over governance in a mixed worktree: the presence of ANY
+    # uncommitted source makes the removal lossy, whatever else is dirty.
+    if [ "${#source[@]}" -gt 0 ]; then
+        echo "${#source[@]} uncommitted source file(s) in $wt_path:"
+        local i shown=0
+        for i in "${!source[@]}"; do
+            [ "$shown" -ge 5 ] && break
+            echo "  ${source[$i]}"
+            shown=$((shown + 1))
         done
+        if [ "${#source[@]}" -gt 5 ]; then
+            echo "  ... $(( ${#source[@]} - 5 )) more"
+        fi
         return 1
     fi
 
-    echo "${#regen[@]} regenerable machine-local file(s) dirty in $wt_path (safe to discard):"
-    local p
-    for p in "${regen[@]}"; do echo "  $p"; done
+    # Name the class, not just the count -- the two discardable classes have
+    # different reasons for being safe, and the operator should be able to tell
+    # which one they are looking at. The governance-only wording is preserved
+    # verbatim from the first cut so its meaning does not shift underneath the
+    # tests that pin it.
+    if [ "${#gen[@]}" -eq 0 ]; then
+        echo "${#gov[@]} governance file(s) dirty in $wt_path (non-authoritative fork; master is the authority) -- discardable"
+    elif [ "${#gov[@]}" -eq 0 ]; then
+        echo "${#gen[@]} vendored/generated file(s) dirty in $wt_path (regenerable: fw vendor self / fw version sync / build) -- discardable"
+    else
+        echo "$(( ${#gov[@]} + ${#gen[@]} )) discardable file(s) dirty in $wt_path: ${#gov[@]} governance (non-authoritative fork; master is the authority), ${#gen[@]} vendored/generated (regenerable) -- discardable"
+    fi
     return 2
 }
 
@@ -513,9 +626,9 @@ do_worktree_remove() {
                 echo "  Removes the worktree directory (branch is kept). Refuses when the"
                 echo "  branch holds commits absent from every remote unless --force is given"
                 echo "  (logged Tier-2 to .context/working/.gate-bypass-log.yaml)."
-                echo "  Also refuses when the worktree is dirty: regenerable machine-local"
-                echo "  state (counters, session.yaml, focus.yaml, ...) can be cleared with"
-                echo "  --force; dirty content registers (.tasks/**, decisions.yaml, ...) are"
+                echo "  Dirty worktrees (T-3102): governance state (.context/**, .tasks/**)"
+                echo "  does NOT block -- it is a non-authoritative fork of master's copy and"
+                echo "  is discarded with a summary line. Uncommitted SOURCE changes are"
                 echo "  refused unconditionally -- --force never discards them."
                 return 0 ;;
             -*) echo "worktree remove: unknown option: $1" >&2; return 2 ;;
@@ -542,34 +655,51 @@ do_worktree_remove() {
         return 1
     fi
 
-    # T-2831 -- classify uncommitted dirt BEFORE ever attempting `git worktree
-    # remove`. Uncommitted work is invisible to the strand guard below (it only
-    # counts commits), and git's own dirty refusal gives no indication of value --
-    # exactly the shape that trains --force, and --force (via `git worktree
-    # remove --force`) discards uncommitted content with no warning. Content
-    # registers are refused UNCONDITIONALLY, --force included: this flag is the
-    # named strand-override, not a content-discard action (AC3).
-    local dirty_summary dirty_rc=0
+    # T-2831 + T-3102 -- classify uncommitted dirt BEFORE ever attempting `git
+    # worktree remove`. Uncommitted work is invisible to the strand guard below
+    # (it only counts commits), and git's own dirty refusal gives no indication
+    # of value -- exactly the shape that trains --force, and --force (via `git
+    # worktree remove --force`) discards uncommitted content with no warning.
+    #
+    # Two classes, and they get opposite treatment:
+    #   SOURCE      -> refused UNCONDITIONALLY, --force included. --force is the
+    #                  named strand-override, not a content-discard action
+    #                  (T-2831 AC3, preserved verbatim).
+    #   DISCARDABLE -> does NOT block. Two sub-classes, both safe for different
+    #                  reasons: governance state (non-authoritative fork under
+    #                  T-2822 -- master holds the authoritative copy) and
+    #                  vendored/generated/session-local churn (regenerable).
+    #                  Predicate: _wt_is_discardable_dirt, which REUSES gc's
+    #                  _wt_is_ignorable_path rather than restating it.
+    #
+    # Scoping this to governance ALONE (the first cut of T-3102) was measurably
+    # too narrow: all four live worktrees still refused, every one on a dirty
+    # `VERSION`. Refusing on non-work made --force routine on EVERY worktree
+    # (OBS-177), and --force then discarded genuinely unlanded commits.
+    local dirty_summary dirty_rc=0 discard_ok=0
     dirty_summary="$(_wt_dirty_summary "$_WT_REMOVE_PATH")" || dirty_rc=$?
 
     if [ "$dirty_rc" = "1" ]; then
-        echo "worktree remove: REFUSED -- content-register files are dirty in '$_WT_REMOVE_PATH'" >&2
+        echo "worktree remove: REFUSED -- uncommitted SOURCE changes in '$_WT_REMOVE_PATH'" >&2
         echo "$dirty_summary" | sed 's/^/  /' >&2
         echo "" >&2
-        echo "  These are content, not runtime noise -- --force will NOT discard them." >&2
+        echo "  This is source, not governance drift -- --force will NOT discard it." >&2
+        echo "  (If instead the branch has unlanded COMMITS, that is a different refusal" >&2
+        echo "   with a different remedy -- push/land the branch. This one is about" >&2
+        echo "   changes you have not committed at all.)" >&2
         echo "  Review the diff, then either land it or explicitly discard per file:" >&2
         echo "    git -C $_WT_REMOVE_PATH diff HEAD -- <file>     (inspect)" >&2
         echo "    git -C $_WT_REMOVE_PATH checkout HEAD -- <file> (discard, per file, on purpose)" >&2
         return 1
     fi
 
-    if [ "$dirty_rc" = "2" ] && [ "$force" != "1" ]; then
-        echo "worktree remove: REFUSED -- regenerable machine-local state is dirty in '$_WT_REMOVE_PATH'" >&2
-        echo "$dirty_summary" | sed 's/^/  /' >&2
-        echo "" >&2
-        echo "  Safe remedy: git -C $_WT_REMOVE_PATH checkout HEAD -- ." >&2
-        echo "  Or override:  fw worktree remove $target --force" >&2
-        return 1
+    if [ "$dirty_rc" = "2" ]; then
+        # Discardable-only: proceed. The unlanded-commit guard below is a
+        # SEPARATE refusal and still applies -- a worktree whose dirt is all
+        # discardable but whose branch holds unlanded commits must still refuse.
+        # (Confirmed live: after this correction all four worktrees have zero
+        # blocking dirt, and the two strands still refuse on 3 and 1 commits.)
+        discard_ok=1
     fi
 
     # T-2825 gotcha: bin/fw runs under `set -euo pipefail` -- `summary="$(cmd)"; rc=$?`
@@ -597,7 +727,16 @@ do_worktree_remove() {
         _wt_log_tier2_bypass "$_WT_REMOVE_BRANCH" "$summary"
     fi
 
-    if git worktree remove "$_WT_REMOVE_PATH" 2>/dev/null; then
+    # Announce the discard only once every guard has passed and removal is
+    # actually about to happen -- printing it at classification time would claim
+    # a discard that the unlanded guard may still refuse.
+    if [ "$discard_ok" = "1" ]; then
+        echo "$dirty_summary"
+    fi
+
+    if [ "$discard_ok" != "1" ] && git worktree remove "$_WT_REMOVE_PATH" 2>/dev/null; then
+        echo "Removed worktree: $_WT_REMOVE_PATH (branch '$_WT_REMOVE_BRANCH' kept)"
+    elif [ "$discard_ok" = "1" ] && git worktree remove --force "$_WT_REMOVE_PATH" 2>/dev/null; then
         echo "Removed worktree: $_WT_REMOVE_PATH (branch '$_WT_REMOVE_BRANCH' kept)"
     elif [ "$force" = "1" ] && git worktree remove --force "$_WT_REMOVE_PATH" 2>/dev/null; then
         echo "Removed worktree --force: $_WT_REMOVE_PATH (branch '$_WT_REMOVE_BRANCH' kept)"

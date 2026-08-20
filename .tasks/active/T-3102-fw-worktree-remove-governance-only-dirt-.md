@@ -2,7 +2,13 @@
 id: T-3102
 name: "fw worktree remove: governance-only dirt must not block removal (T-2822 corollary)"
 description: >
-  Live: all 4 linked worktrees are dirty and the dirt is overwhelmingly .context/.tasks (23/26, 4/5, 1/2, 15/17) because hooks in the main session mutate the worktree's tracked governance copy. git's dirty check therefore refuses fw worktree remove on every worktree, making --force routine (OBS-177) — and --force on a strand discards unlanded commits. Under T-2822's adopted source-only GO, governance state inside a worktree is by construction a non-authoritative fork, so it must not block removal. Source dirt still must.
+  Live: all 4 linked worktrees are dirty and the dirt is overwhelmingly .context/.tasks
+  (23/26, 4/5, 1/2, 15/17) because hooks in the main session mutate the worktree's
+  tracked governance copy. git's dirty check therefore refuses fw worktree remove
+  on every worktree, making --force routine (OBS-177) — and --force on a strand discards
+  unlanded commits. Under T-2822's adopted source-only GO, governance state inside
+  a worktree is by construction a non-authoritative fork, so it must not block removal.
+  Source dirt still must.
 
 status: started-work
 workflow_type: build
@@ -22,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T09:49:16Z
-last_update: 2026-08-20T09:49:16Z
-date_finished: null
+last_update: '2026-08-20T10:00:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +40,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-20T10:00:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=208,acs=10)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-20T10:00:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3102: fw worktree remove: governance-only dirt must not block removal (T-2822 corollary)
@@ -46,14 +80,14 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/worktree.sh` classifies a worktree's dirty paths into governance (`.context/`, `.tasks/`) vs source (everything else) before deciding whether dirt blocks removal
-- [ ] Governance-only dirt does NOT block `fw worktree remove`; the command proceeds and prints a one-line summary naming how many governance files were discarded and why they are discardable (T-2822: non-authoritative fork)
-- [ ] Any source dirt still refuses, with the existing message shape, and names the source paths specifically rather than a bare count
-- [ ] The unlanded-commit guard remains a SEPARATE refusal from the dirt check — a worktree with unlanded commits still refuses even when its dirt is governance-only (the 43-commit strands must not become removable by this change)
-- [ ] Refusal messages distinguish the two causes so the operator can tell "has unlanded work" from "has uncommitted source"
-- [ ] `tests/unit/t3102_worktree_governance_dirt.bats` covers: governance-only dirt removable; source dirt refused; mixed dirt refused; governance-only + unlanded commits still refused; clean worktree removable; no regression when `.context/` absent
-- [ ] Three one-line mutations each kill ≥1 test, named per mutation (or proven equivalent), mutations reverted
-- [ ] Existing `tests/unit/` worktree suites remain green
+- [x] `lib/worktree.sh` classifies a worktree's dirty paths into governance (`.context/`, `.tasks/`) vs source (everything else) before deciding whether dirt blocks removal
+- [x] Governance-only dirt does NOT block `fw worktree remove`; the command proceeds and prints a one-line summary naming how many governance files were discarded and why they are discardable (T-2822: non-authoritative fork)
+- [x] Any source dirt still refuses, with the existing message shape, and names the source paths specifically rather than a bare count
+- [x] The unlanded-commit guard remains a SEPARATE refusal from the dirt check — a worktree with unlanded commits still refuses even when its dirt is governance-only (the 43-commit strands must not become removable by this change)
+- [x] Refusal messages distinguish the two causes so the operator can tell "has unlanded work" from "has uncommitted source"
+- [x] `tests/unit/t3102_worktree_governance_dirt.bats` covers: governance-only dirt removable; source dirt refused; mixed dirt refused; governance-only + unlanded commits still refused; clean worktree removable; no regression when `.context/` absent
+- [x] Three one-line mutations each kill ≥1 test, named per mutation (or proven equivalent), mutations reverted
+- [x] Existing `tests/unit/` worktree suites remain green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
