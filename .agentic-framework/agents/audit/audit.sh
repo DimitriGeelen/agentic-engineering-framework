@@ -628,58 +628,183 @@ else
          "Copy zzz-default.md to .tasks/templates/default.md"
 fi
 
-# T-1279 (G-052): Detect duplicate task IDs across active/ and completed/.
-# ID collisions are silent downstream failures (episodic confusion, fabric
-# ambiguity, commit traceability loss). Any two files sharing `id: T-NNNN`
-# in their frontmatter should fail the audit.
-dup_output=$(python3 -c "
-import os, re, sys
-from collections import defaultdict
-tasks_dir = os.environ.get('TASKS_DIR', '.tasks')
-id_to_files = defaultdict(list)
-for sub in ('active', 'completed'):
-    d = os.path.join(tasks_dir, sub)
-    if not os.path.isdir(d):
-        continue
-    for f in sorted(os.listdir(d)):
-        if not f.startswith('T-') or not f.endswith('.md'):
-            continue
-        path = os.path.join(d, f)
-        try:
-            with open(path) as fh:
-                for i, line in enumerate(fh):
-                    if i > 30:
-                        break
-                    m = re.match(r'^id:\s*(T-\d+)\s*$', line)
-                    if m:
-                        id_to_files[m.group(1)].append(path)
-                        break
-        except Exception:
-            pass
-dups = {k: v for k, v in id_to_files.items() if len(v) > 1}
-if dups:
-    print('DUPLICATE_IDS_FOUND')
-    for task_id, files in sorted(dups.items()):
-        print(f'  {task_id}:')
-        for f in files:
-            print(f'    - {f}')
-    sys.exit(1)
-# T-3105: emit the size of the set actually scanned. This check reads the main
-# checkout only; naming the count is what makes 'no duplicates' falsifiable, and
-# is how a reader notices the number is smaller than the corpus they expect.
-print('OK %d' % sum(len(v) for v in id_to_files.values()))
-" 2>&1)
-if [ $? -eq 0 ]; then
-    pass_over "$(printf '%s\n' "$dup_output" | sed -n 's/^OK \([0-9][0-9]*\)$/\1/p' | tail -1)" \
-         "task file(s) in the main checkout's .tasks/{active,completed}/" \
+# T-1279 (G-052) / T-3107 (slice 2 of 3): duplicate task IDs, over the WHOLE
+# corpus rather than the main checkout alone.
+#
+# A git worktree checks out its own snapshot of `.tasks/`, so "the task corpus"
+# is the UNION of every worktree's view (see fw_task_view_dirs, lib/paths.sh,
+# T-3104). Scanning one view printed "No duplicate task IDs" for seven weeks
+# while T-2505, T-2506 and T-2428 each named a DIFFERENT task in a worktree
+# replica.
+#
+# THE DISCRIMINATOR IS IDENTITY, NOT CONTENT. Git hands the same committed task
+# to every worktree, and a worktree pinned to an older commit holds an older
+# REVISION of that task — same task, different bytes. On this repo's corpus a
+# content-hash compare yields 2744 findings and dies of irrelevance; `created:`
+# (fixed at allocation, never rewritten) yields exactly 3 — the three known
+# collisions, zero false positives. Falls back to the filename slug for the 18
+# legacy files with no parseable `created:`. Do not "simplify" this back to a
+# hash compare; tests/unit/t3107_corpus_duplicate_ids.bats tests 5-7 pin it.
+#
+# Four classes, three verdicts:
+#   same ID twice INSIDE one view      -> FAIL (allocator bug, live)
+#   across views, identity differs     -> WARN (fork artifact: two tasks, one number)
+#   across views, identity same        -> silent, counted as differing revisions
+#   across views, byte-identical       -> silent, counted as replication
+# The FAIL and the WARN are emitted independently: an ID can be both, and
+# neither may mask the other (test 7).
+if ! declare -F fw_task_view_dirs >/dev/null 2>&1; then
+    warn_unenumerable "the corpus view set" \
          "No duplicate task IDs" \
-         "scanned only the main checkout; sibling worktree replicas are out of this check's scope (slice 2)" \
-         "An empty .tasks/{active,completed}/ means the enumeration is mis-rooted — check TASKS_DIR"
+         "fw_task_view_dirs is undefined — lib/paths.sh is stale relative to this audit (T-3104 lifted the view enumerator there). The corpus could not be enumerated, so this check asserted nothing." \
+         "Run 'fw upgrade' (or re-sync lib/paths.sh) so fw_task_view_dirs is defined, then re-run the audit"
 else
-    fail "Duplicate task IDs detected (G-052)" \
-         "$dup_output" \
-         "Rename one of each pair: edit filename AND 'id:' frontmatter to a fresh T-NNNN"
+    dup_views=$(fw_task_view_dirs 2>/dev/null)
+    if [ -z "$dup_views" ]; then
+        warn_unenumerable "the corpus view set" \
+             "No duplicate task IDs" \
+             "fw_task_view_dirs returned zero views. Even a repo with no worktrees must yield the local view, so an empty set means the enumeration is broken, not that the corpus is empty." \
+             "Check 'git worktree list' and TASKS_DIR resolution, then re-run the audit"
+    else
+        dup_py=$(cat <<'DUP_PY'
+import hashlib, os, re, sys
+from collections import defaultdict
+
+ID_RE = re.compile(r'^id:\s*(T-\d+)\s*$')
+CREATED_RE = re.compile(r'^created:\s*(.+?)\s*$')
+SLUG_RE = re.compile(r'^T-\d+-(.*)\.md$')
+
+views, seen = [], set()
+for line in sys.stdin:
+    v = line.strip()
+    if not v or not os.path.isdir(v):
+        continue
+    real = os.path.realpath(v)
+    if real in seen:
+        continue
+    seen.add(real)
+    views.append(v)
+
+# record: (view, path, created, slug, content-hash)
+by_id = defaultdict(list)
+for view in views:
+    for sub in ('active', 'completed'):
+        d = os.path.join(view, sub)
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            if not f.startswith('T-') or not f.endswith('.md'):
+                continue
+            path = os.path.join(d, f)
+            try:
+                with open(path, 'rb') as fh:
+                    raw = fh.read()
+            except Exception:
+                continue
+            text = raw.decode('utf-8', 'replace')
+            tid = created = None
+            for i, line in enumerate(text.splitlines()):
+                if i > 30:
+                    break
+                m = ID_RE.match(line)
+                if m and tid is None:
+                    tid = m.group(1)
+                m = CREATED_RE.match(line)
+                if m and created is None:
+                    val = m.group(1).strip().strip('"').strip("'")
+                    if val and val.lower() not in ('null', '~'):
+                        created = val
+            if tid is None:
+                continue
+            sm = SLUG_RE.match(f)
+            slug = sm.group(1) if sm else f
+            by_id[tid].append((view, path, created, slug,
+                               hashlib.sha256(raw).hexdigest()))
+
+files = sum(len(v) for v in by_id.values())
+within_lines, fork_lines = [], []
+n_identical = n_revisions = n_within = n_forks = 0
+
+for tid in sorted(by_id, key=lambda t: (len(t), t)):
+    recs = by_id[tid]
+
+    # (a) same ID twice inside one view -> FAIL. Reported once per ID, not once
+    #     per view: git replicates the offending pair into every worktree, so
+    #     per-view reporting would multiply one allocator bug by the view count.
+    per_view = defaultdict(list)
+    for r in recs:
+        per_view[r[0]].append(r)
+    offending = sorted(p for v in per_view.values() if len(v) > 1 for p in (r[1] for r in v))
+    if offending:
+        n_within += 1
+        within_lines.append('WITHIN %s (same ID twice inside one corpus view)' % tid)
+        within_lines.extend('    - %s' % p for p in offending)
+
+    # (b) across views: same task, or two tasks on one number?
+    if len(per_view) < 2:
+        continue
+    by_created = all(r[2] for r in recs)
+    ident = (lambda r: r[2]) if by_created else (lambda r: r[3])
+    if len(set(ident(r) for r in recs)) > 1:
+        n_forks += 1
+        fork_lines.append('FORK %s (identity differs by %s)'
+                          % (tid, 'created:' if by_created else 'filename slug'))
+        for r in sorted(recs, key=lambda r: r[1]):
+            fork_lines.append('    - %s  [%s]'
+                              % (r[1], r[2] if by_created else 'slug: ' + r[3]))
+    elif len(set(r[4] for r in recs)) == 1:
+        n_identical += 1
+    else:
+        n_revisions += 1
+
+print('=== WITHIN ===')
+print('\n'.join(within_lines))
+print('=== FORK ===')
+print('\n'.join(fork_lines))
+print('=== STATS ===')
+print('files=%d views=%d identical=%d revisions=%d within=%d forks=%d'
+      % (files, len(views), n_identical, n_revisions, n_within, n_forks))
+DUP_PY
+)
+        dup_output=$(printf '%s\n' "$dup_views" | python3 -c "$dup_py" 2>&1)
+        dup_rc=$?
+        dup_stats=$(printf '%s\n' "$dup_output" | sed -n '/^=== STATS ===$/,$p' | sed -n '2p')
+        if [ $dup_rc -ne 0 ] || [ -z "$dup_stats" ]; then
+            warn_unenumerable "the corpus view set" \
+                 "No duplicate task IDs" \
+                 "The corpus scanner exited $dup_rc with no STATS line. First 5 lines of its output: $(printf '%s\n' "$dup_output" | head -5)" \
+                 "Re-run the scanner by hand over 'fw_task_view_dirs' output to see the error, then re-run the audit"
+        else
+            dup_field() { printf '%s\n' "$dup_stats" | tr ' ' '\n' | sed -n "s/^$1=//p"; }
+            dup_files=$(dup_field files); dup_nviews=$(dup_field views)
+            dup_ident=$(dup_field identical); dup_revs=$(dup_field revisions)
+            dup_within=$(printf '%s\n' "$dup_output" | sed -n '/^=== WITHIN ===$/,/^=== FORK ===$/p' | sed '1d;$d' | grep -v '^$')
+            dup_forks=$(printf '%s\n' "$dup_output" | sed -n '/^=== FORK ===$/,/^=== STATS ===$/p' | sed '1d;$d' | grep -v '^$')
+            dup_nforks=$(dup_field forks)
+
+            [ -n "$dup_within" ] && fail "Duplicate task IDs detected (G-052)" \
+                 "$dup_within" \
+                 "Rename one of each pair: edit filename AND 'id:' frontmatter to a fresh T-NNNN"
+
+            [ -n "$dup_forks" ] && warn "Cross-view task-ID collisions: $dup_nforks ID(s) name a different task in another corpus view" \
+                 "$dup_forks" \
+                 "Two tasks were minted onto one number across views (L-506 leg 2). Re-number the losing side in its worktree, or land/discard that worktree so the corpus holds one task per ID"
+
+            if [ -z "$dup_within" ] && [ -z "$dup_forks" ]; then
+                dup_set="task file(s) across $dup_nviews corpus view(s)"
+                if [ "${dup_ident:-0}" -gt 0 ] || [ "${dup_revs:-0}" -gt 0 ]; then
+                    dup_set="$dup_set ($dup_ident ID(s) byte-identical in every view, $dup_revs same-task at differing revisions)"
+                fi
+                pass_over "$dup_files" \
+                     "$dup_set" \
+                     "No duplicate task IDs" \
+                     "Scanned every view fw_task_view_dirs enumerated, not just the main checkout (T-3107). Replication across views is counted, not reported — only a differing identity is a finding." \
+                     "An empty or single-view corpus where you expect worktrees means the enumeration is mis-rooted — check 'git worktree list' and TASKS_DIR"
+            fi
+        fi
+    fi
 fi
+# end duplicate-task-ID scan
 
 # Validate all project YAML files parse correctly (T-207 regression test).
 # T-1816: extended to .context/arcs/ — broken arc YAML silently 404s the
