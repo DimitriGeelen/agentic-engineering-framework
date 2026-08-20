@@ -33,6 +33,16 @@
 #                                                behind-threshold: it lands cleanly.)
 #   worktree-merged <path> branch=<branch>       linked worktree parked on an
 #                                                already-merged branch
+#   worktree-unlanded <path> branch=<branch> ahead=<n> days=<d>
+#                                                linked worktree whose branch
+#                                                carries <n> commits NOT reachable
+#                                                from TARGET, last touched <d> days
+#                                                ago. The strand class: a worktree
+#                                                that still holds work nobody has
+#                                                landed. Judged against the same
+#                                                TARGET as every other class, so a
+#                                                worktree is never both merged and
+#                                                unlanded (T-3101).
 #   remote-contained origin/<branch>             remote ref fully contained in
 #                                                TARGET (ahead:0 — deletable)
 #   remote-unlanded origin/<branch> ahead=<n>    remote ref carrying <n> commits
@@ -120,9 +130,30 @@ fw_branch_hygiene() {
         fi
     done < <(git -C "$repo" for-each-ref --format='%(refname:short)' refs/heads/)
 
-    # ── linked worktrees parked on merged branches ──
+    # ── linked worktrees: parked on a merged branch, or holding unlanded work ──
     # First porcelain block is the main worktree — skip it; the branch findings
     # above already cover MAIN's checkout.
+    #
+    # T-3101 (slice 2 of T-2822 F5). This loop asked one question — "is this
+    # worktree parked on something already landed?" — and said nothing about the
+    # opposite, far more expensive, state: a worktree holding work that is NOT on
+    # master. Two linked worktrees in this repo held 43 unlanded commits (6 + 37)
+    # dormant from 2026-07-01 and no surface reported a count or an age for five
+    # weeks. `worktree-merged` is the deletable case; `worktree-unlanded` is the
+    # lossy one.
+    #
+    # PRECEDENCE: merged wins, and is tested first. This is not a tie-break — the
+    # two classes are mutually exclusive by construction. A branch that is an
+    # ancestor of TARGET has, by definition, zero commits in `TARGET..branch`, so
+    # the `ahead > 0` guard can never fire for a merged branch. The if/else plus
+    # the guard is belt-and-braces: if a future edit loosens the ancestor test
+    # (e.g. to content-equality, the way `fw worktree gc` compares), the ordering
+    # still keeps a single verdict per worktree. Never emit both for one path —
+    # "delete this" and "you will lose 37 commits" are opposite instructions.
+    #
+    # An empty rev-list result is a sentinel, not a zero: a failed count must stay
+    # silent rather than manufacture a strand out of an error (same reasoning as
+    # the remote loop below).
     local first_wt=1 wt_path="" wtb=""
     while IFS= read -r line; do
         case "$line" in
@@ -131,9 +162,22 @@ fw_branch_hygiene() {
                 wtb="${line#branch refs/heads/}"
                 if [ "$first_wt" = "1" ]; then
                     first_wt=0
-                elif [ "$wtb" != "master" ] && \
-                     git -C "$repo" merge-base --is-ancestor "refs/heads/$wtb" "$target" 2>/dev/null; then
-                    echo "worktree-merged $wt_path branch=$wtb"
+                elif [ "$wtb" != "master" ]; then
+                    if git -C "$repo" merge-base --is-ancestor "refs/heads/$wtb" "$target" 2>/dev/null; then
+                        echo "worktree-merged $wt_path branch=$wtb"
+                    else
+                        local _wt_ahead _wt_days
+                        _wt_ahead=$(git -C "$repo" rev-list --count "$target..refs/heads/$wtb" 2>/dev/null || echo "")
+                        if [ -n "$_wt_ahead" ] && [ "$_wt_ahead" -gt 0 ]; then
+                            # Age is measured on the branch's own last commit, the
+                            # same question `_bh_days_since_commit` answers for the
+                            # local-branch classes (T-3094). No recency gate here:
+                            # unlanded work is a strand on day 0 as much as on day
+                            # 50 — the count is the risk, the age is the context.
+                            _wt_days=$(_bh_days_since_commit "$repo" "refs/heads/$wtb")
+                            echo "worktree-unlanded $wt_path branch=$wtb ahead=$_wt_ahead days=${_wt_days:-unknown}"
+                        fi
+                    fi
                 fi
                 ;;
         esac
