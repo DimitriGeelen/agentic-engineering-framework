@@ -243,6 +243,7 @@ FW_CONFIG_REGISTRY=(
     # Defaults below are read from the CALL SITES, not from CLAUDE.md.
     "BRANCH_BEHIND_WARN|50|Commits-behind-origin/master threshold for the branch-hygiene WARN and the handover merge-back nudge (agents/handover/handover.sh). T-100143/T-100144."
     "STALE_ARC_DAYS|30|Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale (agents/audit/audit.sh). T-1855."
+    "BRANCH_STALE_DAYS|30|Days without a commit ON a branch before its behind-count is allowed to raise a branch-hygiene staleness finding (lib/branch-hygiene.sh). Gates BRANCH_BEHIND_WARN: master moves ~41 commits/day here, so the commit threshold alone trips in ~1.2 days and fires on every healthy branch. Same unit and default as STALE_ARC_DAYS. T-3094 (T-3093 slice 1)."
     "RETIRE_WHEN_ADVISORY|1|Enable the audit retire_when advisory rail for free drivers; 0 silences the section entirely (agents/audit/audit.sh). T-2169."
     "GITIGNORE_REGISTER_ADVISORY|1|Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it (agents/audit/audit.sh, lib/gitignore-register.sh). T-2994."
     # T-3024 (T-3022 slice E'). Handovers are 68% of indexed corpus volume and 79%
