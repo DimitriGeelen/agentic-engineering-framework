@@ -1967,6 +1967,75 @@ elif [ -d "$_cron_lint_dir" ]; then
     done
 fi
 
+# T-3095 (T-3093 slice 2): branch hygiene promoted onto the audit cron.
+#
+# The rail shipped 2026-07-04 with exactly one caller — `bin/fw doctor` — and
+# doctor appears on ZERO cron lines. So nothing has ever put branch hygiene in
+# front of anyone on a schedule, which is why four real strands (43-55 days,
+# 202 unlanded commits on one of them) sat unread. This block is the same
+# promotion `bin/fw doctor` -> audit that T-1771/T-1942/T-1943 did for cron
+# drift: same surface, same cron, no new alert channel.
+#
+# It CALLS lib/branch-hygiene.sh rather than mirroring its classification. The
+# cron-drift precedent above mirrored doctor's logic, and that second copy is
+# the L-399 producer/consumer split this slice deliberately does not repeat —
+# there is one predicate (fw_branch_hygiene) and both surfaces read it.
+#
+# WARN, never FAIL: T-3093 ruled out a blocking gate and per-strand auto-filing
+# because both act on a signal whose false-positive rate was only fixed in
+# slice 1 (T-3094 — recency, not behind-count), and both are much harder to
+# walk back than a WARN. Audit's exit code is therefore unchanged by branch
+# findings alone: warnings exit 1, never 2.
+_bh_lib="$FRAMEWORK_ROOT/lib/branch-hygiene.sh"
+if [ -f "$_bh_lib" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    if fw_is_linked_worktree "$PROJECT_ROOT"; then
+        # Same guard and same reasoning as the cron blocks above (T-2435 /
+        # T-2437, OBS-077): branch hygiene is a whole-repository concern
+        # evaluated from the canonical checkout. A linked worktree derives a
+        # different branch set and would report its own transient branch as
+        # debris. Environment state, not content state -> INFO, never WARN.
+        info "Branch hygiene skipped — linked worktree (branch set is whole-repo, evaluated from the main checkout)"
+    elif ! git -C "$PROJECT_ROOT" rev-parse --verify -q origin/master >/dev/null 2>&1 \
+         && ! git -C "$PROJECT_ROOT" rev-parse --verify -q master >/dev/null 2>&1; then
+        # fw_branch_hygiene returns silently when there is no master lineage to
+        # judge against — indistinguishable at the call site from a tidy repo.
+        # Reporting that as "clean" is the false-green class this framework has
+        # hit repeatedly (T-2732, OBS-185): a check that could not run must not
+        # report as a check that ran and found nothing.
+        info "Branch hygiene skipped — no master lineage to judge against (origin/master and master both absent)"
+    else
+        source "$_bh_lib"
+        _bh_out=$(fw_branch_hygiene "$PROJECT_ROOT" 2>/dev/null || true)
+        if [ -n "$_bh_out" ]; then
+            _bh_count=$(printf '%s\n' "$_bh_out" | grep -c .)
+            # T-3092: class-representative, not positional. A flat `head -N` is
+            # what hid every remote finding in doctor (0 of 4 shown on this repo)
+            # because emission order is local -> worktree -> remote and the local
+            # classes filled the cap. Audit prints more sections than doctor, so
+            # a truncated class here is even less likely to be noticed.
+            _bh_shown=$(printf '%s\n' "$_bh_out" | fw_branch_hygiene_head 12 | sed '2,$s/^/         /')
+            _bh_full="bash -c 'source \"$_bh_lib\"; fw_branch_hygiene \"$PROJECT_ROOT\"'"
+            if [ "$_bh_count" -gt 12 ]; then
+                _bh_shown="$_bh_shown
+         … $((_bh_count - 12)) more (shown lines are one-per-class, not the worst)"
+            fi
+            _bh_fix="Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: $_bh_full"
+            if printf '%s\n' "$_bh_out" | grep -q '^diverged-fork '; then
+                # T-100195 (RCA T-100194): a fork is BOTH ahead and behind, so a
+                # go-live `git merge origin/master` conflicts and a one-way
+                # `fw integrate` cannot absorb what master has. Different remedy,
+                # so it has to be named separately or the mitigation is wrong.
+                _bh_fix="$_bh_fix — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
+            fi
+            warn "Branch hygiene: $_bh_count finding(s) — stale branches, worktrees or remote refs" \
+                 "$_bh_shown" \
+                 "$_bh_fix"
+        else
+            pass "Branch hygiene: no stale branches, worktrees or remote refs"
+        fi
+    fi
+fi
+
 # T-1631 (B-3b of T-1626): Hook-failure threshold check.
 # Reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and
 # warns if any hook is failing in production over threshold. Does NOT

@@ -92,36 +92,41 @@ Analysis: `docs/reports/T-3093-branch-hygiene-escalation.md` (Recommendation, sl
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/audit/audit.sh` sources `lib/branch-hygiene.sh` and **calls**
+- [x] `agents/audit/audit.sh` sources `lib/branch-hygiene.sh` and **calls**
       `fw_branch_hygiene` — no re-implementation, no copied classification logic. A second
       copy of a predicate is the L-399 defect this task's own precedent committed
-- [ ] Findings surface at **WARN**, never FAIL and never blocking. T-3093 explicitly ruled
+- [x] Findings surface at **WARN**, never FAIL and never blocking. T-3093 explicitly ruled
       out a blocking gate and per-strand auto-filing: both act on a signal whose
       false-positive rate has only just been fixed, and both are much harder to walk back
       than a WARN
-- [ ] Output is bounded and **class-representative** — reuse `fw_branch_hygiene_head`
+- [x] Output is bounded and **class-representative** — reuse `fw_branch_hygiene_head`
       (T-3092), which guarantees at least one line per finding class before filling the
       remaining budget. A flat `head -N` is what made T-3092's remote classes invisible in
       doctor (0 of 4 shown), and audit emits more sections than doctor does
-- [ ] Linked worktrees are skipped with INFO, not WARN — branch hygiene is a
+- [x] Linked worktrees are skipped with INFO, not WARN — branch hygiene is a
       whole-repository concern evaluated from the canonical checkout, and a worktree
       derives a different branch set. Same guard and same reasoning as the cron-drift
       block directly above it (`fw_is_linked_worktree`, T-2435 / OBS-077)
-- [ ] A repository with no findings emits a positive OK line, not silence — an absent
+- [x] A repository with no findings emits a positive OK line, not silence — an absent
       section is indistinguishable from a section that did not run (the false-green class
       this framework has hit repeatedly: T-2732, OBS-185)
-- [ ] The audit's own exit code is unchanged by branch-hygiene findings alone: a repo
+- [x] The audit's own exit code is unchanged by branch-hygiene findings alone: a repo
       whose only issue is stale branches must still exit 1 (warnings), not 2 (failures)
-- [ ] Bats coverage in `tests/unit/` for: findings present → WARN emitted with counts,
+- [x] Bats coverage in `tests/unit/` for: findings present → WARN emitted with counts,
       findings absent → OK line emitted, linked worktree → INFO and no WARN, and
       exit-code neutrality
-- [ ] Mutation check recorded in Decisions: removing the audit call turns the
+- [x] Mutation check recorded in Decisions: removing the audit call turns the
       findings-present test red, and downgrading `fw_branch_hygiene_head` to a flat
       `head -N` turns the class-representation test red
-- [ ] The live audit is run and its branch-hygiene section reproduced verbatim in
+- [x] The live audit is run and its branch-hygiene section reproduced verbatim in
       Decisions, with the finding count reconciled against
       `bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .'` — the two must agree,
       and any difference is a defect in this slice, not a rounding artefact
+- [x] A repo with **no master lineage** is INFO-skipped, not reported clean. Added during
+      build, not at filing: `fw_branch_hygiene` returns silently both when a repo is tidy
+      and when there is nothing to judge against, and the two are indistinguishable at the
+      call site. Reporting the second as "clean" is the same false-green the OK-line AC
+      above exists to prevent, one level deeper
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -215,6 +220,21 @@ Analysis: `docs/reports/T-3093-branch-hygiene-escalation.md` (Recommendation, sl
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t3095_audit_branch_hygiene.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t100143_branch_hygiene.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/audit/audit.sh
+# audit CALLS the library — no second copy of the predicate (AC #1)
+grep -q 'fw_branch_hygiene "$PROJECT_ROOT"' agents/audit/audit.sh
+grep -q 'fw_branch_hygiene_head' agents/audit/audit.sh
+# the block never reaches fail() — audit's exit code is unchanged by branch findings (AC #6)
+sed -n '/^_bh_lib="\$FRAMEWORK_ROOT\/lib\/branch-hygiene\.sh"$/,/^fi$/p' agents/audit/audit.sh > /tmp/.t3095blk && ! grep -qE '^[[:space:]]*fail ' /tmp/.t3095blk
+# live audit emits the section, and its count reconciles with the library (AC #9)
+# audit exits 1 on warnings by design; || true keeps set -e from aborting the line there
+bash agents/audit/audit.sh --section structure > /tmp/.t3095aud 2>&1 || true; grep -qE '\[(WARN|PASS|INFO)\] Branch hygiene' /tmp/.t3095aud
+bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .' > /tmp/.t3095lib 2>&1; test "$(grep -c . /tmp/.t3095lib)" = "$(sed -n 's/.*Branch hygiene: \([0-9]*\) finding(s).*/\1/p' /tmp/.t3095aud)"
+# vendored copy refreshed (consumer projects run the vendored audit)
+diff -q agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -294,6 +314,116 @@ Analysis: `docs/reports/T-3093-branch-hygiene-escalation.md` (Recommendation, sl
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-08-20 — Call the library, do not mirror it
+
+- **Chose:** `audit.sh` sources `lib/branch-hygiene.sh` and calls `fw_branch_hygiene` /
+  `fw_branch_hygiene_head`. Zero classification logic in audit; the only place audit reads
+  a class token is the `grep -q '^diverged-fork '` that routes the remedy.
+- **Why:** the precedent this slice follows (`bin/fw doctor` → audit cron drift,
+  T-1771/T-1942/T-1943) mirrored doctor's logic instead of calling it, and that second copy
+  is the L-399 producer/consumer split — one side gets fixed, the other silently doesn't.
+  Branch hygiene has a single library entry point, so there is no excuse for a copy.
+- **Rejected:** re-implementing the scan inline for "audit independence". The independence
+  is illusory: two copies of a predicate do not cross-check each other, they diverge.
+- **Pinned:** test 10 fails if `fw_branch_hygiene` or `fw_branch_hygiene_head` disappears
+  from audit.sh, and fails if any class token is ever *emitted* (rather than matched) there.
+
+### 2026-08-20 — A check that could not run must not report as clean
+
+- **Chose:** three distinct non-finding outcomes, not one. Linked worktree → INFO skip; no
+  master lineage → INFO skip; genuinely tidy repo → PASS.
+- **Why:** `fw_branch_hygiene` is silent in all three cases, so at the call site they are
+  indistinguishable. `bin/fw doctor` collapses the last two and prints "Branch hygiene
+  clean" on a repo it never judged. That is the false-green class this framework has hit
+  repeatedly (T-2732's port-3000 verification lines, OBS-185, the fabric coverage expander
+  at audit.sh:1791) — a silent instrument reporting as a silent result.
+- **Rejected:** mirroring doctor's two-state form for parity. Parity with a defect is not
+  parity worth having; the divergence is documented here instead, and doctor's own version
+  is a candidate follow-up rather than a blocker for this slice.
+- **Pinned:** mutation D (guard disabled) turns test 7 red and nothing else.
+
+### 2026-08-20 — WARN, never FAIL; INFO for worktrees
+
+- **Chose:** the block can reach `warn`, `pass` and `info`, and cannot reach `fail` on any
+  input. Audit's exit code is therefore 1 (warnings) on a repo whose only issue is stale
+  branches, never 2.
+- **Why:** T-3093 explicitly ruled out a blocking gate and per-strand auto-filing. Both act
+  on a signal whose false-positive rate was fixed only one slice ago (T-3094 moved the
+  trigger from behind-count to recency), and both are far harder to walk back than a WARN.
+  The linked-worktree INFO follows the content-vs-environment classification from L-486 /
+  T-2437: a worktree derives a different branch set, so every finding there is a worktree
+  artefact, not content drift.
+- **Rejected:** FAIL on `diverged-fork` specifically, on the grounds that T-100194's fork
+  cost 100+ conflicts. Tempting and wrong: the fork class is the newest and least-measured
+  of the six, and a FAIL blocks pushes. It gets a distinct *remedy string* instead, which
+  carries the same information at zero blast radius.
+- **Pinned:** test 4 asserts `fail=0` on a findings-present fixture; test 5 asserts the
+  shipped block contains no `fail` call at all, so the guarantee holds for inputs the
+  fixture never produces. Mutation C (INFO→WARN on the worktree arm) turns test 3 red.
+
+### 2026-08-20 — Mutation results (AC #8)
+
+Each mutation applied to the shipped `audit.sh`, full suite run, source restored. Every one
+was killed, and C and D were killed by exactly one test each — the tests discriminate, they
+do not merely co-fire.
+
+| # | Mutation | Tests turned red |
+|---|----------|------------------|
+| A | `_bh_out=$(fw_branch_hygiene …)` → `_bh_out=""` (audit stops calling the library) | 1, 4, 6, 9, 10 |
+| B | `fw_branch_hygiene_head 12` → `head -12` (positional cap) | 6, 10 |
+| C | linked-worktree arm `info` → `warn` | 3 |
+| D | no-master-lineage guard → `elif false` | 7 |
+
+Mutation B is the one worth stating plainly: with a flat `head -12` the fixture's
+`remote-unlanded origin/strand` line vanishes entirely behind thirteen `merged-undeleted`
+lines. That is not a hypothetical — it is what T-3092 measured in `fw doctor` on this repo,
+where 0 of 4 remote findings survived the cap. Audit prints more sections than doctor, so a
+class truncated here is even less likely to be noticed.
+
+### 2026-08-20 — Live audit section, reproduced verbatim (AC #9)
+
+`bash agents/audit/audit.sh --section structure`:
+
+```
+[WARN] Branch hygiene: 19 finding(s) — stale branches, worktrees or remote refs
+       Evidence: behind-threshold audit-remediation-t2416 behind=1761 days=55 (threshold 50)
+         merged-undeleted land-t100200-go
+         behind-threshold learning/precompact-cleanup behind=7177 days=170 (threshold 50)
+         merged-undeleted t100196-vendor-fix
+         merged-undeleted t100199-close
+         behind-threshold t2353-audit-emit-tasks behind=1761 days=53 (threshold 50)
+         merged-undeleted t2416-fw-safe-mode-hook-timing
+         diverged-fork t2417-fw-sessions ahead=58 behind=1728 days=48 (threshold 50)
+         merged-undeleted t2510-audit-remediation
+         worktree-merged /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100196-vendor-fix branch=t100196-vendor-fix
+         remote-unlanded origin/learning/precompact-cleanup ahead=1
+         remote-contained origin/t100199-rescue
+         … 7 more (shown lines are one-per-class, not the worst)
+       Mitigation: Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source "/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh"; fw_branch_hygiene "/opt/999-Agentic-Engineering-Framework"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork.
+```
+
+`bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .' | grep -c .` → **19**. The two
+agree exactly. All six finding classes fired and all six are represented in the twelve shown
+lines; the seven suppressed are additional instances of classes already visible.
+
+One correction to this task's own Context section, which said "the live count is seven
+findings": seven is the count of *stale local* branches after T-3094's recency gate. The
+full scan is 19 across six classes — the twelve non-local findings (worktrees, remote refs)
+were never in that number. The reconciliation above is against the library, which is the
+only figure that can be wrong in a way that matters here.
+
+### 2026-08-20 — Resolve the full-list command against FRAMEWORK_ROOT, not `lib/`
+
+- **Chose:** the mitigation string embeds absolute paths — `source
+  "/opt/…/lib/branch-hygiene.sh"; fw_branch_hygiene "/opt/…"`.
+- **Why:** doctor emits the relative form `source lib/branch-hygiene.sh`, which only works
+  from the framework repo root. In a consumer project the library is at
+  `.agentic-framework/lib/`, and the audit that printed the line runs on cron from an
+  unknown cwd. A copy-pasteable command that silently depends on cwd is the T-609/T-1257
+  class this framework has corrected twice.
+- **Rejected:** copying doctor's relative form for parity — same reasoning as the
+  false-green decision above.
 
 ## Decision
 
