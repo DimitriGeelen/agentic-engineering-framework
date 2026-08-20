@@ -446,6 +446,84 @@ info() {
     FINDINGS+=("INFO|$1|")
 }
 
+# --- Verdict-over-a-set emitters (T-3105) ---
+#
+# THE RULE: a check may only PASS over the set it actually evaluated, and must
+# report that set's size. An empty or unenumerable candidate set is a WARN, not
+# a PASS.
+#
+# Origin — three same-day instances of one class. None of them lied; each was
+# true of what it looked at. The defect is that none STATED what it looked at,
+# so "I found nothing" and "I looked nowhere" rendered identically:
+#
+#   1. The GO-scope-not-propagated scan (repaired by hand in T-3099) gated on a
+#      prose phrase matching 2 of 444 completed inceptions, and 0 after the next
+#      filter. Its candidate set was empty by construction, so every PASS it ever
+#      printed asserted nothing — with 179 approved inceptions invisible behind
+#      it.
+#   2. This file's duplicate-task-ID check scans the main checkout only. Three
+#      duplicate IDs living in worktree replicas were invisible for seven weeks
+#      while it printed PASS.
+#   3. Off-framework sibling: an errors store that returns "No errors found"
+#      when it cannot read the store — byte-identical to a genuinely clean run.
+#
+# "No duplicate task IDs" is not falsifiable. "No duplicate task IDs among 3124
+# task file(s)" is: a reader who believes the corpus is larger than 3124 now has
+# something to disagree with. That is the whole point — the count is not
+# decoration, it is the claim's scope, and a claim without a scope cannot be
+# wrong, which is why it also cannot be trusted.
+#
+#   pass_over <count> "<set-description>" "<message>" [<evidence>] [<mitigation>]
+#     count > 0         -> pass "<message> — examined <count> <set-description>"
+#     count == 0        -> warn "<message> — NOT EVALUATED: candidate set empty"
+#     empty/non-numeric -> routed to warn_unenumerable (see below)
+#
+#   warn_unenumerable "<source>" "<message>" [<evidence>] [<mitigation>]
+#     -> warn "<message> — NOT EVALUATED: could not read <source>"
+#
+# Two verbs rather than one, because the two failures are known at different
+# moments. "The set was empty" is known AFTER enumeration returns a number.
+# "Could not enumerate" is known BEFORE any number exists — a missing store, an
+# unreadable path, an absent dependency, a `$(python3 ... 2>/dev/null)` that
+# collapsed to the empty string. T-3099's hand implementation had exactly this
+# two-part shape: it tested for an empty pre-scan summary and warned, then
+# parsed the counts and branched on zero. Folding both into one verb would force
+# every caller to invent a sentinel count for "I never got one", and the obvious
+# sentinel — 0 — is precisely the value that must NOT be conflated with it.
+#
+# pass_over therefore routes a non-numeric count to warn_unenumerable rather
+# than trusting it: a caller whose command substitution collapsed to "" must not
+# be reported as having measured a set of size 0. It measured nothing.
+#
+# Both paths WARN, never FAIL. audit's exit code 2 means a real failure; a check
+# that did not evaluate is an unknown, and an unknown that exits 2 would train
+# readers to ignore it. The same reasoning as the audit's own lock-contention
+# exit 75 above: "did not run" is its own verdict, distinct from both pass and
+# fail.
+pass_over() {
+    local _count="${1//[[:space:]]/}" _set="$2" _msg="$3" _evidence="${4:-}" _mitigation="${5:-}"
+    case "$_count" in
+        ''|*[!0-9]*)
+            warn_unenumerable "$_set" "$_msg" "$_evidence" "$_mitigation"
+            return
+            ;;
+    esac
+    if [ "$_count" -gt 0 ]; then
+        pass "$_msg — examined $_count $_set"
+    else
+        warn "$_msg — NOT EVALUATED: candidate set empty (0 $_set)" \
+             "${_evidence:-The check ran and found nothing, because there was nothing to look at. A PASS here would assert coverage the check does not have (T-3105).}" \
+             "${_mitigation:-Confirm that 0 $_set is the real corpus state and not a mis-scoped enumeration or a predicate that matches nothing}"
+    fi
+}
+
+warn_unenumerable() {
+    local _source="$1" _msg="$2" _evidence="${3:-}" _mitigation="${4:-}"
+    warn "$_msg — NOT EVALUATED: could not read $_source" \
+         "${_evidence:-Enumeration of $_source failed or returned nothing parseable, so this check produced no verdict at all (T-3105).}" \
+         "${_mitigation:-Repair or restore $_source, then re-run — this check asserts nothing until its candidate set can be enumerated}"
+}
+
 # --- New Project Grace Period (T-301) ---
 # Detect new projects: <5 commits and no handover → suppress known day-1 noise
 IS_NEW_PROJECT=false
@@ -586,10 +664,17 @@ if dups:
         for f in files:
             print(f'    - {f}')
     sys.exit(1)
-print('OK')
+# T-3105: emit the size of the set actually scanned. This check reads the main
+# checkout only; naming the count is what makes 'no duplicates' falsifiable, and
+# is how a reader notices the number is smaller than the corpus they expect.
+print('OK %d' % sum(len(v) for v in id_to_files.values()))
 " 2>&1)
 if [ $? -eq 0 ]; then
-    pass "No duplicate task IDs across active/ and completed/"
+    pass_over "$(printf '%s\n' "$dup_output" | sed -n 's/^OK \([0-9][0-9]*\)$/\1/p' | tail -1)" \
+         "task file(s) in the main checkout's .tasks/{active,completed}/" \
+         "No duplicate task IDs" \
+         "scanned only the main checkout; sibling worktree replicas are out of this check's scope (slice 2)" \
+         "An empty .tasks/{active,completed}/ means the enumeration is mis-rooted — check TASKS_DIR"
 else
     fail "Duplicate task IDs detected (G-052)" \
          "$dup_output" \
@@ -662,8 +747,9 @@ except yaml.YAMLError as e:
              "Fix .context/inbox.yaml — a note body with a backslash/quote corrupts it (T-2456); fw note now escapes new entries"
     fi
 fi
-if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
-    pass "All $yaml_pass_count project YAML files parse correctly"
+if [ "$yaml_fail_count" -eq 0 ]; then
+    pass_over "$yaml_pass_count" "project YAML file(s)" "All project YAML files parse correctly" \
+         "" "No YAML files were found to parse — check that .context/, policy/ and .context/arcs/ exist and are populated"
 fi
 
 # T-2067: task-frontmatter parse check.
@@ -789,8 +875,10 @@ if [ -d "$PROJECT_ROOT/.context/arcs" ]; then
         fi
     done
 fi
-if [ "$anchor_checked" -gt 0 ] && [ "$anchor_missing" -eq 0 ]; then
-    pass "All $anchor_checked arc anchor_task references resolve to existing tasks"
+if [ "$anchor_missing" -eq 0 ]; then
+    pass_over "$anchor_checked" "arc anchor_task reference(s)" \
+         "All arc anchor_task references resolve to existing tasks" \
+         "" "0 arcs declared a non-null anchor_task — either .context/arcs/ is empty or every arc has anchor_task: null"
 fi
 
 # T-2980 (arc-017, onboarding-curriculum): seed → corpus-map reference resolution.
@@ -830,8 +918,10 @@ if [ -d "$PROJECT_ROOT/lib/seeds/tasks" ] && [ -d "$PROJECT_ROOT/.context/design
 $(grep -roE --include='*.md' "corpus explain [a-z0-9][a-z0-9-]*" "$PROJECT_ROOT/lib/seeds/tasks" 2>/dev/null)
 SEEDREFS
 fi
-if [ "$seed_ref_checked" -gt 0 ] && [ "$seed_ref_missing" -eq 0 ]; then
-    pass "All $seed_ref_checked onboarding-seed corpus references resolve to existing maps"
+if [ "$seed_ref_missing" -eq 0 ]; then
+    pass_over "$seed_ref_checked" "onboarding-seed corpus reference(s)" \
+         "All onboarding-seed corpus references resolve to existing maps" \
+         "" "No 'fw corpus explain <id>' reference was found in lib/seeds/tasks — either the seeds stopped routing to maps, or lib/seeds/tasks is absent"
 fi
 
 # T-2985 (arc-014, designer-corpus): corpus-lint findings reach the daily audit.
@@ -886,8 +976,9 @@ for f in d.get("findings", []):
 $_cl_rows
 CORPUSLINT
 fi
-if [ "$corpus_lint_scanned" -gt 0 ] && [ "$corpus_lint_findings" -eq 0 ]; then
-    pass "All $corpus_lint_scanned corpus map(s) lint clean"
+if [ "$corpus_lint_findings" -eq 0 ] && [ -f "$_corpus_lint_py" ] && [ -d "$PROJECT_ROOT/.context/designer/projects" ]; then
+    pass_over "$corpus_lint_scanned" "corpus map(s)" "Corpus maps lint clean" \
+         "" "tools/corpus_lint.py ran but reported 0 maps scanned — check its --json output by hand (a 120s timeout also lands here)"
 fi
 
 # T-1855 (T-NEW-7): Stale-arc warning.
@@ -1012,12 +1103,16 @@ for d in ('active', 'completed'):
         fi
     done
 fi
-if [ "$arcs_checked_for_staleness" -gt 0 ] && [ "$stale_arc_count" -eq 0 ]; then
+if [ "$stale_arc_count" -eq 0 ]; then
     # T-2970: name the ASSESSED count, not "all". The previous wording ("All N
     # in-progress arc(s) ...") read as total coverage while N was whatever the
     # membership map happened to see — a census over survivors. Stating the
-    # denominator is what makes a future shortfall visible.
-    pass "Assessed $arcs_checked_for_staleness in-progress arc(s) with constituents; all had task commits within ${stale_arc_threshold} days"
+    # denominator is what makes a future shortfall visible. T-3105 moved the
+    # census onto the shared verb, which also turns the previously-silent
+    # zero-population case into a WARN instead of no line at all.
+    pass_over "$arcs_checked_for_staleness" "in-progress arc(s) with constituents" \
+         "All assessed arcs had task commits within ${stale_arc_threshold} days" \
+         "" "No in-progress arc has any constituent task — either .context/arcs/ holds no in-progress entries, or the arc_id:/arc: tag join is resolving to nothing"
 fi
 
 # T-2969: draft arc with all constituents complete. `fw arc close` requires
@@ -1388,8 +1483,13 @@ arc_tag_only_evidence=""
 # in either `tags: [...]` or as a raw pattern argument. Excludes
 # `current_arc:` and `arc_id:` which are different namespaces.
 arc_tag_only_pattern='grep[^|]*"\^?tags:.*arc:|grep[^|]*arc:[A-Za-z0-9_-]'
+# T-3105: count the files the scan actually walks. A grep that matches nothing
+# and a grep that walked nothing print the same "no violations" line otherwise.
+arc_tag_only_scanned=0
 for scan_dir in lib web agents bin tools; do
     [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
+    arc_tag_only_scanned=$((arc_tag_only_scanned + $(find "$PROJECT_ROOT/$scan_dir" \
+        \( -name '*.sh' -o -name '*.py' -o -name '*.bash' \) -type f 2>/dev/null | wc -l)))
     while IFS= read -r hit; do
         [ -z "$hit" ] && continue
         # Allowlist by path prefix.
@@ -1406,7 +1506,9 @@ for scan_dir in lib web agents bin tools; do
                    "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
 done
 if [ "$arc_tag_only_violations" -eq 0 ]; then
-    pass "No inline arc:<slug> tag-only scans outside canonical lib (T-1881)"
+    pass_over "$arc_tag_only_scanned" "source file(s) under lib/ web/ agents/ bin/ tools/" \
+         "No inline arc:<slug> tag-only scans outside canonical lib (T-1881)" \
+         "" "The scan walked no files — check that lib/ web/ agents/ bin/ tools/ exist under PROJECT_ROOT"
 else
     fail "Found $arc_tag_only_violations inline arc:<slug> tag-only scan(s) outside canonical lib" \
          "$(printf '%b' "$arc_tag_only_evidence" | head -5)" \
@@ -1438,8 +1540,11 @@ fi
 splitroot_violations=0
 splitroot_evidence=""
 splitroot_pattern='PROJECT_ROOT[[:space:]]*/[[:space:]]*["'\''](lib|agents|policy|bin|web)["'\'']'
+# T-3105: population = the Python files this scan walks (see arc_tag_only above).
+splitroot_scanned=0
 for scan_dir in web lib; do
     [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
+    splitroot_scanned=$((splitroot_scanned + $(find "$PROJECT_ROOT/$scan_dir" -name '*.py' -type f 2>/dev/null | wc -l)))
     while IFS= read -r hit; do
         [ -z "$hit" ] && continue
         case "$hit" in
@@ -1455,7 +1560,9 @@ for scan_dir in web lib; do
                    "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
 done
 if [ "$splitroot_violations" -eq 0 ]; then
-    pass "No PROJECT_ROOT resolution of framework-owned assets in web/ + lib/ Python (T-2648, OBS-097)"
+    pass_over "$splitroot_scanned" "Python file(s) under web/ + lib/" \
+         "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097)" \
+         "" "The scan walked no .py files under web/ or lib/ — the OBS-097 rail asserted nothing this run"
 else
     fail "Found $splitroot_violations PROJECT_ROOT resolution(s) of framework-owned assets (breaks split-root consumers)" \
          "$(printf '%b' "$splitroot_evidence" | head -5)" \
@@ -1480,8 +1587,12 @@ fi
 # Allowlist: tests/, docs/, .fabric/, .context/, .tasks/, audit.sh itself.
 stale_slice_count=0
 stale_slice_evidence=""
+# T-3105: population = the files this scan walks (see arc_tag_only above).
+stale_slice_scanned=0
 for scan_dir in web/templates web/blueprints lib; do
     [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
+    stale_slice_scanned=$((stale_slice_scanned + $(find "$PROJECT_ROOT/$scan_dir" \
+        \( -name '*.html' -o -name '*.py' -o -name '*.sh' \) -type f 2>/dev/null | wc -l)))
     while IFS= read -r hit; do
         [ -z "$hit" ] && continue
         # Allowlist (out-of-scope or self-referential)
@@ -1507,7 +1618,9 @@ for scan_dir in web/templates web/blueprints lib; do
                    "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
 done
 if [ "$stale_slice_count" -eq 0 ]; then
-    pass "No stale-slice-references (L-417)"
+    pass_over "$stale_slice_scanned" "file(s) under web/templates web/blueprints lib" \
+         "No stale-slice-references (L-417)" \
+         "" "The scan walked no files — the L-417 rail asserted nothing this run"
 else
     warn "Found $stale_slice_count stale-slice-reference(s) — satellite text references a completed task as if still pending" \
          "$(printf '%b' "$stale_slice_evidence" | head -5)" \
@@ -1701,14 +1814,20 @@ print('|'.join([str(total_inceptions), str(go_inceptions), str(len(findings)), s
 
 if [ -z "$go_scope_summary" ]; then
     # A scan that did not evaluate must not read as a scan that found nothing —
-    # that is the exact defect T-3099 removed from this check.
-    warn "GO-scope-not-propagated scan did not evaluate (pre-scan produced no summary)" \
-         "python3 pre-scan over $PROJECT_ROOT/.tasks returned empty" \
-         "Run the pre-scan without 2>/dev/null to see the error; the check asserts nothing until it does"
+    # that is the exact defect T-3099 removed from this check. T-3105 replaced
+    # the hand implementation with the shared verb: the behaviour is unchanged,
+    # but there is now one definition of the rule rather than two that can drift.
+    warn_unenumerable "the python3 pre-scan over $PROJECT_ROOT/.tasks" \
+         "GO-scope-not-propagated scan" \
+         "the pre-scan produced no summary line" \
+         "Re-run the pre-scan without 2>/dev/null to see the error; the check asserts nothing until it does"
 else
     IFS='|' read -r _gs_inceptions _gs_go _gs_count _gs_sample <<< "$go_scope_summary"
     if [ "${_gs_count:-0}" -eq 0 ]; then
-        pass "No GO-scope-not-propagated inception(s) — examined ${_gs_go:-0} GO-recorded completed inception(s) of ${_gs_inceptions:-0} (sibling to L-417)"
+        pass_over "${_gs_go:-0}" "GO-recorded completed inception(s) of ${_gs_inceptions:-0} completed inception(s)" \
+             "No GO-scope-not-propagated inception(s) (sibling to L-417)" \
+             "the workflow_type:inception filter matched ${_gs_inceptions:-0} completed task(s), of which 0 recorded a GO" \
+             "Check the GO predicate against .tasks/completed/ by hand — an empty GO set is what T-3099 found and repaired, and it can regress"
     else
         warn "Found $_gs_count GO-scope-not-propagated inception(s) of ${_gs_go:-0} GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision" \
              "$_gs_sample" \
@@ -1894,7 +2013,8 @@ DRIFTEOF
         # where drift_total is the CARD count — so it read as "N files were
         # checked" while N was the registry size. 832 hit exactly this: their
         # "(15 cards)" sat on a watch file that expanded to zero files.
-        pass "Fabric drift: all $drift_watched watched file(s) registered"
+        pass_over "$drift_watched" "watched file(s)" "Fabric drift: all watched files registered" \
+             "" "watch-patterns.yaml expanded to zero files — 832 shipped exactly this state with a green line on it (T-2737)"
     fi
 
     # T-2737: the watch file is the denominator of every coverage check above,
@@ -2282,15 +2402,14 @@ check_invariant_suite() {
     _red=$(printf '%s\n' "$_out" | grep -c '^not ok' || true)
     _total=$(printf '%s\n' "$_out" | grep -cE '^(not ok|ok) ' || true)
 
-    if [ "$_total" -eq 0 ]; then
-        warn "Invariant suite produced no TAP results (T-2837)" \
-             "bats ran but emitted neither 'ok' nor 'not ok' — a harness error, not a green suite" \
-             "Run manually and read the output: fw test invariants"
-        return 0
-    fi
-
     if [ "$_red" -eq 0 ]; then
-        pass "Invariant suite: $_total structural invariant(s) green (tests/lint/)"
+        # T-2837 hand-implemented the zero-population WARN here; T-3105 folded it
+        # onto the shared verb so there is one definition of the rule. The
+        # bespoke evidence and mitigation are preserved verbatim — a harness that
+        # emits no TAP at all is a more specific diagnosis than "set empty".
+        pass_over "$_total" "structural invariant(s) (tests/lint/)" "Invariant suite green" \
+             "bats ran but emitted neither 'ok' nor 'not ok' — a harness error, not a green suite (T-2837)" \
+             "Run manually and read the output: fw test invariants"
         return 0
     fi
 
@@ -2574,7 +2693,7 @@ if [ "$task_count" -eq 0 ]; then
          "Create tasks for ongoing work"
 else
     if [ "$valid_task_count" -eq "$task_count" ]; then
-        pass "All $task_count active tasks are valid"
+        pass_over "$task_count" "active task(s)" "All active tasks are valid"
     else
         echo "       $valid_task_count of $task_count tasks fully valid"
     fi
@@ -2608,7 +2727,8 @@ for item in data['quality']['issues']:
 fi
 
 if [ "$quality_issues" -eq 0 ]; then
-    pass "All active tasks meet quality thresholds"
+    pass_over "$task_count" "active task(s)" "All active tasks meet quality thresholds" \
+         "" "0 active tasks were scanned for quality — the thresholds asserted nothing this run"
 fi
 
 echo ""
@@ -2688,22 +2808,34 @@ lines.append('')
 with open(report_path, 'w') as f:
     f.write('\n'.join(lines) + '\n')
 
-if count > 0:
-    capped_ids = [t['id'] for t in tasks[:10]]
-    overflow = count - len(capped_ids)
-    id_str = ', '.join(capped_ids)
-    if overflow > 0:
-        id_str += f' (+{overflow} more)'
-    print(f'{count}|{no_verif}|{id_str}')
+# T-3105: print unconditionally. This line used to fire only when count > 0,
+# so an empty summary meant EITHER no-findings OR the-python-above-died (its
+# stderr goes to /dev/null) — and the shell below scored both as PASS.
+# Emitting the count on every run lets the shell tell the two apart.
+capped_ids = [t['id'] for t in tasks[:10]]
+overflow = count - len(capped_ids)
+id_str = ', '.join(capped_ids)
+if overflow > 0:
+    id_str += f' (+{overflow} more)'
+print(f'{count}|{no_verif}|{id_str}')
 " 2>/dev/null)
 
-    if [ -n "$_unclosed_summary" ]; then
-        IFS='|' read -r _u_count _u_no_verif _u_ids <<< "$_unclosed_summary"
-        warn "$_u_count active task(s) have every Agent AC ticked and no Human AC outstanding, but are still started-work/issues" \
-             "$_u_ids — $_u_no_verif of these have an empty ## Verification block (no mechanical close gate)" \
-             "Candidates for close, not closures — spot-check with 'fw task verify T-XXX' per task, then 'fw task update T-XXX --status work-completed'. Full list: $UNCLOSED_REPORT_PATH"
+    if [ -z "$_unclosed_summary" ]; then
+        warn_unenumerable "the unclosed-satisfied scan over .tasks/active/" \
+             "Satisfied-but-unclosed active tasks" \
+             "the python3 pass over ACTIVE_SCAN produced no summary line (its stderr is discarded)" \
+             "Re-run the block without 2>/dev/null to see the error; until then this rail asserts nothing"
     else
-        pass "No active tasks are satisfied-but-unclosed"
+        IFS='|' read -r _u_count _u_no_verif _u_ids <<< "$_unclosed_summary"
+        if [ "${_u_count:-0}" -gt 0 ]; then
+            warn "$_u_count active task(s) have every Agent AC ticked and no Human AC outstanding, but are still started-work/issues" \
+                 "$_u_ids — $_u_no_verif of these have an empty ## Verification block (no mechanical close gate)" \
+                 "Candidates for close, not closures — spot-check with 'fw task verify T-XXX' per task, then 'fw task update T-XXX --status work-completed'. Full list: $UNCLOSED_REPORT_PATH"
+        else
+            pass_over "$(find "$PROJECT_ROOT/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null | wc -l)" \
+                 "active task(s)" "No active tasks are satisfied-but-unclosed" \
+                 "" ".tasks/active/ holds no task files — the scan had nothing to qualify"
+        fi
     fi
 fi
 echo ""
@@ -2846,8 +2978,10 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
     done < <(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null)
     unset _refs _ref _any_resolved _unresolved _all_reverted _ref_list
 
-    if [ "$orphan_refs" -eq 0 ] && [ "$task_commits" -gt 0 ]; then
-        pass "All commit task refs resolve to actual tasks"
+    if [ "$orphan_refs" -eq 0 ]; then
+        pass_over "$task_commits" "task-referencing commit(s) in ${trace_range:-full history}" \
+             "All commit task refs resolve to actual tasks" \
+             "" "No commit in the traceability range carried a T-XXX reference, so nothing was resolved — check the range and the reference convention"
     fi
 
     # T-1255 (G-007): mirror drift check — github vs origin HEAD divergence.
@@ -3079,7 +3213,7 @@ if [ -f "$PRACTICES_MD" ]; then
         # Check if practices have origins
         practices_with_origin=$(grep -c "Origin:" "$PRACTICES_MD" 2>/dev/null || true)
         if [ "$practices_with_origin" -ge "$practice_count" ]; then
-            pass "All practices have traceable origins"
+            pass_over "$practice_count" "documented practice(s)" "All practices have traceable origins"
 
             # Quality Check: Verify practice origins reference existing tasks
             # T-3053 (A3): the same `head -1` shape lived here, but it is the
@@ -3109,7 +3243,9 @@ if [ -f "$PRACTICES_MD" ]; then
             done < <(grep "Origin:" "$PRACTICES_MD" 2>/dev/null)
 
             if [ "$orphan_origins" -eq 0 ]; then
-                pass "All practice origins resolve to actual tasks"
+                pass_over "$practices_with_origin" "practice Origin: line(s)" \
+                     "All practice origins resolve to actual tasks" \
+                     "" "No Origin: line was found to resolve, so this check asserted nothing about 015-Practices.md"
             fi
         else
             warn "Some practices missing origin" \
@@ -3203,7 +3339,10 @@ if [ -n "$COMPLETED_SCAN" ]; then
 fi
 
 if [ "$missing_episodic" -eq 0 ]; then
-    pass "All completed tasks have episodic summaries"
+    _ep_pop=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "")
+    pass_over "$_ep_pop" "completed task(s)" "All completed tasks have episodic summaries" \
+         "" "completed-task-scan reported no completed tasks — the coverage claim covers nothing"
+    unset _ep_pop
 fi
 
 # Check 2: Episodic quality (non-empty required fields, enrichment status)
@@ -3250,9 +3389,8 @@ fi
 
 if [ "$pending_enrichment" -eq 0 ] && [ "$low_quality_episodic" -eq 0 ]; then
     episodic_count=$(find "$episodic_dir" -name "T-*.yaml" -type f 2>/dev/null | wc -l)
-    if [ "$episodic_count" -gt 0 ]; then
-        pass "All $episodic_count episodic summaries have quality content"
-    fi
+    pass_over "$episodic_count" "episodic summary file(s)" "All episodic summaries have quality content" \
+         "" "$episodic_dir holds no T-*.yaml — the quality claim covers nothing"
 fi
 
 # Check 3: Orphaned episodic files (no matching task)
@@ -3273,8 +3411,10 @@ if [ -d "$episodic_dir" ]; then
     shopt -u nullglob
 fi
 
-if [ "$orphaned_episodic" -eq 0 ] && [ -d "$episodic_dir" ]; then
-    pass "No orphaned episodic files"
+if [ -d "$episodic_dir" ] && [ "$orphaned_episodic" -eq 0 ]; then
+    pass_over "$(find "$episodic_dir" -maxdepth 1 -name "T-*.yaml" -type f 2>/dev/null | wc -l)" \
+         "episodic file(s)" "No orphaned episodic files" \
+         "" "$episodic_dir exists but holds no T-*.yaml — nothing could be orphaned because nothing is there"
 fi
 
 echo ""
@@ -3598,12 +3738,13 @@ if [ -n "$COMPLETED_SCAN" ]; then
 fi
 
 if [ "$missing_research" -eq 0 ]; then
-    inception_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('inception_count',0))" 2>/dev/null || echo "0")
-    if [ "$inception_count" -gt 0 ]; then
-        pass "All $inception_count completed inceptions have research artifacts"
-    else
-        pass "No completed inception tasks to check"
-    fi
+    inception_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('inception_count',0))" 2>/dev/null || echo "")
+    # T-3105: "No completed inception tasks to check" used to be a PASS. It is
+    # the empty-set case stated out loud and then scored as a success — the
+    # exact shape this rule exists to remove.
+    pass_over "$inception_count" "completed inception(s)" \
+         "All completed inceptions have research artifacts" \
+         "" "completed-task-scan reported no completed inceptions — C-001 coverage asserted nothing this run"
 fi
 
 echo ""
@@ -3726,7 +3867,11 @@ while IFS= read -r task_id; do
 done < <(find_inceptions_without_recommendation "$PROJECT_ROOT/.tasks/active" 2>/dev/null)
 
 if [ "$c006_missing" -eq 0 ]; then
-    pass "C-006: All active inceptions have a real Recommendation block"
+    _c006_pop=$(grep -rl '^workflow_type:[[:space:]]*inception' "$PROJECT_ROOT/.tasks/active" 2>/dev/null | wc -l)
+    pass_over "$_c006_pop" "active inception(s)" \
+         "C-006: All active inceptions have a real Recommendation block" \
+         "" "No active task declares workflow_type: inception — the Recommendation rail covered nothing this run"
+    unset _c006_pop
 fi
 
 echo ""
@@ -4199,7 +4344,9 @@ except Exception: print(0)" 2>/dev/null || echo 0)
     if [ "$vq_red" = "-1" ]; then
         info "CTL-013b: review-queue verification re-run produced no verdict (skipped)"
     elif [ "$vq_red" = "0" ]; then
-        pass "CTL-013b: review-queue verification re-run: $vq_checked task(s), 0 red"
+        pass_over "$vq_checked" "review-queue task(s) re-run" \
+             "CTL-013b: review-queue verification re-run, 0 red" \
+             "" "fw verify-queue reported 0 red out of 0 checked — the rotating cursor covered no task this run"
     else
         vq_ids=$(echo "$vq_json" | python3 -c "import json,sys
 d=json.load(sys.stdin)
@@ -4286,7 +4433,9 @@ print('|'.join(stuck))
 PYAUDIT_ARCHIVE
 )
 if [ -z "$ARCHIVE_ELIGIBLE_OUT" ]; then
-    pass "CTL-031: No archive-eligible stuck partial-complete tasks (T-1903/L-403)"
+    pass_over "$(find "$PROJECT_ROOT/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null | wc -l)" \
+         "active task(s)" "CTL-031: No archive-eligible stuck partial-complete tasks (T-1903/L-403)" \
+         "" ".tasks/active/ holds no task files, so nothing could be stuck"
 else
     stuck_count=$(echo "$ARCHIVE_ELIGIBLE_OUT" | tr '|' '\n' | wc -l)
     warn "CTL-031: $stuck_count stuck partial-complete task(s) — all ACs ticked, in active/ — run: bin/fw task archive-eligible" \
@@ -4346,7 +4495,9 @@ for item in data.get('status_desync', []):
 " 2>/dev/null)
     fi
     if [ "$status_desync_fail" -eq 0 ]; then
-        pass "CTL-028: All completed/ tasks have frontmatter status: work-completed"
+        pass_over "$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "")" \
+             "completed task(s)" "CTL-028: All completed/ tasks have frontmatter status: work-completed" \
+             "" "completed-task-scan reported no completed tasks — the status-desync rail covered nothing"
     fi
 fi
 
@@ -4375,7 +4526,9 @@ for item in data.get('horizon_drift', []):
 " 2>/dev/null)
     fi
     if [ "$horizon_drift_fail" -eq 0 ]; then
-        pass "CTL-030: All completed/ tasks have null/absent stored horizon (arc-009)"
+        pass_over "$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "")" \
+             "completed task(s)" "CTL-030: All completed/ tasks have null/absent stored horizon (arc-009)" \
+             "" "completed-task-scan reported no completed tasks — the horizon-drift rail covered nothing"
     fi
 fi
 
@@ -4471,7 +4624,9 @@ PYEOF
 )
     fi
     if [ "$completable_warn" -eq 0 ]; then
-        pass "CTL-029: No completable-but-not-completed active tasks"
+        pass_over "$(find "$PROJECT_ROOT/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null | wc -l)" \
+             "active task(s)" "CTL-029: No completable-but-not-completed active tasks" \
+             "" ".tasks/active/ holds no task files — the completability scan had nothing to consider"
     fi
 fi
 
@@ -4516,8 +4671,9 @@ for item in data.get('unchecked_ac', []):
 " 2>/dev/null)
     fi
     if [ "$ac_fail" -eq 0 ]; then
-        completed_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "0")
-        pass "CTL-012: All $completed_count completed tasks have checked ACs"
+        completed_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "")
+        pass_over "$completed_count" "completed task(s)" "CTL-012: All completed tasks have checked ACs" \
+             "" "completed-task-scan reported no completed tasks — the AC-coverage claim covered nothing"
     fi
 fi
 
@@ -4731,8 +4887,18 @@ case "$d10_level" in
              "Human-owned inception/spec tasks completed without human AC verification" \
              "Review flagged tasks — human dialogue may have been skipped"
         ;;
-    *)
+    PASS)
         pass "D10: Decision-without-dialogue — none detected"
+        ;;
+    *)
+        # T-3105: the old catch-all `*)` scored an EMPTY detector result as a
+        # PASS. The detector's stdout is the only channel, so a python that
+        # dies produces "" -> level "" -> the success arm. Did-not-run and
+        # ran-clean must not share a branch.
+        warn_unenumerable "the D10 decision-without-dialogue detector" \
+             "D10: Decision-without-dialogue" \
+             "the detector emitted no recognised level (got: '${d10_level:-<empty>}')" \
+             "Re-run the D10 python block by hand and read its stderr"
         ;;
 esac
 
@@ -4785,8 +4951,18 @@ D11EOF
                  "Gaps in watching status for over 30 days" \
                  "Review: fw gaps — close or escalate stale gaps"
             ;;
-        *)
+        PASS)
             pass "D11: Gap register staleness — all gaps fresh"
+            ;;
+        *)
+            # T-3105: the old catch-all `*)` scored an EMPTY detector result
+            # as a PASS. The detector's stdout is the only channel, so a
+            # python that dies produces "" -> level "" -> the success arm.
+            # Did-not-run and ran-clean must not share a branch.
+            warn_unenumerable "the D11 gap-register staleness detector" \
+                 "D11: Gap register staleness" \
+                 "the detector emitted no recognised level (got: '${d11_level:-<empty>}')" \
+                 "Re-run the D11 python block by hand and read its stderr"
             ;;
     esac
 else
@@ -5041,8 +5217,18 @@ case "$d5_level" in
              "Tasks with unusual cycle times detected" \
              "Review flagged tasks for process issues"
         ;;
-    *)
+    PASS)
         pass "D5: Task lifecycle — no anomalies"
+        ;;
+    *)
+        # T-3105: the old catch-all `*)` scored an EMPTY detector result as a
+        # PASS. The detector's stdout is the only channel, so a python that
+        # dies produces "" -> level "" -> the success arm. Did-not-run and
+        # ran-clean must not share a branch.
+        warn_unenumerable "the D5 task-lifecycle detector" \
+             "D5: Task lifecycle" \
+             "the detector emitted no recognised level (got: '${d5_level:-<empty>}')" \
+             "Re-run the D5 python block by hand and read its stderr"
         ;;
 esac
 
@@ -5122,8 +5308,18 @@ case "$d13_level" in
              "Decision recorded but workflow stuck in active/" \
              "Recover both classes with: bin/fw inception sweep (T-1514)"
         ;;
-    *)
+    PASS)
         pass "D13: Inception limbo — no stuck inceptions"
+        ;;
+    *)
+        # T-3105: the old catch-all `*)` scored an EMPTY detector result as a
+        # PASS. The detector's stdout is the only channel, so a python that
+        # dies produces "" -> level "" -> the success arm. Did-not-run and
+        # ran-clean must not share a branch.
+        warn_unenumerable "the D13 inception-limbo detector" \
+             "D13: Inception limbo" \
+             "the detector emitted no recognised level (got: '${d13_level:-<empty>}')" \
+             "Re-run the D13 python block by hand and read its stderr"
         ;;
 esac
 
@@ -5583,8 +5779,18 @@ case "$d15_level" in
              "Inception with all Human ACs ticked but no decision recorded — operator forgot to run fw inception decide" \
              "Run: fw inception decide T-XXX go|no-go|defer --rationale '...'"
         ;;
-    *)
+    PASS)
         pass "D15: Inception limbo state — none ($d15_result)"
+        ;;
+    *)
+        # T-3105: the old catch-all `*)` scored an EMPTY detector result as a
+        # PASS. The detector's stdout is the only channel, so a python that
+        # dies produces "" -> level "" -> the success arm. Did-not-run and
+        # ran-clean must not share a branch.
+        warn_unenumerable "the D15 inception-limbo-state detector" \
+             "D15: Inception limbo state" \
+             "the detector emitted no recognised level (got: '${d15_level:-<empty>}')" \
+             "Re-run the D15 python block by hand and read its stderr"
         ;;
 esac
 
