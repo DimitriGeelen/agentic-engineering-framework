@@ -1,17 +1,18 @@
 ---
-id: T-3112
-name: "L3: fw doctor audits worktrees for hook drift, not just consumers (R7)"
+id: T-3115
+name: "Audit check: vendored config.sh registry must be inert"
 description: >
-  R7 leg 3. fw doctor audits 31 consumer projects for missing hooks and zero worktrees.
-  Same predicate, new subject — the T-3101 one-predicate-many-surfaces shape. Reports
-  the gap rather than closing it, which is worth having: the gap was invisible for
-  the seven weeks that produced T-2505, T-2506 and T-2428. See docs/design/task-corpus-concurrency-model.md
-  R7.
+  tests/ is deliberately outside the vendored include list, so no consumer tree asserts
+  its lib/config.sh registry descriptions are inert. The T-3089 lint guards the authoring
+  site only. A hand-edited vendored copy would fork-bomb that consumer with nothing
+  to catch it. Add the inertness assertion to agents/audit (which IS vendored) so
+  every consumer checks its own copy. Verified 2026-08-20: 0 of 74 copies currently
+  affected — this is prevention, not remediation.
 
-status: started-work
+status: captured
 workflow_type: build
-owner: claude-code
-horizon: now
+owner: agent
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -25,8 +26,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-20T17:36:32Z
-last_update: 2026-08-20T21:24:20Z
+created: 2026-08-20T18:54:52Z
+last_update: '2026-08-20T19:00:15Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -39,7 +40,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-20T17:45:08Z'
+  - ts: '2026-08-20T19:00:08Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -49,7 +50,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=202,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-20T17:45:14Z'
+  - ts: '2026-08-20T19:00:15Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -68,47 +69,51 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3112: L3: fw doctor audits worktrees for hook drift, not just consumers (R7)
+# T-3115: Audit check: vendored config.sh registry must be inert
 
 ## Context
 
-R7 leg 3 (`docs/design/task-corpus-concurrency-model.md`). `fw doctor` already audits
-31 consumer projects for hook drift against the authority's `.claude/settings.json`.
-It audits **zero worktrees** — yet a linked worktree is exactly the same shape of
-replica: it carries its own `.claude/settings.json`, its own `bin/fw`, and its own
-copy of the enforcement code that is supposed to constrain it. Measured in
-`t100199-close`: `check-worktree-governance-write.sh` absent, `CLAUDE_PROJECT_DIR`
-0 refs, `bin/fw` dated 6 July.
-
-Same predicate, new subject — the T-3101 one-predicate-many-surfaces shape. This leg
-reports the gap rather than closing it (L2/L4 close it), which is worth having on its
-own: the gap was invisible for the seven weeks that produced T-2505, T-2506 and T-2428.
-
-Set-reporting discipline from T-3105 applies: the check states how many worktrees it
-examined, and an empty candidate set is stated explicitly rather than passing vacuously.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The hook-comparison predicate lives in exactly ONE place (`lib/hook-parity.sh`); the inline `extract_hooks` python in `bin/fw`'s Consumer Projects loop is replaced by a call to it, so `bin/fw` holds zero copies of the predicate.
-- [x] `fw doctor` emits a `Worktrees` section that enumerates linked worktrees via `git worktree list --porcelain` and reports the size of the set it examined.
-- [x] A linked worktree whose `.claude/settings.json` is missing hooks the authority has → WARN naming the worktree and the missing hook names.
-- [x] A linked worktree with no `.claude/settings.json` at all → WARN (`settings absent`), never silent.
-- [x] Zero linked worktrees → an explicit reported line, not an absent section (T-3105 set-reporting: an empty candidate set is stated, never a vacuous pass).
-- [x] The Consumer Projects check's output shape is unchanged by the predicate extraction (same `ok N/M` and `missing K: names` strings).
-- [x] `tests/unit/t3112_worktree_hook_parity.bats` covers: drifted worktree → WARN, in-sync worktree → OK, settings absent → WARN, empty set → reported, and predicate-appears-once.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
+### Human
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+     Remove this section if all criteria are agent-verifiable.
+     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+
+     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
+     If your Expected clause is grep-able / file-exists / structural (a deterministic
+     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
+     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+     verification genuinely needs human taste (tone, feel, layout rhythm).
+     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+
+     [REVIEW] example (genuine human judgment):
+       - [ ] [REVIEW] Dashboard renders correctly
+         **Steps:**
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
+
+     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
+         **Steps:**
+         1. Run `bin/fw reviewer T-XXX`
+         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
+         **If not:** Inspect hook block-message string and add missing mechanism
+       Conversion: this AC should be moved to ### Agent and
+       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
+-->
 
 ## Verification
-
-bats tests/unit/t3112_worktree_hook_parity.bats > /tmp/.t3112.out 2>&1 && grep -q '^ok 1 ' /tmp/.t3112.out && ! grep -q '^not ok' /tmp/.t3112.out
-test -f lib/hook-parity.sh
-test "$(grep -c 'def extract_hooks' bin/fw)" = "0"
-test "$(grep -c 'def extract_hooks' lib/hook-parity.sh)" = "1"
-bin/fw doctor > /tmp/.t3112.doctor 2>&1; grep -q 'Worktrees' /tmp/.t3112.doctor
-grep -qE 'linked worktree' /tmp/.t3112.doctor
-bash -n bin/fw && bash -n lib/hook-parity.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -261,11 +266,7 @@ bash -n bin/fw && bash -n lib/hook-parity.sh
 
 ## Updates
 
-### 2026-08-20T17:36:32Z — task-created [task-create-agent]
+### 2026-08-20T18:54:52Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3112-l3-fw-doctor-audits-worktrees-for-hook-d.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3115-audit-check-vendored-configsh-registry-m.md
 - **Context:** Initial task creation
-
-### 2026-08-20T21:24:20Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
