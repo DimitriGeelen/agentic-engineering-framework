@@ -292,32 +292,53 @@ T-1828. The counter-measure here is choosing a unit that is causally tied to the
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The nine agent ACs and all nine Verification lines pass, and the one thing
+left is genuinely a human call: whether the new `BRANCH_STALE_DAYS` row *reads* right on
+`/config`. That is layout and wording, which curl and grep cannot settle — it is exactly
+the class P-013 exists for, and I did not bypass it.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+The substance is measured, not asserted. The old trigger fired on commits landing on
+`origin/master`, ~41/day here, 88% of them governance churn — so a healthy branch became
+a finding in ~1.2 days. The new gate asks how many days since anyone committed **on the
+branch**, which is the question the finding is named after. The commit count stays on the
+line because it, not the day count, is what tells you whether a strand is still landable
+under FF-only integrate.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
+Two caveats stated rather than buried. First, the live finding count does **not** drop —
+all seven staleness findings here are 43–170 days untouched, so all seven are true. This
+slice stops the *next* false positive; it does not tidy the current list, and an AC
+demanding a drop would only have been satisfiable by breaking the detector. Second,
+mutation G (flipping the guard to fail-closed) **survives** the suite. I am reporting that
+rather than dropping it: the path is unreachable because `git for-each-ref` filters broken
+refs before the loop sees them — the same mechanism T-3092 hit — so the `-n` test is a
+deliberate fail-open sentinel, documented as unreachable instead of pinned by a test that
+could only pass by faking the condition.
 
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- `tests/unit/t100143_branch_hygiene.bats` — 21/21 green, 6 of them new for this slice
+  (fresh-but-far-behind silent, its non-recency control, untouched-still-surfaces,
+  threshold boundary, non-staleness classes unaffected, date-helper contract)
+- `tests/lint/config-registry-parity.bats` — green; the registry entry
+  (`lib/config.sh:246`) and its Watchtower mirror (`web/blueprints/config.py:46`) agree
+- Mutation F (recency guard neutered) → red on tests 16, 19. Mutation H (days tag dropped)
+  → red on tests 3, 17, 18. Mutation G → survives, unreachable (Decisions D-3)
+- Live scan retains all four real strands — `t2353-audit-emit-tasks` (53d),
+  `t2417-fw-sessions` (48d), `worktree-rca-worktree-push-strand` (49d),
+  `t2511-warn-remediation` (43d) — each still carrying its `behind=` count
+- `merged-undeleted`, `remote-contained`, `remote-unlanded` unchanged (regression-guarded
+  by verification line 8)
+- Watchtower `/config` renders the new row (verification line 5); the running server
+  needed a restart to pick it up, which is why this was checked rather than assumed
+- Correction recorded, not silently fixed: AC #1 originally claimed `fw config list` would
+  surface the key. It does not, for any registry key — `_config_get`
+  (`lib/config-file.sh:185`) reads `.framework.yaml` overrides only. See Decisions D-4
+- Analysis: `docs/reports/T-3093-branch-hygiene-escalation.md` F3
+
+**Blocks slice 2.** The T-3093 GO sequence is recalibrate → promote to the audit cron.
+Promoting before this landed would have flooded the daily audit with the same false
+positives and burned the signal permanently.
 
 ## Decisions
 
@@ -396,8 +417,8 @@ only by breaking the detector.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8c5270bd
-- **Timestamp:** 2026-08-20T00:42:07Z
+- **Scan ID:** R-a71ec7af
+- **Timestamp:** 2026-08-20T00:42:34Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
