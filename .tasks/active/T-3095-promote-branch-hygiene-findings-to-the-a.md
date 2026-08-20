@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T00:56:39Z
-last_update: '2026-08-20T01:00:15Z'
+last_update: 2026-08-20T01:26:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -68,14 +68,60 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 2 of the T-3093 GO. **Slice 1 (T-3094) had to land first** — that ordering was the
+substance of the decision, not a preference: promoting a rail that fired on every branch
+within ~1.2 days would have flooded the daily audit and burned the signal permanently.
+With T-3094 in, the trigger is days-since-last-commit-on-the-branch and the live count is
+seven findings, all 43–170 days untouched, all true.
+
+The rail itself has never had an automatic surface. `fw_branch_hygiene` has exactly one
+caller (`bin/fw:3221`, i.e. `fw doctor`), audit and handover do not call it, and doctor
+appears on **zero** cron lines. It shipped 2026-07-04; the oldest strand forked
+2026-03-01. So the strands predate the detector, and nothing has ever put its output in
+front of anyone on a schedule — which is the whole reason four real strands sat unlanded
+for 43–55 days.
+
+Precedent to follow, not invent: `agents/audit/audit.sh:1826` promotes `bin/fw doctor`'s
+cron-drift logic into audit (T-1771, T-1942, T-1943). Same surface, same cron, no new
+alert channel. The one thing that precedent got wrong and this slice must not repeat is
+that it **mirrored** doctor's logic rather than calling it; branch-hygiene has a single
+library entry point (`lib/branch-hygiene.sh::fw_branch_hygiene`) and audit must call it.
+
+Analysis: `docs/reports/T-3093-branch-hygiene-escalation.md` (Recommendation, slice 2).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `agents/audit/audit.sh` sources `lib/branch-hygiene.sh` and **calls**
+      `fw_branch_hygiene` — no re-implementation, no copied classification logic. A second
+      copy of a predicate is the L-399 defect this task's own precedent committed
+- [ ] Findings surface at **WARN**, never FAIL and never blocking. T-3093 explicitly ruled
+      out a blocking gate and per-strand auto-filing: both act on a signal whose
+      false-positive rate has only just been fixed, and both are much harder to walk back
+      than a WARN
+- [ ] Output is bounded and **class-representative** — reuse `fw_branch_hygiene_head`
+      (T-3092), which guarantees at least one line per finding class before filling the
+      remaining budget. A flat `head -N` is what made T-3092's remote classes invisible in
+      doctor (0 of 4 shown), and audit emits more sections than doctor does
+- [ ] Linked worktrees are skipped with INFO, not WARN — branch hygiene is a
+      whole-repository concern evaluated from the canonical checkout, and a worktree
+      derives a different branch set. Same guard and same reasoning as the cron-drift
+      block directly above it (`fw_is_linked_worktree`, T-2435 / OBS-077)
+- [ ] A repository with no findings emits a positive OK line, not silence — an absent
+      section is indistinguishable from a section that did not run (the false-green class
+      this framework has hit repeatedly: T-2732, OBS-185)
+- [ ] The audit's own exit code is unchanged by branch-hygiene findings alone: a repo
+      whose only issue is stale branches must still exit 1 (warnings), not 2 (failures)
+- [ ] Bats coverage in `tests/unit/` for: findings present → WARN emitted with counts,
+      findings absent → OK line emitted, linked worktree → INFO and no WARN, and
+      exit-code neutrality
+- [ ] Mutation check recorded in Decisions: removing the audit call turns the
+      findings-present test red, and downgrading `fw_branch_hygiene_head` to a flat
+      `head -N` turns the class-representation test red
+- [ ] The live audit is run and its branch-hygiene section reproduced verbatim in
+      Decisions, with the finding count reconciled against
+      `bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .'` — the two must agree,
+      and any difference is a defect in this slice, not a rounding artefact
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

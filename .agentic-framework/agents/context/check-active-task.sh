@@ -312,8 +312,62 @@ _bootstrap_shape_hint() {
 _blocked_subject() {
     if [ -n "${BASH_CMD:-}" ]; then
         printf 'Blocked command: %s' "$(printf '%s' "$BASH_CMD" | tr '\n' ' ' | head -c 160)"
+        printf '\n%s' "$(_bash_gate_reason)"
     else
         printf 'Attempting to modify: %s' "${FILE_PATH:-}"
+    fi
+}
+
+# T-3096 / G-084: say which of the gate's TWO questions actually refused.
+#
+# The Bash arm asks (1) does this match a write pattern, and (2) is its base command on
+# the read-only allowlist. Every block message downstream is phrased for question 1 —
+# "Cannot modify files under a completed task", "before editing source files" — but most
+# real blocks come from question 2. Measured in one session: `sed -n RANGE file`,
+# `timeout 30 termlink agent inbox | head` and `./x.sh status | tail` were each told they
+# had attempted a modification. None writes.
+#
+# That is not a cosmetic problem. A gate that names a cause the agent knows to be false
+# teaches the agent that the gate's stated contract is unreliable, and the documented
+# consequence is that the agent routes around it rather than through the sanctioned
+# remedy (L-399 / T-1890 — a bypass contract that fails on one leg produced three weeks
+# of silent circumvention). Naming the real reason costs two lines and keeps the gate
+# credible on the occasions it is right.
+#
+# Emitted from _blocked_subject so all eight block sites inherit it with no new call
+# site to forget — the same "consume at exactly one checkpoint" argument the SAFE_ALLOWED
+# comment at :231 makes, for the same reason.
+_bash_gate_reason() {
+    [ -z "${BASH_CMD:-}" ] && return 0
+    type has_bash_write_pattern &>/dev/null || return 0
+
+    if has_bash_write_pattern "$BASH_CMD"; then
+        printf 'Why: it matches a file-write pattern (a redirect, rm, tee, sed -i, or a heredoc).'
+        return 0
+    fi
+
+    # No write pattern: the refusal came from recognition, not modification. Name the
+    # segment that was not recognised — with a chained command that is the one datum
+    # that turns "why is my read blocked?" into a one-second answer.
+    local _seg _bad=""
+    if type _fw_chain_split &>/dev/null && type _fw_single_command_is_safe &>/dev/null; then
+        while IFS= read -r _seg; do
+            [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
+            if ! _fw_single_command_is_safe "$_seg"; then
+                _bad=$(printf '%s' "$_seg" | sed 's/^[[:space:]]*//' | head -c 60)
+                break
+            fi
+        done < <(_fw_chain_split "$BASH_CMD")
+    fi
+
+    if [ -n "$_bad" ]; then
+        printf 'Why: this command writes nothing the gate can detect. It was gated because\n'
+        printf '     "%s" is not on the read-only allowlist\n' "$_bad"
+        printf '     (agents/context/lib/safe-commands.sh), so the gate cannot prove it is a read.\n'
+        printf '     If it genuinely only reads, that is a gap in the allowlist worth filing.'
+    else
+        printf 'Why: this command writes nothing the gate can detect, but it is not recognised\n'
+        printf '     as read-only (agents/context/lib/safe-commands.sh).'
     fi
 }
 
