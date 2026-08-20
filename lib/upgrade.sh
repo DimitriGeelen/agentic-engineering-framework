@@ -1644,26 +1644,19 @@ CRONREGEOF
     _t2912_hook_gap() {
         local sfile="$1"
         local analysis
-        analysis=$(FW_FILE="$fw_settings" CONSUMER_FILE="$sfile" python3 -c "
-import json, os
+        analysis=$(FW_FILE="$fw_settings" CONSUMER_FILE="$sfile" FW_LIB="$FRAMEWORK_ROOT/lib" python3 -c "
+import json, os, sys
 
-def extract_hooks(path):
-    hooks = set()
-    try:
-        with open(path) as f:
-            data = json.load(f)
-        for event, entries in data.get('hooks', {}).items():
-            for entry in entries:
-                for hook in entry.get('hooks', []):
-                    cmd = hook.get('command', '')
-                    if 'fw hook' in cmd:
-                        name = cmd.split('fw hook ')[-1].strip()
-                    else:
-                        name = cmd.strip().split('/')[-1]
-                    hooks.add((event, name))
-    except (json.JSONDecodeError, FileNotFoundError):
-        pass
-    return hooks
+# T-3113: extract_hooks was a third inline copy of the predicate that
+# lib/hook-parity.sh (T-3112) had already consolidated for doctor's two call
+# sites. Imported now, not copied. Same shape as lib/hook_portability.py below.
+# NOTE the parse policy: this caller wants the LENIENT one (strict=False, an
+# unparseable settings.json yields an empty set → missing = everything →
+# needs_regen → the broken file gets regenerated). That is T-2912's shipped
+# behaviour and it is the correct response here; doctor wants the strict policy
+# instead. Both live in the module.
+sys.path.insert(0, os.environ['FW_LIB'])
+from hook_parity import extract_hooks
 
 def check_stale_paths(path):
     stale = 0
@@ -2335,6 +2328,11 @@ EOF
 
             # T-2094 F10 (T-2078 V1-C): post-upgrade fw doctor advisory.
             _t2094_emit_doctor_advisory "$target_dir"
+
+            # T-3113 (R7 leg L4): the replicas beside this project are still
+            # running the enforcement code they forked with. Named here because
+            # this is the one moment a pull-only propagation model gets to speak.
+            _t3113_emit_worktree_advisory "$target_dir"
         fi
     fi
 }
@@ -2395,4 +2393,118 @@ _t2094_emit_doctor_advisory() {
         echo -e "  ${GREEN}Advisory:${NC} doctor PASS (exit 0)."
     fi
     return 0  # always 0 — F10 is non-blocking by spec
+}
+
+# T-3113 (R7 leg L4): post-upgrade linked-worktree staleness advisory.
+#
+# `fw upgrade` refreshed the main checkout. Every linked worktree beside it is
+# still running whatever enforcement code it forked with — and before this
+# helper existed, `grep -c worktree lib/upgrade.sh` returned 0. The command that
+# exists to propagate the framework was blind to the replicas of it.
+#
+# This is the LOUD half of R7. Vendored propagation is pull-only: no leg reaches
+# a project that never upgrades, so the moment it does upgrade is the last moment
+# available to say anything at all. L3 (T-3112) put the same information in
+# `fw doctor`; this puts it where the operator is already thinking about
+# staleness, with "what just changed" still warm.
+#
+# TWO FACTS, BOTH REPORTED. Either alone misleads:
+#   - commits behind the authority's HEAD — tracked content (bin/fw, lib/, hooks
+#     templates). A worktree 2000 commits behind runs 2000-commit-old enforcement.
+#   - hook delta vs the authority's .claude/settings.json — NOT the same question.
+#     `.claude/settings.json` drifts independently of commit distance; a worktree
+#     can be 0 behind and still missing four hooks (measured: t100196-vendor-fix).
+# Reporting only one produces a confident green that the other would have refuted.
+#
+# The hook half delegates to fw_hook_parity_delta (lib/hook-parity.sh, T-3112).
+# lib/upgrade.sh holds no copy of the predicate; a bats test pins that.
+#
+# Non-blocking by spec, same contract as _t2094_emit_doctor_advisory above:
+# always returns 0. An advisory that can fail an upgrade is an advisory operators
+# learn to route around.
+#
+# Extracted as a helper so bats can exercise it directly without driving a
+# ten-step do_upgrade — same reason _t2094 was extracted.
+#
+# Args:
+#   $1 — target_dir (the project that was just upgraded)
+_t3113_emit_worktree_advisory() {
+    local target_dir="$1"
+    local _hp_lib="${FRAMEWORK_ROOT:-}/lib/hook-parity.sh"
+
+    echo ""
+    echo -e "  ${BOLD}Linked worktrees (advisory):${NC}"
+
+    if [ ! -f "$_hp_lib" ] || ! command -v git >/dev/null 2>&1; then
+        echo -e "  ${YELLOW}SKIP${NC}  Cannot check — hook-parity library or git unavailable."
+        echo -e "         Worktree staleness is UNCHECKED, not clean."
+        return 0
+    fi
+    # shellcheck source=/dev/null
+    source "$_hp_lib"
+
+    local authority
+    if ! authority=$(fw_hook_parity_authority_root "$target_dir" 2>/dev/null) || [ -z "$authority" ]; then
+        # T-3105: an unenumerable set is stated, never passed over in silence.
+        # "Not a git repo" is a legitimate state — but it is one in which this
+        # advisory proves nothing, and a blank section reads as proof.
+        echo -e "  ${YELLOW}SKIP${NC}  $target_dir is not a git repository — worktree set unenumerable."
+        return 0
+    fi
+
+    local wt_list
+    if ! wt_list=$(fw_hook_parity_linked_worktrees "$target_dir" 2>/dev/null); then
+        echo -e "  ${YELLOW}SKIP${NC}  git worktree list failed — worktree set unenumerable."
+        return 0
+    fi
+
+    local auth_head auth_settings="$authority/.claude/settings.json"
+    auth_head=$(git -C "$authority" rev-parse HEAD 2>/dev/null || echo "")
+
+    local wt wname behind delta stale=0 count=0
+    while IFS= read -r wt; do
+        [ -n "$wt" ] || continue
+        count=$((count + 1))
+        wname=$(basename "$wt")
+
+        behind=""
+        if [ -n "$auth_head" ]; then
+            behind=$(git -C "$wt" rev-list --count "HEAD..$auth_head" 2>/dev/null || echo "")
+        fi
+        delta=$(fw_hook_parity_delta "$auth_settings" "$wt/.claude/settings.json")
+
+        local behind_bad=0 hooks_bad=0
+        [ -n "$behind" ] && [ "$behind" -gt 0 ] 2>/dev/null && behind_bad=1
+        case "$delta" in ok*) ;; *) hooks_bad=1 ;; esac
+
+        if [ "$behind_bad" -eq 0 ] && [ "$hooks_bad" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  $wname (up to date, ${delta#ok } hooks)"
+            continue
+        fi
+
+        stale=$((stale + 1))
+        local detail=""
+        [ "$behind_bad" -eq 1 ] && detail="$behind commit(s) behind"
+        if [ "$hooks_bad" -eq 1 ]; then
+            [ -n "$detail" ] && detail="$detail, "
+            detail="$detail$delta"
+        fi
+        # Unknown behind-count is reported as unknown rather than omitted — the
+        # absence of a number must not read as zero.
+        [ -z "$behind" ] && detail="$detail (behind-count unknown)"
+        echo -e "  ${YELLOW}STALE${NC}  $wname ($detail)"
+        echo -e "         $wt"
+    done < <(printf '%s\n' "$wt_list")
+
+    if [ "$count" -eq 0 ]; then
+        echo -e "  ${CYAN}SKIP${NC}  examined 0 linked worktree(s) — none exist"
+    elif [ "$stale" -eq 0 ]; then
+        echo -e "  ${GREEN}OK${NC}  examined $count linked worktree(s), none stale"
+    else
+        echo ""
+        echo -e "  $stale of $count linked worktree(s) run older enforcement than this project."
+        echo -e "  Land and remove:  fw integrate run master --push  (then fw worktree gc)"
+        echo -e "  Or refresh in place: fw upgrade <worktree-path>"
+    fi
+    return 0  # always 0 — advisory, never blocks the upgrade
 }

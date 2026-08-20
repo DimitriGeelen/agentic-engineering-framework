@@ -105,7 +105,11 @@ examined, and an empty candidate set is stated explicitly rather than passing va
 bats tests/unit/t3112_worktree_hook_parity.bats > /tmp/.t3112.out 2>&1 && grep -q '^ok 1 ' /tmp/.t3112.out && ! grep -q '^not ok' /tmp/.t3112.out
 test -f lib/hook-parity.sh
 test "$(grep -c 'def extract_hooks' bin/fw)" = "0"
-test "$(grep -c 'def extract_hooks' lib/hook-parity.sh)" = "1"
+# T-3113 moved the predicate to lib/hook_parity.py. The original line here was
+# `grep -c 'def extract_hooks' lib/hook-parity.sh == 1` — which named ONE file and
+# was blind to a third copy in lib/upgrade.sh. Corrected to a repo-wide scan so
+# re-running this block still asserts something true.
+test "$(grep -rl 'def extract_hooks' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '.agentic-framework/' | grep -v '.claude/worktrees/' | sort | tr -d ' ')" = "./lib/hook_parity.py"
 bin/fw doctor --quick > /tmp/.t3112.doctor 2>&1; grep -q "Worktrees" /tmp/.t3112.doctor
 grep -qE 'linked worktree' /tmp/.t3112.doctor
 bash -n bin/fw && bash -n lib/hook-parity.sh

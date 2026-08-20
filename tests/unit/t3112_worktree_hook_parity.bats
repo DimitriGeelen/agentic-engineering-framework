@@ -158,9 +158,19 @@ print(json.dumps(d))
     [ "$output" = "0" ]
 }
 
-@test "the predicate exists exactly once, in lib/hook-parity.sh" {
-    run bash -c "grep -c 'def extract_hooks' '$LIB'"
-    [ "$output" = "1" ]
+@test "the predicate is defined exactly once, repo-wide" {
+    # T-3113 corrected this test. It used to assert `grep -c ... lib/hook-parity.sh
+    # == 1` — which named ONE file and was therefore blind to the third inline copy
+    # sitting in lib/upgrade.sh the whole time. An invariant that names a file
+    # cannot see a copy in a file it does not name. Scan for definitions, list the
+    # files, assert the list.
+    run bash -c "cd '$_FW_ROOT' && grep -rl 'def extract_hooks' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | sort"
+    [ "$output" = "./lib/hook_parity.py" ]
+}
+
+@test "lib/hook-parity.sh delegates to the module rather than inlining it" {
+    run bash -c "grep -c 'hook_parity.py' '$LIB'"
+    [ "$output" -ge 1 ]
 }
 
 @test "fw doctor: Worktrees section reports its set, Consumer shape survived" {

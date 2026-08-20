@@ -8,10 +8,10 @@ description: >
   a project that never upgrades. See docs/design/task-corpus-concurrency-model.md
   R7.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T17:37:22Z
-last_update: '2026-08-20T17:45:14Z'
+last_update: 2026-08-20T22:04:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,47 +72,44 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+R7 leg 4 (`docs/design/task-corpus-concurrency-model.md`). Measured before starting:
+`grep -c worktree lib/upgrade.sh` → **0**. `fw upgrade` is completely worktree-blind.
+It refreshes the main checkout and says nothing about the replicas sitting beside it,
+each still running whatever enforcement code it forked with.
+
+L3 (T-3112) made `fw doctor` say it unprompted. L4 says it at the moment the operator
+is already thinking about staleness — mid-upgrade, when "what just changed" is warm.
+That matters because vendored propagation is **pull-only**: no leg of R7 reaches a
+project that never runs `fw upgrade`, so the one moment it does run is the only
+moment left to be loud.
+
+"Behind" is two independent facts and the advisory reports both, because either alone
+is misleading: a worktree can be zero commits behind and still missing hooks (its
+`.claude/settings.json` is not tracked the same way), and it can carry every hook and
+still be 2000 commits behind. Reuses `fw_hook_parity_delta` from L3 rather than
+growing a second copy of the predicate.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/upgrade.sh` gains `_t3113_emit_worktree_advisory <target_dir>`, extracted as a helper (same precedent as `_t2094_emit_doctor_advisory`) so bats can exercise it without driving a full 10-step `do_upgrade`.
+- [x] `do_upgrade` calls it on the live path (not dry-run), after the post-upgrade doctor advisory.
+- [x] For each linked worktree of `target_dir` it reports BOTH: how many commits behind the authority's HEAD the worktree is, AND its hook delta vs the authority's `.claude/settings.json`.
+- [x] The hook delta reuses `fw_hook_parity_delta` from `lib/hook-parity.sh` (T-3112) — `lib/upgrade.sh` holds zero copies of the predicate.
+- [x] A worktree that is neither behind nor hook-drifted reports OK; a stale one is named with its absolute path and a concrete remedy.
+- [x] Zero linked worktrees → an explicit `examined 0 linked worktree(s)` line; an unenumerable set → an explicit line saying so. Never silence (T-3105).
+- [x] The advisory is non-blocking: it cannot change `do_upgrade`'s exit code, matching the `_t2094_emit_doctor_advisory` contract.
+- [x] `tests/unit/t3113_upgrade_worktree_advisory.bats` covers: behind worktree named with its count, hook-drifted worktree named, clean worktree OK, zero-worktree set reported, unenumerable reported, and exit-code-unaffected.
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
+
+bats tests/unit/t3113_upgrade_worktree_advisory.bats > /tmp/.t3113.out 2>&1 && grep -q '^ok 1 ' /tmp/.t3113.out && ! grep -q '^not ok' /tmp/.t3113.out
+grep -q '_t3113_emit_worktree_advisory' lib/upgrade.sh
+grep -q 'fw_hook_parity_delta' lib/upgrade.sh
+test "$(grep -c 'def extract_hooks' lib/upgrade.sh)" = "0"
+bash -n lib/upgrade.sh && bash -n lib/hook-parity.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -269,3 +266,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3113-l4-fw-upgrade-names-which-worktrees-are-.md
 - **Context:** Initial task creation
+
+### 2026-08-20T22:04:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

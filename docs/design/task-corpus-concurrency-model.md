@@ -178,7 +178,7 @@ created *before* the fix existed.
 | **L1** — corpus guard in the shared `pre-commit` ✅ T-3110 | refuses a commit touching `.tasks/` when `--git-common-dir` ≠ `--git-dir`. Version-independent; reaches pre-existing and stale replicas | uncommitted writes; a repo that overrides `core.hooksPath` |
 | **L2** — re-exec redirection | `bin/fw` detects a linked worktree and re-execs the **authority's** `bin/fw`, fixing stale-replica-code and allocation in one move | worktrees whose checkout predates the redirect — future-facing only |
 | **L3** — worktrees as a drift subject ✅ T-3112 | `fw doctor` audited 31 *consumers* for missing hooks and **zero worktrees**. Same predicate, new subject (the T-3101 shape) — the comparison moved to `lib/hook-parity.sh` and `bin/fw` now holds zero copies of it | nothing, once shipped — but it reports, it does not prevent |
-| **L4** — loud vendored propagation | `fw upgrade` names which of a project's worktrees are behind; doctor says it unprompted | a project that never runs `fw upgrade` at all |
+| **L4** — loud vendored propagation ✅ T-3113 | `fw upgrade` names which of a project's worktrees are behind — commits-behind AND hook delta, because either alone misleads; doctor says it unprompted (L3) | a project that never runs `fw upgrade` at all |
 
 **L1 is the keystone** because it is the only leg with no version precondition.
 L2 is the *complete* fix but only for replicas created after it ships. L3 and L4
@@ -190,6 +190,15 @@ worktrees in this repo had drifted from the authority's hook set, and the hook
 missing from all four was `check-worktree-governance-write` — the one whose
 absence is the mechanism behind the three incidents above. The gap was not
 hypothetical and it was not small.
+
+**What L4 found while checking its own ACs** (T-3113): the hook-comparison
+predicate existed in *three* inline copies, not two. L3 consolidated two and
+asserted "`bin/fw` holds zero copies" — true, and blind to the third, in
+`lib/upgrade.sh`. The assertion named one file; the copy that mattered was in
+another. R7 says enforcement code forks with the branch; this is the same
+disease one level down — **the predicate forks with the call site**, and an
+invariant that names files rather than scanning for definitions cannot see it.
+The repo-wide scan is now the test.
 
 ### The honest limits
 
