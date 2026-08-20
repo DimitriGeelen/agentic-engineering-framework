@@ -66,8 +66,9 @@ A replica exists because git puts it there — it cannot be prevented by *absenc
 | **R2** | The main checkout is the **sole authority**. Worktrees hold read-only replicas of the corpus. | ✅ | T-3098 |
 | **R3** | Allocation is **globally serialised**: union view of all replicas, one lock held at the authority. | ✅ | T-100202 |
 | **R4** | Mutation is **single-writer**. Replicas never write the corpus. Source in a worktree remains freely writable. | ✅ | T-3098 |
-| **R5** | Verification spans **all views**, and every check **states the set it evaluated**. | ⏳ | T-3104, T-3105, slice 2 |
+| **R5** | Verification spans **all views**, and every check **states the set it evaluated**. | ✅ | T-3104, T-3105, T-3107 |
 | **R6** | Divergence is reconciled by a **named operation**, never silently merged. | manual | T-3103 |
+| **R7** | Enforcement must come from the **authority**, never from the replica it constrains. | ⏳ | T-3108 (GO) |
 
 ### R6 collapses once R2 and R4 hold
 
@@ -126,12 +127,74 @@ reader does not helpfully turn it into a bug.
 | Slice | Deliverable | Task |
 |---|---|---|
 | 1 | Lift the corpus view set into a shared library; allocator and audit read one definition | T-3104 |
-| 2 | Duplicate-ID detection spans all views; distinguishes *within-authority* duplicates (a real bug) from *cross-view* duplicates (a fork artifact) | queued |
+| 2 | Duplicate-ID detection spans all views; distinguishes *within-authority* duplicates (a real bug) from *cross-view* duplicates (a fork artifact) | T-3107 ✅ |
 | 3 | Audit checks declare their evaluated set; empty or unenumerable sets WARN | T-3105 |
 
 Slices 1 and 3 have disjoint write sets and run in parallel. Slice 2 writes
 `agents/audit/audit.sh` (converging with slice 3) and depends on slice 1's
 library, so it is serialised behind both — fan out on reads, fan in on writes.
+
+
+## R7 — the enforcement code forks too
+
+R1-R6 assume the rules are *enforced*. They are enforced by code. **That code is
+tracked content, so it forks with the branch** — which means the replica supplies
+the code that is supposed to constrain the replica. That is circular, and no
+amount of hardening inside `agents/` escapes it.
+
+This is not a hypothesis. Measured in this repo, in the `t100199-close` worktree:
+
+| Fix | In the authority | In the replica |
+|---|---|---|
+| `check-worktree-governance-write.sh` (R2/R4) | present | **absent** |
+| union-scan in the allocator (R3) | 2 occurrences | **0** |
+| `${CLAUDE_PROJECT_DIR}` in `settings.json` (T-2709) | present | **0 refs** |
+
+Its `bin/fw` is dated **6 July**. A session opened there today allocates IDs the
+pre-T-100202 way and writes governance freely. **Every fix in this document is
+absent from the replica it was designed to constrain.**
+
+Vendored consumers are the same shape with a multiplier: `.agentic-framework/` is
+tracked, so it forks identically, *and* consumers only receive fixes when someone
+runs `fw upgrade`. `fw doctor` currently reports that **31 of 31 consumers are
+missing `check-worktree-governance-write`**.
+
+### The one anchor that does not fork
+
+`.git/hooks` resolves to the **shared common dir** from the main checkout and from
+every linked worktree alike — verified, and `core.hooksPath` is set explicitly
+rather than merely defaulted. Four hooks already live there (`commit-msg`,
+`post-commit`, `pre-commit`, `pre-push`).
+
+**A git hook installed once at the authority runs in every linked worktree
+regardless of that worktree's framework version.** It is the only enforcement
+point immune to the fork, and therefore the only one that reaches a replica
+created *before* the fix existed.
+
+### Four legs
+
+| Leg | What it does | What it does **not** reach |
+|---|---|---|
+| **L1** — corpus guard in the shared `pre-commit` | refuses a commit touching `.tasks/` when `--git-common-dir` ≠ `--git-dir`. Version-independent; reaches pre-existing and stale replicas | uncommitted writes; a repo that overrides `core.hooksPath` |
+| **L2** — re-exec redirection | `bin/fw` detects a linked worktree and re-execs the **authority's** `bin/fw`, fixing stale-replica-code and allocation in one move | worktrees whose checkout predates the redirect — future-facing only |
+| **L3** — worktrees as a drift subject | `fw doctor` audits 31 *consumers* for missing hooks and **zero worktrees**. Same predicate, new subject (the T-3101 shape) | nothing, once shipped — but it reports, it does not prevent |
+| **L4** — loud vendored propagation | `fw upgrade` names which of a project's worktrees are behind; doctor says it unprompted | a project that never runs `fw upgrade` at all |
+
+**L1 is the keystone** because it is the only leg with no version precondition.
+L2 is the *complete* fix but only for replicas created after it ships. L3 and L4
+make the gap visible rather than closing it — which is worth having, since the gap
+was invisible for the seven weeks that produced T-2505, T-2506 and T-2428.
+
+### The honest limits
+
+L1 fires at commit-time, not write-time, so an uncommitted duplicate still exists
+on disk — weaker than R2's write block, but universal where R2 is not. It assumes
+`core.hooksPath` is not overridden. And none of the four legs reaches a project
+that never upgrades, which is why L4 carries the vendored fleet and why a
+**release channel** (stable vs experimental) is the natural companion decision:
+today every consumer implicitly tracks whatever `master` happens to be, and the
+only reason that has been safe is the accident of master sitting behind while
+experimental work accumulated beside it. That safety is unmanaged.
 
 ## What would change this design
 

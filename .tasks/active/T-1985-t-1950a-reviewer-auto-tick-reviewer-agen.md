@@ -290,20 +290,27 @@ test -f tests/unit/test_reviewer_auto_tick.py
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c96fd8e6
-- **Timestamp:** 2026-06-11T12:12:58Z
+- **Scan ID:** R-e9770426
+- **Timestamp:** 2026-08-20T12:44:17Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Sovereignty rail: digest-keyed feedback-stream entry `auto_tick:<task_id>:<ac_index>:<ac_text_digest>` written to `.context/working/feedback-stream.yaml` on every tick. Re-scanning the same task with 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/feedback-stream.yaml in: Sovereignty rail: digest-keyed feedback-stream entry `auto_tick:<task_id>:<ac_index>:<ac_text_digest>` written to `.context/working/feedback-stream.ya`
 
 **Verification-level findings:**
 
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(python3 -m pytest tests/unit/test_reviewer_auto_tick.py -q 2>&1); echo "$out" | tail -3`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
      - evidence: ``bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.`
 
-- **Suppressed:** 2 (by override)
-  - mock-only-integration @ AC vs Verification cross-check
-  - AC-verify-mismatch @ AC#4 (Agent)
+- **Expired overrides:** 2
+  - OV-f3632338 pattern=mock-only-integration expired_at=2026-08-20T07:40:14Z
+  - OV-21992fcb pattern=AC-verify-mismatch expired_at=2026-08-20T07:40:18Z
 ### 2026-05-22T07:44:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
