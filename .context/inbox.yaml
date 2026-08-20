@@ -3976,3 +3976,10 @@ observations:
   dismissed_at: 2026-08-19T23:51:14Z
   promoted_to: null
   urgent: true
+- id: OBS-332
+  text: "BVP hv-lc ranking is degenerate: all 15 hv-lc tasks tie at BVP=108 / NORM=0.40 / COST=3.6, so the quadrant filter returns a set but imposes no order within it. Estimator-proposed scores appear to be converging on a single heuristic default rather than discriminating between tasks. Separate from the known T-3068 cost gap (82% have no cost at all) — this is the 26 that DO have one still not separating. Measured 2026-08-20 via 'fw bvp --include-proposed --quadrant hv-lc'."
+  captured: 2026-08-20T01:19:42Z
+  context_task: T-3096
+  tags: []
+  status: pending
+  promoted_to: null

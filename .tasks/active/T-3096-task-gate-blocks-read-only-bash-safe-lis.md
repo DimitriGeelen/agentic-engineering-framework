@@ -112,7 +112,7 @@ Two further defects visible in the same code:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The gated set is **derived, not remembered** (T-2888 precedent): every base command
+- [x] The gated set is **derived, not remembered** (T-2888 precedent): every base command
       appearing in this repo's own `.sh`/`.py`/`.bats`/task-file verification lines is run
       through `is_bash_safe_command` with `has_bash_write_pattern` false, and the ones that
       come back gated are tabulated in `## Decisions` with a per-command keep/add verdict
@@ -133,10 +133,10 @@ Two further defects visible in the same code:
       executing a file is never provably read-only (Tier 0 scope boundary, T-2742). What
       changes for it is the message, not the verdict. An AC demanding all three pass would
       have been satisfiable only by allowlisting arbitrary script execution
-- [ ] Nothing that previously gated now passes except by explicit verdict in the Decisions
+- [x] Nothing that previously gated now passes except by explicit verdict in the Decisions
       table — verified by running the pre-fix and post-fix predicate over the same derived
       corpus and diffing, with the diff reproduced in Decisions
-- [ ] Mutation check recorded: removing the wrapper-stripper turns the `timeout` test red,
+- [x] Mutation check recorded: removing the wrapper-stripper turns the `timeout` test red,
       and removing the message split turns the message test red
 
 ### Human
@@ -172,80 +172,62 @@ Two further defects visible in the same code:
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t3096_safe_commands_wrappers.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/context_safe_commands.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/safe_commands_chain.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/safe_commands_env_prefix.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/test_safe_commands_git_commit.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/drift_gate_not_shadowed_by_safelist.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/context/lib/safe-commands.sh
+bash -n agents/context/check-active-task.sh
+# the block message must never claim a modification for a command that has no write pattern
+bash -c 'source agents/context/lib/safe-commands.sh; eval "$(sed -n "/^_bash_gate_reason() {/,/^}/p" agents/context/check-active-task.sh)"; BASH_CMD="./x.sh status | tail -5"; _bash_gate_reason' > /tmp/.t3096-msg.out 2>&1 && grep -q "writes nothing the gate can detect" /tmp/.t3096-msg.out && ! grep -q "matches a file-write pattern" /tmp/.t3096-msg.out
+# the prescribed port-resolution idiom (CLAUDE.md §Watchtower Port) must classify safe
+bash -c 'source agents/context/lib/safe-commands.sh; is_bash_safe_command "curl -sf \"\$(bin/fw watchtower url)/config\" -o /tmp/x"'
+# the derivation report the READ set was taken from must exist and carry its counts
+grep -q "^| READ |" docs/reports/T-3096-fw-verb-classification.md
+# G-084 is registered and the register still parses
+python3 -c "import yaml,sys; d=yaml.safe_load(open('.context/project/concerns.yaml')); sys.exit(0 if any(c['id']=='G-084' for c in d['concerns']) else 1)"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** Three read-only Bash commands were refused in one session, each told it had
+attempted a file modification. None writes.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Why (1)** — the gate asks two questions but every block message is phrased for the
+first. **Why (2)** — because when the two questions were joined, the second one's failure
+mode ("not recognised") had no message of its own, so it inherited the first one's
+("you wrote something"). **Why (3)** — because the second question was expected to answer
+YES almost always: the allowlist's own header cites 7,920 measured invocations and claims
+it "catches the safe 98.6%". **Why (4)** — because that measurement was taken once, at
+T-650, and the list has been maintained by patching since: eleven incidents are named in
+its own comments, each adding the one entry that had just blocked someone.
+**Why (5)** — because nothing re-derives the list against what the repo actually runs. The
+98.6% claim was never re-measured, and it is now wrong by a wide margin — 50 of 52
+read-only shapes this repo's own tooling uses classify GATED.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Class.** A coverage claim that decays silently. The list did not get worse; the repo
+grew around it, and the one artefact that would have shown the drift — a re-derivation —
+was never run twice. Same shape as T-2888 (git sub-verbs, four incidents before anyone
+derived the set) and as T-3094's proxy-metric drift, one layer up: a measurement taken
+once and then trusted as a property.
+
+**Why it went unreported for so long.** The failure presents as friction, not as an error.
+An agent that hits it re-spells the command, splits the chain, or reaches for a different
+tool — and succeeds. Nothing is logged, no gate records a false positive, and the agent
+that worked around it has no reason to file anything. The message telling it that it had
+modified a file is precisely what made the diagnosis unavailable: it named a cause that
+was not worth investigating because it was not true.
+
+**Prevention, not mitigation.** Three legs, and only the first is the symptom fix:
+(1) the derived set + wrapper stripper — the entries that were missing;
+(2) `_bash_gate_reason` — the class of false positive that *cannot* be eliminated
+(script execution) is now reported truthfully, so the next occurrence is diagnosable in
+one read instead of invisible;
+(3) G-084 registered with a `trigger_check` that names the exact predicate pair to
+evaluate, so the next instance is recognised as this gap rather than re-derived from
+scratch. Leg 2 is the one that makes the gap self-reporting; without it, leg 1 would just
+reset the clock on the same silent decay.
 
 ## Evolution
 
@@ -302,14 +284,125 @@ Two further defects visible in the same code:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### D-1: keep the positive allowlist; the enumeration is not the bug
+
+The obvious fix — "no write pattern detected, therefore allow" — is wrong, and stating
+why is the point of this decision. `has_bash_write_pattern` scans a command *string*. It
+cannot see inside `./build.sh` or `python3 deploy.py`, which is the identical scope
+boundary Tier 0 has and which CLAUDE.md already documents (§Enforcement Tiers, T-2742).
+Dropping the allowlist would make every script invocation read-only by default.
+
+So the allowlist stays a positive assertion. What changed is how its contents are
+obtained: **derived from the corpus, not remembered incident by incident.** That method
+is not new here — T-2888 established it for `git` sub-verbs after four consecutive
+incidents patched the same function — it had simply never been applied to the base-command
+list or to `fw`'s own surface.
+
+### D-2: measured gap — 50 of 52, and 92 of 120
+
+| Scope | Measured |
+|---|---|
+| Read-only shapes used by this repo's tooling that classified GATED | **50 of 52** |
+| `fw` (command, sub-verb) pairs total | 299 |
+| ... classified READ | 120 |
+| ... READ *and* reachable through the old allowlist | 28 |
+| ... **READ and unreachable** | **92** |
+
+The worst single instance: CLAUDE.md §Watchtower Port prescribes
+`curl -sf "$(bin/fw watchtower url)/page"` as *the* way not to hard-code port 3000 — and
+`fw watchtower url` gated. A rule violated 371 times across 277 tasks (T-2732) had its
+sanctioned alternative refused by another gate.
+
+### D-3: `timeout` is a prefix, so it belongs in a stripper, not the allowlist
+
+Adding `timeout` to the list would have been the fourth patch of one symptom. The file's
+own comments already name the class twice — T-1908 (env-var prefixes) and T-2988 (grouping
+punctuation), both "a positional token reader meeting a prefix nobody taught it about" —
+and this is its third instance. The stripper generalises to `nohup`, `nice`, `stdbuf`,
+`command`, `env` and `flock` at once.
+
+It also **closes a hole rather than opening one**. `env` sat in Category 5 as
+unconditionally safe, so the base extracted as `env` and `env ./anything.sh` classified
+SAFE on the strength of the word `env`. After stripping, that line is judged on
+`./anything.sh` and gates. Pinned by a test.
+
+`xargs` is excluded: its command is assembled from stdin at runtime, so there is nothing
+static to judge. Every parse failure in the stripper — an unrecognised option, a missing
+duration, an empty remainder — leaves the base as the wrapper name, which matches no arm.
+The failure direction is always toward BLOCKING.
+
+### D-4: two departures from the derived READ set, both toward gating
+
+The classification worker (`docs/reports/T-3096-fw-verb-classification.md`, file:line
+evidence per verdict) proposed a set I did not adopt wholesale.
+
+- **`orchestrator improve` excluded** though classified READ. It is a v2 stub that
+  currently prints. A stub is a temporary property, not a contract, and the verb's name
+  declares an intent to act — the day it is implemented the gate would silently permit
+  it. A test now pins the exclusion so a later author does not "fix" the omission.
+- **Nothing already allowed was narrowed.** The derivation proposed scoping `integrate`
+  to `check|classify` and `resume` to `quick`. Both are whole-command allows today for
+  stated reasons — T-2471: integrate runs from a worktree whose Bash-hook PROJECT_ROOT
+  resolves to the main repo, so focus is null. Tightening them would re-open a deadlock
+  this file has been patched four times to close.
+
+`yq` is excluded from the filter set for the mirror of the reason `sed` is included:
+`sed -i` is caught by a dedicated rule in `has_bash_write_pattern`, and `yq -i` is caught
+by nothing. Verified in both directions rather than assumed.
+
+### D-5: the message defect is the half that costs the gate its authority
+
+The predicate change stops *some* false positives. It cannot stop all of them — executing
+a script is not provably read-only and never will be. What can be fixed unconditionally is
+what the agent is *told*: a Bash block now distinguishes "this matches a write pattern"
+from "this is not recognised as read-only", and in the second case names the offending
+segment of a chain.
+
+This is not cosmetics. A gate that names a cause the agent knows to be false teaches the
+agent that the gate's stated contract is unreliable, and the documented consequence is
+that the agent routes around it — L-399 / T-1890, where one broken leg of a bypass
+contract produced three weeks of silent circumvention. Emitted from `_blocked_subject` so
+all eight block sites inherit it with no new call site to forget.
+
+### D-6: differential over 20,222 corpus lines — every transition accounted for
+
+| Transition | Count | Disposition |
+|---|---:|---|
+| GATED → GATED | 14,986 | unchanged |
+| SAFE → SAFE | 4,165 | unchanged |
+| WRITE → WRITE | 989 | write classification untouched |
+| **GATED → SAFE** | **65** | intended |
+| **SAFE → GATED** | **17** | not commands |
+
+Both non-trivial buckets were read line by line, not sampled:
+
+- The **65** are real verification lines from real task files — `diff -q A B`,
+  `cmp -s A B`, `awk '...' file`, `curl … | awk`. Exactly the target.
+- The **17** are English prose. The corpus is built from task-file `## Verification`
+  sections, which contain commentary as well as commands, and every one of the 17 is a
+  sentence beginning with the word `command` or `env` ("command failure. It therefore
+  slips both guards…"). They used to classify SAFE *because* `command` and `env` were
+  unconditionally safe base words — so this bucket is not a regression, it is the D-3
+  hole becoming visible from the other side. Prose is never executed, so the change is
+  inert in production.
+
+Corpus caveat stated rather than buried: it is task verification text, so it contains
+non-commands. That inflates all five counts equally and does not affect the two buckets
+the verdict rests on, both of which were enumerated in full.
+
+### D-7: mutations — four applied, four red
+
+| # | Mutation | Result |
+|---|---|---|
+| I | wrapper case arm never matches (stripper disabled) | **RED** — tests 1, 3, 5, 20 |
+| J | `_bash_gate_reason` always reports a write | **RED** — tests 23, 24 |
+| K | name the whole command line instead of the offending segment | **RED** — test 24 |
+| L | add `yq` to the filter list (the excluded case) | **RED** — test 15 |
+
+One near-miss worth recording: the first version of test 24's leak-guard grepped the whole
+output for `cat f`, which line 1 legitimately echoes back — so it failed against correct
+behaviour. Fixed by restricting the guard to the line that names the offender. A guard
+that trips on the correct output is the same defect class as a gate that fires on a read.
 
 ## Decision
 
@@ -327,3 +420,12 @@ Two further defects visible in the same code:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3096-task-gate-blocks-read-only-bash-safe-lis.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-75b97e53
+- **Timestamp:** 2026-08-20T01:24:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

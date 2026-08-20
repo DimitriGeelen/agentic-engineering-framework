@@ -457,9 +457,121 @@ _fw_single_command_is_safe() {
         fw|bin/fw)
             local fw_sub
             fw_sub=$(echo "$cmd" | awk '{print $2}')
+            local fw_sub3
+            fw_sub3=$(echo "$cmd" | awk '{print $3}')
             case "$fw_sub" in
                 doctor|metrics|audit|version|resume|help|status|fabric|gaps|promote)
                     return 0
+                    ;;
+
+                # ── T-3096: the rest of fw's read-only surface ──────────────────
+                #
+                # The ten names above were the whole allowlist; measurement found 92 more
+                # READ (command, sub-verb) pairs unreachable through it, out of 120 READ
+                # of 299 total pairs. The consequence was not theoretical: CLAUDE.md
+                # prescribes `curl -sf "$(bin/fw watchtower url)/page"` as THE way to
+                # avoid hard-coding port 3000, and `fw watchtower url` gated — so the
+                # framework's own canonical idiom was refused whenever focus was null or
+                # completed. Same for `fw reviewer`, `fw review-queue`, `fw learnings`,
+                # `fw recall`, `fw ask` and `fw bus manifest`, all of which the Quick
+                # Reference tells agents to reach for reflexively.
+                #
+                # Derived by classifying every arm of bin/fw's dispatch case against the
+                # function it routes to, with file:line evidence per verdict, in
+                # docs/reports/T-3096-fw-verb-classification.md. MIXED and UNKNOWN pairs
+                # (20 + 4) are excluded by construction — a verb whose read and write
+                # forms differ by an argument cannot be decided on the verb alone, which
+                # is the same rule that keeps `git config` and `git symbolic-ref` out.
+                #
+                # Two deliberate departures from that derivation, both toward gating:
+                #
+                #   `orchestrator improve` was classified READ because it is currently a
+                #   stub that prints. A stub is a temporary property, not a contract, and
+                #   the verb's name declares an intent to act — the day it is implemented
+                #   the gate would silently permit it. Excluded.
+                #
+                #   Nothing already allowed above is NARROWED here. The derivation
+                #   proposed scoping `integrate` to check|classify and `resume` to quick;
+                #   both are whole-command allows today for stated deadlock reasons
+                #   (T-2471 runs integrate from a worktree whose PROJECT_ROOT resolves to
+                #   the main repo, i.e. null focus). Tightening them would re-open a
+                #   deadlock this file has already been patched four times to close.
+                ask|recall|search|decisions|timeline|learnings|patterns|practices|policy|\
+                costs|review-queue|sessions|approvals)
+                    return 0
+                    ;;
+                watchtower)
+                    case "$fw_sub3" in port|url|status) return 0 ;; esac
+                    ;;
+                config)
+                    case "$fw_sub3" in get|list|overrides) return 0 ;; esac
+                    ;;
+                git)
+                    case "$fw_sub3" in status|log|worker-commits) return 0 ;; esac
+                    ;;
+                arc)
+                    case "$fw_sub3" in list|ls|show|review|show-suggestions|help) return 0 ;; esac
+                    ;;
+                bvp)
+                    # bare `fw bvp` is the ranking; `fw bvp T-123` is per-task detail.
+                    case "$fw_sub3" in ""|arcs|--quadrant|--include-proposed|--include-completed|--help|-h|T-*) return 0 ;; esac
+                    ;;
+                healing)
+                    case "$fw_sub3" in diagnose|patterns|suggest) return 0 ;; esac
+                    ;;
+                inception)
+                    case "$fw_sub3" in status) return 0 ;; esac
+                    ;;
+                orchestrator)
+                    case "$fw_sub3" in status|routes|next-dispatch|pre-flight) return 0 ;; esac
+                    ;;
+                resolver)
+                    case "$fw_sub3" in workflows|explain|stalled|latched) return 0 ;; esac
+                    ;;
+                outcome)
+                    # `evaluate` prints (lib/outcome.py:347-350); `backprop` appends to
+                    # dispatch-outcomes.jsonl (:368) and is deliberately absent.
+                    case "$fw_sub3" in evaluate|read|list) return 0 ;; esac
+                    ;;
+                bus)
+                    case "$fw_sub3" in manifest|read) return 0 ;; esac
+                    ;;
+                pause|assumption|pending)
+                    case "$fw_sub3" in list) return 0 ;; esac
+                    ;;
+                dispatch)
+                    case "$fw_sub3" in hosts) return 0 ;; esac
+                    ;;
+                rail)
+                    case "$fw_sub3" in identity|status) return 0 ;; esac
+                    ;;
+                mcp)
+                    case "$fw_sub3" in manifest-show|show|check|wire-fragment|status) return 0 ;; esac
+                    ;;
+                tier0|onboarding|traceability|enforcement|mirror|release|notify|worktree|designer)
+                    case "$fw_sub3" in status|path|url|pending) return 0 ;; esac
+                    ;;
+                prompt)
+                    case "$fw_sub3" in list|ls|show|cat|copy|render) return 0 ;; esac
+                    ;;
+                termlink)
+                    case "$fw_sub3" in check|status|result) return 0 ;; esac
+                    ;;
+                cron)
+                    case "$fw_sub3" in status|list) return 0 ;; esac
+                    ;;
+                corpus)
+                    case "$fw_sub3" in lint|explain) return 0 ;; esac
+                    ;;
+                write-set)
+                    case "$fw_sub3" in check) return 0 ;; esac
+                    ;;
+                reviewer)
+                    # `fw reviewer T-XXX` SCANS and writes a verdict block into the task
+                    # file, so the bare form is NOT here. Only the override reader is.
+                    if [ "$fw_sub3" = "override" ] && [ "$(echo "$cmd" | awk '{print $4}')" = "list" ]; then
+                        return 0
+                    fi
                     ;;
                 context)
                     local ctx_sub

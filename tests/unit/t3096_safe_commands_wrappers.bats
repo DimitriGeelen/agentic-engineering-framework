@@ -229,3 +229,66 @@ _load_msg_fns() {
         echo "LEAK: named the whole line, not the offending segment:"; echo "$named"; return 1
     fi
 }
+
+# --- 6. fw's read-only surface -----------------------------------------------------
+#
+# The allowlist carried ten fw sub-verbs. Classifying every arm of bin/fw's dispatch
+# case found 120 READ pairs of 299, of which 92 were unreachable — including
+# `fw watchtower url`, which CLAUDE.md prescribes as THE way to avoid hard-coding
+# port 3000. Evidence per verdict: docs/reports/T-3096-fw-verb-classification.md.
+
+@test "fw: the prescribed port-resolution idiom is safe" {
+    # CLAUDE.md §Watchtower Port. This gating is why the rule was hard to follow.
+    run is_bash_safe_command "bin/fw watchtower url"
+    [ "$status" -eq 0 ]
+    run is_bash_safe_command "curl -sf \"\$(bin/fw watchtower url)/config\" -o /tmp/x"
+    [ "$status" -eq 0 ]
+}
+
+@test "fw: read verbs the Quick Reference tells agents to use reflexively are safe" {
+    for c in "bin/fw review-queue" "bin/fw learnings" "bin/fw decisions" "bin/fw recall q" \
+             "bin/fw ask q" "bin/fw timeline" "bin/fw costs" "bin/fw bus manifest T-1" \
+             "bin/fw config get PORT" "bin/fw arc list" "bin/fw cron status" \
+             "bin/fw orchestrator status" "bin/fw pause list" "bin/fw write-set check T-1 T-2" \
+             "bin/fw outcome evaluate T-1" "bin/fw bvp"; do
+        run is_bash_safe_command "$c"
+        [ "$status" -eq 0 ] || { echo "expected SAFE but gated: $c"; return 1; }
+    done
+}
+
+@test "fw: the mutating twin of every added read stays gated" {
+    for c in "bin/fw watchtower start" "bin/fw config set X 1" "bin/fw bus post --task T-1" \
+             "bin/fw outcome backprop T-1" "bin/fw arc close x" "bin/fw cron install" \
+             "bin/fw reviewer override add T-1" "bin/fw task update T-1 --status work-completed"; do
+        run is_bash_safe_command "$c"
+        [ "$status" -ne 0 ] || { echo "expected GATED but passed: $c"; return 1; }
+    done
+}
+
+@test "fw: 'reviewer T-XXX' is gated — it WRITES a verdict block into the task file" {
+    # Only `reviewer override list` is a read. The bare scan form mutates.
+    run is_bash_safe_command "bin/fw reviewer T-3096"
+    [ "$status" -ne 0 ]
+    run is_bash_safe_command "bin/fw reviewer override list"
+    [ "$status" -eq 0 ]
+}
+
+@test "fw: 'orchestrator improve' stays gated although it currently only prints" {
+    # Classified READ because it is a v2 stub. A stub is a temporary property, not a
+    # contract; the verb's name declares intent to act. Excluded on purpose, and this
+    # test is what stops a future author from "fixing" the omission.
+    run is_bash_safe_command "bin/fw orchestrator improve"
+    [ "$status" -ne 0 ]
+}
+
+@test "fw: nothing previously allowed was narrowed" {
+    # The derivation proposed scoping `integrate` to check|classify and `resume` to
+    # quick. Both are whole-command allows today for stated deadlock reasons (T-2471:
+    # integrate runs from a worktree whose PROJECT_ROOT resolves to the main repo, so
+    # focus is null). Narrowing them would re-open a deadlock closed four times over.
+    for c in "bin/fw integrate run master --push" "bin/fw resume status" "bin/fw resume sync" \
+             "bin/fw fabric drift" "bin/fw task create --name x" "bin/fw handover"; do
+        run is_bash_safe_command "$c"
+        [ "$status" -eq 0 ] || { echo "REGRESSION — previously allowed, now gated: $c"; return 1; }
+    done
+}
