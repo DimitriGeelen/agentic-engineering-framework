@@ -209,7 +209,55 @@ recurrence.
 # matching build command (dotnet build / go build / cargo check / tsc --noEmit /
 # mvn compile) to that build task's ## Verification — P-011 only runs what you write.
 
-## Recommendation
+
+**Recommendation:** GO — build both legs. Neither requires a new go/no-go.
+
+**Rationale.** The analysis the operator remembered exists, is correct, and was already
+approved: T-2822 (2026-08-06) names the mechanism — *governance state is tracked content,
+so a worktree is by construction a fork of it* — and the operator recorded GO the same
+day. Two weeks later its keystone slice has no task, no hook and no commit. So the answer
+to "why do we still have a headache" is not a missing analysis. It is that an approved fix
+produced no buildable work, and the rail built to catch exactly that has never been able
+to fire.
+
+That second fact is the reason to act now rather than simply file the missing slice. The
+audit's GO-scope-not-propagated detector gates on a claim *phrase*; **2 of 444** completed
+inceptions match it and **0** survive the next filter. Its candidate set is empty by
+construction, so every `[PASS]` it has printed — including today's — asserts nothing. **54**
+GO'd inceptions are invisible to it. T-2822 is one of 54, which means the worktree problem
+is a visible symptom of a governance failure that is silently affecting decisions across
+the whole corpus.
+
+Building leg A alone would fix worktrees and leave the mechanism that lost it intact.
+
+**Evidence:**
+- `docs/reports/T-2822-worktree-policy.md` §Recommendation + its recorded `**Decision**: GO`;
+  `related_tasks: []`, no `unlocks_inception_decision:` anywhere, `ls agents/context/ | grep
+  -i worktree` empty. Slice 3 exists as T-2861, status `captured`.
+- Detector gate measured directly against `agents/audit/audit.sh:1545`: 444 inceptions,
+  2 claim-regex matches, 0 after the `related_tasks` filter; 54 survivors under every
+  conservative filter.
+- Live state: 43 unlanded commits in two worktrees dormant since 2026-07-01
+  (`git rev-list --count` — 6 and 37), still present today.
+- IW-1: `session-metrics.sh:244` counter (494 / 0.0754) with no per-error row;
+  `patterns.yaml` 19 entries, unwritten since 2026-04-08.
+
+**Already in flight** (dispatched to TermLink workers, not yet integrated): **T-3098**
+builds T-2822 slice 1; **T-3099** replaces the detector's prose gate with a structural
+predicate. Both are executing existing decisions, which is why they started before this
+review rather than after it.
+
+**Needs the operator, and only the operator:**
+1. **Tier 0 — prune the two stranded worktrees and their branches.** T-2824 recovered
+   everything of value and correctly stopped short; branch deletion is Tier 0 and that
+   handoff has been outstanding since 2026-08-06. Nothing agent-side can close it.
+2. **T-100201** — the T-100196 / T-2394 contradiction in CLAUDE.md is still open and is a
+   worktree-adjacent decision only the operator can settle.
+
+**What would change this recommendation:** evidence that a real workflow needs governance
+writes from inside a worktree. Leg A ships behind a logged bypass precisely so that, if
+one exists, it appears in the bypass log as data rather than as a silent workaround.
+
 
 **Recommendation:** DEFER
 
