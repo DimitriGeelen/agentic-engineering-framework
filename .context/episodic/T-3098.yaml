@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3098: Refuse governance writes from a linked worktree (T-2822 slice 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T07:35:12Z
+# ============================================================================
+
+task_id: T-3098
+task_name: "Refuse governance writes from a linked worktree (T-2822 slice 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-20T07:13:00Z
+completed: 2026-08-20T07:31:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-20T09:22:53+02:00
+last_commit: 2026-08-20T09:22:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refuse governance writes from a linked worktree (T-2822 slice 1)
+
+# Key outcomes
+outcomes:
+  - 'A PreToolUse hook refuses Write/Edit whose target path is under `.context/` or'
+  - 'The main checkout is never blocked. A repo where git-dir and git-common-dir collapse'
+  - 'The block message names the correct move (make the edit on master) AND the bypass'
+  - 'Bypass is an **env var**, not a flag: `FW_ALLOW_WORKTREE_GOVERNANCE_WRITE=1`. The'
+  - 'The bypass is the instrument, not an escape hatch: T-2822''s GO shipped it'
+  - 'Hook is registered in `.claude/settings.json` and `bin/fw enforcement baseline` is'
+  - 'Bats coverage: linked worktree + `.tasks/` path → blocked; linked worktree +'
+  - 'Mutation check recorded in Decisions: inverting the worktree test turns the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-20 — Detection reuses `fw_is_linked_worktree`, not a re-implementation'
+    chose: 'source `lib/paths.sh` and call `fw_is_linked_worktree "$cwd"`; the hook contains no git-dir comparison of its own.'
+    rationale: 'duplicating the primitive is the exact producer/consumer split (L-399) this defect class is about — two copies drift and one of them fails open silently. Mutation M3 below shows what the alternative buys.'
+    alternatives_rejected: ['a `.claude/worktrees` substring test. That is a naming convention, not an invariant; `git worktree add` anywhere else is undetected.']
+  - decision: '2026-08-20 — Bash hook, not Python'
+    chose: 'a single bash file, `agents/context/check-worktree-governance-write.sh`.'
+    rationale: 'the detection primitive is bash (`lib/paths.sh`), and the sibling Python hooks all exist because they parse YAML frontmatter. This hook parses none. One `python3 -c` pass handles the stdin JSON and path normalisation, matching `check-active-task.sh`.'
+    alternatives_rejected: ['a `.py` + `.sh` wrapper pair — it would have forced a second copy of the worktree test in Python, which is the thing above.']
+  - decision: '2026-08-20 — Governance-path filter is anchored to the worktree toplevel'
+    chose: 'block only paths under `<worktree-toplevel>/.context/` or `/.tasks/`, resolved absolute (relative `file_path` is joined against the call''s `cwd`).'
+    rationale: 'a bare `*/.tasks/*` glob would refuse an **absolute write into the main checkout''s** `.tasks/` issued from a worktree shell — which is precisely the move the block message tells the agent to make. Pinned by the test "absolute write into the MAIN checkout''s .tasks/ is allowed". - **Residual, deliberate:** the gate keys on `cwd`, per the AC. A write from a main-checkout `cwd` to an absolute path inside a sibling worktree''s `.context/` is not refused. Left as-is rather than widened, because widening changes the predicate the ACs specify.'
+  - decision: '2026-08-20 — Bypass logs only when it actually bypassed a refusal'
+    chose: 'the `FW_ALLOW_WORKTREE_GOVERNANCE_WRITE=1` branch sits *after* the worktree and path tests, so a bypass entry is written only for calls that would otherwise have been blocked. Entry records `file`, `worktree` and `main_checkout`.'
+    rationale: 'AC #5 — the register has to answer "does any real workflow need this?". If the env var is exported for a whole session, logging every governance write from the main checkout would bury the signal under noise from calls that were never gated. - **Not honouring `FW_SAFE_MODE`:** that hatch disables the *task* gate. This gate has its own named bypass; folding it into `FW_SAFE_MODE` would make worktree divergence invisible whenever safe mode is on.'
+  - decision: '2026-08-20 — Mutation check (AC #8)'
+  - decision: '2026-08-20 — Not done here, by instruction'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/check-worktree-governance-write.sh'
+  - 'agents/context/check-worktree-governance-write.sh'
+  - '.claude/settings.json'
+  - '.context/project/enforcement-baseline.sha256'
+  - 'docs/reports/T-3097-worktree-incident-corpus.md'
+  - '.tasks/active/T-3098-refuse-governance-writes-from-a-linked-w.md'
+  - 'tests/unit/t3098_worktree_governance_write.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T09:22:53'
+    action: 'T-3098: refuse governance writes from a linked worktree (T-2822 slice 1)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 8
+  lines_added: 1234
+  lines_removed: 73
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3098-refuse-governance-writes-from-a-linked-w.md
+generated_by: context-agent-hybrid

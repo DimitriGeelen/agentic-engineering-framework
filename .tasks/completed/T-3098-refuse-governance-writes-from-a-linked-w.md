@@ -6,12 +6,12 @@ description: >
   linked git worktree. Executes T-2822's GO of 2026-08-06, whose keystone slice was
   never built.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-009]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T07:13:00Z
-last_update: '2026-08-20T07:15:13Z'
-date_finished:
+last_update: 2026-08-20T07:31:26Z
+date_finished: 2026-08-20T07:31:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -64,6 +64,24 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-20T07:26:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3098: Refuse governance writes from a linked worktree (T-2822 slice 1)
@@ -88,31 +106,31 @@ for five weeks.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A PreToolUse hook refuses Write/Edit whose target path is under `.context/` or
+- [x] A PreToolUse hook refuses Write/Edit whose target path is under `.context/` or
       `.tasks/` when the tool call's cwd is a **linked** worktree. Detection uses the
       git-dir vs git-common-dir comparison (verified both directions by T-2822 S2), not a
       path-substring test for `.claude/worktrees` — the latter is a naming convention, not
       an invariant
-- [ ] The main checkout is never blocked. A repo where git-dir and git-common-dir collapse
+- [x] The main checkout is never blocked. A repo where git-dir and git-common-dir collapse
       to the same path is the main checkout by definition, and every governance write there
       must pass untouched
-- [ ] The block message names the correct move (make the edit on master) AND the bypass
+- [x] The block message names the correct move (make the edit on master) AND the bypass
       mechanism, per the T-2139/T-2143 rule that a gate message is written for the agent
       that trips it
-- [ ] Bypass is an **env var**, not a flag: `FW_ALLOW_WORKTREE_GOVERNANCE_WRITE=1`. The
+- [x] Bypass is an **env var**, not a flag: `FW_ALLOW_WORKTREE_GOVERNANCE_WRITE=1`. The
       Write tool has no flag surface (same constraint as T-2205's producer 4), so a flag
       cannot work here. Every bypass writes a Tier-2 entry to `.gate-bypass-log.yaml`
-- [ ] The bypass is the instrument, not an escape hatch: T-2822's GO shipped it
+- [x] The bypass is the instrument, not an escape hatch: T-2822's GO shipped it
       deliberately so a legitimate worktree-governance workflow shows up as **data** rather
       than as a silent workaround. The log entry must record the path, so the eventual
       question "does any real workflow need this" is answerable from the register
-- [ ] Hook is registered in `.claude/settings.json` and `bin/fw enforcement baseline` is
+- [x] Hook is registered in `.claude/settings.json` and `bin/fw enforcement baseline` is
       refreshed — otherwise doctor reports a FAIL that accumulates silently (L-398, T-1886)
-- [ ] Bats coverage: linked worktree + `.tasks/` path → blocked; linked worktree +
+- [x] Bats coverage: linked worktree + `.tasks/` path → blocked; linked worktree +
       `lib/` path → allowed; main checkout + `.tasks/` path → allowed; bypass env set →
       allowed AND logged. The third case is the one that matters most — a false positive
       here breaks every session
-- [ ] Mutation check recorded in Decisions: inverting the worktree test turns the
+- [x] Mutation check recorded in Decisions: inverting the worktree test turns the
       main-checkout test red, and dropping the path filter turns the `lib/` test red
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -205,6 +223,21 @@ for five weeks.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+out=$(bats tests/unit/t3098_worktree_governance_write.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/context/check-worktree-governance-write.sh
+# detection is delegated, never re-implemented (AC #1)
+grep -q 'fw_is_linked_worktree' agents/context/check-worktree-governance-write.sh
+# the string appears only in the comment explaining why it must NOT be the test
+grep -vE '^[[:space:]]*#' agents/context/check-worktree-governance-write.sh > /tmp/.t3098code && ! grep -q 'claude/worktrees' /tmp/.t3098code
+# the main checkout is never blocked — the failure that would break every session (AC #2)
+printf '{"tool_name":"Write","cwd":"%s","tool_input":{"file_path":"%s/.tasks/active/T-x.md"}}' "$PWD" "$PWD" | CLAUDECODE=1 bash agents/context/check-worktree-governance-write.sh
+# block message names the correct move AND the bypass (AC #3)
+grep -q 'FW_ALLOW_WORKTREE_GOVERNANCE_WRITE' agents/context/check-worktree-governance-write.sh
+# registered, and the enforcement baseline refreshed with it (AC #6, L-398)
+grep -q 'check-worktree-governance-write' .claude/settings.json
+out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q 'Enforcement baseline CHANGED'
+diff -q agents/context/check-worktree-governance-write.sh .agentic-framework/agents/context/check-worktree-governance-write.sh
 
 ## RCA
 
@@ -367,3 +400,23 @@ check-worktree-governance-write` returns 0 on a main-checkout payload.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3098-refuse-governance-writes-from-a-linked-w.md
 - **Context:** Initial task creation
+
+### 2026-08-20T07:26:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-55a603f6
+- **Timestamp:** 2026-08-20T07:35:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 72
+     - evidence: `out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q 'Enforcement baseline CHANGED'`
+
+### 2026-08-20T07:31:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -6,12 +6,12 @@ description: >
   match it and 0 survive the next filter, so its candidate set is empty by construction.
   Replace with a structural predicate.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T07:13:52Z
-last_update: '2026-08-20T07:15:13Z'
-date_finished:
+last_update: 2026-08-20T07:38:29Z
+date_finished: 2026-08-20T07:38:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -64,6 +64,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-20T07:26:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3099: GO-scope-not-propagated detector is prose-keyed and has never fired
@@ -94,25 +111,25 @@ carefully — an inverse correlation with the thing being measured.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The detector's candidate gate is **structural**, not a claim phrase: a GO'd
+- [x] The detector's candidate gate is **structural**, not a claim phrase: a GO'd
       completed inception with `related_tasks:` empty/absent, no task back-referencing it,
       and no `unlocks_inception_decision:` pointing at it. No vocabulary anywhere in the
       predicate
-- [ ] The before/after candidate counts are recorded in Decisions from a real run. Baseline
+- [x] The before/after candidate counts are recorded in Decisions from a real run. Baseline
       measured on this corpus: **2 of 444** completed inceptions match the claim regex and
       **0** survive the `related_tasks` filter — the candidate set is empty by construction
-- [ ] Output is bounded: report a count plus a small sample, with the full list reachable
+- [x] Output is bounded: report a count plus a small sample, with the full list reachable
       by a named command. A section that emits 50+ WARN lines on first run trains people to
       skip it, which reproduces the blindness in a different way
-- [ ] Severity stays **WARN**. The finding is "somebody should triage this", not "the build
+- [x] Severity stays **WARN**. The finding is "somebody should triage this", not "the build
       is broken", and the 54-item backlog is pre-existing debt rather than a regression
-- [ ] The positive line states the size of the set actually examined, not just "none found"
+- [x] The positive line states the size of the set actually examined, not just "none found"
       — the whole defect here is a PASS that asserted nothing (same class as `audit.sh:1791`
       fabric coverage, T-2737)
-- [ ] Bats coverage: a fixture inception that names slices in prose the OLD regex would
+- [x] Bats coverage: a fixture inception that names slices in prose the OLD regex would
       have missed is now detected; one that is properly back-referenced is not; one with
       populated `related_tasks:` is not
-- [ ] Mutation check recorded in Decisions: restoring the claim-phrase gate turns the
+- [x] Mutation check recorded in Decisions: restoring the claim-phrase gate turns the
       prose-fixture test red
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -205,6 +222,19 @@ carefully — an inverse correlation with the thing being measured.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+out=$(bats tests/unit/t3099_go_scope_structural.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/audit/audit.sh
+# no vocabulary anywhere in the candidate predicate (AC #1)
+# CLAIM_RE survives only in the comment recording what was removed — never as a predicate
+sed -n '/^# T-2096 (OBS-036/,/^# end GO-scope-not-propagated scan/p' agents/audit/audit.sh > /tmp/.t3099blk && grep -vE "^[[:space:]]*#" /tmp/.t3099blk > /tmp/.t3099code && ! grep -q 'CLAIM_RE' /tmp/.t3099code
+# the two-pass O(M+N) structure survives (T-2298)
+grep -q 'Pass 2' /tmp/.t3099blk && grep -q 'referenced = set()' /tmp/.t3099blk
+# the rail actually fires now, and names the size of the set examined (AC #2, #5)
+timeout 300 bash agents/audit/audit.sh --section structure > /tmp/.t3099aud 2>&1 || true; grep -qE 'GO-scope-not-propagated inception\(s\) of [0-9]+ GO-recorded' /tmp/.t3099aud
+# WARN, never FAIL (AC #4)
+! grep -qE '^\[FAIL\].*GO-scope' /tmp/.t3099aud
+diff -q agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
 
 ## RCA
 
@@ -376,3 +406,18 @@ from the referenced-id set: a task naming itself is not propagation.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3099-go-scope-not-propagated-detector-is-pros.md
 - **Context:** Initial task creation
+
+### 2026-08-20T07:26:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-27b1d04f
+- **Timestamp:** 2026-08-20T07:39:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-20T07:38:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

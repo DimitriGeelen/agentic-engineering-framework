@@ -4,12 +4,12 @@ name: "Promote branch-hygiene findings to the audit cron (T-3093 slice 2)"
 description: >
   Promote branch-hygiene findings to the audit cron (T-3093 slice 2)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T00:56:39Z
-last_update: 2026-08-20T01:26:44Z
-date_finished:
+last_update: 2026-08-20T07:01:49Z
+date_finished: 2026-08-20T07:01:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -229,9 +229,12 @@ grep -q 'fw_branch_hygiene_head' agents/audit/audit.sh
 # the block never reaches fail() — audit's exit code is unchanged by branch findings (AC #6)
 sed -n '/^_bh_lib="\$FRAMEWORK_ROOT\/lib\/branch-hygiene\.sh"$/,/^fi$/p' agents/audit/audit.sh > /tmp/.t3095blk && ! grep -qE '^[[:space:]]*fail ' /tmp/.t3095blk
 # live audit emits the section, and its count reconciles with the library (AC #9)
-# audit exits 1 on warnings by design; || true keeps set -e from aborting the line there
-bash agents/audit/audit.sh --section structure > /tmp/.t3095aud 2>&1 || true; grep -qE '\[(WARN|PASS|INFO)\] Branch hygiene' /tmp/.t3095aud
-bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .' > /tmp/.t3095lib 2>&1; test "$(grep -c . /tmp/.t3095lib)" = "$(sed -n 's/.*Branch hygiene: \([0-9]*\) finding(s).*/\1/p' /tmp/.t3095aud)"
+# The block emits a section on this repo, and its count reconciles with the library (AC #9).
+# NOT via `audit.sh --section structure`: audit takes a global lock and the close path runs
+# its own audit, so that line fails with "Another audit is already running" exactly when the
+# gate evaluates it. The helper evaluates the shipped block itself — same source, no lock.
+tests/helpers/audit-branch-hygiene-block.sh . . > /tmp/.t3095blk2 2>&1 && grep -qE '^(WARN|PASS|INFO)\|Branch hygiene' /tmp/.t3095blk2
+bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .' > /tmp/.t3095lib 2>&1; test "$(grep -c . /tmp/.t3095lib)" = "$(sed -n 's/.*Branch hygiene: \([0-9]*\) finding(s).*/\1/p' /tmp/.t3095blk2)"
 # vendored copy refreshed (consumer projects run the vendored audit)
 diff -q agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
 
@@ -413,6 +416,24 @@ full scan is 19 across six classes — the twelve non-local findings (worktrees,
 were never in that number. The reconciliation above is against the library, which is the
 only figure that can be wrong in a way that matters here.
 
+### 2026-08-20 — A verification line may not run `fw audit` (found by the gate, not by me)
+
+- **Symptom:** two verification lines passed by hand, seconds apart, and both failed under
+  the P-011 gate. Output: `Another audit is already running — exiting (no verdict produced)`.
+- **Cause:** `audit.sh` takes a global lock, and the `--status work-completed` path runs its
+  own audit. A verification line that shells out to `fw audit` therefore races the very
+  command evaluating it — deterministically, not occasionally. It is unrunnable *only* at
+  the moment it is required to run.
+- **Chose:** extract the shipped block into `tests/helpers/audit-branch-hygiene-block.sh`
+  and have both the bats suite and the verification line evaluate that. Same source text,
+  no lock, and the duplicate runner the bats file had been writing into its own tmpdir is
+  gone with it.
+- **Worth generalising:** the audit correctly failed loud rather than emitting an empty
+  verdict, which is the only reason this was visible at all — a lock that exited 0 with no
+  output would have passed the gate while asserting nothing. That is the same false-green
+  shape as T-2732's port-3000 lines. Captured as a learning.
+- **Rejected:** `--skip-verification`. The lines were wrong; the gate was right.
+
 ### 2026-08-20 — Resolve the full-list command against FRAMEWORK_ROOT, not `lib/`
 
 - **Chose:** the mitigation string embeds absolute paths — `source
@@ -441,3 +462,15 @@ only figure that can be wrong in a way that matters here.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3095-promote-branch-hygiene-findings-to-the-a.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-80bfae97
+- **Timestamp:** 2026-08-20T07:01:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-20T07:01:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
