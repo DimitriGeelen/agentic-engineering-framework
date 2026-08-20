@@ -195,7 +195,7 @@ recurrence.
 - Problem requires fundamental redesign or unbounded scope — **not met.** No redesign is
   proposed; leg A executes a decision already taken, leg B repairs one predicate.
 - Fix cost exceeds benefit given current evidence — **not met.** The measured cost of the
-  status quo is 43 stranded commits, a lost inception, a forked task-ID space, and 54
+  status quo is 43 stranded commits, a lost inception, a forked task-ID space, and 178
   un-triaged GO decisions.
 
 ## Verification
@@ -209,6 +209,34 @@ recurrence.
 # matching build command (dotnet build / go build / cargo check / tsc --noEmit /
 # mvn compile) to that build task's ## Verification — P-011 only runs what you write.
 
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+**Decision**: GO
+
+**Rationale**: Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
+
+**Date**: 2026-08-20T08:05:21Z
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
+
+### 2026-08-20T07:04:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Recommendation
 
 **Recommendation:** GO — build both legs. Neither requires a new go/no-go.
 
@@ -270,48 +298,3 @@ Filed at the start of the investigation: the evidence base (errors log, peer RCA
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
      can be revised before fw inception decide. -->
-
-## Decisions
-
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
-
-## Decision
-
-**Decision**: GO
-
-**Rationale**: Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
-
-**Date**: 2026-08-20T08:05:21Z
-
-## Updates
-
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
-
-### 2026-08-20T07:04:20Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-## Recommendation
-
-**Recommendation:** DEFER
-
-**Rationale:**
-
-Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
-
-**Evidence:**
-
-<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
-
-
-### 2026-08-20T08:05:21Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
