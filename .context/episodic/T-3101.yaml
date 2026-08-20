@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3101: Worktree visibility — surface sibling worktrees' unlanded commits and age (T-2822 slice 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T09:40:21Z
+# ============================================================================
+
+task_id: T-3101
+task_name: "Worktree visibility — surface sibling worktrees' unlanded commits and age (T-2822 slice 2)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T09:28:56Z
+completed: 2026-08-20T09:40:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-20T11:39:51+02:00
+last_commit: 2026-08-20T11:39:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  surface sibling worktrees' unlanded commits and age (T-2822 slice 2)
+
+# Key outcomes
+outcomes:
+  - '`lib/branch-hygiene.sh` emits a new finding class `worktree-unlanded <path> branch=<br> ahead=<n> days=<d>` for linked worktrees whose branch holds commits not reachable from the master base'
+  - 'Emission is conditional on `ahead > 0`; a landed worktree does not produce the class, and no worktree is reported in both `worktree-merged` and `worktree-unlanded` (precedence rule documented in-file)'
+  - 'Base resolution reuses the existing origin/master→master fallback used by `merged-undeleted`/`diverged-fork`; age reuses `_bh_days_since_commit` rather than reimplementing it'
+  - 'The class-documentation comment block at the top of `lib/branch-hygiene.sh` documents the new class in the existing style'
+  - '`fw doctor` and the T-3095 audit block both surface the class with no edits to `bin/fw` or `agents/audit/audit.sh` (both already read the single `fw_branch_hygiene` predicate)'
+  - '`tests/unit/t3101_worktree_unlanded.bats` covers ≥8 cases including exact `ahead` count, exact `days` count, no-worktree silence, and both base-fallback branches; all green'
+  - 'Three one-line mutations of the new code each kill ≥1 test, with the killed test named per mutation (mutations reverted afterwards)'
+  - 'Pre-existing suites `t100143_branch_hygiene.bats` and `t3095_audit_branch_hygiene.bats` remain green'
+  - 'The two known stranded worktrees in this repo surface in live output with their real ahead/days numbers (or their absence is reported explicitly)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3101-worktree-visibility.md'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-3101-worktree-visibility--surface-sibling-wor.md'
+  - 'tests/unit/t3101_worktree_unlanded.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T11:39:51'
+    action: 'T-3101: surface sibling worktrees'' unlanded commits and age (T-2822 slice 2)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 4
+  lines_added: 516
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3101-worktree-visibility--surface-sibling-wor.md
+generated_by: context-agent-hybrid
