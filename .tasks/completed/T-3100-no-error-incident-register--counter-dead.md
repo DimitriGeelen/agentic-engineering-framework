@@ -5,16 +5,16 @@ description: >
   Decide what the framework's error/incident record should be. T-3097 IW-1 measured
   the gap; the remedy is unchosen.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-20T07:17:23Z
-last_update: '2026-08-20T07:30:14Z'
-date_finished:
+last_update: 2026-08-20T08:05:29Z
+date_finished: 2026-08-20T08:05:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -100,15 +100,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -157,9 +157,47 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: From T-3097 IW-1. Measured: session-metrics.sh recomputes failed_tool_calls (494, rate 0.0754) with no per-error row; patterns.yaml healing store holds 19 entries, dead since 2026-04-08 (134 days); the real record is scattered across inbox.yaml (329 obs), concerns.yaml, learnings.yaml and ~3030 task files with no aggregating surface. The operator asked for statistics and none are derivable. Genuine evidence gap, not a hedge: the choice between reviving the healing store, adding an errors view over the existing four registers, or accepting tasks+observations AS the register and building only a query surface is unresolved. Choosing wrongly adds a fifth scattered source.
+
+**Date**: 2026-08-20T08:05:28Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-08-20T08:05:28Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** From T-3097 IW-1. Measured: session-metrics.sh recomputes failed_tool_calls (494, rate 0.0754) with no per-error row; patterns.yaml healing store holds 19 entries, dead since 2026-04-08 (134 days); the real record is scattered across inbox.yaml (329 obs), concerns.yaml, learnings.yaml and ~3030 task files with no aggregating surface. The operator asked for statistics and none are derivable. Genuine evidence gap, not a hedge: the choice between reviving the healing store, adding an errors view over the existing four registers, or accepting tasks+observations AS the register and building only a query surface is unresolved. Choosing wrongly adds a fifth scattered source.
+
+### 2026-08-20T08:05:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7bcdc5d8
+- **Timestamp:** 2026-08-20T08:05:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-65d7a252
+- **Timestamp:** 2026-08-20T08:05:30Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3097` | task | ✓ pass |
+
+### 2026-08-20T08:05:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
