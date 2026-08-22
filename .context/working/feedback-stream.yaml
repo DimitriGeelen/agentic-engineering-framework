@@ -36457,3 +36457,21 @@ scan_id: R-5d241780
 task_id: T-3113
 payload:
   task_file: .tasks/active/T-3113-l4-fw-upgrade-names-which-worktrees-are-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T10:51:44Z'
+scan_id: R-09b53109
+task_id: T-3111
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T10:51:44Z'
+scan_id: R-09b53109
+task_id: T-3111
+payload:
+  task_file: .tasks/active/T-3111-l2-fw-re-execs-the-authority-binary-from.md

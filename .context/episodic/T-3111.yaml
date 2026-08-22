@@ -1,0 +1,161 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3111: L2: fw re-execs the authority binary from a linked worktree (R7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-22T10:51:55Z
+# ============================================================================
+
+task_id: T-3111
+task_name: "L2: fw re-execs the authority binary from a linked worktree (R7)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T17:35:42Z
+completed: 2026-08-22T10:51:43Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-08-21T00:27:22+02:00
+last_commit: 2026-08-22T12:51:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handover note, real ACs, and the two re-exec hazards (L2 prep). L2 — fw re-execs the authority's binary from a linked worktree (R7). fabric cards + self-vendor for the L2 redirect
+
+# Key outcomes
+outcomes:
+  - '`bin/fw`, when invoked from a linked worktree, re-execs the authority''s `bin/fw` with the same argv, using `lib/paths.sh:fw_is_linked_worktree` for detection and `lib/hook-parity.sh:fw_hook_parity_authority_root` for resolution — no new detector, no `$FRAMEWORK_ROOT`-based resolution.'
+  - 'The re-exec exports `FRAMEWORK_ROOT` scoped to the authority in the same step as the `exec`. Binary and root move together (T-2845 measured that inheriting the replica''s `FRAMEWORK_ROOT` makes the redirect byte-identical to doing nothing).'
+  - 'An env sentinel prevents re-exec loops: the authority''s `bin/fw` sees it set and never bounces back, at any nesting depth.'
+  - 'Invocation from the main checkout is completely unaffected — no exec, no sentinel, no measurable change in behaviour or output.'
+  - 'An escape hatch (`FW_NO_REEXEC=1`) skips the redirect and is logged Tier-2, for the case where an operator genuinely needs the replica''s own binary.'
+  - '`bin/fw --version` (or an equivalent cheap probe) run from a linked worktree reports the AUTHORITY''s version, not the replica''s — the observable proof the redirect fired.'
+  - '`tests/unit/t3111_worktree_reexec.bats` covers: redirect fires from a linked worktree, does not fire from the main checkout, loop guard holds, `FRAMEWORK_ROOT` lands on the authority, escape hatch works, and argv survives intact including args with spaces.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/lib/worktree-identity.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.context/audits/2026-08-20.yaml'
+  - '.context/audits/2026-08-21.yaml'
+  - '.context/audits/2026-08-22.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/go-scope-unpropagated/LATEST.md'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-20.yaml'
+  - '.context/audits/reviewer/2026-08-21.yaml'
+  - '.context/audits/reviewer/2026-08-22.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/episodic/T-3106.yaml'
+  - '.context/episodic/T-3107.yaml'
+  - '.context/episodic/T-3108.yaml'
+  - '.context/episodic/T-3109.yaml'
+  - '.context/episodic/T-3110.yaml'
+  - '.context/episodic/T-3112.yaml'
+  - '.context/episodic/T-3113.yaml'
+  - '.context/handovers/S-2026-0820-0233.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0820-0843.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0820-1112.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0820-1121.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0820-1623.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0820-1945.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0820-2316.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0821-0033.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0822-1209.discard-manifest.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.verify-queue-state.json'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - 'docs/design/task-corpus-concurrency-model.md'
+  - 'docs/generated/components/agents-git-lib-commit.md'
+  - 'docs/generated/components/agents-git-lib-worktree-corpus-guard.md'
+  - 'docs/generated/components/lib-branch-hygiene.md'
+  - 'docs/generated/components/lib-hook-parity.md'
+  - 'docs/generated/components/lib-hook_parity.md'
+  - 'docs/generated/components/lib-tier0_origin.md'
+  - 'docs/generated/components/tests-unit-doctor_designer_pin_drift.md'
+  - 'docs/generated/components/tests-unit-handover_commit_scope.md'
+  - 'docs/generated/components/tests-unit-t3073_c001_recommendation_bearing_inceptions.md'
+  - 'docs/generated/components/tests-unit-t3112_worktree_hook_parity.md'
+  - 'docs/generated/components/tests-unit-t3113_upgrade_worktree_advisory.md'
+  - 'docs/generated/components/tests-unit-test_tier0_origin.md'
+  - 'docs/generated/components/tests-unit-tier0_card_provenance.md'
+  - 'docs/generated/components/tests-unit-tier0_grant_ttl.md'
+  - 'docs/generated/components/tests-web-test_approvals_origin.md'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-3111-worktree-authority-reexec.md'
+  - '.fabric/components/lib-worktree-identity.yaml'
+  - '.fabric/components/tests-unit-t3111_worktree_reexec.yaml'
+  - 'lib/paths.sh'
+  - 'lib/worktree-identity.sh'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3097-worktree-failure-class--ultra-deep-rca-a.md'
+  - '.tasks/active/T-3105-audit-checks-must-report-the-set-they-ev.md'
+  - '.tasks/active/T-3111-l2-fw-re-execs-the-authority-binary-from.md'
+  - 'tests/unit/t3111_worktree_reexec.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-21T00:27:22'
+    action: 'T-3111: handover note, real ACs, and the two re-exec hazards (L2 prep)'
+  - time: '2026-08-22T12:51:06'
+    action: 'T-3111: L2 — fw re-execs the authority''s binary from a linked worktree (R7)'
+  - time: '2026-08-22T12:51:31'
+    action: 'T-3111: fabric cards + self-vendor for the L2 redirect'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2476 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2476
+  commits: 3
+  files_changed: 82
+  lines_added: 15628
+  lines_removed: 6683
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3111-l2-fw-re-execs-the-authority-binary-from.md
+generated_by: context-agent-hybrid

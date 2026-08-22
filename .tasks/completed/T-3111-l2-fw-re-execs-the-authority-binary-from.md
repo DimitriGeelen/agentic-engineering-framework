@@ -7,12 +7,12 @@ description: >
   move. Future-facing only: a worktree needs the redirect already in its checkout.
   See docs/design/task-corpus-concurrency-model.md R7.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/hook-parity.sh, lib/paths.sh, lib/worktree-identity.sh, tests/unit/t3111_worktree_reexec.bats, tests/unit/t3112_worktree_hook_parity.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T17:35:42Z
-last_update: 2026-08-22T10:17:35Z
-date_finished:
+last_update: 2026-08-22T10:51:43Z
+date_finished: 2026-08-22T10:51:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -348,3 +348,22 @@ grep -q 'worktree-identity.sh' lib/paths.sh
 grep -q '^_fw_reexec_authority "\$@"' bin/fw
 # The main checkout is unaffected: fw still runs and reports the repo's own version.
 bin/fw --version > /tmp/.t3111v.out 2>&1 && grep -q "Framework: /opt/999-Agentic-Engineering-Framework$" /tmp/.t3111v.out
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-09b53109
+- **Timestamp:** 2026-08-22T10:51:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `bin/fw`, when invoked from a linked worktree, re-execs the authority's `bin/fw` with the same argv, using `lib/paths.sh:fw_is_linked_worktree` for detection and `lib/hook-parity.sh:fw_hook_parity_aut
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/paths.sh in: `bin/fw`, when invoked from a linked worktree, re-execs the authority's `bin/fw` with the same argv, using `lib/paths.sh:fw_is_linked_worktree` for de`
+- **AC#7 (Agent)** — `tests/unit/t3111_worktree_reexec.bats` covers: redirect fires from a linked worktree, does not fire from the main checkout, loop guard holds, `FRAMEWORK_ROOT` lands on the authority, escape hatch wor
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/t3111_worktree_reexec.bats in: `tests/unit/t3111_worktree_reexec.bats` covers: redirect fires from a linked worktree, does not fire from the main checkout, loop guard holds, `FRAMEW`
+
+### 2026-08-22T10:51:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
