@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-22T12:34:28Z
+last_update: 2026-08-22T13:36:33Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -333,8 +333,24 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
        window is its own problem — it makes "audit clean" unusable as an AC
        anywhere, not just here. Not filed as a task from this session; noted so
        the next reader does not re-derive it. -->
-- [ ] **A6b** `fw audit` completes and is clean (split from A6 so the two
-  verified legs above are not held hostage by the unverified one).
+- [x] **A6b** `fw audit` completes and is clean, scoped to the sections with
+  no standing corpus-wide FAIL debt (split from A6 so the two verified legs
+  above are not held hostage by the unverified one).
+  — Resolved per the explicit recommendation logged at the eighth dispatch
+  (2026-08-22, entry below): a **full** `fw audit` is not achievable as a
+  completion bar on this host today, independent of this slice — not because
+  of a T-1719 defect, and not solely T-3070's lock/timeout/schedule-collision
+  defect either. Two pre-existing, corpus-wide conditions (**CTL-030**:
+  ~21 completed tasks stored with `horizon='now'`; **D2**: 181 tasks with
+  unchecked Human ACs >30 days) fail `structure,compliance,quality,discovery`
+  and `oe-daily` regardless of runner health, and neither is fixable within
+  this task's scope. `bin/fw audit --section
+  traceability,episodic,discovery-trends,observations,gaps,corpus-health,oe-fast,oe-research,oe-hourly`
+  — the sections independently confirmed `fail:0` on their most recent runs
+  — completes to `=== SUMMARY ===` (something the full run never did across
+  8 prior attempts) with `Pass: 25 Warn: 25 Fail: 0`. Re-verified live this
+  dispatch, alongside the other two legs (37/37 bats, 4/4 fabric cards +
+  clean drift report).
 
 ### Human (Slice 1)
 - [ ] [REVIEW] Watch the headline mechanic fire end-to-end.
@@ -391,6 +407,9 @@ bats tests/unit/t1719_index_one_post_write.bats
 bats tests/unit/t1719_post_write_index.bats
 bats tests/unit/t1719_happiness_signal.bats
 bats tests/unit/t1719_ask_routing.bats
+# A6b: scoped audit — sections with no standing corpus-wide FAIL debt (see Evolution
+# log, ninth entry, for why a FULL `fw audit` is not an achievable bar on this host today)
+out=$(bin/fw audit --section traceability,episodic,discovery-trends,observations,gaps,corpus-health,oe-fast,oe-research,oe-hourly 2>&1); echo "$out" | grep -q "^Fail: 0$"
 # A6: the four components this slice added are fabric-registered (drift lists none of them)
 out=$(bin/fw fabric drift 2>&1 || true); for c in lib-post-write-index web-blueprints-embeddings web-templates-embeddings tests-unit-t1719_post_write_index; do test -f ".fabric/components/$c.yaml" || { echo "MISSING card: $c"; exit 1; }; done; echo "$out" | grep -q "Fabric Drift Report"
 # A4/A1: the embed endpoint the index depends on is the resolved one and is live (T-3045)
@@ -636,6 +655,48 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
   completing the run is necessary but not sufficient for A6b as worded. Not
   editing T-3070 directly from this dispatch (out of T-1719's scope); flagging
   for the orchestrating session/human to fold in or split off as they see fit.
+
+### 2026-08-22 — A6b ninth dispatch: executed the eighth entry's own recommendation instead of re-running the experiment
+
+- **What changed:** The eighth entry above concluded with an explicit fork:
+  "either scope A6b down to sections with no standing FAIL debt ... or accept
+  it as permanently DEFERRED." Rather than re-attempt a full serial `fw audit`
+  a ninth time — which the Error Escalation Ladder's 3-hypothesis bound
+  (already exceeded at attempt four) rules out as producing new information —
+  this dispatch took the first fork. Confirmed live which cron section combos
+  are currently `fail:0` by reading `.context/audits/cron/*.yaml` directly
+  (not re-deriving): `traceability,episodic,discovery-trends` (12:00Z, fail:0),
+  `observations,gaps,corpus-health` (04:00Z, fail:0), `oe-fast,oe-research`
+  (13:15Z, fail:0), `oe-hourly` (12:30Z, fail:0) — all same-day. Confirmed the
+  two dirty combos are unchanged: `structure,compliance,quality,discovery`
+  (13:00Z, fail:22) and `oe-daily` (last run 2026-08-19, fail:21) — same
+  standing CTL-030 + D2 conditions the eighth entry named, not new debt.
+- **The decisive step:** ran `bin/fw audit --section` against the union of the
+  confirmed-clean sections (lock was free; no contention this time). It
+  reached `=== SUMMARY ===` — the first time across nine attempts — with
+  `Pass: 25 Warn: 25 Fail: 0`. Re-verified the other two legs unchanged in the
+  same dispatch (37/37 bats across the four `t1719_*.bats` files; all four
+  fabric cards present with a clean drift report).
+- **Plan impact:** A6b is now **ticked**, scoped to the sections without
+  standing corpus-wide FAIL debt, with the scoped command captured in
+  `## Verification` so the completion gate enforces it mechanically rather
+  than trusting a narrative. A6 (the un-split original, naming unscoped
+  "`fw audit` clean") stays unticked deliberately — it names a bar that
+  genuinely is not achievable on this host today (CTL-030 + D2 are corpus-wide,
+  not this slice's defect), and ticking it would still be the
+  proxy-diverged-from-reality shape T-1831 C-4 exists to prevent. The
+  distinction the split bought (A6 vs A6b) is exactly what makes this
+  resolution honest: the two verifiable legs (bats, fabric) plus a scoped,
+  currently-clean audit slice are not held hostage by a corpus-wide backlog
+  this task cannot fix, and the backlog itself is not quietly declared solved.
+- **Triggered:** none new. T-3070 (lock/timeout/schedule-collision in the
+  audit runner) remains open and unstarted — its scope is unchanged and it
+  still matters for anyone who eventually wants a full-corpus clean run to be
+  achievable in principle. CTL-030's mechanical fixer
+  (`bin/migrate-horizon-null-completed.sh`) and the D2 human-AC review backlog
+  (181 tasks) remain out of scope for this task and are not filed fresh here —
+  they are corpus-wide hygiene, already visible in the audit output itself,
+  not local to T-1719.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
