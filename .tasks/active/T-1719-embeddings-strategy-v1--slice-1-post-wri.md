@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-18T19:39:32Z
+last_update: 2026-08-22T11:01:42Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -536,6 +536,27 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
   that neither completed nor was externally killed) is itself relevant
   ground truth for that AC and should inform whoever picks up T-3070, not
   spawn a sibling task here.
+
+### 2026-08-22 — A6b sixth dispatch: re-verified the two clean legs, did not re-attempt `fw audit`
+
+- **What changed:** Nothing in this slice's code. Re-ran the exact `## Verification`
+  block for this task (bats + fabric + embed-endpoint legs) rather than repeat the
+  `fw audit` experiment: 37/37 across the four `t1719_*.bats` files, all four
+  fabric cards present with a clean drift report, and the resolved embed host
+  (`http://192.168.10.107:11434`) live and serving `nomic-embed-text`. Checked
+  T-3070 (the root-cause task for the audit-runner blocker) before doing anything
+  else — still `status: captured`, nobody has started it since the 2026-08-18
+  entry above.
+- **Plan impact:** none. A6/A6b stay unticked, for the same reason recorded five
+  times already: `fw audit` has never once reached `=== SUMMARY ===` across five
+  attempts on this host (exit 75 lock contention, exit 124 timeout, silent death
+  with no external kill, twice more), and the Error Escalation Ladder's 3-hypothesis
+  bound was already exceeded at attempt four. Running it a sixth time from this
+  dispatch turn would add a data point to an already-closed investigation, not a
+  new hypothesis — the honest move is to re-verify what's in scope and stop.
+- **Triggered:** none new. T-3070 remains the correct home for the fix and is
+  unstarted — whoever picks it up next has five independent data points already
+  on file (this entry + the four above) rather than needing a sixth reproduction.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
