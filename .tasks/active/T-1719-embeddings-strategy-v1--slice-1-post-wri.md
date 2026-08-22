@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-22T11:01:42Z
+last_update: 2026-08-22T12:01:32Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -557,6 +557,31 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
 - **Triggered:** none new. T-3070 remains the correct home for the fix and is
   unstarted — whoever picks it up next has five independent data points already
   on file (this entry + the four above) rather than needing a sixth reproduction.
+
+### 2026-08-22 — A6b seventh dispatch: cron contention observed live, still not re-attempted
+
+- **What changed:** Nothing in this slice's code. Re-ran the exact `## Verification`
+  block again: 37/37 across the four `t1719_*.bats` files, all four fabric cards
+  present with a clean drift report, and the resolved embed host
+  (`http://192.168.10.107:11434`) live and serving `nomic-embed-text`. Before
+  touching `fw audit`, checked T-3070 (still `status: captured`, unstarted since
+  the 2026-08-18 entry) and the live process table: this project's own
+  `audit.sh --cron` was actively holding the lock at dispatch time (PIDs
+  2361402/2362279, section `traceability,episodic,discovery-trends`, started
+  14:00, alongside eight sibling cron audits across five other projects on the
+  same host at the same minute) — the exact schedule-collision condition
+  T-3070's fourth entry names as the likely sharpener, caught live rather than
+  inferred after the fact.
+- **Plan impact:** none. A6/A6b stay unticked, same reasoning as the prior six
+  entries: the Error Escalation Ladder's 3-hypothesis bound was exceeded at
+  attempt four, and this dispatch adds confirming evidence (contention observed
+  in real time, not just theorized) rather than a new hypothesis. Re-running
+  `fw audit` from this turn would collide with the cron run already holding the
+  lock and reproduce the exit-75 failure mode for a second time, which is not
+  new information.
+- **Triggered:** none new. T-3070 remains the correct home and is still
+  unstarted — six independent data points are now on file (this entry + the
+  five above) for whoever picks it up next.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
