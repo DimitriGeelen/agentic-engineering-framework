@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3105: Audit checks must report the set they evaluated; empty candidate sets WARN (slice 3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-22T11:31:32Z
+# ============================================================================
+
+task_id: T-3105
+task_name: "Audit checks must report the set they evaluated; empty candidate sets WARN (slice 3)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T12:16:38Z
+completed: 2026-08-22T11:31:19Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-08-20T17:03:38+02:00
+last_commit: 2026-08-20T17:03:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit checks report the set they evaluated; empty sets WARN (slice 3)
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` gains a helper that emits a PASS carrying the evaluated-set size, and emits WARN instead when that size is zero or the set could not be enumerated'
+  - 'Every audit check whose verdict is computed over an enumerable candidate set is converted to the helper; a written inventory names each converted check and each deliberately-unconverted one with its reason'
+  - 'A check that cannot enumerate its candidate set (missing store, unreadable path, absent dependency) emits WARN naming what it could not read — never PASS, never silence'
+  - 'Converted PASS lines state the count in their text, so the line is falsifiable on its own (e.g. "no duplicate task IDs among N tasks across M views")'
+  - 'The T-3099 GO-scope check, which already implements this behaviour by hand, is migrated to the shared helper rather than left as a second implementation'
+  - '`tests/unit/t3105_audit_set_reporting.bats` covers: non-empty set PASSes with count; empty set WARNs; unenumerable set WARNs and names the cause; count in the emitted text matches the real size'
+  - 'A live `bin/fw audit` run is compared before and after: no check silently changes verdict except those intended, and each intended change is listed'
+  - 'Three one-line mutations each kill ≥1 test (named), or are proven equivalent; mutations reverted'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'docs/reports/T-3105-audit-set-reporting.md'
+  - '.tasks/active/T-3105-audit-checks-must-report-the-set-they-ev.md'
+  - 'tests/helpers/audit-set-reporting-block.sh'
+  - 'tests/unit/t3105_audit_set_reporting.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T17:03:38'
+    action: 'T-3105: audit checks report the set they evaluated; empty sets WARN (slice 3)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2834 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2834
+  commits: 1
+  files_changed: 5
+  lines_added: 1100
+  lines_removed: 74
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3105-audit-checks-must-report-the-set-they-ev.md
+generated_by: context-agent-hybrid
