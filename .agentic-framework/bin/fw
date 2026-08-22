@@ -235,6 +235,134 @@ if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; the
     fi
 fi
 
+# ─── R7 leg L2: run the AUTHORITY's fw, never the replica's (T-3111) ──────────
+#
+# The problem this closes, stated once: the framework's rules are enforced by
+# code; code is tracked content; so a linked worktree checks out its own copy of
+# the code that is supposed to constrain it. A session opened in a worktree cut
+# in July allocates task IDs the pre-T-100202 way and writes governance freely,
+# because the enforcement fixed on master in August is simply not in that
+# checkout. That is how T-2505, T-2506 and T-2428 were each minted twice on one
+# day (docs/design/task-corpus-concurrency-model.md §R7).
+#
+# The fix: when fw finds itself running against a linked worktree, it re-execs
+# the MAIN checkout's bin/fw with the same argv. The authority's libraries, its
+# agents, its allocator — one exec, and the replica's stale code never runs.
+#
+# WHAT MOVES AND WHAT DOES NOT.
+#   FRAMEWORK_ROOT moves to the authority. It must, and it must move in the same
+#   step as the exec: fw honours an inherited FRAMEWORK_ROOT over its own
+#   location (the T-2099 fork-bomb fix, ~line 940). Exec the authority's binary
+#   while a replica-scoped FRAMEWORK_ROOT is still exported and the authority
+#   politely loads the replica's libraries — output byte-identical to having
+#   changed nothing. T-2845 measured exactly that trap in
+#   _t2094_emit_doctor_advisory. Binary and root move together or not at all.
+#
+#   PROJECT_ROOT does NOT move. The worktree is still the project you are
+#   working in: `fw git commit`, `fw doctor`, `fw test` must act on the checkout
+#   the operator is standing in. Moving it would silently redirect commits to
+#   master's tree. Allocation is fixed anyway, because the authority's allocator
+#   union-scans every view (T-100202/T-3104) including this one — the fix rides
+#   in with the code, not with the working directory.
+#
+# HONEST LIMIT: future-facing only. The redirect must already be in the
+# replica's checkout to fire, so it does nothing for the worktrees that produced
+# the incidents. That is why L1 — the shared pre-commit corpus guard, which
+# lives in .git/hooks and therefore does not fork — is the keystone, and this
+# leg is the complete-but-late one.
+_fw_reexec_authority() {
+    # Sentinel first: the authority's fw runs this same code and must not bounce
+    # back. Checked before any git call, so a redirected process pays nothing.
+    [ -n "${FW_REEXEC_DEPTH:-}" ] && return 0
+
+    # Both libs are sourceable-and-side-effect-free by contract; lib/paths.sh is
+    # not (it resolves and exports paths on source), which is why the predicate
+    # lives in lib/worktree-identity.sh. Resolved from THIS binary's own tree —
+    # the replica's, necessarily: bootstrapping a redirect out of a replica can
+    # only start with the replica's own code. An older checkout without these
+    # files simply does not redirect, which is the same as before this shipped.
+    local _l="$FW_BIN_DIR/../lib"
+    [ -f "$_l/worktree-identity.sh" ] && [ -f "$_l/hook-parity.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$_l/worktree-identity.sh" 2>/dev/null || return 0
+    # shellcheck source=/dev/null
+    source "$_l/hook-parity.sh" 2>/dev/null || return 0
+
+    # TWO SUBJECTS, ONE HAZARD. A replica reaches the running process by two
+    # independent routes and either alone is enough to run stale enforcement:
+    #
+    #   PROJECT_ROOT is a worktree  → resolve_framework() prefers the project's
+    #       own vendored tree (T-498), so even the AUTHORITY's binary loads the
+    #       replica's lib/ and agents/. The binary is fine; the code is not.
+    #   FW_BIN_DIR is in a worktree → the replica's binary itself was invoked.
+    #       Its FRAMEWORK_ROOT is the replica whatever PROJECT_ROOT says.
+    #
+    # Checking only the first misses `\.claude/worktrees/x/bin/fw` run from a
+    # session rooted at the main checkout — which is how a replica's July code
+    # gets executed by an August session without anything looking unusual.
+    local _subj=""
+    if [ -n "${PROJECT_ROOT:-}" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+        _subj="$PROJECT_ROOT"
+    elif fw_is_linked_worktree "$FW_BIN_DIR"; then
+        # Normalise to the worktree's top level, not bin/. Both resolve the same
+        # authority, but _subj is also what the bypass log names as "the replica",
+        # and `<wt>/bin` is not a checkout anyone can act on.
+        _subj=$(git -C "$FW_BIN_DIR" rev-parse --show-toplevel 2>/dev/null) || _subj="$FW_BIN_DIR"
+    else
+        return 0
+    fi
+
+    local _auth
+    _auth=$(fw_hook_parity_authority_root "$_subj") || return 0
+    [ -n "$_auth" ] && [ -x "$_auth/bin/fw" ] || return 0
+
+    # No "already the right binary?" short-circuit on purpose. When PROJECT_ROOT
+    # is the worktree the exec is what pins FRAMEWORK_ROOT to the authority, so
+    # skipping it because the binary already matches would skip the half that
+    # matters. The sentinel bounds this at exactly one exec either way.
+
+    # Escape hatch, checked HERE rather than first: a bypass is only a bypass
+    # once something was actually going to happen. Above the detection it would
+    # log every main-checkout invocation as a skipped redirect, which is how a
+    # Tier-2 log stops being read. Logged rather than silent — "I ran the
+    # replica's fw on purpose" is exactly the fact a later forensic needs and
+    # cannot reconstruct from the outcome.
+    if [ -n "${FW_NO_REEXEC:-}" ]; then
+        local _log_dir="${PROJECT_ROOT:-$_subj}/.context/working"
+        if [ -d "$_log_dir" ]; then
+            {
+                echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+                echo "  flag: 'FW_NO_REEXEC=1'"
+                echo "  caller: 'bin/fw:_fw_reexec_authority'"
+                echo "  reason: 'R7 leg L2 authority redirect skipped (T-3111)'"
+                printf "  replica: '%s'\n" "$_subj"
+                printf "  authority: '%s'\n" "$_auth"
+            } >> "$_log_dir/.gate-bypass-log.yaml" 2>/dev/null || true
+        fi
+        return 0
+    fi
+
+    # FRAMEWORK_ROOT for the authority, in the authority's own terms. Order
+    # mirrors resolve_framework(): framework-repo first (T-1346-B1), vendored
+    # second (T-498). Deriving it here rather than letting the authority
+    # re-resolve is deliberate — its resolver would consult PROJECT_ROOT, which
+    # is still the worktree, and land back on the replica's vendored copy.
+    local _auth_fw=""
+    if [ -f "$_auth/FRAMEWORK.md" ] && [ -d "$_auth/agents" ]; then
+        _auth_fw="$_auth"
+    elif [ -f "$_auth/.agentic-framework/FRAMEWORK.md" ]; then
+        _auth_fw="$_auth/.agentic-framework"
+    else
+        return 0
+    fi
+
+    export FW_REEXEC_DEPTH=1
+    export FRAMEWORK_ROOT="$_auth_fw"
+    if [ -n "${PROJECT_ROOT:-}" ]; then export PROJECT_ROOT; fi
+    exec "$_auth/bin/fw" "$@"
+}
+_fw_reexec_authority "$@"
+
 # T-1346-B2: Detect which framework copy resolved (vendored, framework-repo, global).
 # Must be called AFTER FRAMEWORK_ROOT and PROJECT_ROOT are populated.
 # Returns one of: vendored | framework-repo | global | unknown
@@ -2891,14 +3019,17 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
     local cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
     # T-2435 (OBS-077): cron is host-level (installed once from the canonical main
     # checkout). In a linked worktree the derived target is worktree-named and never
-    # installed, so the drift checks below are pure worktree artifacts. Detect a linked
-    # worktree inline (bin/fw does not source lib/paths.sh) — git-dir != git-common-dir.
-    local _fw_gd _fw_gcd _fw_is_wt=0
-    _fw_gd=$(git -C "$PROJECT_ROOT" rev-parse --git-dir 2>/dev/null || echo .git)
-    _fw_gcd=$(git -C "$PROJECT_ROOT" rev-parse --git-common-dir 2>/dev/null || echo .git)
-    case "$_fw_gd"  in /*) ;; *) _fw_gd="$PROJECT_ROOT/$_fw_gd" ;; esac
-    case "$_fw_gcd" in /*) ;; *) _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;; esac
-    [ "$_fw_gd" != "$_fw_gcd" ] && _fw_is_wt=1
+    # installed, so the drift checks below are pure worktree artifacts.
+    # T-3111 replaced the inline git-dir/git-common-dir comparison that used to sit
+    # here with the shared predicate. bin/fw still cannot source lib/paths.sh (it
+    # resolves and exports paths on source), which is exactly why the predicate now
+    # lives in a side-effect-free lib of its own — sourced, not copied. The source is
+    # idempotent (_FW_WORKTREE_IDENTITY_LOADED), so the L2 redirect having already
+    # loaded it costs nothing here.
+    local _fw_is_wt=0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/worktree-identity.sh" 2>/dev/null || true
+    if fw_is_linked_worktree "$PROJECT_ROOT" 2>/dev/null; then _fw_is_wt=1; fi
     if [ "$_fw_is_wt" = "1" ]; then
         # T-2466: surface worktree topology so a session knows whether its branch is
         # live on this host (hooks run MAIN's bin/fw; merge-to-master ≠ live until
