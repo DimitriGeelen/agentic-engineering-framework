@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3102: fw worktree remove: governance-only dirt must not block removal (T-2822 corollary)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-22T16:14:44Z
+# ============================================================================
+
+task_id: T-3102
+task_name: "fw worktree remove: governance-only dirt must not block removal (T-2822 corollary)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T09:49:16Z
+completed: 2026-08-22T16:14:22Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-08-20T16:39:22+02:00
+last_commit: 2026-08-20T16:39:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  governance-only dirt must not block fw worktree remove (T-2822 corollary)
+
+# Key outcomes
+outcomes:
+  - '`lib/worktree.sh` classifies a worktree''s dirty paths into governance (`.context/`, `.tasks/`) vs source (everything else) before deciding whether dirt blocks removal'
+  - 'Governance-only dirt does NOT block `fw worktree remove`; the command proceeds and prints a one-line summary naming how many governance files were discarded and why they are discardable (T-2822: non-authoritative fork)'
+  - 'Any source dirt still refuses, with the existing message shape, and names the source paths specifically rather than a bare count'
+  - 'The unlanded-commit guard remains a SEPARATE refusal from the dirt check — a worktree with unlanded commits still refuses even when its dirt is governance-only (the 43-commit strands must not become removable by this change)'
+  - 'Refusal messages distinguish the two causes so the operator can tell "has unlanded work" from "has uncommitted source"'
+  - '`tests/unit/t3102_worktree_governance_dirt.bats` covers: governance-only dirt removable; source dirt refused; mixed dirt refused; governance-only + unlanded commits still refused; clean worktree removable; no regression when `.context/` absent'
+  - 'Three one-line mutations each kill ≥1 test, named per mutation (or proven equivalent), mutations reverted'
+  - 'Existing `tests/unit/` worktree suites remain green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3102-worktree-governance-dirt.md'
+  - 'lib/worktree.sh'
+  - '.tasks/active/T-3102-fw-worktree-remove-governance-only-dirt-.md'
+  - 'tests/unit/t3102_worktree_governance_dirt.bats'
+  - 'tests/unit/worktree_remove_dirty_class.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T16:39:22'
+    action: 'T-3102: governance-only dirt must not block fw worktree remove (T-2822 corollary)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3265 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3265
+  commits: 1
+  files_changed: 5
+  lines_added: 1140
+  lines_removed: 119
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3102-fw-worktree-remove-governance-only-dirt-.md
+generated_by: context-agent-hybrid
