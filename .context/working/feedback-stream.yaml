@@ -35897,3 +35897,563 @@ scan_id: R-054041ad
 task_id: T-3092
 payload:
   task_file: .tasks/active/T-3092-branch-hygiene-scan-is-blind-to-remote-r.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:03:22Z'
+scan_id: R-a9dff643
+task_id: T-3093
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:03:22Z'
+scan_id: R-a9dff643
+task_id: T-3093
+payload:
+  task_file: .tasks/active/T-3093-how-should-unread-branch-hygiene-finding.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-20T00:03:22Z'
+scan_id: RC-32dfb298
+task_id: T-3093
+payload:
+  overall: CONFIRMED
+  claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:03:55Z'
+scan_id: R-faab3931
+task_id: T-3093
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:03:55Z'
+scan_id: R-faab3931
+task_id: T-3093
+payload:
+  task_file: .tasks/active/T-3093-how-should-unread-branch-hygiene-finding.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-20T00:03:55Z'
+scan_id: RC-ed185c3c
+task_id: T-3093
+payload:
+  overall: CONFIRMED
+  claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:16:25Z'
+scan_id: R-fb503eb2
+task_id: T-3093
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:16:25Z'
+scan_id: R-fb503eb2
+task_id: T-3093
+payload:
+  task_file: .tasks/active/T-3093-how-should-unread-branch-hygiene-finding.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-20T00:16:25Z'
+scan_id: RC-977c474c
+task_id: T-3093
+payload:
+  overall: CONFIRMED
+  claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:41:19Z'
+scan_id: R-1962d246
+task_id: T-3094
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:41:19Z'
+scan_id: R-1962d246
+task_id: T-3094
+payload:
+  task_file: .tasks/active/T-3094-branch-staleness-in-days-not-commits--re.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:42:07Z'
+scan_id: R-8c5270bd
+task_id: T-3094
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:42:07Z'
+scan_id: R-8c5270bd
+task_id: T-3094
+payload:
+  task_file: .tasks/active/T-3094-branch-staleness-in-days-not-commits--re.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:42:34Z'
+scan_id: R-a71ec7af
+task_id: T-3094
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:42:34Z'
+scan_id: R-a71ec7af
+task_id: T-3094
+payload:
+  task_file: .tasks/active/T-3094-branch-staleness-in-days-not-commits--re.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:43:05Z'
+scan_id: R-26805fad
+task_id: T-3094
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:43:05Z'
+scan_id: R-26805fad
+task_id: T-3094
+payload:
+  task_file: .tasks/active/T-3094-branch-staleness-in-days-not-commits--re.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T00:43:06Z'
+scan_id: R-ee40e251
+task_id: T-3094
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T00:43:06Z'
+scan_id: R-ee40e251
+task_id: T-3094
+payload:
+  task_file: .tasks/active/T-3094-branch-staleness-in-days-not-commits--re.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T01:12:41Z'
+scan_id: R-70ab2119
+task_id: T-3081
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T01:12:41Z'
+scan_id: R-70ab2119
+task_id: T-3081
+payload:
+  task_file: .tasks/active/T-3081-a-learning-that-prescribes-its-own-fix-a.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-20T01:12:41Z'
+scan_id: RC-a3605fcd
+task_id: T-3081
+payload:
+  overall: CONFIRMED
+  claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-08-20T01:12:50Z'
+scan_id: R-5f1cd21b
+task_id: T-3084
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T01:12:50Z'
+scan_id: R-5f1cd21b
+task_id: T-3084
+payload:
+  task_file: .tasks/active/T-3084-bvp-value-axis-does-not-discriminate-ins.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-20T01:12:50Z'
+scan_id: RC-7e6effe0
+task_id: T-3084
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-08-20T01:24:42Z'
+scan_id: R-75b97e53
+task_id: T-3096
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T01:24:42Z'
+scan_id: R-75b97e53
+task_id: T-3096
+payload:
+  task_file: .tasks/active/T-3096-task-gate-blocks-read-only-bash-safe-lis.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T01:26:10Z'
+scan_id: R-f048b804
+task_id: T-3096
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T01:26:10Z'
+scan_id: R-f048b804
+task_id: T-3096
+payload:
+  task_file: .tasks/active/T-3096-task-gate-blocks-read-only-bash-safe-lis.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T07:01:59Z'
+scan_id: R-80bfae97
+task_id: T-3095
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T07:01:59Z'
+scan_id: R-80bfae97
+task_id: T-3095
+payload:
+  task_file: .tasks/active/T-3095-promote-branch-hygiene-findings-to-the-a.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T07:35:01Z'
+scan_id: R-55a603f6
+task_id: T-3098
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T07:35:01Z'
+scan_id: R-55a603f6
+task_id: T-3098
+payload:
+  task_file: .tasks/active/T-3098-refuse-governance-writes-from-a-linked-w.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T07:39:55Z'
+scan_id: R-27b1d04f
+task_id: T-3099
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T07:39:55Z'
+scan_id: R-27b1d04f
+task_id: T-3099
+payload:
+  task_file: .tasks/active/T-3099-go-scope-not-propagated-detector-is-pros.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T08:05:30Z'
+scan_id: R-7bcdc5d8
+task_id: T-3100
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T08:05:30Z'
+scan_id: R-7bcdc5d8
+task_id: T-3100
+payload:
+  task_file: .tasks/active/T-3100-no-error-incident-register--counter-dead.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-20T08:05:30Z'
+scan_id: RC-65d7a252
+task_id: T-3100
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-08-20T09:40:11Z'
+scan_id: R-ac22d16c
+task_id: T-3101
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T09:40:11Z'
+scan_id: R-ac22d16c
+task_id: T-3101
+payload:
+  task_file: .tasks/active/T-3101-worktree-visibility--surface-sibling-wor.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T09:59:35Z'
+scan_id: R-153f2a2e
+task_id: T-3103
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T09:59:35Z'
+scan_id: R-153f2a2e
+task_id: T-3103
+payload:
+  task_file: .tasks/active/T-3103-land-the-stranded-worktree-work--recover.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T12:44:17Z'
+scan_id: R-e9770426
+task_id: T-1985
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T12:44:17Z'
+scan_id: R-e9770426
+task_id: T-1985
+payload:
+  task_file: .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md
+---
+kind: override_expired
+timestamp: '2026-08-20T12:44:17Z'
+scan_id: R-e9770426
+task_id: T-1985
+payload:
+  id: OV-f3632338
+  pattern_id: mock-only-integration
+  expired_at: '2026-08-20T07:40:14Z'
+---
+kind: override_expired
+timestamp: '2026-08-20T12:44:17Z'
+scan_id: R-e9770426
+task_id: T-1985
+payload:
+  id: OV-21992fcb
+  pattern_id: AC-verify-mismatch
+  expired_at: '2026-08-20T07:40:18Z'
+---
+kind: scan_emitted
+timestamp: '2026-08-20T12:55:03Z'
+scan_id: R-597330ed
+task_id: T-3106
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T12:55:03Z'
+scan_id: R-597330ed
+task_id: T-3106
+payload:
+  task_file: .tasks/active/T-3106-task-corpus-concurrency-model--design-re.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T17:12:04Z'
+scan_id: R-04a6dcab
+task_id: T-3108
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T17:12:04Z'
+scan_id: R-04a6dcab
+task_id: T-3108
+payload:
+  task_file: .tasks/active/T-3108-enforcement-code-forks-with-the-branch--.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-20T17:12:04Z'
+scan_id: RC-1188d8e5
+task_id: T-3108
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-20T17:31:22Z'
+scan_id: R-eab32b46
+task_id: T-3107
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T17:31:22Z'
+scan_id: R-eab32b46
+task_id: T-3107
+payload:
+  task_file: .tasks/active/T-3107-duplicate-id-detection-spans-all-corpus-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T17:45:25Z'
+scan_id: R-8e0c61ca
+task_id: T-3109
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T17:45:25Z'
+scan_id: R-8e0c61ca
+task_id: T-3109
+payload:
+  task_file: .tasks/active/T-3109-write-r7-into-the-corpus-concurrency-des.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T18:38:54Z'
+scan_id: R-c7dad8a4
+task_id: T-3110
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T18:38:54Z'
+scan_id: R-c7dad8a4
+task_id: T-3110
+payload:
+  task_file: .tasks/active/T-3110-l1-corpus-guard-in-the-shared-pre-commit.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T18:39:51Z'
+scan_id: R-926e6290
+task_id: T-3089
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T18:39:51Z'
+scan_id: R-926e6290
+task_id: T-3089
+payload:
+  task_file: .tasks/active/T-3089-lint-forbid-backticks-in-quoted-bash-str.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T21:59:23Z'
+scan_id: R-17eaa369
+task_id: T-3112
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T21:59:23Z'
+scan_id: R-17eaa369
+task_id: T-3112
+payload:
+  task_file: .tasks/active/T-3112-l3-fw-doctor-audits-worktrees-for-hook-d.md
+---
+kind: scan_emitted
+timestamp: '2026-08-20T22:21:06Z'
+scan_id: R-5d241780
+task_id: T-3113
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-20T22:21:06Z'
+scan_id: R-5d241780
+task_id: T-3113
+payload:
+  task_file: .tasks/active/T-3113-l4-fw-upgrade-names-which-worktrees-are-.md

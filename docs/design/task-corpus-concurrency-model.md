@@ -68,7 +68,7 @@ A replica exists because git puts it there — it cannot be prevented by *absenc
 | **R4** | Mutation is **single-writer**. Replicas never write the corpus. Source in a worktree remains freely writable. | ✅ | T-3098 |
 | **R5** | Verification spans **all views**, and every check **states the set it evaluated**. | ✅ | T-3104, T-3105, T-3107 |
 | **R6** | Divergence is reconciled by a **named operation**, never silently merged. | manual | T-3103 |
-| **R7** | Enforcement must come from the **authority**, never from the replica it constrains. | ⏳ | T-3108 (GO) |
+| **R7** | Enforcement must come from the **authority**, never from the replica it constrains. | ✅ | T-3110, T-3111, T-3112, T-3113 |
 
 ### R6 collapses once R2 and R4 hold
 
@@ -176,7 +176,7 @@ created *before* the fix existed.
 | Leg | What it does | What it does **not** reach |
 |---|---|---|
 | **L1** — corpus guard in the shared `pre-commit` ✅ T-3110 | refuses a commit touching `.tasks/` when `--git-common-dir` ≠ `--git-dir`. Version-independent; reaches pre-existing and stale replicas | uncommitted writes; a repo that overrides `core.hooksPath` |
-| **L2** — re-exec redirection | `bin/fw` detects a linked worktree and re-execs the **authority's** `bin/fw`, fixing stale-replica-code and allocation in one move | worktrees whose checkout predates the redirect — future-facing only |
+| **L2** — re-exec redirection ✅ T-3111 | `bin/fw` detects a linked worktree and re-execs the **authority's** `bin/fw`, exporting the authority's `FRAMEWORK_ROOT` in the same step — stale replica code and ID allocation fixed in one move. `PROJECT_ROOT` deliberately stays on the worktree | worktrees whose checkout predates the redirect — future-facing only |
 | **L3** — worktrees as a drift subject ✅ T-3112 | `fw doctor` audited 31 *consumers* for missing hooks and **zero worktrees**. Same predicate, new subject (the T-3101 shape) — the comparison moved to `lib/hook-parity.sh` and `bin/fw` now holds zero copies of it | nothing, once shipped — but it reports, it does not prevent |
 | **L4** — loud vendored propagation ✅ T-3113 | `fw upgrade` names which of a project's worktrees are behind — commits-behind AND hook delta, because either alone misleads; doctor says it unprompted (L3) | a project that never runs `fw upgrade` at all |
 
@@ -199,6 +199,18 @@ another. R7 says enforcement code forks with the branch; this is the same
 disease one level down — **the predicate forks with the call site**, and an
 invariant that names files rather than scanning for definitions cannot see it.
 The repo-wide scan is now the test.
+
+**What L2 found in the predicate it reused** (T-3111): `fw_is_linked_worktree`
+compared `--git-dir` against `--git-common-dir` textually. git does not answer
+those two questions in one form — called against a *subdirectory* of the main
+checkout it returns the first absolute and the second relative — so the
+comparison read `<root>/.git` against `<root>/bin/../.git` and reported **every
+subdirectory of the main checkout as a linked worktree**. It had been correct in
+practice for a year because every caller happened to pass a repo root; L2 is the
+first to pass `bin/`. The definition is now canonicalised and lives in
+`lib/worktree-identity.sh`, sourced by `lib/paths.sh` and by `bin/fw` (whose
+doctor held an independent inline copy until this leg). Third leg in a row where
+the copy count, not the logic, was the defect.
 
 ### The honest limits
 

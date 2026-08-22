@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3112: L3: fw doctor audits worktrees for hook drift, not just consumers (R7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T21:59:34Z
+# ============================================================================
+
+task_id: T-3112
+task_name: "L3: fw doctor audits worktrees for hook drift, not just consumers (R7)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T17:36:32Z
+completed: 2026-08-20T21:53:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-20T23:47:48+02:00
+last_commit: 2026-08-20T23:48:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  L3 — fw doctor audits linked worktrees for enforcement drift (R7). refresh vendored copies for the worktree hook-parity audit
+
+# Key outcomes
+outcomes:
+  - 'The hook-comparison predicate lives in exactly ONE place (`lib/hook-parity.sh`); the inline `extract_hooks` python in `bin/fw`''s Consumer Projects loop is replaced by a call to it, so `bin/fw` holds zero copies of the predicate.'
+  - '`fw doctor` emits a `Worktrees` section that enumerates linked worktrees via `git worktree list --porcelain` and reports the size of the set it examined.'
+  - 'A linked worktree whose `.claude/settings.json` is missing hooks the authority has → WARN naming the worktree and the missing hook names.'
+  - 'A linked worktree with no `.claude/settings.json` at all → WARN (`settings absent`), never silent.'
+  - 'Zero linked worktrees → an explicit reported line, not an absent section (T-3105 set-reporting: an empty candidate set is stated, never a vacuous pass).'
+  - 'The Consumer Projects check''s output shape is unchanged by the predicate extraction (same `ok N/M` and `missing K: names` strings).'
+  - '`tests/unit/t3112_worktree_hook_parity.bats` covers: drifted worktree → WARN, in-sync worktree → OK, settings absent → WARN, empty set → reported, and predicate-appears-once.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/hook-parity.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - 'docs/design/task-corpus-concurrency-model.md'
+  - 'docs/reports/T-3112-worktree-hook-parity.md'
+  - '.fabric/components/lib-hook-parity.yaml'
+  - 'lib/hook-parity.sh'
+  - '.tasks/active/T-3112-l3-fw-doctor-audits-worktrees-for-hook-d.md'
+  - 'tests/unit/t3112_worktree_hook_parity.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T23:47:48'
+    action: 'T-3112: L3 — fw doctor audits linked worktrees for enforcement drift (R7)'
+  - time: '2026-08-20T23:48:07'
+    action: 'T-3112: refresh vendored copies for the worktree hook-parity audit'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 256 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 256
+  commits: 2
+  files_changed: 11
+  lines_added: 773
+  lines_removed: 97
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3112-l3-fw-doctor-audits-worktrees-for-hook-d.md
+generated_by: context-agent-hybrid

@@ -15,7 +15,7 @@ Judged against TARGET = origin/master when present, else master. Repos with
 no master lineage produce no findings (nothing to judge against).
 Finding classes (one token-prefixed line each):
 merged-undeleted <branch>                    local branch tip contained in TARGET
-behind-threshold <branch> behind=<n> (threshold <t>)
+behind-threshold <branch> behind=<n> days=<d> (threshold <t>)
 
 ## Used By (2)
 

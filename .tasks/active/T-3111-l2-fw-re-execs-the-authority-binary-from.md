@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T17:35:42Z
-last_update: 2026-08-20T22:26:16Z
+last_update: 2026-08-22T10:17:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,6 +64,24 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-21T18:00:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=1 (body:episodic-only); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -118,13 +136,13 @@ origin/t2539-staging and github/master.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/fw`, when invoked from a linked worktree, re-execs the authority's `bin/fw` with the same argv, using `lib/paths.sh:fw_is_linked_worktree` for detection and `lib/hook-parity.sh:fw_hook_parity_authority_root` for resolution — no new detector, no `$FRAMEWORK_ROOT`-based resolution.
-- [ ] The re-exec exports `FRAMEWORK_ROOT` scoped to the authority in the same step as the `exec`. Binary and root move together (T-2845 measured that inheriting the replica's `FRAMEWORK_ROOT` makes the redirect byte-identical to doing nothing).
-- [ ] An env sentinel prevents re-exec loops: the authority's `bin/fw` sees it set and never bounces back, at any nesting depth.
-- [ ] Invocation from the main checkout is completely unaffected — no exec, no sentinel, no measurable change in behaviour or output.
-- [ ] An escape hatch (`FW_NO_REEXEC=1`) skips the redirect and is logged Tier-2, for the case where an operator genuinely needs the replica's own binary.
-- [ ] `bin/fw --version` (or an equivalent cheap probe) run from a linked worktree reports the AUTHORITY's version, not the replica's — the observable proof the redirect fired.
-- [ ] `tests/unit/t3111_worktree_reexec.bats` covers: redirect fires from a linked worktree, does not fire from the main checkout, loop guard holds, `FRAMEWORK_ROOT` lands on the authority, escape hatch works, and argv survives intact including args with spaces.
+- [x] `bin/fw`, when invoked from a linked worktree, re-execs the authority's `bin/fw` with the same argv, using `lib/paths.sh:fw_is_linked_worktree` for detection and `lib/hook-parity.sh:fw_hook_parity_authority_root` for resolution — no new detector, no `$FRAMEWORK_ROOT`-based resolution.
+- [x] The re-exec exports `FRAMEWORK_ROOT` scoped to the authority in the same step as the `exec`. Binary and root move together (T-2845 measured that inheriting the replica's `FRAMEWORK_ROOT` makes the redirect byte-identical to doing nothing).
+- [x] An env sentinel prevents re-exec loops: the authority's `bin/fw` sees it set and never bounces back, at any nesting depth.
+- [x] Invocation from the main checkout is completely unaffected — no exec, no sentinel, no measurable change in behaviour or output.
+- [x] An escape hatch (`FW_NO_REEXEC=1`) skips the redirect and is logged Tier-2, for the case where an operator genuinely needs the replica's own binary.
+- [x] `bin/fw --version` (or an equivalent cheap probe) run from a linked worktree reports the AUTHORITY's version, not the replica's — the observable proof the redirect fired.
+- [x] `tests/unit/t3111_worktree_reexec.bats` covers: redirect fires from a linked worktree, does not fire from the main checkout, loop guard holds, `FRAMEWORK_ROOT` lands on the authority, escape hatch works, and argv survives intact including args with spaces.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -318,3 +336,15 @@ origin/t2539-staging and github/master.
 ### 2026-08-20T22:26:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+bats tests/unit/t3111_worktree_reexec.bats > /tmp/.t3111.out 2>&1 && grep -q "^ok 16" /tmp/.t3111.out && ! grep -q "^not ok" /tmp/.t3111.out
+bats tests/unit/t3112_worktree_hook_parity.bats > /tmp/.t3112.out 2>&1 && ! grep -q "^not ok" /tmp/.t3112.out
+bats tests/unit/t3113_upgrade_worktree_advisory.bats > /tmp/.t3113.out 2>&1 && ! grep -q "^not ok" /tmp/.t3113.out
+# The predicate exists exactly once repo-wide. A count in one named file cannot see a copy in a file it does not name (T-3113).
+test "$(grep -rl '^fw_is_linked_worktree()' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | sort | tr '\n' ' ')" = "./lib/worktree-identity.sh "
+# lib/paths.sh sources the shared definition rather than carrying its own.
+grep -q 'worktree-identity.sh' lib/paths.sh
+# bin/fw wires the redirect in (an unsourced/uncalled function is a silent no-op that reads like a clean bill of health).
+grep -q '^_fw_reexec_authority "\$@"' bin/fw
+# The main checkout is unaffected: fw still runs and reports the repo's own version.
+bin/fw --version > /tmp/.t3111v.out 2>&1 && grep -q "Framework: /opt/999-Agentic-Engineering-Framework$" /tmp/.t3111v.out

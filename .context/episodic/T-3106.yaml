@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3106: Task corpus concurrency model — design record and business rules
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T12:55:13Z
+# ============================================================================
+
+task_id: T-3106
+task_name: "Task corpus concurrency model — design record and business rules"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T12:52:11Z
+completed: 2026-08-20T12:55:02Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-20T14:54:43+02:00
+last_commit: 2026-08-20T14:55:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  design record — task corpus concurrency model and business rules. fix case-sensitive grep in verification block
+
+# Key outcomes
+outcomes:
+  - '`docs/design/task-corpus-concurrency-model.md` states the mismatch (registry invariants vs branchable storage) and argues explicitly why the storage stays files-in-git rather than moving to a database'
+  - 'The design pattern is named and diagrammed: single authority, many read replicas, globally serialised allocation, scope-declaring verification'
+  - 'Six business rules R1–R6 are stated, each with implementation status and the task that shipped it'
+  - 'The document records that R6 collapses once R2 and R4 hold — replicas that cannot write cannot diverge — so R6 is legacy-only and needs no standing verb'
+  - 'R5 is identified as the live gap with its three same-day instances tabulated (what each reported vs what each evaluated)'
+  - 'The legitimate consumer difference on `.tasks/` (corpus to the allocator, deliverable to `_wt_is_ignorable_path`) is documented so it is not "unified" into a bug'
+  - 'A "what would change this design" section states the evidence that would overturn R2/R4'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix case-sensitive grep in verification block'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/design/task-corpus-concurrency-model.md'
+  - '.tasks/active/T-3106-task-corpus-concurrency-model--design-re.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T14:54:43'
+    action: 'T-3106: design record — task corpus concurrency model and business rules'
+  - time: '2026-08-20T14:55:02'
+    action: 'T-3106: fix case-sensitive grep in verification block'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 2
+  lines_added: 306
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3106-task-corpus-concurrency-model--design-re.md
+generated_by: context-agent-hybrid

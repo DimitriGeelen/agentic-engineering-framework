@@ -13,7 +13,7 @@ Surface under test: bin/fw doctor designer-pin block.
 States:
 vendored sha256 == pin sha256           → OK    — t1
 vendored sha256 != pin sha256           → WARN  — t2
-vendored file absent (per pin path)     → SKIP  — t3
+vendored file absent (per pin path)     → WARN  — t3 (was SKIP until T-3064)
 pin present but missing sha256/path     → SKIP  — t4
 HERMETIC (T-2547): the pin drift check honors FW_DESIGNER_PIN_FILE. Each test points
 

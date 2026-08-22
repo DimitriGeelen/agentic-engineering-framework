@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3107: Duplicate-ID detection spans all corpus views (slice 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T17:31:33Z
+# ============================================================================
+
+task_id: T-3107
+task_name: "Duplicate-ID detection spans all corpus views (slice 2)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T15:03:55Z
+completed: 2026-08-20T17:31:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-20T17:06:54+02:00
+last_commit: 2026-08-20T19:31:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored copies for the three corpus-concurrency slices. cross-view duplicate-ID detection (slice 2) — R5 closed. refresh vendored copies for the cross-view duplicate detector. fix verification line — the FORK string is built from a %s placeholder
+
+# Key outcomes
+outcomes:
+  - 'The audit''s duplicate-task-ID check reads `fw_task_view_dirs` (T-3104) instead of scanning the main checkout alone; no second definition of "the corpus" remains in `agents/audit/audit.sh`'
+  - 'The check distinguishes two classes and says which it found: **within-authority** duplicates (the same ID twice inside ONE view — a real allocator bug, FAIL) and **cross-view** duplicates (the same ID in two different views — a fork artifact, WARN with both view paths named)'
+  - 'A cross-view pair whose files are byte-identical is reported as a REPLICA, not a duplicate — git checking the same committed task out into every worktree is the normal case and must not produce noise (compare by content hash, not by path)'
+  - 'The PASS line states the evaluated set in the T-3105 shape: number of task files AND number of views, e.g. "no duplicate task IDs among N task file(s) across M view(s)"'
+  - 'Zero views or an unenumerable view set emits WARN via `warn_unenumerable`, never PASS'
+  - '`tests/unit/t3107_corpus_duplicate_ids.bats` covers: clean single view; clean multi-view with identical replicas; within-authority duplicate FAILs; cross-view divergent duplicate WARNs and names both paths; cross-view identical replica stays silent; empty view set WARNs'
+  - 'Run against the live corpus and report what it finds — including whether the three known 2026-07-01 collisions (T-2505, T-2506, T-2428) surface, and if they do not, why not'
+  - 'Three one-line mutations each kill ≥1 test (named), or are proven equivalent; mutations reverted'
+  - '`bin/fw audit` still runs end-to-end and its verdict sequence changes ONLY where intended; state the change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix verification line — the FORK string is built from a %s placeholder'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/lib/worktree.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.context/episodic/T-3108.yaml'
+  - 'docs/reports/T-3107-corpus-duplicate-detection.md'
+  - '.tasks/active/T-3107-duplicate-id-detection-spans-all-corpus-.md'
+  - '.tasks/completed/T-3108-enforcement-code-forks-with-the-branch--.md'
+  - 'tests/helpers/audit-dup-task-ids-block.sh'
+  - 'tests/unit/t3107_corpus_duplicate_ids.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T17:06:54'
+    action: 'T-3107: refresh vendored copies for the three corpus-concurrency slices'
+  - time: '2026-08-20T19:23:08'
+    action: 'T-3107: cross-view duplicate-ID detection (slice 2) — R5 closed'
+  - time: '2026-08-20T19:23:25'
+    action: 'T-3107: refresh vendored copies for the cross-view duplicate detector'
+  - time: '2026-08-20T19:31:16'
+    action: 'T-3107: fix verification line — the FORK string is built from a %s placeholder'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 147 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 147
+  commits: 4
+  files_changed: 13
+  lines_added: 1809
+  lines_removed: 537
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3107-duplicate-id-detection-spans-all-corpus-.md
+generated_by: context-agent-hybrid

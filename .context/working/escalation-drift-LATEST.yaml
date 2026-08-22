@@ -1,27 +1,21 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-19T03:23:02.386288+00:00
-corpus_total: 2698
-bug_class_total: 493
+generated: 2026-08-22T03:23:02.878459+00:00
+corpus_total: 2718
+bug_class_total: 495
 bug_class_pct: 18
 h1_flagged: 360
-h1_pct_of_bug_class: 73
+h1_pct_of_bug_class: 72
 h2_repeat_patterns: 157
 h3_flagged: 265
 h3_pct_of_bug_class: 53
-recent_30d_flagged: 21
+recent_30d_flagged: 18
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
-  - tid: "T-100202-task-id-allocator-inflation--split-view-"
-    name: "Task-ID allocator inflation + split-view collision RCA (T-100xxx band, audit-emi"
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2580-testsweb-full-dir-run-has-8-order-depend"
-    name: "tests/web full-dir run has 8 order-dependent failures (all inception decide/verd"
-  - tid: "T-2583-reviewer-skip-as-pass-detector-false-pos"
-    name: "Reviewer skip-as-pass detector false-positive: it matches the RCA-template"
   - tid: "T-2612-handoff-jump-regression-uuid-form-corpus"
     name: "handoff jump regression: uuid-form corpus + 0.3.1 no auto-resolve — operator-sur"
   - tid: "T-2613-aef-audit-cron-warnfail-connector-unwire"
@@ -32,19 +26,25 @@ recent_sample:
     name: "Corpus squash burst RCA — operator delete-all+resave regressed task-lifecycle"
   - tid: "T-2676-fix-harvestsh-indent-assumption-greps-de"
     name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
+  - tid: "T-2677-fix-dead-audit-graduation-counter-learni"
+    name: "fix dead audit graduation counter (learnings >=20 branch never fires)"
+  - tid: "T-2685-fix-corpus-explain-rail-arity-drift-sile"
+    name: "fix corpus explain rail arity drift silently downgrading authority stage (OBS-10"
+  - tid: "T-2724-fw-init-reports-19-broken-hooks-on-a-cor"
+    name: "fw init reports 19 broken hooks on a correct install — validator never expands"
 h2_top:
   - learning: "P-011"
-    task_count: 2159
+    task_count: 2192
   - learning: "L-387"
-    task_count: 1940
+    task_count: 1967
   - learning: "L-291"
-    task_count: 1022
+    task_count: 1036
   - learning: "L-398"
-    task_count: 777
+    task_count: 788
   - learning: "P-010"
-    task_count: 414
+    task_count: 422
   - learning: "L-399"
-    task_count: 86
+    task_count: 91
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"

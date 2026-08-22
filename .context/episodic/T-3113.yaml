@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3113: L4: fw upgrade names which worktrees are behind (R7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T22:21:16Z
+# ============================================================================
+
+task_id: T-3113
+task_name: "L4: fw upgrade names which worktrees are behind (R7)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T17:37:22Z
+completed: 2026-08-20T22:21:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-21T00:15:36+02:00
+last_commit: 2026-08-21T00:15:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  L4 — fw upgrade names which worktrees are behind (R7). refresh vendored copies for the worktree upgrade advisory
+
+# Key outcomes
+outcomes:
+  - '`lib/upgrade.sh` gains `_t3113_emit_worktree_advisory <target_dir>`, extracted as a helper (same precedent as `_t2094_emit_doctor_advisory`) so bats can exercise it without driving a full 10-step `do_upgrade`.'
+  - '`do_upgrade` calls it on the live path (not dry-run), after the post-upgrade doctor advisory.'
+  - 'For each linked worktree of `target_dir` it reports BOTH: how many commits behind the authority''s HEAD the worktree is, AND its hook delta vs the authority''s `.claude/settings.json`.'
+  - 'The hook delta reuses `fw_hook_parity_delta` from `lib/hook-parity.sh` (T-3112) — `lib/upgrade.sh` holds zero copies of the predicate.'
+  - 'A worktree that is neither behind nor hook-drifted reports OK; a stale one is named with its absolute path and a concrete remedy.'
+  - 'Zero linked worktrees → an explicit `examined 0 linked worktree(s)` line; an unenumerable set → an explicit line saying so. Never silence (T-3105).'
+  - 'The advisory is non-blocking: it cannot change `do_upgrade`''s exit code, matching the `_t2094_emit_doctor_advisory` contract.'
+  - '`tests/unit/t3113_upgrade_worktree_advisory.bats` covers: behind worktree named with its count, hook-drifted worktree named, clean worktree OK, zero-worktree set reported, unenumerable reported, and exit-code-unaffected.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook_parity.py'
+  - '.agentic-framework/lib/hook-parity.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/VERSION'
+  - 'docs/design/task-corpus-concurrency-model.md'
+  - 'docs/reports/T-3113-upgrade-worktree-advisory.md'
+  - '.fabric/components/lib-hook_parity.yaml'
+  - '.fabric/components/tests-unit-t3112_worktree_hook_parity.yaml'
+  - '.fabric/components/tests-unit-t3113_upgrade_worktree_advisory.yaml'
+  - 'lib/hook_parity.py'
+  - 'lib/hook-parity.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3113-l4-fw-upgrade-names-which-worktrees-are-.md'
+  - '.tasks/completed/T-3112-l3-fw-doctor-audits-worktrees-for-hook-d.md'
+  - 'tests/unit/t3112_worktree_hook_parity.bats'
+  - 'tests/unit/t3113_upgrade_worktree_advisory.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-21T00:15:36'
+    action: 'T-3113: L4 — fw upgrade names which worktrees are behind (R7)'
+  - time: '2026-08-21T00:15:51'
+    action: 'T-3113: refresh vendored copies for the worktree upgrade advisory'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 283 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 283
+  commits: 2
+  files_changed: 17
+  lines_added: 896
+  lines_removed: 148
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3113-l4-fw-upgrade-names-which-worktrees-are-.md
+generated_by: context-agent-hybrid

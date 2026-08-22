@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3109: Write R7 into the corpus concurrency design record and file its four legs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T17:45:36Z
+# ============================================================================
+
+task_id: T-3109
+task_name: "Write R7 into the corpus concurrency design record and file its four legs"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T17:32:15Z
+completed: 2026-08-20T17:45:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-20T19:39:29+02:00
+last_commit: 2026-08-20T19:39:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  R7 — enforcement code forks with the branch; four legs filed
+
+# Key outcomes
+outcomes:
+  - '`docs/design/task-corpus-concurrency-model.md` gains an **R7** rule stating that enforcement code is tracked content and therefore forks with the branch, with the live evidence that proves it'
+  - 'The R5 row is updated from ⏳ to ✅ with its shipping tasks, and the implementation table records all three slices as landed'
+  - 'The four legs (L1 shared git hook, L2 re-exec redirection, L3 worktrees as a drift subject, L4 loud vendored propagation) are written down with what each does and does NOT reach'
+  - 'The honest limits of L1 are stated: commit-time not write-time, assumes `core.hooksPath` is not overridden, and reaches nothing in a project that never runs `fw upgrade`'
+  - 'Four follow-up tasks are filed, one per leg, each with a one-line scope'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/design/task-corpus-concurrency-model.md'
+  - '.tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3109-write-r7-into-the-corpus-concurrency-des.md'
+  - '.tasks/active/T-3110-l1-corpus-guard-in-the-shared-pre-commit.md'
+  - '.tasks/active/T-3111-l2-fw-re-execs-the-authority-binary-from.md'
+  - '.tasks/active/T-3112-l3-fw-doctor-audits-worktrees-for-hook-d.md'
+  - '.tasks/active/T-3113-l4-fw-upgrade-names-which-worktrees-are-.md'
+  - '.tasks/active/T-3114-release-channels-consumers-choose-stable.md'
+  - '.tasks/completed/T-3107-duplicate-id-detection-spans-all-corpus-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T19:39:29'
+    action: 'T-3109: R7 — enforcement code forks with the branch; four legs filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 10
+  lines_added: 1426
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3109-write-r7-into-the-corpus-concurrency-des.md
+generated_by: context-agent-hybrid

@@ -2,7 +2,7 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-08-17T08:26:55Z'
+last_run: '2026-08-20T13:02:54Z'
 baseline_count: 263
 current_count: 260
 gated_baseline: 4
@@ -53,7 +53,7 @@ findings:
     - termlink_channel_set_retention
     - termlink_channel_sweep
 apply_result: null
-sessions_scanned: 21
+sessions_scanned: 15
 sessions_probe_error: null
 warnings:
 - "NEW: 6 unclassified tool(s) (manual review needed \u2014 outside T-1761 convention\

@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3110: L1: corpus guard in the shared pre-commit hook (R7 keystone)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-20T18:39:05Z
+# ============================================================================
+
+task_id: T-3110
+task_name: "L1: corpus guard in the shared pre-commit hook (R7 keystone)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T17:34:41Z
+completed: 2026-08-20T18:38:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-20T20:32:58+02:00
+last_commit: 2026-08-20T20:33:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  L1 corpus guard in the shared pre-commit hook (R7 keystone). refresh vendored copies for the corpus guard
+
+# Key outcomes
+outcomes:
+  - 'The shared `pre-commit` hook refuses a commit that stages any path under `.tasks/` when the commit is being made from a **linked worktree** (`git rev-parse --git-common-dir` ≠ `--git-dir`), and is silent otherwise'
+  - 'The predicate lives in a sourced library function, not inline in the hook body, so `fw doctor`/audit can read the same predicate later (one predicate, many surfaces — the T-3101 shape)'
+  - 'The block message names the authority path, the staged `.tasks/` paths, and the bypass mechanism explicitly; an agent that trips it can unblock itself without asking the operator'
+  - 'A bypass exists as an **env-var prefix** (`FW_ALLOW_WORKTREE_CORPUS_COMMIT=1`), not a flag — `git commit` rejects unknown options, so a flag contract would be unhonourable (L-399 / T-1890 producer-consumer parity)'
+  - 'Every agent-initiated bypass writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`'
+  - 'Commits from the **main checkout** touching `.tasks/` are completely unaffected — verified by an explicit test, since this is the path every normal session takes'
+  - 'Source-file commits from a worktree are unaffected; only `.tasks/` is guarded'
+  - '`fw git install-hooks` installs it, and re-running install is idempotent (no duplicated block in the hook body)'
+  - '`tests/unit/t3110_worktree_corpus_commit_guard.bats` covers: main-checkout `.tasks/` commit allowed; worktree `.tasks/` commit refused; worktree source-only commit allowed; worktree mixed commit refused and names the `.tasks/` paths; env bypass permits and logs; re-install is idempotent'
+  - 'Three one-line mutations each kill ≥1 test (named), or are proven equivalent; mutations reverted'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/dispatch/preamble.md'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/agents/git/lib/worktree-corpus-guard.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/dispatch/preamble.md'
+  - 'agents/git/lib/hooks.sh'
+  - 'agents/git/lib/worktree-corpus-guard.sh'
+  - 'docs/reports/T-3110-worktree-corpus-commit-guard.md'
+  - '.fabric/components/agents-git-lib-worktree-corpus-guard.yaml'
+  - '.tasks/active/T-3110-l1-corpus-guard-in-the-shared-pre-commit.md'
+  - '.tasks/completed/T-3109-write-r7-into-the-corpus-concurrency-des.md'
+  - 'tests/unit/t3110_worktree_corpus_commit_guard.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T20:32:58'
+    action: 'T-3110: L1 corpus guard in the shared pre-commit hook (R7 keystone)'
+  - time: '2026-08-20T20:33:13'
+    action: 'T-3110: refresh vendored copies for the corpus guard'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 64
+  commits: 2
+  files_changed: 13
+  lines_added: 1249
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3110-l1-corpus-guard-in-the-shared-pre-commit.md
+generated_by: context-agent-hybrid

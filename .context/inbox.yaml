@@ -3983,3 +3983,45 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-333
+  text: "has_bash_write_pattern false-positives on the Co-Authored-By trailer the framework itself mandates. CLAUDE.md tells every agent to end commit messages with 'Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>'. The '>' closing that email address matches the redirect regex [^2>&]>[^>&] (the offending substring is literally 'm>\"'), so EVERY compliant 'git commit -m' classifies as a file write. Consequence: git commit never takes the safe-command fast path and always falls through to the task gate — invisible while a task is active, a hard block the moment focus is null or work-completed (hit live 2026-08-20 while trying to commit vendored copies right after closing T-3096). Sibling to the T-2833 note already in the code ('a doc-write whose payload literally contains a working git commit -m example still matches, since bash regex cannot see quote-nesting') but the inverse direction: here the payload is not an example, it is the mandated trailer. Candidate fix: exempt '<...@...>' angle-addresses, or scan only outside quoted regions. Not fixed in T-3096 — one bug, one task."
+  captured: 2026-08-20T01:30:02Z
+  context_task: T-3095
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-334
+  text: "Error register exists but is 60 days cold and half-blind: skills-manager 'errors' skill holds 3 records (all project 150-skills-manager, newest 2026-06-21), zero ever from this framework. Of 4 read surfaces, errors_review --action list and errors_error_status work; errors_list_errors returns 'No errors found' under every filter (silent false-empty, indistinguishable from a clean project); errors_analyze crashes with TypeError on the project kwarg. Same vacuous-PASS class as the T-3099 GO-scope prose gate and the audit fabric expander (OBS-185) — third instance. Sharpens T-3100 (DEFER): the aggregation question now has a live-but-broken candidate store, not just the four scattered framework registers."
+  captured: 2026-08-20T09:32:57Z
+  context_task: T-3101
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-335
+  text: "tests/unit/create_task.bats test 3 ('T-2832: --start writes focus inside the sandbox, not the live .context') FAILS at HEAD and, in failing, clobbers the LIVE .context/working/focus*.yaml — verified pre-existing by restoring both T-3104 files from git show HEAD and re-running. It blocked a TermLink worker mid-task (T-3104) by tripping the T-560 stale-focus gate. A sandbox-isolation test that escapes its own sandbox is the sharpest possible instance of the class."
+  captured: 2026-08-20T14:41:06Z
+  context_task: T-3105
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-336
+  text: "A worker's rewrite of agents/audit/audit.sh dropped the executable bit (git index 100755, on-disk 664). 'bin/fw audit' then died with exit 126 'Permission denied' — the ENTIRE audit rail silently disabled by a mode change no gate watches. Nothing in doctor, audit, or the pre-push hooks compares on-disk mode against the git index. One-line detector: git ls-files -s -- '*.sh' | awk '$1==\"100755\"{print $4}' | while read f; do [ -x \"$f\" ] || echo \"$f\"; done. Note this is exactly the T-3105 class one level up: the audit that reports on everything else has no check that it can itself run."
+  captured: 2026-08-20T14:41:12Z
+  context_task: T-3105
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-337
+  text: "fw mirror status reports 'github: in sync' while github/master was 404 commits behind origin/master. It compares origin's HEAD (which points at the checked-out branch, t2539-staging) against github's same-named branch and says NOTHING about master — then renders a green line. 'fw mirror sync' has the same scope: it synced t2539-staging only and reported 'synced 9cf2eb6f4 -> 398bf5385' as success. Exactly the T-3105 class: a check that does not state the ref set it compared, so 'in sync' and 'looked at one branch' render identically. Fix shape: name the refs compared and their count, per the R5 rule in docs/design/task-corpus-concurrency-model.md."
+  captured: 2026-08-20T17:30:45Z
+  context_task: T-3107
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-338
+  text: "fw bvp --include-proposed --quadrant hv-lc returns a degenerate ranking: the top 10 tasks all score BVP=108, NORM=0.40, COST=3.6 — identical to three significant figures. A ranking whose entries are indistinguishable cannot order work, which is its only purpose. Two compounding causes: (1) 120/147 tasks (82%) have no measurable cost because components: is unresolved (T-3068), so quadrant thresholds are computed over 27 tasks and applied to 147; (2) the v1 heuristic estimator appears to assign the same driver scores to any build task with similar AC/line counts, so proposed scores carry almost no per-task information. Same family as the T-3105 false-green class: the output looks like signal and is not. Relevant now that the standing directive is to prioritise HV/LC and HV/HC from this ranking."
+  captured: 2026-08-20T17:45:20Z
+  context_task: T-3109
+  tags: []
+  status: pending
+  promoted_to: null

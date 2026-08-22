@@ -8,6 +8,14 @@
 
 Git Agent - Commit subcommand
 Validates task references before committing
+── Pathspec scoping (T-3090) ────────────────────────────────────────────────
+Everything after `--` is a PATHSPEC and is forwarded to `git commit` after its
+own `--`, so the commit contains only those paths. Without it, `git commit`
+takes the WHOLE INDEX — including anything a concurrent session had staged but
+not yet committed.
+That is not hypothetical: commit d3d3e49db ("T-3028: Session handover
+S-2026-0819-2334") absorbed two files belonging to another session's T-3089 and
+emptied that session's index out from under it mid-compose. The handover had
 
 ### Framework Reference
 
