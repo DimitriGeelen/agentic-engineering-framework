@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-22T13:36:33Z
+last_update: 2026-08-22T14:31:44Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -697,6 +697,36 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
   (181 tasks) remain out of scope for this task and are not filed fresh here —
   they are corpus-wide hygiene, already visible in the audit output itself,
   not local to T-1719.
+
+### 2026-08-22 — A6b tenth dispatch: re-verification, direct invocation hit lock contention again, cron reads confirm clean
+
+- **What changed:** Nothing in this slice's code — same as the sixth through
+  ninth entries, this was a re-verification pass. Ran the full
+  `t1719_*.bats` suite live (37/37, unchanged), confirmed all four fabric
+  cards present with a clean drift report, and confirmed the resolved embed
+  host (`http://192.168.10.107:11434`) live and serving `nomic-embed-text`.
+- **The scoped `fw audit --section` invocation from `## Verification` timed
+  out at 3 minutes** (no SUMMARY, no partial output — same failure shape as
+  the earlier full-audit attempts, cause unconfirmed but consistent with
+  T-3070's known lock/schedule-collision class: `.context/audits/cron/`
+  shows a section audit landing roughly every 15 minutes, which is enough
+  contention to starve an ad hoc run). Rather than retry blindly (Error
+  Escalation Ladder: this is a repeat of a previously-diagnosed failure
+  mode, not a new hypothesis to test), read the cron's own most recent
+  per-section results directly, same technique as the ninth entry:
+  `traceability,episodic,discovery-trends` (16:00Z) fail:0,
+  `observations,gaps,corpus-health` (06:00Z) fail:0, `oe-fast,oe-research`
+  (16:15Z) fail:0, `oe-hourly` (14:30Z) fail:0. All four combos that make up
+  A6b's scoped section list are confirmed clean on their latest runs today.
+- **Plan impact:** none — A6b stays ticked, its evidence re-confirmed rather
+  than superseded. This entry exists so the next reader sees that the
+  direct-invocation timeout is a recurring, already-diagnosed symptom (not a
+  fresh regression needing a new hypothesis), and doesn't re-spend the
+  Error Escalation Ladder's 3-hypothesis bound rediscovering it.
+- **Triggered:** none new. T-3070 remains the correct home for the
+  lock/timeout/schedule-collision defect; this entry adds one more data
+  point (direct scoped invocation, not just the full run, also starves under
+  cron contention) but doesn't change T-3070's scope.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
