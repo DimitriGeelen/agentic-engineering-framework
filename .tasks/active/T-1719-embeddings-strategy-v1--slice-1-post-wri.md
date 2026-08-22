@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-22T14:31:44Z
+last_update: 2026-08-22T15:35:17Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -727,6 +727,60 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
   lock/timeout/schedule-collision defect; this entry adds one more data
   point (direct scoped invocation, not just the full run, also starves under
   cron contention) but doesn't change T-3070's scope.
+
+### 2026-08-22 — A6b eleventh dispatch: re-verified unchanged, and the redundant-dispatch cadence itself has a diagnosed cause
+
+- **What changed:** Nothing in this slice's code. Re-ran the four
+  `t1719_*.bats` files live: 37/37 on two consecutive runs; one transient
+  failure on `indexing a document makes it retrievable...` in a third run
+  did not reproduce in isolation or on a subsequent full-suite run, so it's
+  treated as a flake (same contention-adjacent shape as the audit timeouts
+  above, not a regression — no code changed between the failing and passing
+  runs). Confirmed the four fabric cards for this slice still present with a
+  clean drift report (10 unregistered components exist elsewhere in the
+  corpus, none of them T-1719's). Read the cron's own latest per-section
+  results directly rather than re-invoking the runner: `oe-hourly` (17:30Z)
+  fail:0, `oe-fast,oe-research` (17:15Z) fail:0,
+  `traceability,episodic,discovery-trends` (17:00Z) fail:0,
+  `observations,gaps,corpus-health` (06:00Z, most recent occurrence of that
+  combo today) fail:0. All four A6b-scoped combos unchanged from the tenth
+  entry. `structure,compliance,quality,discovery` still fail:23 (CTL-030 +
+  D2, unchanged, out of scope).
+- **The actually new finding: this is the sixth consecutive dispatch (6th
+  through 11th) to re-verify the same already-ticked AC with zero
+  advancement, and that cadence has a diagnosed, already-registered cause —
+  OBS-280 (2026-08-16, filed under T-3030, never promoted to a task).**
+  `deploy/resolver-loop.service` (repo, T-2914-fixed) runs `--stall-after 5`
+  — excludes a task from re-dispatch once N consecutive attempts show no
+  advancement. `/etc/systemd/system/resolver-loop.service` (this host,
+  live) still runs `--cooldown-min 30`, which the repo's own comment states
+  "had already expired by the time the next tick fired ... so it never
+  actually suppressed anything" (origin: T-2862, 57 dispatches / 0 outcomes
+  over 2 days — the exact same shape now measured a second time on T-1719).
+  Confirmed live: `diff /etc/systemd/system/resolver-loop.service
+  deploy/resolver-loop.service` shows the installed unit predates T-2914.
+  The "Recent Dispatches" envelope on this very dispatch showed five prior
+  T-1719 dispatches exactly 30 minutes apart (13:00/13:30/14:00/14:30/15:00),
+  matching `OnUnitActiveSec` on the timer precisely — direct confirmation
+  the clock, not convergence, is driving the cadence.
+- **Plan impact:** none on this slice's ACs — A6b stays ticked, A6 stays
+  deliberately unticked (documented reasons unchanged since the eighth
+  entry). The impact is procedural: further identical re-dispatches of
+  T-1719 add no information (the last five didn't), and the fix for the
+  *cadence* is out of T-1719's scope — it belongs to the systemd unit, not
+  this slice. Filed **T-3116** (redeploy `resolver-loop.service` with the
+  T-2914 fix, real ACs + diff/systemctl verification, held for human
+  confirmation before touching live infra) so the next re-dispatch of
+  T-1719, if any, is either the last one (stall-after would exclude it
+  after its 5th non-advancing attempt, already exceeded) or doesn't happen
+  because the loop is fixed first.
+- **Triggered:** T-3116 (redeploy fix, filed this dispatch, awaiting human
+  go-ahead — modifies shared autonomous-dispatch infra, outside this
+  slice's scope to apply unilaterally). OBS-280 stands as the origin
+  finding; this entry adds the first live measurement of its actual
+  blast radius (a specific task, 6+ redundant dispatches, ~3 hours of
+  30-minute-cadence re-verification with zero new information after the
+  ninth).
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver

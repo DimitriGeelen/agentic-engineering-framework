@@ -4025,3 +4025,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-339
+  text: "Live measurement of OBS-280's blast radius. T-1719 was re-dispatched by resolver-loop.service five times exactly 30 minutes apart (13:00/13:30/14:00/14:30/15:00Z, 2026-08-22), matching the timer's OnUnitActiveSec precisely, all outcome=success, with zero AC advancement after the ninth of eleven total dispatches on the same already-resolved AC (A6b). `diff /etc/systemd/system/resolver-loop.service deploy/resolver-loop.service` confirms the installed unit still runs `--cooldown-min 30` (pre-T-2914) while the repo template has carried `--stall-after 5` since T-2914/T-2915/T-2916 landed — a fix chain that is fully built and fully inert on this host because the unit file was never redeployed. `--stall-after 5` would have excluded T-1719 after its 5th non-advancing dispatch; it reached at least its 11th. Filed T-3116 (real ACs, diff+systemctl verification) to close the deploy gap; held for human confirmation before touching live systemd config since it's shared autonomous-dispatch infra outside T-1719's own scope."
+  captured: 2026-08-22T17:45:00Z
+  context_task: T-1719
+  tags: [resolver-loop, deploy-drift]
+  status: pending
+  promoted_to: T-3116
