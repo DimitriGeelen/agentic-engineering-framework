@@ -25,14 +25,30 @@ mirror_log_event() {
 }
 
 mirror_default_branch() {
-    # Resolve the default branch on origin. Falls back to "master".
+    # Resolve origin's actual default branch — NOT the local checkout's
+    # current branch (T-3088: the two are unrelated; a session working on a
+    # feature branch is not evidence of what origin considers default, and
+    # comparing origin's HEAD SHA against the mirror's branch-of-the-same-name
+    # as the local checkout silently compares two different branches).
     local _ref
+    # Fast path: local cache of origin's HEAD symref, if present and fresh.
     _ref=$(git -C "${PROJECT_ROOT:-.}" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')
-    [ -n "$_ref" ] && { echo "$_ref"; return; }
-    # Fall back to the local current branch if it tracks origin
-    _ref=$(git -C "${PROJECT_ROOT:-.}" branch --show-current 2>/dev/null)
-    [ -n "$_ref" ] && { echo "$_ref"; return; }
-    echo "master"
+    if [ -n "$_ref" ]; then
+        echo "$_ref"
+        return 0
+    fi
+    # Authoritative: ask origin directly. Works with no local tracking ref.
+    _ref=$(git -C "${PROJECT_ROOT:-.}" ls-remote --symref origin HEAD 2>/dev/null | awk '$1 == "ref:" && $3 == "HEAD" {print $2}' | sed 's|refs/heads/||')
+    if [ -n "$_ref" ]; then
+        echo "$_ref"
+        return 0
+    fi
+    # Cannot resolve — fail loudly instead of guessing (previously fell back
+    # to the local current branch, which silently compared two different
+    # branches from 2026-08-14 onward whenever the checkout was not on
+    # origin's default branch).
+    echo "ERROR: cannot resolve origin's default branch (no refs/remotes/origin/HEAD, ls-remote --symref origin HEAD failed)" >&2
+    return 1
 }
 
 mirror_sync_one() {
@@ -138,7 +154,11 @@ USAGE
     fi
 
     local branch
-    branch=$(mirror_default_branch)
+    if ! branch=$(mirror_default_branch); then
+        mirror_log_event "$log_file" "origin" "unreachable" "" "$origin_head"
+        [ "$quiet" -eq 0 ] && echo "ERROR: cannot resolve origin's default branch, aborting sync" >&2
+        return 1
+    fi
 
     local rc=0
     while IFS= read -r remote; do
@@ -168,7 +188,10 @@ mirror_status() {
     fi
 
     local branch
-    branch=$(mirror_default_branch)
+    if ! branch=$(mirror_default_branch); then
+        echo "ERROR: cannot resolve origin's default branch" >&2
+        return 1
+    fi
 
     while IFS= read -r remote; do
         [ -z "$remote" ] && continue
@@ -184,6 +207,34 @@ mirror_status() {
             echo "  $remote: DIVERGED"
         fi
     done <<< "$remotes"
+}
+
+mirror_stuck_diverged_check() {
+    # T-3088: `mirror_sync` refuses to auto-push a diverged mirror — the
+    # correct fail-safe direction, but silent: nothing surfaces a mirror
+    # parked in `diverged` for days (origin: github mirror stuck diverged
+    # 2026-08-14 to 2026-08-22, discovered only when GitHub visibly looked
+    # stale). Prints one remote name per line for every remote whose most
+    # recent `threshold` sync-log entries are all `diverged`.
+    # Args: log_file [threshold=4]
+    # Returns 0 if no remote is stuck, 1 if at least one is.
+    local log_file="$1" threshold="${2:-4}"
+    [ -f "$log_file" ] || return 0
+
+    local stuck=0
+    local remotes
+    remotes=$(awk -F'\t' '{print $2}' "$log_file" 2>/dev/null | sort -u)
+    while IFS= read -r remote; do
+        [ -z "$remote" ] && continue
+        local tail_outcomes tail_n
+        tail_outcomes=$(awk -F'\t' -v r="$remote" '$2==r{print $3}' "$log_file" | tail -n "$threshold")
+        tail_n=$(echo "$tail_outcomes" | grep -c .)
+        if [ "$tail_n" -ge "$threshold" ] && ! echo "$tail_outcomes" | grep -qv '^diverged$'; then
+            echo "$remote"
+            stuck=1
+        fi
+    done <<< "$remotes"
+    [ "$stuck" -eq 0 ]
 }
 
 mirror_main() {

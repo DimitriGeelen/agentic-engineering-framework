@@ -166,3 +166,130 @@ teardown() {
     [ "$status" -eq 2 ]
     [[ "$output" == *"Unknown mirror subcommand"* ]]
 }
+
+# T-3088 A5: source-level pin that `fw doctor` wires the stuck-diverged
+# check in (per F7/T-2451 — full `fw doctor` is slow/network-coupled, so
+# don't run it here; assert the wiring instead, mirroring t2452's pattern).
+@test "T-3088: do_doctor calls mirror_stuck_diverged_check, guarded by --quick" {
+    run grep -n "mirror_stuck_diverged_check" "$FRAMEWORK_ROOT/bin/fw"
+    [ "$status" -eq 0 ]
+    run bash -c "grep -A20 'T-3088: mirror sync stuck DIVERGED' '$FRAMEWORK_ROOT/bin/fw' | grep -q 'source.*mirror.sh'"
+    [ "$status" -eq 0 ]
+    run grep -q 'Mirror sync stuck diverged (.mirror-sync.log)' "$FRAMEWORK_ROOT/bin/fw"
+    [ "$status" -eq 0 ]
+}
+
+# T-3088: mirror_default_branch previously fell back to the LOCAL checkout's
+# current branch when refs/remotes/origin/HEAD was absent, instead of asking
+# origin what its default branch actually is. That meant mirror_sync_one
+# fetched refs/heads/<local-branch> from the mirror and compared it against
+# origin's HEAD SHA (which is origin's default branch, e.g. master) — two
+# different branches, silently compared as if they were the same one.
+
+@test "mirror_default_branch: resolves origin's real default branch, not the local current branch" {
+    # No refs/remotes/origin/HEAD in these fixtures (confirmed: git remote add
+    # + push does not populate it without an explicit fetch/set-head). Put the
+    # local checkout on a branch that is NOT origin's default.
+    git checkout -q -b totally-unrelated-local-branch
+
+    run mirror_default_branch
+    [ "$status" -eq 0 ]
+    [ "$output" = "master" ]
+}
+
+@test "mirror_sync: compares the SAME branch on origin and mirror regardless of local checkout branch" {
+    git remote remove mirror_behind
+    git remote remove mirror_diverged
+    git remote remove mirror_unreachable
+
+    # mirror_synced's master already matches origin's master (c3, from setup).
+    # Push a DIFFERENT commit to mirror_synced under a branch name that
+    # matches the local checkout's current branch — this is the value the
+    # old fallback would have queried instead of "master".
+    git checkout -q -b sidebranch-local
+    echo cLocal >> a && git add a && git commit -qm cLocal
+    git push -q mirror_synced sidebranch-local:sidebranch-local
+    git checkout -q master
+
+    local origin_master mirror_synced_master mirror_synced_side
+    origin_master=$(git ls-remote origin refs/heads/master | awk '{print $1}')
+    mirror_synced_master=$(git ls-remote mirror_synced refs/heads/master | awk '{print $1}')
+    mirror_synced_side=$(git ls-remote mirror_synced refs/heads/sidebranch-local | awk '{print $1}')
+    [ "$origin_master" = "$mirror_synced_master" ]
+    [ "$origin_master" != "$mirror_synced_side" ]
+
+    # Now run mirror_sync from the "sidebranch-local" checkout — the exact
+    # condition live since 2026-08-14. Correct behavior: still compares
+    # master vs master (in-sync), never touches sidebranch-local.
+    git checkout -q sidebranch-local
+
+    run mirror_sync
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"mirror_synced: in sync"* ]]
+
+    # The mirror's sidebranch-local ref must be untouched — proof the sync
+    # never compared or pushed against the local-branch-named ref.
+    local after_side
+    after_side=$(git ls-remote mirror_synced refs/heads/sidebranch-local | awk '{print $1}')
+    [ "$after_side" = "$mirror_synced_side" ]
+}
+
+@test "mirror_stuck_diverged_check: fires when the last N runs are all diverged (T-3088, A5)" {
+    local log="$TEST_TEMP_DIR/stuck.log"
+    printf '2026-08-14T09:00:00Z\tgithub\tin-sync\txxx\txxx\n' > "$log"
+    printf '2026-08-14T09:15:00Z\tgithub\tdiverged\taaa\tbbb\n' >> "$log"
+    printf '2026-08-14T09:30:00Z\tgithub\tdiverged\taaa\tccc\n' >> "$log"
+    printf '2026-08-14T09:45:00Z\tgithub\tdiverged\taaa\tddd\n' >> "$log"
+    printf '2026-08-14T10:00:00Z\tgithub\tdiverged\taaa\teee\n' >> "$log"
+
+    run mirror_stuck_diverged_check "$log" 4
+    [ "$status" -eq 1 ]
+    [ "$output" = "github" ]
+}
+
+@test "mirror_stuck_diverged_check: does not fire when the most recent run recovered" {
+    local log="$TEST_TEMP_DIR/recovered.log"
+    printf '2026-08-14T09:15:00Z\tgithub\tdiverged\taaa\tbbb\n' > "$log"
+    printf '2026-08-14T09:30:00Z\tgithub\tdiverged\taaa\tccc\n' >> "$log"
+    printf '2026-08-14T09:45:00Z\tgithub\tdiverged\taaa\tddd\n' >> "$log"
+    printf '2026-08-14T10:00:00Z\tgithub\tin-sync\teee\teee\n' >> "$log"
+
+    run mirror_stuck_diverged_check "$log" 4
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+@test "mirror_stuck_diverged_check: does not fire below the threshold count" {
+    local log="$TEST_TEMP_DIR/short.log"
+    printf '2026-08-14T09:45:00Z\tgithub\tdiverged\taaa\tddd\n' > "$log"
+    printf '2026-08-14T10:00:00Z\tgithub\tdiverged\taaa\teee\n' >> "$log"
+
+    run mirror_stuck_diverged_check "$log" 4
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+@test "mirror_stuck_diverged_check: missing log file is not stuck" {
+    run mirror_stuck_diverged_check "$TEST_TEMP_DIR/does-not-exist.log" 4
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+@test "mirror_sync: diverged remote still refused when local checkout is on a non-default branch (positive control, L-616)" {
+    git remote remove mirror_synced
+    git remote remove mirror_behind
+    git remote remove mirror_unreachable
+
+    git checkout -q -b totally-unrelated-local-branch
+
+    local before
+    before=$(git ls-remote mirror_diverged refs/heads/master | awk '{print $1}')
+
+    run mirror_sync
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"DIVERGED"* ]]
+
+    local after
+    after=$(git ls-remote mirror_diverged refs/heads/master | awk '{print $1}')
+    [ "$after" = "$before" ]
+}

@@ -1,0 +1,143 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3088: mirror_default_branch falls back to the current branch, so the github mirror has compared two different branches since 2026-08-14
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-22T14:09:52Z
+# ============================================================================
+
+task_id: T-3088
+task_name: "mirror_default_branch falls back to the current branch, so the github mirror has compared two different branches since 2026-08-14"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-19T19:38:28Z
+completed: 2026-08-22T14:09:31Z
+duration_days: 3
+updates_count: 1
+first_commit: 2026-08-19T21:41:16+02:00
+last_commit: 2026-08-20T00:15:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the mirror branch-resolution defect; close T-3086 and T-3087. refresh vendored copies for the T-3086 / T-3087 source changes. refresh vendored web/blueprints/config.py for the T-3080 registry key. governance state — T-3090 close, decisions D-464..467, audit refresh. refresh vendored copies for the T-3090 git-agent and handover changes. T-3078 close-out — partial-complete, reviewer verdict, decisions captured. refresh vendored copies for the T-3078 provenance changes
+
+# Key outcomes
+outcomes:
+  - '**A1 — `mirror_default_branch` answers the question it is named for.** With'
+  - '**A2 — the two compared values come from the same branch.** `origin_head` and the ref'
+  - '**A3 — `fw mirror status` reports in-sync for the current real state.** Both remotes'
+  - '**A4 — positive control (L-616).** A genuinely diverged mirror still reports'
+  - '**A5 — the silent-refusal class is made visible.** A mirror stuck in `diverged` for'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.agentic-framework/agents/git/lib/commit.sh'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/tier0_origin.py'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.context/approvals/pending-7d5ff5699146.yaml'
+  - '.context/audits/2026-08-18.yaml'
+  - '.context/audits/2026-08-19.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-19.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/episodic/T-3086.yaml'
+  - '.context/episodic/T-3087.yaml'
+  - '.context/handovers/S-2026-0819-2334.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.t3080-bats.out'
+  - '.context/working/.t3080-cfgpage.out'
+  - '.context/working/.t3080-help.out'
+  - '.context/working/.t3080-inv.out'
+  - '.context/working/.t3080-serve.out'
+  - '.context/working/.t3080-tier0.out'
+  - '.context/working/.t3087.out'
+  - '.context/working/.verify-queue-state.json'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3078-tier-0-approval-cards-carry-no-provenanc.md'
+  - '.tasks/active/T-3088-mirrordefaultbranch-falls-back-to-the-cu.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/completed/T-1893-arc-005-closure-demo-evidence-capture-g-.md'
+  - '.tasks/completed/T-3086-fix-fork-bomb-backticks-in-configsh-regi.md'
+  - '.tasks/completed/T-3087-add-missing-fwhumanizeseconds-helper-bre.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-19T21:41:16'
+    action: 'T-3088: file the mirror branch-resolution defect; close T-3086 and T-3087'
+  - time: '2026-08-19T21:42:34'
+    action: 'T-3088: refresh vendored copies for the T-3086 / T-3087 source changes'
+  - time: '2026-08-19T23:38:57'
+    action: 'T-3088: refresh vendored web/blueprints/config.py for the T-3080 registry key'
+  - time: '2026-08-19T23:53:31'
+    action: 'T-3088: governance state — T-3090 close, decisions D-464..467, audit refresh'
+  - time: '2026-08-19T23:53:52'
+    action: 'T-3088: refresh vendored copies for the T-3090 git-agent and handover changes'
+  - time: '2026-08-20T00:15:12'
+    action: 'T-3088: T-3078 close-out — partial-complete, reviewer verdict, decisions captured'
+  - time: '2026-08-20T00:15:15'
+    action: 'T-3088: refresh vendored copies for the T-3078 provenance changes'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 3991 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3991
+  commits: 7
+  files_changed: 57
+  lines_added: 9695
+  lines_removed: 18912
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3088-mirrordefaultbranch-falls-back-to-the-cu.md
+generated_by: context-agent-hybrid

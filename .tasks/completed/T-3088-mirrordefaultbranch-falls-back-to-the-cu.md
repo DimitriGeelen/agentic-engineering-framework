@@ -6,10 +6,10 @@ description: >
   mirror_default_branch falls back to the current branch, so the github mirror has
   compared two different branches since 2026-08-14
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-19T19:38:28Z
-last_update: 2026-08-19T22:15:28Z
-date_finished:
+last_update: 2026-08-22T14:09:31Z
+date_finished: 2026-08-22T14:09:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -111,21 +111,21 @@ not a mirror defect. Fixing this task will not move `master`.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 — `mirror_default_branch` answers the question it is named for.** With
+- [x] **A1 — `mirror_default_branch` answers the question it is named for.** With
       `refs/remotes/origin/HEAD` absent, it resolves origin's real default branch (e.g. via
       `git ls-remote --symref origin HEAD`) rather than substituting the local current
       branch. If it genuinely cannot resolve one, it fails loudly instead of guessing.
-- [ ] **A2 — the two compared values come from the same branch.** `origin_head` and the ref
+- [x] **A2 — the two compared values come from the same branch.** `origin_head` and the ref
       fetched from the mirror are read for one and the same branch name; asserted by a test
       that drives `mirror_sync_one` with the local checkout on a non-default branch — the
       exact condition that has been live since 2026-08-14.
-- [ ] **A3 — `fw mirror status` reports in-sync for the current real state.** Both remotes
+- [x] **A3 — `fw mirror status` reports in-sync for the current real state.** Both remotes
       are at `10663c1d` on master today, so the correct verdict is in-sync, not DIVERGED.
       Run before and after; the before-state is the bug reproducing.
-- [ ] **A4 — positive control (L-616).** A genuinely diverged mirror still reports
+- [x] **A4 — positive control (L-616).** A genuinely diverged mirror still reports
       `diverged` and still refuses to push. Without this, a change that merely stops
       reporting divergence is indistinguishable from one that fixes the comparison.
-- [ ] **A5 — the silent-refusal class is made visible.** A mirror stuck in `diverged` for
+- [x] **A5 — the silent-refusal class is made visible.** A mirror stuck in `diverged` for
       more than N consecutive runs surfaces somewhere the operator reads (`fw doctor`), so
       the next instance of "fails in the safe direction, forever" is not found five days
       later by someone asking why GitHub looks old.
@@ -173,9 +173,14 @@ grep -qx "master" .context/working/.t3088-branch.out
 bin/fw mirror status > .context/working/.t3088-status.out 2>&1
 grep -q "in sync" .context/working/.t3088-status.out && ! grep -q "DIVERGED" .context/working/.t3088-status.out
 
-# Regression test for the comparison itself.
-bats tests/unit/mirror_default_branch.bats > .context/working/.t3088-bats.out 2>&1
-grep -q "^ok 1 " .context/working/.t3088-bats.out && ! grep -q "^not ok" .context/working/.t3088-bats.out
+# Regression tests for the comparison itself (A1/A2/A4) plus the stuck-diverged
+# visibility check (A5). Extends the existing mirror_sync suite rather than a
+# new file — same fixtures, same sourcing convention.
+bats tests/unit/test_mirror_sync.bats tests/unit/test_mirror_stderr_capture.bats > .context/working/.t3088-bats.out 2>&1
+grep -qE '^1\.\.[0-9]+$' .context/working/.t3088-bats.out && ! grep -q "^not ok" .context/working/.t3088-bats.out
+
+bash -n bin/fw
+bash -n lib/mirror.sh
 
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -239,19 +244,39 @@ grep -q "^ok 1 " .context/working/.t3088-bats.out && ! grep -q "^not ok" .contex
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw mirror sync` reported `github: DIVERGED` on every 15-minute cron run from
+2026-08-14T15:45:02Z onward, while GitHub and OneDev were in fact byte-identical on `master`
+the entire time.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `mirror_default_branch()` (`lib/mirror.sh:27`) tried `refs/remotes/origin/HEAD`
+(a local tracking-ref cache that is not populated by `git remote add` + `git push`, only by
+`git remote set-head` or certain fetch configurations), and when that was absent it fell back
+to **the local checkout's current branch** rather than asking origin what its default branch
+actually is. `mirror_sync_one` then compared `origin_head` (origin's default branch SHA) against
+`refs/heads/<local-current-branch>` fetched from the mirror — two unrelated branches — via
+`merge-base --is-ancestor`, which correctly reported them as non-ancestors ("diverged") because
+they were never the same lineage to begin with.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the failure mode is fail-safe by design (diverged mirrors are
+never auto-pushed, by intent — human decision required), so the log output was indistinguishable
+from a genuine divergence. Nothing compared the *log's own history* to notice the refusal was
+permanent rather than transient. T-1829 added push-stderr capture for exactly this class of
+silent stall, but only on the `push-failed` path — this bug never reaches a push, so that
+safety net didn't cover it.
+
+**Prevention:**
+1. `mirror_default_branch()` now resolves origin's default branch authoritatively via
+   `git ls-remote --symref origin HEAD` when the local tracking-ref cache is absent, and fails
+   loudly (non-zero exit, no output) instead of guessing from local checkout state.
+2. `mirror_sync` / `mirror_status` abort cleanly if the branch can't be resolved, rather than
+   proceeding with an empty branch name.
+3. New `mirror_stuck_diverged_check()` (lib/mirror.sh) + `fw doctor` wiring (bin/fw, T-3088)
+   WARNs when a remote's last 4 consecutive sync-log entries are all `diverged` — turning "fails
+   safe, forever, unnoticed" into a surfaced signal the next time this class recurs for any
+   reason (genuine divergence included).
+4. Regression tests in `tests/unit/test_mirror_sync.bats` pin the exact live condition (local
+   checkout on a non-default branch, no `refs/remotes/origin/HEAD`) and were verified to fail
+   against the pre-fix code before the fix landed.
 
 ## Evolution
 
@@ -333,3 +358,15 @@ grep -q "^ok 1 " .context/working/.t3088-bats.out && ! grep -q "^not ok" .contex
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3088-mirrordefaultbranch-falls-back-to-the-cu.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bb18ed0b
+- **Timestamp:** 2026-08-22T14:09:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-22T14:09:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
