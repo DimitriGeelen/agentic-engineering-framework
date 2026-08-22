@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-08-22T12:01:32Z
+last_update: 2026-08-22T12:34:28Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -582,6 +582,60 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
 - **Triggered:** none new. T-3070 remains the correct home and is still
   unstarted — six independent data points are now on file (this entry + the
   five above) for whoever picks it up next.
+
+### 2026-08-22 — A6b eighth dispatch: the blocker is no longer "can it finish" — it's "even when it finishes, it isn't clean"
+
+- **What changed:** Nothing in this slice's code. Re-verified the two clean legs
+  unchanged (37/37 across the four `t1719_*.bats` files; all four fabric cards
+  present with a clean drift report; resolved embed host
+  `http://192.168.10.107:11434` live and serving `nomic-embed-text`). Instead of
+  re-attempting a full serial `fw audit` an eighth time (the lock was free and the
+  Error Escalation Ladder's 3-hypothesis bound was already exceeded at attempt
+  four — see the six entries above), pursued a genuinely new angle: does the
+  *cron's own per-section runs* — which are short enough to routinely win the
+  lock and complete — ever come back clean? Read `.context/audits/cron/*.yaml`
+  directly rather than invoking the runner again.
+- **Finding — decisive, and different in kind from the prior seven:** they do
+  complete, on a 30-min/hourly/daily cadence, and they are **not** clean.
+  `structure,compliance,quality,discovery` (last run 2026-08-22-1200) reports
+  `pass:36 warn:66 fail:22`; `oe-daily` (last run 2026-08-19-0700) reports
+  `pass:665 warn:71 fail:21`. The FAILs collapse to two pre-existing, corpus-wide
+  conditions, neither caused by or fixable within T-1719's scope:
+  1. **CTL-030** (~21 tasks) — completed tasks stored with `horizon='now'`
+     instead of null/absent (T-2160 render fix). A mechanical, idempotent fixer
+     already exists (`bin/migrate-horizon-null-completed.sh`) but running it
+     against 21 unrelated completed tasks is far outside "smallest change that
+     satisfies T-1719's ACs," and it's a corpus-hygiene backlog that predates
+     this task.
+  2. **D2** — 181 tasks with unchecked Human ACs waiting >30 days (up to 140d).
+     This one has no mechanical fix at all — it requires actual humans
+     reviewing 181 tasks. It will keep failing `fw audit` until that backlog is
+     worked down, regardless of anything T-3070 fixes.
+  Traceability/episodic/discovery-trends, observations/gaps, oe-fast/oe-research
+  and oe-hourly all came back `fail:0` on their most recent runs — the corpus
+  isn't broadly unhealthy, these two specific standing conditions are.
+- **Plan impact:** this reframes A6b, not just re-confirms it. The first seven
+  entries treated the blocker as "the runner can't reach a verdict" (T-3070:
+  lock contention / timeout / schedule collision) — implying that fixing the
+  runner would eventually let this AC pass. That framing is now known to be
+  incomplete: even a runner with zero contention/timeout bugs would still
+  report `fail:>0` today, because of D2 alone, which no runner fix touches.
+  **"`fw audit` clean" is not currently achievable as a task-completion bar for
+  *any* task on this host**, not because of a defect in this slice, and not
+  solely because of T-3070's defect either. A6/A6b stay unticked — ticking would
+  still be the proxy-diverged-from-reality shape T-1831 C-4 exists to prevent,
+  now with sharper evidence for why. The honest resolution is not "try again"
+  but "the AC's premise needs a decision": either scope A6b down to sections
+  with no standing FAIL debt (traceability/episodic/observations/oe-fast/
+  oe-hourly all qualify today), or accept it as permanently DEFERRED pending the
+  D2 backlog being worked down elsewhere, and record that as an explicit human
+  call rather than another silent unticked box.
+- **Triggered:** none new filed. T-3070 remains the correct home for the
+  lock/timeout/schedule-collision fix, but its own framing ("full audit cannot
+  complete") should be read alongside this finding when someone picks it up —
+  completing the run is necessary but not sufficient for A6b as worded. Not
+  editing T-3070 directly from this dispatch (out of T-1719's scope); flagging
+  for the orchestrating session/human to fold in or split off as they see fit.
 
 ### 2026-08-16 — A3 shipped; the fallback covers less than its name implies
 - **What changed:** `fw ask` now routes through the Resolver
