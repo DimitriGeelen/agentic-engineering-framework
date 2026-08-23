@@ -216,6 +216,256 @@ def _resolve_source_path(rel, source_dir, framework_root):
     return None
 
 
+# ---------------------------------------------------------------------------
+# Bash invocation resolution (T-3123)
+# ---------------------------------------------------------------------------
+#
+# Shell composes two ways. `source X` / `. X` splices X's TEXT into the caller
+# — that is the T-3122 path above. The other way is INVOCATION: the caller runs
+# X as a subprocess (`./x.sh`, `bash x.sh`, `exec "$D/x.sh"`). That edge was not
+# modelled at all, so a script whose only dependency is what it executes got a
+# card with zero edges.
+#
+# Everything below keys on SHELL grammar only — command position, POSIX
+# builtins, shell interpreter names. No directory name, no variable name and no
+# package prefix from this or any other tree appears here. That restraint is the
+# point: T-3121 hardcoded `web|lib|agents|tools`, T-3122 hardcoded four $VAR
+# names, and both broke the moment a file was written in a different idiom.
+
+# A command position: start of line, or immediately after a separator /
+# grouping character. Same construction as _SOURCE_CMD_RE, minus the fixed
+# command name — here it is the word AT the position that gets read.
+_CMD_POS_RE = re.compile(r'(?:^|[;&|(){}`])[ \t]*', re.MULTILINE)
+
+# Words that stand in FRONT of the real command and hand off to it. POSIX
+# builtins and coreutils wrappers, plus bats' `run`. Compared by basename, so
+# `/usr/bin/env` matches `env`.
+_CMD_PREFIX_WORDS = frozenset({
+    'exec', 'command', 'builtin', 'env', 'nohup', 'nice', 'sudo', 'time',
+    'if', 'elif', 'while', 'until', 'then', 'do', 'else', '!', 'run',
+})
+
+# Shell interpreters. After one of these, the script is the first non-option
+# argument rather than the command word itself.
+_SHELL_INTERPRETERS = frozenset({'sh', 'bash', 'zsh', 'ksh', 'dash', 'ash'})
+
+_ENV_ASSIGN_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*=')
+
+
+def _mask_comment_lines(content):
+    """Blank out whole-line `#` comments, preserving line structure.
+
+    Usage banners and commented-out calls are prose, not composition; without
+    this a `# bash tools/x.sh` example line becomes a dependency edge.
+    """
+    return re.sub(r'^[ \t]*#.*$', '', content, flags=re.MULTILINE)
+
+
+_HEREDOC_START_RE = re.compile(r'<<-?\s*(["\']?)([A-Za-z_][A-Za-z0-9_]*)\1')
+
+
+def _mask_inert_regions(content):
+    """Blank the INSIDE of quoted strings, trailing comments and heredoc bodies.
+
+    Used only to locate command positions. A `;` inside an echo message and a
+    `(` inside an embedded `python3 - <<PY` body are text, not shell
+    separators — but the command-position regex cannot tell, so it opened a
+    bogus command at every one of them. That is where every false edge in this
+    repo's corpus came from: `add_issue "... see .context/inbox.yaml"` and
+    `print(f"  History: .context/bvp-weight-history.yaml")` both resolve to real
+    files and both are prose.
+
+    The result has the SAME length as ``content``, so a match offset found in it
+    indexes the original unchanged. Callers read the word itself from the
+    original, which is why masking a quoted argument is harmless: `exec
+    "$D/x.sh"` is found at the position of `exec`, then read raw.
+
+    Quote state is scoped to a LINE (heredocs excepted). Real shell is not a
+    language a 60-line lexer can track — an `awk` program, a regex class or an
+    apostrophe in a trailing comment will eventually desync it. Resetting per
+    line bounds the damage of any desync to that one line instead of blanking
+    the rest of a 5000-line file, which is exactly what an unscoped version did
+    here: it silently cost 90% of the real edges and looked like a clean run.
+    """
+    out = list(content)
+    heredoc = None          # (delimiter, allow_leading_tabs)
+    pos = 0
+    n = len(content)
+    while pos < n:
+        eol = content.find('\n', pos)
+        if eol == -1:
+            eol = n
+        line = content[pos:eol]
+
+        if heredoc is not None:
+            delim, strip_tabs = heredoc
+            if (line.lstrip('\t') if strip_tabs else line).strip() == delim:
+                heredoc = None
+            else:
+                for k in range(pos, eol):
+                    out[k] = ' '
+            pos = eol + 1
+            continue
+
+        quote = None        # None | "'" | '"' | '`'
+        stack = []          # quote states saved across $( ) nesting
+        i = pos
+        while i < eol:
+            ch = content[i]
+
+            if ch == '\\' and quote != "'" and i + 1 < eol:
+                out[i + 1] = ' '
+                i += 2
+                continue
+
+            if quote != "'" and content.startswith('$(', i):
+                stack.append(quote)
+                quote = None
+                i += 2
+                continue
+
+            if quote is None and stack and ch == ')':
+                quote = stack.pop()
+                i += 1
+                continue
+
+            if quote is None:
+                if ch == '#' and (i == pos or content[i - 1] in ' \t;&|('):
+                    for k in range(i, eol):
+                        out[k] = ' '
+                    break
+                if ch in '"\'`':
+                    quote = ch
+                    i += 1
+                    continue
+                if content.startswith('<<', i) and not content.startswith('<<<', i):
+                    m = _HEREDOC_START_RE.match(content, i)
+                    if m:
+                        heredoc = (m.group(2), content.startswith('<<-', i))
+                        i = m.end()
+                        continue
+            elif ch == quote:
+                quote = None
+                i += 1
+                continue
+            else:
+                out[i] = ' '
+
+            i += 1
+
+        pos = eol + 1
+
+    return ''.join(out)
+
+
+def _is_executable(rel, framework_root):
+    """Whether the resolved path can actually be RUN as a command.
+
+    The shell's own rule, used as the shell uses it: a bare command word only
+    invokes a file that carries the execute bit. A README, a YAML config or a
+    settings.json mentioned in passing cannot be a subprocess, so it cannot be
+    an invocation edge. Not applied behind an interpreter — `bash x.sh` runs a
+    file whether or not it is chmod +x.
+    """
+    return os.access(os.path.join(framework_root, rel), os.X_OK)
+
+
+def _trim_word_tail(word):
+    """Drop closer punctuation that a word scan carries along.
+
+    `_read_shell_word` stops at separators but not at an unmatched closer, so
+    `$(bash a/b.sh)` hands back `a/b.sh)`. The trailing literal-path scan reads
+    backwards from the end, so one stray `)` erases the whole path.
+    """
+    return word.rstrip(')}`;,')
+
+
+def _skip_blanks(text, i):
+    """Advance past spaces, tabs and backslash-newline continuations."""
+    while i < len(text):
+        if text[i] in ' \t':
+            i += 1
+        elif text.startswith('\\\n', i):
+            i += 2
+        else:
+            break
+    return i
+
+
+def _iter_shell_invocations(content):
+    """Yield the argument of every script INVOCATION in ``content``.
+
+    Yields ``(word, via_interpreter)`` where ``word`` is the raw shell word
+    naming the script and ``via_interpreter`` records whether it was reached
+    through `bash`/`sh`/... (in which case it need not look like a path) or as
+    the command word itself (in which case it must).
+
+    Recognised, with any number of prefix words in front:
+        ./a/b.sh          bash a/b.sh        sh b.sh        bash -e b.sh
+        exec "$D/b.sh"    "$D/b.sh" a1 a2    $(dirname "$0")/b.sh
+        command bash b.sh    VAR=1 exec ./b.sh    /usr/bin/env bash b.sh
+
+    Deliberately NOT recognised: `bash -c "..."` (the argument is an inline
+    command string, not a file), and any command word without a `/` — a bare
+    name is a PATH lookup, not a script in this tree, so `grep x.sh` and
+    `[ -f x.sh ]` never become edges.
+    """
+    scan = _mask_inert_regions(content)
+    for m in _CMD_POS_RE.finditer(scan):
+        # A line reached by backslash-continuation carries ARGUMENTS of the
+        # command above it, not a new command. Without this, every entry of a
+        # `for f in \` list and every wrapped `warn "..." \ "$D/x.sh"` argument
+        # reads as an invocation — 11 of this repo's first 24 new edges were
+        # exactly that, and every one pointed at a real executable file.
+        p = m.start()
+        if p > 0 and scan[p - 1] == '\n' and p >= 2 and scan[p - 2] == '\\':
+            continue
+        i = _skip_blanks(content, m.end())
+        via_interpreter = False
+        # Bounded: a real invocation reaches its script within a few words.
+        for _ in range(8):
+            word = _read_shell_word(content, i)
+            if not word:
+                break
+            nxt = _skip_blanks(content, i + len(word))
+            bare = word.strip('"\'')
+
+            if via_interpreter:
+                if bare.startswith('-'):
+                    # `-c` (alone or bundled, e.g. `-ec`) means the next word is
+                    # a command STRING. Abandon this command entirely.
+                    if 'c' in bare.lstrip('-').split('=', 1)[0]:
+                        break
+                    i = nxt
+                    continue
+                # `bash -euo pipefail x.sh` — `pipefail` is the argument of an
+                # option, not the script. A script argument is a path or carries
+                # a suffix; a bare suffixless word is not one, so keep scanning.
+                if '/' in bare or '.' in bare.rsplit('/', 1)[-1]:
+                    yield _trim_word_tail(word), True
+                    break
+                i = nxt
+                continue
+
+            if _ENV_ASSIGN_RE.match(bare):
+                i = nxt
+                continue
+
+            name = bare.rsplit('/', 1)[-1]
+            if name in _CMD_PREFIX_WORDS:
+                i = nxt
+                continue
+            if name in _SHELL_INTERPRETERS:
+                via_interpreter = True
+                i = nxt
+                continue
+
+            # The command word itself. Only a path can name a script in-tree.
+            if '/' in bare:
+                yield _trim_word_tail(word), False
+            break
+
+
 def detect_bash_sources(content, source_location, framework_root):
     """Detect bash source/dot-source, exec, and variable-path patterns.
 
@@ -243,6 +493,19 @@ def detect_bash_sources(content, source_location, framework_root):
         rel = _trailing_literal_path(arg)
         if rel:
             add(_resolve_source_path(rel, source_dir, framework_root))
+
+    # Pattern: INVOCATION — the caller runs the target as a subprocess rather
+    # than splicing its text (T-3123). Resolved through exactly the same
+    # trailing-literal-path machinery as `source`, so `bash "$ANY_VAR/x.sh"`
+    # lands on the same target as `source "$ANY_VAR/x.sh"`. Shares `add()`, so
+    # a script both sourced and invoked yields one edge, not two.
+    for word, via_interpreter in _iter_shell_invocations(_mask_comment_lines(content)):
+        rel = _trailing_literal_path(word)
+        if not rel:
+            continue
+        target = _resolve_source_path(rel, source_dir, framework_root)
+        if target and (via_interpreter or _is_executable(target, framework_root)):
+            add(target)
 
     # Pattern: exec "$AGENTS_DIR/agent/script.sh" "$@"
     for m in re.finditer(r'exec\s+"?\$AGENTS_DIR/([^"$\s]+)"?', content):
@@ -376,6 +639,16 @@ def detect_bats_deps(content, source_location, framework_root):
     # fw routing depends on bin/fw, even when the path isn't quoted explicitly.
     if re.search(r'\bbin/fw\b', content) and "bin/fw" != source_location:
         edges.append(("bin/fw", "tests"))
+
+    # A .bats file that runs a script TESTS it. The generic bash detectors above
+    # label the same reference `calls` (T-3123 sees `run bash "$R/x.sh"` as an
+    # invocation, which it is), so without this a test file would carry two
+    # edges to one subject under two relations — and the reverse pass would
+    # write both `called_by` and `tested_by` onto the subject's card. The more
+    # specific relation wins.
+    tested = {t for t, etype in edges if etype == "tests"}
+    edges = [(t, etype) for t, etype in edges
+             if not (etype == "calls" and t in tested)]
 
     # De-duplicate while preserving order (multiple patterns may emit the same edge)
     seen = set()
