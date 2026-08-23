@@ -901,6 +901,51 @@ python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; imp
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All four Slice 1 deliverables (post-write hook, happiness
+signal, one-provider routing, Watchtower panel) are built, tested, and
+live-verified. The one unticked Agent AC (A6, unscoped "fw audit clean")
+names a bar that is not achievable by any task on this host today — it was
+split into A6b (scoped to sections with no standing corpus-wide FAIL debt),
+which is ticked and mechanically enforced in `## Verification`. That
+finding, and the twelve-dispatch investigation behind it, is documented in
+full in `## Evolution` rather than repeated here. Nothing remains that
+agent work can move forward — the two Human ACs require the operator's own
+hands (running `fw ask`, watching the Watchtower panel, approving the
+litellm cloud-fallback config), and are exactly what this Recommendation
+hands off.
+
+**Evidence:**
+- A1-A5 ticked with live-verified evidence in `## Acceptance Criteria`
+  (post-write hook 2.0-2.3s, happiness schema, `fw ask` routing +
+  outcome rows, `/embeddings` panel live at 200 with real data).
+- A6b ticked: `bin/fw audit --section
+  traceability,episodic,discovery-trends,observations,gaps,corpus-health,oe-fast,oe-research,oe-hourly`
+  → `Pass: 25 Warn: 25 Fail: 0`, mechanically enforced in `## Verification`.
+- 37/37 across the four `t1719_*.bats` files, re-confirmed across eleven
+  separate dispatches with no regression.
+- All four new components fabric-registered, `fw fabric drift` clean of
+  them.
+- **This handoff was itself blocked until now:** `fw task review T-1719`
+  refused to emit a URL because no `## Recommendation` section existed —
+  found and fixed in this dispatch. None of the eleven prior Evolution
+  entries had reached this, which means the human-review path for this
+  task has never actually been reachable via the sanctioned command before
+  this edit.
+- **Separately:** this task has been redispatched ~12+ times since A6b was
+  ticked (2026-08-22) with zero code advancement each time. Root cause is
+  external to this task: the live `resolver-loop.service` systemd unit is
+  still running the pre-T-2914 `--cooldown-min 30` flag instead of
+  `--stall-after 5` (confirmed via `diff /etc/systemd/system/resolver-loop.service
+  deploy/resolver-loop.service` this dispatch — still diverged). The fix is
+  filed as **T-3116** (started-work, owner: agent, awaiting human go-ahead
+  to touch live infra — correctly out of this task's scope to apply
+  unilaterally). Approving T-3116 stops the redundant redispatch of this
+  and other tasks; it does not change this task's own GO recommendation.
+
 ## Updates
 
 ### 2026-05-04T15:26:17Z — task-created [task-create-agent]
