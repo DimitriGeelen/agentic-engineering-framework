@@ -11,10 +11,10 @@ description: >
   which moves their number from 0 to 0. Third sighting of the class: the detector
   was calibrated against the one tree its author could see.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T20:11:51Z
-last_update: '2026-08-23T20:15:13Z'
+last_update: 2026-08-23T20:48:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,45 +75,70 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`detect_bash_sources` in `agents/fabric/lib/enrich.py` models exactly one shell
+relationship: script A's *text* becomes part of script B (`source`, `.`). Shell
+also composes by **invocation** — A runs B as a subprocess — and that edge is
+not modelled at all, so a script whose only dependency is what it executes gets
+a card with zero edges.
+
+This is the third sighting of one class. T-3121: Python import prefixes
+hardcoded to `web|lib|agents|tools`. T-3122: shell source targets hardcoded to
+four `$VAR` names. Both were calibrated to the one tree their author could see.
+T-3122 widened the *vocabulary* of sourcing, which is why it moved
+832-Workflow-designer's number from 0 to 0 — their tree does not source at all.
+Widening a vocabulary cannot reach a relationship the detector does not model.
+
+Evidence is currently entirely 832's (20/65 files, 110 distinct targets,
+`tests/run-bridge-tests.sh` at 93 invocations with a zero-edge card). AC1 exists
+because that evidence must be reproduced locally before the fix is trusted — if
+our own tree composes by sourcing, the change ships blind and the measured
+delta is the only thing that can say so.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Local baseline is measured and reported before any code change: how many
+      tracked `.sh` files contain no `source`/`.` statement, how many reference
+      another tracked `.sh`, and the distinct-target count. Reported even when it
+      is small — a near-zero local number is a valid result that qualifies the
+      fix, not a reason to suppress it.
+- [ ] `enrich.py` grows invocation detection for shell: a tracked script
+      referenced as a command by another tracked script produces a dependency
+      edge, alongside the existing source/. edges.
+- [ ] Detection is not keyed to any project-specific directory name, variable
+      name, or top-level package list. A fixture using vocabulary this repo does
+      not use must still resolve.
+- [ ] Self-edges are excluded and duplicate edges are collapsed, matching the
+      guarantees T-3122 added to the sourcing path.
+- [ ] New tests live in `tests/unit/` with their own fixture tree (L-599: not
+      pinned to the live corpus), and are mutation-checked — the report states
+      how many of them fail against the pre-change code. A test that passes both
+      before and after guards nothing and does not count.
+- [ ] Before/after edge counts are reported as both raw and deduplicated totals.
+      T-3122's raw count read as a 54% regression until dedup inverted it; a
+      single number is not reportable here.
+- [ ] `bin/fw fabric drift` and the fabric section of `bin/fw audit` still run
+      clean after the change.
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+## Baseline (AC1, measured 2026-08-23, pre-change)
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+Measured over tracked `.sh` files, excluding the vendored `.agentic-framework/`
+copy so the same file is not counted twice.
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
+| Population | Count |
+|---|---|
+| tracked `.sh` files | 246 |
+| no `source`/`.` statement anywhere | 89 |
+| reference another tracked `.sh` | 165 (158 distinct targets) |
+| **both — no source AND invokes** | **37** |
 
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+The 37 are the population this task targets: their composition is entirely
+invocation, so `detect_bash_sources` produces a zero-edge card for every one of
+them. 832's finding reproduces locally rather than being specific to their tree,
+which is what AC1 existed to settle. Largest invokers here are
+`agents/audit/audit.sh` (38 referenced scripts), `agents/audit/self-audit.sh`
+(23), `agents/task-create/update-task.sh` (19) and `agents/handover/handover.sh`
+(18) — all framework-core, all currently under-connected in the fabric.
 
 ## Verification
 
@@ -272,3 +297,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3123-fabric-shell-detector-models-sourcing-bu.md
 - **Context:** Initial task creation
+
+### 2026-08-23T20:48:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
