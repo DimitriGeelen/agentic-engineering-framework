@@ -6,16 +6,16 @@ description: >
   master. Companion to R7 leg 4 (docs/design/task-corpus-concurrency-model.md): loud
   vendored propagation only helps if there is a declared channel to be behind on.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-20T17:38:21Z
-last_update: '2026-08-20T17:45:14Z'
-date_finished:
+last_update: 2026-08-23T21:23:12Z
+date_finished: 2026-08-23T21:23:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -101,15 +101,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -158,9 +158,48 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Operator proposed it directly after we found master 404 commits behind t2539-staging: 'we want an experimental and a stable branch... in our onboarding and installation routine have the choice'. Half of it already exists unnamed — .framework.yaml pins a version, fw upgrade moves the pin, the .upstream sentinel records the source, doctor reports drift across 31 consumers. What is missing is the channel concept: today every consumer implicitly tracks whatever master happens to be, and the only reason that was safe is the accident of master sitting behind. Proposal: .framework.yaml gains channel: stable|experimental; fw init asks; fw upgrade honours it; doctor reports 'stable, 2 releases behind' instead of 'relation undetermined'. GO.
+
+**Date**: 2026-08-23T21:23:11Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-08-23T21:23:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Operator proposed it directly after we found master 404 commits behind t2539-staging: 'we want an experimental and a stable branch... in our onboarding and installation routine have the choice'. Half of it already exists unnamed — .framework.yaml pins a version, fw upgrade moves the pin, the .upstream sentinel records the source, doctor reports drift across 31 consumers. What is missing is the channel concept: today every consumer implicitly tracks whatever master happens to be, and the only reason that was safe is the accident of master sitting behind. Proposal: .framework.yaml gains channel: stable|experimental; fw init asks; fw upgrade honours it; doctor reports 'stable, 2 releases behind' instead of 'relation undetermined'. GO.
+
+### 2026-08-23T21:23:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-691072eb
+- **Timestamp:** 2026-08-23T21:23:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-4fb86721
+- **Timestamp:** 2026-08-23T21:23:13Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-08-23T21:23:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

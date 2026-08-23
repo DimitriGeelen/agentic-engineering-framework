@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3125: self-vendor pre-push gate reads the working tree but its stated purpose is the pushed ref
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-23T21:43:16Z
+# ============================================================================
+
+task_id: T-3125
+task_name: "self-vendor pre-push gate reads the working tree but its stated purpose is the pushed ref"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-23T20:52:29Z
+completed: 2026-08-23T21:43:03Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-08-23T23:39:53+02:00
+last_commit: 2026-08-23T23:43:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the self-vendor pre-push gate judges the tree being pushed. result + file T-3126 (the audit gate has the same confusion). verification line matched pretty-formatter output, bats emits TAP here
+
+# Key outcomes
+outcomes:
+  - 'The gate blocks only when the vendored copies are stale **in the tree being'
+  - 'Working-tree-only drift still surfaces, as a WARN naming the affected'
+  - 'The gate''s original protection is intact: committing a source change without'
+  - 'Tests cover all four states on their own fixture repo (L-599, not this'
+  - 'The fix lives in `agents/git/lib/hooks.sh`. `bin/fw` is not edited — it'
+  - '`.git/hooks/pre-push` is regenerated (or confirmed to source the changed'
+  - 'Scope fence: this task does **not** touch the file-class list shared by'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.context/episodic/T-3114.yaml'
+  - '.tasks/active/T-3125-self-vendor-pre-push-gate-reads-the-work.md'
+  - '.tasks/active/T-3126-the-pre-push-audit-gate-blocks-a-ref-ope.md'
+  - '.tasks/completed/T-3114-release-channels-consumers-choose-stable.md'
+  - 'tests/unit/t3125_prepush_self_vendor_judges_pushed_ref.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-23T23:39:53'
+    action: 'T-3125: the self-vendor pre-push gate judges the tree being pushed'
+  - time: '2026-08-23T23:42:37'
+    action: 'T-3125: result + file T-3126 (the audit gate has the same confusion)'
+  - time: '2026-08-23T23:43:02'
+    action: 'T-3125: verification line matched pretty-formatter output, bats emits TAP here'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 50 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 3
+  files_changed: 7
+  lines_added: 748
+  lines_removed: 351
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3125-self-vendor-pre-push-gate-reads-the-work.md
+generated_by: context-agent-hybrid
