@@ -337,7 +337,22 @@ done
 AUDIT_LOCK_DIR="${CONTEXT_DIR}/locks"
 mkdir -p "$AUDIT_LOCK_DIR" 2>/dev/null
 AUDIT_LOCK_FILE="$AUDIT_LOCK_DIR/audit.lock"
-AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-600}"
+
+# T-3070: a full (unscoped) run walks all ~28 section headers, including a
+# whole-tree secret/large-file scan and several sub-timeouts (bats 300s +
+# corpus-lint 120s + corpus-health 90s) that section-scoped cron runs never
+# touch. 600s is sized for those cron runs (each a handful of sections,
+# minutes at most) — a full run measured on this corpus was still only
+# 43% through its sections (12/28, killed mid EPISODIC MEMORY CHECKS) at
+# the 590s mark, confirming 600s is not a contention artifact but simply too
+# short for the unscoped case. FW_AUDIT_TIMEOUT still overrides either mode;
+# FW_AUDIT_FULL_TIMEOUT is a full-run-only override for tuning without
+# touching the cron-facing default.
+if [ -z "$SECTIONS" ]; then
+    AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-${FW_AUDIT_FULL_TIMEOUT:-3000}}"
+else
+    AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-600}"
+fi
 
 # Clean up stale lock files (older than timeout + 60s buffer)
 if [ -f "$AUDIT_LOCK_FILE" ]; then

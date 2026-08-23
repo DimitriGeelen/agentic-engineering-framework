@@ -16,9 +16,26 @@
 # `create` is a separate follow-up. This avoids duplicating the existing integrate surface.
 
 # Resolve the "master" ref this repo integrates onto (local first, then origin).
+# The trunk every landing verdict is measured against.
+#
+# REMOTE FIRST (T-3117). This used to prefer refs/heads/master, and in the
+# session-on-master flow (T-100196) that ref is never updated: work lands by
+# pushing `HEAD:master` from a topic branch, which advances origin/master and
+# leaves the LOCAL master branch wherever it was. Measured here on 2026-08-23,
+# local master was **1744 commits behind** origin/master — so every "has this
+# landed?" answer in gc, `fw worktree status` and the branch-hygiene surfaces
+# was computed against a trunk from six weeks earlier. Nothing could ever be
+# reclaimed, which is why four stale worktrees survived R7's entire arc.
+#
+# "Landed" means on the SHARED trunk, so the remote-tracking ref is the
+# correct subject, not a local bookmark that may be stale or ahead. A local
+# master that is ahead of origin/master holds commits that are genuinely not
+# landed yet; reporting them as landed would be the dangerous direction of
+# this error, and preferring the remote gets that right too. The local refs
+# stay as fallback for repos with no remote at all.
 _wt_master_ref() {
     local r
-    for r in refs/heads/master refs/heads/main refs/remotes/origin/master refs/remotes/origin/main; do
+    for r in refs/remotes/origin/master refs/remotes/origin/main refs/heads/master refs/heads/main; do
         if git rev-parse --verify --quiet "$r" >/dev/null 2>&1; then
             printf '%s\n' "$r"
             return 0
@@ -788,6 +805,7 @@ _wt_is_ignorable_path() {
 
 # _wt_work_landed <branch> <master_ref>
 # Echoes a reason token; return: 0 = work landed, 1 = unlanded, 2 = undecidable.
+#   0 "merged"                    — every commit on the branch is IN master
 #   0 "no-deliverables"           — branch changed only ignorable paths
 #   0 "all-deliverables-on-master"— every deliverable file byte-identical on master
 #   1 "unlanded:<n>/<total>"      — n deliverable files differ from master
@@ -796,6 +814,31 @@ _wt_work_landed() {
     local branch="$1" master_ref="$2"
     local mb; mb="$(git merge-base "$branch" "$master_ref" 2>/dev/null)" || { echo "no-merge-base"; return 2; }
     [ -n "$mb" ] || { echo "no-merge-base"; return 2; }
+
+    # ANCESTRY FIRST — and it is not an optimisation (T-3117).
+    #
+    # The content comparison below asks "is every file this branch touched
+    # byte-identical on master TODAY?". For a branch whose commits are all
+    # already in master but which is 571 commits BEHIND, the answer is no —
+    # master has since changed those files again — and gc reported
+    # `unlanded:1440/1442` for a branch git itself calls a strict ancestor.
+    # That verdict is not conservative, it is wrong: there is nothing to land,
+    # so nothing can be at risk, and "push before any prune" is advice about
+    # commits that are already pushed.
+    #
+    # Measured: t100196-vendor-fix and t100199-close, both strict ancestors of
+    # origin/master, sat unreclaimable from 6 July because of this — the exact
+    # worktrees whose stale enforcement code produced the duplicate task IDs
+    # R7 was built to stop. The tool that should have removed them was telling
+    # the operator they held unlanded work.
+    #
+    # Ancestry is the stronger statement and needs no heuristic: if every
+    # commit is contained in master, the work landed. Ask that first; fall
+    # through to content comparison only for branches with unique commits,
+    # which is the case it was written for (re-derivation defeats `git cherry`).
+    if git merge-base --is-ancestor "$branch" "$master_ref" 2>/dev/null; then
+        echo "merged"; return 0
+    fi
 
     local -a deliverables=()
     local f

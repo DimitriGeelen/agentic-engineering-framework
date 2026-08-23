@@ -3333,6 +3333,26 @@ if len(rows) > 5:
     set -e
     fi  # T-2452/F6: end --quick guard for mirror divergence
 
+    # T-3088: mirror sync stuck DIVERGED — the cron-driven `fw mirror sync`
+    # refuses to auto-push a diverged mirror by design (human recovery
+    # required), which is the correct fail-safe direction but is also silent:
+    # nothing surfaces a mirror parked in `diverged` for days. Read the sync
+    # log's last few entries per remote and WARN when the tail is uniformly
+    # `diverged` — the exact "fails safe, forever, unnoticed" class this
+    # closes.
+    if _doctor_quick_skip "Mirror sync stuck diverged (.mirror-sync.log)"; then :; else
+    source "$FW_LIB_DIR/mirror.sh"
+    local _mirror_sync_log="$PROJECT_ROOT/.context/working/.mirror-sync.log"
+    local _mirror_stuck_n=4  # 4 consecutive 15-min cron runs = ~1 hour stuck
+    local _mirror_stuck_remote
+    while IFS= read -r _mirror_stuck_remote; do
+        [ -z "$_mirror_stuck_remote" ] && continue
+        echo -e "  ${YELLOW}WARN${NC}  Mirror '$_mirror_stuck_remote' stuck DIVERGED for $_mirror_stuck_n+ consecutive sync runs (T-3088) — needs human recovery"
+        echo -e "         Investigate: tail -20 $_mirror_sync_log | grep -F \$'\\t$_mirror_stuck_remote\\t'"
+        warnings=$((warnings + 1))
+    done < <(mirror_stuck_diverged_check "$_mirror_sync_log" "$_mirror_stuck_n")
+    fi  # T-3088: end --quick guard for mirror-stuck-diverged
+
     # Check: Workflow file schema linter (T-1694 / Q14)
     # Lints all .context/project/workflows/*.yaml against ADR-0003 schema:
     #   - inline:true workflows must NOT carry dispatch fields
