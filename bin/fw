@@ -2205,6 +2205,65 @@ else:
         fi
     fi
 
+    # Check: designer pin CURRENCY — is a newer release available upstream? (T-3119)
+    # Sibling of, but distinct from, the pin<->vendored drift check above. That one
+    # measures EXPOSURE (does what we run match what we pinned); this one measures
+    # CURRENCY (is what we pinned still the newest thing the origin publishes).
+    # Only both-green means "consistent AND up to date" — designer-v0.9.0 through
+    # v0.11.0 sat unconsumed for three releases with every instrument reporting OK,
+    # because nothing on either side ever looked at the origin's tag list.
+    #
+    # Resolves the newest `designer-v*` tag at the pin's own `source_origin:` via
+    # `git ls-remote --tags` and compares SEMANTICALLY (sort -V). A lexical compare
+    # ranks 0.8.0 above 0.10.0 and inverts the entire check.
+    #
+    # An unreachable origin gets its OWN state and never reads as "current"
+    # (L-575 / T-2916: a guard that cannot read its input must not report the same
+    # thing as a guard that read it and found nothing). It does not count as a warning.
+    #
+    # The probe is bounded by `timeout` and runs with GIT_TERMINAL_PROMPT=0 plus ssh
+    # BatchMode=yes, so an unreachable or credential-prompting origin cannot hang
+    # `fw doctor`. It is a network probe, so --quick skips it like the other host
+    # probes; FW_SKIP_DESIGNER_CURRENCY=1 skips it in full mode (offline / CI runs).
+    # Both skips print a line — never silence, which would read as "current".
+    # FW_DESIGNER_PIN_FILE points the check at a temp pin copy for tests (T-2547),
+    # exactly as the drift check above does.
+    local _dc_pin="${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}"
+    if [ -f "$_dc_pin" ]; then
+        if [ "${FW_SKIP_DESIGNER_CURRENCY:-0}" = "1" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  designer pin currency probe disabled (FW_SKIP_DESIGNER_CURRENCY=1)"
+        elif _doctor_quick_skip "designer pin currency (origin ls-remote)"; then
+            :
+        else
+            local _dc_ver _dc_origin _dc_ls _dc_latest _dc_newest
+            _dc_ver=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dc_pin'));print(d.get('version','') or '')" 2>/dev/null)
+            _dc_origin=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dc_pin'));print(d.get('source_origin','') or '')" 2>/dev/null)
+            if [ -z "$_dc_ver" ] || [ -z "$_dc_origin" ]; then
+                echo -e "  ${CYAN}SKIP${NC}  designer pin currency not checkable (pin has no version/source_origin)"
+            elif _dc_ls=$(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5" timeout 10 git ls-remote --tags "$_dc_origin" 'designer-v*' 2>/dev/null); then
+                _dc_latest=$(printf '%s\n' "$_dc_ls" | sed -e 's|.*refs/tags/||' -e 's|\^{}$||' | grep '^designer-v' | sed -e 's|^designer-v||' | sort -V | tail -1 || true)
+                if [ -z "$_dc_latest" ]; then
+                    echo -e "  ${CYAN}SKIP${NC}  designer pin currency unknown — origin publishes no designer-v* tags"
+                    echo -e "         origin: $_dc_origin"
+                else
+                    _dc_newest=$(printf '%s\n%s\n' "$_dc_ver" "$_dc_latest" | sort -V | tail -1)
+                    if [ "$_dc_latest" != "$_dc_ver" ] && [ "$_dc_newest" = "$_dc_latest" ]; then
+                        echo -e "  ${YELLOW}WARN${NC}  designer pin is behind its origin — pinned $_dc_ver, newest released $_dc_latest"
+                        echo -e "         tag designer-v$_dc_latest at $_dc_origin"
+                        echo -e "         Run: fw designer sync --from-tag   (re-pin + sha256-verify at the tag)"
+                        warnings=$((warnings + 1))
+                    else
+                        echo -e "  ${GREEN}OK${NC}  designer pin current with origin (newest released $_dc_latest)"
+                    fi
+                fi
+            else
+                echo -e "  ${CYAN}SKIP${NC}  designer pin currency UNKNOWN — could not reach origin $_dc_origin"
+                echo -e "         This is not 'current': the origin's newest release was never read."
+                echo -e "         Set FW_SKIP_DESIGNER_CURRENCY=1 to skip this probe on offline runs."
+            fi
+        fi
+    fi
+
     # Check: proxy-policy emitted-but-not-installed drift (T-2432, arc-013)
     # Sibling of the MCP manifest + cron registry→generated drift classes. Compares the
     # in-repo SOURCE policy against the DEPLOYED copy by CONTENT (sha256, never mtime).
