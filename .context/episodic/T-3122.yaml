@@ -1,0 +1,139 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3122: fabric shell detector recognises only four framework path variables - 65 percent of source statements produce no edge, including 88 that use FRAMEWORK_ROOT
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-23T19:59:36Z
+# ============================================================================
+
+task_id: T-3122
+task_name: "fabric shell detector recognises only four framework path variables - 65 percent of source statements produce no edge, including 88 that use FRAMEWORK_ROOT"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-23T19:48:24Z
+completed: 2026-08-23T19:59:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-23T21:58:33+02:00
+last_commit: 2026-08-23T21:59:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shell detector resolves paths, not four blessed variable names. apply the shell edges the fixed detector finds. vendor the shell detector fix
+
+# Key outcomes
+outcomes:
+  - '`source`/`.` resolves when the path uses ANY variable prefix, not a hardcoded set — `$FRAMEWORK_ROOT/lib/x.sh`, `$fw_root/x.sh`, `$_self_root/x.sh` all resolve by trying the trailing path, never by pattern-matching the variable''s name'
+  - 'Literal relative paths (`source ./lib/common.sh`, `source lib/common.sh`) resolve'
+  - 'Command-substitution prefixes (`source "$(dirname "$0")/lib/x.sh"`, `$(cd .. && pwd)`) resolve on their trailing literal path segment'
+  - 'Resolution is tried source-dir-relative AND project-root-relative, in that order, so local sourcing keeps winning'
+  - 'Every emitted edge is existence-guarded and de-duplicated; no self-edges. Widening the match must not invent an edge to a path that is not on disk'
+  - 'The four existing recognised forms still resolve exactly as before — pinned by a test that fails if the old branches are dropped'
+  - 'Regression test builds its own fixture tree with consumer-shaped names (NOT `lib/`+`$LIB_DIR`, which would pass against the broken code), covering each row of the table above'
+  - 'Re-measured over this repo, and the raw number went the *wrong* way before it went the right way — which is the finding, not a footnote. Raw emitted edges **631 → 290**, which reads as a 54% regression. Deduplicated, it is **264 → 290 unique (file, target) pairs: +28 gained, 2 lost**. The old detector emitted every edge an average of 2.4 times, and both "lost" edges are self-edges (`lib/arc_membership.sh` → itself, `lib/task-audit.sh` → itself) that the old code had no guard against. Files with at least one shell edge: 88 → 99. Concretely, `bin/fw` now resolves 97 shell dependencies where the four blessed variable names found a fraction of them'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor the shell detector fix'
+    source: git-mined
+  - description: 'apply the shell edges the fixed detector finds'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - 'agents/fabric/lib/enrich.py'
+  - '.fabric/components/add-learning.yaml'
+  - '.fabric/components/agents-context-lib-episodic.yaml'
+  - '.fabric/components/agents-git-lib-worktree-corpus-guard.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/checkpoint.yaml'
+  - '.fabric/components/lib-arc_membership-sh.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-colors.yaml'
+  - '.fabric/components/lib-compat.yaml'
+  - '.fabric/components/lib-config-file.yaml'
+  - '.fabric/components/lib-config.yaml'
+  - '.fabric/components/lib-consumer-recover.yaml'
+  - '.fabric/components/lib-corpus-id.yaml'
+  - '.fabric/components/lib-costs.yaml'
+  - '.fabric/components/lib-errors.yaml'
+  - '.fabric/components/lib-evolution_log.yaml'
+  - '.fabric/components/lib-git-identity.yaml'
+  - '.fabric/components/lib-inception.yaml'
+  - '.fabric/components/lib-index-health.yaml'
+  - '.fabric/components/lib-init.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-preflight.yaml'
+  - '.fabric/components/lib-rail-identity.yaml'
+  - '.fabric/components/lib-render_surface.yaml'
+  - '.fabric/components/lib-review.yaml'
+  - '.fabric/components/lib-setup.yaml'
+  - '.fabric/components/lib-task-audit.yaml'
+  - '.fabric/components/lib-update.yaml'
+  - '.fabric/components/lib-upgrade.yaml'
+  - '.fabric/components/lib-url-credentials.yaml'
+  - '.fabric/components/lib-validate-init.yaml'
+  - '.fabric/components/lib-verification-port.yaml'
+  - '.fabric/components/lib-verification-verdict.yaml'
+  - '.fabric/components/lib-version-relation.yaml'
+  - '.fabric/components/lib-watchtower.yaml'
+  - '.fabric/components/lib-worktree-identity.yaml'
+  - '.fabric/components/lib-yaml.yaml'
+  - '.fabric/components/tests-unit-arc_membership_agent_surfaces.yaml'
+  - '.fabric/components/tests-unit-arc_membership_dual_id.yaml'
+  - '.fabric/components/tests-unit-arc_membership_shared.yaml'
+  - '.fabric/components/tests-unit-arc_membership_union.yaml'
+  - '.fabric/components/tests-unit-arc_next_numeric_id_octal.yaml'
+  - '.fabric/components/tests-unit-check_render_surface_human_ac_sigpipe.yaml'
+  - '.fabric/components/tests-unit-rail_identity_guard.yaml'
+  - '.fabric/components/tests-unit-t2380_transcript_dir_encoding.yaml'
+  - '.fabric/components/tests-unit-t2762_upgrade_foreign_source_sha.yaml'
+  - '.fabric/components/tests-unit-t3111_worktree_reexec.yaml'
+  - '.fabric/components/tests-unit-t3113_upgrade_worktree_advisory.yaml'
+  - '.fabric/components/tests-unit-test_index_doctor_rail.yaml'
+  - '.fabric/components/tests-unit-test_self_vendor_agents_md_filter.yaml'
+  - '.fabric/components/tests-unit-update_mode_routing.yaml'
+  - '.fabric/components/tests-unit-version_relation.yaml'
+  - '.tasks/active/T-3122-fabric-shell-detector-recognises-only-fo.md'
+  - 'tests/unit/test_fabric_shell_sources.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-23T21:58:33'
+    action: 'T-3122: shell detector resolves paths, not four blessed variable names'
+  - time: '2026-08-23T21:59:12'
+    action: 'T-3122: apply the shell edges the fixed detector finds'
+  - time: '2026-08-23T21:59:13'
+    action: 'T-3122: vendor the shell detector fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 3
+  files_changed: 56
+  lines_added: 1041
+  lines_removed: 95
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3122-fabric-shell-detector-recognises-only-fo.md
+generated_by: context-agent-hybrid

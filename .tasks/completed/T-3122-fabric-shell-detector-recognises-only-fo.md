@@ -4,10 +4,10 @@ name: "fabric shell detector recognises only four framework path variables - 65 
 description: >
   detect_bash_sources matches only source/. under $LIB_DIR, $SCRIPT_DIR, $AGENTS_DIR, $FW_LIB_DIR. Measured here: 194 source statements across 247 .sh files, 67 recognised, 127 not - the largest unrecognised group being $FRAMEWORK_ROOT/ at 88. Reported by 832-Workflow-designer, whose 17/17 shell cards are edgeless. Same conflation class as T-3121: the detector encodes one project's vocabulary as if it were the language's.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-3121]
@@ -23,8 +23,8 @@ arc_id: arc-004
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T19:48:24Z
-last_update: 2026-08-23T19:48:24Z
-date_finished: null
+last_update: 2026-08-23T19:59:22Z
+date_finished: 2026-08-23T19:59:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -350,3 +350,27 @@ only vantage point from which a vocabulary-shaped detector looks broken.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3122-fabric-shell-detector-recognises-only-fo.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-16dd9d58
+- **Timestamp:** 2026-08-23T19:59:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `source`/`.` resolves when the path uses ANY variable prefix, not a hardcoded set — `$FRAMEWORK_ROOT/lib/x.sh`, `$fw_root/x.sh`, `$_self_root/x.sh` all resolve by trying the trailing path, never by pa
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=FRAMEWORK_ROOT/lib/x.sh in: `source`/`.` resolves when the path uses ANY variable prefix, not a hardcoded set — `$FRAMEWORK_ROOT/lib/x.sh`, `$fw_root/x.sh`, `$_self_root/x.sh` al`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 61
+     - evidence: `python3 -m pytest tests/unit/test_fabric_shell_sources.py -q 2>&1 | tail -3 | grep -qE '[0-9]+ passed'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 62
+     - evidence: `python3 -m pytest tests/unit/test_fabric_dotted_imports.py -q 2>&1 | tail -3 | grep -qE '[0-9]+ passed'`
+
+### 2026-08-23T19:59:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
