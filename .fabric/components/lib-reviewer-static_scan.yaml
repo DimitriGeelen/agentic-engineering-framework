@@ -14,6 +14,10 @@ depends_on:
   type: calls
 - target: lib/reviewer/recommendation_claims.py
   type: calls
+- target: lib/reviewer/overrides.py
+  type: uses
+- target: lib/reviewer/recommendation_claims.py
+  type: uses
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
@@ -29,6 +33,12 @@ depended_by:
   type: called_by
 - target: web/shared.py
   type: called_by
+- target: lib/reviewer/audit.py
+  type: uses_by
+- target: lib/reviewer/drift_cli.py
+  type: uses_by
+- target: tools/audit-swallowed-errors.py
+  type: uses_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

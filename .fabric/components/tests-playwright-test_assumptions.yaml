@@ -3,16 +3,16 @@ name: test_assumptions
 type: script
 subsystem: tests-playwright
 location: tests/playwright/test_assumptions.py
-tags: [playwright, test]
-
-purpose: "Playwright tests for Assumptions page (T-1020)."
-
+tags:
+- playwright
+- test
+purpose: Playwright tests for Assumptions page (T-1020).
 depends_on:
-  - target: tests/playwright/conftest.py
-    type: calls
-
-depended_by:
-  []
-
+- target: tests/playwright/conftest.py
+  type: calls
+- target: tests/playwright/target.py
+  type: uses
+depended_by: []
 last_verified: 2026-04-07
 created_by: agent
+last_enriched: '2026-08-23'

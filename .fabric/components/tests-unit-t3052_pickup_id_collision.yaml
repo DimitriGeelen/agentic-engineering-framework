@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: tests/unit/t3052_pickup_id_collision.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/pickup.sh
+  type: calls
+- target: lib/pickup.sh
+  type: tests
+depended_by: []
 last_verified: 2026-08-17
 created_by: unknown
+last_enriched: '2026-08-23'

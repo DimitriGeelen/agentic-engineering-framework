@@ -4,17 +4,159 @@ type: script
 subsystem: unknown
 location: tests/playwright/target.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/playwright/conftest.py
+  type: uses_by
+- target: tests/playwright/test_api_config.py
+  type: uses_by
+- target: tests/playwright/test_api_cron_jobs.py
+  type: uses_by
+- target: tests/playwright/test_api_health.py
+  type: uses_by
+- target: tests/playwright/test_api_index.py
+  type: uses_by
+- target: tests/playwright/test_api_quality.py
+  type: uses_by
+- target: tests/playwright/test_api_search.py
+  type: uses_by
+- target: tests/playwright/test_approvals.py
+  type: uses_by
+- target: tests/playwright/test_approvals_content_tokens.py
+  type: uses_by
+- target: tests/playwright/test_approvals_style_tokens.py
+  type: uses_by
+- target: tests/playwright/test_arc_badge.py
+  type: uses_by
+- target: tests/playwright/test_arc_page_parity.py
+  type: uses_by
+- target: tests/playwright/test_arcs_pages_tokens.py
+  type: uses_by
+- target: tests/playwright/test_ask.py
+  type: uses_by
+- target: tests/playwright/test_assumptions.py
+  type: uses_by
+- target: tests/playwright/test_badge_contrast.py
+  type: uses_by
+- target: tests/playwright/test_breadcrumb.py
+  type: uses_by
+- target: tests/playwright/test_bulk_actions.py
+  type: uses_by
+- target: tests/playwright/test_cockpit.py
+  type: uses_by
+- target: tests/playwright/test_cockpit_activity.py
+  type: uses_by
+- target: tests/playwright/test_cockpit_density_spacing.py
+  type: uses_by
+- target: tests/playwright/test_cockpit_inline_tokens.py
+  type: uses_by
+- target: tests/playwright/test_cockpit_knowledge_counts.py
+  type: uses_by
+- target: tests/playwright/test_cockpit_status_pills.py
+  type: uses_by
+- target: tests/playwright/test_cockpit_traceability.py
+  type: uses_by
+- target: tests/playwright/test_command_palette.py
+  type: uses_by
+- target: tests/playwright/test_config.py
+  type: uses_by
+- target: tests/playwright/test_core.py
+  type: uses_by
+- target: tests/playwright/test_costs.py
+  type: uses_by
+- target: tests/playwright/test_cron.py
+  type: uses_by
+- target: tests/playwright/test_directives.py
+  type: uses_by
+- target: tests/playwright/test_discoveries.py
+  type: uses_by
+- target: tests/playwright/test_discovery.py
+  type: uses_by
+- target: tests/playwright/test_docs.py
+  type: uses_by
+- target: tests/playwright/test_docs_detail.py
+  type: uses_by
+- target: tests/playwright/test_enforcement.py
+  type: uses_by
+- target: tests/playwright/test_fabric.py
+  type: uses_by
+- target: tests/playwright/test_fabric_coupling_token.py
+  type: uses_by
+- target: tests/playwright/test_fabric_graph_cold_load.py
+  type: uses_by
+- target: tests/playwright/test_file_viewer.py
+  type: uses_by
+- target: tests/playwright/test_filter_chips.py
+  type: uses_by
+- target: tests/playwright/test_graduation.py
+  type: uses_by
+- target: tests/playwright/test_health.py
+  type: uses_by
+- target: tests/playwright/test_inception.py
+  type: uses_by
+- target: tests/playwright/test_inception_page.py
+  type: uses_by
+- target: tests/playwright/test_interactions.py
+  type: uses_by
+- target: tests/playwright/test_kanban_drag.py
+  type: uses_by
+- target: tests/playwright/test_metrics.py
+  type: uses_by
+- target: tests/playwright/test_nav_layouts.py
+  type: uses_by
+- target: tests/playwright/test_nav_subsections.py
+  type: uses_by
+- target: tests/playwright/test_navigation.py
+  type: uses_by
+- target: tests/playwright/test_patterns.py
+  type: uses_by
+- target: tests/playwright/test_pins.py
+  type: uses_by
+- target: tests/playwright/test_project.py
+  type: uses_by
+- target: tests/playwright/test_quality.py
+  type: uses_by
+- target: tests/playwright/test_review.py
+  type: uses_by
+- target: tests/playwright/test_review_acs.py
+  type: uses_by
+- target: tests/playwright/test_review_csrf.py
+  type: uses_by
+- target: tests/playwright/test_review_htmx_target_inheritance.py
+  type: uses_by
+- target: tests/playwright/test_review_page.py
+  type: uses_by
+- target: tests/playwright/test_risks.py
+  type: uses_by
+- target: tests/playwright/test_search.py
+  type: uses_by
+- target: tests/playwright/test_search_extended.py
+  type: uses_by
+- target: tests/playwright/test_sessions.py
+  type: uses_by
+- target: tests/playwright/test_settings.py
+  type: uses_by
+- target: tests/playwright/test_settings_nav_link.py
+  type: uses_by
+- target: tests/playwright/test_shortcuts_overlay.py
+  type: uses_by
+- target: tests/playwright/test_smoke.py
+  type: uses_by
+- target: tests/playwright/test_task_detail.py
+  type: uses_by
+- target: tests/playwright/test_task_panel.py
+  type: uses_by
+- target: tests/playwright/test_task_panel_edit.py
+  type: uses_by
+- target: tests/playwright/test_tasks.py
+  type: uses_by
+- target: tests/playwright/test_terminal.py
+  type: uses_by
+- target: tests/playwright/test_theme_toggle_contrast.py
+  type: uses_by
+- target: tests/playwright/test_timeline.py
+  type: uses_by
 last_verified: 2026-08-04
 created_by: unknown
+last_enriched: '2026-08-23'

@@ -31,6 +31,14 @@ depended_by:
   type: tests_by
 - target: tools/corpus_conformance.py
   type: called_by
+- target: tests/unit/create_task_status_guard.bats
+  type: called_by
+- target: tests/unit/create_task_status_guard.bats
+  type: tests_by
+- target: tests/unit/t2924_update_task_owner_gate.bats
+  type: called_by
+- target: tests/unit/t2924_update_task_owner_gate.bats
+  type: tests_by
 last_verified: 2026-03-10
 created_by: T-413
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

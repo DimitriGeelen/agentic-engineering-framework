@@ -4,13 +4,16 @@ type: route
 subsystem: watchtower
 location: web/blueprints/costs.py
 tags: []
-purpose: Watchtower /costs page — token usage dashboard with session table and project
-  summary (T-802)
+purpose: Watchtower /costs page — token usage dashboard with session table and project summary (T-802)
 depends_on:
 - target: web/shared.py
   type: calls
 - target: web/templates/costs.html
   type: renders
+- target: lib/context_tokens.py
+  type: calls
+- target: web/shared.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: calls
@@ -31,6 +34,14 @@ depended_by:
 - target: web/test_costs.py
   type: called_by
 - tests/playwright/test_costs.py
+- target: lib/context_tokens.py
+  type: called_by
+- target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/blueprints/core.py
+  type: uses_by
+- target: web/test_costs.py
+  type: uses_by
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-08-23'

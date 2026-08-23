@@ -5,7 +5,11 @@ subsystem: framework-core
 location: lib/write_set.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: lib/hook-threshold.py
+  type: calls
+- target: lib/arc.sh
+  type: calls
 depended_by:
 - target: agents/termlink/bvp-estimator/estimator.py
   type: called_by
@@ -15,6 +19,10 @@ depended_by:
   type: called_by
 - target: agents/orchestrator/orchestrator-graph.py
   type: called_by
+- target: tests/unit/t3039_write_set_implicit.bats
+  type: called_by
+- target: tests/unit/t3039_write_set_implicit.bats
+  type: tests_by
 last_verified: 2026-06-11
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

@@ -8,9 +8,15 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/enums.sh
   type: calls
+- target: tools/corpus_spec.py
+  type: uses
 depended_by:
 - target: C-004
   type: called_by
+- target: tests/unit/test_corpus_conformance_registry.py
+  type: called_by
+- target: tools/corpus_explain.py
+  type: uses_by
 last_verified: 2026-07-26
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

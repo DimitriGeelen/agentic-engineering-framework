@@ -3,18 +3,17 @@ name: install_verify_no_cwd_init
 type: script
 subsystem: testing
 location: tests/unit/install_verify_no_cwd_init.bats
-tags: [install, regression, onboarding]
-
-purpose: "Regression test (T-2799): runs the real install.sh end to end in an isolated HOME + empty cwd and asserts the cwd is untouched afterward. Guards against the installer's own verify() step silently auto-initialising a project wherever the user happened to invoke curl|bash from."
-
+tags:
+- install
+- regression
+- onboarding
+purpose: 'Regression test (T-2799): runs the real install.sh end to end in an isolated HOME + empty cwd and asserts the cwd
+  is untouched afterward. Guards against the installer''s own verify() step silently auto-initialising a project wherever
+  the user happened to invoke curl|bash from.'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-08-04
 created_by: unknown
+last_enriched: '2026-08-23'

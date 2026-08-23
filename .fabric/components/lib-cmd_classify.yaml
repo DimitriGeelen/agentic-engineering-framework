@@ -4,17 +4,19 @@ type: script
 subsystem: framework-core
 location: lib/cmd_classify.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/lint/prescribed-commands-are-allowed.bats
+  type: tests_by
+- target: tests/unit/t2919_budget_gate_command_classify.bats
+  type: tests_by
+- target: tests/unit/t2923_cmd_classify_heredoc.bats
+  type: called_by
+- target: tests/unit/t2923_cmd_classify_heredoc.bats
+  type: tests_by
 last_verified: 2026-08-11
 created_by: unknown
+last_enriched: '2026-08-23'

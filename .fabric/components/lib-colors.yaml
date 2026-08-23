@@ -112,6 +112,16 @@ depended_by:
   type: called_by
 - target: tests/unit/t2380_transcript_dir_encoding.bats
   type: tests_by
+- target: tests/unit/t3051_exec_bit_gates.bats
+  type: called_by
+- target: tests/unit/t3051_exec_bit_gates.bats
+  type: tests_by
+- target: tests/unit/t3054_watchtower_root_fallback.bats
+  type: called_by
+- target: tests/unit/t3054_watchtower_root_fallback.bats
+  type: tests_by
+- target: tests/unit/t3113_upgrade_worktree_advisory.bats
+  type: tests_by
 last_verified: 2026-03-11
 created_by: unknown
-last_enriched: '2026-06-16'
+last_enriched: '2026-08-23'

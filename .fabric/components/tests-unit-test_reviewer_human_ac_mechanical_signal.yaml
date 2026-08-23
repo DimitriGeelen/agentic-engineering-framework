@@ -8,7 +8,9 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/reviewer/__init__.py
   type: calls
+- target: lib/reviewer/__init__.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-18
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-08-23'

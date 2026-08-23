@@ -14,9 +14,15 @@ depends_on:
   type: calls
 - target: web/blueprints/tasks.py
   type: registers
+- target: web/shared.py
+  type: uses
+- target: web/subprocess_utils.py
+  type: uses
+- target: web/blueprints/tasks.py
+  type: uses
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -36,3 +42,7 @@ depended_by:
   type: called_by
 - target: web/shared.py
   type: called_by
+- target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/blueprints/core.py
+  type: uses_by

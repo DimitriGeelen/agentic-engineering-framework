@@ -3,16 +3,16 @@ name: test_api_health
 type: script
 subsystem: tests-playwright
 location: tests/playwright/test_api_health.py
-tags: [playwright, test]
-
-purpose: "Playwright tests for health endpoints (T-1033)."
-
+tags:
+- playwright
+- test
+purpose: Playwright tests for health endpoints (T-1033).
 depends_on:
-  - target: tests/playwright/conftest.py
-    type: calls
-
-depended_by:
-  []
-
+- target: tests/playwright/conftest.py
+  type: calls
+- target: tests/playwright/target.py
+  type: uses
+depended_by: []
 last_verified: 2026-04-07
 created_by: agent
+last_enriched: '2026-08-23'

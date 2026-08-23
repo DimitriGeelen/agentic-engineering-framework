@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: tests/unit/test_frontmatter_loader_equivalence.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/shared.py
+  type: calls
+- target: web/shared.py
+  type: uses
+depended_by: []
 last_verified: 2026-08-03
 created_by: unknown
+last_enriched: '2026-08-23'

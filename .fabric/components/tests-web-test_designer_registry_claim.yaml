@@ -10,7 +10,15 @@ depends_on:
   type: calls
 - target: web/app.py
   type: calls
+- target: web/designer_registry.py
+  type: uses
+- target: tests/web/test_designer_registry_ghosts.py
+  type: uses
+- target: web/app.py
+  type: uses
+- target: web/blueprints/designer_api.py
+  type: uses
 depended_by: []
 last_verified: 2026-07-20
 created_by: unknown
-last_enriched: '2026-07-21'
+last_enriched: '2026-08-23'

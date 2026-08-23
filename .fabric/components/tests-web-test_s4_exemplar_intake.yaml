@@ -3,26 +3,29 @@ name: test_s4_exemplar_intake
 type: script
 subsystem: tests
 location: tests/web/test_s4_exemplar_intake.py
-tags: [designer, 832-seam, s4, drop-point, fixture-intake]
-
-purpose: "Drop-point intake harness for 832's future PICKER-authored S4 exemplar (their T-228):
-  skips until tests/fixtures/832/s4-exemplar.{bpmn,sha256} are delivered, then flips to full
-  asserts — sha pin verify, editor-authorship fingerprint (workflowMeta uuid present, no
-  linkEventThrow/Catch host tags, links ride extensionElements on intermediate throw/catch),
-  Pass-5 three-leg classification vs the live corpus, and per-leg registry outcome via
-  sync_project_refs on a meta-clone store. Synthetic editor-dialect test runs green pre-delivery
-  (T-2593; pattern sibling of test_pair_draft3_intake)."
-
+tags:
+- designer
+- 832-seam
+- s4
+- drop-point
+- fixture-intake
+purpose: 'Drop-point intake harness for 832''s future PICKER-authored S4 exemplar (their T-228): skips until tests/fixtures/832/s4-exemplar.{bpmn,sha256}
+  are delivered, then flips to full asserts — sha pin verify, editor-authorship fingerprint (workflowMeta uuid present, no
+  linkEventThrow/Catch host tags, links ride extensionElements on intermediate throw/catch), Pass-5 three-leg classification
+  vs the live corpus, and per-leg registry outcome via sync_project_refs on a meta-clone store. Synthetic editor-dialect test
+  runs green pre-delivery (T-2593; pattern sibling of test_pair_draft3_intake).'
 depends_on:
-  - target: tests/web/test_designer_registry_ghosts.py
-    type: calls
-  - target: web/designer_registry.py
-    type: calls
-  - target: tools/bpmn_to_tasks.py
-    type: calls
-
-depended_by:
-  []
-
+- target: tests/web/test_designer_registry_ghosts.py
+  type: calls
+- target: web/designer_registry.py
+  type: calls
+- target: tools/bpmn_to_tasks.py
+  type: calls
+- target: tests/web/test_designer_registry_ghosts.py
+  type: uses
+- target: web/designer_registry.py
+  type: uses
+depended_by: []
 last_verified: 2026-07-22
 created_by: T-2593
+last_enriched: '2026-08-23'

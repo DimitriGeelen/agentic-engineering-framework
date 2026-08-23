@@ -17,9 +17,13 @@ depends_on:
   type: calls
 - target: web/shared.py
   type: calls
+- target: web/search_utils.py
+  type: uses
+- target: web/shared.py
+  type: uses
 last_verified: 2026-02-21
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'
 depended_by:
 - target: C-003
   type: called_by
@@ -31,3 +35,11 @@ depended_by:
   type: called_by
 - target: web/search_utils.py
   type: called_by
+- target: C-003
+  type: uses_by
+- target: web/blueprints/api.py
+  type: uses_by
+- target: web/blueprints/discovery.py
+  type: uses_by
+- target: web/embeddings.py
+  type: uses_by

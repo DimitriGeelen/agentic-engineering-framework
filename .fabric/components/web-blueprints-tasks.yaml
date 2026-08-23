@@ -20,9 +20,17 @@ depends_on:
   type: calls
 - target: web/blueprints/bvp.py
   type: registers
+- target: lib/arc_membership.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/subprocess_utils.py
+  type: uses
+- target: web/blueprints/bvp.py
+  type: uses
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -73,3 +81,19 @@ depended_by:
   type: registered_by
 - target: lib/arc_membership.py
   type: called_by
+- target: tests/unit/test_ac_body_html_comment.py
+  type: uses_by
+- target: tests/unit/test_arc_membership_web_surfaces.py
+  type: uses_by
+- target: tests/unit/test_filter_chips.py
+  type: uses_by
+- target: tests/unit/test_task_panel_edit.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/blueprints/approvals.py
+  type: uses_by
+- target: web/blueprints/cockpit.py
+  type: uses_by
+- target: web/blueprints/review.py
+  type: uses_by

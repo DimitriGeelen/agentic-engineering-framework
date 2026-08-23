@@ -4,17 +4,31 @@ type: script
 subsystem: unknown
 location: tests/unit/t1719_post_write_index.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/post-write-index.sh
+  type: calls
+- target: agents/context/lib/episodic.sh
+  type: calls
+- target: agents/context/lib/pattern.sh
+  type: calls
+- target: C-002
+  type: calls
+- target: agents/context/lib/decision.sh
+  type: calls
+- target: lib/post-write-index.sh
+  type: tests
+- target: agents/context/lib/episodic.sh
+  type: tests
+- target: agents/context/lib/pattern.sh
+  type: tests
+- target: C-002
+  type: tests
+- target: agents/context/lib/decision.sh
+  type: tests
+- target: web/embeddings.py
+  type: tests
+depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
+last_enriched: '2026-08-23'

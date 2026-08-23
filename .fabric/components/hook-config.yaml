@@ -111,6 +111,10 @@ depends_on:
   type: calls
 - target: agents/context/check-active-completed-dup.sh
   type: calls
+- target: agents/context/check-onboarding-gate.sh
+  type: calls
+- target: agents/context/check-rail-mcp-label.sh
+  type: calls
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -120,4 +124,4 @@ coupling: soft
 coupling_note: Hook format is Claude Code-specific. Hooks snapshot at session start — runtime edits require restart.
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-07-21'
+last_enriched: '2026-08-23'

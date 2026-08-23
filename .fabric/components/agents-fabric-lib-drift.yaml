@@ -13,7 +13,11 @@ depended_by:
   type: called_by
 - target: tests/unit/test_fabric_drift_absolute_paths.py
   type: called_by
-last_enriched: '2026-07-07'
+- target: tests/unit/t3049_fabric_url_location.bats
+  type: called_by
+- target: tests/unit/t3049_fabric_url_location.bats
+  type: tests_by
+last_enriched: '2026-08-23'
 docs:
 - path: docs/articles/deep-dives/07-component-fabric.md
   title: 'Deep Dive: Component Fabric'

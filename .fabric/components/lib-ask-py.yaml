@@ -10,6 +10,14 @@ purpose: Python implementation of fw ask subcommand (sibling of lib/ask.sh)
 depends_on:
 - target: web/embeddings.py
   type: calls
+- target: lib/resolver.py
+  type: calls
+- target: web/embeddings.py
+  type: uses
+- target: lib/resolver.py
+  type: uses
+- target: lib/outcome.py
+  type: uses
 depended_by:
 - target: agents/context/lib/focus.sh
   type: called_by
@@ -17,6 +25,10 @@ depended_by:
   type: called_by
 - target: lib/ask.sh
   type: called_by
+- target: tests/unit/t1719_ask_routing.bats
+  type: called_by
+- target: tests/unit/t1719_ask_routing.bats
+  type: tests_by
 last_verified: 2026-05-06
 created_by: T-1759
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

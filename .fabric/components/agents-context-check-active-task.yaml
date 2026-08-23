@@ -12,6 +12,8 @@ depends_on:
   type: calls
 - target: lib/config.sh
   type: calls
+- target: bin/fw
+  type: calls
 depended_by:
 - target: C-009
   type: triggered_by
@@ -51,10 +53,56 @@ depended_by:
   type: called_by
 - target: tests/unit/hook_enable_absolute_path.bats
   type: called_by
+- target: lib/hook_parity.py
+  type: called_by
+- target: tests/lint/prescribed-commands-are-allowed.bats
+  type: tests_by
+- target: tests/unit/capture_verbs_nulltask.bats
+  type: called_by
+- target: tests/unit/capture_verbs_nulltask.bats
+  type: tests_by
+- target: tests/unit/drift_gate_not_shadowed_by_safelist.bats
+  type: called_by
+- target: tests/unit/drift_gate_not_shadowed_by_safelist.bats
+  type: tests_by
+- target: tests/unit/hook_absolute_paths.bats
+  type: called_by
+- target: tests/unit/onboarding_gate_arc_tag_fp.bats
+  type: called_by
+- target: tests/unit/onboarding_gate_arc_tag_fp.bats
+  type: tests_by
+- target: tests/unit/settings_regenerate_preserves_hooks.bats
+  type: called_by
+- target: tests/unit/t2936_bootstrap_quoted_redirect.bats
+  type: called_by
+- target: tests/unit/t2936_bootstrap_quoted_redirect.bats
+  type: tests_by
+- target: tests/unit/t2987_bootstrap_shape_hint.bats
+  type: called_by
+- target: tests/unit/t2987_bootstrap_shape_hint.bats
+  type: tests_by
+- target: tests/unit/t2988_grouped_command_classification.bats
+  type: called_by
+- target: tests/unit/t2988_grouped_command_classification.bats
+  type: tests_by
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: called_by
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: tests_by
+- target: tests/unit/t3050_b005_block_message.bats
+  type: called_by
+- target: tests/unit/t3050_b005_block_message.bats
+  type: tests_by
+- target: tests/unit/t3112_worktree_hook_parity.bats
+  type: called_by
+- target: tests/unit/t3113_upgrade_worktree_advisory.bats
+  type: called_by
+- target: agents/context/check-onboarding-gate.sh
+  type: read_by
 last_verified: 2026-03-01
 created_by: unknown
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'
   type: deep-dive
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

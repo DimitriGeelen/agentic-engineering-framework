@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: tests/lint/no-backticks-in-inline-python.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: C-007
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-07-31
 created_by: unknown
+last_enriched: '2026-08-23'

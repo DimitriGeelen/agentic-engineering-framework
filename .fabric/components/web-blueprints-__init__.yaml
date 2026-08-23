@@ -146,6 +146,80 @@ depends_on:
   type: registers
 - target: web/blueprints/designer_api.py
   type: registers
+- target: web/blueprints/embeddings.py
+  type: calls
+- target: web/blueprints/embeddings.py
+  type: registers
+- target: web/blueprints/core.py
+  type: uses
+- target: web/blueprints/tasks.py
+  type: uses
+- target: web/blueprints/timeline.py
+  type: uses
+- target: web/blueprints/discovery.py
+  type: uses
+- target: web/blueprints/quality.py
+  type: uses
+- target: web/blueprints/session.py
+  type: uses
+- target: web/blueprints/metrics.py
+  type: uses
+- target: web/blueprints/cockpit.py
+  type: uses
+- target: web/blueprints/inception.py
+  type: uses
+- target: web/blueprints/enforcement.py
+  type: uses
+- target: web/blueprints/risks.py
+  type: uses
+- target: web/blueprints/fabric.py
+  type: uses
+- target: web/blueprints/discoveries.py
+  type: uses
+- target: web/blueprints/docs.py
+  type: uses
+- target: web/blueprints/settings.py
+  type: uses
+- target: web/blueprints/cron.py
+  type: uses
+- target: web/blueprints/api.py
+  type: uses
+- target: web/blueprints/approvals.py
+  type: uses
+- target: web/blueprints/review.py
+  type: uses
+- target: web/blueprints/costs.py
+  type: uses
+- target: web/blueprints/config.py
+  type: uses
+- target: web/blueprints/terminal.py
+  type: uses
+- target: web/blueprints/sessions.py
+  type: uses
+- target: web/blueprints/prompts.py
+  type: uses
+- target: web/blueprints/pending.py
+  type: uses
+- target: web/blueprints/fleet.py
+  type: uses
+- target: web/blueprints/reviewer.py
+  type: uses
+- target: web/blueprints/escalation.py
+  type: uses
+- target: web/blueprints/hooks.py
+  type: uses
+- target: web/blueprints/orchestrator.py
+  type: uses
+- target: web/blueprints/arcs.py
+  type: uses
+- target: web/blueprints/bvp.py
+  type: uses
+- target: web/blueprints/designer.py
+  type: uses
+- target: web/blueprints/designer_api.py
+  type: uses
+- target: web/blueprints/embeddings.py
+  type: uses
 depended_by:
 - target: web/app.py
   type: imported_by
@@ -172,6 +246,32 @@ depended_by:
   type: called_by
 - target: tests/unit/test_pins.py
   type: called_by
+- target: tests/unit/test_appearance_validation.py
+  type: uses_by
+- target: tests/unit/test_arc_display_helper.py
+  type: uses_by
+- target: tests/unit/test_arcs_membership_cached.py
+  type: called_by
+- target: tests/unit/test_arcs_membership_cached.py
+  type: uses_by
+- target: tests/unit/test_bvp_blueprint_cost.py
+  type: uses_by
+- target: tests/unit/test_bvp_scatter_arc_mode.py
+  type: uses_by
+- target: tests/unit/test_cockpit_activity.py
+  type: uses_by
+- target: tests/unit/test_cockpit_knowledge_counts.py
+  type: uses_by
+- target: tests/unit/test_cockpit_traceability.py
+  type: uses_by
+- target: tests/unit/test_nav_layout_polish.py
+  type: uses_by
+- target: tests/unit/test_nav_layouts.py
+  type: uses_by
+- target: tests/unit/test_pins.py
+  type: uses_by
+- target: web/app.py
+  type: uses_by
 last_verified: 2026-03-01
 created_by: unknown
-last_enriched: '2026-07-21'
+last_enriched: '2026-08-23'

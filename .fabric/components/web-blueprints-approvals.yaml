@@ -28,6 +28,18 @@ depends_on:
   type: calls
 - target: web/blueprints/bvp.py
   type: registers
+- target: agents/context/check-tier0.sh
+  type: calls
+- target: web/shared.py
+  type: uses
+- target: web/blueprints/inception.py
+  type: uses
+- target: web/blueprints/tasks.py
+  type: uses
+- target: web/blueprints/arcs.py
+  type: uses
+- target: web/blueprints/bvp.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -48,6 +60,24 @@ depended_by:
   type: called_by
 - target: tests/unit/approvals_close_ready_arcs.bats
   type: tests_by
+- target: tests/playwright/test_inception.py
+  type: uses_by
+- target: tests/web/test_approvals_blocked_arcs.py
+  type: called_by
+- target: tests/web/test_approvals_blocked_arcs.py
+  type: registered_by
+- target: tests/web/test_approvals_blocked_arcs.py
+  type: uses_by
+- target: tests/web/test_approvals_origin.py
+  type: called_by
+- target: tests/web/test_approvals_origin.py
+  type: registered_by
+- target: tests/web/test_approvals_origin.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/blueprints/core.py
+  type: uses_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

@@ -30,6 +30,16 @@ depended_by:
   type: called_by
 - target: tests/unit/check_active_task_switch_focus.bats
   type: tests_by
+- target: tests/unit/corpus_id_allocator.bats
+  type: tests_by
+- target: tests/unit/learning_application_birth.bats
+  type: called_by
+- target: tests/unit/learning_application_birth.bats
+  type: tests_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: called_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-05-18'
+last_enriched: '2026-08-23'

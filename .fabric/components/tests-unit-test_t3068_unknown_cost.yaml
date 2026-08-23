@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: tests/unit/test_t3068_unknown_cost.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/app.py
+  type: calls
+- target: agents/termlink/bvp-estimator/estimator.py
+  type: calls
+depended_by: []
 last_verified: 2026-08-17
 created_by: unknown
+last_enriched: '2026-08-23'

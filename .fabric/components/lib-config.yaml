@@ -68,6 +68,18 @@ depended_by:
   type: called_by
 - target: lib/notify.sh
   type: called_by
+- target: agents/context/check-rail-mcp-label.sh
+  type: called_by
+- target: agents/handover/handover.sh
+  type: called_by
+- target: tests/unit/handover_digest.bats
+  type: tests_by
+- target: tests/unit/rail_identity_guard.bats
+  type: tests_by
+- target: tests/unit/test_index_doctor_rail.bats
+  type: tests_by
+- target: web/search_utils.py
+  type: called_by
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-06-22'
+last_enriched: '2026-08-23'

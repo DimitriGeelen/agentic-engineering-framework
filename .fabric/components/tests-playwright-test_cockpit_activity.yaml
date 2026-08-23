@@ -5,9 +5,12 @@ subsystem: unknown
 location: tests/playwright/test_cockpit_activity.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: tests/playwright/target.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
+last_enriched: '2026-08-23'

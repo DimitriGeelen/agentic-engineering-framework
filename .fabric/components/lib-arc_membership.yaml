@@ -37,6 +37,14 @@ depended_by:
   type: called_by
 - target: web/blueprints/tasks.py
   type: called_by
+- target: tests/unit/test_arc_membership_shared.py
+  type: uses_by
+- target: web/blueprints/arcs.py
+  type: uses_by
+- target: web/blueprints/core.py
+  type: uses_by
+- target: web/blueprints/tasks.py
+  type: uses_by
 last_verified: 2026-05-17
 created_by: T-1880
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

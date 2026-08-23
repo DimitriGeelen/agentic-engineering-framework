@@ -4,17 +4,27 @@ type: script
 subsystem: unknown
 location: tests/unit/settings_regenerate_preserves_hooks.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/settings_merge.py
+  type: tests
+- target: bin/fw
+  type: tests
+- target: agents/context/check-active-task.sh
+  type: calls
+- target: agents/context/check-arc-id.sh
+  type: calls
+- target: agents/context/check-inception-decisions.sh
+  type: calls
+- target: agents/context/check-inception-schema.sh
+  type: calls
+- target: agents/context/check-active-completed-dup.sh
+  type: calls
+- target: agents/context/check-heredoc-cmd-sub.sh
+  type: calls
+- target: agents/context/check-settings-edit.sh
+  type: calls
+depended_by: []
 last_verified: 2026-08-01
 created_by: unknown
+last_enriched: '2026-08-23'

@@ -19,6 +19,8 @@ depended_by:
   type: called_by
 - target: web/blueprints/bvp.py
   type: called_by
+- target: tests/lint/bvp-help-parity.bats
+  type: tests_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

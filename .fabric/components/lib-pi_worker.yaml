@@ -11,6 +11,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_pi_worker.py
   type: called_by
+- target: lib/spawn.py
+  type: uses_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

@@ -4,17 +4,25 @@ type: script
 subsystem: unknown
 location: tests/unit/t3051_exec_bit_gates.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/pickup.sh
+  type: calls
+- target: lib/colors.sh
+  type: calls
+- target: lib/pickup.sh
+  type: tests
+- target: lib/pickup-channel-bridge.sh
+  type: tests
+- target: lib/colors.sh
+  type: tests
+- target: agents/termlink/bvp-estimator/bvp-estimator.sh
+  type: tests
+- target: agents/handover/discard-manifest.sh
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
+last_enriched: '2026-08-23'

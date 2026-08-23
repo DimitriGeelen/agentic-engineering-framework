@@ -12,7 +12,11 @@ depends_on:
   type: tests
 - target: web/shared.py
   type: tests
+- target: agents/context/lib/extract_decisions.py
+  type: calls
+- target: agents/context/lib/extract_decisions.py
+  type: tests
 depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-08-23'

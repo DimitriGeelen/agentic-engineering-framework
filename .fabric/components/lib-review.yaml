@@ -31,6 +31,16 @@ depended_by:
   type: tests_by
 - target: web/blueprints/review.py
   type: called_by
+- target: lib/comment_strip.py
+  type: called_by
+- target: tests/integration/t2922_greenfield_first_inception.bats
+  type: tests_by
+- target: tests/unit/t2945_default_template_recommendation.bats
+  type: tests_by
+- target: tests/unit/t2948_review_human_ac_comment_aware.bats
+  type: called_by
+- target: tests/unit/t2948_review_human_ac_comment_aware.bats
+  type: tests_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

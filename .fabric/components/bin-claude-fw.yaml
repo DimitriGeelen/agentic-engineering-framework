@@ -4,14 +4,16 @@ type: script
 subsystem: framework-core
 location: bin/claude-fw
 tags: []
-purpose: Claude Code wrapper with auto-restart support. Runs claude normally, then
-  checks for a restart signal file written by checkpoint.sh when auto-handover fires
-  at critical budget. If found and fresh, auto-restarts with claude -c to continue
+purpose: Claude Code wrapper with auto-restart support. Runs claude normally, then checks for a restart signal file written
+  by checkpoint.sh when auto-handover fires at critical budget. If found and fresh, auto-restarts with claude -c to continue
   seamlessly.
 depends_on:
 - target: C-008
   type: reads
   note: Reads .context/working/.restart-requested signal file written by checkpoint.sh
-depended_by: []
+depended_by:
+- target: bin/claude-fw-router
+  type: triggers_by
 last_verified: 2026-03-01
 created_by: unknown
+last_enriched: '2026-08-23'

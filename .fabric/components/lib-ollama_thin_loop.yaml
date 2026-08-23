@@ -18,6 +18,8 @@ depended_by:
   type: calls
 - target: tests/unit/test_ollama_thin_loop.py
   type: reads
+- target: lib/spawn.py
+  type: uses_by
 last_verified: 2026-07-21
 created_by: T-2592
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

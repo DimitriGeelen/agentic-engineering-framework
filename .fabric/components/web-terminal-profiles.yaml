@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: web/blueprints/terminal.py
   type: called_by
+- target: web/blueprints/terminal.py
+  type: uses_by
 last_verified: 2026-04-06
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-08-23'

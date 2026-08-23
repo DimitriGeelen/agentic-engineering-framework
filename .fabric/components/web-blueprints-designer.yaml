@@ -22,11 +22,23 @@ depends_on:
   type: calls
 - target: tools/corpus_overlay.py
   type: calls
+- target: web/shared.py
+  type: uses
+- target: web/blueprints/designer_api.py
+  type: uses
+- target: web/designer_registry.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- target: tests/web/test_api_overlay.py
+  type: uses_by
+- target: tests/web/test_designer_overlay.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by
 last_verified: 2026-07-10
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

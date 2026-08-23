@@ -5,10 +5,14 @@ subsystem: unknown
 location: tools/corpus_explain.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: tools/corpus_spec.py
+  type: uses
+- target: tools/corpus_conformance.py
+  type: uses
 depended_by:
 - target: bin/fw
   type: called_by
 last_verified: 2026-07-26
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

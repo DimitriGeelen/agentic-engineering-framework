@@ -21,6 +21,16 @@ depended_by:
   type: called_by
 - target: tests/web/test_s4_exemplar_intake.py
   type: called_by
+- target: tests/web/test_designer_registry_claim.py
+  type: uses_by
+- target: tests/web/test_designer_registry_ghosts.py
+  type: uses_by
+- target: tests/web/test_s4_exemplar_intake.py
+  type: uses_by
+- target: web/blueprints/designer.py
+  type: uses_by
+- target: web/blueprints/designer_api.py
+  type: uses_by
 last_verified: 2026-07-20
 created_by: unknown
-last_enriched: '2026-07-22'
+last_enriched: '2026-08-23'

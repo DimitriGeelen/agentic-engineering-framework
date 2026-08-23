@@ -18,7 +18,13 @@ depends_on:
   type: calls
 - target: web/templates/appearance.html
   type: calls
+- target: web/blueprints/settings.py
+  type: uses
+- target: web/blueprints/__init__.py
+  type: uses
+- target: web/app.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

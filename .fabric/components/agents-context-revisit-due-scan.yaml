@@ -11,5 +11,14 @@ depended_by:
   type: called_by
 - target: bin/fw
   type: called_by
+- target: tests/unit/revisit_signal_untracked.bats
+  type: called_by
+- target: tests/unit/revisit_signal_untracked.bats
+  type: tests_by
+- target: tests/unit/revisit_undated_signal.bats
+  type: called_by
+- target: tests/unit/revisit_undated_signal.bats
+  type: tests_by
 last_verified: '2026-07-22'
 created_by: unknown
+last_enriched: '2026-08-23'

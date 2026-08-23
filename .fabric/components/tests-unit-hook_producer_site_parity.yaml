@@ -3,25 +3,32 @@ name: hook_producer_site_parity
 type: script
 subsystem: testing
 location: tests/unit/hook_producer_site_parity.bats
-tags: [hooks, init, parity, T-2911]
-
-purpose: "Guards that lib/init.sh:generate_claude_code_config never diverges again
-  from the framework repo's own .claude/settings.json (the cumulative record of
-  every 'fw hook-enable' call) — name-keyed comparison plus an explicit
-  framework-only allowlist and a negative control proving the comparator is
-  non-vacuous."
-
+tags:
+- hooks
+- init
+- parity
+- T-2911
+purpose: Guards that lib/init.sh:generate_claude_code_config never diverges again from the framework repo's own .claude/settings.json
+  (the cumulative record of every 'fw hook-enable' call) — name-keyed comparison plus an explicit framework-only allowlist
+  and a negative control proving the comparator is non-vacuous.
 depends_on:
-  - target: lib/init.sh
-    type: reads
-  - target: .claude/settings.json
-    type: reads
-  - target: bin/fw
-    type: triggers
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/init.sh
+  type: reads
+- target: .claude/settings.json
+  type: reads
+- target: bin/fw
+  type: triggers
+- target: lib/init.sh
+  type: calls
+- target: bin/fw
+  type: calls
+- target: lib/init.sh
+  type: tests
+- target: bin/hook-enable.sh
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-08-10
 created_by: unknown
+last_enriched: '2026-08-23'

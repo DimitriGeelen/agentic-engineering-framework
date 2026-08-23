@@ -18,6 +18,12 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_task_audit.bats
   type: tests_by
+- target: agents/audit/active-task-scan.py
+  type: called_by
+- target: tests/unit/t2945_default_template_recommendation.bats
+  type: called_by
+- target: tests/unit/t2945_default_template_recommendation.bats
+  type: tests_by
 last_verified: 2026-04-11
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

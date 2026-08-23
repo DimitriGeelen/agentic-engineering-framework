@@ -10,7 +10,9 @@ depends_on:
   type: calls
 - target: web/templates/cockpit.html
   type: calls
+- target: web/app.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

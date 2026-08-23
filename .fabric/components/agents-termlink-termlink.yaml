@@ -11,6 +11,8 @@ depends_on:
   type: calls
 - target: tools/ollama-tool-loop.py
   type: calls
+- target: lib/git-identity.sh
+  type: calls
 depended_by:
 - target: bin/fw
   type: called_by
@@ -34,6 +36,10 @@ depended_by:
   type: called_by
 - target: lib/ollama_loop.py
   type: called_by
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: called_by
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: tests_by
 last_verified: 2026-03-23
 created_by: unknown
-last_enriched: '2026-05-09'
+last_enriched: '2026-08-23'

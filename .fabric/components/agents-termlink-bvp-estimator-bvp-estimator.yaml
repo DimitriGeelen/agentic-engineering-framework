@@ -13,6 +13,8 @@ depended_by:
   type: called_by
 - target: agents/termlink/bvp-estimator/estimator.py
   type: called_by
+- target: tests/unit/t3051_exec_bit_gates.bats
+  type: tests_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

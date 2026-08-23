@@ -4,17 +4,17 @@ type: script
 subsystem: unknown
 location: tests/unit/audit_corpus_lint_findings.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: C-004
+  type: calls
+- target: tools/corpus_lint.py
+  type: calls
+- target: C-004
+  type: tests
+- target: tools/corpus_lint.py
+  type: tests
+depended_by: []
 last_verified: 2026-08-14
 created_by: unknown
+last_enriched: '2026-08-23'

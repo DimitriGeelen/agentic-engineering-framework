@@ -12,7 +12,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -44,3 +44,21 @@ depended_by:
   type: called_by
 - target: tests/unit/test_self_vendor_libs_md_filter.bats
   type: tests_by
+- target: lib/hook_parity.py
+  type: called_by
+- target: tests/unit/self_vendor_parity.bats
+  type: called_by
+- target: tests/unit/self_vendor_parity.bats
+  type: tests_by
+- target: tests/unit/t2759_upgrade_target_dir_shadowing.bats
+  type: tests_by
+- target: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+  type: tests_by
+- target: tests/unit/t3112_worktree_hook_parity.bats
+  type: tests_by
+- target: tests/unit/t3113_upgrade_worktree_advisory.bats
+  type: tests_by
+- target: tests/unit/version_relation.bats
+  type: tests_by
+- target: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+  type: called_by

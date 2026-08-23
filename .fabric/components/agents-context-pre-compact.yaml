@@ -14,7 +14,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -39,4 +39,6 @@ depended_by:
 - target: tests/unit/upgrade_dedupe_user_hooks.bats
   type: called_by
 - target: tests/unit/upgrade_duplicate_hook_detection.bats
+  type: called_by
+- target: tests/unit/validate_init_hook_path_expansion.bats
   type: called_by

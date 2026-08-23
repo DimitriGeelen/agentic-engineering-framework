@@ -17,6 +17,12 @@ depended_by:
   type: called_by
 - target: tests/unit/test_reviewer_audit_pass_a.py
   type: called_by
+- target: lib/reviewer/audit.py
+  type: uses_by
+- target: lib/reviewer/drift_cli.py
+  type: uses_by
+- target: tests/unit/test_reviewer_audit_pass_a.py
+  type: uses_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

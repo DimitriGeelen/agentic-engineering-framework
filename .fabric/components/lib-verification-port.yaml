@@ -4,17 +4,21 @@ type: script
 subsystem: framework-core
 location: lib/verification-port.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/comment_strip.py
+  type: called_by
+- target: lib/verify_queue.py
+  type: called_by
+- target: tests/unit/t2921_verification_comment_strip.bats
+  type: called_by
+- target: tests/unit/t2921_verification_comment_strip.bats
+  type: tests_by
+- target: tests/unit/t2991_verification_preflight.bats
+  type: called_by
+- target: tests/unit/t2991_verification_preflight.bats
+  type: tests_by
 last_verified: 2026-08-02
 created_by: unknown
+last_enriched: '2026-08-23'

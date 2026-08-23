@@ -4,25 +4,21 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-onboarding-gate.sh
 tags: []
+purpose: 'T-2815 PreToolUse Write/Edit hook — refuses adding an agent-unresolvable task (owner != human but agent-unresolvable:
+  inception workflow_type or an unticked ### Human AC) to the T-532 gated onboarding set. Bash wrapper exec''s the real logic
+  in check-onboarding-gate.py.
 
-purpose: >
-  T-2815 PreToolUse Write/Edit hook — refuses adding an agent-unresolvable
-  task (owner != human but agent-unresolvable: inception workflow_type or
-  an unticked ### Human AC) to the T-532 gated onboarding set. Bash wrapper
-  exec's the real logic in check-onboarding-gate.py.
-
+  '
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  - target: agents/context/check-onboarding-gate.py
-    type: calls
-  - target: agents/context/check-active-task.sh
-    type: reads
-
+- target: agents/context/check-onboarding-gate.py
+  type: calls
+- target: agents/context/check-active-task.sh
+  type: reads
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  - target: tests/unit/check_onboarding_gate.bats
-    type: reads
-
+- target: tests/unit/check_onboarding_gate.bats
+  type: reads
+- target: C-009
+  type: called_by
 last_verified: 2026-08-05
 created_by: agent
+last_enriched: '2026-08-23'

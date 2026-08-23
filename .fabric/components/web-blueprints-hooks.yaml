@@ -12,11 +12,15 @@ depends_on:
   type: renders
 - target: lib/hook-threshold.py
   type: calls
+- target: web/shared.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- target: web/blueprints/__init__.py
+  type: uses_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

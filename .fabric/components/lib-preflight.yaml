@@ -25,4 +25,6 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_preflight.bats
   type: tests_by
-last_enriched: '2026-05-06'
+- target: tests/unit/git_identity_check.bats
+  type: tests_by
+last_enriched: '2026-08-23'

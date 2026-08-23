@@ -4,17 +4,19 @@ type: script
 subsystem: unknown
 location: tests/unit/t2945_default_template_recommendation.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/task-audit.sh
+  type: calls
+- target: bin/fw
+  type: calls
+- target: lib/review.sh
+  type: tests
+- target: lib/task-audit.sh
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-08-12
 created_by: unknown
+last_enriched: '2026-08-23'

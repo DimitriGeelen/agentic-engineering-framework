@@ -5,7 +5,9 @@ subsystem: context-fabric
 location: agents/context/lib/episodic.sh
 tags: []
 purpose: Context Agent - generate-episodic command
-depends_on: []
+depends_on:
+- target: lib/post-write-index.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -21,7 +23,19 @@ depended_by:
   type: called_by
 - target: tests/unit/episodic_yaml_decision_escape.bats
   type: tests_by
-last_enriched: '2026-05-18'
+- target: tests/unit/episodic_frontmatter_extraction.bats
+  type: called_by
+- target: tests/unit/episodic_frontmatter_extraction.bats
+  type: tests_by
+- target: tests/unit/episodic_yaml_timeline_escape.bats
+  type: called_by
+- target: tests/unit/episodic_yaml_timeline_escape.bats
+  type: tests_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: called_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: tests_by
+last_enriched: '2026-08-23'
 docs:
 - path: docs/articles/deep-dives/04-three-layer-memory.md
   title: 'Deep Dive: Three-Layer Memory'

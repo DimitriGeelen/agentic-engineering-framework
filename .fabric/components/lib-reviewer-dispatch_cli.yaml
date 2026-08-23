@@ -10,6 +10,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/termlink_worker.py
+  type: uses
 depended_by:
 - target: tests/unit/g066_readiness.bats
   type: tests_by
@@ -17,4 +19,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-22
 created_by: unknown
-last_enriched: '2026-06-04'
+last_enriched: '2026-08-23'

@@ -30,6 +30,8 @@ depends_on:
   type: calls
 - target: lib/config.sh
   type: calls
+- target: lib/context_tokens.py
+  type: calls
 depended_by:
 - target: C-009
   type: triggers
@@ -67,6 +69,10 @@ depended_by:
   type: called_by
 - target: tests/unit/upgrade_duplicate_hook_detection.bats
   type: called_by
+- target: lib/context_tokens.py
+  type: called_by
+- target: tests/unit/t3112_worktree_hook_parity.bats
+  type: called_by
 writes:
 - target: .context/working/.tool-counter
   contract: Text integer, incremented on every post-tool call
@@ -83,7 +89,7 @@ shared_constants:
   note: Duplicated in C-007 (budget-gate.sh)
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

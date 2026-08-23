@@ -28,7 +28,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'
 depended_by:
 - target: agents/git/git.sh
   type: called_by
@@ -37,4 +37,6 @@ depended_by:
 - target: tests/unit/inception_commit_counter.bats
   type: called_by
 - target: tests/unit/inception_commit_counter.bats
+  type: tests_by
+- target: tests/unit/hook_version_marker_parity.bats
   type: tests_by

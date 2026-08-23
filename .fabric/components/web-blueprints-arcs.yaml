@@ -35,6 +35,12 @@ depends_on:
   type: registers
 - target: web/templates/arc_review.html
   type: renders
+- target: lib/arc_membership.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/blueprints/bvp.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -64,6 +70,14 @@ depended_by:
   type: called_by
 - target: web/blueprints/approvals.py
   type: registered_by
+- target: tests/unit/test_arcs_routes.py
+  type: uses_by
+- target: web/app.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/blueprints/approvals.py
+  type: uses_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-22'
+last_enriched: '2026-08-23'

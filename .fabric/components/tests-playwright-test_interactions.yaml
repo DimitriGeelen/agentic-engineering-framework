@@ -7,6 +7,9 @@ tags: []
 purpose: Playwright interaction tests — dark mode, search, task filtering (T-1015)
 depends_on:
 - web/blueprints/core.py
+- target: tests/playwright/target.py
+  type: uses
 depended_by: []
 last_verified: 2026-04-07
 created_by: unknown
+last_enriched: '2026-08-23'

@@ -8,11 +8,17 @@ purpose: Provides CRUD operations and YAML file persistence for terminal session
 depends_on:
 - target: web/terminal/session.py
   type: calls
+- target: web/terminal/session.py
+  type: uses
 depended_by:
 - target: web/blueprints/sessions.py
   type: called_by
 - target: web/blueprints/terminal.py
   type: called_by
+- target: web/blueprints/sessions.py
+  type: uses_by
+- target: web/blueprints/terminal.py
+  type: uses_by
 last_verified: 2026-04-06
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-08-23'

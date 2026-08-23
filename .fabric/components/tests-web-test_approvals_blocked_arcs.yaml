@@ -4,17 +4,19 @@ type: script
 subsystem: unknown
 location: tests/web/test_approvals_blocked_arcs.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/app.py
+  type: calls
+- target: web/blueprints/approvals.py
+  type: calls
+- target: web/blueprints/approvals.py
+  type: registers
+- target: web/app.py
+  type: uses
+- target: web/blueprints/approvals.py
+  type: uses
+depended_by: []
 last_verified: 2026-08-14
 created_by: unknown
+last_enriched: '2026-08-23'

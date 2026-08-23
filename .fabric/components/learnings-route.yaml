@@ -54,6 +54,18 @@ depends_on:
   type: calls
 - target: lib/gaps.py
   type: calls
+- target: web/context_loader.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/embeddings.py
+  type: uses
+- target: lib/gaps.py
+  type: uses
+- target: web/search.py
+  type: uses
+- target: web/search_utils.py
+  type: uses
 depended_by:
 - target: C-006
   type: htmx
@@ -70,4 +82,4 @@ depended_by:
   type: registered_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-06-04'
+last_enriched: '2026-08-23'

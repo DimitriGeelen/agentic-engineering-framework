@@ -15,6 +15,10 @@ depended_by:
   type: tests_by
 - target: web/blueprints/discovery.py
   type: called_by
+- target: C-003
+  type: uses_by
+- target: web/blueprints/discovery.py
+  type: uses_by
 last_verified: 2026-06-03
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

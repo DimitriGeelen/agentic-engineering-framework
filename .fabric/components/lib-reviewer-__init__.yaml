@@ -17,6 +17,16 @@ depended_by:
   type: called_by
 - target: tests/unit/test_reviewer_ac_evidence_untick.py
   type: called_by
+- target: lib/reviewer/audit.py
+  type: uses_by
+- target: tests/unit/test_reviewer_ac_evidence_untick.py
+  type: uses_by
+- target: tests/unit/test_reviewer_audit_pass_b.py
+  type: uses_by
+- target: tests/unit/test_reviewer_human_ac_mechanical_signal.py
+  type: uses_by
+- target: tests/unit/test_reviewer_overrides.py
+  type: uses_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-08-23'

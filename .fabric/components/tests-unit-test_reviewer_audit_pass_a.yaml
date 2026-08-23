@@ -10,7 +10,11 @@ depends_on:
   type: calls
 - target: lib/reviewer/drift.py
   type: calls
+- target: lib/reviewer/audit.py
+  type: uses
+- target: lib/reviewer/drift.py
+  type: uses
 depended_by: []
 last_verified: 2026-04-26
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

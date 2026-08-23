@@ -16,11 +16,25 @@ depends_on:
   type: calls
 - target: lib/reviewer/reverify.py
   type: calls
+- target: lib/reviewer/__init__.py
+  type: uses
+- target: lib/reviewer/overrides.py
+  type: uses
+- target: lib/reviewer/drift.py
+  type: uses
+- target: lib/reviewer/static_scan.py
+  type: uses
+- target: lib/reviewer/reverify.py
+  type: uses
 depended_by:
 - target: tests/unit/test_reviewer_audit_pass_a.py
   type: called_by
 - target: tests/unit/test_reviewer_audit_pass_b.py
   type: called_by
+- target: tests/unit/test_reviewer_audit_pass_a.py
+  type: uses_by
+- target: tests/unit/test_reviewer_audit_pass_b.py
+  type: uses_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

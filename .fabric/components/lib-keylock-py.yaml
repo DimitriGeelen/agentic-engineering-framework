@@ -6,11 +6,16 @@ location: lib/keylock.py
 tags:
 - concurrency
 - locking
-purpose: 'Python sibling of lib/keylock.sh: sidecar fcntl.flock advisory locks in
-  .context/locks/, with a bounded timeout that raises loudly rather than degrading
-  to a silent skipped write. Guards the dispatch ledger against the concurrent-append
+purpose: 'Python sibling of lib/keylock.sh: sidecar fcntl.flock advisory locks in .context/locks/, with a bounded timeout
+  that raises loudly rather than degrading to a silent skipped write. Guards the dispatch ledger against the concurrent-append
   erasure fixed in T-3042.'
-depends_on: []
+depends_on:
+- target: lib/keylock.sh
+  type: calls
+- target: web/embeddings.py
+  type: calls
+- target: lib/spawn.py
+  type: calls
 depended_by:
 - target: lib/spawn.py
   type: called_by
@@ -18,6 +23,12 @@ depended_by:
   type: called_by
 - target: tests/unit/test_spawn.py
   type: tests_by
+- target: lib/message_router.py
+  type: uses_by
+- target: lib/resolver.py
+  type: uses_by
+- target: lib/spawn.py
+  type: uses_by
 last_verified: 2026-08-16
 created_by: T-3042
-last_enriched: '2026-08-16'
+last_enriched: '2026-08-23'

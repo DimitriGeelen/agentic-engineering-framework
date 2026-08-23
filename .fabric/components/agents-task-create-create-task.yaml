@@ -37,7 +37,19 @@ depended_by:
   type: called_by
 - target: tests/unit/update_task.bats
   type: tests_by
-last_enriched: '2026-05-06'
+- target: tests/integration/readme_five_minute_by_hand.bats
+  type: tests_by
+- target: tests/unit/create_task_owner_gate.bats
+  type: called_by
+- target: tests/unit/create_task_owner_gate.bats
+  type: tests_by
+- target: tests/unit/create_task_status_guard.bats
+  type: called_by
+- target: tests/unit/create_task_status_guard.bats
+  type: tests_by
+- target: tests/unit/test_task_create_description_yaml.py
+  type: called_by
+last_enriched: '2026-08-23'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

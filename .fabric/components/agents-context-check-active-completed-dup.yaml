@@ -13,6 +13,8 @@ purpose: PreToolUse Write|Edit|MultiEdit guard (T-2121 prong 1) that blocks crea
 depends_on:
 - target: lib/hook_paths.py
   type: calls
+- target: lib/hook_paths.py
+  type: uses
 depended_by:
 - target: agents/context/check-active-completed-dup.sh
   type: triggers
@@ -22,4 +24,4 @@ depended_by:
   type: called_by
 last_verified: 2026-07-10
 created_by: T-2517
-last_enriched: '2026-07-21'
+last_enriched: '2026-08-23'

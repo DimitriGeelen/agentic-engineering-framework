@@ -18,9 +18,31 @@ depends_on:
   type: calls
 - target: web/search.py
   type: calls
+- target: web/canary.py
+  type: calls
+- target: web/corpus_manifest.py
+  type: calls
+- target: web/embed_health.py
+  type: calls
+- target: web/recall_telemetry.py
+  type: calls
+- target: tools/measure_chunk_tokens.py
+  type: calls
+- target: web/canary.py
+  type: uses
+- target: web/corpus_manifest.py
+  type: uses
+- target: web/embed_health.py
+  type: uses
+- target: web/search_utils.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/search.py
+  type: uses
 last_verified: 2026-02-22
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'
 depended_by:
 - target: C-003
   type: called_by
@@ -33,4 +55,44 @@ depended_by:
 - target: web/search_utils.py
   type: called_by
 - target: lib/ask.py
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: C-003
+  type: uses_by
+- target: lib/ask.py
+  type: uses_by
+- target: lib/keylock.py
+  type: called_by
+- target: tests/integration/test_recall_miss_live.py
+  type: called_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: tests_by
+- target: tests/unit/t3058_reindex_scratch_ignored.bats
+  type: tests_by
+- target: tests/unit/test_canary_manifest.py
+  type: called_by
+- target: tests/unit/test_chunk_cap.py
+  type: called_by
+- target: tests/unit/test_embed_health.py
+  type: called_by
+- target: tests/unit/test_incremental_reindex.py
+  type: called_by
+- target: tests/unit/test_index_freshness.py
+  type: called_by
+- target: tools/measure_chunk_tokens.py
+  type: called_by
+- target: tools/probe_handover_recall.py
+  type: called_by
+- target: web/app.py
+  type: uses_by
+- target: web/blueprints/api.py
+  type: uses_by
+- target: web/blueprints/discovery.py
+  type: uses_by
+- target: web/blueprints/embeddings.py
+  type: called_by
+- target: web/blueprints/embeddings.py
+  type: uses_by
+- target: web/recall_telemetry.py
   type: called_by

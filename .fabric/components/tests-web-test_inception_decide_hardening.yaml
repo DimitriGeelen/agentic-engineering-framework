@@ -8,7 +8,15 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: web/app.py
   type: calls
+- target: web/app.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/subprocess_utils.py
+  type: uses
+- target: web/blueprints/inception.py
+  type: uses
 depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
-last_enriched: '2026-04-26'
+last_enriched: '2026-08-23'

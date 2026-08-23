@@ -23,7 +23,13 @@ depended_by:
   type: called_by
 - target: tests/unit/context_focus.bats
   type: tests_by
-last_enriched: '2026-05-06'
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: called_by
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: tests_by
+- target: web/embed_health.py
+  type: called_by
+last_enriched: '2026-08-23'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

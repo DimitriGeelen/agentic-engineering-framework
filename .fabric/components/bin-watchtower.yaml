@@ -21,11 +21,17 @@ depends_on:
   type: calls
 last_verified: 2026-03-04
 created_by: T-322
-last_enriched: '2026-05-27'
+last_enriched: '2026-08-23'
 depended_by:
 - target: bin/fw
   type: called_by
 - target: tests/unit/watchtower_url_refresh.bats
   type: called_by
 - target: tests/unit/watchtower_url_refresh.bats
+  type: tests_by
+- target: tests/unit/self_vendor_parity.bats
+  type: tests_by
+- target: tests/unit/t3054_watchtower_root_fallback.bats
+  type: tests_by
+- target: tests/unit/watchtower_url_no_guess.bats
   type: tests_by

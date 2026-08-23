@@ -17,4 +17,10 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_harvest.bats
   type: tests_by
-last_enriched: '2026-05-06'
+- target: tests/unit/harvest_indent_agnostic.bats
+  type: called_by
+- target: tests/unit/harvest_indent_agnostic.bats
+  type: tests_by
+- target: tests/unit/t2927_observation_inbox_listing.bats
+  type: tests_by
+last_enriched: '2026-08-23'

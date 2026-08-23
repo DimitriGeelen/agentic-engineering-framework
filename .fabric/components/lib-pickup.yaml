@@ -29,6 +29,14 @@ depended_by:
   type: tests_by
 - target: tests/unit/t2457_fabric_atomic_card_write.bats
   type: tests_by
+- target: tests/unit/t3051_exec_bit_gates.bats
+  type: called_by
+- target: tests/unit/t3051_exec_bit_gates.bats
+  type: tests_by
+- target: tests/unit/t3052_pickup_id_collision.bats
+  type: called_by
+- target: tests/unit/t3052_pickup_id_collision.bats
+  type: tests_by
 last_verified: 2026-03-30
 created_by: unknown
-last_enriched: '2026-06-22'
+last_enriched: '2026-08-23'

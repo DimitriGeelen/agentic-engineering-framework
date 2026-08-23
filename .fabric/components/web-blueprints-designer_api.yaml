@@ -10,6 +10,10 @@ depends_on:
   type: calls
 - target: web/shared.py
   type: calls
+- target: web/designer_registry.py
+  type: uses
+- target: web/shared.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -21,6 +25,22 @@ depended_by:
   type: registered_by
 - target: web/designer_registry.py
   type: called_by
+- target: tests/web/test_api_version_latest.py
+  type: uses_by
+- target: tests/web/test_designer_api_uuid_identity.py
+  type: uses_by
+- target: tests/web/test_designer_landing.py
+  type: uses_by
+- target: tests/web/test_designer_overlay.py
+  type: uses_by
+- target: tests/web/test_designer_registry_claim.py
+  type: uses_by
+- target: tests/web/test_designer_registry_ghosts.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/blueprints/designer.py
+  type: uses_by
 last_verified: 2026-07-11
 created_by: unknown
-last_enriched: '2026-07-21'
+last_enriched: '2026-08-23'

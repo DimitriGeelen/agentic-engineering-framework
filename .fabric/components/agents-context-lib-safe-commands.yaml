@@ -21,6 +21,22 @@ depended_by:
   type: called_by
 - target: tests/unit/test_safe_commands_git_commit.bats
   type: tests_by
+- target: tests/unit/capture_verbs_nulltask.bats
+  type: called_by
+- target: tests/unit/capture_verbs_nulltask.bats
+  type: tests_by
+- target: tests/unit/safe_commands_chain.bats
+  type: called_by
+- target: tests/unit/safe_commands_chain.bats
+  type: tests_by
+- target: tests/unit/t2936_bootstrap_quoted_redirect.bats
+  type: called_by
+- target: tests/unit/t2936_bootstrap_quoted_redirect.bats
+  type: tests_by
+- target: tests/unit/t2988_grouped_command_classification.bats
+  type: called_by
+- target: tests/unit/t2988_grouped_command_classification.bats
+  type: tests_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-08-23'

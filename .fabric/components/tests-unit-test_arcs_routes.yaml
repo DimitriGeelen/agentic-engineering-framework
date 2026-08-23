@@ -13,7 +13,13 @@ purpose: Unit tests for /arcs and /arcs/<id> routes (T-1662) — Flask test_clie
 depends_on:
 - target: C-004
   type: calls
+- target: web/shared.py
+  type: uses
+- target: web/blueprints/arcs.py
+  type: uses
+- target: web/app.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-15'
+last_enriched: '2026-08-23'

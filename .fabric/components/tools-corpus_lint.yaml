@@ -11,6 +11,12 @@ depends_on:
 depended_by:
 - target: bin/fw
   type: called_by
+- target: C-004
+  type: called_by
+- target: tests/unit/audit_corpus_lint_findings.bats
+  type: called_by
+- target: tests/unit/audit_corpus_lint_findings.bats
+  type: tests_by
 last_verified: 2026-07-22
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

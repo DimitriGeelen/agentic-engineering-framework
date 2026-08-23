@@ -17,6 +17,8 @@ depended_by:
   type: triggers
 - target: C-009
   type: called_by
+- target: tests/unit/settings_regenerate_preserves_hooks.bats
+  type: called_by
 last_verified: 2026-07-10
 created_by: T-2517
-last_enriched: '2026-07-21'
+last_enriched: '2026-08-23'

@@ -4,17 +4,17 @@ type: script
 subsystem: framework-core
 location: lib/post-write-index.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/context/lib/episodic.sh
+  type: called_by
+- target: agents/context/lib/pattern.sh
+  type: called_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: called_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: tests_by
 last_verified: 2026-08-16
 created_by: unknown
+last_enriched: '2026-08-23'

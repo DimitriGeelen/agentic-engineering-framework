@@ -4,17 +4,23 @@ type: script
 subsystem: framework-core
 location: lib/hook_parity.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/hook-parity.sh
+  type: calls
+- target: lib/upgrade.sh
+  type: calls
+- target: bin/fw
+  type: calls
+- target: agents/context/check-active-task.sh
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/t3111_worktree_reexec.bats
+  type: tests_by
+- target: tests/unit/t3112_worktree_hook_parity.bats
+  type: tests_by
+- target: tests/unit/t3113_upgrade_worktree_advisory.bats
+  type: tests_by
 last_verified: 2026-08-20
 created_by: unknown
+last_enriched: '2026-08-23'

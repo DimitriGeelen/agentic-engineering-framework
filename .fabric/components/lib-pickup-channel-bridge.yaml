@@ -3,20 +3,25 @@ name: pickup-channel-bridge
 type: script
 subsystem: framework-core
 location: lib/pickup-channel-bridge.sh
-tags: [pickup, channel-bus, termlink, federation, T-1165, T-1214]
-purpose: "One-way bridge from shell pickup to T-1155 channel bus. Invoked
-  by pickup_process_one (lib/pickup.sh) after an envelope moves to processed/.
-  Mirrors the envelope to 'framework:pickup' topic so online bus subscribers
-  observe pickups alongside shell consumers. Non-fatal (exits 0 on any error);
-  capability-probing (prefers termlink channel post; falls back to event
-  broadcast; silent no-op if neither present). T-1165/T-1214 GO Option B:
-  federate, don't converge."
+tags:
+- pickup
+- channel-bus
+- termlink
+- federation
+- T-1165
+- T-1214
+purpose: 'One-way bridge from shell pickup to T-1155 channel bus. Invoked by pickup_process_one (lib/pickup.sh) after an envelope
+  moves to processed/. Mirrors the envelope to ''framework:pickup'' topic so online bus subscribers observe pickups alongside
+  shell consumers. Non-fatal (exits 0 on any error); capability-probing (prefers termlink channel post; falls back to event
+  broadcast; silent no-op if neither present). T-1165/T-1214 GO Option B: federate, don''t converge.'
 depends_on:
-  - target: lib/pickup.sh
-    type: called_by
+- target: lib/pickup.sh
+  type: called_by
 depended_by:
-  - target: lib/pickup.sh
-    type: invokes_at_process_one
+- target: lib/pickup.sh
+  type: invokes_at_process_one
+- target: tests/unit/t3051_exec_bit_gates.bats
+  type: tests_by
 last_verified: 2026-04-24
-last_enriched: '2026-04-24'
+last_enriched: '2026-08-23'
 created_by: T-1165

@@ -14,6 +14,8 @@ purpose: Centralized YAML loading for context project files (learnings, patterns
 depends_on:
 - target: web/shared.py
   type: calls
+- target: web/shared.py
+  type: uses
 depended_by:
 - target: web/blueprints/discovery.py
   type: calls
@@ -35,6 +37,18 @@ depended_by:
   type: called_by
 - target: web/blueprints/discovery.py
   type: called_by
+- target: C-003
+  type: uses_by
+- target: web/blueprints/core.py
+  type: uses_by
+- target: web/blueprints/discovery.py
+  type: uses_by
+- target: web/blueprints/metrics.py
+  type: uses_by
+- target: web/blueprints/quality.py
+  type: uses_by
+- target: web/blueprints/risks.py
+  type: uses_by
 last_verified: 2026-03-11
 created_by: T-416
-last_enriched: '2026-04-09'
+last_enriched: '2026-08-23'

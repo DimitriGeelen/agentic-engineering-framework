@@ -4,17 +4,17 @@ type: script
 subsystem: watchtower
 location: web/embed_health.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: agents/context/lib/focus.sh
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/test_embed_health.py
+  type: called_by
+- target: web/embeddings.py
+  type: called_by
+- target: web/embeddings.py
+  type: uses_by
 last_verified: 2026-08-15
 created_by: unknown
+last_enriched: '2026-08-23'

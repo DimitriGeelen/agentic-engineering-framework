@@ -60,6 +60,18 @@ depends_on:
   type: calls
 - target: tools/corpus_conformance.py
   type: calls
+- target: lib/traceability.sh
+  type: calls
+- target: lib/cron-registry.sh
+  type: calls
+- target: lib/branch-hygiene.sh
+  type: calls
+- target: lib/gitignore-register.sh
+  type: calls
+- target: tools/corpus_lint.py
+  type: calls
+- target: lib/verify_queue.py
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -132,6 +144,48 @@ depended_by:
   type: tests_by
 - target: lib/cron_dry_run.py
   type: called_by
+- target: lib/comment_strip.py
+  type: called_by
+- target: tests/unit/audit_corpus_lint_findings.bats
+  type: called_by
+- target: tests/unit/audit_corpus_lint_findings.bats
+  type: tests_by
+- target: tests/unit/audit_graduation_counter.bats
+  type: called_by
+- target: tests/unit/audit_graduation_counter.bats
+  type: tests_by
+- target: tests/unit/audit_root_commit_traceability.bats
+  type: tests_by
+- target: tests/unit/audit_seed_corpus_refs.bats
+  type: called_by
+- target: tests/unit/audit_seed_corpus_refs.bats
+  type: tests_by
+- target: tests/unit/fabric_coverage_single_source.bats
+  type: called_by
+- target: tests/unit/fabric_coverage_single_source.bats
+  type: tests_by
+- target: tests/unit/fabric_watch_pattern_fitness.bats
+  type: called_by
+- target: tests/unit/fabric_watch_pattern_fitness.bats
+  type: tests_by
+- target: tests/unit/self_vendor_parity.bats
+  type: tests_by
+- target: tests/unit/t2927_observation_inbox_listing.bats
+  type: tests_by
+- target: tests/unit/t3049_fabric_url_location.bats
+  type: called_by
+- target: tests/unit/t3049_fabric_url_location.bats
+  type: tests_by
+- target: tests/unit/t3053_multiref_traceability.bats
+  type: called_by
+- target: tests/unit/t3053_multiref_traceability.bats
+  type: tests_by
+- target: tests/unit/test_audit_frontmatter_variants.py
+  type: called_by
+- target: tests/unit/test_index_doctor_rail.bats
+  type: called_by
+- target: tests/unit/test_index_doctor_rail.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

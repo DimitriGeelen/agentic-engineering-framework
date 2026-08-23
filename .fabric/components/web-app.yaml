@@ -69,9 +69,19 @@ depends_on:
   type: calls
 - target: web/blueprints/arcs.py
   type: registers
+- target: web/shared.py
+  type: uses
+- target: web/search_utils.py
+  type: uses
+- target: web/blueprints/arcs.py
+  type: uses
+- target: web/blueprints/__init__.py
+  type: uses
+- target: web/embeddings.py
+  type: uses
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -161,3 +171,101 @@ depended_by:
   type: called_by
 - target: tests/web/test_designer_overlay.py
   type: called_by
+- target: agents/ux-review/ux-review.py
+  type: uses_by
+- target: tests/unit/test_approvals_content_tokens.py
+  type: uses_by
+- target: tests/unit/test_approvals_style_tokens.py
+  type: uses_by
+- target: tests/unit/test_arc_membership_web_surfaces.py
+  type: uses_by
+- target: tests/unit/test_arcs_pages_tokens.py
+  type: uses_by
+- target: tests/unit/test_arcs_routes.py
+  type: uses_by
+- target: tests/unit/test_breadcrumb.py
+  type: uses_by
+- target: tests/unit/test_bulk_actions.py
+  type: uses_by
+- target: tests/unit/test_cockpit_activity.py
+  type: uses_by
+- target: tests/unit/test_cockpit_density_spacing.py
+  type: uses_by
+- target: tests/unit/test_cockpit_inline_tokens.py
+  type: uses_by
+- target: tests/unit/test_cockpit_knowledge_counts.py
+  type: uses_by
+- target: tests/unit/test_cockpit_status_pills.py
+  type: uses_by
+- target: tests/unit/test_cockpit_traceability.py
+  type: uses_by
+- target: tests/unit/test_command_palette.py
+  type: uses_by
+- target: tests/unit/test_fabric_coupling_token.py
+  type: uses_by
+- target: tests/unit/test_file_route_extensions.py
+  type: uses_by
+- target: tests/unit/test_filter_chips.py
+  type: uses_by
+- target: tests/unit/test_kanban_drag.py
+  type: uses_by
+- target: tests/unit/test_nav_layout_polish.py
+  type: uses_by
+- target: tests/unit/test_nav_layouts.py
+  type: uses_by
+- target: tests/unit/test_nav_subsections.py
+  type: uses_by
+- target: tests/unit/test_orchestrator_parallel_view.py
+  type: uses_by
+- target: tests/unit/test_orchestrator_workflow_coverage.py
+  type: uses_by
+- target: tests/unit/test_pins.py
+  type: uses_by
+- target: tests/unit/test_review_paused_resolve.py
+  type: uses_by
+- target: tests/unit/test_reviewer_audit_blueprint.py
+  type: uses_by
+- target: tests/unit/test_session_cookie_port.py
+  type: called_by
+- target: tests/unit/test_settings_nav_link.py
+  type: uses_by
+- target: tests/unit/test_shortcuts_overlay.py
+  type: uses_by
+- target: tests/unit/test_t3068_unknown_cost.py
+  type: called_by
+- target: tests/unit/test_task_panel.py
+  type: uses_by
+- target: tests/unit/test_task_panel_edit.py
+  type: uses_by
+- target: tests/unit/test_theme_toggle_contrast.py
+  type: uses_by
+- target: tests/web/test_api_overlay.py
+  type: uses_by
+- target: tests/web/test_api_version_latest.py
+  type: uses_by
+- target: tests/web/test_approvals_blocked_arcs.py
+  type: called_by
+- target: tests/web/test_approvals_blocked_arcs.py
+  type: uses_by
+- target: tests/web/test_approvals_origin.py
+  type: called_by
+- target: tests/web/test_approvals_origin.py
+  type: uses_by
+- target: tests/web/test_designer_api_uuid_identity.py
+  type: uses_by
+- target: tests/web/test_designer_landing.py
+  type: uses_by
+- target: tests/web/test_designer_overlay.py
+  type: uses_by
+- target: tests/web/test_designer_registry_claim.py
+  type: uses_by
+- target: tests/web/test_designer_registry_ghosts.py
+  type: uses_by
+- target: tests/web/test_inception_decide_hardening.py
+  type: uses_by
+- target: tests/web/test_onboarding_maps_reachable.py
+  type: called_by
+- target: tests/web/test_onboarding_maps_reachable.py
+  type: uses_by
+- target: web/test_costs.py
+  type: uses_by

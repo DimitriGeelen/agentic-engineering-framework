@@ -21,7 +21,9 @@ depends_on:
   type: reads
 - target: tests/fixtures/832/pair-draft-3.bpmn
   type: calls
+- target: tests/web/test_designer_registry_ghosts.py
+  type: uses
 depended_by: []
 last_verified: 2026-07-21
 created_by: T-2590
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

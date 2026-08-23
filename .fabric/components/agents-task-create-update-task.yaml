@@ -38,7 +38,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'
 depended_by:
 - target: C-004
   type: called_by
@@ -103,6 +103,30 @@ depended_by:
 - target: tests/unit/recommendation_gate_build_partial.bats
   type: tests_by
 - target: tests/unit/render_surface_review_state_dup_human.bats
+  type: tests_by
+- target: tests/unit/ac_structure_close_gate.bats
+  type: called_by
+- target: tests/unit/ac_structure_close_gate.bats
+  type: tests_by
+- target: tests/unit/t2921_verification_comment_strip.bats
+  type: called_by
+- target: tests/unit/t2921_verification_comment_strip.bats
+  type: tests_by
+- target: tests/unit/t2924_update_task_owner_gate.bats
+  type: called_by
+- target: tests/unit/t2924_update_task_owner_gate.bats
+  type: tests_by
+- target: tests/unit/t2991_verification_preflight.bats
+  type: called_by
+- target: tests/unit/t2991_verification_preflight.bats
+  type: tests_by
+- target: tests/unit/t3030_two_writer_guard.bats
+  type: tests_by
+- target: tests/unit/update_task_orphan_guard.bats
+  type: called_by
+- target: tests/unit/update_task_orphan_guard.bats
+  type: tests_by
+- target: tests/unit/verification_pipe_buffer.bats
   type: tests_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md

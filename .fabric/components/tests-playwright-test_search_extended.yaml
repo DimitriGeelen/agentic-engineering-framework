@@ -3,16 +3,16 @@ name: test_search_extended
 type: script
 subsystem: tests-playwright
 location: tests/playwright/test_search_extended.py
-tags: [playwright, test]
-
-purpose: "Playwright tests for search sub-pages (T-1025)."
-
+tags:
+- playwright
+- test
+purpose: Playwright tests for search sub-pages (T-1025).
 depends_on:
-  - target: tests/playwright/conftest.py
-    type: calls
-
-depended_by:
-  []
-
+- target: tests/playwright/conftest.py
+  type: calls
+- target: tests/playwright/target.py
+  type: uses
+depended_by: []
 last_verified: 2026-04-07
 created_by: agent
+last_enriched: '2026-08-23'

@@ -5,7 +5,11 @@ subsystem: framework-core
 location: lib/workflow_coverage.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: lib/spawn.py
+  type: uses
+- target: lib/resolver.py
+  type: uses
 depended_by:
 - target: tests/unit/test_workflow_coverage.py
   type: called_by
@@ -13,4 +17,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-12
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

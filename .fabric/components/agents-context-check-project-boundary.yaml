@@ -34,6 +34,10 @@ depended_by:
   type: called_by
 - target: C-009
   type: called_by
+- target: tests/unit/t2920_boundary_heredoc_strip_order.bats
+  type: called_by
+- target: tests/unit/t2920_boundary_heredoc_strip_order.bats
+  type: tests_by
 last_verified: 2026-03-28
 created_by: T-559
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

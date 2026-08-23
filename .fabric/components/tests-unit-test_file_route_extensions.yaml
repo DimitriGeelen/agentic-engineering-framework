@@ -16,7 +16,11 @@ depends_on:
   type: calls
 - target: lib/task_pair_acd.py
   type: calls
+- target: web/app.py
+  type: uses
+- target: web/shared.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-05-09'
+last_enriched: '2026-08-23'

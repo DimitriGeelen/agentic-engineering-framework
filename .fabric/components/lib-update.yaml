@@ -17,6 +17,8 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_update.bats
   type: tests_by
+- target: tests/unit/update_mode_routing.bats
+  type: tests_by
 last_verified: 2026-03-23
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

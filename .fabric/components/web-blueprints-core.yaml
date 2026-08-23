@@ -36,9 +36,23 @@ depends_on:
   type: registers
 - target: lib/arc_membership.py
   type: calls
+- target: lib/arc_membership.py
+  type: uses
+- target: web/context_loader.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/subprocess_utils.py
+  type: uses
+- target: web/blueprints/approvals.py
+  type: uses
+- target: web/blueprints/costs.py
+  type: uses
+- target: web/blueprints/cockpit.py
+  type: uses
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-08-23'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -61,3 +75,7 @@ depended_by:
   type: registered_by
 - target: tests/playwright/test_landing_arc_cards.py
   type: rendered_by
+- target: tests/unit/test_arc_membership_web_surfaces.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by

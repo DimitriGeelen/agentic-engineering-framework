@@ -14,9 +14,13 @@ depends_on:
   type: calls
 - target: .context/project/controls.yaml
   type: calls
+- target: web/context_loader.py
+  type: uses
+- target: web/shared.py
+  type: uses
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -27,3 +31,5 @@ depended_by:
 - target: web/blueprints/__init__.py
   type: registered_by
 - tests/playwright/test_risks.py
+- target: web/blueprints/__init__.py
+  type: uses_by

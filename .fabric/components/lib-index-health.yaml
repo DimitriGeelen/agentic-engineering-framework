@@ -4,17 +4,15 @@ type: script
 subsystem: framework-core
 location: lib/index-health.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: called_by
+- target: tests/unit/test_index_doctor_rail.bats
+  type: tests_by
+- target: web/blueprints/embeddings.py
+  type: called_by
 last_verified: 2026-08-15
 created_by: unknown
+last_enriched: '2026-08-23'

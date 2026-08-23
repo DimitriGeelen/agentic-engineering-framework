@@ -4,17 +4,15 @@ type: script
 subsystem: unknown
 location: tests/unit/version_relation.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/version-relation.sh
+  type: tests
+- target: lib/upgrade.sh
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-08-01
 created_by: unknown
+last_enriched: '2026-08-23'

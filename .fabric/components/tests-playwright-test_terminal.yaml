@@ -7,6 +7,9 @@ tags: []
 purpose: Playwright tests for Terminal page (T-970)
 depends_on:
 - web/blueprints/terminal.py
+- target: tests/playwright/target.py
+  type: uses
 depended_by: []
 last_verified: 2026-04-06
 created_by: unknown
+last_enriched: '2026-08-23'

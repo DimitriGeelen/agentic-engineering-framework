@@ -14,6 +14,10 @@ depends_on:
   type: calls
 - target: lib/bvp.sh
   type: calls
+- target: lib/keylock.py
+  type: uses
+- target: lib/spawn.py
+  type: uses
 depended_by:
 - target: lib/resolver.sh
   type: called_by
@@ -33,6 +37,28 @@ depended_by:
   type: called_by
 - target: tools/escalation-scan-v0.5.py
   type: called_by
+- target: bin/fw
+  type: called_by
+- target: lib/ask.py
+  type: called_by
+- target: lib/ask.py
+  type: uses_by
+- target: lib/workflow_coverage.py
+  type: uses_by
+- target: tests/unit/t2915_resolver_inflight_expiry.bats
+  type: called_by
+- target: tests/unit/t2915_resolver_inflight_expiry.bats
+  type: tests_by
+- target: tests/unit/t2916_stall_guard_coverage.bats
+  type: called_by
+- target: tests/unit/t2916_stall_guard_coverage.bats
+  type: tests_by
+- target: tests/unit/t3030_two_writer_guard.bats
+  type: called_by
+- target: tests/unit/t3030_two_writer_guard.bats
+  type: tests_by
+- target: tests/unit/test_spawn.py
+  type: called_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

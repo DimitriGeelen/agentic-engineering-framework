@@ -25,6 +25,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/task_id_race.bats
   type: tests_by
+- target: lib/keylock.py
+  type: called_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

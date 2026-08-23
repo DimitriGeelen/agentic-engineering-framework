@@ -145,6 +145,32 @@ depended_by:
   type: called_by
 - target: tools/bpmn_promote.py
   type: called_by
+- target: agents/context/check-rail-mcp-label.sh
+  type: called_by
+- target: tests/governance/test_pretooluse_gates.bats
+  type: tests_by
+- target: tests/unit/drift_gate_not_shadowed_by_safelist.bats
+  type: tests_by
+- target: tests/unit/episodic_frontmatter_extraction.bats
+  type: tests_by
+- target: tests/unit/handover_digest.bats
+  type: tests_by
+- target: tests/unit/harvest_indent_agnostic.bats
+  type: called_by
+- target: tests/unit/harvest_indent_agnostic.bats
+  type: tests_by
+- target: tests/unit/note_capture_guard.bats
+  type: tests_by
+- target: tests/unit/note_exit_status.bats
+  type: tests_by
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: called_by
+- target: tests/unit/t3038_session_scoped_focus.bats
+  type: tests_by
+- target: tests/unit/t3053_multiref_traceability.bats
+  type: tests_by
+- target: tests/unit/t3111_worktree_reexec.bats
+  type: tests_by
 last_verified: 2026-03-10
 created_by: T-412
-last_enriched: '2026-07-21'
+last_enriched: '2026-08-23'

@@ -4,8 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/sessions.py
 tags: []
-purpose: Flask blueprint that renders the terminal session management page listing
-  active and historical sessions
+purpose: Flask blueprint that renders the terminal session management page listing active and historical sessions
 depends_on:
 - target: web/shared.py
   type: calls
@@ -13,12 +12,18 @@ depends_on:
   type: calls
 - target: web/templates/sessions.html
   type: renders
+- target: web/shared.py
+  type: uses
+- target: web/terminal/registry.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
 - tests/playwright/test_sessions.py
+- target: web/blueprints/__init__.py
+  type: uses_by
 last_verified: 2026-04-06
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-08-23'

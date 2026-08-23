@@ -42,7 +42,17 @@ depended_by:
   type: called_by
 - target: tests/unit/session_start_hook_warning.bats
   type: called_by
-last_enriched: '2026-07-07'
+- target: lib/tier0_origin.py
+  type: called_by
+- target: tests/unit/tier0_scope_boundary.bats
+  type: called_by
+- target: tests/unit/tier0_scope_boundary.bats
+  type: tests_by
+- target: web/blueprints/approvals.py
+  type: called_by
+- target: web/blueprints/config.py
+  type: called_by
+last_enriched: '2026-08-23'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'

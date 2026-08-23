@@ -30,9 +30,11 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/config.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-22'
+last_enriched: '2026-08-23'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
@@ -77,6 +79,18 @@ depended_by:
 - target: tests/unit/handover_checkpoint_push.bats
   type: called_by
 - target: tests/unit/handover_checkpoint_push.bats
+  type: tests_by
+- target: tests/unit/handover_commit_scope.bats
+  type: called_by
+- target: tests/unit/handover_commit_scope.bats
+  type: tests_by
+- target: tests/unit/handover_digest.bats
+  type: tests_by
+- target: tests/unit/handover_task_classification.bats
+  type: tests_by
+- target: tests/unit/t2927_observation_inbox_listing.bats
+  type: called_by
+- target: tests/unit/t2927_observation_inbox_listing.bats
   type: tests_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md

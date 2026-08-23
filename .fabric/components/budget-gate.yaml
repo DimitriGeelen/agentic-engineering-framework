@@ -27,6 +27,8 @@ depends_on:
   type: calls
 - target: lib/config.sh
   type: calls
+- target: lib/context_tokens.py
+  type: calls
 depended_by:
 - target: C-009
   type: triggers
@@ -42,6 +44,16 @@ depended_by:
   type: tests_by
 - target: C-009
   type: called_by
+- target: lib/context_tokens.py
+  type: called_by
+- target: tests/lint/no-backticks-in-inline-python.bats
+  type: tests_by
+- target: tests/lint/prescribed-commands-are-allowed.bats
+  type: tests_by
+- target: tests/unit/t2919_budget_gate_command_classify.bats
+  type: called_by
+- target: tests/unit/t2919_budget_gate_command_classify.bats
+  type: tests_by
 shared_constants:
   TOKEN_WARN: 120000
   TOKEN_URGENT: 150000
@@ -53,4 +65,4 @@ docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'
   type: deep-dive
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

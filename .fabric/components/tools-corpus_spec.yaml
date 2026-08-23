@@ -15,6 +15,14 @@ depended_by:
   type: called_by
 - target: tools/corpus_lint.py
   type: uses_by
+- target: tests/unit/test_importer_fidelity.py
+  type: called_by
+- target: tools/corpus_conformance.py
+  type: uses_by
+- target: tools/corpus_explain.py
+  type: uses_by
+- target: tools/corpus_overlay.py
+  type: uses_by
 last_verified: 2026-07-22
 created_by: unknown
-last_enriched: '2026-07-27'
+last_enriched: '2026-08-23'

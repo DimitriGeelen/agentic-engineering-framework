@@ -10,7 +10,9 @@ depends_on:
   type: calls
 - target: web/blueprints/bvp.py
   type: registers
+- target: web/blueprints/bvp.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-29
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-08-23'

@@ -4,17 +4,11 @@ type: script
 subsystem: unknown
 location: tests/unit/t3117_gc_landing_predicate.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/worktree.sh
+  type: tests
+depended_by: []
 last_verified: 2026-08-23
 created_by: unknown
+last_enriched: '2026-08-23'

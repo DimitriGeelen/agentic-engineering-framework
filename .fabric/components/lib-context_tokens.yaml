@@ -4,17 +4,23 @@ type: script
 subsystem: framework-core
 location: lib/context_tokens.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: C-007
+  type: calls
+- target: C-008
+  type: calls
+- target: lib/costs.sh
+  type: calls
+- target: web/blueprints/costs.py
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: C-007
+  type: called_by
+- target: C-008
+  type: called_by
+- target: web/blueprints/costs.py
+  type: called_by
 last_verified: 2026-08-09
 created_by: unknown
+last_enriched: '2026-08-23'

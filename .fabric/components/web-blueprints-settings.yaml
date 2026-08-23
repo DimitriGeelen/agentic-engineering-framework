@@ -14,6 +14,8 @@ depends_on:
   type: renders
 - target: web/templates/appearance.html
   type: renders
+- target: web/shared.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -32,6 +34,12 @@ depended_by:
   type: registered_by
 - target: tests/unit/test_render_surface_gate.bats
   type: tests_by
+- target: tests/unit/test_nav_layout_polish.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/shared.py
+  type: uses_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-05-29'
+last_enriched: '2026-08-23'

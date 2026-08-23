@@ -15,7 +15,11 @@ depends_on:
   type: calls
 - target: web/blueprints/costs.py
   type: registers
+- target: web/blueprints/costs.py
+  type: uses
+- target: web/app.py
+  type: uses
 depended_by: []
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-08-23'

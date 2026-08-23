@@ -13,6 +13,8 @@ depended_by:
   type: called_by
 - target: tools/escalation-scan-v0.5.py
   type: called_by
+- target: lib/ask.py
+  type: uses_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

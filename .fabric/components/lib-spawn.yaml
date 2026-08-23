@@ -12,11 +12,27 @@ depends_on:
   type: calls
 - target: lib/ollama_loop.py
   type: calls
+- target: lib/keylock.py
+  type: uses
+- target: lib/pi_worker.py
+  type: uses
+- target: lib/ollama_loop.py
+  type: uses
+- target: lib/ollama_thin_loop.py
+  type: uses
+- target: lib/termlink_worker.py
+  type: uses
 depended_by:
 - target: lib/resolver.py
   type: called_by
 - target: tests/unit/test_spawn.py
   type: called_by
+- target: lib/keylock.py
+  type: called_by
+- target: lib/resolver.py
+  type: uses_by
+- target: lib/workflow_coverage.py
+  type: uses_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

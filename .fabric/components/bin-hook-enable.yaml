@@ -19,6 +19,12 @@ depended_by:
   type: called_by
 - target: tests/unit/hook_enable_absolute_path.bats
   type: tests_by
+- target: tests/unit/hook_producer_site_parity.bats
+  type: tests_by
+- target: tests/unit/self_vendor_parity.bats
+  type: called_by
+- target: tests/unit/self_vendor_parity.bats
+  type: tests_by
 last_verified: 2026-04-24
 created_by: T-1189
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

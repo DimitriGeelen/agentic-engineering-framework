@@ -6,7 +6,9 @@ location: agents/audit/active-task-scan.py
 tags: []
 purpose: Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review
   queue status in one efficient pass
-depends_on: []
+depends_on:
+- target: lib/task-audit.sh
+  type: calls
 depended_by:
 - target: C-004
   type: called_by
@@ -22,6 +24,10 @@ depended_by:
   type: called_by
 - target: tests/unit/audit_ctl030_completed_horizon_drift.bats
   type: tests_by
+- target: tests/unit/t3073_c001_recommendation_bearing_inceptions.bats
+  type: called_by
+- target: tests/unit/t3073_c001_recommendation_bearing_inceptions.bats
+  type: tests_by
 last_verified: 2026-04-06
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-08-23'

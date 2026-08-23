@@ -4,17 +4,21 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-rail-mcp-label.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/paths.sh
+  type: calls
+- target: lib/config.sh
+  type: calls
+- target: lib/rail-identity.sh
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: C-009
+  type: called_by
+- target: tests/unit/rail_mcp_label_guard.bats
+  type: called_by
+- target: tests/unit/rail_mcp_label_guard.bats
+  type: tests_by
 last_verified: 2026-08-10
 created_by: unknown
+last_enriched: '2026-08-23'

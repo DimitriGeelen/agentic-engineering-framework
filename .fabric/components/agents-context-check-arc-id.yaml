@@ -13,6 +13,8 @@ depended_by:
   type: tests_by
 - target: C-009
   type: called_by
+- target: tests/unit/settings_regenerate_preserves_hooks.bats
+  type: called_by
 last_verified: 2026-05-16
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

@@ -12,7 +12,13 @@ depends_on:
   type: calls
 - target: web/blueprints/reviewer.py
   type: registers
+- target: web/blueprints/reviewer.py
+  type: uses
+- target: web/app.py
+  type: uses
+- target: web/shared.py
+  type: uses
 depended_by: []
 last_verified: 2026-04-26
 created_by: unknown
-last_enriched: '2026-04-26'
+last_enriched: '2026-08-23'

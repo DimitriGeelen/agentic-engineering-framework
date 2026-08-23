@@ -21,7 +21,11 @@ depended_by:
   type: tests_by
 - target: tests/unit/check_active_task_switch_focus.bats
   type: called_by
-last_enriched: '2026-05-18'
+- target: tests/unit/t1719_post_write_index.bats
+  type: called_by
+- target: tests/unit/t1719_post_write_index.bats
+  type: tests_by
+last_enriched: '2026-08-23'
 docs:
 - path: docs/articles/deep-dives/04-three-layer-memory.md
   title: 'Deep Dive: Three-Layer Memory'

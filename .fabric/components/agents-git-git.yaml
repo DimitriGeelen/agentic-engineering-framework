@@ -22,7 +22,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-08-23'
 depended_by:
 - target: agents/handover/handover.sh
   type: called_by
@@ -42,6 +42,16 @@ depended_by:
   type: called_by
 - target: tests/unit/git_log.bats
   type: called_by
+- target: tests/unit/handover_commit_scope.bats
+  type: called_by
+- target: tests/unit/handover_commit_scope.bats
+  type: tests_by
+- target: tests/unit/hook_version_marker_parity.bats
+  type: tests_by
+- target: tests/unit/t2813_install_hooks_write_failure.bats
+  type: called_by
+- target: tests/unit/t2813_install_hooks_write_failure.bats
+  type: tests_by
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

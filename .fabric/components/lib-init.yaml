@@ -19,7 +19,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -48,3 +48,25 @@ depended_by:
   type: tests_by
 - target: tests/unit/lib_init.bats
   type: tests_by
+- target: lib/settings_merge.py
+  type: called_by
+- target: tests/unit/git_identity_check.bats
+  type: tests_by
+- target: tests/unit/hook_producer_site_parity.bats
+  type: called_by
+- target: tests/unit/hook_producer_site_parity.bats
+  type: tests_by
+- target: tests/unit/init_project_shape_detection.bats
+  type: tests_by
+- target: tests/unit/init_seed_guard.bats
+  type: called_by
+- target: tests/unit/init_seed_guard.bats
+  type: tests_by
+- target: tests/unit/init_strips_upstream_credentials.bats
+  type: tests_by
+- target: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+  type: tests_by
+- target: tests/unit/hook_producer_site_parity.bats
+  type: read_by
+- target: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+  type: called_by

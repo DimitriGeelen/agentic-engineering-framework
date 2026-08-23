@@ -56,4 +56,8 @@ depended_by:
   type: called_by
 - target: tests/unit/audit_d10_html_comment_blindness.bats
   type: tests_by
-last_enriched: '2026-05-18'
+- target: tests/integration/t2922_greenfield_first_inception.bats
+  type: called_by
+- target: tests/integration/t2922_greenfield_first_inception.bats
+  type: tests_by
+last_enriched: '2026-08-23'

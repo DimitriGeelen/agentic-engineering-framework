@@ -40,6 +40,18 @@ depends_on:
   type: calls
 - target: lib/gaps.py
   type: calls
+- target: web/context_loader.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/embeddings.py
+  type: uses
+- target: lib/gaps.py
+  type: uses
+- target: web/search.py
+  type: uses
+- target: web/search_utils.py
+  type: uses
 depended_by:
 - target: web/search.py
   type: used-by
@@ -54,6 +66,8 @@ depended_by:
 - target: web/static/js/chat.js
   type: called_by
 - tests/playwright/test_patterns.py
+- target: web/blueprints/__init__.py
+  type: uses_by
 last_verified: 2026-04-05
 created_by: T-917
-last_enriched: '2026-06-04'
+last_enriched: '2026-08-23'

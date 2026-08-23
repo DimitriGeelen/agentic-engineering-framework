@@ -12,7 +12,11 @@ depends_on:
   type: calls
 - target: web/blueprints/tasks.py
   type: registers
+- target: web/blueprints/tasks.py
+  type: uses
+- target: web/app.py
+  type: uses
 depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-08-23'

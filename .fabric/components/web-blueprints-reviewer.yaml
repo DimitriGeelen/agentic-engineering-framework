@@ -10,6 +10,10 @@ depends_on:
   type: calls
 - target: lib/reviewer/overrides.py
   type: calls
+- target: web/shared.py
+  type: uses
+- target: lib/reviewer/overrides.py
+  type: uses
 depended_by:
 - target: tests/unit/test_reviewer_audit_blueprint.py
   type: called_by
@@ -19,6 +23,10 @@ depended_by:
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- target: tests/unit/test_reviewer_audit_blueprint.py
+  type: uses_by
+- target: web/blueprints/__init__.py
+  type: uses_by
 last_verified: 2026-04-25
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'
