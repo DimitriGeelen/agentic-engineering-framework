@@ -36691,3 +36691,21 @@ scan_id: R-16dd9d58
 task_id: T-3122
 payload:
   task_file: .tasks/active/T-3122-fabric-shell-detector-recognises-only-fo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-23T20:28:38Z'
+scan_id: R-f82cc44e
+task_id: T-3124
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-23T20:28:38Z'
+scan_id: R-f82cc44e
+task_id: T-3124
+payload:
+  task_file: .tasks/active/T-3124-file-viewer-404-says-the-file-does-not-e.md

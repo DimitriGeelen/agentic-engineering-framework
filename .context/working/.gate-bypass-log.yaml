@@ -7252,3 +7252,11 @@ FW_SWITCH_FOCUS=1 git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -q
   command: 'FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/ 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3122: file T-3123 (invocation gap) + register U-012 (blocked push)
 
 T-3123 captures 832-Workflow-desig'
+- timestamp: '2026-08-23T20:29:34Z'
+  task: 'T-1719'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3124'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/ 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3124: partial-complete — 7/7 Agent ACs, awaiting the wording review
+
+Co-Authored-By: Claude Opus 5 <'

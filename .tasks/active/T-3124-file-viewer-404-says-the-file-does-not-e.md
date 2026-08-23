@@ -4,12 +4,12 @@ name: "file viewer 404 says the file does not exist when it exists but its direc
 description: >
   web/blueprints/docs.py:152-157 aborts 404 both when is_viewable_path fails and when the file is genuinely absent. Verified on this build: docs/adr/0001-orchestration-model-pin-enforcement.md is 1692 bytes, tracked, and /file/ renders 'does not exist.' Reported by 001-CashWeb (T-092) who measured the identical sentence on their consumer. 1221 of 2011 tracked docs/ files are unservable here, including 4 ADRs written specifically to be linked to.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/docs.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T20:19:07Z
-last_update: 2026-08-23T20:19:07Z
-date_finished: null
+last_update: 2026-08-23T20:28:34Z
+date_finished: 2026-08-23T20:28:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -258,6 +258,36 @@ python3 -m pytest tests/unit/test_file_viewer_unservable.py -q 2>&1 | tail -3 | 
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+
+**Recommendation:** GO
+
+**Rationale:** all seven Agent ACs verified, five of them by tests and all four
+behaviours re-checked live against a restarted server rather than inferred from
+the diff. The single Human AC is a wording judgement, not a correctness one —
+the branch behind it is proven, so the worst case on review is that the sentence
+gets reworded, which costs an edit and no rework.
+
+The reason to take it now rather than bundle it with the larger allowlist
+question: the current page is confidently wrong about a fact the reader cannot
+otherwise check. That is the specific failure that cost 001-CashWeb nine days,
+and it is live on 1221 tracked files here including four ADRs. Fixing the
+sentence is independent of deciding which directories deserve serving, and it
+degrades safely — a reader who now sees "Not Served" is pointed at the
+allowlist whatever we later decide the allowlist should contain.
+
+What this deliberately does NOT do: change VIEWABLE_DIR_PREFIXES, or add the
+audit check that would reconcile tracked files against it. Both were proposed by
+the reporter and both are real; both are larger than a message fix and would
+have made this unlandable in one pass.
+
+**Evidence:**
+- `web/blueprints/docs.py` — abort split; check order (traversal → resolve-under-root → probe) made explicit
+- `tests/unit/test_file_viewer_unservable.py` — 5 tests, all passing
+- Live, post-restart: tracked+unservable → 404 "Not Served"; tracked+servable → 200; untracked-on-disk → 404 "does not exist" (no disclosure); absent → 404 unchanged
+- Disclosure boundary: `git ls-files --error-unmatch` with `:(literal)` pathspec, fail-closed on any git error
+- Symlink guard tightened from bare `startswith(root)` to a `root + os.sep` boundary — a sibling directory sharing the prefix defeated the old form
+- Origin measurement: `docs/adr/0001-…md` 1692 bytes, tracked, previously reported as non-existent; 1221/2011 tracked `docs/` files affected
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -285,3 +315,20 @@ python3 -m pytest tests/unit/test_file_viewer_unservable.py -q 2>&1 | tail -3 | 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3124-file-viewer-404-says-the-file-does-not-e.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f82cc44e
+- **Timestamp:** 2026-08-23T20:28:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 -m pytest tests/unit/test_file_viewer_unservable.py -q 2>&1 | tail -3 | grep -qE '[0-9]+ passed'`
+
+### 2026-08-23T20:28:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
