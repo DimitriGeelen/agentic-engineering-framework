@@ -1,0 +1,87 @@
+# Audit Results - 2026-08-23-1230
+timestamp: 2026-08-23T10:30:43Z
+sections: "structure"
+summary:
+  pass: 29
+  warn: 6
+  fail: 1
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: WARN
+    check: "Cross-view task-ID collisions: 3 ID(s) name a different task in another corpus view"
+    mitigation: "Two tasks were minted onto one number across views (L-506 leg 2). Re-number the losing side in its worktree, or land/discard that worktree so the corpus holds one task per ID"
+  - level: PASS
+    check: "All project YAML files parse correctly — examined 29 project YAML file(s)"
+  - level: PASS
+    check: "All arc anchor_task references resolve to existing tasks — examined 17 arc anchor_task reference(s)"
+  - level: PASS
+    check: "All onboarding-seed corpus references resolve to existing maps — examined 12 onboarding-seed corpus reference(s)"
+  - level: PASS
+    check: "Corpus maps lint clean — examined 8 corpus map(s)"
+  - level: PASS
+    check: "All assessed arcs had task commits within 30 days — examined 15 in-progress arc(s) with constituents"
+  - level: INFO
+    check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F3: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F1: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
+  - level: PASS
+    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 390 source file(s) under lib/ web/ agents/ bin/ tools/"
+  - level: PASS
+    check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 134 Python file(s) under web/ + lib/"
+  - level: PASS
+    check: "No stale-slice-references (L-417) — examined 263 file(s) under web/templates web/blueprints lib"
+  - level: WARN
+    check: "Found 180 GO-scope-not-propagated inception(s) of 349 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
+    mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
+  - level: PASS
+    check: "Fabric: 1106 registered card(s)"
+  - level: WARN
+    check: "Fabric: 189/1019 cards have no edges"
+    mitigation: "Run: fw fabric enrich"
+  - level: WARN
+    check: "Fabric drift: 10 source file(s) have no fabric card"
+    mitigation: "Run: fw fabric scan"
+  - level: WARN
+    check: "Fabric: 732 card(s) point at files no watch pattern covers"
+    mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
+  - level: FAIL
+    check: "Cron drift: /opt/999-Agentic-Engineering-Framework/.context/cron-registry.yaml is ahead of /opt/999-Agentic-Engineering-Framework/.context/cron/agentic-audit.crontab (registry edited but not generated)"
+    mitigation: "Run: fw cron generate"
+  - level: PASS
+    check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
+  - level: WARN
+    check: "Branch hygiene: 21 finding(s) — stale branches, worktrees or remote refs"
+    mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
+  - level: PASS
+    check: "Hook threshold: no hooks failing over threshold"
+  - level: PASS
+    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+  - level: PASS
+    check: "Invariant suite green — examined 73 structural invariant(s) (tests/lint/)"
+  - level: PASS
+    check: "Designer ghost registry: ghost↔task joins clean"
+  - level: PASS
+    check: "Map conformance: aef-task-lifecycle matches its enforced machine"
+  - level: PASS
+    check: "Map conformance: aef-inception-flow matches its enforced machine"
+  - level: PASS
+    check: "Map conformance: aef-dispatch-loop matches its enforced machine"
+  - level: PASS
+    check: "Map conformance: aef-audit-cron matches its enforced machine"
+  - level: PASS
+    check: "Map conformance: aef-tier0-escalation matches its enforced machine"
+  - level: INFO
+    check: "Stale draft(s), 30d+ untouched: draft-t2584-scratch — promote via the ceremony or delete from the gallery (T-2623)"
