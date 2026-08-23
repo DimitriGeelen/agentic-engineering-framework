@@ -4,12 +4,12 @@ name: "Retire the four stale linked worktrees and resolve the cross-view task-ID
 description: >
   Retire the four stale linked worktrees and resolve the cross-view task-ID collisions
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, lib/worktree.sh, tests/unit/t3117_gc_landing_predicate.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T10:21:11Z
-last_update: '2026-08-23T10:45:12Z'
-date_finished:
+last_update: 2026-08-23T11:07:18Z
+date_finished: 2026-08-23T11:07:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -290,3 +290,15 @@ git ls-remote origin refs/heads/worktree-inception-gov-payload-mediation > /tmp/
 git ls-remote origin refs/heads/worktree-rca-worktree-push-strand > /tmp/.t3117r2.out 2>&1 && test -s /tmp/.t3117r2.out
 # gc prefers the remote trunk, not a local master that the push-based flow never advances.
 grep -q "refs/remotes/origin/master refs/remotes/origin/main refs/heads/master" lib/worktree.sh
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-48e2a6ae
+- **Timestamp:** 2026-08-23T11:07:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-23T11:07:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

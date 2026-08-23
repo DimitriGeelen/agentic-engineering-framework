@@ -1,0 +1,139 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3117: Retire the four stale linked worktrees and resolve the cross-view task-ID collisions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-23T11:07:30Z
+# ============================================================================
+
+task_id: T-3117
+task_name: "Retire the four stale linked worktrees and resolve the cross-view task-ID collisions"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-23T10:21:11Z
+completed: 2026-08-23T11:07:18Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-23T12:28:17+02:00
+last_commit: 2026-08-23T13:07:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw worktree gc measured landing against a six-week-old trunk. self-vendor the worktree landing-predicate fix. regenerate cron from registry (unblocks pre-push audit FAIL). preservation ledger + design-doc aftermath section for the worktree retirement. retire the four stale linked worktrees — 3 cross-view ID collisions → 0
+
+# Key outcomes
+outcomes:
+  - '**Preservation proven before any removal.** For each of the four linked worktrees, `git rev-list --count origin/master..<branch>` is 0, OR its unique commits are pushed to a named `origin/` ref, OR its uncommitted work is captured into a tracked file on master. Recorded per worktree in `docs/reports/T-3117-worktree-retirement.md` with the command output that proves it. No removal happens before its own row is filled.'
+  - '`git worktree list` shows exactly one entry — the main checkout. `git worktree prune` leaves nothing behind in `.git/worktrees/`.'
+  - '`fw audit` structure section reports **zero** cross-view task-ID collisions (today: 3 — T-2428, T-2505, T-2506), and states the size of the set it examined.'
+  - 'Each of T-2428, T-2505, T-2506 resolves to exactly one task file across all corpus views, and the survivor is the authority''s copy with its `created:` unchanged — the fork artifact is what disappears, never the authoritative task.'
+  - '`fw doctor` branch-hygiene reports no `worktree-unlanded` and no `worktree-merged` findings.'
+  - 'Nothing was deleted from the authority''s `.tasks/`: `git diff --stat origin/master@{1}..HEAD -- .tasks/` shows no removals of files that existed in the main checkout before this task.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'self-vendor the worktree landing-predicate fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/mirror.sh'
+  - '.agentic-framework/lib/worktree.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.context/audits/2026-08-22.yaml'
+  - '.context/audits/2026-08-23.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.context/episodic/T-2745.yaml'
+  - '.context/episodic/T-3040.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.auto-restart-pending'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/happiness.jsonl'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/.t3070-full-audit.out'
+  - '.context/working/.t3070-start.epoch'
+  - '.context/working/.t3070-start.human'
+  - '.context/working/.t3088-bats.out'
+  - '.context/working/.t3088-branch.out'
+  - '.context/working/.t3088-status.out'
+  - '.context/working/.verify-queue-state.json'
+  - '.context/working/watchtower.log'
+  - 'docs/design/task-corpus-concurrency-model.md'
+  - 'docs/generated/components/lib-worktree-identity.md'
+  - 'docs/generated/components/tests-unit-t3111_worktree_reexec.md'
+  - 'docs/reports/T-2002-ux-review-arc-007-s0-s1.md'
+  - 'docs/reports/T-3117-worktree-retirement.md'
+  - '.fabric/components/tests-unit-t3117_gc_landing_predicate.yaml'
+  - 'lib/worktree.sh'
+  - '.tasks/active/T-1719-embeddings-strategy-v1--slice-1-post-wri.md'
+  - '.tasks/active/T-3070-full-fw-audit-cannot-complete-single-pro.md'
+  - '.tasks/active/T-3104-lift-the-task-corpus-view-set-into-a-sha.md'
+  - '.tasks/active/T-3116-redeploy-resolver-loopservice-with-t-291.md'
+  - '.tasks/active/T-3117-retire-the-four-stale-linked-worktrees-a.md'
+  - '.tasks/active/T-449-deep-dive-articles-02-06-editing-pass--s.md'
+  - '.tasks/completed/T-2745-wire-pytest-testsunit-into-fw-test-and-c.md'
+  - '.tasks/completed/T-3040-peer-message-backlog-lost--local-hub-had.md'
+  - 'tests/unit/t3070_audit_full_run_timeout.bats'
+  - 'tests/unit/t3117_gc_landing_predicate.bats'
+  - 'VERSION'
+  - 'web/static/ux-review/index.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-23T12:28:17'
+    action: 'T-3117: fw worktree gc measured landing against a six-week-old trunk'
+  - time: '2026-08-23T12:28:39'
+    action: 'T-3117: self-vendor the worktree landing-predicate fix'
+  - time: '2026-08-23T12:36:37'
+    action: 'T-3117: regenerate cron from registry (unblocks pre-push audit FAIL)'
+  - time: '2026-08-23T12:40:19'
+    action: 'T-3117: preservation ledger + design-doc aftermath section for the worktree retirement'
+  - time: '2026-08-23T13:07:03'
+    action: 'T-3117: retire the four stale linked worktrees — 3 cross-view ID collisions → 0'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 46
+  commits: 5
+  files_changed: 56
+  lines_added: 10135
+  lines_removed: 5535
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3117-retire-the-four-stale-linked-worktrees-a.md
+generated_by: context-agent-hybrid

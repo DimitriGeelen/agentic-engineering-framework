@@ -36601,3 +36601,21 @@ scan_id: R-40d8531b
 task_id: T-3102
 payload:
   task_file: .tasks/active/T-3102-fw-worktree-remove-governance-only-dirt-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-23T11:07:19Z'
+scan_id: R-48e2a6ae
+task_id: T-3117
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-23T11:07:19Z'
+scan_id: R-48e2a6ae
+task_id: T-3117
+payload:
+  task_file: .tasks/active/T-3117-retire-the-four-stale-linked-worktrees-a.md

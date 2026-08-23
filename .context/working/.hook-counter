@@ -1,11 +1,11 @@
-error-watchdog=75
+error-watchdog=77
 
 check-onboarding-gate=10
-checkpoint=77
-check-tier0=63
-audit-task-tools=65
+checkpoint=79
+check-tier0=65
+audit-task-tools=67
 check-human-ac-tick=3
-budget-gate=23
-check-project-boundary=23
-check-active-task=23
-loop-detect=31
+budget-gate=25
+check-project-boundary=25
+check-active-task=25
+loop-detect=33
