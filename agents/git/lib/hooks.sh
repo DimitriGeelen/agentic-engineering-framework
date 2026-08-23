@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.12"
+COMMIT_MSG_HOOK_VERSION="1.13"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -102,7 +102,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.12
+# VERSION=1.13
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -660,10 +660,10 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.5
+# VERSION=1.6
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
@@ -832,6 +832,69 @@ fi
 # Guard 2: FW_SKIP_SELF_VENDOR_CHECK=1 bypass for legitimate skip scenarios
 # (e.g. release prep where vendor refresh is the next commit). Tier-2 visibility
 # via stderr WARN — matches existing hook pattern (no separate log writes).
+# T-3125: the detector above judges the WORKING TREE; the property this gate
+# protects is about the PUSHED REF. `fw vendor self --dry-run` compares
+# working-tree source against working-tree vendored copies, so ANY session with
+# an uncommitted edit to a vendored-class file blocked EVERY other session's
+# push, with no exit but a Tier-2 or Tier-0 bypass. Observed live 2026-08-23: 19
+# commits held for hours by a concurrent session's uncommitted bin/fw and
+# agents/audit/audit.sh — for both, `git show HEAD:<src>` was byte-identical to
+# the vendored blob. The ref being pushed was clean; the block was false.
+#
+# So the dry-run stays as the cheap DETECTOR, and these two helpers decide
+# whether the drift it found actually exists in the COMMITTED tree.
+#
+# _t3125_vendor_class mirrors the classes `fw vendor self --check` syncs
+# (lib/bin/agents/web/policy/.tasks-templates/designer). It is a deliberate
+# read-only MIRROR, not a shared list: bin/fw and agents/audit/audit.sh own the
+# canonical filters and their mismatch is a separate open defect (T-2607) which
+# this task does not touch. Getting the mirror wrong is safe in one direction
+# only — a class listed here that vendor-self does not sync could hold a real
+# push, so keep it conservative. VERSION is excluded on purpose: it is
+# sync-only, outside --check, and is rewritten on every commit.
+_t3125_vendor_class() {
+    case "$1" in
+        bin/*.pyc)                                  return 1 ;;
+        bin/*)                                      return 0 ;;
+        lib/*.sh|lib/*.py|lib/*.md)                 return 0 ;;
+        agents/*.sh|agents/*.py|agents/*.md)        return 0 ;;
+        web/*.sh|web/*.py|web/*.html|web/*.css|web/*.js|web/*.svg|web/*.j2|web/*.jinja2) return 0 ;;
+        .tasks/templates/*.md)                      return 0 ;;
+        policy/value-drivers.yaml|policy/bvp-scoring-rubric.md|policy/capability-overlay/tool-set.yaml|policy/anti-patterns.yaml|policy/escalation-patterns.yaml|policy/designer-pin.yaml) return 0 ;;
+    esac
+    # Designer class: only the build the ref's own pin names. The vendored tree
+    # deliberately prunes superseded builds, so matching vendor/designer/*.html
+    # would report 8 permanent phantoms and never let the gate downgrade.
+    [ -n "$_t3125_pinned_designer" ] && [ "$1" = "$_t3125_pinned_designer" ] && return 0
+    return 1
+}
+
+# Prints every class-matching source path whose vendored counterpart in $1 is
+# missing or different. Walks SOURCE paths (not the vendored tree) because that
+# is what vendor-self iterates: it syncs when the destination is absent OR
+# differs, so a newly committed lib/foo.sh that was never vendored is drift and
+# must still BLOCK. One `git ls-tree` fork, compared in-memory by blob sha.
+_t3125_committed_drift() {
+    local _ref="$1" _line _meta _path _sha
+    declare -A _t3125_blob
+    while IFS= read -r -d '' _line; do
+        _meta="${_line%%$'\t'*}"
+        _path="${_line#*$'\t'}"
+        _sha="${_meta##* }"
+        _t3125_blob["$_path"]="$_sha"
+    done < <(git -C "$PROJECT_ROOT" ls-tree -r -z "$_ref" 2>/dev/null)
+    _t3125_pinned_designer=$(git -C "$PROJECT_ROOT" show "$_ref:policy/designer-pin.yaml" 2>/dev/null \
+        | grep -E '^vendored_path:' | head -1 \
+        | sed -e 's/^vendored_path:[[:space:]]*//' -e 's/#.*//' -e 's/^"//' -e 's/"[[:space:]]*$//' -e 's/[[:space:]]*$//')
+    for _path in "${!_t3125_blob[@]}"; do
+        case "$_path" in .agentic-framework/*) continue ;; esac
+        _t3125_vendor_class "$_path" || continue
+        if [ "${_t3125_blob[.agentic-framework/$_path]:-}" != "${_t3125_blob[$_path]}" ]; then
+            printf '%s\n' "$_path"
+        fi
+    done
+}
+
 if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" ]; then
     if [ "${FW_SKIP_SELF_VENDOR_CHECK:-0}" = "1" ]; then
         echo "" >&2
@@ -841,24 +904,61 @@ if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" 
     else
         _sv_out=$("$PROJECT_ROOT/bin/fw" vendor self --dry-run 2>&1 || true)
         if echo "$_sv_out" | grep -q "would sync"; then
+            # T-3125: which ref is actually being pushed? git feeds pre-push
+            # "<local-ref> <local-sha> <remote-ref> <remote-sha>" on stdin, already
+            # buffered into $_stdin_buf by the T-1603 block above. Take the first
+            # non-deletion branch sha — that is the tree consumers will vendor.
+            # Fall back to HEAD when stdin carried nothing usable (manual
+            # invocation, tag-only push, deletion): HEAD is the closest committed
+            # approximation, and it is still strictly better than the working
+            # tree, which is what the false positive was made of.
+            _t3125_ref=""
+            while IFS=' ' read -r _t3125_lref _t3125_lsha _t3125_rref _t3125_rsha; do
+                [ -z "$_t3125_lref" ] && continue
+                [ "$_t3125_lsha" = "$_zero" ] && continue
+                case "$_t3125_lref" in refs/heads/*) ;; *) continue ;; esac
+                _t3125_ref="$_t3125_lsha"
+                break
+            done <<EOF
+$_stdin_buf
+EOF
+            [ -n "$_t3125_ref" ] || _t3125_ref="HEAD"
+            _sv_committed=$(_t3125_committed_drift "$_t3125_ref")
+
+            if [ -n "$_sv_committed" ]; then
+                echo "" >&2
+                echo "ERROR: Push blocked — self-vendor drift detected (T-2240):" >&2
+                echo "" >&2
+                echo "$_sv_out" | grep "would sync" | head -3 >&2
+                echo "" >&2
+                echo "Vendored .agentic-framework/ is stale; see the 'would sync' line(s)" >&2
+                echo "above for the affected class(es). Consumers that vendor from origin" >&2
+                echo "would inherit the divergence silently." >&2
+                echo "" >&2
+                echo "Stale in the COMMITTED tree being pushed (T-3125), first 5:" >&2
+                printf '%s\n' "$_sv_committed" | head -5 | sed 's/^/  /' >&2
+                echo "" >&2
+                echo "Fix:" >&2
+                echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/ && git commit -m 'T-XXX: refresh vendored copies'" >&2
+                echo "" >&2
+                echo "Bypass (logged Tier-2):" >&2
+                echo "  FW_SKIP_SELF_VENDOR_CHECK=1 git push" >&2
+                echo "Bypass (Tier 0):" >&2
+                echo "  git push --no-verify" >&2
+                echo "" >&2
+                exit 1
+            fi
+
             echo "" >&2
-            echo "ERROR: Push blocked — self-vendor drift detected (T-2240):" >&2
+            echo "WARN: Self-vendor drift is working-tree-only — push allowed (T-3125)" >&2
+            echo "  Affected class(es):" >&2
+            echo "$_sv_out" | grep "would sync" | head -3 | sed 's/^ */    /' >&2
+            echo "  The tree being pushed ($_t3125_ref) is IN SYNC: every vendored-class" >&2
+            echo "  file matches its vendored copy in that commit, so consumers vendoring" >&2
+            echo "  from origin inherit nothing stale. The drift above lives only in" >&2
+            echo "  uncommitted edits — yours or a concurrent session's." >&2
+            echo "  Run 'bin/fw vendor self' before COMMITTING those edits." >&2
             echo "" >&2
-            echo "$_sv_out" | grep "would sync" | head -3 >&2
-            echo "" >&2
-            echo "Vendored .agentic-framework/ is stale; see the 'would sync' line(s)" >&2
-            echo "above for the affected class(es). Consumers that vendor from origin" >&2
-            echo "would inherit the divergence silently." >&2
-            echo "" >&2
-            echo "Fix:" >&2
-            echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/ && git commit -m 'T-XXX: refresh vendored copies'" >&2
-            echo "" >&2
-            echo "Bypass (logged Tier-2):" >&2
-            echo "  FW_SKIP_SELF_VENDOR_CHECK=1 git push" >&2
-            echo "Bypass (Tier 0):" >&2
-            echo "  git push --no-verify" >&2
-            echo "" >&2
-            exit 1
         fi
     fi
 fi
