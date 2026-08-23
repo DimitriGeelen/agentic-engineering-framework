@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:35:02Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-08-23T17:01:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -304,6 +304,52 @@ criteria below are the closure condition, and neither the agent nor any scan can
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO — hand the operator trial over; the substrate it walks is ready and
+verified.
+
+**Rationale:** This keystone's two remaining criteria are an operator trial, and nothing an
+agent does can tick them. The question the recommendation answers is therefore not "should
+this close" — it is "is the trial worth the operator's time yet, or would they be walking a
+broken substrate?" That question has an evidence-backed answer now, and it did not on
+2026-08-08.
+
+Half B is proven live (T-2815). Half A shipped (T-2877, 6/6 ACs). T-2941 then rehearsed the
+mechanical half of the trial rather than assuming it — and found the trial *not* ready: F1,
+every `fw corpus explain` route in the curriculum was dead in a consumer, because neither
+the reader nor the maps were vendored. The curriculum's defining design decision (route to
+corpus maps rather than embed content) was inert in exactly the environment a new operator
+would meet it in. That was blocking, and it was right to block.
+
+T-2942 fixed it, and the fix is verified end-to-end here rather than relayed from the task
+text: a fresh `fw init` consumer built in a temp dir resolves **6 of 6** distinct maps the
+seeds name, 0 dead. The set has grown since T-2941 measured it — 12 invocations across 6
+maps now, against the 10 across 4 it recorded (T-2979 added the existing-project path) — so
+the check was re-derived from the seeds rather than copied from the older finding.
+
+What remains genuinely cannot be delegated: whether the prose reads as a colleague
+explaining what is happening, and whether an operator reaches their own first real task
+without asking. Per §Arc Completion Discipline that is the arc's headline mechanic, and
+"both halves are built" is not it.
+
+One honest caveat carried forward from T-2941 F2: the prescribed Steps exercise 5 of the 11
+`## For the Operator` sections. The trial is a real walk, not a complete one.
+
+**Evidence:**
+- Half B live end-to-end; both branches of the invariant covered by green bats, zero skips
+  (T-2720 Agent ACs 1-2, ticked).
+- Half A shipped as T-2877 — 6/6 Agent ACs, 6/6 verification.
+- T-2941 rehearsal found F1 BLOCKING (10 dead routes in a consumer) and F3 clean: zero
+  sections gate the operator, 10 route invocations and no map content restated.
+- T-2942 vendored `tools/` and `.context/designer/projects` — both confirmed present under
+  `.agentic-framework/` in this tree.
+- Fresh-consumer walk, run for this recommendation: `fw init` into a clean temp repo, then
+  `fw corpus explain` for each of the 6 maps the seeds name → **6/6 rc=0, 0 dead**.
+- Remaining blockers: 2 `[REVIEW]` ACs, both operator-judgment, neither convertible to
+  `[REVIEWER]` (their Expected clauses are "reads as a colleague", "you reach your own first
+  real task" — prose and experience, which T-1947 routes away from static scan).
 
 ## Decisions
 

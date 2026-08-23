@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-23-1853
-timestamp: 2026-08-23T16:53:50Z
+# Audit Results - 2026-08-23-1858
+timestamp: 2026-08-23T16:58:56Z
 sections: "structure"
 summary:
   pass: 30
@@ -59,7 +59,7 @@ findings:
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: WARN
-    check: "Branch hygiene: 18 finding(s) — stale branches, worktrees or remote refs"
+    check: "Branch hygiene: 19 finding(s) — stale branches, worktrees or remote refs"
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
