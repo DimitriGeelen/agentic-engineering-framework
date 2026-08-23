@@ -1,0 +1,682 @@
+=== AUDIT REPORT ===
+Timestamp: 2026-08-22T19:03:54+02:00
+Project: /opt/999-Agentic-Engineering-Framework
+
+=== STRUCTURE CHECKS ===
+[PASS] Tasks directory exists
+[PASS] Tasks/active directory exists
+[PASS] Tasks/completed directory exists
+[PASS] Tasks/templates directory exists
+[PASS] Task template exists
+[WARN] Cross-view task-ID collisions: 3 ID(s) name a different task in another corpus view
+       Evidence: FORK T-2428 (identity differs by created:)
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2428-governance-by-payload-mediation.md  [2026-06-18T19:50:00Z]
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/rca-worktree-push-strand/.tasks/active/T-2428-worktree-teardown-strands-unpushed-commi.md  [2026-07-01T09:18:46Z]
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100196-vendor-fix/.tasks/active/T-2428-governance-by-payload-mediation.md  [2026-06-18T19:50:00Z]
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/active/T-2428-governance-by-payload-mediation.md  [2026-06-18T19:50:00Z]
+    - /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2428-governance-by-payload-mediation.md  [2026-06-18T19:50:00Z]
+FORK T-2505 (identity differs by created:)
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2505-worktree-usage-policy--refine-per-task-d.md  [2026-07-01T11:31:04Z]
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100196-vendor-fix/.tasks/completed/T-2505-ratify-p-03-red-team-test-contract-spec-.md  [2026-07-06T08:13:37Z]
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-2505-ratify-p-03-red-team-test-contract-spec-.md  [2026-07-06T08:13:37Z]
+    - /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2505-ratify-p-03-red-team-test-contract-spec-.md  [2026-07-06T08:13:37Z]
+FORK T-2506 (identity differs by created:)
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2506-reconcile-main-checkout-stranded-uncommi.md  [2026-07-01T11:38:17Z]
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100196-vendor-fix/.tasks/completed/T-2506-pre-compact-handover-silently-drops-sess.md  [2026-07-06T09:18:30Z]
+    - /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-2506-pre-compact-handover-silently-drops-sess.md  [2026-07-06T09:18:30Z]
+    - /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2506-pre-compact-handover-silently-drops-sess.md  [2026-07-06T09:18:30Z]
+       Mitigation: Two tasks were minted onto one number across views (L-506 leg 2). Re-number the losing side in its worktree, or land/discard that worktree so the corpus holds one task per ID
+[PASS] All project YAML files parse correctly — examined 29 project YAML file(s)
+[PASS] All arc anchor_task references resolve to existing tasks — examined 17 arc anchor_task reference(s)
+[PASS] All onboarding-seed corpus references resolve to existing maps — examined 12 onboarding-seed corpus reference(s)
+[PASS] Corpus maps lint clean — examined 8 corpus map(s)
+[PASS] All assessed arcs had task commits within 30 days — examined 15 in-progress arc(s) with constituents
+[INFO] free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F3: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F1: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F2: retire_when text present, no recognition heuristic — manual review
+[PASS] No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 390 source file(s) under lib/ web/ agents/ bin/ tools/
+[PASS] No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 134 Python file(s) under web/ + lib/
+[PASS] No stale-slice-references (L-417) — examined 263 file(s) under web/templates web/blueprints lib
+[WARN] Found 180 GO-scope-not-propagated inception(s) of 349 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision
+       Evidence: T-100200, T-3108, T-3100, T-3093, T-3084 (+175 more)
+       Mitigation: Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)
+[PASS] Fabric: 1105 registered card(s)
+[WARN] Fabric: 188/1018 cards have no edges
+       Evidence: Graph coverage below target
+       Mitigation: Run: fw fabric enrich
+[WARN] Fabric drift: 10 source file(s) have no fabric card
+       Evidence: 10 unregistered files matching watch-patterns.yaml
+       Mitigation: Run: fw fabric scan
+[WARN] Fabric: 731 card(s) point at files no watch pattern covers
+       Evidence: The registry already treats these as components; drift checks cannot see them, so coverage is measured over a subset
+       Mitigation: Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components
+[PASS] Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+[WARN] Branch hygiene: 21 finding(s) — stale branches, worktrees or remote refs
+       Evidence: behind-threshold audit-remediation-t2416 behind=2184 days=57 (threshold 50)
+         merged-undeleted land-t100200-go
+         behind-threshold learning/precompact-cleanup behind=7600 days=172 (threshold 50)
+         merged-undeleted t100196-vendor-fix
+         merged-undeleted t100199-close
+         behind-threshold t2353-audit-emit-tasks behind=2184 days=55 (threshold 50)
+         merged-undeleted t2416-fw-safe-mode-hook-timing
+         diverged-fork t2417-fw-sessions ahead=58 behind=2151 days=51 (threshold 50)
+         worktree-unlanded /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation branch=worktree-inception-gov-payload-mediation ahead=6 days=51
+         worktree-merged /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100196-vendor-fix branch=t100196-vendor-fix
+         remote-unlanded origin/learning/precompact-cleanup ahead=1
+         remote-contained origin/t100199-rescue
+         … 9 more (shown lines are one-per-class, not the worst)
+       Mitigation: Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source "/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh"; fw_branch_hygiene "/opt/999-Agentic-Engineering-Framework"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork.
+[PASS] Hook threshold: no hooks failing over threshold
+[FAIL] Self-vendor drift: libs class — 2 file(s) out of sync (T-2244)
+       Evidence: First 2: bin/fw lib/mirror.sh
+       Mitigation: Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)
+[PASS] Invariant suite green — examined 73 structural invariant(s) (tests/lint/)
+[PASS] Designer ghost registry: ghost↔task joins clean
+[PASS] Map conformance: aef-task-lifecycle matches its enforced machine
+[PASS] Map conformance: aef-inception-flow matches its enforced machine
+[PASS] Map conformance: aef-dispatch-loop matches its enforced machine
+[PASS] Map conformance: aef-audit-cron matches its enforced machine
+[PASS] Map conformance: aef-tier0-escalation matches its enforced machine
+[INFO] Stale draft(s), 30d+ untouched: draft-t2584-scratch — promote via the ceremony or delete from the gallery (T-2623)
+
+=== WHOLE-TREE SCANS ===
+[PASS] Secret scan: tracked tree clean
+[PASS] Large-file gate: tracked tree clean
+
+=== TASK COMPLIANCE CHECKS ===
+[WARN] Task T-2720-keystone-onboarding-set-contains-nothing.md missing field: owner
+       Evidence: Compliance check failed
+       Mitigation: Fix missing field: owner in T-2720-keystone-onboarding-set-contains-nothing.md
+       378 of 379 tasks fully valid
+
+=== TASK QUALITY CHECKS ===
+[PASS] All active tasks meet quality thresholds — examined 379 active task(s)
+
+[WARN] 17 active task(s) have every Agent AC ticked and no Human AC outstanding, but are still started-work/issues
+       Evidence: T-1274, T-1542, T-1624, T-2200, T-2202, T-2410, T-2715, T-2801, T-2802, T-2871 (+7 more) — 7 of these have an empty ## Verification block (no mechanical close gate)
+       Mitigation: Candidates for close, not closures — spot-check with 'fw task verify T-XXX' per task, then 'fw task update T-XXX --status work-completed'. Full list: /opt/999-Agentic-Engineering-Framework/.context/audits/unclosed-satisfied/LATEST.md
+
+=== GIT TRACEABILITY CHECKS ===
+[PASS] Git traceability: 99% (8441/8489 commits reference tasks)
+[WARN] Uncommitted changes present
+       Evidence: 22 real file(s) modified (10 session-state file(s) ignored)
+       Mitigation: Commit changes with task reference or stash
+[PASS] All commit task refs resolve to actual tasks — examined 8441 task-referencing commit(s) in full history
+
+=== CORPUS HEALTH ===
+[PASS] Corpus canaries: retrieval verified end to end
+=== ENFORCEMENT CHECKS ===
+[PASS] Bypass log exists
+[WARN] Gate-bypass log: 53 safety bypasses in last 7 days (+ 6 drift overrides)
+       Evidence: 1009 total entries; safety-bypass-as-pattern signal
+       Mitigation: Review .context/working/.gate-bypass-log.yaml — investigate --skip-* / --scope-reduction-acknowledged callers
+[PASS] Commit-msg hook installed
+[PASS] No Tier 0 violations detected
+
+=== LEARNING CAPTURE CHECKS ===
+[PASS] Practices documented: 7 practice(s) in 015-Practices.md
+[PASS] All practices have traceable origins — examined 7 documented practice(s)
+[PASS] All practice origins resolve to actual tasks — examined 7 practice Origin: line(s)
+[PASS] Bugfix-learning coverage: 74% (335/451 bugfixes have learnings)
+
+=== EPISODIC MEMORY CHECKS ===
+[PASS] All completed tasks have episodic summaries — examined 2724 completed task(s)
+[PASS] All episodic summaries have quality content — examined 2726 episodic summary file(s)
+[PASS] No orphaned episodic files — examined 2726 episodic file(s)
+
+=== OBSERVATION INBOX CHECKS ===
+[WARN] 26 urgent observation(s) still pending
+       Evidence: Urgent items in .context/inbox.yaml need attention
+       Mitigation: Run: fw note triage
+[WARN] 143 observation(s) pending for >7 days
+       Evidence: Stale observations in .context/inbox.yaml
+       Mitigation: Run: fw note triage — promote or dismiss stale items
+
+=== CONCERNS REGISTER CHECKS ===
+[PASS] Gaps register: 15 watching, no triggers fired
+
+=== HANDOVER OPEN QUESTIONS CHECK ===
+[PASS] Handover open questions: none (section empty or template placeholder)
+
+=== GRADUATION PIPELINE CHECKS ===
+[WARN] Learnings ready for promotion — review graduation candidates
+       Evidence: 671 learnings, promotion candidates available
+       Mitigation: Run: fw promote suggest
+
+=== INCEPTION RESEARCH CHECKS ===
+[WARN] Inception task T-2527 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2527-*.md
+[WARN] Inception task T-2761 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2761-*.md
+[WARN] Inception task T-3081 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3081-*.md
+[WARN] Inception task T-3084 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3084-*.md
+[WARN] Inception task T-3100 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3100-*.md
+[WARN] Inception task T-3108 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3108-*.md
+
+=== RESEARCH PERSISTENCE OE CHECKS ===
+[WARN] C-001: Inception T-1265 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-1265-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-1271 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-1271-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2062 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2062-watchtower-review-404-completed.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2062
+[WARN] C-001: Inception T-2063 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2063-watchtower-complete-button-silent-fail.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2063
+[WARN] C-001: Inception T-2064 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2064-review-queue-zero-human-acs.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2064
+[WARN] C-001: Inception T-2065 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2065-arc-approve-driver-no-rescore.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2065
+[WARN] C-001: Inception T-2066 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2066-inception-detail-template-silent-drop.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2066
+[WARN] C-001: Inception T-2321 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2321-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2323 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2323-yield-point-granularity-inception.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2323
+[WARN] C-001: Inception T-2668 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2668-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2669 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2669-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2670 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2670-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2770 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2770-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2876 (started-work) has artifact but task doesn't reference it
+       Evidence: t-2876-interpreter-write-gate-bypass.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2876
+[WARN] C-001: Inception T-2899 (started-work) has no research artifact in docs/reports/
+       Evidence: Inception in progress — status started-work, with no persisted research
+       Mitigation: Create docs/reports/T-2899-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2963 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2963-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-3114 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-3114-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-682 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-682-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-704 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-704-*.md — the thinking trail IS the artifact
+[INFO] C-001 population breakdown: 1/4 started-work missing an artefact, 11/26 awaiting-decision missing an artefact
+[PASS] C-002: commit-msg hook has research artifact check
+[PASS] C-002: No research warnings logged (clean or first run)
+[PASS] C-003: Research checkpoint logic present in checkpoint.sh
+[PASS] C-006: All active inceptions have a real Recommendation block — examined 30 active inception(s)
+
+=== OE-FAST: 30-MINUTE CONTROL CHECKS ===
+[PASS] CTL-001: Focus file empty (no recent activity — expected)
+[PASS] CTL-003: Budget status file fresh (< 5min old)
+[PASS] CTL-004: Tool counter at 113 (last commit: 60 minutes ago)
+[PASS] CTL-018: Budget status valid JSON (level: ok)
+
+=== OE-HOURLY: HOURLY CONTROL CHECKS ===
+[PASS] CTL-008: Task reference traceability 100% (0/20 without T-XXX)
+[PASS] CTL-020: 4 cron audit file(s) in last hour
+
+=== OE-DAILY: DAILY CONTROL CHECKS ===
+[PASS] CTL-002: Tier 0 guard installed and wired in settings.json
+[PASS] CTL-005: Error watchdog installed and wired in settings.json
+[PASS] CTL-006: Handover coverage for compactions (1757 handovers, 911 compactions)
+[PASS] CTL-007: Post-compact resume hook configured in settings.json
+[PASS] CTL-009: Inception T-1265 has decision (7 commits)
+[PASS] CTL-009: Inception T-1271 has decision (8 commits)
+[PASS] CTL-009: Inception T-1309 has decision (11 commits)
+[PASS] CTL-009: Inception T-1611 has decision (14 commits)
+[PASS] CTL-009: Inception T-1685 has decision (4 commits)
+[PASS] CTL-009: Inception T-2062 has decision (11 commits)
+[PASS] CTL-009: Inception T-2063 has decision (8 commits)
+[PASS] CTL-009: Inception T-2064 has decision (5 commits)
+[PASS] CTL-009: Inception T-2065 has decision (6 commits)
+[PASS] CTL-009: Inception T-2066 has decision (9 commits)
+[PASS] CTL-009: Inception T-2137 has decision (7 commits)
+[PASS] CTL-009: Inception T-2323 has decision (15 commits)
+[PASS] CTL-009: Inception T-2428 has decision (30 commits)
+[PASS] CTL-009: Inception T-2715 has decision (31 commits)
+[PASS] CTL-009: Inception T-2876 has decision (8 commits)
+[PASS] CTL-009: Inception T-3097 has decision (5 commits)
+[PASS] CTL-009: Inception T-550 has decision (8 commits)
+[PASS] CTL-009: Inception T-558 has decision (7 commits)
+[PASS] CTL-009: Inception T-682 has decision (7 commits)
+[PASS] CTL-009: Inception T-704 has decision (10 commits)
+[PASS] CTL-009: Inception T-705 has decision (12 commits)
+[PASS] CTL-009: Inception T-844 has decision (9 commits)
+[PASS] CTL-009: Inception T-084 has decision (3 commits)
+[PASS] CTL-009: Inception T-097 has decision (3 commits)
+[PASS] CTL-009: Inception T-100200 has decision (5 commits)
+[PASS] CTL-009: Inception T-1061 has decision (14 commits)
+[PASS] CTL-009: Inception T-107 has decision (33 commits)
+[PASS] CTL-009: Inception T-1084 has decision (6 commits)
+[PASS] CTL-009: Inception T-1092 has decision (10 commits)
+[PASS] CTL-009: Inception T-109 has decision (36 commits)
+[PASS] CTL-009: Inception T-1100 has decision (9 commits)
+[PASS] CTL-009: Inception T-1101 has decision (4 commits)
+[PASS] CTL-009: Inception T-1102 has decision (4 commits)
+[PASS] CTL-009: Inception T-1103 has decision (6 commits)
+[PASS] CTL-009: Inception T-1104 has decision (5 commits)
+[PASS] CTL-009: Inception T-1105 has decision (15 commits)
+[PASS] CTL-009: Inception T-1106 has decision (11 commits)
+[PASS] CTL-009: Inception T-1107 has decision (13 commits)
+[PASS] CTL-009: Inception T-1109 has decision (14 commits)
+[PASS] CTL-009: Inception T-110 has decision (40 commits)
+[PASS] CTL-009: Inception T-1110 has decision (3 commits)
+[PASS] CTL-009: Inception T-1111 has decision (4 commits)
+[PASS] CTL-009: Inception T-1112 has decision (7 commits)
+[PASS] CTL-009: Inception T-1115 has decision (5 commits)
+[PASS] CTL-009: Inception T-1119 has decision (5 commits)
+[PASS] CTL-009: Inception T-111 has decision (42 commits)
+[PASS] CTL-009: Inception T-1120 has decision (3 commits)
+[PASS] CTL-009: Inception T-1121 has decision (5 commits)
+[PASS] CTL-009: Inception T-1122 has decision (4 commits)
+[PASS] CTL-009: Inception T-1123 has decision (8 commits)
+[PASS] CTL-009: Inception T-1124 has decision (5 commits)
+[PASS] CTL-009: Inception T-1125 has decision (9 commits)
+[PASS] CTL-009: Inception T-1126 has decision (4 commits)
+[PASS] CTL-009: Inception T-1127 has decision (4 commits)
+[PASS] CTL-009: Inception T-1129 has decision (5 commits)
+[PASS] CTL-009: Inception T-1130 has decision (8 commits)
+[PASS] CTL-009: Inception T-1131 has decision (3 commits)
+[PASS] CTL-009: Inception T-1134 has decision (3 commits)
+[PASS] CTL-009: Inception T-1135 has decision (5 commits)
+[PASS] CTL-009: Inception T-1136 has decision (4 commits)
+[PASS] CTL-009: Inception T-1140 has decision (5 commits)
+[PASS] CTL-009: Inception T-1141 has decision (3 commits)
+[PASS] CTL-009: Inception T-1145 has decision (3 commits)
+[PASS] CTL-009: Inception T-1146 has decision (8 commits)
+[PASS] CTL-009: Inception T-1151 has decision (3 commits)
+[PASS] CTL-009: Inception T-1178 has decision (4 commits)
+[PASS] CTL-009: Inception T-118 has decision (24 commits)
+[PASS] CTL-009: Inception T-1200 has decision (4 commits)
+[PASS] CTL-009: Inception T-120 has decision (34 commits)
+[PASS] CTL-009: Inception T-1212 has decision (8 commits)
+[PASS] CTL-009: Inception T-1213 has decision (6 commits)
+[PASS] CTL-009: Inception T-122 has decision (22 commits)
+[PASS] CTL-009: Inception T-124 has decision (32 commits)
+[PASS] CTL-009: Inception T-1251 has decision (4 commits)
+[PASS] CTL-009: Inception T-1252 has decision (5 commits)
+[PASS] CTL-009: Inception T-1253 has decision (8 commits)
+[PASS] CTL-009: Inception T-1255 has decision (5 commits)
+[PASS] CTL-009: Inception T-1258 has decision (5 commits)
+[PASS] CTL-009: Inception T-1260 has decision (16 commits)
+[PASS] CTL-009: Inception T-1261 has decision (4 commits)
+[PASS] CTL-009: Inception T-1268 has decision (12 commits)
+[PASS] CTL-009: Inception T-1270 has decision (10 commits)
+[PASS] CTL-009: Inception T-1272 has decision (3 commits)
+[PASS] CTL-009: Inception T-1276 has decision (3 commits)
+[PASS] CTL-009: Inception T-1283 has decision (10 commits)
+[PASS] CTL-009: Inception T-1284 has decision (13 commits)
+[PASS] CTL-009: Inception T-1298 has decision (3 commits)
+[PASS] CTL-009: Inception T-1299 has decision (4 commits)
+[PASS] CTL-009: Inception T-1302 has decision (6 commits)
+[PASS] CTL-009: Inception T-1303 has decision (3 commits)
+[PASS] CTL-009: Inception T-1304 has decision (4 commits)
+[PASS] CTL-009: Inception T-1305 has decision (5 commits)
+[PASS] CTL-009: Inception T-130 has decision (31 commits)
+[PASS] CTL-009: Inception T-1311 has decision (4 commits)
+[PASS] CTL-009: Inception T-1312 has decision (3 commits)
+[PASS] CTL-009: Inception T-1313 has decision (3 commits)
+[PASS] CTL-009: Inception T-1314 has decision (4 commits)
+[PASS] CTL-009: Inception T-1315 has decision (5 commits)
+[PASS] CTL-009: Inception T-1316 has decision (3 commits)
+[PASS] CTL-009: Inception T-1319 has decision (4 commits)
+[PASS] CTL-009: Inception T-131 has decision (25 commits)
+[PASS] CTL-009: Inception T-1321 has decision (4 commits)
+[PASS] CTL-009: Inception T-1322 has decision (4 commits)
+[PASS] CTL-009: Inception T-1326 has decision (6 commits)
+[PASS] CTL-009: Inception T-132 has decision (27 commits)
+[PASS] CTL-009: Inception T-1330 has decision (7 commits)
+[PASS] CTL-009: Inception T-1332 has decision (8 commits)
+[PASS] CTL-009: Inception T-1333 has decision (13 commits)
+[PASS] CTL-009: Inception T-1337 has decision (3 commits)
+[PASS] CTL-009: Inception T-133 has decision (33 commits)
+[PASS] CTL-009: Inception T-1345 has decision (5 commits)
+[PASS] CTL-009: Inception T-1346 has decision (9 commits)
+[PASS] CTL-009: Inception T-1348 has decision (3 commits)
+[PASS] CTL-009: Inception T-1353 has decision (3 commits)
+[PASS] CTL-009: Inception T-1355 has decision (4 commits)
+[PASS] CTL-009: Inception T-1359 has decision (3 commits)
+[PASS] CTL-009: Inception T-1365 has decision (3 commits)
+[PASS] CTL-009: Inception T-1372 has decision (13 commits)
+[PASS] CTL-009: Inception T-1376 has decision (14 commits)
+[PASS] CTL-009: Inception T-1388 has decision (16 commits)
+[PASS] CTL-009: Inception T-138 has decision (30 commits)
+[PASS] CTL-009: Inception T-1404 has decision (9 commits)
+[PASS] CTL-009: Inception T-140 has decision (35 commits)
+[PASS] CTL-009: Inception T-1420 has decision (5 commits)
+[PASS] CTL-009: Inception T-1442 has decision (19 commits)
+[PASS] CTL-009: Inception T-1443 has decision (25 commits)
+[PASS] CTL-009: Inception T-1444 has decision (5 commits)
+[PASS] CTL-009: Inception T-1451 has decision (8 commits)
+[PASS] CTL-009: Inception T-1452 has decision (8 commits)
+[PASS] CTL-009: Inception T-1455 has decision (8 commits)
+[PASS] CTL-009: Inception T-1459 has decision (4 commits)
+[PASS] CTL-009: Inception T-1460 has decision (4 commits)
+[PASS] CTL-009: Inception T-1482 has decision (4 commits)
+[PASS] CTL-009: Inception T-1499 has decision (7 commits)
+[PASS] CTL-009: Inception T-1501 has decision (8 commits)
+[PASS] CTL-009: Inception T-1505 has decision (5 commits)
+[PASS] CTL-009: Inception T-1506 has decision (5 commits)
+[PASS] CTL-009: Inception T-1507 has decision (5 commits)
+[PASS] CTL-009: Inception T-1513 has decision (5 commits)
+[PASS] CTL-009: Inception T-1538 has decision (4 commits)
+[PASS] CTL-009: Inception T-1544 has decision (3 commits)
+[PASS] CTL-009: Inception T-1548 has decision (4 commits)
+[PASS] CTL-009: Inception T-154 has decision (71 commits)
+[PASS] CTL-009: Inception T-155 has decision (43 commits)
+[PASS] CTL-009: Inception T-1565 has decision (13 commits)
+[PASS] CTL-009: Inception T-156 has decision (27 commits)
+[PASS] CTL-009: Inception T-157 has decision (75 commits)
+[PASS] CTL-009: Inception T-158 has decision (40 commits)
+[PASS] CTL-009: Inception T-1601 has decision (7 commits)
+[PASS] CTL-009: Inception T-1616 has decision (5 commits)
+[PASS] CTL-009: Inception T-1617 has decision (4 commits)
+[PASS] CTL-009: Inception T-1626 has decision (22 commits)
+[PASS] CTL-009: Inception T-1633 has decision (21 commits)
+[PASS] CTL-009: Inception T-1641 has decision (20 commits)
+[PASS] CTL-009: Inception T-1642 has decision (9 commits)
+[PASS] CTL-009: Inception T-1645 has decision (5 commits)
+[PASS] CTL-009: Inception T-164 has decision (68 commits)
+[PASS] CTL-009: Inception T-1653 has decision (9 commits)
+[PASS] CTL-009: Inception T-1660 has decision (5 commits)
+[PASS] CTL-009: Inception T-1666 has decision (3 commits)
+[PASS] CTL-009: Inception T-1667 has decision (11 commits)
+[PASS] CTL-009: Inception T-1670 has decision (8 commits)
+[PASS] CTL-009: Inception T-1675 has decision (4 commits)
+[PASS] CTL-009: Inception T-1686 has decision (4 commits)
+[PASS] CTL-009: Inception T-1688 has decision (9 commits)
+[PASS] CTL-009: Inception T-1689 has decision (8 commits)
+[PASS] CTL-009: Inception T-168 has decision (207 commits)
+[PASS] CTL-009: Inception T-1690 has decision (4 commits)
+[PASS] CTL-009: Inception T-1691 has decision (4 commits)
+[PASS] CTL-009: Inception T-1692 has decision (4 commits)
+[PASS] CTL-009: Inception T-1705 has decision (4 commits)
+[PASS] CTL-009: Inception T-1709 has decision (6 commits)
+[PASS] CTL-009: Inception T-1710 has decision (4 commits)
+[PASS] CTL-009: Inception T-1713 has decision (6 commits)
+[PASS] CTL-009: Inception T-1714 has decision (3 commits)
+[PASS] CTL-009: Inception T-1715 has decision (12 commits)
+[PASS] CTL-009: Inception T-1717 has decision (10 commits)
+[PASS] CTL-009: Inception T-1721 has decision (3 commits)
+[PASS] CTL-009: Inception T-1726 has decision (8 commits)
+[PASS] CTL-009: Inception T-1729 has decision (5 commits)
+[PASS] CTL-009: Inception T-1744 has decision (11 commits)
+[PASS] CTL-009: Inception T-1745 has decision (4 commits)
+[PASS] CTL-009: Inception T-174 has decision (39 commits)
+[PASS] CTL-009: Inception T-1761 has decision (11 commits)
+[PASS] CTL-009: Inception T-1768 has decision (5 commits)
+[PASS] CTL-009: Inception T-178 has decision (25 commits)
+[PASS] CTL-009: Inception T-179 has decision (25 commits)
+[PASS] CTL-009: Inception T-1804 has decision (5 commits)
+[PASS] CTL-009: Inception T-181 has decision (57 commits)
+[PASS] CTL-009: Inception T-1829 has decision (11 commits)
+[PASS] CTL-009: Inception T-1830 has decision (9 commits)
+[PASS] CTL-009: Inception T-1831 has decision (18 commits)
+[PASS] CTL-009: Inception T-1833 has decision (5 commits)
+[PASS] CTL-009: Inception T-1846 has decision (17 commits)
+[PASS] CTL-009: Inception T-1878 has decision (22 commits)
+[PASS] CTL-009: Inception T-1902 has decision (17 commits)
+[PASS] CTL-009: Inception T-1905 has decision (11 commits)
+[PASS] CTL-009: Inception T-190 has decision (50 commits)
+[PASS] CTL-009: Inception T-1915 has decision (15 commits)
+[PASS] CTL-009: Inception T-191 has decision (55 commits)
+[PASS] CTL-009: Inception T-192 has decision (51 commits)
+[PASS] CTL-009: Inception T-194 has decision (68 commits)
+[PASS] CTL-009: Inception T-1950 has decision (8 commits)
+[PASS] CTL-009: Inception T-1958 has decision (5 commits)
+[PASS] CTL-009: Inception T-1959 has decision (7 commits)
+[PASS] CTL-009: Inception T-1981 has decision (7 commits)
+[PASS] CTL-009: Inception T-1983 has decision (5 commits)
+[PASS] CTL-009: Inception T-1987 has decision (7 commits)
+[PASS] CTL-009: Inception T-2000 has decision (7 commits)
+[PASS] CTL-009: Inception T-200 has decision (49 commits)
+[PASS] CTL-009: Inception T-2030 has decision (16 commits)
+[PASS] CTL-009: Inception T-2057 has decision (10 commits)
+[PASS] CTL-009: Inception T-2078 has decision (14 commits)
+[PASS] CTL-009: Inception T-2081 has decision (4 commits)
+[PASS] CTL-009: Inception T-2097 has decision (5 commits)
+[PASS] CTL-009: Inception T-2098 has decision (4 commits)
+[PASS] CTL-009: Inception T-2100 has decision (5 commits)
+[PASS] CTL-009: Inception T-2101 has decision (5 commits)
+[PASS] CTL-009: Inception T-2115 has decision (3 commits)
+[PASS] CTL-009: Inception T-2118 has decision (7 commits)
+[PASS] CTL-009: Inception T-2121 has decision (17 commits)
+[PASS] CTL-009: Inception T-2122 has decision (5 commits)
+[PASS] CTL-009: Inception T-2123 has decision (8 commits)
+[PASS] CTL-009: Inception T-2125 has decision (10 commits)
+[PASS] CTL-009: Inception T-2126 has decision (3 commits)
+[PASS] CTL-009: Inception T-2133 has decision (4 commits)
+[PASS] CTL-009: Inception T-2138 has decision (13 commits)
+[PASS] CTL-009: Inception T-2143 has decision (21 commits)
+[PASS] CTL-009: Inception T-2144 has decision (22 commits)
+[PASS] CTL-009: Inception T-2157 has decision (6 commits)
+[PASS] CTL-009: Inception T-2158 has decision (17 commits)
+[PASS] CTL-009: Inception T-2159 has decision (5 commits)
+[PASS] CTL-009: Inception T-2173 has decision (9 commits)
+[PASS] CTL-009: Inception T-2181 has decision (5 commits)
+[PASS] CTL-009: Inception T-2186 has decision (21 commits)
+[PASS] CTL-009: Inception T-2201 has decision (10 commits)
+[PASS] CTL-009: Inception T-2203 has decision (8 commits)
+[PASS] CTL-009: Inception T-2204 has decision (19 commits)
+[PASS] CTL-009: Inception T-2209 has decision (27 commits)
+[PASS] CTL-009: Inception T-2217 has decision (6 commits)
+[PASS] CTL-009: Inception T-2225 has decision (8 commits)
+[PASS] CTL-009: Inception T-2229 has decision (8 commits)
+[PASS] CTL-009: Inception T-222 has decision (34 commits)
+[PASS] CTL-009: Inception T-2231 has decision (6 commits)
+[PASS] CTL-009: Inception T-2233 has decision (4 commits)
+[PASS] CTL-009: Inception T-2245 has decision (16 commits)
+[PASS] CTL-009: Inception T-2248 has decision (6 commits)
+[PASS] CTL-009: Inception T-2252 has decision (4 commits)
+[PASS] CTL-009: Inception T-2275 has decision (3 commits)
+[PASS] CTL-009: Inception T-2277 has decision (5 commits)
+[PASS] CTL-009: Inception T-228 has decision (30 commits)
+[PASS] CTL-009: Inception T-2303 has decision (15 commits)
+[PASS] CTL-009: Inception T-2305 has decision (8 commits)
+[PASS] CTL-009: Inception T-2324 has decision (17 commits)
+[PASS] CTL-009: Inception T-2330 has decision (10 commits)
+[PASS] CTL-009: Inception T-2333 has decision (3 commits)
+[PASS] CTL-009: Inception T-2347 has decision (7 commits)
+[PASS] CTL-009: Inception T-2352 has decision (9 commits)
+[PASS] CTL-009: Inception T-235 has decision (50 commits)
+[PASS] CTL-009: Inception T-2393 has decision (5 commits)
+[PASS] CTL-009: Inception T-2394 has decision (12 commits)
+[PASS] CTL-009: Inception T-2413 has decision (4 commits)
+[PASS] CTL-009: Inception T-2416 has decision (11 commits)
+[PASS] CTL-009: Inception T-2418 has decision (13 commits)
+[PASS] CTL-009: Inception T-2419 has decision (8 commits)
+[PASS] CTL-009: Inception T-2442 has decision (9 commits)
+[PASS] CTL-009: Inception T-2447 has decision (4 commits)
+[PASS] CTL-009: Inception T-2458 has decision (8 commits)
+[PASS] CTL-009: Inception T-2464 has decision (3 commits)
+[PASS] CTL-009: Inception T-2484 has decision (7 commits)
+[PASS] CTL-009: Inception T-2494 has decision (9 commits)
+[PASS] CTL-009: Inception T-2505 has decision (13 commits)
+[PASS] CTL-009: Inception T-2520 has decision (5 commits)
+[PASS] CTL-009: Inception T-2522 has decision (6 commits)
+[PASS] CTL-009: Inception T-2527 has decision (5 commits)
+[PASS] CTL-009: Inception T-2528 has decision (3 commits)
+[PASS] CTL-009: Inception T-2538 has decision (3 commits)
+[PASS] CTL-009: Inception T-2541 has decision (7 commits)
+[PASS] CTL-009: Inception T-254 has decision (33 commits)
+[PASS] CTL-009: Inception T-2551 has decision (8 commits)
+[PASS] CTL-009: Inception T-2553 has decision (3 commits)
+[PASS] CTL-009: Inception T-2571 has decision (5 commits)
+[PASS] CTL-009: Inception T-2602 has decision (5 commits)
+[PASS] CTL-009: Inception T-2608 has decision (4 commits)
+[PASS] CTL-009: Inception T-2619 has decision (4 commits)
+[PASS] CTL-009: Inception T-261 has decision (27 commits)
+[PASS] CTL-009: Inception T-2620 has decision (14 commits)
+[PASS] CTL-009: Inception T-2652 has decision (9 commits)
+[PASS] CTL-009: Inception T-2663 has decision (3 commits)
+[PASS] CTL-009: Inception T-2679 has decision (6 commits)
+[PASS] CTL-009: Inception T-2687 has decision (8 commits)
+[PASS] CTL-009: Inception T-2703 has decision (7 commits)
+[PASS] CTL-009: Inception T-2704 has decision (7 commits)
+[PASS] CTL-009: Inception T-272 has decision (34 commits)
+[PASS] CTL-009: Inception T-2757 has decision (4 commits)
+[PASS] CTL-009: Inception T-2761 has decision (3 commits)
+[PASS] CTL-009: Inception T-279 has decision (43 commits)
+[PASS] CTL-009: Inception T-2800 has decision (15 commits)
+[PASS] CTL-009: Inception T-2822 has decision (18 commits)
+[PASS] CTL-009: Inception T-2857 has decision (5 commits)
+[PASS] CTL-009: Inception T-2863 has decision (17 commits)
+[PASS] CTL-009: Inception T-2909 has decision (3 commits)
+[PASS] CTL-009: Inception T-2925 has decision (8 commits)
+[PASS] CTL-009: Inception T-292 has decision (42 commits)
+[PASS] CTL-009: Inception T-294 has decision (41 commits)
+[PASS] CTL-009: Inception T-2992 has decision (4 commits)
+[PASS] CTL-009: Inception T-2993 has decision (3 commits)
+[PASS] CTL-009: Inception T-2995 has decision (5 commits)
+[PASS] CTL-009: Inception T-3004 has decision (6 commits)
+[PASS] CTL-009: Inception T-3005 has decision (9 commits)
+[PASS] CTL-009: Inception T-3007 has decision (8 commits)
+[PASS] CTL-009: Inception T-3018 has decision (6 commits)
+[PASS] CTL-009: Inception T-3022 has decision (21 commits)
+[PASS] CTL-009: Inception T-3025 has decision (14 commits)
+[PASS] CTL-009: Inception T-3041 has decision (12 commits)
+[PASS] CTL-009: Inception T-305 has decision (20 commits)
+[PASS] CTL-009: Inception T-306 has decision (34 commits)
+[PASS] CTL-009: Inception T-3072 has decision (5 commits)
+[PASS] CTL-009: Inception T-307 has decision (42 commits)
+[PASS] CTL-009: Inception T-3093 has decision (6 commits)
+[PASS] CTL-009: Inception T-316 has decision (7 commits)
+[PASS] CTL-009: Inception T-325 has decision (7 commits)
+[PASS] CTL-009: Inception T-339 has decision (3 commits)
+[PASS] CTL-009: Inception T-356 has decision (3 commits)
+[PASS] CTL-009: Inception T-358 has decision (3 commits)
+[PASS] CTL-009: Inception T-362 has decision (3 commits)
+[PASS] CTL-009: Inception T-375 has decision (3 commits)
+[PASS] CTL-009: Inception T-411 has decision (3 commits)
+[PASS] CTL-009: Inception T-432 has decision (4 commits)
+[PASS] CTL-009: Inception T-434 has decision (5 commits)
+[PASS] CTL-009: Inception T-435 has decision (7 commits)
+[PASS] CTL-009: Inception T-436 has decision (7 commits)
+[PASS] CTL-009: Inception T-445 has decision (5 commits)
+[PASS] CTL-009: Inception T-455 has decision (7 commits)
+[PASS] CTL-009: Inception T-469 has decision (5 commits)
+[PASS] CTL-009: Inception T-473 has decision (3 commits)
+[PASS] CTL-009: Inception T-477 has decision (6 commits)
+[PASS] CTL-009: Inception T-482 has decision (4 commits)
+[PASS] CTL-009: Inception T-489 has decision (4 commits)
+[PASS] CTL-009: Inception T-490 has decision (3 commits)
+[PASS] CTL-009: Inception T-495 has decision (3 commits)
+[PASS] CTL-009: Inception T-502 has decision (4 commits)
+[PASS] CTL-009: Inception T-513 has decision (7 commits)
+[PASS] CTL-009: Inception T-532 has decision (11 commits)
+[PASS] CTL-009: Inception T-533 has decision (6 commits)
+[PASS] CTL-009: Inception T-534 has decision (3 commits)
+[PASS] CTL-009: Inception T-548 has decision (5 commits)
+[PASS] CTL-009: Inception T-549 has decision (12 commits)
+[PASS] CTL-009: Inception T-561 has decision (4 commits)
+[PASS] CTL-009: Inception T-570 has decision (3 commits)
+[PASS] CTL-009: Inception T-571 has decision (4 commits)
+[PASS] CTL-009: Inception T-578 has decision (3 commits)
+[PASS] CTL-009: Inception T-579 has decision (3 commits)
+[PASS] CTL-009: Inception T-580 has decision (3 commits)
+[PASS] CTL-009: Inception T-581 has decision (3 commits)
+[PASS] CTL-009: Inception T-582 has decision (3 commits)
+[PASS] CTL-009: Inception T-583 has decision (4 commits)
+[PASS] CTL-009: Inception T-586 has decision (10 commits)
+[PASS] CTL-009: Inception T-589 has decision (3 commits)
+[PASS] CTL-009: Inception T-598 has decision (4 commits)
+[PASS] CTL-009: Inception T-599 has decision (3 commits)
+[PASS] CTL-009: Inception T-600 has decision (3 commits)
+[PASS] CTL-009: Inception T-601 has decision (3 commits)
+[PASS] CTL-009: Inception T-603 has decision (4 commits)
+[PASS] CTL-009: Inception T-607 has decision (3 commits)
+[PASS] CTL-009: Inception T-608 has decision (6 commits)
+[PASS] CTL-009: Inception T-614 has decision (3 commits)
+[PASS] CTL-009: Inception T-625 has decision (3 commits)
+[PASS] CTL-009: Inception T-629 has decision (5 commits)
+[PASS] CTL-009: Inception T-630 has decision (3 commits)
+[PASS] CTL-009: Inception T-635 has decision (3 commits)
+[PASS] CTL-009: Inception T-678 has decision (8 commits)
+[PASS] CTL-009: Inception T-679 has decision (38 commits)
+[PASS] CTL-009: Inception T-697 has decision (4 commits)
+[PASS] CTL-009: Inception T-698 has decision (3 commits)
+[PASS] CTL-009: Inception T-699 has decision (3 commits)
+[PASS] CTL-009: Inception T-700 has decision (4 commits)
+[PASS] CTL-009: Inception T-701 has decision (4 commits)
+[PASS] CTL-009: Inception T-702 has decision (3 commits)
+[PASS] CTL-009: Inception T-703 has decision (3 commits)
+[PASS] CTL-009: Inception T-707 has decision (6 commits)
+[PASS] CTL-009: Inception T-772 has decision (5 commits)
+[PASS] CTL-009: Inception T-792 has decision (3 commits)
+[PASS] CTL-009: Inception T-799 has decision (3 commits)
+[PASS] CTL-009: Inception T-800 has decision (4 commits)
+[PASS] CTL-009: Inception T-816 has decision (5 commits)
+[PASS] CTL-009: Inception T-817 has decision (5 commits)
+[PASS] CTL-009: Inception T-818 has decision (6 commits)
+[PASS] CTL-009: Inception T-823 has decision (3 commits)
+[PASS] CTL-009: Inception T-837 has decision (5 commits)
+[PASS] CTL-009: Inception T-856 has decision (3 commits)
+[PASS] CTL-009: Inception T-864 has decision (3 commits)
+[PASS] CTL-009: Inception T-866 has decision (4 commits)
+[PASS] CTL-009: Inception T-882 has decision (3 commits)
+[PASS] CTL-009: Inception T-885 has decision (3 commits)
+[PASS] CTL-009: Inception T-954 has decision (10 commits)
+[PASS] CTL-009: Inception T-962 has decision (6 commits)
+[PASS] CTL-009: Inception T-968 has decision (8 commits)
+[PASS] CTL-027: Inception T-1265 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1271 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1309 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1611 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1685 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2062 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2063 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2064 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2065 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2066 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2137 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2321 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2323 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2428 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2668 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2669 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2670 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2715 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2770 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2876 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2899 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2963 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-3097 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-3114 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-550 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-558 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-682 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-704 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-705 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-844 has Recommendation + Decision sections
+[PASS] CTL-010: Bypass log has 13 entries (post-commit detector working)
+[PASS] CTL-011: pre-push hook installed and executable
+[PASS] CTL-013: T-1895 verification re-run: 4/4 pass
+[WARN] CTL-013: T-1894 verification re-run: 2 command(s) failing
+       Evidence: Verification commands that passed at completion now fail
+       Mitigation: Review T-1894 — environment may have changed
+[WARN] CTL-013: T-1892 verification re-run: 1 command(s) failing
+       Evidence: Verification commands that passed at completion now fail
+       Mitigation: Review T-1892 — environment may have changed

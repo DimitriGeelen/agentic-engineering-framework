@@ -1,84 +1,134 @@
-# Audit Results - 2026-08-22-1215
-timestamp: 2026-08-22T10:15:54Z
-sections: "structure"
+# Audit Results - 2026-08-22-1541
+timestamp: 2026-08-22T13:41:20Z
+sections: "traceability,episodic,discovery-trends,observations,gaps,corpus-health,oe-fast,oe-research,oe-hourly"
 summary:
-  pass: 29
-  warn: 6
+  pass: 24
+  warn: 26
   fail: 0
 findings:
   - level: PASS
-    check: "Tasks directory exists"
-  - level: PASS
-    check: "Tasks/active directory exists"
-  - level: PASS
-    check: "Tasks/completed directory exists"
-  - level: PASS
-    check: "Tasks/templates directory exists"
-  - level: PASS
-    check: "Task template exists"
+    check: "Git traceability: 99% (8436/8484 commits reference tasks)"
   - level: WARN
-    check: "Cross-view task-ID collisions: 3 ID(s) name a different task in another corpus view"
-    mitigation: "Two tasks were minted onto one number across views (L-506 leg 2). Re-number the losing side in its worktree, or land/discard that worktree so the corpus holds one task per ID"
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
-    check: "All project YAML files parse correctly — examined 29 project YAML file(s)"
+    check: "All commit task refs resolve to actual tasks — examined 8436 task-referencing commit(s) in full history"
   - level: PASS
-    check: "All arc anchor_task references resolve to existing tasks — examined 17 arc anchor_task reference(s)"
+    check: "Corpus canaries: retrieval verified end to end"
   - level: PASS
-    check: "All onboarding-seed corpus references resolve to existing maps — examined 12 onboarding-seed corpus reference(s)"
+    check: "All completed tasks have episodic summaries — examined 2721 completed task(s)"
   - level: PASS
-    check: "Corpus maps lint clean — examined 8 corpus map(s)"
+    check: "All episodic summaries have quality content — examined 2723 episodic summary file(s)"
   - level: PASS
-    check: "All assessed arcs had task commits within 30 days — examined 15 in-progress arc(s) with constituents"
+    check: "No orphaned episodic files — examined 2723 episodic file(s)"
+  - level: WARN
+    check: "26 urgent observation(s) still pending"
+    mitigation: "Run: fw note triage"
+  - level: WARN
+    check: "141 observation(s) pending for >7 days"
+    mitigation: "Run: fw note triage — promote or dismiss stale items"
+  - level: PASS
+    check: "Gaps register: 15 watching, no triggers fired"
+  - level: WARN
+    check: "C-001: Inception T-1265 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-1265-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-1271 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-1271-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-2062 (recommendation) has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-2062"
+  - level: WARN
+    check: "C-001: Inception T-2063 (recommendation) has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-2063"
+  - level: WARN
+    check: "C-001: Inception T-2064 (recommendation) has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-2064"
+  - level: WARN
+    check: "C-001: Inception T-2065 (recommendation) has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-2065"
+  - level: WARN
+    check: "C-001: Inception T-2066 (recommendation) has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-2066"
+  - level: WARN
+    check: "C-001: Inception T-2321 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-2321-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-2323 (recommendation) has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-2323"
+  - level: WARN
+    check: "C-001: Inception T-2668 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-2668-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-2669 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-2669-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-2670 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-2670-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-2770 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-2770-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-2876 (started-work) has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-2876"
+  - level: WARN
+    check: "C-001: Inception T-2899 (started-work) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-2899-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-2963 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-2963-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-3114 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-3114-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-682 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-682-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-704 (recommendation) has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-704-*.md — the thinking trail IS the artifact"
   - level: INFO
-    check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
-  - level: INFO
-    check: "free driver F3: retire_when text present, no recognition heuristic — manual review"
-  - level: INFO
-    check: "free driver F1: retire_when text present, no recognition heuristic — manual review"
-  - level: INFO
-    check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
+    check: "C-001 population breakdown: 1/4 started-work missing an artefact, 11/26 awaiting-decision missing an artefact"
   - level: PASS
-    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 389 source file(s) under lib/ web/ agents/ bin/ tools/"
+    check: "C-002: commit-msg hook has research artifact check"
   - level: PASS
-    check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 134 Python file(s) under web/ + lib/"
+    check: "C-002: No research warnings logged (clean or first run)"
   - level: PASS
-    check: "No stale-slice-references (L-417) — examined 262 file(s) under web/templates web/blueprints lib"
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: PASS
+    check: "C-006: All active inceptions have a real Recommendation block — examined 30 active inception(s)"
+  - level: PASS
+    check: "CTL-001: Focus file empty (no recent activity — expected)"
   - level: WARN
-    check: "Found 180 GO-scope-not-propagated inception(s) of 349 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
-    mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
+    check: "CTL-003: Budget status file stale (6min old)"
+    mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
   - level: PASS
-    check: "Fabric: 1103 registered card(s)"
+    check: "CTL-004: Tool counter at 32 (last commit: 69 minutes ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: ok)"
+  - level: PASS
+    check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
+  - level: PASS
+    check: "CTL-020: 4 cron audit file(s) in last hour"
+  - level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: WARN
-    check: "Fabric: 186/1016 cards have no edges"
-    mitigation: "Run: fw fabric enrich"
+    check: "D5: Task lifecycle — 23 anomaly(s): T-801(140d-active) T-802(140d-active) T-803(140d-active) T-2715(21d-active) T-2899(12d-active) T-2876(13d-active) T-100201(47d-active) T-1542(117d-active) T-1624(113d-active) T-1820(100d-active) (+13 more)"
+    mitigation: "Review flagged tasks for process issues"
   - level: WARN
-    check: "Fabric drift: 10 source file(s) have no fabric card"
-    mitigation: "Run: fw fabric scan"
+    check: "D13: Inception limbo — 9 task(s): A=6/B=3 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2715(B) T-2876(B) (+1 more)"
+    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - level: WARN
-    check: "Fabric: 730 card(s) point at files no watch pattern covers"
-    mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
+    check: "D3: Commit velocity — WARN drop today=8 expected_by_now=36 avg=55 ratio=0.2x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - level: PASS
-    check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
-  - level: WARN
-    check: "Branch hygiene: 21 finding(s) — stale branches, worktrees or remote refs"
-    mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
+    check: "D7: Commit bunching — none (PASS 8_commits_24h_no_bunching)"
   - level: PASS
-    check: "Hook threshold: no hooks failing over threshold"
+    check: "D6: Completion velocity — normal (PASS recent=6.7 earlier=12.9)"
   - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+    check: "D12: Bypass log — no log file"
   - level: PASS
-    check: "Invariant suite green — examined 73 structural invariant(s) (tests/lint/)"
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
   - level: PASS
-    check: "Designer ghost registry: ghost↔task joins clean"
+    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
   - level: PASS
-    check: "Map conformance: aef-task-lifecycle matches its enforced machine"
-  - level: PASS
-    check: "Map conformance: aef-inception-flow matches its enforced machine"
-  - level: PASS
-    check: "Map conformance: aef-dispatch-loop matches its enforced machine"
-  - level: PASS
-    check: "Map conformance: aef-audit-cron matches its enforced machine"
-  - level: PASS
-    check: "Map conformance: aef-tier0-escalation matches its enforced machine"
-  - level: INFO
-    check: "Stale draft(s), 30d+ untouched: draft-t2584-scratch — promote via the ceremony or delete from the gallery (T-2623)"
+    check: "D15: Inception limbo state — none (PASS no_limbo)"

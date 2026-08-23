@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2745: Wire pytest tests/unit/ into fw test and CI (153 files run by no runner)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-22T15:01:58Z
+# ============================================================================
+
+task_id: T-2745
+task_name: "Wire pytest tests/unit/ into fw test and CI (153 files run by no runner)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-03T00:07:50Z
+completed: 2026-08-22T15:01:43Z
+duration_days: 19
+updates_count: 2
+first_commit: 2026-08-16T15:47:47+02:00
+last_commit: 2026-08-16T17:37:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Wire pytest tests/unit/ (2306 tests) into fw test command. wire pytest tests/unit/ into CI (fw test unit/all already wired)
+
+# Key outcomes
+outcomes:
+  - 'Count of pytest files in tests/unit/ is documented (174 files discovered)'
+  - '`bin/fw test unit` invokes pytest for tests/unit/*.py files without errors'
+  - '`bin/fw test all` runs both bats and pytest tests from tests/unit/ in sequence'
+  - 'Test output shows pass/fail count for both bats and pytest results'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.github/workflows/test.yml'
+  - '.tasks/active/T-2745-wire-pytest-testsunit-into-fw-test-and-c.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-16T15:47:47'
+    action: 'T-2745: Wire pytest tests/unit/ (2306 tests) into fw test command'
+  - time: '2026-08-16T17:37:17'
+    action: 'T-2745: wire pytest tests/unit/ into CI (fw test unit/all already wired)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 28253 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28253
+  commits: 2
+  files_changed: 3
+  lines_added: 96
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2745-wire-pytest-testsunit-into-fw-test-and-c.md
+generated_by: context-agent-hybrid

@@ -21,7 +21,7 @@ components: [docs/articles/deep-dives/02-tier0-protection.md,
       docs/articles/deep-dives/06-authority-model.md]
 related_tasks: [T-450, T-338, T-446]
 created: 2026-03-12T06:37:40Z
-last_update: 2026-08-04T18:06:23Z
+last_update: 2026-08-22T17:20:49Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -300,3 +300,6 @@ test -s docs/articles/deep-dives/06-authority-model.md
 
 ### 2026-08-04T18:06:23Z — status-update [task-update-agent]
 - **Change:** workflow_type: build → refactor
+
+### 2026-08-22T17:20:49Z — status-update [task-update-agent]
+- **Change:** horizon: next → next

@@ -36475,3 +36475,129 @@ scan_id: R-09b53109
 task_id: T-3111
 payload:
   task_file: .tasks/active/T-3111-l2-fw-re-execs-the-authority-binary-from.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T11:31:21Z'
+scan_id: R-071b37af
+task_id: T-3105
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T11:31:21Z'
+scan_id: R-071b37af
+task_id: T-3105
+payload:
+  task_file: .tasks/active/T-3105-audit-checks-must-report-the-set-they-ev.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T13:00:57Z'
+scan_id: R-68cf45c7
+task_id: T-3040
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T13:00:57Z'
+scan_id: R-68cf45c7
+task_id: T-3040
+payload:
+  task_file: .tasks/active/T-3040-peer-message-backlog-lost--local-hub-had.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T14:09:41Z'
+scan_id: R-bb18ed0b
+task_id: T-3088
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T14:09:41Z'
+scan_id: R-bb18ed0b
+task_id: T-3088
+payload:
+  task_file: .tasks/active/T-3088-mirrordefaultbranch-falls-back-to-the-cu.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T15:01:48Z'
+scan_id: R-76e9d039
+task_id: T-2745
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T15:01:48Z'
+scan_id: R-76e9d039
+task_id: T-2745
+payload:
+  task_file: .tasks/active/T-2745-wire-pytest-testsunit-into-fw-test-and-c.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T16:08:28Z'
+scan_id: R-820349c0
+task_id: T-3102
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T16:08:28Z'
+scan_id: R-820349c0
+task_id: T-3102
+payload:
+  task_file: .tasks/active/T-3102-fw-worktree-remove-governance-only-dirt-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T16:08:47Z'
+scan_id: R-e1019d49
+task_id: T-3102
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T16:08:47Z'
+scan_id: R-e1019d49
+task_id: T-3102
+payload:
+  task_file: .tasks/active/T-3102-fw-worktree-remove-governance-only-dirt-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-22T16:14:33Z'
+scan_id: R-40d8531b
+task_id: T-3102
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-22T16:14:33Z'
+scan_id: R-40d8531b
+task_id: T-3102
+payload:
+  task_file: .tasks/active/T-3102-fw-worktree-remove-governance-only-dirt-.md

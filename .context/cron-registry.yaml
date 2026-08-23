@@ -11,14 +11,21 @@ jobs:
     Per T-1443 v1.2 staged rollout.'
 - id: structural-30m
   name: Structural audits (30 min)
-  schedule: '*/30 * * * *'
+  schedule: '5,35 * * * *'
   command: flock -n /var/lock/agentic-cron-structural-30m.lock -c 'fw audit --section
     structure,compliance,quality,discovery --cron'
   source_file: agentic-audit.crontab
   origin_task: T-184
   status: active
-  description: Checks task quality, project structure integrity, compliance, and discovery
-    patterns every 30 minutes.
+  description: 'Checks task quality, project structure integrity, compliance, and discovery
+    patterns every 30 minutes. Offset to :05/:35 (T-3070) — the prior */30 (:00/:30)
+    schedule exactly collided with traceability-hourly (:00) and oe-hourly (:30) on
+    the SAME shared audit.sh flock (.context/locks/audit.lock, not the per-job
+    /var/lock/agentic-cron-*.lock), so structural-30m silently lost the race and its
+    section was skipped for that half-hour. Confirmed live 2026-08-22 — both
+    structural-30m and traceability-hourly fired at the top of the hour,
+    traceability-hourly won and structural-30m produced no cron report file for
+    that slot.'
 - id: traceability-hourly
   name: Git traceability + episodic (hourly)
   schedule: 0 * * * *

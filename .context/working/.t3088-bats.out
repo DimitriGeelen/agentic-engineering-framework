@@ -1,0 +1,21 @@
+1..20
+ok 1 mirror_sync: in-sync remote logged + reported, no push
+ok 2 mirror_sync: behind remote is fast-forwarded up to origin
+ok 3 mirror_sync: diverged remote refused, never auto-pushed
+ok 4 mirror_sync: unreachable remote logged, exits non-zero, others unaffected
+ok 5 mirror_sync --dry-run: behind remote not actually pushed
+ok 6 mirror_sync: no mirror remotes is OK (only origin configured)
+ok 7 mirror_status: prints parity per remote
+ok 8 mirror_main: unknown subcommand exits 2
+ok 9 T-3088: do_doctor calls mirror_stuck_diverged_check, guarded by --quick
+ok 10 mirror_default_branch: resolves origin's real default branch, not the local current branch
+ok 11 mirror_sync: compares the SAME branch on origin and mirror regardless of local checkout branch
+ok 12 mirror_stuck_diverged_check: fires when the last N runs are all diverged (T-3088, A5)
+ok 13 mirror_stuck_diverged_check: does not fire when the most recent run recovered
+ok 14 mirror_stuck_diverged_check: does not fire below the threshold count
+ok 15 mirror_stuck_diverged_check: missing log file is not stuck
+ok 16 mirror_sync: diverged remote still refused when local checkout is on a non-default branch (positive control, L-616)
+ok 17 T-1843: mirror.sh contains T-1829 stderr-capture marker
+ok 18 T-1843: mirror.sh parses with bash -n
+ok 19 T-1843: push-failed appends stderr block to .mirror-sync.log
+ok 20 T-1843: successful push does NOT append stderr block
