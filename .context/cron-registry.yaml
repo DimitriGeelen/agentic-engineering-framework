@@ -38,14 +38,16 @@ jobs:
     discovers trends hourly.
 - id: observations-6h
   name: Observations + gaps (6 hourly)
-  schedule: 0 */6 * * *
+  schedule: 10 */6 * * *
   command: flock -n /var/lock/agentic-cron-observations-6h.lock -c 'fw audit --section
     observations,gaps,corpus-health --cron'
   source_file: agentic-audit.crontab
   origin_task: T-184
   status: active
-  description: Reviews observation inbox and gaps register every 6 hours; verifies
-    vector-index canaries end to end (T-3013).
+  description: 'Reviews observation inbox and gaps register every 6 hours; verifies
+    vector-index canaries end to end (T-3013). Offset to :10 (T-3070) — the
+    prior 0 */6 * * * schedule exactly collided with traceability-hourly
+    (0 * * * *) at hours 0/6/12/18 on the shared audit.sh flock.'
 - id: index-reindex-hourly
   name: Vector index incremental reindex (hourly)
   schedule: 20 * * * *
@@ -78,30 +80,43 @@ jobs:
   description: Operational effectiveness hourly control checks (CTL-008, CTL-020).
 - id: oe-daily
   name: OE daily checks
-  schedule: 0 7 * * *
+  schedule: 12 7 * * *
   command: flock -n /var/lock/agentic-cron-oe-daily.lock -c 'fw audit --section oe-daily
     --cron'
   source_file: agentic-audit.crontab
   origin_task: T-196
   status: active
-  description: Daily operational effectiveness audit covering most controls at 7am.
+  description: 'Daily operational effectiveness audit covering most controls,
+    offset to 7:12am (T-3070) — the prior 0 7 * * * schedule exactly collided
+    with traceability-hourly (0 * * * *) at 7:00 on the shared audit.sh flock.'
 - id: oe-weekly
   name: OE weekly checks
-  schedule: 0 9 * * 1
+  schedule: 12 9 * * 1
   command: flock -n /var/lock/agentic-cron-oe-weekly.lock -c 'fw audit --section oe-weekly
     --cron'
   source_file: agentic-audit.crontab
   origin_task: T-196
   status: active
-  description: Weekly operational effectiveness audit (CTL-016) on Monday at 9am.
+  description: 'Weekly operational effectiveness audit (CTL-016) on Monday,
+    offset to 9:12am (T-3070) — the prior 0 9 * * 1 schedule exactly collided
+    with traceability-hourly (0 * * * *) at Monday 9:00 on the shared
+    audit.sh flock.'
 - id: full-daily
   name: Full audit (daily)
-  schedule: 0 8 * * *
+  schedule: 2 8 * * *
   command: flock -n /var/lock/agentic-cron-full-daily.lock -c 'fw audit --cron'
   source_file: agentic-audit.crontab
   origin_task: T-184
   status: active
-  description: Complete audit of all sections, runs daily at 8am.
+  description: 'Complete audit of all sections, runs daily at 8:02am. Offset from
+    :00 (T-3070) — the prior 0 8 * * * schedule exactly collided with
+    traceability-hourly (0 * * * *) on the SAME shared audit.sh flock
+    (.context/locks/audit.lock, not the per-job /var/lock/agentic-cron-*.lock),
+    so full-daily could silently lose the race to the much shorter
+    traceability-hourly run and produce no report for that day (same class as
+    the structural-30m fix above). A full run now also carries its own larger
+    internal timeout (FW_AUDIT_FULL_TIMEOUT, default 3000s) so it is not killed
+    mid-run once it does acquire the lock.'
 - id: docs-daily
   name: Component docs regeneration (daily)
   schedule: 15 8 * * *

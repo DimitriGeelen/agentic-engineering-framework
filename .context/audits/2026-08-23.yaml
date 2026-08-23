@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-23-1917
-timestamp: 2026-08-23T17:17:59Z
+# Audit Results - 2026-08-23-2137
+timestamp: 2026-08-23T19:37:43Z
 sections: "structure"
 summary:
-  pass: 30
+  pass: 28
   warn: 5
-  fail: 0
+  fail: 2
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3105 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3108 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 29 project YAML file(s)"
   - level: PASS
@@ -48,7 +48,7 @@ findings:
   - level: PASS
     check: "Fabric: 1106 registered card(s)"
   - level: WARN
-    check: "Fabric: 189/1019 cards have no edges"
+    check: "Fabric: 26/1019 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 10 source file(s) have no fabric card"
@@ -63,10 +63,12 @@ findings:
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
-  - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: PASS
-    check: "Invariant suite green — examined 73 structural invariant(s) (tests/lint/)"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 3 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
+  - level: FAIL
+    check: "Invariant suite: 1 of 74 structural invariant(s) RED (T-2837)"
+    mitigation: "Run: fw test invariants"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS

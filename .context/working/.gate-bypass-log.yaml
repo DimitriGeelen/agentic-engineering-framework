@@ -7244,3 +7244,11 @@ FW_SWITCH_FOCUS=1 git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -q
   caller: 'check-active-task focus-drift'
   target: 'T-3110'
   command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-3110 --status work-completed 2>&1 | tail -6'
+- timestamp: '2026-08-23T20:13:56Z'
+  task: 'T-1719'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3122'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/ 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3122: file T-3123 (invocation gap) + register U-012 (blocked push)
+
+T-3123 captures 832-Workflow-desig'

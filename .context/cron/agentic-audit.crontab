@@ -15,7 +15,7 @@ PATH=/usr/local/bin:/usr/bin:/bin
 0 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-traceability-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron' 2>&1 | logger -t agentic-cron
 
 # Observations + gaps (6 hourly)
-0 */6 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-observations-6h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps,corpus-health --cron' 2>&1 | logger -t agentic-cron
+10 */6 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-observations-6h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps,corpus-health --cron' 2>&1 | logger -t agentic-cron
 
 # Vector index incremental reindex (hourly)
 20 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-index-reindex-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" index reindex' 2>&1 | logger -t agentic-cron
@@ -27,13 +27,13 @@ PATH=/usr/local/bin:/usr/bin:/bin
 30 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-hourly --cron' 2>&1 | logger -t agentic-cron
 
 # OE daily checks
-0 7 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron' 2>&1 | logger -t agentic-cron
+12 7 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron' 2>&1 | logger -t agentic-cron
 
 # OE weekly checks
-0 9 * * 1 root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-weekly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron' 2>&1 | logger -t agentic-cron
+12 9 * * 1 root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-weekly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron' 2>&1 | logger -t agentic-cron
 
 # Full audit (daily)
-0 8 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-full-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron' 2>&1 | logger -t agentic-cron
+2 8 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-full-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron' 2>&1 | logger -t agentic-cron
 
 # Component docs regeneration (daily)
 15 8 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" docs --all 2>&1 | logger -t agentic-cron

@@ -36655,3 +36655,39 @@ scan_id: R-8538fb2e
 task_id: T-3119
 payload:
   task_file: .tasks/active/T-3119-fw-doctor-reports-designer-pin-currency-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-23T19:41:22Z'
+scan_id: R-d1745cb4
+task_id: T-3121
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-23T19:41:22Z'
+scan_id: R-d1745cb4
+task_id: T-3121
+payload:
+  task_file: .tasks/active/T-3121-fw-fabric-enrich-is-blind-to-dotted-impo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-23T19:59:25Z'
+scan_id: R-16dd9d58
+task_id: T-3122
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-23T19:59:25Z'
+scan_id: R-16dd9d58
+task_id: T-3122
+payload:
+  task_file: .tasks/active/T-3122-fabric-shell-detector-recognises-only-fo.md

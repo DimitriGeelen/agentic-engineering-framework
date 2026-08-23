@@ -1,0 +1,1188 @@
+=== AUDIT REPORT ===
+Timestamp: 2026-08-23T21:08:44+02:00
+Project: /opt/999-Agentic-Engineering-Framework
+
+=== STRUCTURE CHECKS ===
+[PASS] Tasks directory exists
+[PASS] Tasks/active directory exists
+[PASS] Tasks/completed directory exists
+[PASS] Tasks/templates directory exists
+[PASS] Task template exists
+[PASS] No duplicate task IDs — examined 3107 task file(s) across 1 corpus view(s)
+[PASS] All project YAML files parse correctly — examined 29 project YAML file(s)
+[PASS] All arc anchor_task references resolve to existing tasks — examined 17 arc anchor_task reference(s)
+[PASS] All onboarding-seed corpus references resolve to existing maps — examined 12 onboarding-seed corpus reference(s)
+[PASS] Corpus maps lint clean — examined 8 corpus map(s)
+[PASS] All assessed arcs had task commits within 30 days — examined 15 in-progress arc(s) with constituents
+[INFO] free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F3: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F1: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F2: retire_when text present, no recognition heuristic — manual review
+[PASS] No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 390 source file(s) under lib/ web/ agents/ bin/ tools/
+[PASS] No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 134 Python file(s) under web/ + lib/
+[PASS] No stale-slice-references (L-417) — examined 263 file(s) under web/templates web/blueprints lib
+[WARN] Found 180 GO-scope-not-propagated inception(s) of 349 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision
+       Evidence: T-100200, T-3108, T-3100, T-3093, T-3084 (+175 more)
+       Mitigation: Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)
+[PASS] Fabric: 1106 registered card(s)
+[WARN] Fabric: 189/1019 cards have no edges
+       Evidence: Graph coverage below target
+       Mitigation: Run: fw fabric enrich
+[WARN] Fabric drift: 10 source file(s) have no fabric card
+       Evidence: 10 unregistered files matching watch-patterns.yaml
+       Mitigation: Run: fw fabric scan
+[WARN] Fabric: 732 card(s) point at files no watch pattern covers
+       Evidence: The registry already treats these as components; drift checks cannot see them, so coverage is measured over a subset
+       Mitigation: Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components
+[FAIL] Cron drift: /opt/999-Agentic-Engineering-Framework/.context/cron-registry.yaml is ahead of /opt/999-Agentic-Engineering-Framework/.context/cron/agentic-audit.crontab (registry edited but not generated)
+       Evidence: Registry has been edited since the generated crontab was produced — new/modified jobs are invisible to the OS scheduler
+       Mitigation: Run: fw cron generate
+[PASS] Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+[WARN] Branch hygiene: 18 finding(s) — stale branches, worktrees or remote refs
+       Evidence: behind-threshold audit-remediation-t2416 behind=2210 days=58 (threshold 50)
+         merged-undeleted land-t100200-go
+         behind-threshold learning/precompact-cleanup behind=7626 days=173 (threshold 50)
+         merged-undeleted t100196-vendor-fix
+         merged-undeleted t100199-close
+         behind-threshold t2353-audit-emit-tasks behind=2210 days=56 (threshold 50)
+         merged-undeleted t2416-fw-safe-mode-hook-timing
+         diverged-fork t2417-fw-sessions ahead=58 behind=2177 days=52 (threshold 50)
+         merged-undeleted t2510-audit-remediation
+         behind-threshold t2511-warn-remediation behind=1881 days=47 (threshold 50)
+         remote-unlanded origin/learning/precompact-cleanup ahead=1
+         remote-contained origin/t100199-rescue
+         … 6 more (shown lines are one-per-class, not the worst)
+       Mitigation: Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source "/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh"; fw_branch_hygiene "/opt/999-Agentic-Engineering-Framework"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork.
+[PASS] Hook threshold: no hooks failing over threshold
+[PASS] Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)
+[PASS] Invariant suite green — examined 73 structural invariant(s) (tests/lint/)
+[PASS] Designer ghost registry: ghost↔task joins clean
+[PASS] Map conformance: aef-task-lifecycle matches its enforced machine
+[PASS] Map conformance: aef-inception-flow matches its enforced machine
+[PASS] Map conformance: aef-dispatch-loop matches its enforced machine
+[PASS] Map conformance: aef-audit-cron matches its enforced machine
+[PASS] Map conformance: aef-tier0-escalation matches its enforced machine
+[INFO] Stale draft(s), 30d+ untouched: draft-t2584-scratch — promote via the ceremony or delete from the gallery (T-2623)
+
+=== WHOLE-TREE SCANS ===
+[PASS] Secret scan: tracked tree clean
+[PASS] Large-file gate: tracked tree clean
+
+=== TASK COMPLIANCE CHECKS ===
+[WARN] Task T-2720-keystone-onboarding-set-contains-nothing.md missing field: owner
+       Evidence: Compliance check failed
+       Mitigation: Fix missing field: owner in T-2720-keystone-onboarding-set-contains-nothing.md
+       379 of 380 tasks fully valid
+
+=== TASK QUALITY CHECKS ===
+[PASS] All active tasks meet quality thresholds — examined 380 active task(s)
+
+[WARN] 17 active task(s) have every Agent AC ticked and no Human AC outstanding, but are still started-work/issues
+       Evidence: T-1274, T-1542, T-1624, T-2200, T-2202, T-2410, T-2715, T-2801, T-2802, T-2871 (+7 more) — 7 of these have an empty ## Verification block (no mechanical close gate)
+       Mitigation: Candidates for close, not closures — spot-check with 'fw task verify T-XXX' per task, then 'fw task update T-XXX --status work-completed'. Full list: /opt/999-Agentic-Engineering-Framework/.context/audits/unclosed-satisfied/LATEST.md
+
+=== GIT TRACEABILITY CHECKS ===
+[PASS] Git traceability: 99% (8459/8507 commits reference tasks)
+[WARN] Uncommitted changes present
+       Evidence: 17 real file(s) modified (12 session-state file(s) ignored)
+       Mitigation: Commit changes with task reference or stash
+[PASS] All commit task refs resolve to actual tasks — examined 8459 task-referencing commit(s) in full history
+
+=== CORPUS HEALTH ===
+[PASS] Corpus canaries: retrieval verified end to end
+=== ENFORCEMENT CHECKS ===
+[PASS] Bypass log exists
+[WARN] Gate-bypass log: 32 safety bypasses in last 7 days (+ 2 drift overrides)
+       Evidence: 1009 total entries; safety-bypass-as-pattern signal
+       Mitigation: Review .context/working/.gate-bypass-log.yaml — investigate --skip-* / --scope-reduction-acknowledged callers
+[PASS] Commit-msg hook installed
+[PASS] No Tier 0 violations detected
+
+=== LEARNING CAPTURE CHECKS ===
+[PASS] Practices documented: 7 practice(s) in 015-Practices.md
+[PASS] All practices have traceable origins — examined 7 documented practice(s)
+[PASS] All practice origins resolve to actual tasks — examined 7 practice Origin: line(s)
+[PASS] Bugfix-learning coverage: 74% (335/451 bugfixes have learnings)
+
+=== EPISODIC MEMORY CHECKS ===
+[PASS] All completed tasks have episodic summaries — examined 2727 completed task(s)
+[PASS] All episodic summaries have quality content — examined 2729 episodic summary file(s)
+[PASS] No orphaned episodic files — examined 2729 episodic file(s)
+
+=== OBSERVATION INBOX CHECKS ===
+[WARN] 26 urgent observation(s) still pending
+       Evidence: Urgent items in .context/inbox.yaml need attention
+       Mitigation: Run: fw note triage
+[WARN] 181 observation(s) pending for >7 days
+       Evidence: Stale observations in .context/inbox.yaml
+       Mitigation: Run: fw note triage — promote or dismiss stale items
+
+=== CONCERNS REGISTER CHECKS ===
+[PASS] Gaps register: 15 watching, no triggers fired
+
+=== HANDOVER OPEN QUESTIONS CHECK ===
+[PASS] Handover open questions: none (section empty or template placeholder)
+
+=== GRADUATION PIPELINE CHECKS ===
+[WARN] Learnings ready for promotion — review graduation candidates
+       Evidence: 671 learnings, promotion candidates available
+       Mitigation: Run: fw promote suggest
+
+=== INCEPTION RESEARCH CHECKS ===
+[WARN] Inception task T-2527 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2527-*.md
+[WARN] Inception task T-2761 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-2761-*.md
+[WARN] Inception task T-3081 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3081-*.md
+[WARN] Inception task T-3084 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3084-*.md
+[WARN] Inception task T-3100 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3100-*.md
+[WARN] Inception task T-3108 has no research artifact in docs/reports/
+       Evidence: Completed inception with no persisted research output
+       Mitigation: Save research findings: docs/reports/T-3108-*.md
+
+=== RESEARCH PERSISTENCE OE CHECKS ===
+[WARN] C-001: Inception T-1265 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-1265-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-1271 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-1271-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2062 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2062-watchtower-review-404-completed.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2062
+[WARN] C-001: Inception T-2063 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2063-watchtower-complete-button-silent-fail.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2063
+[WARN] C-001: Inception T-2064 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2064-review-queue-zero-human-acs.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2064
+[WARN] C-001: Inception T-2065 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2065-arc-approve-driver-no-rescore.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2065
+[WARN] C-001: Inception T-2066 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2066-inception-detail-template-silent-drop.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2066
+[WARN] C-001: Inception T-2321 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2321-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2323 (recommendation) has artifact but task doesn't reference it
+       Evidence: t-2323-yield-point-granularity-inception.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2323
+[WARN] C-001: Inception T-2668 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2668-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2669 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2669-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2670 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2670-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2770 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2770-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2876 (started-work) has artifact but task doesn't reference it
+       Evidence: t-2876-interpreter-write-gate-bypass.md exists but not linked in task Updates
+       Mitigation: Add artifact reference to ## Updates section of T-2876
+[WARN] C-001: Inception T-2899 (started-work) has no research artifact in docs/reports/
+       Evidence: Inception in progress — status started-work, with no persisted research
+       Mitigation: Create docs/reports/T-2899-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-2963 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-2963-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-3114 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-3114-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-682 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-682-*.md — the thinking trail IS the artifact
+[WARN] C-001: Inception T-704 (recommendation) has no research artifact in docs/reports/
+       Evidence: Inception awaiting decision — carries a substantive ## Recommendation, so research is finished, with no persisted research
+       Mitigation: Create docs/reports/T-704-*.md — the thinking trail IS the artifact
+[INFO] C-001 population breakdown: 1/4 started-work missing an artefact, 11/26 awaiting-decision missing an artefact
+[PASS] C-002: commit-msg hook has research artifact check
+[PASS] C-002: No research warnings logged (clean or first run)
+[PASS] C-003: Research checkpoint logic present in checkpoint.sh
+[PASS] C-006: All active inceptions have a real Recommendation block — examined 30 active inception(s)
+
+=== OE-FAST: 30-MINUTE CONTROL CHECKS ===
+[PASS] CTL-001: Focus file has active task (T-1719)
+[PASS] CTL-003: Budget status file fresh (< 5min old)
+[PASS] CTL-004: Tool counter at 158 (last commit: 25 minutes ago)
+[PASS] CTL-018: Budget status valid JSON (level: ok)
+
+=== OE-HOURLY: HOURLY CONTROL CHECKS ===
+[PASS] CTL-008: Task reference traceability 100% (0/20 without T-XXX)
+[PASS] CTL-020: 3 cron audit file(s) in last hour
+
+=== OE-DAILY: DAILY CONTROL CHECKS ===
+[PASS] CTL-002: Tier 0 guard installed and wired in settings.json
+[PASS] CTL-005: Error watchdog installed and wired in settings.json
+[PASS] CTL-006: Handover coverage for compactions (1761 handovers, 913 compactions)
+[PASS] CTL-007: Post-compact resume hook configured in settings.json
+[PASS] CTL-009: Inception T-1265 has decision (7 commits)
+[PASS] CTL-009: Inception T-1271 has decision (8 commits)
+[PASS] CTL-009: Inception T-1309 has decision (11 commits)
+[PASS] CTL-009: Inception T-1611 has decision (14 commits)
+[PASS] CTL-009: Inception T-1685 has decision (4 commits)
+[PASS] CTL-009: Inception T-2062 has decision (11 commits)
+[PASS] CTL-009: Inception T-2063 has decision (8 commits)
+[PASS] CTL-009: Inception T-2064 has decision (5 commits)
+[PASS] CTL-009: Inception T-2065 has decision (6 commits)
+[PASS] CTL-009: Inception T-2066 has decision (9 commits)
+[PASS] CTL-009: Inception T-2137 has decision (7 commits)
+[PASS] CTL-009: Inception T-2323 has decision (15 commits)
+[PASS] CTL-009: Inception T-2428 has decision (32 commits)
+[PASS] CTL-009: Inception T-2715 has decision (31 commits)
+[PASS] CTL-009: Inception T-2876 has decision (8 commits)
+[PASS] CTL-009: Inception T-3097 has decision (5 commits)
+[PASS] CTL-009: Inception T-550 has decision (8 commits)
+[PASS] CTL-009: Inception T-558 has decision (7 commits)
+[PASS] CTL-009: Inception T-682 has decision (7 commits)
+[PASS] CTL-009: Inception T-704 has decision (10 commits)
+[PASS] CTL-009: Inception T-705 has decision (12 commits)
+[PASS] CTL-009: Inception T-844 has decision (9 commits)
+[PASS] CTL-009: Inception T-084 has decision (3 commits)
+[PASS] CTL-009: Inception T-097 has decision (3 commits)
+[PASS] CTL-009: Inception T-100200 has decision (5 commits)
+[PASS] CTL-009: Inception T-1061 has decision (14 commits)
+[PASS] CTL-009: Inception T-107 has decision (33 commits)
+[PASS] CTL-009: Inception T-1084 has decision (6 commits)
+[PASS] CTL-009: Inception T-1092 has decision (10 commits)
+[PASS] CTL-009: Inception T-109 has decision (36 commits)
+[PASS] CTL-009: Inception T-1100 has decision (9 commits)
+[PASS] CTL-009: Inception T-1101 has decision (4 commits)
+[PASS] CTL-009: Inception T-1102 has decision (4 commits)
+[PASS] CTL-009: Inception T-1103 has decision (6 commits)
+[PASS] CTL-009: Inception T-1104 has decision (5 commits)
+[PASS] CTL-009: Inception T-1105 has decision (15 commits)
+[PASS] CTL-009: Inception T-1106 has decision (11 commits)
+[PASS] CTL-009: Inception T-1107 has decision (13 commits)
+[PASS] CTL-009: Inception T-1109 has decision (14 commits)
+[PASS] CTL-009: Inception T-110 has decision (40 commits)
+[PASS] CTL-009: Inception T-1110 has decision (3 commits)
+[PASS] CTL-009: Inception T-1111 has decision (4 commits)
+[PASS] CTL-009: Inception T-1112 has decision (7 commits)
+[PASS] CTL-009: Inception T-1115 has decision (5 commits)
+[PASS] CTL-009: Inception T-1119 has decision (5 commits)
+[PASS] CTL-009: Inception T-111 has decision (42 commits)
+[PASS] CTL-009: Inception T-1120 has decision (3 commits)
+[PASS] CTL-009: Inception T-1121 has decision (5 commits)
+[PASS] CTL-009: Inception T-1122 has decision (4 commits)
+[PASS] CTL-009: Inception T-1123 has decision (8 commits)
+[PASS] CTL-009: Inception T-1124 has decision (5 commits)
+[PASS] CTL-009: Inception T-1125 has decision (9 commits)
+[PASS] CTL-009: Inception T-1126 has decision (4 commits)
+[PASS] CTL-009: Inception T-1127 has decision (4 commits)
+[PASS] CTL-009: Inception T-1129 has decision (5 commits)
+[PASS] CTL-009: Inception T-1130 has decision (8 commits)
+[PASS] CTL-009: Inception T-1131 has decision (3 commits)
+[PASS] CTL-009: Inception T-1134 has decision (3 commits)
+[PASS] CTL-009: Inception T-1135 has decision (5 commits)
+[PASS] CTL-009: Inception T-1136 has decision (4 commits)
+[PASS] CTL-009: Inception T-1140 has decision (5 commits)
+[PASS] CTL-009: Inception T-1141 has decision (3 commits)
+[PASS] CTL-009: Inception T-1145 has decision (3 commits)
+[PASS] CTL-009: Inception T-1146 has decision (8 commits)
+[PASS] CTL-009: Inception T-1151 has decision (3 commits)
+[PASS] CTL-009: Inception T-1178 has decision (4 commits)
+[PASS] CTL-009: Inception T-118 has decision (24 commits)
+[PASS] CTL-009: Inception T-1200 has decision (4 commits)
+[PASS] CTL-009: Inception T-120 has decision (34 commits)
+[PASS] CTL-009: Inception T-1212 has decision (8 commits)
+[PASS] CTL-009: Inception T-1213 has decision (6 commits)
+[PASS] CTL-009: Inception T-122 has decision (22 commits)
+[PASS] CTL-009: Inception T-124 has decision (32 commits)
+[PASS] CTL-009: Inception T-1251 has decision (4 commits)
+[PASS] CTL-009: Inception T-1252 has decision (5 commits)
+[PASS] CTL-009: Inception T-1253 has decision (8 commits)
+[PASS] CTL-009: Inception T-1255 has decision (5 commits)
+[PASS] CTL-009: Inception T-1258 has decision (5 commits)
+[PASS] CTL-009: Inception T-1260 has decision (16 commits)
+[PASS] CTL-009: Inception T-1261 has decision (4 commits)
+[PASS] CTL-009: Inception T-1268 has decision (12 commits)
+[PASS] CTL-009: Inception T-1270 has decision (10 commits)
+[PASS] CTL-009: Inception T-1272 has decision (3 commits)
+[PASS] CTL-009: Inception T-1276 has decision (3 commits)
+[PASS] CTL-009: Inception T-1283 has decision (10 commits)
+[PASS] CTL-009: Inception T-1284 has decision (13 commits)
+[PASS] CTL-009: Inception T-1298 has decision (3 commits)
+[PASS] CTL-009: Inception T-1299 has decision (4 commits)
+[PASS] CTL-009: Inception T-1302 has decision (6 commits)
+[PASS] CTL-009: Inception T-1303 has decision (3 commits)
+[PASS] CTL-009: Inception T-1304 has decision (4 commits)
+[PASS] CTL-009: Inception T-1305 has decision (5 commits)
+[PASS] CTL-009: Inception T-130 has decision (31 commits)
+[PASS] CTL-009: Inception T-1311 has decision (4 commits)
+[PASS] CTL-009: Inception T-1312 has decision (3 commits)
+[PASS] CTL-009: Inception T-1313 has decision (3 commits)
+[PASS] CTL-009: Inception T-1314 has decision (4 commits)
+[PASS] CTL-009: Inception T-1315 has decision (5 commits)
+[PASS] CTL-009: Inception T-1316 has decision (3 commits)
+[PASS] CTL-009: Inception T-1319 has decision (4 commits)
+[PASS] CTL-009: Inception T-131 has decision (25 commits)
+[PASS] CTL-009: Inception T-1321 has decision (4 commits)
+[PASS] CTL-009: Inception T-1322 has decision (4 commits)
+[PASS] CTL-009: Inception T-1326 has decision (6 commits)
+[PASS] CTL-009: Inception T-132 has decision (27 commits)
+[PASS] CTL-009: Inception T-1330 has decision (7 commits)
+[PASS] CTL-009: Inception T-1332 has decision (8 commits)
+[PASS] CTL-009: Inception T-1333 has decision (13 commits)
+[PASS] CTL-009: Inception T-1337 has decision (3 commits)
+[PASS] CTL-009: Inception T-133 has decision (33 commits)
+[PASS] CTL-009: Inception T-1345 has decision (5 commits)
+[PASS] CTL-009: Inception T-1346 has decision (9 commits)
+[PASS] CTL-009: Inception T-1348 has decision (3 commits)
+[PASS] CTL-009: Inception T-1353 has decision (3 commits)
+[PASS] CTL-009: Inception T-1355 has decision (4 commits)
+[PASS] CTL-009: Inception T-1359 has decision (3 commits)
+[PASS] CTL-009: Inception T-1365 has decision (3 commits)
+[PASS] CTL-009: Inception T-1372 has decision (13 commits)
+[PASS] CTL-009: Inception T-1376 has decision (14 commits)
+[PASS] CTL-009: Inception T-1388 has decision (16 commits)
+[PASS] CTL-009: Inception T-138 has decision (30 commits)
+[PASS] CTL-009: Inception T-1404 has decision (9 commits)
+[PASS] CTL-009: Inception T-140 has decision (35 commits)
+[PASS] CTL-009: Inception T-1420 has decision (5 commits)
+[PASS] CTL-009: Inception T-1442 has decision (19 commits)
+[PASS] CTL-009: Inception T-1443 has decision (25 commits)
+[PASS] CTL-009: Inception T-1444 has decision (5 commits)
+[PASS] CTL-009: Inception T-1451 has decision (8 commits)
+[PASS] CTL-009: Inception T-1452 has decision (8 commits)
+[PASS] CTL-009: Inception T-1455 has decision (8 commits)
+[PASS] CTL-009: Inception T-1459 has decision (4 commits)
+[PASS] CTL-009: Inception T-1460 has decision (4 commits)
+[PASS] CTL-009: Inception T-1482 has decision (4 commits)
+[PASS] CTL-009: Inception T-1499 has decision (7 commits)
+[PASS] CTL-009: Inception T-1501 has decision (8 commits)
+[PASS] CTL-009: Inception T-1505 has decision (5 commits)
+[PASS] CTL-009: Inception T-1506 has decision (5 commits)
+[PASS] CTL-009: Inception T-1507 has decision (5 commits)
+[PASS] CTL-009: Inception T-1513 has decision (5 commits)
+[PASS] CTL-009: Inception T-1538 has decision (4 commits)
+[PASS] CTL-009: Inception T-1544 has decision (3 commits)
+[PASS] CTL-009: Inception T-1548 has decision (4 commits)
+[PASS] CTL-009: Inception T-154 has decision (71 commits)
+[PASS] CTL-009: Inception T-155 has decision (43 commits)
+[PASS] CTL-009: Inception T-1565 has decision (13 commits)
+[PASS] CTL-009: Inception T-156 has decision (27 commits)
+[PASS] CTL-009: Inception T-157 has decision (75 commits)
+[PASS] CTL-009: Inception T-158 has decision (40 commits)
+[PASS] CTL-009: Inception T-1601 has decision (7 commits)
+[PASS] CTL-009: Inception T-1616 has decision (5 commits)
+[PASS] CTL-009: Inception T-1617 has decision (4 commits)
+[PASS] CTL-009: Inception T-1626 has decision (22 commits)
+[PASS] CTL-009: Inception T-1633 has decision (21 commits)
+[PASS] CTL-009: Inception T-1641 has decision (20 commits)
+[PASS] CTL-009: Inception T-1642 has decision (9 commits)
+[PASS] CTL-009: Inception T-1645 has decision (5 commits)
+[PASS] CTL-009: Inception T-164 has decision (68 commits)
+[PASS] CTL-009: Inception T-1653 has decision (9 commits)
+[PASS] CTL-009: Inception T-1660 has decision (5 commits)
+[PASS] CTL-009: Inception T-1666 has decision (3 commits)
+[PASS] CTL-009: Inception T-1667 has decision (11 commits)
+[PASS] CTL-009: Inception T-1670 has decision (8 commits)
+[PASS] CTL-009: Inception T-1675 has decision (4 commits)
+[PASS] CTL-009: Inception T-1686 has decision (4 commits)
+[PASS] CTL-009: Inception T-1688 has decision (9 commits)
+[PASS] CTL-009: Inception T-1689 has decision (8 commits)
+[PASS] CTL-009: Inception T-168 has decision (207 commits)
+[PASS] CTL-009: Inception T-1690 has decision (4 commits)
+[PASS] CTL-009: Inception T-1691 has decision (4 commits)
+[PASS] CTL-009: Inception T-1692 has decision (4 commits)
+[PASS] CTL-009: Inception T-1705 has decision (4 commits)
+[PASS] CTL-009: Inception T-1709 has decision (6 commits)
+[PASS] CTL-009: Inception T-1710 has decision (4 commits)
+[PASS] CTL-009: Inception T-1713 has decision (6 commits)
+[PASS] CTL-009: Inception T-1714 has decision (3 commits)
+[PASS] CTL-009: Inception T-1715 has decision (12 commits)
+[PASS] CTL-009: Inception T-1717 has decision (10 commits)
+[PASS] CTL-009: Inception T-1721 has decision (3 commits)
+[PASS] CTL-009: Inception T-1726 has decision (8 commits)
+[PASS] CTL-009: Inception T-1729 has decision (5 commits)
+[PASS] CTL-009: Inception T-1744 has decision (11 commits)
+[PASS] CTL-009: Inception T-1745 has decision (4 commits)
+[PASS] CTL-009: Inception T-174 has decision (39 commits)
+[PASS] CTL-009: Inception T-1761 has decision (11 commits)
+[PASS] CTL-009: Inception T-1768 has decision (5 commits)
+[PASS] CTL-009: Inception T-178 has decision (25 commits)
+[PASS] CTL-009: Inception T-179 has decision (25 commits)
+[PASS] CTL-009: Inception T-1804 has decision (5 commits)
+[PASS] CTL-009: Inception T-181 has decision (57 commits)
+[PASS] CTL-009: Inception T-1829 has decision (11 commits)
+[PASS] CTL-009: Inception T-1830 has decision (9 commits)
+[PASS] CTL-009: Inception T-1831 has decision (18 commits)
+[PASS] CTL-009: Inception T-1833 has decision (5 commits)
+[PASS] CTL-009: Inception T-1846 has decision (17 commits)
+[PASS] CTL-009: Inception T-1878 has decision (22 commits)
+[PASS] CTL-009: Inception T-1902 has decision (17 commits)
+[PASS] CTL-009: Inception T-1905 has decision (11 commits)
+[PASS] CTL-009: Inception T-190 has decision (50 commits)
+[PASS] CTL-009: Inception T-1915 has decision (15 commits)
+[PASS] CTL-009: Inception T-191 has decision (55 commits)
+[PASS] CTL-009: Inception T-192 has decision (51 commits)
+[PASS] CTL-009: Inception T-194 has decision (68 commits)
+[PASS] CTL-009: Inception T-1950 has decision (8 commits)
+[PASS] CTL-009: Inception T-1958 has decision (5 commits)
+[PASS] CTL-009: Inception T-1959 has decision (7 commits)
+[PASS] CTL-009: Inception T-1981 has decision (7 commits)
+[PASS] CTL-009: Inception T-1983 has decision (5 commits)
+[PASS] CTL-009: Inception T-1987 has decision (7 commits)
+[PASS] CTL-009: Inception T-2000 has decision (7 commits)
+[PASS] CTL-009: Inception T-200 has decision (49 commits)
+[PASS] CTL-009: Inception T-2030 has decision (16 commits)
+[PASS] CTL-009: Inception T-2057 has decision (10 commits)
+[PASS] CTL-009: Inception T-2078 has decision (14 commits)
+[PASS] CTL-009: Inception T-2081 has decision (4 commits)
+[PASS] CTL-009: Inception T-2097 has decision (5 commits)
+[PASS] CTL-009: Inception T-2098 has decision (4 commits)
+[PASS] CTL-009: Inception T-2100 has decision (5 commits)
+[PASS] CTL-009: Inception T-2101 has decision (5 commits)
+[PASS] CTL-009: Inception T-2115 has decision (3 commits)
+[PASS] CTL-009: Inception T-2118 has decision (7 commits)
+[PASS] CTL-009: Inception T-2121 has decision (17 commits)
+[PASS] CTL-009: Inception T-2122 has decision (5 commits)
+[PASS] CTL-009: Inception T-2123 has decision (8 commits)
+[PASS] CTL-009: Inception T-2125 has decision (10 commits)
+[PASS] CTL-009: Inception T-2126 has decision (3 commits)
+[PASS] CTL-009: Inception T-2133 has decision (4 commits)
+[PASS] CTL-009: Inception T-2138 has decision (13 commits)
+[PASS] CTL-009: Inception T-2143 has decision (21 commits)
+[PASS] CTL-009: Inception T-2144 has decision (22 commits)
+[PASS] CTL-009: Inception T-2157 has decision (6 commits)
+[PASS] CTL-009: Inception T-2158 has decision (17 commits)
+[PASS] CTL-009: Inception T-2159 has decision (5 commits)
+[PASS] CTL-009: Inception T-2173 has decision (9 commits)
+[PASS] CTL-009: Inception T-2181 has decision (5 commits)
+[PASS] CTL-009: Inception T-2186 has decision (21 commits)
+[PASS] CTL-009: Inception T-2201 has decision (10 commits)
+[PASS] CTL-009: Inception T-2203 has decision (8 commits)
+[PASS] CTL-009: Inception T-2204 has decision (19 commits)
+[PASS] CTL-009: Inception T-2209 has decision (27 commits)
+[PASS] CTL-009: Inception T-2217 has decision (6 commits)
+[PASS] CTL-009: Inception T-2225 has decision (8 commits)
+[PASS] CTL-009: Inception T-2229 has decision (8 commits)
+[PASS] CTL-009: Inception T-222 has decision (34 commits)
+[PASS] CTL-009: Inception T-2231 has decision (6 commits)
+[PASS] CTL-009: Inception T-2233 has decision (4 commits)
+[PASS] CTL-009: Inception T-2245 has decision (16 commits)
+[PASS] CTL-009: Inception T-2248 has decision (6 commits)
+[PASS] CTL-009: Inception T-2252 has decision (4 commits)
+[PASS] CTL-009: Inception T-2275 has decision (3 commits)
+[PASS] CTL-009: Inception T-2277 has decision (5 commits)
+[PASS] CTL-009: Inception T-228 has decision (30 commits)
+[PASS] CTL-009: Inception T-2303 has decision (15 commits)
+[PASS] CTL-009: Inception T-2305 has decision (8 commits)
+[PASS] CTL-009: Inception T-2324 has decision (17 commits)
+[PASS] CTL-009: Inception T-2330 has decision (10 commits)
+[PASS] CTL-009: Inception T-2333 has decision (3 commits)
+[PASS] CTL-009: Inception T-2347 has decision (7 commits)
+[PASS] CTL-009: Inception T-2352 has decision (9 commits)
+[PASS] CTL-009: Inception T-235 has decision (50 commits)
+[PASS] CTL-009: Inception T-2393 has decision (5 commits)
+[PASS] CTL-009: Inception T-2394 has decision (12 commits)
+[PASS] CTL-009: Inception T-2413 has decision (4 commits)
+[PASS] CTL-009: Inception T-2416 has decision (11 commits)
+[PASS] CTL-009: Inception T-2418 has decision (13 commits)
+[PASS] CTL-009: Inception T-2419 has decision (8 commits)
+[PASS] CTL-009: Inception T-2442 has decision (9 commits)
+[PASS] CTL-009: Inception T-2447 has decision (4 commits)
+[PASS] CTL-009: Inception T-2458 has decision (8 commits)
+[PASS] CTL-009: Inception T-2464 has decision (3 commits)
+[PASS] CTL-009: Inception T-2484 has decision (7 commits)
+[PASS] CTL-009: Inception T-2494 has decision (9 commits)
+[PASS] CTL-009: Inception T-2505 has decision (15 commits)
+[PASS] CTL-009: Inception T-2520 has decision (5 commits)
+[PASS] CTL-009: Inception T-2522 has decision (6 commits)
+[PASS] CTL-009: Inception T-2527 has decision (5 commits)
+[PASS] CTL-009: Inception T-2528 has decision (3 commits)
+[PASS] CTL-009: Inception T-2538 has decision (3 commits)
+[PASS] CTL-009: Inception T-2541 has decision (7 commits)
+[PASS] CTL-009: Inception T-254 has decision (33 commits)
+[PASS] CTL-009: Inception T-2551 has decision (8 commits)
+[PASS] CTL-009: Inception T-2553 has decision (3 commits)
+[PASS] CTL-009: Inception T-2571 has decision (5 commits)
+[PASS] CTL-009: Inception T-2602 has decision (5 commits)
+[PASS] CTL-009: Inception T-2608 has decision (4 commits)
+[PASS] CTL-009: Inception T-2619 has decision (4 commits)
+[PASS] CTL-009: Inception T-261 has decision (27 commits)
+[PASS] CTL-009: Inception T-2620 has decision (14 commits)
+[PASS] CTL-009: Inception T-2652 has decision (9 commits)
+[PASS] CTL-009: Inception T-2663 has decision (3 commits)
+[PASS] CTL-009: Inception T-2679 has decision (6 commits)
+[PASS] CTL-009: Inception T-2687 has decision (8 commits)
+[PASS] CTL-009: Inception T-2703 has decision (7 commits)
+[PASS] CTL-009: Inception T-2704 has decision (7 commits)
+[PASS] CTL-009: Inception T-272 has decision (36 commits)
+[PASS] CTL-009: Inception T-2757 has decision (4 commits)
+[PASS] CTL-009: Inception T-2761 has decision (3 commits)
+[PASS] CTL-009: Inception T-279 has decision (43 commits)
+[PASS] CTL-009: Inception T-2800 has decision (15 commits)
+[PASS] CTL-009: Inception T-2822 has decision (18 commits)
+[PASS] CTL-009: Inception T-2857 has decision (5 commits)
+[PASS] CTL-009: Inception T-2863 has decision (17 commits)
+[PASS] CTL-009: Inception T-2909 has decision (3 commits)
+[PASS] CTL-009: Inception T-2925 has decision (8 commits)
+[PASS] CTL-009: Inception T-292 has decision (42 commits)
+[PASS] CTL-009: Inception T-294 has decision (42 commits)
+[PASS] CTL-009: Inception T-2992 has decision (4 commits)
+[PASS] CTL-009: Inception T-2993 has decision (3 commits)
+[PASS] CTL-009: Inception T-2995 has decision (5 commits)
+[PASS] CTL-009: Inception T-3004 has decision (6 commits)
+[PASS] CTL-009: Inception T-3005 has decision (9 commits)
+[PASS] CTL-009: Inception T-3007 has decision (8 commits)
+[PASS] CTL-009: Inception T-3018 has decision (6 commits)
+[PASS] CTL-009: Inception T-3022 has decision (21 commits)
+[PASS] CTL-009: Inception T-3025 has decision (14 commits)
+[PASS] CTL-009: Inception T-3041 has decision (12 commits)
+[PASS] CTL-009: Inception T-305 has decision (20 commits)
+[PASS] CTL-009: Inception T-306 has decision (34 commits)
+[PASS] CTL-009: Inception T-3072 has decision (5 commits)
+[PASS] CTL-009: Inception T-307 has decision (42 commits)
+[PASS] CTL-009: Inception T-3093 has decision (6 commits)
+[PASS] CTL-009: Inception T-316 has decision (7 commits)
+[PASS] CTL-009: Inception T-325 has decision (7 commits)
+[PASS] CTL-009: Inception T-339 has decision (3 commits)
+[PASS] CTL-009: Inception T-356 has decision (3 commits)
+[PASS] CTL-009: Inception T-358 has decision (3 commits)
+[PASS] CTL-009: Inception T-362 has decision (3 commits)
+[PASS] CTL-009: Inception T-375 has decision (3 commits)
+[PASS] CTL-009: Inception T-411 has decision (3 commits)
+[PASS] CTL-009: Inception T-432 has decision (4 commits)
+[PASS] CTL-009: Inception T-434 has decision (5 commits)
+[PASS] CTL-009: Inception T-435 has decision (7 commits)
+[PASS] CTL-009: Inception T-436 has decision (7 commits)
+[PASS] CTL-009: Inception T-445 has decision (5 commits)
+[PASS] CTL-009: Inception T-455 has decision (7 commits)
+[PASS] CTL-009: Inception T-469 has decision (5 commits)
+[PASS] CTL-009: Inception T-473 has decision (3 commits)
+[PASS] CTL-009: Inception T-477 has decision (6 commits)
+[PASS] CTL-009: Inception T-482 has decision (4 commits)
+[PASS] CTL-009: Inception T-489 has decision (4 commits)
+[PASS] CTL-009: Inception T-490 has decision (3 commits)
+[PASS] CTL-009: Inception T-495 has decision (3 commits)
+[PASS] CTL-009: Inception T-502 has decision (4 commits)
+[PASS] CTL-009: Inception T-513 has decision (7 commits)
+[PASS] CTL-009: Inception T-532 has decision (11 commits)
+[PASS] CTL-009: Inception T-533 has decision (6 commits)
+[PASS] CTL-009: Inception T-534 has decision (3 commits)
+[PASS] CTL-009: Inception T-548 has decision (5 commits)
+[PASS] CTL-009: Inception T-549 has decision (12 commits)
+[PASS] CTL-009: Inception T-561 has decision (4 commits)
+[PASS] CTL-009: Inception T-570 has decision (3 commits)
+[PASS] CTL-009: Inception T-571 has decision (4 commits)
+[PASS] CTL-009: Inception T-578 has decision (3 commits)
+[PASS] CTL-009: Inception T-579 has decision (3 commits)
+[PASS] CTL-009: Inception T-580 has decision (3 commits)
+[PASS] CTL-009: Inception T-581 has decision (3 commits)
+[PASS] CTL-009: Inception T-582 has decision (3 commits)
+[PASS] CTL-009: Inception T-583 has decision (4 commits)
+[PASS] CTL-009: Inception T-586 has decision (10 commits)
+[PASS] CTL-009: Inception T-589 has decision (3 commits)
+[PASS] CTL-009: Inception T-598 has decision (4 commits)
+[PASS] CTL-009: Inception T-599 has decision (3 commits)
+[PASS] CTL-009: Inception T-600 has decision (3 commits)
+[PASS] CTL-009: Inception T-601 has decision (3 commits)
+[PASS] CTL-009: Inception T-603 has decision (4 commits)
+[PASS] CTL-009: Inception T-607 has decision (3 commits)
+[PASS] CTL-009: Inception T-608 has decision (6 commits)
+[PASS] CTL-009: Inception T-614 has decision (3 commits)
+[PASS] CTL-009: Inception T-625 has decision (3 commits)
+[PASS] CTL-009: Inception T-629 has decision (5 commits)
+[PASS] CTL-009: Inception T-630 has decision (3 commits)
+[PASS] CTL-009: Inception T-635 has decision (3 commits)
+[PASS] CTL-009: Inception T-678 has decision (8 commits)
+[PASS] CTL-009: Inception T-679 has decision (38 commits)
+[PASS] CTL-009: Inception T-697 has decision (4 commits)
+[PASS] CTL-009: Inception T-698 has decision (3 commits)
+[PASS] CTL-009: Inception T-699 has decision (3 commits)
+[PASS] CTL-009: Inception T-700 has decision (4 commits)
+[PASS] CTL-009: Inception T-701 has decision (4 commits)
+[PASS] CTL-009: Inception T-702 has decision (3 commits)
+[PASS] CTL-009: Inception T-703 has decision (3 commits)
+[PASS] CTL-009: Inception T-707 has decision (6 commits)
+[PASS] CTL-009: Inception T-772 has decision (5 commits)
+[PASS] CTL-009: Inception T-792 has decision (3 commits)
+[PASS] CTL-009: Inception T-799 has decision (3 commits)
+[PASS] CTL-009: Inception T-800 has decision (4 commits)
+[PASS] CTL-009: Inception T-816 has decision (5 commits)
+[PASS] CTL-009: Inception T-817 has decision (5 commits)
+[PASS] CTL-009: Inception T-818 has decision (6 commits)
+[PASS] CTL-009: Inception T-823 has decision (3 commits)
+[PASS] CTL-009: Inception T-837 has decision (5 commits)
+[PASS] CTL-009: Inception T-856 has decision (3 commits)
+[PASS] CTL-009: Inception T-864 has decision (3 commits)
+[PASS] CTL-009: Inception T-866 has decision (4 commits)
+[PASS] CTL-009: Inception T-882 has decision (3 commits)
+[PASS] CTL-009: Inception T-885 has decision (3 commits)
+[PASS] CTL-009: Inception T-954 has decision (10 commits)
+[PASS] CTL-009: Inception T-962 has decision (6 commits)
+[PASS] CTL-009: Inception T-968 has decision (8 commits)
+[PASS] CTL-027: Inception T-1265 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1271 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1309 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1611 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-1685 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2062 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2063 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2064 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2065 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2066 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2137 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2321 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2323 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2428 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2668 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2669 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2670 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2715 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2770 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2876 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2899 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-2963 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-3097 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-3114 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-550 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-558 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-682 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-704 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-705 has Recommendation + Decision sections
+[PASS] CTL-027: Inception T-844 has Recommendation + Decision sections
+[PASS] CTL-010: Bypass log has 13 entries (post-commit detector working)
+[PASS] CTL-011: pre-push hook installed and executable
+[WARN] CTL-013: T-1700 verification re-run: 1 command(s) failing
+       Evidence: Verification commands that passed at completion now fail
+       Mitigation: Review T-1700 — environment may have changed
+[PASS] CTL-013: T-1895 verification re-run: 4/4 pass
+[WARN] CTL-013: T-1894 verification re-run: 2 command(s) failing
+       Evidence: Verification commands that passed at completion now fail
+       Mitigation: Review T-1894 — environment may have changed
+[PASS] CTL-013b: review-queue verification re-run, 0 red — examined 3 review-queue task(s) re-run
+[PASS] CTL-019: claude-fw wrapper installed and executable
+[PASS] CTL-025: T-100131 partial-complete with owner:human ✓
+[PASS] CTL-025: T-100188 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1701 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1702 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1707 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1718 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1773 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1774 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1775 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1776 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1792 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1794 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1795 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1796 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1797 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1799 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1801 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1802 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1803 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1805 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1806 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1807 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1808 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1810 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1811 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1818 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1827 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1834 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1842 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1843 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1844 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1891 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1909 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1910 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1911 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1928 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1929 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1930 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1933 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1934 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1935 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1936 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1939 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1947 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1951 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1954 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1955 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1957 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1960 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1961 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1963 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1964 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1965 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1968 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1969 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1970 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1971 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1976 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1977 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1978 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1980 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1982 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1984 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1985 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1988 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1989 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1990 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1991 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1992 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1993 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1994 partial-complete with owner:human ✓
+[PASS] CTL-025: T-1999 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2002 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2003 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2004 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2006 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2008 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2009 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2010 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2011 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2012 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2013 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2015 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2016 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2017 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2018 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2019 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2020 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2021 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2022 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2023 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2024 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2025 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2026 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2027 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2028 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2029 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2031 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2033 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2034 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2038 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2039 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2040 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2041 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2043 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2044 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2045 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2046 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2047 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2049 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2051 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2054 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2062 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2063 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2064 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2065 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2066 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2075 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2077 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2080 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2082 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2084 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2085 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2086 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2087 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2088 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2089 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2102 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2103 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2106 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2110 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2111 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2112 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2114 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2116 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2117 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2119 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2136 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2160 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2167 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2174 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2175 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2176 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2179 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2183 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2185 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2192 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2222 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2240 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2265 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2274 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2278 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2281 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2332 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2335 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2336 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2342 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2349 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2369 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2373 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2376 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2395 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2403 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2406 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2417 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2428 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2430 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2463 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2474 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2479 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2525 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2529 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2530 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2555 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2558 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2561 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2563 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2565 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2578 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2586 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2589 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2596 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2618 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2623 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2624 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2629 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2630 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2631 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2632 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2634 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2651 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2674 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2686 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2713 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2741 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2774 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2775 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2780 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2781 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2787 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2807 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2809 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2831 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2838 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2842 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2864 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2870 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2891 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2896 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2904 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2905 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2974 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2979 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2986 partial-complete with owner:human ✓
+[PASS] CTL-025: T-2994 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3006 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3010 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3011 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3012 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3013 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3016 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3017 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3019 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3024 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3028 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3030 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3046 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3065 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3066 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3078 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3080 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3090 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3091 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3094 partial-complete with owner:human ✓
+[PASS] CTL-025: T-3096 partial-complete with owner:human ✓
+[WARN] CTL-031: 3 stuck partial-complete task(s) — all ACs ticked, in active/ — run: bin/fw task archive-eligible
+       Evidence: Tasks: T-1792 T-1794 T-1795
+       Mitigation: Sweep with: bin/fw task archive-eligible (origin: T-1903, L-403)
+
+[PASS] CTL-026: Human sovereignty gate present (completion + owner protection)
+[WARN] CTL-028: T-2494 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2494 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-100194 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-100194 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-100195 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-100195 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2411 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2411 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2486 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2486 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2487 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2487 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2488 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2488 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2491 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2491 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2492 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2492 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2493 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2493 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2495 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2495 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2497 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2497 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2498 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2498 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2509 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2509 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[WARN] CTL-028: T-2853 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
+       Evidence: Likely cause: git mv bypassed the state machine (L-390)
+       Mitigation: Fix: bin/fw task update T-2853 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects.
+[PASS] CTL-030: All completed/ tasks have null/absent stored horizon (arc-009) — examined 2727 completed task(s)
+[WARN] CTL-029: T-100201 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-100201 --status work-completed
+[WARN] CTL-029: T-1062 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-1062 --status work-completed
+[WARN] CTL-029: T-1274 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-1274 --status work-completed
+[WARN] CTL-029: T-1542 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-1542 --status work-completed
+[WARN] CTL-029: T-1624 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-1624 --status work-completed
+[WARN] CTL-029: T-2171 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2171 --status work-completed
+[WARN] CTL-029: T-2200 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2200 --status work-completed
+[WARN] CTL-029: T-2202 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2202 --status work-completed
+[WARN] CTL-029: T-2205 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2205 --status work-completed
+[WARN] CTL-029: T-2219 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2219 --status work-completed
+[WARN] CTL-029: T-2221 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2221 --status work-completed
+[WARN] CTL-029: T-2268 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2268 --status work-completed
+[WARN] CTL-029: T-2306 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2306 --status work-completed
+[WARN] CTL-029: T-2309 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2309 --status work-completed
+[WARN] CTL-029: T-2410 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2410 --status work-completed
+[WARN] CTL-029: T-2420 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2420 --status work-completed
+[WARN] CTL-029: T-2715 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2715 --status work-completed
+[WARN] CTL-029: T-2716 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2716 --status work-completed
+[WARN] CTL-029: T-2720 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2720 --status work-completed
+[WARN] CTL-029: T-2801 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2801 --status work-completed
+[WARN] CTL-029: T-2802 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2802 --status work-completed
+[WARN] CTL-029: T-2871 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2871 --status work-completed
+[WARN] CTL-029: T-2876 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2876 --status work-completed
+[WARN] CTL-029: T-2969 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-2969 --status work-completed
+[WARN] CTL-029: T-3049 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-3049 --status work-completed
+[WARN] CTL-029: T-3097 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-3097 --status work-completed
+[WARN] CTL-029: T-3104 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-3104 --status work-completed
+[WARN] CTL-029: T-3121 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-3121 --status work-completed
+[WARN] CTL-029: T-332 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-332 --status work-completed
+[WARN] CTL-029: T-334 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-334 --status work-completed
+[WARN] CTL-029: T-464 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-464 --status work-completed
+[WARN] CTL-029: T-544 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-544 --status work-completed
+[WARN] CTL-029: T-801 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-801 --status work-completed
+[WARN] CTL-029: T-802 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-802 --status work-completed
+[WARN] CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed
+       Evidence: Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)
+       Mitigation: Run: bin/fw task update T-803 --status work-completed
+[WARN] CTL-012: Completed task T-2389 has unchecked AC
+       Evidence: - [ ] Self-trigger: `checkpoint.sh` fires the critical auto-handover from budget
+       Mitigation: Review task completion — AC gate may have been bypassed
+[WARN] CTL-012-MISSING-DECIDE: Inception task T-2494 flipped without decide ceremony
+       Evidence: - [ ] Problem statement validated
+       Mitigation: Auto-tick markers present but ## Decision section empty — run: fw inception decide T-2494 go|no-go|defer --rationale '...' OR backfill the Decision section manually then tick the auto-tick ACs
+[WARN] CTL-012: Completed task T-436 has unchecked AC
+       Evidence: - [ ] All 7 spikes completed with findings documented (5/7 done — Spike 1 and 3 
+       Mitigation: Review task completion — AC gate may have been bypassed
+[WARN] CTL-012: Completed task T-678 has unchecked AC
+       Evidence: - [ ] Component fabric built (key files registered in .fabric/)
+       Mitigation: Review task completion — AC gate may have been bypassed
+=== DISCOVERY: OMISSION DETECTION ===
+[PASS] D1: Episodic quality — 0% [TODO] (18/2729)
+[FAIL] D2: Human review queue — 182 task(s) waiting >30d: T-100131(48d) T-100188(48d) T-1701(88d) T-1702(84d) T-1707(88d) T-1718(88d) T-1773(101d) T-1774(101d) T-1775(101d) T-1776(84d) T-1792(102d) T-1794(102d) T-1795(102d) T-1796(102d) T-1797(102d) T-1799(102d) T-1801(102d) T-1802(102d) T-1803(102d) T-1805(102d) T-1806(102d) T-1807(102d) T-1808(102d) T-1810(102d) T-1811(102d) T-1818(101d) T-1827(93d) T-1834(100d) T-1842(93d) T-1843(93d) T-1844(93d) T-1891(97d) T-1909(95d) T-1910(95d) T-1911(95d) T-1928(96d) T-1929(96d) T-1930(96d) T-1933(96d) T-1934(95d) T-1935(95d) T-1936(94d) T-1939(95d) T-1947(95d) T-1951(93d) T-1954(95d) T-1955(95d) T-1957(95d) T-1960(94d) T-1961(94d) T-1963(94d) T-1964(95d) T-1965(95d) T-1968(94d) T-1969(94d) T-1970(94d) T-1971(94d) T-1976(93d) T-1977(94d) T-1978(93d) T-1980(93d) T-1982(94d) T-1984(93d) T-1985(93d) T-1988(93d) T-1989(89d) T-1990(88d) T-1991(93d) T-1992(89d) T-1993(89d) T-1994(88d) T-1999(92d) T-2002(88d) T-2003(89d) T-2004(89d) T-2006(89d) T-2008(89d) T-2009(89d) T-2010(89d) T-2011(89d) T-2012(89d) T-2013(89d) T-2015(89d) T-2016(89d) T-2017(89d) T-2018(89d) T-2019(89d) T-2020(89d) T-2021(89d) T-2022(89d) T-2023(89d) T-2024(89d) T-2025(89d) T-2026(89d) T-2027(89d) T-2028(89d) T-2029(89d) T-2031(89d) T-2033(89d) T-2034(89d) T-2038(89d) T-2039(89d) T-2040(89d) T-2041(89d) T-2043(89d) T-2044(89d) T-2045(89d) T-2046(89d) T-2047(89d) T-2049(89d) T-2051(88d) T-2054(88d) T-2062(87d) T-2063(87d) T-2064(87d) T-2065(87d) T-2066(87d) T-2075(86d) T-2077(86d) T-2080(86d) T-2082(86d) T-2084(86d) T-2085(86d) T-2086(86d) T-2087(86d) T-2088(86d) T-2089(86d) T-2102(85d) T-2103(85d) T-2106(85d) T-2110(85d) T-2111(85d) T-2112(85d) T-2114(85d) T-2116(85d) T-2117(85d) T-2119(78d) T-2136(84d) T-2160(83d) T-2167(82d) T-2174(82d) T-2175(82d) T-2176(78d) T-2179(82d) T-2183(71d) T-2185(80d) T-2192(81d) T-2222(78d) T-2240(76d) T-2265(75d) T-2274(75d) T-2278(75d) T-2281(75d) T-2332(73d) T-2335(33d) T-2336(73d) T-2342(73d) T-2349(48d) T-2369(71d) T-2373(71d) T-2376(71d) T-2403(69d) T-2406(69d) T-2417(68d) T-2428(66d) T-2430(66d) T-2463(48d) T-2474(60d) T-2479(48d) T-2525(43d) T-2529(43d) T-2530(43d) T-2555(34d) T-2558(34d) T-2561(34d) T-2563(34d) T-2565(34d) T-2578(33d) T-2586(33d) T-2589(33d) T-2596(32d) T-2618(30d) T-2623(27d) T-2624(27d) T-2629(27d) T-2630(27d) T-2631(27d) T-2632(26d) T-2634(26d) T-2651(26d) T-2674(25d) T-2686(24d) T-2713(22d) T-2741(20d) T-2774(19d) T-2775(19d) T-2780(19d) T-2781(19d) T-2787(19d) T-2807(18d) T-2809(18d) T-2831(17d) T-2838(16d) T-2842(16d) T-2864(15d) T-2870(15d) T-2891(14d) T-2896(14d)
+       Evidence: Tasks may be forgotten
+       Mitigation: Review with: fw task verify (lists unchecked Human ACs)
+[PASS] D8: Handover quality — no [TODO] in LATEST.md
+[PASS] D8b: Handover archive — 0/10 recent handovers have [TODO]s
+[PASS] D10: Decision-without-dialogue — none detected
+[PASS] D11: Gap register staleness — all gaps fresh
+
+=== DISCOVERY: TREND DETECTION ===
+[PASS] D4: Audit trend — insufficient history (<3 entries)
+[WARN] D5: Task lifecycle — 22 anomaly(s): T-801(142d-active) T-802(142d-active) T-803(142d-active) T-2715(22d-active) T-2899(14d-active) T-2876(15d-active) T-100201(48d-active) T-1542(118d-active) T-1624(114d-active) T-1820(101d-active) (+12 more)
+       Evidence: Tasks with unusual cycle times detected
+       Mitigation: Review flagged tasks for process issues
+[WARN] D13: Inception limbo — 9 task(s): A=6/B=3 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2715(B) T-2876(B) (+1 more)
+       Evidence: Decision recorded but workflow stuck in active/
+       Mitigation: Recover both classes with: bin/fw inception sweep (T-1514)
+[PASS] D3: Commit velocity — normal (PASS today=20 avg=44 ratio=0.5x)
+[PASS] D7: Commit bunching — none (PASS 20_commits_24h_no_bunching)
+[WARN] D6: Completion velocity — sustained drop (drop recent_avg=3.0 vs earlier_avg=14.0)
+       Evidence: Task completion rate dropped >70% vs prior week
+       Mitigation: Check for blockers or process issues slowing work
+[PASS] D12: Bypass log — no log file
+[PASS] D9: Control drift — normal (PASS 10_audits_checked)
+
+[PASS] D14: Empty inception Recommendation — none (PASS no_empty_recommendations)
+[PASS] D15: Inception limbo state — none (PASS no_limbo)
+
+=== OE-WEEKLY: WEEKLY CONTROL CHECKS ===
+[PASS] CTL-016: No failure patterns recorded
+
+=== ORCHESTRATOR ARC CHECKS ===
+[WARN] Orchestrator-arc MCP scan: drift detected
+       Evidence: "NEW: 6 unclassified tool(s) (manual review needed \u2014 outside T-1761 convention\
+       Mitigation: Update .context/audits/orchestrator-mcp-baseline.yaml or investigate ratchet/new-tool
+[PASS] framework-mcp scan: PASS — 6/22 tools gated (manifest present)
+[PASS] framework-mcp manifest: PASS — in sync with tool-set.yaml
+[FAIL] Workflow dispatcher coverage: 1/9 unroutable worker_kind: ask(ollama-direct)
+       Evidence: Workflow declares worker_kind without a spawn handler — runtime NotImplementedError trap
+       Mitigation: Either add a handler to lib/spawn._DISPATCHERS, or change the workflow's worker_kind to a routable one (pi, ollama-loop, TermLink)
+
+=== ARC-COMPLETION CHECKS ===
+[WARN] Arc 'arc-005': 47/47 tasks completed (1.0000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-005 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-010': 13/15 tasks completed (0.8667) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-010 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-012': 14/14 tasks completed (1.0000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-012 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-014': 30/37 tasks completed (0.8108) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-014 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-001': 11/11 tasks completed (1.0000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-001 --demo <path|url> --decision "..."
+[PASS] Arc 'arc-002': 2/3 (0.6667) — below threshold 0.80, no closure pressure
+[WARN] Arc 'arc-009': 5/5 tasks completed (1.0000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-009 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-017': 9/10 tasks completed (0.9000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-017 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-015': 3/3 tasks completed (1.0000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-015 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-003': 30/31 tasks completed (0.9677) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-003 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-011': 20/21 tasks completed (0.9524) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-011 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-004': 5/6 tasks completed (0.8333) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-004 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-016': 2/2 tasks completed (1.0000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-016 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-006': 49/53 tasks completed (0.9245) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-006 --demo <path|url> --decision "..."
+[WARN] Arc 'arc-007': 1/1 tasks completed (1.0000) but arc still in-progress
+       Evidence: Threshold 0.80 reached — code-complete without explicit closure (G-062 signature)
+       Mitigation: Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-007 --demo <path|url> --decision "..."
+
+=== SUMMARY ===
+Pass: 749
+Warn: 112
+Fail: 3
+
+=== PRIORITY ACTIONS ===
+     1	Add artifact reference to ## Updates section of T-2062
+     2	Add artifact reference to ## Updates section of T-2063
+     3	Add artifact reference to ## Updates section of T-2064
+     4	Add artifact reference to ## Updates section of T-2065
+     5	Add artifact reference to ## Updates section of T-2066
+
+=== TREND ANALYSIS ===
+Repeated issues detected in last 14 days (candidates for practice):
+  -      7 Arc 'embeddings-strategy' has no task commits in the last 30 days (3 task(s) in arc) (7 times)
+  -      4 Arc 'horizon-axis-hardening' has no task commits in the last 30 days (5 task(s) in arc) (4 times)
+  -      4 Arc 'capability-overlay' has no task commits in the last 30 days (15 task(s) in arc) (4 times)
+  -      4 Arc 'capability-overlay' has no task commits in the last 30 days (12 task(s) in arc) (4 times)
+  -      3 Fabric drift: 9 source file(s) have no fabric card (3 times)
+  -      3 Fabric drift: 7 source file(s) have no fabric card (3 times)
+  -      3 Fabric drift: 6 source file(s) have no fabric card (3 times)
+
+Consider creating a practice to address these recurring issues.
+Run: fw context add-learning "description" --task T-XXX
+
+Audit history: 14 audit(s) in last 14 days + today
+
+Audit saved to: /opt/999-Agentic-Engineering-Framework/.context/audits/2026-08-23.yaml
+
+=== END AUDIT ===

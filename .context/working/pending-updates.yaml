@@ -229,3 +229,19 @@ pending_updates:
     ECONNRESET evidence is version-dated (measured 0.11.693, their tree 0.11.1537,
     T-2772 fixed it on an unmerged branch - so accurate for what this host runs, inaccurate
     vs current source).'
+- id: U-012
+  command: git push origin HEAD:t2539-staging && git push origin HEAD:master && git
+    push github HEAD:master
+  reason: '8 commits (T-3121, T-3122) cannot be pushed: pre-push self-vendor gate
+    reads the WORKING TREE, which holds a concurrent session''s uncommitted bin/fw
+    + agents/audit/audit.sh (T-3070), idle since 21:13. The commits themselves are
+    clean — all four vendored files byte-identical at HEAD. Needs: that session''s
+    work committed or discarded, then run this. Not bypassing (Tier-2 gate bypass
+    is not agent-delegated).'
+  task: T-3122
+  host: 192.168.10.107
+  agent: agent
+  created: '2026-08-23T20:10:51Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null

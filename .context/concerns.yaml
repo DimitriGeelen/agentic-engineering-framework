@@ -1,3 +1,47 @@
+- id: OBS-249
+  type: bug
+  severity: high
+  surface: agents/audit/audit.sh `schedule install` subcommand (_cron_generate_source) vs bin/fw
+    `cron generate`/`cron install` — both write $PROJECT_ROOT/.context/cron/agentic-audit.crontab
+  detected_in: T-3070 (investigating why a just-committed cron-registry.yaml schedule fix for
+    audit-lock contention appeared reverted minutes later)
+  symptom: 'Editing .context/cron-registry.yaml, running `fw cron generate` (which correctly
+    picks up the edit), then running the command its own success message recommends —
+    `fw audit schedule install` — silently overwrote the just-generated, git-tracked crontab
+    source file with a hardcoded template from a DIFFERENT, unrelated code path, reverting
+    every registry-driven schedule change with no error, no diff shown, no warning. Confirmed
+    live 2026-08-23: three T-3070 collision fixes (structural-30m, full-daily, observations-6h/oe-daily/oe-weekly)
+    were all reverted by one `fw audit schedule install` call minutes after being generated
+    correctly.'
+  root_cause: 'T-1112''s RCA (docs/reports/T-1112-cron-divergence-rca.md) had already diagnosed
+    this exact class in 2026-04 — "two parallel cron management systems with no structural
+    binding" — and T-1114 built the intended single chokepoint, `fw cron install` (bin/fw:5394,
+    registry-driven: generate + diff + atomic install). But the legacy entry point,
+    `agents/audit/audit.sh schedule install`, was never redirected to it; its own
+    `_cron_generate_source()` heredoc (audit.sh:75-121) kept independently regenerating the
+    SAME target file ($CRON_SOURCE = .context/cron/agentic-audit.crontab) from a hardcoded
+    template with the pre-T-3070 schedules baked in. Both entry points looked authoritative —
+    `fw cron generate`''s own stdout even said "Install with: fw audit schedule install",
+    steering straight into the stale path. T-1114''s C1 ("collapse into a single command")
+    was read as "add a new correct command" rather than "make the old command''s name resolve
+    to the new logic" — the collapse never actually happened at the second entry point.'
+  prevention: 'FIXED (T-3070): `agents/audit/audit.sh schedule install` now checks for
+    .context/cron-registry.yaml and, if present, `exec`s `fw cron install "$@"` before reaching
+    the hardcoded heredoc — the heredoc path now only runs for pre-T-448 consumer projects with
+    no registry (backward compat, not a live dual-writer). `fw cron generate`''s misleading
+    "Install with: fw audit schedule install" hint corrected to "fw cron install". Regression:
+    tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats (4 tests — delegates when
+    registry present, matches registry content not the template, in-sync on rerun, legacy path
+    still works with no registry, hint text corrected).'
+  blast_radius: cross-project
+  observed: '2026-08-23'
+  fixed_in: T-3070
+  fixed_date: '2026-08-23'
+  status: resolved
+  related:
+  - T-1112
+  - T-1114
+  - T-3070
 - id: OBS-185
   type: bug
   severity: medium

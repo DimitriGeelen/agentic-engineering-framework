@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (18)
+## Qualifying tasks (17)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -44,7 +44,6 @@ nothing mechanical would gate their close.
 | T-2969 | started-work | build | draft arc with all constituents complete is reported... | 5 | yes |
 | T-3097 | started-work | inception | Worktree failure class — ultra-deep RCA and structur... | 3 | **no** |
 | T-3104 | started-work | refactor | Lift the task-corpus view set into a shared library ... | 7 | **no** |
-| T-3119 | started-work | build | fw doctor reports designer pin currency: WARN when s... | 5 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |
