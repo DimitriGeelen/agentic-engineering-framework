@@ -9,10 +9,10 @@ description: >
   The audit WARN 'N cards have no edges' advertises 'Run: fw fabric enrich' as its
   fix, which cannot clear it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -28,8 +28,8 @@ arc_id: arc-004
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T19:24:53Z
-last_update: '2026-08-23T19:30:19Z'
-date_finished:
+last_update: 2026-08-23T19:41:19Z
+date_finished: 2026-08-23T19:41:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -275,6 +275,34 @@ escalates.
 
 ## Evolution
 
+### 2026-08-23 — the framework was exempt, and that was the finding
+
+- **What changed:** the task was filed asserting that 114 dotted imports in this
+  repo were invisible to the enricher. That was wrong. Measuring the fix's effect
+  produced an identical edge count before and after, which only made sense if
+  something else was already resolving those imports. It was:
+  `detect_python_imports:271` matches dotted paths under a hardcoded
+  `web|lib|agents|tools` prefix list — this repo's own package names. Our imports
+  were never invisible; they were carried by a detector consumers cannot benefit
+  from.
+- **Plan impact:** the acceptance criterion "enrich adds strictly more edges than
+  baseline on this repo" was near-unsatisfiable as written. The dotted-path fix
+  alone moved this repo by +16 edges, because this repo was never the victim. The
+  real defect was resolution, not matching: candidates were built only from the
+  source file's directory and its parent, never the project root, so the generic
+  detector returned **zero** edges for every nested file. Added that as strategy 4
+  — the generalisation of the hardcoded prefix list — which moved the repo +343.
+- **Triggered:** one AC added (root-relative resolution) and one rewritten to
+  report the measured split rather than assert a constant. Two tests added beyond
+  the dispatched worker's scope: nested-source root-relative resolution, and a
+  precedence test that local resolution still wins so the fallback cannot silently
+  re-point existing edges. Fixture names deliberately avoid `web`/`lib`/`agents`/
+  `tools`, since with them the suite passes against the broken code.
+- **Worth keeping:** the initial framing was the sort of error that ships quietly.
+  Both the peer's report and my own confirmation pointed the same way, the fix was
+  real, and the tests were green — only the *measurement* disagreed. It is the
+  cheapest of the three to skip.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -353,3 +381,25 @@ escalates.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3121-fw-fabric-enrich-is-blind-to-dotted-impo.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d1745cb4
+- **Timestamp:** 2026-08-23T19:41:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `detect_generic_python_imports` resolves dotted `from pkg.mod import X` to `pkg/mod.py` and to `pkg/mod/__init__.py`, keeping the existing three flat strategies working unchanged
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=pkg/mod.py in: `detect_generic_python_imports` resolves dotted `from pkg.mod import X` to `pkg/mod.py` and to `pkg/mod/__init__.py`, keeping the existing three flat `
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 -m pytest tests/unit/test_fabric_dotted_imports.py -q 2>&1 | tail -3 | grep -qE '[0-9]+ passed'`
+
+### 2026-08-23T19:41:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

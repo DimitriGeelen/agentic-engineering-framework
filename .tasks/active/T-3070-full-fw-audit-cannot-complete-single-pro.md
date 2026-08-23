@@ -38,7 +38,7 @@ related_tasks: [T-1719, T-2930, T-860, T-862]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T13:20:32Z
-last_update: 2026-08-22T17:01:22Z
+last_update: '2026-08-23T19:30:18Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,6 +95,24 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-23T19:30:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3070: Full fw audit cannot complete: single process-wide lock contends with cron section runs
@@ -122,7 +140,39 @@ occasional brief lock contention that self-resolves on retry. The severity is
 lower than the original description implied; the primary blocked consumer is
 `fw audit clean` as a task AC (T-1719 A6/A6b), not the push path.
 
-**Diagnostic run in progress (2026-08-17T14:09:15Z):** launched a fully
+**Root cause disentangled (2026-08-23):** BOTH candidates were real,
+independently. (1) `AUDIT_TIMEOUT` was too short for a full run regardless of
+contention — fixed by giving full runs (SECTIONS empty) their own larger
+default (`FW_AUDIT_FULL_TIMEOUT`, 3000s vs the section-scoped 600s;
+`agents/audit/audit.sh:341-355`, pinned by
+`tests/unit/t3070_audit_full_run_timeout.bats`). (2) The schedule collision
+was real AND wider than filed: `full-daily` (`0 8 * * *`) exactly collided
+with `traceability-hourly` (`0 * * * *`) at 8:00 daily, and three MORE
+undetected collisions existed on the same shared flock —
+`observations-6h`/`oe-daily`/`oe-weekly` each also fired at `:00`, colliding
+with `traceability-hourly`'s every-hour `:00` trigger. `structural-30m` had
+already been offset to `5,35` for the same class before this task started.
+Fixed by offsetting all four remaining `:00`-aligned jobs
+(`.context/cron-registry.yaml`); pinned generically (not just the four known
+pairs) by `tests/lint/audit-lock-cron-schedule-collision.bats`, which expands
+every active `fw audit`-invoking job's 5 cron fields and fails on ANY pair
+that can fire the same absolute minute.
+
+**Structural finding beyond the filed scope (OBS-249):** deploying the
+schedule fix surfaced a second, more serious bug — `agents/audit/audit.sh
+schedule install` was an independent, hardcoded-template generator for the
+SAME git-tracked crontab source file that `fw cron generate`/`fw cron
+install` (T-1112/T-1114) already own, and it silently reverted this task's
+registry-driven fixes minutes after they were correctly generated (`fw cron
+generate`'s own success message even recommends the broken command). Fixed
+by making `audit.sh schedule install` delegate to `fw cron install` when a
+registry exists (`agents/audit/audit.sh` install case); the hardcoded
+template now only serves pre-T-448 consumer projects with no registry.
+Pinned by `tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats`.
+See OBS-249 for the full RCA.
+
+**Diagnostic run in progress (2026-08-17T14:09:15Z, superseded — see live
+ground-truth run below):** launched a fully
 detached `fw audit` (`nohup ... & disown`, no external timeout, lock
 confirmed free at start) to get ground-truth timing before choosing a fix
 shape — PID 4115033, output at
@@ -138,9 +188,9 @@ mtime vs the `AUDIT REPORT` header timestamp).
 - [ ] Ground truth established: actual wall-clock time for an uncontended,
   un-killed full `fw audit` run to reach `=== SUMMARY ===` (or confirmation it
   never does within a generous bound, e.g. 2400s)
-- [ ] Root cause disentangled: confirm/refute whether `AUDIT_TIMEOUT=600s` alone
+- [x] Root cause disentangled: confirm/refute whether `AUDIT_TIMEOUT=600s` alone
   (independent of lock contention) is insufficient for a full run on this corpus
-- [ ] Fix implemented for at least one of: (a) cron schedule collision at
+- [x] Fix implemented for at least one of: (a) cron schedule collision at
   minute 0 in `.context/cron-registry.yaml` / `agents/audit/audit.sh` crontab
   block, (b) distinct lock or larger timeout budget for full vs section-scoped
   runs
@@ -257,6 +307,48 @@ mtime vs the `AUDIT REPORT` header timestamp).
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A full (unscoped) `fw audit` run either exits immediately with 75
+("another audit already running") or, once it acquires the lock, gets killed
+mid-run before reaching `=== SUMMARY ===`, making `fw audit clean` unusable
+as a task Acceptance Criterion.
+
+**Root cause (two independent, compounding causes):**
+1. `AUDIT_TIMEOUT` defaulted to 600s for every run regardless of scope. A full
+   run walks ~28 sections including whole-tree scans and was measured only
+   43% through (12/28 sections) at the 590s mark — 600s was simply too short
+   for the unscoped case, independent of contention.
+2. Five cron jobs that all invoke `fw audit` (full or `--section`-scoped)
+   share ONE internal flock (`.context/locks/audit.lock`,
+   `agents/audit/audit.sh`) regardless of their own distinct per-job
+   `/var/lock/agentic-cron-*.lock`. Five of those jobs were scheduled at
+   minute `:00` (`full-daily`, `traceability-hourly`, `observations-6h`,
+   `oe-daily`, `oe-weekly`) — an exact collision, not intermittent bad luck —
+   so a full run frequently lost the race to acquire the lock at all.
+
+**Why structurally allowed:** Nothing compared a job's declared cron schedule
+against its lock-sharing peers — `.context/cron-registry.yaml` had no
+collision check, only a per-field generator. The timeout was a single
+constant with no scope-awareness. Deploying the schedule fix then surfaced a
+THIRD, deeper structural gap (OBS-249): `agents/audit/audit.sh schedule
+install` was a second, independent generator for the same git-tracked
+crontab file that `fw cron generate`/`fw cron install` (T-1112/T-1114) were
+built to own exclusively — T-1114's "collapse into one command" only added
+the new correct command, it never redirected the old one, so the legacy path
+kept silently reverting registry-driven fixes. This went undetected because
+`fw cron generate`'s own success message recommended the broken command.
+
+**Prevention:**
+- `tests/unit/t3070_audit_full_run_timeout.bats` — pins the scope-aware
+  timeout default (full > 600s, section-scoped stays 600s).
+- `tests/lint/audit-lock-cron-schedule-collision.bats` — generic collision
+  detector over the real registry: expands every active `fw audit`-invoking
+  job's 5 cron fields and fails on ANY pair (not just the ones observed) that
+  can fire in the same absolute minute.
+- `tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats` —
+  pins that the legacy entry point now delegates to the registry-driven
+  generator instead of maintaining a second copy.
+- OBS-249 registered in `.context/concerns.yaml` for the dual-writer class.
 
 ## Evolution
 
