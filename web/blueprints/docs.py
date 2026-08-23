@@ -4,6 +4,7 @@ and a general-purpose file viewer for project markdown files (T-632)."""
 import logging
 import os
 import re as re_mod
+import subprocess
 from pathlib import Path
 
 import markdown2
@@ -45,6 +46,58 @@ _EXT_TO_LANG = {
 # Markdown surface (review, tasks, approvals, inception) gets one-click
 # artefact navigation. Re-exported here as `_FILE_REF_RE` / `_auto_link_files`
 # for back-compat with the existing call site below.
+
+# T-3124: the /file/ route used to answer "The requested page does not exist."
+# for two structurally different situations — a genuinely absent path, and a
+# path that is present on disk but whose directory is not in
+# VIEWABLE_DIR_PREFIXES. The second sentence is false, and false-but-answered
+# is worse than blank: the reader goes hunting for a file that is already
+# there instead of looking at the allowlist. 1221 of 2011 tracked files under
+# docs/ were in that state.
+#
+# Existence is only ever disclosed for GIT-TRACKED paths. An untracked file
+# that happens to sit on disk (.env, keys, scratch output) keeps the plain
+# "does not exist" answer, so this route never becomes an existence oracle
+# for arbitrary filesystem paths.
+
+
+def _is_git_tracked(filepath: str) -> bool:
+    """Return True iff `filepath` (repo-relative) is tracked by git.
+
+    Uses `git ls-files --error-unmatch` with `:(literal)` pathspec magic so a
+    crafted path containing glob metacharacters (`*`, `?`, `[`) cannot match
+    some *other* tracked file and coax a disclosure out of the caller.
+    Any failure to run git is treated as untracked (fail closed).
+    """
+    if not filepath or ".." in filepath:
+        return False
+    try:
+        proc = subprocess.run(
+            ["git", "ls-files", "--error-unmatch", "--", f":(literal){filepath}"],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return proc.returncode == 0
+
+
+def _render_unservable(filepath):
+    """404 page for a tracked, on-disk file whose directory is not served."""
+    return render_page(
+        "_error.html",
+        page_title="Not Served",
+        error_title="404 Not Served",
+        error_message=(
+            f"{filepath} is present in the repository, but its directory is "
+            "not served by the file viewer. The served directories are listed "
+            "in VIEWABLE_DIR_PREFIXES (web/shared.py) — add this file's "
+            "directory there to view it here."
+        ),
+    ), 404
+
 
 bp = Blueprint("docs", __name__)
 
@@ -148,17 +201,37 @@ def file_viewer(filepath):
 
     Markdown files render as Markdown. Source files (.py, .sh, .yaml, etc.)
     render as syntax-highlighted code blocks.
+
+    T-3124: a tracked file that exists but sits outside VIEWABLE_DIR_PREFIXES
+    gets its own 404 body naming the allowlist, instead of the false claim
+    that it does not exist. See `_is_git_tracked` for the disclosure boundary.
     """
-    if not is_viewable_path(filepath):
+    # T-3124: check order is load-bearing. Traversal is rejected first, then
+    # the resolved path is confirmed to be under PROJECT_ROOT, and only then
+    # does anything probe the filesystem or git. A traversal attempt must
+    # never reach the "file exists but is not served" branch below.
+    if not filepath or ".." in filepath or filepath.startswith("/"):
         abort(404)
 
     file_path = PROJECT_ROOT / filepath
-    if not file_path.exists() or not file_path.is_file():
-        abort(404)
 
     # Resolve and verify still under PROJECT_ROOT (symlink protection)
-    resolved = file_path.resolve()
-    if not str(resolved).startswith(str(PROJECT_ROOT.resolve())):
+    try:
+        resolved = file_path.resolve()
+    except OSError:
+        abort(404)
+    root = str(PROJECT_ROOT.resolve())
+    if not (str(resolved) == root or str(resolved).startswith(root + os.sep)):
+        abort(404)
+
+    if not is_viewable_path(filepath):
+        # Present + tracked → say so, and name the allowlist. Anything else
+        # (untracked, or genuinely absent) gets the plain not-found answer.
+        if file_path.is_file() and _is_git_tracked(filepath):
+            return _render_unservable(filepath)
+        abort(404)
+
+    if not file_path.exists() or not file_path.is_file():
         abort(404)
 
     content = file_path.read_text()
