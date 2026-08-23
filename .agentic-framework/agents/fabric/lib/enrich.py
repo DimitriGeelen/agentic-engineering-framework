@@ -96,31 +96,159 @@ REVERSE_EDGE_TYPE = {
 # Pattern detectors — each returns list of (target_location, edge_type)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Bash source-argument resolution (T-3122)
+# ---------------------------------------------------------------------------
+
+# Characters that may appear in a literal (unexpanded) path fragment.
+_PATH_CHARS = set(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._+-/@"
+)
+
+# A `source` / `.` command, at a shell command position (start of line, or after
+# a separator / block keyword). The argument itself is scanned by hand below,
+# because it may contain quotes, `&&` and nested `$( )` that no regex should try
+# to balance.
+_SOURCE_CMD_RE = re.compile(
+    r'(?:^|[;&|(){}]|\bthen\b|\bdo\b|\belse\b)[ \t]*(?:source|\.)[ \t]+',
+    re.MULTILINE,
+)
+
+
+def _read_shell_word(text, i):
+    """Return the single shell word starting at ``text[i]``.
+
+    Tracks quote state and `$( )` nesting so that an argument like
+    ``"$(cd "$(dirname "$0")/.." && pwd)/lib/config.sh"`` is read whole instead
+    of being cut at the embedded `&&`.
+    """
+    quote = None
+    stack = []
+    out = []
+    while i < len(text):
+        ch = text[i]
+        if ch == '\n':
+            break
+        if ch == '\\' and i + 1 < len(text):
+            out.append(ch)
+            out.append(text[i + 1])
+            i += 2
+            continue
+        if ch == '$' and text.startswith('$(', i):
+            stack.append(quote)
+            quote = None
+            out.append('$(')
+            i += 2
+            continue
+        if ch == ')' and stack:
+            quote = stack.pop()
+            out.append(ch)
+            i += 1
+            continue
+        if quote is None and ch in '"\'':
+            quote = ch
+        elif quote == ch:
+            quote = None
+        elif quote is None and not stack and (ch.isspace() or ch in ';&|<>#'):
+            break
+        out.append(ch)
+        i += 1
+    return ''.join(out)
+
+
+def _iter_source_args(content):
+    """Yield the raw argument of every `source`/`.` command in ``content``."""
+    for m in _SOURCE_CMD_RE.finditer(content):
+        arg = _read_shell_word(content, m.end())
+        if arg:
+            yield arg
+
+
+def _trailing_literal_path(arg):
+    """Extract the trailing literal path from a source argument, or None.
+
+    ``"$FRAMEWORK_ROOT/lib/config.sh"``, ``"$fw_root/lib/config.sh"``,
+    ``"${ANYTHING}/lib/config.sh"``, ``"$(dirname "$0")/lib/config.sh"``,
+    ``./lib/config.sh`` and ``lib/config.sh`` all yield ``lib/config.sh``.
+    Whatever precedes the literal tail is irrelevant — the variable's *name* is
+    never consulted.
+    """
+    a = arg.strip()
+    bare = a.lstrip('"\'')
+    # Not project sources: absolute system paths and home-relative paths.
+    if not bare or bare[0] in '~/' or bare.startswith('$HOME'):
+        return None
+
+    # Blank out every expansion so only literal text survives the scan below.
+    s = a.replace('"', '').replace("'", '')
+    s = s.replace('$(', '\x00(')
+    s = re.sub(r'\$\{[^}]*\}', '\x00', s)
+    s = re.sub(r'\$[A-Za-z_][A-Za-z0-9_]*', '\x00', s)
+    s = re.sub(r'\$[0-9@*#?!$-]', '\x00', s)
+
+    i = len(s)
+    while i > 0 and s[i - 1] in _PATH_CHARS:
+        i -= 1
+    path = s[i:].lstrip('/')
+    while path.startswith('./'):
+        path = path[2:]
+    if not path or path.endswith('/') or path in ('.', '..'):
+        return None
+    return path
+
+
+def _resolve_source_path(rel, source_dir, framework_root):
+    """Resolve a literal source path against the source dir, then the root.
+
+    Order (first hit wins, existence-guarded at every step):
+      a) <source_dir>/<rel>
+      b) <source_dir>/lib/<rel>     — preserves the old `$LIB_DIR` behaviour
+      c) <project_root>/<rel>       — the `$FRAMEWORK_ROOT/...` idiom
+    """
+    for cand in (os.path.join(source_dir, rel),
+                 os.path.join(source_dir, 'lib', rel),
+                 rel):
+        cand = os.path.normpath(cand)
+        if os.path.isabs(cand) or cand.startswith('..'):
+            continue
+        if os.path.isfile(os.path.join(framework_root, cand)):
+            return cand
+    return None
+
+
 def detect_bash_sources(content, source_location, framework_root):
-    """Detect bash source/dot-source, exec, and variable-path patterns."""
+    """Detect bash source/dot-source, exec, and variable-path patterns.
+
+    `source X` / `. X` is resolved by extracting the TRAILING LITERAL PATH from
+    the argument and resolving that against the filesystem (T-3122). The prior
+    implementation matched on the *variable name* — it recognised only
+    `$LIB_DIR`, `$SCRIPT_DIR`, `$AGENTS_DIR` and `$FW_LIB_DIR`, so 127 of this
+    repo's 194 source statements (65%) emitted no edge at all, including the 88
+    written with the framework's own `$FRAMEWORK_ROOT/...` idiom. Same class as
+    the hardcoded `web|lib|agents|tools` prefix list fixed in T-3121: resolve
+    the path, don't trust a name list.
+    """
     edges = []
+    seen = set()
     source_dir = os.path.dirname(source_location)
 
-    # Pattern: source "$LIB_DIR/file.sh" or . "$LIB_DIR/file.sh"
-    for m in re.finditer(
-        r'(?:source|\.)\s+"?\$(?:LIB_DIR|SCRIPT_DIR)/([^"$\s]+)"?', content
-    ):
-        target_file = m.group(1)
-        candidates = [
-            os.path.join(source_dir, "lib", target_file),
-            os.path.join(source_dir, target_file),
-        ]
-        for c in candidates:
-            c = os.path.normpath(c)
-            if os.path.exists(os.path.join(framework_root, c)):
-                edges.append((c, "calls"))
-                break
+    def add(target, relation="calls"):
+        """Record an edge, guarding self-edges and duplicate targets."""
+        if target and target != source_location and target not in seen:
+            seen.add(target)
+            edges.append((target, relation))
+
+    # Pattern: source <arg> / . <arg> — any argument shape.
+    for arg in _iter_source_args(content):
+        rel = _trailing_literal_path(arg)
+        if rel:
+            add(_resolve_source_path(rel, source_dir, framework_root))
 
     # Pattern: exec "$AGENTS_DIR/agent/script.sh" "$@"
     for m in re.finditer(r'exec\s+"?\$AGENTS_DIR/([^"$\s]+)"?', content):
         target = os.path.normpath(os.path.join("agents", m.group(1)))
         if os.path.exists(os.path.join(framework_root, target)):
-            edges.append((target, "calls"))
+            add(target)
 
     # Pattern: source/exec "$FW_LIB_DIR/file.sh"
     for m in re.finditer(
@@ -128,19 +256,19 @@ def detect_bash_sources(content, source_location, framework_root):
     ):
         target = os.path.normpath(os.path.join("lib", m.group(1)))
         if os.path.exists(os.path.join(framework_root, target)):
-            edges.append((target, "calls"))
+            add(target)
 
     # Pattern: exec python3 "$AGENTS_DIR/path"
     for m in re.finditer(r'exec\s+python3\s+"?\$AGENTS_DIR/([^"$\s]+)"?', content):
         target = os.path.normpath(os.path.join("agents", m.group(1)))
         if os.path.exists(os.path.join(framework_root, target)):
-            edges.append((target, "calls"))
+            add(target)
 
     # Pattern: exec python3 -m web.module
     for m in re.finditer(r'exec\s+python3\s+-m\s+(web\.\w+)', content):
         mod = m.group(1).replace(".", "/") + ".py"
         if os.path.exists(os.path.join(framework_root, mod)):
-            edges.append((mod, "calls"))
+            add(mod)
 
     # Pattern: "$FRAMEWORK_ROOT/path.sh" or "$PROJECT_ROOT/path.sh" (called as command)
     for m in re.finditer(
@@ -148,8 +276,7 @@ def detect_bash_sources(content, source_location, framework_root):
     ):
         target = os.path.normpath(m.group(1))
         if os.path.exists(os.path.join(framework_root, target)):
-            if target != source_location:
-                edges.append((target, "calls"))
+            add(target)
 
     # Pattern: "$FRAMEWORK_ROOT/agents/X/Y.sh" via variable like GIT_AGENT=
     for m in re.finditer(
@@ -157,8 +284,7 @@ def detect_bash_sources(content, source_location, framework_root):
     ):
         target = os.path.normpath(m.group(1))
         if os.path.exists(os.path.join(framework_root, target)):
-            if target != source_location:
-                edges.append((target, "calls"))
+            add(target)
 
     # Pattern: "$FRAMEWORK_ROOT/metrics.sh" or standalone script paths
     for m in re.finditer(
@@ -166,8 +292,7 @@ def detect_bash_sources(content, source_location, framework_root):
     ):
         target = os.path.normpath(m.group(1))
         if os.path.exists(os.path.join(framework_root, target)):
-            if target != source_location:
-                edges.append((target, "calls"))
+            add(target)
 
     # Pattern: "$FRAMEWORK_ROOT/bin/fw" / "$PROJECT_ROOT/bin/fw" — suffixless
     # invocation (T-2511). The FRAMEWORK_ROOT/*.sh pattern above requires a
@@ -176,7 +301,7 @@ def detect_bash_sources(content, source_location, framework_root):
     # not prose — distinct from the bare `bin/fw` grep-pattern false-positive class.
     if re.search(r'"\$(?:FRAMEWORK_ROOT|PROJECT_ROOT)/bin/fw"', content) \
        and source_location != "bin/fw" and os.path.exists(os.path.join(framework_root, "bin/fw")):
-        edges.append(("bin/fw", "calls"))
+        add("bin/fw")
 
     # Pattern: exec python3 "$(dirname "$0")/sibling.py"  (T-2511)
     # The fw hook dispatcher loads a thin .sh that exec's its own-dir .py sibling
@@ -185,7 +310,7 @@ def detect_bash_sources(content, source_location, framework_root):
     for m in re.finditer(r'\$\(\s*dirname\s+"?\$0"?\s*\)/([^"$\s]+\.(?:sh|py))', content):
         target = os.path.normpath(os.path.join(source_dir, m.group(1)))
         if os.path.exists(os.path.join(framework_root, target)) and target != source_location:
-            edges.append((target, "calls"))
+            add(target)
 
     return edges
 
