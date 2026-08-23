@@ -434,14 +434,18 @@ def detect_template_deps(content, source_location, framework_root):
 
 def detect_generic_python_imports(content, source_location, project_root):
     """
-    Detect standard Python imports: from X import Y
+    Detect standard Python imports: `from X import Y` and `import X`.
 
-    Attempts to resolve module names to actual files in the project,
-    inferring paths based on source file location and common patterns.
+    Handles dotted module paths (`from pkg.mod import Y`, `import pkg.mod`),
+    resolving each to either `pkg/mod.py` or `pkg/mod/__init__.py` relative to
+    the source file's directory, then its parent. Flat imports resolve exactly
+    as before (T-3121 — the `\\w` pattern excluded `.`, so 114 dotted imports in
+    this repo emitted no edge at all).
 
     This is a prototype for consumer project support (L-CONSUMER-001).
     """
     edges = []
+    seen = set()
 
     # Get directory containing source file
     source_dir = os.path.dirname(source_location)
@@ -456,37 +460,68 @@ def detect_generic_python_imports(content, source_location, project_root):
         'flask', 'jinja2', 'werkzeug', 'requests', 'numpy', 'pandas'
     }
 
-    # Pattern: from module import something
-    for m in re.finditer(r'from\s+(\w+)\s+import', content):
-        module_name = m.group(1)
+    def resolve(module_name):
+        """Resolve a (possibly dotted) module name to a project-relative path."""
+        # Relative imports (`from . import x`) carry no resolvable root segment
+        if module_name.startswith('.') or module_name.endswith('.'):
+            return None
 
-        # Skip standard library and common third-party modules
-        if module_name in SKIP_MODULES:
-            continue
+        parts = module_name.split('.')
+        if not all(parts):
+            return None
 
-        # Try to resolve module to file
+        # SKIP_MODULES is consulted on the ROOT segment: `yaml.parser` is still
+        # third-party even though `yaml` alone is what the set lists.
+        if parts[0] in SKIP_MODULES:
+            return None
+
+        subpath = os.path.join(*parts)
+
+        candidates = []
         # Strategy 1: Same directory as source
-        target = os.path.join(source_dir, module_name + '.py')
-        if os.path.exists(os.path.join(project_root, target)):
-            if target != source_location:
-                edges.append((target, "uses"))
-            continue
-
+        candidates.append(os.path.join(source_dir, subpath + '.py'))
         # Strategy 2: Package init file
-        target = os.path.join(source_dir, module_name, '__init__.py')
-        if os.path.exists(os.path.join(project_root, target)):
-            if target != source_location:
-                edges.append((target, "uses"))
-            continue
-
+        candidates.append(os.path.join(source_dir, subpath, '__init__.py'))
         # Strategy 3: Check parent directory (for shared modules)
         parent_dir = os.path.dirname(source_dir)
         if parent_dir:
-            target = os.path.join(parent_dir, module_name + '.py')
+            candidates.append(os.path.join(parent_dir, subpath + '.py'))
+            candidates.append(os.path.join(parent_dir, subpath, '__init__.py'))
+
+        # Strategy 4: project-root-relative (T-3121). A dotted import is normally
+        # rooted at the project, not at the importing file's directory —
+        # `web/blueprints/tasks.py` doing `from web.shared import x` means
+        # `<root>/web/shared.py`, which strategies 1-3 cannot reach from
+        # `web/blueprints/`. Without this the generic detector returns zero edges
+        # for ANY nested source file, which is why detect_python_imports carries a
+        # hardcoded `web|lib|agents|tools` prefix list: that list is this strategy,
+        # written out for one project's top-level packages. Last so local
+        # resolution still wins, and existence-guarded like the rest.
+        candidates.append(subpath + '.py')
+        candidates.append(os.path.join(subpath, '__init__.py'))
+
+        for target in candidates:
             if os.path.exists(os.path.join(project_root, target)):
-                if target != source_location:
-                    edges.append((target, "uses"))
-                continue
+                return target
+        return None
+
+    def add(module_name):
+        target = resolve(module_name)
+        # Never a self-edge, never a duplicate target from one file
+        if target and target != source_location and target not in seen:
+            seen.add(target)
+            edges.append((target, "uses"))
+
+    # Pattern: from module.path import something
+    for m in re.finditer(r'^[ \t]*from\s+([\w.]+)\s+import\b', content, re.MULTILINE):
+        add(m.group(1))
+
+    # Pattern: import a.b, c as d
+    for m in re.finditer(r'^[ \t]*import\s+([^\n#;]+)', content, re.MULTILINE):
+        for chunk in m.group(1).split(','):
+            name = chunk.strip().split(' as ')[0].strip()
+            if name and re.fullmatch(r'[\w.]+', name):
+                add(name)
 
     return edges
 
