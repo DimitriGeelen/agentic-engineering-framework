@@ -144,7 +144,7 @@ a ref-based operation reproduces exactly the class this task closed one surface 
 
 ## Verification
 
-bats tests/unit/t3125_prepush_self_vendor_judges_pushed_ref.bats > /tmp/.t3125a.out 2>&1 && grep -q "7 tests, 0 failures" /tmp/.t3125a.out
+bats tests/unit/t3125_prepush_self_vendor_judges_pushed_ref.bats > /tmp/.t3125a.out 2>&1 && grep -q "^ok 7 " /tmp/.t3125a.out && ! grep -q "^not ok" /tmp/.t3125a.out
 bash -n agents/git/lib/hooks.sh
 grep -q "T-3125" .git/hooks/pre-push
 diff -q agents/git/lib/hooks.sh .agentic-framework/agents/git/lib/hooks.sh
