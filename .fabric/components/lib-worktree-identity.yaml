@@ -11,6 +11,10 @@ depended_by:
   type: called_by
 - target: tests/unit/t3111_worktree_reexec.bats
   type: tests_by
+- target: lib/paths.sh
+  type: called_by
+- target: tests/unit/t3111_worktree_reexec.bats
+  type: called_by
 last_verified: 2026-08-22
 created_by: unknown
 last_enriched: '2026-08-23'

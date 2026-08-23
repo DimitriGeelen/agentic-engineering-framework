@@ -36,6 +36,10 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/verification-port.sh
+  type: calls
+- target: lib/verification-verdict.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 last_enriched: '2026-08-23'

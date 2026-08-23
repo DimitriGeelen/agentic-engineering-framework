@@ -10,6 +10,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/version-relation.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 last_enriched: '2026-08-23'
@@ -61,4 +63,8 @@ depended_by:
 - target: tests/unit/version_relation.bats
   type: tests_by
 - target: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+  type: called_by
+- target: tests/unit/t3113_upgrade_worktree_advisory.bats
+  type: called_by
+- target: tests/unit/test_self_vendor_agents_md_filter.bats
   type: called_by

@@ -12,6 +12,8 @@ purpose: fw preflight subcommand. Validates system prerequisites (bash version, 
 depends_on:
 - id: bin/fw
   relationship: invoked-by
+- target: lib/git-identity.sh
+  type: calls
 last_verified: 2026-03-04
 created_by: T-322
 depended_by:

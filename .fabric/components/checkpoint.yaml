@@ -32,6 +32,8 @@ depends_on:
   type: calls
 - target: lib/context_tokens.py
   type: calls
+- target: lib/compat.sh
+  type: calls
 depended_by:
 - target: C-009
   type: triggers

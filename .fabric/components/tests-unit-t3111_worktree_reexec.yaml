@@ -16,6 +16,8 @@ depends_on:
   type: tests
 - target: bin/fw
   type: tests
+- target: lib/worktree-identity.sh
+  type: calls
 depended_by: []
 last_verified: 2026-08-22
 created_by: unknown

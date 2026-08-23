@@ -13,6 +13,12 @@ depended_by:
   type: tests_by
 - target: tests/unit/version_relation.bats
   type: tests_by
+- target: lib/upgrade.sh
+  type: called_by
+- target: tests/unit/t2762_upgrade_foreign_source_sha.bats
+  type: called_by
+- target: tests/unit/version_relation.bats
+  type: called_by
 last_verified: 2026-08-01
 created_by: unknown
 last_enriched: '2026-08-23'

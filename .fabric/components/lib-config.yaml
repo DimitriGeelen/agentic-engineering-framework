@@ -80,6 +80,12 @@ depended_by:
   type: tests_by
 - target: web/search_utils.py
   type: called_by
+- target: lib/config-file.sh
+  type: called_by
+- target: lib/watchtower.sh
+  type: called_by
+- target: tests/unit/test_index_doctor_rail.bats
+  type: called_by
 last_verified: 2026-04-03
 created_by: unknown
 last_enriched: '2026-08-23'

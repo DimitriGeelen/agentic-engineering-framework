@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/update.sh
   type: tests
+- target: lib/update.sh
+  type: calls
 depended_by: []
 last_verified: 2026-08-07
 created_by: unknown

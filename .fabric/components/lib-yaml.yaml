@@ -27,6 +27,8 @@ depended_by:
   type: called_by
 - target: tests/unit/episodic_frontmatter_extraction.bats
   type: tests_by
+- target: agents/context/lib/episodic.sh
+  type: called_by
 last_verified: 2026-03-11
 created_by: unknown
 last_enriched: '2026-08-23'

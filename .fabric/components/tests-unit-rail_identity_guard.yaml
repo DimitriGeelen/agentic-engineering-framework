@@ -12,6 +12,8 @@ depends_on:
   type: tests
 - target: bin/fw
   type: tests
+- target: lib/rail-identity.sh
+  type: calls
 depended_by: []
 last_verified: 2026-08-09
 created_by: unknown

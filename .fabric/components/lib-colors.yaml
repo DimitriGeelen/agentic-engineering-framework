@@ -122,6 +122,10 @@ depended_by:
   type: tests_by
 - target: tests/unit/t3113_upgrade_worktree_advisory.bats
   type: tests_by
+- target: lib/errors.sh
+  type: called_by
+- target: tests/unit/t3113_upgrade_worktree_advisory.bats
+  type: called_by
 last_verified: 2026-03-11
 created_by: unknown
 last_enriched: '2026-08-23'

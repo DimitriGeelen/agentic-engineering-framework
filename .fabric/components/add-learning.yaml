@@ -16,6 +16,8 @@ depends_on:
   location: agents/context/lib/learning.sh:88
   contract: 'YAML list item under ''learnings:'' key. Fields: id (L-XXX), learning, source, task, date, context, application.
     No indent on list dash.'
+- target: lib/corpus-id.sh
+  type: calls
 depended_by:
 - target: C-001
   type: calls

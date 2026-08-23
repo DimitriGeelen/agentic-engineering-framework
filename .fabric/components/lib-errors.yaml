@@ -11,7 +11,9 @@ tags:
 - core
 purpose: Consistent error/warning/info output functions with TTY-aware coloring. Provides die(), error(), warn(), info(),
   success(), block() with standardized exit codes (0=ok, 1=error, 2=blocking). Auto-sourced by lib/paths.sh.
-depends_on: []
+depends_on:
+- target: lib/colors.sh
+  type: calls
 depended_by:
 - target: lib/paths.sh
   type: calls
@@ -83,4 +85,4 @@ depended_by:
   type: tests_by
 last_verified: 2026-03-10
 created_by: T-414
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

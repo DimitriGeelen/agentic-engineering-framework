@@ -5,7 +5,9 @@ subsystem: framework-core
 location: lib/consumer-recover.sh
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: lib/url-credentials.sh
+  type: calls
 depended_by:
 - target: tests/unit/test_consumer_recover.bats
   type: called_by

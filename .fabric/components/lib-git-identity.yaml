@@ -17,6 +17,14 @@ depended_by:
   type: tests_by
 - target: tests/unit/git_worker_commits.bats
   type: tests_by
+- target: lib/init.sh
+  type: called_by
+- target: lib/preflight.sh
+  type: called_by
+- target: lib/setup.sh
+  type: called_by
+- target: lib/validate-init.sh
+  type: called_by
 last_verified: 2026-08-09
 created_by: unknown
 last_enriched: '2026-08-23'

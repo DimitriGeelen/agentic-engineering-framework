@@ -13,6 +13,8 @@ depends_on:
 - target: lib/init.sh
   type: reads
   description: 'Parses #@init: tags to determine what to validate'
+- target: lib/git-identity.sh
+  type: calls
 last_verified: 2026-03-08
 created_by: unknown
 depended_by:

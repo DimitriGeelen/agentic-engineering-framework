@@ -15,6 +15,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/check_render_surface_human_ac_sigpipe.bats
   type: tests_by
+- target: tests/unit/check_render_surface_human_ac_sigpipe.bats
+  type: called_by
 last_verified: 2026-05-09
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-08-23'

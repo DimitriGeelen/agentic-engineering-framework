@@ -11,6 +11,8 @@ depended_by:
   type: called_by
 - target: tests/unit/corpus_id_allocator.bats
   type: tests_by
+- target: C-002
+  type: called_by
 last_verified: 2026-08-10
 created_by: unknown
 last_enriched: '2026-08-23'

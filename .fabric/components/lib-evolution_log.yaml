@@ -5,7 +5,9 @@ subsystem: framework-core
 location: lib/evolution_log.sh
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: lib/arc_membership.sh
+  type: calls
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
@@ -15,6 +17,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/arc_membership_agent_surfaces.bats
   type: tests_by
+- target: tests/unit/arc_membership_agent_surfaces.bats
+  type: called_by
 last_verified: 2026-05-04
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-08-23'

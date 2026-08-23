@@ -8,7 +8,9 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/upgrade.sh
   type: tests
+- target: lib/upgrade.sh
+  type: calls
 depended_by: []
 last_verified: 2026-06-10
 created_by: unknown
-last_enriched: '2026-06-10'
+last_enriched: '2026-08-23'

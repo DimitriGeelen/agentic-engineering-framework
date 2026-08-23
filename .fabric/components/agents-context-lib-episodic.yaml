@@ -8,6 +8,10 @@ purpose: Context Agent - generate-episodic command
 depends_on:
 - target: lib/post-write-index.sh
   type: calls
+- target: lib/yaml.sh
+  type: calls
+- target: lib/compat.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:

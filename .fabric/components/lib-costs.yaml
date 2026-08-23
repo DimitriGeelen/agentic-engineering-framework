@@ -8,6 +8,8 @@ purpose: Token usage tracking from JSONL transcripts — parses Claude Code sess
 depends_on:
 - target: lib/colors.sh
   type: calls
+- target: lib/paths.sh
+  type: calls
 depended_by:
 - target: bin/fw
   type: calls

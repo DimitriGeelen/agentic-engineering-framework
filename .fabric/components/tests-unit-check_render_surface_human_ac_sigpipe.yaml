@@ -14,7 +14,9 @@ depends_on:
   type: tests
 - target: lib/render_surface.sh
   type: tests
+- target: lib/render_surface.sh
+  type: calls
 depended_by: []
 last_verified: 2026-05-18
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-08-23'

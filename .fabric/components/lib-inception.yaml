@@ -12,6 +12,8 @@ depends_on:
   type: calls
 - target: lib/inception_recommendation.sh
   type: calls
+- target: lib/paths.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:

@@ -55,6 +55,10 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_version.bats
   type: tests_by
+- target: agents/context/lib/episodic.sh
+  type: called_by
+- target: C-008
+  type: called_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-08-23'

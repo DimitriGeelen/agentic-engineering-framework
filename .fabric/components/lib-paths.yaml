@@ -20,6 +20,8 @@ depends_on:
   type: calls
 - target: lib/yaml.sh
   type: calls
+- target: lib/worktree-identity.sh
+  type: calls
 depended_by:
 - target: agents/audit/audit.sh
   type: calls
@@ -171,6 +173,16 @@ depended_by:
   type: tests_by
 - target: tests/unit/t3111_worktree_reexec.bats
   type: tests_by
+- target: agents/git/lib/worktree-corpus-guard.sh
+  type: called_by
+- target: lib/costs.sh
+  type: called_by
+- target: lib/inception.sh
+  type: called_by
+- target: lib/review.sh
+  type: called_by
+- target: tests/unit/t2380_transcript_dir_encoding.bats
+  type: called_by
 last_verified: 2026-03-10
 created_by: T-412
 last_enriched: '2026-08-23'

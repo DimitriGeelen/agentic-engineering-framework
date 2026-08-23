@@ -5,7 +5,13 @@ subsystem: framework-core
 location: lib/review.sh
 tags: []
 purpose: 'fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation.'
-depends_on: []
+depends_on:
+- target: lib/paths.sh
+  type: calls
+- target: lib/watchtower.sh
+  type: calls
+- target: lib/task-audit.sh
+  type: calls
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by

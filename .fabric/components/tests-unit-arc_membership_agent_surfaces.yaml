@@ -12,7 +12,9 @@ depends_on:
   type: tests
 - target: agents/handover/handover.sh
   type: tests
+- target: lib/evolution_log.sh
+  type: calls
 depended_by: []
 last_verified: 2026-05-17
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-08-23'

@@ -8,6 +8,10 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: agents/task-create/update-task.sh
   type: calls
+- target: lib/arc_membership.sh
+  type: calls
+- target: lib/watchtower.sh
+  type: calls
 depended_by:
 - target: tests/unit/test_arc_system.py
   type: called_by
@@ -60,6 +64,10 @@ depended_by:
 - target: tests/playwright/test_arcs_detail_arc_id_membership.py
   type: called_by
 - target: lib/write_set.py
+  type: called_by
+- target: tests/unit/arc_membership_union.bats
+  type: called_by
+- target: tests/unit/arc_next_numeric_id_octal.bats
   type: called_by
 last_verified: 2026-05-01
 created_by: unknown

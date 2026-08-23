@@ -16,6 +16,10 @@ depends_on:
   type: tests
 - target: bin/fw
   type: tests
+- target: lib/config.sh
+  type: calls
+- target: lib/index-health.sh
+  type: calls
 depended_by: []
 last_verified: 2026-08-15
 created_by: unknown

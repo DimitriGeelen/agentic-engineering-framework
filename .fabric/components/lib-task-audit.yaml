@@ -24,6 +24,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t2945_default_template_recommendation.bats
   type: tests_by
+- target: lib/review.sh
+  type: called_by
 last_verified: 2026-04-11
 created_by: unknown
 last_enriched: '2026-08-23'

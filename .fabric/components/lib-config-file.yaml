@@ -9,6 +9,8 @@ purpose: Reads and writes persistent project-level settings in .framework.yaml w
 depends_on:
 - target: lib/config-file.sh
   type: calls
+- target: lib/config.sh
+  type: calls
 depended_by:
 - target: lib/config-file.sh
   type: called-by
@@ -28,4 +30,4 @@ depended_by:
   type: called_by
 last_verified: 2026-04-05
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-08-23'

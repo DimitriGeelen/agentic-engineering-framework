@@ -20,7 +20,9 @@ depends_on:
   type: tests
 - target: agents/handover/discard-manifest.sh
   type: tests
+- target: lib/paths.sh
+  type: calls
 depended_by: []
 last_verified: 2026-06-13
 created_by: unknown
-last_enriched: '2026-06-16'
+last_enriched: '2026-08-23'
