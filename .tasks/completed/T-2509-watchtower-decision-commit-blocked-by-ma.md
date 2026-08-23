@@ -7,7 +7,7 @@ description: >
 status: started-work
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []

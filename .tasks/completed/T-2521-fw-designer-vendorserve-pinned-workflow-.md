@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [agents/designer/designer.sh, bin/fw, web/blueprints/designer.py, 
       web/blueprints/__init__.py]

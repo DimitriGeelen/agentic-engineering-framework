@@ -1,13 +1,13 @@
 ---
-id: T-2495
-name: "ship resolver-loop systemd timer+service units (T-2494 D)"
+id: T-3118
+name: "CTL-030 horizon drift on 21 completed tasks blocks every push"
 description: >
-  ship resolver-loop systemd timer+service units (T-2494 D)
+  CTL-030 horizon drift on 21 completed tasks blocks every push
 
 status: started-work
-workflow_type: build
+workflow_type: refactor
 owner: agent
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-24T21:12:20Z
-last_update: '2026-08-17T12:36:21Z'
+created: 2026-08-23T11:08:48Z
+last_update: '2026-08-23T11:15:13Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -35,60 +35,56 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-07T08:00:11Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-08-17T12:36:21Z'
+  - ts: '2026-08-23T11:15:07Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 2
+      tier: 3
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=154,acs=6)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=204,acs=6)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-16T22:25:08Z'
+  - ts: '2026-08-23T11:15:13Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
-      D3: 2
+      D2: 4
+      D3: 3
       D4: 2
-      F-RECALL: 2
+      F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2495: ship resolver-loop systemd timer+service units (T-2494 D)
+# T-3118: CTL-030 horizon drift on 21 completed tasks blocks every push
 
 ## Context
 
-T-2494 D resolved unattended-autonomy's trigger to a **systemd timer off the canonical
-MAIN checkout** (not host cron), structurally collapsing deploy-moles #5–#9. This ships the
-two inert unit files; the operator installs them (the consequential "go autonomous" act).
-Design + rationale: `docs/reports/T-2494-deploy-topology-whack-a-mole-rca.md` §D.
+The pre-push audit refused every push: 21 completed tasks carried a non-null
+`horizon:`, failing CTL-030. The audit names
+`bin/migrate-horizon-null-completed.sh` in its own mitigation line for each
+failure — so the fix was supposed to be one command.
+
+It was not. The script's value pattern would have rewritten 2362 of the 2725
+completed tasks and deleted a frontmatter line from each. This task fixes the
+script, then runs it.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `deploy/resolver-loop.service` exists: `Type=oneshot`, `WorkingDirectory=/opt/999-Agentic-Engineering-Framework`, `ExecStart` uses `/opt/999-Agentic-Engineering-Framework/bin/fw resolver loop --dispatch --max 1 --cooldown-min 30` (fw + PROJECT_ROOT both = canonical MAIN; no `/root/.agentic-framework` dependency), `Wants/After=litellm-proxy.service`
-- [x] `deploy/resolver-loop.timer` exists: `OnUnitActiveSec=30min`, `Persistent=true`, `WantedBy=timers.target`
-- [x] Both units pass `systemd-analyze verify` (syntactic + directive validity) — exit 0, no errors
-- [x] Header comment documents the one-line install command and that the loop runs entirely off canonical MAIN (no host-vendored-install / crontab / cron-registry dependency)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] `bin/migrate-horizon-null-completed.sh` run; every file under `.tasks/completed/` carries `horizon:` null or absent. Re-running reports `0 changes` (the script's own idempotence contract).
+- [x] `fw audit` reports zero `CTL-030` failures, down from 21.
+- [x] No file outside `.tasks/completed/` was modified by the migration — the script's stated safety boundary, checked against `git status` rather than trusted.
+- [x] `git push` to origin is no longer refused by the pre-push audit.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -123,57 +119,48 @@ Design + rationale: `docs/reports/T-2494-deploy-topology-whack-a-mole-rca.md` §
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-test -f deploy/resolver-loop.service && test -f deploy/resolver-loop.timer
-systemd-analyze verify deploy/resolver-loop.service deploy/resolver-loop.timer
-grep -q 'ExecStart=/opt/999-Agentic-Engineering-Framework/bin/fw resolver loop --dispatch --max 1 --cooldown-min 30' deploy/resolver-loop.service
-grep -q 'OnUnitActiveSec=30min' deploy/resolver-loop.timer
+out=$(bats tests/unit/t3118_horizon_migration_scope.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/migrate-horizon-null-completed.sh --dry-run > /tmp/.t3118.out 2>&1 && grep -q '^0 changes' /tmp/.t3118.out
+grep -n 'HORIZON_RE = ' bin/migrate-horizon-null-completed.sh > /tmp/.t3118.re 2>&1 && grep -q 'S.n' /tmp/.t3118.re
+! grep -h '^horizon:' .tasks/completed/T-*.md | grep -qvE '^horizon:[[:space:]]*(null|~)?[[:space:]]*(#.*)?$'
+bin/fw audit --section structure > /tmp/.t3118.aud 2>&1 || true; ! grep -q 'CTL-030' /tmp/.t3118.aud
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** CTL-030 failed on 21 completed tasks, and the pre-push audit hook
+refused every push to origin until they were fixed.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause (of the drift):** `horizon:` is written by `update-task.sh` at the
+`work-completed` transition, but nothing nulls it on the way into `completed/`.
+T-2160 moved render-time `past` to derive from `_location == 'completed'`, which
+made the stored value behaviourally irrelevant but did not stop it being stored.
+The 21 are tasks closed since the T-2161 one-shot migration ran.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Root cause (of the trap in the fix):** the migration's value pattern opened
+with `horizon:\s*`, and `\s` includes the newline. For an already-correct file —
+
+    horizon:
+    tags: []
+
+— the match consumed the line break, took `tags: []` as horizon's value, and
+rewrote both lines as a single `horizon: null`, deleting the following
+frontmatter line. Measured before the fix: 2362 of 2725 files reported as
+needing a change, against 21 real failures. `[^\S\n]` is horizontal whitespace
+only; the distinction is the whole bug.
+
+**Why structurally allowed:** the bug is invisible in the happy path. A file with
+`horizon: now` migrates correctly under either pattern, and every exercise the
+original migration got used that shape. The failing case is the file that is
+*already correct* — the one nobody thinks to test, because the migration is
+supposed to skip it. The script's own docstring asserted the safety property
+("only touches files where the value is non-null/non-empty") that the regex did
+not hold, and the audit repeated that assertion to the operator as advice.
+
+**Prevention:** `tests/unit/t3118_horizon_migration_scope.bats` — 8 tests, every
+one of which uses an already-correct file as its subject, plus a source-level
+test asserting the pattern never spans a newline (greps for `[^\S\n]` and
+against `horizon:\s*`). Test 8 checks the live corpus condition directly, so the
+suite goes red on drift even if the audit is never run.
 
 ## Evolution
 
@@ -199,6 +186,35 @@ grep -q 'OnUnitActiveSec=30min' deploy/resolver-loop.timer
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+<!-- T-2945: same shape as inception.md's block — the gate that reads it
+     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
+     shape is copied rather than reinvented.
+
+     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
+     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
+     `fw task review` emission for build/refactor/test/decommission tasks in that
+     state with no substantive block here — the operator would otherwise open
+     /review/<id> to a blank Recommendation card and be asked to approve a form.
+
+     Not required while every Human AC is ticked or the task has none: the gate
+     only fires on the partial-complete transition. It is here from the start so
+     you write it while you still have the evidence, not when the gate refuses.
+
+     Format (the parser wants the `**Recommendation:**` line at the start of a
+     line; a leading `-` or `*` bullet is also accepted):
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
+     **Evidence:**
+     - Finding 1
+     - Finding 2
+
+     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
+     for Human Review). If the artefact is complete and you still don't want to
+     commit, that is a calibration failure — recommend GO or NO-GO.
+-->
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -222,7 +238,7 @@ grep -q 'OnUnitActiveSec=30min' deploy/resolver-loop.timer
 
 ## Updates
 
-### 2026-06-24T21:12:20Z — task-created [task-create-agent]
+### 2026-08-23T11:08:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2495-ship-resolver-loop-systemd-timerservice-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3118-ctl-030-horizon-drift-on-21-completed-ta.md
 - **Context:** Initial task creation

@@ -48,7 +48,19 @@ dry_run = sys.argv[2] == '1'
 # line (allowing inline comments via `# ...` — preserved on the new line).
 # We replace with `horizon: null` so the frontmatter remains valid YAML.
 FRONT_RE = re.compile(r'^(---\n)(.*?)(\n---)', re.DOTALL)
-HORIZON_RE = re.compile(r'^(horizon:\s*)([^\s#][^\n]*?)(\s*)(#.*)?$', re.MULTILINE)
+# `[^\S\n]` is HORIZONTAL whitespace only, and the distinction is load-bearing
+# (T-3118). This was `\s*`, which includes `\n` — so for the already-correct
+#
+#     horizon:
+#     tags: []
+#
+# the pattern consumed the newline, matched `tags: []` as horizon's VALUE, and
+# rewrote both lines as `horizon: null` — deleting the following line. It also
+# meant the "already null" skip almost never fired: 2362 of 2725 completed
+# tasks were reported as needing a change when the audit named 21. A migration
+# advertised as "only touches files with non-null horizon" would have rewritten
+# 87% of the corpus and dropped a frontmatter line from each.
+HORIZON_RE = re.compile(r'^(horizon:[^\S\n]*)([^\s#][^\n]*?)([^\S\n]*)(#.*)?$', re.MULTILINE)
 
 changed = 0
 skipped_already_null = 0

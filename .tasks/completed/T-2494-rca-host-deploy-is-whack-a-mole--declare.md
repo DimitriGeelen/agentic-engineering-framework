@@ -9,7 +9,7 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []

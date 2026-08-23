@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, lib/config.sh, lib/notify.sh, web/blueprints/config.py]
 related_tasks: []
