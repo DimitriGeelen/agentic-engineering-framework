@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3119: fw doctor reports designer pin currency: WARN when source_origin has a newer tag
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-23T18:17:07Z
+# ============================================================================
+
+task_id: T-3119
+task_name: "fw doctor reports designer pin currency: WARN when source_origin has a newer tag"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-23T17:23:51Z
+completed: 2026-08-23T18:06:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-23T20:05:51+02:00
+last_commit: 2026-08-23T20:05:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw doctor reports designer pin currency, not just exposure
+
+# Key outcomes
+outcomes:
+  - '`fw doctor` resolves the newest `designer-v*` tag at the pin''s own `source_origin:` and'
+  - 'The check degrades to a distinct, non-failing state when the origin is unreachable —'
+  - 'Version comparison is semantic, not lexical — `0.10.0` and `0.11.0` are both ahead of'
+  - 'The network call is bounded and cannot hang `fw doctor` on an unreachable origin.'
+  - 'Covered by bats over a real local git remote with tags — not a mocked `ls-remote` —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.tasks/active/T-3119-fw-doctor-reports-designer-pin-currency-.md'
+  - '.tasks/active/T-3120-designer-0110-adoption--re-pin-from-tag-.md'
+  - 'tests/unit/t3119_designer_currency.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-23T20:05:51'
+    action: 'T-3119: fw doctor reports designer pin currency, not just exposure'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 42 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 42
+  commits: 1
+  files_changed: 4
+  lines_added: 701
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3119-fw-doctor-reports-designer-pin-currency-.md
+generated_by: context-agent-hybrid

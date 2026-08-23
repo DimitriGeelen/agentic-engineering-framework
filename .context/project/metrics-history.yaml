@@ -232,46 +232,6 @@ entries:
   traceability_pct: 100
   episodic_quality_pct: 9
   open_gaps: 11
-- timestamp: '2026-08-16T17:30:04Z'
-  pass: 2
-  warn: 0
-  fail: 0
-  active_tasks: 362
-  completed_tasks: 2668
-  velocity: 108
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 12
-- timestamp: '2026-08-16T17:45:09Z'
-  pass: 8
-  warn: 2
-  fail: 0
-  active_tasks: 362
-  completed_tasks: 2668
-  velocity: 110
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 12
-- timestamp: '2026-08-16T18:03:57Z'
-  pass: 13
-  warn: 3
-  fail: 0
-  active_tasks: 362
-  completed_tasks: 2668
-  velocity: 111
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 12
-- timestamp: '2026-08-16T18:15:06Z'
-  pass: 8
-  warn: 3
-  fail: 0
-  active_tasks: 363
-  completed_tasks: 2668
-  velocity: 112
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 12
 - timestamp: '2026-08-16T18:25:37Z'
   pass: 31
   warn: 5
@@ -8439,6 +8399,86 @@ entries:
   active_tasks: 379
   completed_tasks: 2726
   velocity: 11
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T17:17:51Z'
+  pass: 30
+  warn: 5
+  fail: 0
+  active_tasks: 379
+  completed_tasks: 2726
+  velocity: 12
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T17:19:27Z'
+  pass: 30
+  warn: 5
+  fail: 0
+  active_tasks: 379
+  completed_tasks: 2726
+  velocity: 12
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T17:30:03Z'
+  pass: 2
+  warn: 0
+  fail: 0
+  active_tasks: 381
+  completed_tasks: 2726
+  velocity: 12
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T17:37:01Z'
+  pass: 37
+  warn: 60
+  fail: 2
+  active_tasks: 381
+  completed_tasks: 2726
+  velocity: 12
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T17:45:08Z'
+  pass: 9
+  warn: 19
+  fail: 0
+  active_tasks: 381
+  completed_tasks: 2726
+  velocity: 12
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T18:03:49Z'
+  pass: 12
+  warn: 4
+  fail: 0
+  active_tasks: 381
+  completed_tasks: 2726
+  velocity: 12
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T18:06:57Z'
+  pass: 37
+  warn: 61
+  fail: 2
+  active_tasks: 381
+  completed_tasks: 2726
+  velocity: 13
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 13
+- timestamp: '2026-08-23T18:15:08Z'
+  pass: 8
+  warn: 20
+  fail: 0
+  active_tasks: 381
+  completed_tasks: 2726
+  velocity: 13
   traceability_pct: 100
   episodic_quality_pct: 9
   open_gaps: 13
