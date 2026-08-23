@@ -1,8 +1,8 @@
-# Audit Results - 2026-08-23-1230
-timestamp: 2026-08-23T10:30:43Z
+# Audit Results - 2026-08-23-1238
+timestamp: 2026-08-23T10:38:06Z
 sections: "structure"
 summary:
-  pass: 29
+  pass: 28
   warn: 6
   fail: 1
 findings:
@@ -58,10 +58,8 @@ findings:
     check: "Fabric: 732 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: FAIL
-    check: "Cron drift: /opt/999-Agentic-Engineering-Framework/.context/cron-registry.yaml is ahead of /opt/999-Agentic-Engineering-Framework/.context/cron/agentic-audit.crontab (registry edited but not generated)"
-    mitigation: "Run: fw cron generate"
-  - level: PASS
-    check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
+    check: "Cron drift: /opt/999-Agentic-Engineering-Framework/.context/cron/agentic-audit.crontab differs from deployed /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
+    mitigation: "Run: fw cron install"
   - level: WARN
     check: "Branch hygiene: 21 finding(s) — stale branches, worktrees or remote refs"
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."

@@ -223,6 +223,36 @@ today every consumer implicitly tracks whatever `master` happens to be, and the
 only reason that has been safe is the accident of master sitting behind while
 experimental work accumulated beside it. That safety is unmanaged.
 
+## Retiring the replicas R7 was built to survive (T-3117)
+
+R1–R7 stop new divergence. The divergence already on disk is a separate job, and
+`fw worktree gc` — the tool written for it — had been refusing to do it.
+
+Two defects, both erring toward *keep*, which is the direction nobody
+re-examines because "it says there is unlanded work" is a good reason to leave a
+worktree alone:
+
+- **The trunk was wrong.** `_wt_master_ref` preferred `refs/heads/master`. The
+  session-on-master flow lands by pushing `HEAD:master` from a topic branch,
+  which advances `origin/master` and never touches the local `master` branch.
+  Measured 2026-08-23: **1744 commits behind**. Every landing verdict in gc,
+  `fw worktree status` and branch-hygiene was computed against a six-week-old
+  trunk.
+- **The test was wrong.** `_wt_work_landed` only asked whether every file a
+  branch touched is byte-identical on master *today*. A branch whose commits are
+  all in master but which is behind fails that test, because master has since
+  changed those files again — so gc printed `unlanded:1440/1442` for a branch
+  git calls a strict ancestor. Ancestry is the stronger statement and is now
+  asked first.
+
+The two worktrees the tool refused to reclaim are the two whose stale
+enforcement code minted T-2505, T-2506 and T-2428 twice. **The cleanup tool was
+protecting the exact artifacts the design was written to eliminate**, and it
+said so in a line that read like diligence.
+
+Retirement ledger, preservation evidence and the disposition of all three
+cross-view ID collisions: `docs/reports/T-3117-worktree-retirement.md`.
+
 ## What would change this design
 
 Evidence that a real workflow needs to **write** the task corpus from inside a
