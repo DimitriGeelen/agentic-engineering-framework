@@ -1,0 +1,120 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3118: CTL-030 horizon drift on 21 completed tasks blocks every push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-23T16:55:32Z
+# ============================================================================
+
+task_id: T-3118
+task_name: "CTL-030 horizon drift on 21 completed tasks blocks every push"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-23T11:08:48Z
+completed: 2026-08-23T16:53:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-23T18:53:32+02:00
+last_commit: 2026-08-23T18:53:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix the horizon migration's newline-spanning value pattern, then run it
+
+# Key outcomes
+outcomes:
+  - '`bin/migrate-horizon-null-completed.sh` run; every file under `.tasks/completed/` carries `horizon:` null or absent. Re-running reports `0 changes` (the script''s own idempotence contract).'
+  - '`fw audit` reports zero `CTL-030` failures, down from 21.'
+  - 'No file outside `.tasks/completed/` was modified by the migration — the script''s stated safety boundary, checked against `git status` rather than trusted.'
+  - '`git push` to origin is no longer refused by the pre-push audit.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix the horizon migration''s newline-spanning value pattern, then run it'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/migrate-horizon-null-completed.sh'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/static/ux-review/index.html'
+  - 'bin/migrate-horizon-null-completed.sh'
+  - '.context/audits/2026-08-23.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/handovers/S-2026-0823-1837.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.auto-restart-pending'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3118-ctl-030-horizon-drift-on-21-completed-ta.md'
+  - '.tasks/completed/T-100194-rca-host-working-branch-forked-198287-co.md'
+  - '.tasks/completed/T-100195-guard-trunk-divergence-fw-doctor-warn-on.md'
+  - '.tasks/completed/T-1700-v1-build-install--integrate-litellm-prox.md'
+  - '.tasks/completed/T-2401-refresh-continuous-run-directive-for-arc.md'
+  - '.tasks/completed/T-2405-fw-review-queue---arc-filter-arc-focused.md'
+  - '.tasks/completed/T-2411-claude-fw-startup-banner-show-project--b.md'
+  - '.tasks/completed/T-2412-obs-077-selfvendorweb-skips-htmlcssjs-te.md'
+  - '.tasks/completed/T-2439-configurable-ntfy-server-url-via-fw-conf.md'
+  - '.tasks/completed/T-2486-fix-obs-087-exec-bit-fw-resolveroutcomep.md'
+  - '.tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md'
+  - '.tasks/completed/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md'
+  - '.tasks/completed/T-2491-wire-fw-resolver-pick-into-a-bounded-aut.md'
+  - '.tasks/completed/T-2492-dogfood-the-autonomous-pickerloop-live-p.md'
+  - '.tasks/completed/T-2493-land-orchestrator-autonomy-work-to-maste.md'
+  - '.tasks/completed/T-2494-rca-host-deploy-is-whack-a-mole--declare.md'
+  - '.tasks/completed/T-2495-ship-resolver-loop-systemd-timerservice-.md'
+  - '.tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md'
+  - '.tasks/completed/T-2498-fix-integrate-go-livesh-missing-exec-bit.md'
+  - '.tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md'
+  - '.tasks/completed/T-2521-fw-designer-vendorserve-pinned-workflow-.md'
+  - '.tasks/completed/T-2853-fw-update-misroutes-a-git-based-global-i.md'
+  - 'tests/unit/t3118_horizon_migration_scope.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-23T18:53:32'
+    action: 'T-3118: fix the horizon migration''s newline-spanning value pattern, then run it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 345 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 345
+  commits: 1
+  files_changed: 47
+  lines_added: 1456
+  lines_removed: 2316
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3118-ctl-030-horizon-drift-on-21-completed-ta.md
+generated_by: context-agent-hybrid

@@ -4,12 +4,12 @@ name: "CTL-030 horizon drift on 21 completed tasks blocks every push"
 description: >
   CTL-030 horizon drift on 21 completed tasks blocks every push
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/migrate-horizon-null-completed.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T11:08:48Z
-last_update: '2026-08-23T11:15:13Z'
-date_finished:
+last_update: 2026-08-23T16:53:49Z
+date_finished: 2026-08-23T16:53:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -242,3 +242,20 @@ suite goes red on drift even if the audit is never run.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3118-ctl-030-horizon-drift-on-21-completed-ta.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7f34a124
+- **Timestamp:** 2026-08-23T16:55:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `! grep -h '^horizon:' .tasks/completed/T-*.md | grep -qvE '^horizon:[[:space:]]*(null|~)?[[:space:]]*(#.*)?$'`
+
+### 2026-08-23T16:53:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
