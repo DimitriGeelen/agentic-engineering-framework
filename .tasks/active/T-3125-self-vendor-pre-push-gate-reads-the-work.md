@@ -1,8 +1,19 @@
 ---
 id: T-3125
-name: "self-vendor pre-push gate reads the working tree but its stated purpose is the pushed ref"
+name: "self-vendor pre-push gate reads the working tree but its stated purpose is
+  the pushed ref"
 description: >
-  The T-2240 pre-push gate runs 'fw vendor self --dry-run', which compares working-tree source against working-tree vendored copies. Its own comment states the property it protects: 'consumers that vendor from origin/master inherit the stale lib/ silently'. Consumers vendor from the PUSHED REF, not from anyone's working tree. The proxy and the property diverge, and the divergence is not rare: any session with uncommitted edits to a vendored-class file blocks every other session's push indefinitely, with no exit except a Tier-2 or Tier-0 bypass. Observed live 2026-08-23 — 15 commits held for hours by another session's uncommitted bin/fw and agents/audit/audit.sh, where 'git show HEAD:<src>' was byte-identical to the vendored copy for both files, so the ref being pushed was clean. Same family as T-1828: a gate measuring a proxy that drifted from the property it exists to protect.
+  The T-2240 pre-push gate runs 'fw vendor self --dry-run', which compares working-tree
+  source against working-tree vendored copies. Its own comment states the property
+  it protects: 'consumers that vendor from origin/master inherit the stale lib/ silently'.
+  Consumers vendor from the PUSHED REF, not from anyone's working tree. The proxy
+  and the property diverge, and the divergence is not rare: any session with uncommitted
+  edits to a vendored-class file blocks every other session's push indefinitely, with
+  no exit except a Tier-2 or Tier-0 bypass. Observed live 2026-08-23 — 15 commits
+  held for hours by another session's uncommitted bin/fw and agents/audit/audit.sh,
+  where 'git show HEAD:<src>' was byte-identical to the vendored copy for both files,
+  so the ref being pushed was clean. Same family as T-1828: a gate measuring a proxy
+  that drifted from the property it exists to protect.
 
 status: captured
 workflow_type: build
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T20:52:29Z
-last_update: 2026-08-23T20:52:29Z
-date_finished: null
+last_update: '2026-08-23T21:00:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-23T21:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-23T21:00:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3125: self-vendor pre-push gate reads the working tree but its stated purpose is the pushed ref

@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3123: fabric shell detector models sourcing but not invocation - a script that RUNS another script produces no edge
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-23T21:18:41Z
+# ============================================================================
+
+task_id: T-3123
+task_name: "fabric shell detector models sourcing but not invocation - a script that RUNS another script produces no edge"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-23T20:11:51Z
+completed: 2026-08-23T21:18:19Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-08-23T22:51:20+02:00
+last_commit: 2026-08-23T23:18:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs + local baseline — 832's invocation class reproduces here. file T-3125 — the self-vendor gate's proxy diverges from its stated property. the fabric enricher learns that shell composes by invocation
+
+# Key outcomes
+outcomes:
+  - 'Local baseline is measured and reported before any code change: how many'
+  - '`enrich.py` grows invocation detection for shell: a tracked script'
+  - 'Detection is not keyed to any project-specific directory name, variable'
+  - 'Self-edges are excluded and duplicate edges are collapsed, matching the'
+  - 'New tests live in `tests/unit/` with their own fixture tree (L-599: not'
+  - 'Before/after edge counts are reported as both raw and deduplicated totals.'
+  - '`bin/fw fabric drift` and the fabric section of `bin/fw audit` still run'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - 'agents/fabric/lib/enrich.py'
+  - '.tasks/active/T-3123-fabric-shell-detector-models-sourcing-bu.md'
+  - '.tasks/active/T-3125-self-vendor-pre-push-gate-reads-the-work.md'
+  - 'tests/unit/test_fabric_shell_invocations.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-23T22:51:20'
+    action: 'T-3123: real ACs + local baseline — 832''s invocation class reproduces here'
+  - time: '2026-08-23T22:52:57'
+    action: 'T-3123: file T-3125 — the self-vendor gate''s proxy diverges from its stated property'
+  - time: '2026-08-23T23:18:00'
+    action: 'T-3123: the fabric enricher learns that shell composes by invocation'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 66 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 66
+  commits: 3
+  files_changed: 5
+  lines_added: 1272
+  lines_removed: 203
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3123-fabric-shell-detector-models-sourcing-bu.md
+generated_by: context-agent-hybrid

@@ -11,10 +11,10 @@ description: >
   which moves their number from 0 to 0. Third sighting of the class: the detector
   was calibrated against the one tree its author could see.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T20:11:51Z
-last_update: 2026-08-23T20:48:50Z
-date_finished:
+last_update: 2026-08-23T21:18:19Z
+date_finished: 2026-08-23T21:18:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -214,3 +214,15 @@ python3 -m pytest tests/unit/test_fabric_shell_sources.py tests/unit/test_fabric
 python3 -c "import ast,sys; ast.parse(open('agents/fabric/lib/enrich.py').read())"
 bin/fw fabric drift > /tmp/.t3123c.out 2>&1; grep -qv "ERROR" /tmp/.t3123c.out
 diff -q agents/fabric/lib/enrich.py .agentic-framework/agents/fabric/lib/enrich.py
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b2f39d65
+- **Timestamp:** 2026-08-23T21:18:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-23T21:18:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
