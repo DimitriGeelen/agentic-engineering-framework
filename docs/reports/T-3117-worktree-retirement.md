@@ -56,3 +56,41 @@ but the duplicate.
 The branch history keeps every fork file recoverable after the worktree
 directory is gone, which is why pushing the two unlanded branches is the whole
 of the preservation requirement.
+
+## Removal — what actually happened
+
+Preservation refs confirmed on `origin` **before** any removal:
+
+```
+f59472365  refs/heads/worktree-inception-gov-payload-mediation   (was 2d108af23 — 3 commits pushed)
+ec56fe61e  refs/heads/worktree-rca-worktree-push-strand          (new branch — all 37 commits pushed)
+```
+
+`t100196-vendor-fix` and `t100199-close` needed no push: `git merge-base
+--is-ancestor <branch> origin/master` is true for both, so every commit is
+already in master.
+
+Then:
+
+| Worktree | Removed by | Dirty state at removal |
+|---|---|---|
+| `t100196-vendor-fix` | `fw worktree gc --apply` (verdict `merged`) | — |
+| `t100199-close` | `fw worktree gc --apply` (verdict `merged`) | — |
+| `inception-gov-payload-mediation` | `fw worktree remove` | 26 discardable: 23 governance (non-authoritative fork), 3 vendored/generated |
+| `rca-worktree-push-strand` | `fw worktree remove` | 5 discardable: 4 governance, 1 vendored/generated |
+
+Every branch was **kept**; only the working directories are gone. Branch
+deletion is Tier 0 and stays with the operator.
+
+`git worktree list` now shows one entry. `git worktree prune` had nothing to
+do — `.git/worktrees/` is gone entirely.
+
+### One orphan left deliberately
+
+`.claude/worktrees/t100196-go-live-guard/` survives as an untracked 4K
+directory containing a single file, `.context/audits/2026-08-11.yaml`. It has no
+`.git` link, was never a registered worktree, and holds no `.tasks/` — so it is
+not a corpus view and does not affect the collision check. It is the residue of
+an audit run whose `PROJECT_ROOT` resolved into a worktree that no longer
+exists. Deleting a directory is Tier 0; it is listed in the operator handoff
+rather than removed here.

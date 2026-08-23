@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T10:21:11Z
-last_update: 2026-08-23T10:21:11Z
-date_finished: null
+last_update: '2026-08-23T10:45:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,24 +34,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-23T10:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=206,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-23T10:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3117: Retire the four stale linked worktrees and resolve the cross-view task-ID collisions
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+R7 (T-3110–T-3113) stops new worktree divergence. It does not remove the
+divergence already on disk. This retires the four linked worktrees that were
+still present, and with them the three cross-view task-ID collisions
+(T-2428, T-2505, T-2506) that the audit had been reporting since 1 July.
+
+Ledger, preservation evidence and the disposition of every collision:
+`docs/reports/T-3117-worktree-retirement.md`.
+Design context: `docs/design/task-corpus-concurrency-model.md` §R7.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **Preservation proven before any removal.** For each of the four linked worktrees, `git rev-list --count origin/master..<branch>` is 0, OR its unique commits are pushed to a named `origin/` ref, OR its uncommitted work is captured into a tracked file on master. Recorded per worktree in `docs/reports/T-3117-worktree-retirement.md` with the command output that proves it. No removal happens before its own row is filled.
-- [ ] `git worktree list` shows exactly one entry — the main checkout. `git worktree prune` leaves nothing behind in `.git/worktrees/`.
-- [ ] `fw audit` structure section reports **zero** cross-view task-ID collisions (today: 3 — T-2428, T-2505, T-2506), and states the size of the set it examined.
-- [ ] Each of T-2428, T-2505, T-2506 resolves to exactly one task file across all corpus views, and the survivor is the authority's copy with its `created:` unchanged — the fork artifact is what disappears, never the authoritative task.
-- [ ] `fw doctor` branch-hygiene reports no `worktree-unlanded` and no `worktree-merged` findings.
-- [ ] Nothing was deleted from the authority's `.tasks/`: `git diff --stat origin/master@{1}..HEAD -- .tasks/` shows no removals of files that existed in the main checkout before this task.
+- [x] **Preservation proven before any removal.** For each of the four linked worktrees, `git rev-list --count origin/master..<branch>` is 0, OR its unique commits are pushed to a named `origin/` ref, OR its uncommitted work is captured into a tracked file on master. Recorded per worktree in `docs/reports/T-3117-worktree-retirement.md` with the command output that proves it. No removal happens before its own row is filled.
+- [x] `git worktree list` shows exactly one entry — the main checkout. `git worktree prune` leaves nothing behind in `.git/worktrees/`.
+- [x] `fw audit` structure section reports **zero** cross-view task-ID collisions (today: 3 — T-2428, T-2505, T-2506), and states the size of the set it examined.
+- [x] Each of T-2428, T-2505, T-2506 resolves to exactly one task file across all corpus views, and the survivor is the authority's copy with its `created:` unchanged — the fork artifact is what disappears, never the authoritative task.
+- [x] `fw doctor` branch-hygiene reports no `worktree-unlanded` and no `worktree-merged` findings.
+- [x] Nothing was deleted from the authority's `.tasks/`: `git diff --stat origin/master@{1}..HEAD -- .tasks/` shows no removals of files that existed in the main checkout before this task.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,3 +276,17 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3117-retire-the-four-stale-linked-worktrees-a.md
 - **Context:** Initial task creation
+
+bats tests/unit/t3117_gc_landing_predicate.bats > /tmp/.t3117.out 2>&1 && grep -q "^ok 8" /tmp/.t3117.out && ! grep -q "^not ok" /tmp/.t3117.out
+# Exactly one worktree remains — the main checkout — and nothing is left registered.
+test "$(git worktree list | wc -l)" = "1"
+test ! -d .git/worktrees
+# The corpus is one view again, and the check states the set it examined (T-3105).
+grep -q "No duplicate task IDs — examined .* task file(s) across 1 corpus view(s)" .context/audits/2026-08-23.yaml
+# Neither worktree-directory finding class survives in branch hygiene.
+bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene "/opt/999-Agentic-Engineering-Framework"' > /tmp/.t3117bh.out 2>&1; ! grep -qE "^(worktree-unlanded|worktree-merged) " /tmp/.t3117bh.out
+# Both unlanded branches are preserved on origin — removal cost no commits.
+git ls-remote origin refs/heads/worktree-inception-gov-payload-mediation > /tmp/.t3117r1.out 2>&1 && test -s /tmp/.t3117r1.out
+git ls-remote origin refs/heads/worktree-rca-worktree-push-strand > /tmp/.t3117r2.out 2>&1 && test -s /tmp/.t3117r2.out
+# gc prefers the remote trunk, not a local master that the push-based flow never advances.
+grep -q "refs/remotes/origin/master refs/remotes/origin/main refs/heads/master" lib/worktree.sh
