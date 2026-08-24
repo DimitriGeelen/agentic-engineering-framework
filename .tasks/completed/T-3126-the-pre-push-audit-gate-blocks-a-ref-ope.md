@@ -18,12 +18,12 @@ description: >
   and audit disagree on the file-class list) but a different axis: this is about WHICH
   TREE, not which files.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, agents/git/lib/hooks.sh, lib/bats_red_attribution.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -36,8 +36,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T21:41:55Z
-last_update: 2026-08-24T20:29:25Z
-date_finished:
+last_update: 2026-08-24T21:20:48Z
+date_finished: 2026-08-24T21:20:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -358,3 +358,20 @@ scope line all resolve to `ref` and keep blocking.
 ### 2026-08-24T20:29:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2d5c3406
+- **Timestamp:** 2026-08-24T21:26:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 69
+     - evidence: `bin/fw test lint > /tmp/.t3126-lint.out 2>&1; ! grep -E "^\s*\x1b?\[?[0-9;]*m?FAIL" /tmp/.t3126-lint.out | grep -qE "audit\.sh|hooks\.sh|bats_red_attribution\.py"`
+
+### 2026-08-24T21:20:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

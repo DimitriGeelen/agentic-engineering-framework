@@ -17,10 +17,10 @@ description: >
   constant. OE-DAILY alone is 824s, 48 percent of the run, so it is where the headroom
   will go first.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -35,7 +35,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-24T18:13:40Z
-last_update: '2026-08-24T18:15:14Z'
+last_update: 2026-08-24T21:27:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,8 +87,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] AC1 — Measure before asserting. Record the current full-audit wall time and the per-section breakdown against the configured ceiling (`FW_AUDIT_FULL_TIMEOUT`, default 3000s). Baseline from T-3070: total 1729s (42% headroom), OE-DAILY alone 824s — 48% of the whole run. Confirm or correct those numbers; do not carry them forward unverified.
+- [ ] AC2 — A check asserts the headroom, and it names the number. Emit a WARN when the last recorded full-audit duration exceeds a configured fraction of the ceiling (propose 70%). The message must state the measured duration, the ceiling, and the fraction — a bare "approaching timeout" cannot be acted on.
+- [ ] AC3 — The duration is actually recorded. `audit.sh` persists per-run total and per-section durations somewhere the check can read (the audit YAML is the obvious home). Without this AC2 has nothing to read, which is how the gap opened in the first place.
+- [ ] AC4 — A section that times out is distinguishable from a section that passed. Confirm what the run currently emits when a section hits the 600s section-scoped timeout, and make it unambiguous in the record. T-3070's whole misdiagnosis came from a killed section reading as a lock-contention failure — the timeout was invisible in what the run left behind.
+- [ ] AC5 — The threshold is a config key with a registry entry and a doctor range-check, not a literal in the script (CLAUDE.md §Configuration — a documented key that does not exist is worse than an undocumented live one, and `tests/lint/config-registry-parity.bats` enforces that direction).
+- [ ] AC6 — Regression test in its own fixture (L-599 — do NOT pin to the live 1729s, which moves every time the corpus grows): a synthetic duration record over threshold → WARN; under → silent; missing/unparseable record → explicit "not measured", never a silent pass. The absent-record case is the one that matters: silence there is exactly what this task exists to fix.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,3 +282,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3127-no-check-asserts-the-full-audit-timeout-.md
 - **Context:** Initial task creation
+
+### 2026-08-24T18:22:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

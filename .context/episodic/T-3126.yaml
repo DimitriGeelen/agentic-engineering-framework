@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3126: the pre-push audit gate blocks a ref operation on working-tree health findings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-24T21:26:59Z
+# ============================================================================
+
+task_id: T-3126
+task_name: "the pre-push audit gate blocks a ref operation on working-tree health findings"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-23T21:41:55Z
+completed: 2026-08-24T21:20:48Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-24T23:19:05+02:00
+last_commit: 2026-08-24T23:19:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the pre-push audit gate stops refusing a ref on working-tree findings
+
+# Key outcomes
+outcomes:
+  - 'AC1 — Ground truth first: enumerate every audit `--section structure` check that can emit FAIL, and classify each as REF-SCOPED (the finding is a property of the commit being pushed) or WORKTREE-SCOPED (the finding is a property of uncommitted/untracked files and would not exist in a clean checkout of the pushed ref). Record the classification and its evidence in the task body. If a check is genuinely BOTH, say so and treat it as ref-scoped.'
+  - 'AC2 — Audit findings carry their scope. Each structure-section finding emits a machine-readable scope tag (`ref` or `worktree`). Adding the tag must not change any existing PASS/WARN/FAIL verdict — the audit reports exactly what it reported before, plus the tag.'
+  - 'AC3 — The pre-push gate blocks only on ref-scoped FAILs. A worktree-scoped FAIL is reported in full and downgraded to a non-blocking WARN whose message says plainly that the finding is in the working tree, is not in the ref being pushed, and is therefore not blocking this push.'
+  - 'AC4 — A ref-scoped FAIL still blocks. Blocking behaviour on genuine FAILs is unchanged, including the exit-75 could-not-run branch (T-2930), which must keep blocking — a gate that did not run is not a gate that passed.'
+  - 'AC5 — Regression test pinning both directions, in its own fixture tree (L-599: do not pin to a live defect or the live corpus). At minimum: (a) worktree-only FAIL → push allowed + WARN; (b) ref FAIL → BLOCKED; (c) both present → BLOCKED; (d) exit 75 → BLOCKED. State how many tests fail against the pre-change code — a test that passes before the fix guards nothing.'
+  - 'AC6 — The literal 2026-08-23 shape is covered: uncommitted `bin/fw` + `agents/audit/audit.sh` producing ''Self-vendor drift: libs class'' and two untracked `.bats` files producing ''Invariant suite: 1 of 74 RED'', on a ref containing neither, must push cleanly.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.fabric/components/lib-bats_red_attribution.yaml'
+  - 'lib/bats_red_attribution.py'
+  - '.tasks/active/T-3126-the-pre-push-audit-gate-blocks-a-ref-ope.md'
+  - 'tests/unit/t3126_prepush_audit_gate_scope.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-24T23:19:05'
+    action: 'T-3126: the pre-push audit gate stops refusing a ref on working-tree findings'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1418 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1418
+  commits: 1
+  files_changed: 6
+  lines_added: 850
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3126-the-pre-push-audit-gate-blocks-a-ref-ope.md
+generated_by: context-agent-hybrid
