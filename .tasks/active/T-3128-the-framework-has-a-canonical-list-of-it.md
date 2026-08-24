@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-24T20:31:10Z
-last_update: '2026-08-24T20:45:14Z'
+last_update: 2026-08-24T22:02:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -114,12 +114,51 @@ dirt that is *real uncommitted work* being destroyed by the `--force` its refusa
 toward. This is about dirt that is *definitionally noise* blocking an operation that has no
 business reading it.
 
+### Refinement from 001-CashWeb (chat-arc 365-368) — a filter is the wrong shape
+
+The framing above, and the ACs below, assume the answer is a *filter*: one list, one binary
+question, ignore-or-abort. 001-CashWeb's measurement says that is too coarse, and checking it
+here rather than taking it on report confirms it. `.context/working/feedback-stream.yaml` is
+dirty on this tree right now, is **not** in `_SESSION_STATE_FILTER`, and is a **4155-document**
+YAML stream. It is not noise. Both sides genuinely append to it, so ignoring the local copy
+during a landing silently discards whatever this session wrote.
+
+So the self-churning paths are three kinds, not one:
+
+| Kind | Right behaviour on a landing | Examples |
+|------|------------------------------|----------|
+| **Noise** — regenerated or ephemeral, no cross-session content | Ignore | counters, `watchtower.{pid,log}`, `locks/` |
+| **Accumulating record** — both sides append independently | **Union merge on a content key**, never take-one-side | `feedback-stream.yaml`, `metrics-history.yaml`, the monitor JSONLs, `audits/` |
+| **Regenerated pointer** — rewritten whole each time | Newer-wins by an **in-file** timestamp | `handovers/LATEST.md` |
+
+CashWeb's union patch on feedback-stream keys on `(kind, timestamp, scan_id, task_id)` and was
+measured against both real sides: 80 docs local, 130 on the branch, 132 in the union, with
+*every* one-sided record surviving in both directions and no duplicates. They also make the
+point that a naive test passes against the discard-one-side bug, so the test has to assert
+both directions — a fixture where each side holds a document the other lacks.
+
+Two consequences for the ACs below, which were written before this and are wrong as stated:
+
+- **AC1 is insufficient.** Lifting `_SESSION_STATE_FILTER` verbatim into a library propagates a
+  binary answer to a three-way question. The shared thing should be a *classification* — path →
+  kind — with the current filter recoverable from it as "kind == noise".
+- **AC3 is unsafe for the accumulating class.** "Do not abort when the only dirty paths match
+  the list" is right for noise and actively destructive for `feedback-stream.yaml`: proceeding
+  without merging drops this session's appended records with no error.
+
+CashWeb also self-corrected an over-claim in the same thread: they had said `LATEST.md` was the
+next blocker, then opened it and found it clean locally, so it is not. Recorded because the
+design guidance for the regenerated-pointer class survives the correction and is worth having
+before we rule that path — and specifically the note that newer-wins must not compare mtime,
+since the merge itself rewrites the file.
+
 ## Acceptance Criteria
 
 ### Agent
-- [ ] AC1 — `_SESSION_STATE_FILTER` is lifted out of `agents/audit/audit.sh` into a shared library with a single definition, and audit.sh consumes it from there. The audit's own uncommitted-changes verdict is byte-identical before and after the lift on the same tree — this step changes no behaviour.
+- [ ] AC1 — (REVISED after the CashWeb refinement above; the original wording said "lift `_SESSION_STATE_FILTER` verbatim", which propagates a binary answer to a three-way question.) A shared library holds a *classification* — path pattern → kind ∈ {noise, accumulating, regenerated} — with the existing filter recoverable as "kind == noise". `audit.sh` consumes it, and its uncommitted-changes verdict is byte-identical before and after the lift.
 - [ ] AC2 — Enumerate every consumer that reads working-tree dirtiness and decides something on it (`fw integrate`, `fw worktree remove`/`gc`, the pre-push hooks, `fw sync`, doctor's branch hygiene). For each, record whether it currently honours the list, and whether it *should* — some legitimately must refuse on any dirt. Write the table into the task body. Do not change a consumer you cannot justify.
-- [ ] AC3 — The landing path (`fw integrate` and the FF-land it wraps) no longer aborts when the only dirty paths match the list. Real dirt outside the list still aborts, unchanged.
+- [ ] AC3 — (REVISED — the original "do not abort when dirty paths match the list" is right for noise and destructive for the accumulating class.) The landing path no longer aborts on `noise` paths; **merges** `accumulating` paths rather than taking either side; resolves `regenerated` paths newer-wins by an in-file timestamp, never mtime (the merge rewrites the file, so mtime records when git touched it). Real dirt outside the classification still aborts, unchanged.
+- [ ] AC3b — The merge is asserted in BOTH directions. A test where each side holds a record the other lacks must show both surviving — a discard-one-side bug passes a naive one-sided test. Reference measurement from 001-CashWeb on `feedback-stream.yaml`: 80 docs local, 130 branch, 132 union, no duplicates, round-trips through `safe_dump_all`.
 - [ ] AC4 — When the landing path proceeds past session-state dirt, it says so: names how many paths it ignored and where the list lives. Silence here would make a skipped abort indistinguishable from no dirt at all.
 - [ ] AC5 — Regression test in its own fixture tree (L-599 — do not pin to this repo's current dirty state, which is the live defect and will be cleaned): (a) only-session-state dirt → land proceeds; (b) one real dirty file → aborts; (c) both → aborts; (d) the list is read from the shared definition, so a test that edits the shared list changes both consumers. Report how many tests fail against pre-change code.
 - [ ] AC6 — The list itself is checked against reality: every path in the regex is confirmed to be written by a framework writer that does not commit it, and any self-churning tracked path found NOT in the list is either added or recorded as a deliberate exclusion.
@@ -315,4 +354,12 @@ business reading it.
 
 ### 2026-08-24T20:32:35Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-08-24T22:01:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-08-24T22:02:17Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
