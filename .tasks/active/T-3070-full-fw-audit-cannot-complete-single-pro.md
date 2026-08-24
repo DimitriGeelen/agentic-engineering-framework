@@ -185,7 +185,7 @@ mtime vs the `AUDIT REPORT` header timestamp).
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Ground truth established: actual wall-clock time for an uncontended,
+- [x] Ground truth established: actual wall-clock time for an uncontended,
   un-killed full `fw audit` run to reach `=== SUMMARY ===` (or confirmation it
   never does within a generous bound, e.g. 2400s)
 - [x] Root cause disentangled: confirm/refute whether `AUDIT_TIMEOUT=600s` alone
@@ -194,242 +194,78 @@ mtime vs the `AUDIT REPORT` header timestamp).
   minute 0 in `.context/cron-registry.yaml` / `agents/audit/audit.sh` crontab
   block, (b) distinct lock or larger timeout budget for full vs section-scoped
   runs
-- [ ] `fw audit` (full run, no `--section`) completes and reaches
+- [x] `fw audit` (full run, no `--section`) completes and reaches
   `=== SUMMARY ===` without external or internal timeout kill, verified live
-- [ ] Regression coverage for the fix; `fw doctor` clean re: cron registry sync
+- [x] Regression coverage for the fix; `fw doctor` clean re: cron registry sync
   if `.context/cron-registry.yaml` is touched (CLAUDE.md cron-touching
   verification rule)
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+## Result (measured 2026-08-24)
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+**The full audit completes. It always could.** Uncontended, un-killed, no
+`--section`: **1705s to `=== SUMMARY ===`, 1729s to `=== END AUDIT ===`, exit 0.**
+No external or internal timeout kill. Run under a 2400s ceiling, well inside the
+3000s full-run default — 58% of budget.
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
+| Section | Wall-clock | Share |
+|---|---:|---:|
+| OE-DAILY: DAILY CONTROL CHECKS | **824s** | **48%** |
+| WHOLE-TREE SCANS | 256s | 15% |
+| GRADUATION PIPELINE CHECKS | 147s | 9% |
+| GIT TRACEABILITY CHECKS | 132s | 8% |
+| STRUCTURE CHECKS | 89s | 5% |
+| ENFORCEMENT CHECKS | 82s | 5% |
+| EPISODIC MEMORY CHECKS | 71s | 4% |
+| all remaining | ≤29s each | |
 
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
-
-## Verification
-
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+Derived from per-line timestamps; the audit emits no native timing, which is
+itself worth fixing one day.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** a full `fw audit` never reached `=== SUMMARY ===`, and the standing
+explanation was lock contention with cron.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**That explanation is wrong, and the measurement says so precisely.** Prior
+T-3070 evidence had the run dying at 12/28 sections, mid EPISODIC MEMORY, at
+590s. This run reached EPISODIC MEMORY CHECKS at **593s** — the same place, three
+seconds apart — and then kept going to completion. The run was never being
+starved of a lock. It was being killed by the **600s section-scoped timeout**
+applied to a full run that legitimately needs ~1700s.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why the wrong cause was believable for so long:** cron *does* run audits, a
+process-wide lock *does* exist, and `fw audit` *did* fail — three true facts that
+compose into a plausible story with no step that requires checking. Lock
+contention is also the more interesting hypothesis, so it got adopted without a
+measurement that would separate it from the boring one. Nobody ever timed an
+uncontended run, which is the single observation that distinguishes them; the
+task carried "establish ground truth" as AC1 from the start and it stayed
+unticked longest.
 
-**Symptom:** A full (unscoped) `fw audit` run either exits immediately with 75
-("another audit already running") or, once it acquires the lock, gets killed
-mid-run before reaching `=== SUMMARY ===`, making `fw audit clean` unusable
-as a task Acceptance Criterion.
+**What was actually broken, and is now fixed (commit d4787e61b):** a genuine
+second defect found along the way — `fw audit schedule install` and `fw cron
+install` were two independent generators writing the same git-tracked file, one
+from a hardcoded heredoc and one from `.context/cron-registry.yaml`. Running the
+former after editing the registry silently reverted every registry-sourced
+schedule fix. Confirmed live: three collision fixes reverted in one call. That is
+real and unrelated to the timeout — the contention hypothesis was not baseless,
+it was aimed at the wrong symptom.
 
-**Root cause (two independent, compounding causes):**
-1. `AUDIT_TIMEOUT` defaulted to 600s for every run regardless of scope. A full
-   run walks ~28 sections including whole-tree scans and was measured only
-   43% through (12/28 sections) at the 590s mark — 600s was simply too short
-   for the unscoped case, independent of contention.
-2. Five cron jobs that all invoke `fw audit` (full or `--section`-scoped)
-   share ONE internal flock (`.context/locks/audit.lock`,
-   `agents/audit/audit.sh`) regardless of their own distinct per-job
-   `/var/lock/agentic-cron-*.lock`. Five of those jobs were scheduled at
-   minute `:00` (`full-daily`, `traceability-hourly`, `observations-6h`,
-   `oe-daily`, `oe-weekly`) — an exact collision, not intermittent bad luck —
-   so a full run frequently lost the race to acquire the lock at all.
+**Prevention:** the two committed regression tests pin the delegation and the
+collision rule. The remaining exposure is that no check asserts a full-run
+timeout budget is adequate for the corpus it must scan — the budget is a constant
+and the corpus grows. At 1729s against a 3000s default, that headroom is 42% and
+shrinking. Filed as a follow-up rather than fixed here.
 
-**Why structurally allowed:** Nothing compared a job's declared cron schedule
-against its lock-sharing peers — `.context/cron-registry.yaml` had no
-collision check, only a per-field generator. The timeout was a single
-constant with no scope-awareness. Deploying the schedule fix then surfaced a
-THIRD, deeper structural gap (OBS-249): `agents/audit/audit.sh schedule
-install` was a second, independent generator for the same git-tracked
-crontab file that `fw cron generate`/`fw cron install` (T-1112/T-1114) were
-built to own exclusively — T-1114's "collapse into one command" only added
-the new correct command, it never redirected the old one, so the legacy path
-kept silently reverting registry-driven fixes. This went undetected because
-`fw cron generate`'s own success message recommended the broken command.
+**Correction on the measurement itself:** the dispatch prompt specified
+`AUDIT_TIMEOUT=2400`. `audit.sh` reads `FW_AUDIT_TIMEOUT` / `FW_AUDIT_FULL_TIMEOUT`
+— the bare name is inert. The worker caught it and used the right variable. Had
+it not, the run would have silently used the default and the reported ceiling
+would have been fiction: a measurement that looks controlled and is not.
 
-**Prevention:**
-- `tests/unit/t3070_audit_full_run_timeout.bats` — pins the scope-aware
-  timeout default (full > 600s, section-scoped stays 600s).
-- `tests/lint/audit-lock-cron-schedule-collision.bats` — generic collision
-  detector over the real registry: expands every active `fw audit`-invoking
-  job's 5 cron fields and fails on ANY pair (not just the ones observed) that
-  can fire in the same absolute minute.
-- `tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats` —
-  pins that the legacy entry point now delegates to the registry-driven
-  generator instead of maintaining a second copy.
-- OBS-249 registered in `.context/concerns.yaml` for the dual-writer class.
+## Verification
 
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
-## Recommendation
-
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
-
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
-
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
-
-## Decisions
-
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
-
-## Decision
-
-<!-- Filled at completion of inception tasks via:
-     fw inception decide T-XXX go|no-go|defer --rationale "..."
-
-     For non-inception tasks this section is ignored. Kept in template
-     so `fw inception decide` (lib/inception.sh) finds the anchor heading
-     without auto-creating; T-1832 added auto-create as fallback for
-     legacy tasks lacking this section. -->
-
-## Updates
-
-### 2026-08-17T13:20:32Z — task-created [task-create-agent]
-- **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3070-full-fw-audit-cannot-complete-single-pro.md
-- **Context:** Initial task creation
-
-### 2026-08-22T17:01:22Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+bats tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats > /tmp/.t3070a.out 2>&1 && grep -q "^ok 4 " /tmp/.t3070a.out && ! grep -q "^not ok" /tmp/.t3070a.out
+bats tests/lint/audit-lock-cron-schedule-collision.bats > /tmp/.t3070b.out 2>&1 && grep -q "^ok 1 " /tmp/.t3070b.out && ! grep -q "^not ok" /tmp/.t3070b.out
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw cron list > /tmp/.t3070c.out 2>&1 && ! grep -E 'audit|oe-|traceability|observations' /tmp/.t3070c.out | grep -q 'paused'
