@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-24T20:31:10Z
-last_update: 2026-08-24T22:02:17Z
+last_update: 2026-08-24T22:33:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +63,23 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-08-24T22:32:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -146,6 +163,25 @@ Two consequences for the ACs below, which were written before this and are wrong
   the list" is right for noise and actively destructive for `feedback-stream.yaml`: proceeding
   without merging drops this session's appended records with no error.
 
+### The list is anchored to the wrong prefix
+
+Found while checking this tree for uncommitted work before a handover, so it is a live
+instance and not a hypothetical: `docs/reports/T-1549-escalation-scan-v0.md` is a tracked
+file, rewritten by a cron scan (`Run:` and `Corpus:` lines advanced 2026-08-22 → 2026-08-24,
+2718 → 2732 tasks), and never committed by its writer. Textbook self-churn.
+
+But `_SESSION_STATE_FILTER` is anchored `^\.context/`. A self-churning path under `docs/` is
+not merely absent from the list — it is outside the regex's reach by construction, so adding
+it would require changing the anchor, not just the alternation. That means the list's *shape*
+encodes an assumption ("all framework self-churn lives under `.context/`") that is already
+false, and every audit of the list against reality will keep coming back clean while missing
+this class, because the check inherits the same anchor.
+
+Worth stating as its own AC6 clause: the reality-check must scan the whole tracked tree for
+paths that change without a session edit, not just `.context/`. A list that can only find
+what it already covers is the proxy-vs-property class again (T-1828, T-3125, T-3126) — the
+instrument and the claim share a blind spot, so the measurement can never contradict it.
+
 CashWeb also self-corrected an over-claim in the same thread: they had said `LATEST.md` was the
 next blocker, then opened it and found it clean locally, so it is not. Recorded because the
 design guidance for the regenerated-pointer class survives the correction and is worth having
@@ -162,6 +198,7 @@ since the merge itself rewrites the file.
 - [ ] AC4 — When the landing path proceeds past session-state dirt, it says so: names how many paths it ignored and where the list lives. Silence here would make a skipped abort indistinguishable from no dirt at all.
 - [ ] AC5 — Regression test in its own fixture tree (L-599 — do not pin to this repo's current dirty state, which is the live defect and will be cleaned): (a) only-session-state dirt → land proceeds; (b) one real dirty file → aborts; (c) both → aborts; (d) the list is read from the shared definition, so a test that edits the shared list changes both consumers. Report how many tests fail against pre-change code.
 - [ ] AC6 — The list itself is checked against reality: every path in the regex is confirmed to be written by a framework writer that does not commit it, and any self-churning tracked path found NOT in the list is either added or recorded as a deliberate exclusion.
+- [ ] AC6b — The reality-check scans the WHOLE tracked tree, not just `.context/`. `_SESSION_STATE_FILTER` is anchored `^\.context/`, and at least one self-churning tracked file lives outside it (`docs/reports/T-1549-escalation-scan-v0.md`, rewritten by a cron scan, never committed). A check that inherits the list's own anchor can only ever find what the list already covers — the instrument and the claim would share a blind spot, and the measurement could never contradict the assumption. Record every path found this way with its writer.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -361,5 +398,13 @@ since the merge itself rewrites the file.
 - **Change:** horizon: next → now (auto-sync)
 
 ### 2026-08-24T22:02:17Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-08-24T22:32:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-08-24T22:33:16Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
