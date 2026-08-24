@@ -20,12 +20,12 @@ description: >
   Root-caused in T-1719 Evolution log (2026-08-17 entries) and .context/inbox.yaml
   (OBS-221-adjacent entry, 'PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT PILEUP').
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [audit, lock-contention, cron, verification-gate]
-components: []
+components: [C-004, bin/fw]
 related_tasks: [T-1719, T-2930, T-860, T-862]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -38,8 +38,8 @@ related_tasks: [T-1719, T-2930, T-860, T-862]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T13:20:32Z
-last_update: '2026-08-23T19:30:18Z'
-date_finished:
+last_update: 2026-08-24T18:14:04Z
+date_finished: 2026-08-24T18:14:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -269,3 +269,20 @@ bats tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats > /tmp/.
 bats tests/lint/audit-lock-cron-schedule-collision.bats > /tmp/.t3070b.out 2>&1 && grep -q "^ok 1 " /tmp/.t3070b.out && ! grep -q "^not ok" /tmp/.t3070b.out
 out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
 bin/fw cron list > /tmp/.t3070c.out 2>&1 && ! grep -E 'audit|oe-|traceability|observations' /tmp/.t3070c.out | grep -q 'paused'
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-95364734
+- **Timestamp:** 2026-08-24T18:18:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw cron list > /tmp/.t3070c.out 2>&1 && ! grep -E 'audit|oe-|traceability|observations' /tmp/.t3070c.out | grep -q 'paused'`
+
+### 2026-08-24T18:14:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

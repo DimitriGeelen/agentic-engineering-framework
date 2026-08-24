@@ -2,7 +2,21 @@
 id: T-3126
 name: "the pre-push audit gate blocks a ref operation on working-tree health findings"
 description: >
-  T-3125 fixed the self-vendor pre-push gate to judge the tree being pushed. The audit gate immediately downstream still blocks on findings computed from the WORKING TREE. Two of them, both from a concurrent session's uncommitted work, held the push after T-3125 cleared: 'Self-vendor drift: libs class - 3 file(s) out of sync' (uncommitted bin/fw and agents/audit/audit.sh) and 'Invariant suite: 1 of 74 RED' (invariant 43, two untracked .bats files that a runner would collect). Neither is present in the ref being pushed. The audit is not wrong to read the working tree - that is what a health check is for. The defect is the COUPLING: a working-tree health FAIL is wired to refuse a ref-based operation, so one session's in-flight edits block every other session's push, which is exactly the class T-3125 just closed one surface of. Options are to partition audit findings into ref-scoped and worktree-scoped and gate only on the former, or to keep the gate but evaluate the failing checks against the pushed ref the way T-3125's hook now does. Sibling of T-2607 (vendor-self and audit disagree on the file-class list) but a different axis: this is about WHICH TREE, not which files.
+  T-3125 fixed the self-vendor pre-push gate to judge the tree being pushed. The audit
+  gate immediately downstream still blocks on findings computed from the WORKING TREE.
+  Two of them, both from a concurrent session's uncommitted work, held the push after
+  T-3125 cleared: 'Self-vendor drift: libs class - 3 file(s) out of sync' (uncommitted
+  bin/fw and agents/audit/audit.sh) and 'Invariant suite: 1 of 74 RED' (invariant
+  43, two untracked .bats files that a runner would collect). Neither is present in
+  the ref being pushed. The audit is not wrong to read the working tree - that is
+  what a health check is for. The defect is the COUPLING: a working-tree health FAIL
+  is wired to refuse a ref-based operation, so one session's in-flight edits block
+  every other session's push, which is exactly the class T-3125 just closed one surface
+  of. Options are to partition audit findings into ref-scoped and worktree-scoped
+  and gate only on the former, or to keep the gate but evaluate the failing checks
+  against the pushed ref the way T-3125's hook now does. Sibling of T-2607 (vendor-self
+  and audit disagree on the file-class list) but a different axis: this is about WHICH
+  TREE, not which files.
 
 status: captured
 workflow_type: build
@@ -22,8 +36,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T21:41:55Z
-last_update: 2026-08-23T21:41:55Z
-date_finished: null
+last_update: '2026-08-23T21:45:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +48,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-23T21:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-23T21:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3126: the pre-push audit gate blocks a ref operation on working-tree health findings

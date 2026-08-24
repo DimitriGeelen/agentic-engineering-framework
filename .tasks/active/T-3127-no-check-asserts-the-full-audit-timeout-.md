@@ -1,8 +1,21 @@
 ---
 id: T-3127
-name: "no check asserts the full-audit timeout budget still fits the corpus it must scan"
+name: "no check asserts the full-audit timeout budget still fits the corpus it must
+  scan"
 description: >
-  T-3070 measured an uncontended full 'fw audit' at 1729s against a 3000s FW_AUDIT_FULL_TIMEOUT default - 58 percent of budget, 42 percent headroom. The budget is a constant; the corpus it scans grows with every task, learning, episodic and fabric card. Nothing asserts the two still fit. When headroom reaches zero the failure mode is a timeout kill mid-section, which is exactly what T-3070 spent months misattributing to lock contention - the audit died at 590s, at the 600s section cap, and the plausible-but-wrong explanation held because no one had ever timed an uncontended run. The same misdiagnosis is available again the moment 1729s becomes 3001s, and it will look identical. Options: assert measured-runtime-under-budget as an audit check of itself, emit native per-section timings so the growth is visible before it bites (T-3070 had to derive them from per-line timestamps), or scale the budget from corpus size rather than pinning a constant. OE-DAILY alone is 824s, 48 percent of the run, so it is where the headroom will go first.
+  T-3070 measured an uncontended full 'fw audit' at 1729s against a 3000s FW_AUDIT_FULL_TIMEOUT
+  default - 58 percent of budget, 42 percent headroom. The budget is a constant; the
+  corpus it scans grows with every task, learning, episodic and fabric card. Nothing
+  asserts the two still fit. When headroom reaches zero the failure mode is a timeout
+  kill mid-section, which is exactly what T-3070 spent months misattributing to lock
+  contention - the audit died at 590s, at the 600s section cap, and the plausible-but-wrong
+  explanation held because no one had ever timed an uncontended run. The same misdiagnosis
+  is available again the moment 1729s becomes 3001s, and it will look identical. Options:
+  assert measured-runtime-under-budget as an audit check of itself, emit native per-section
+  timings so the growth is visible before it bites (T-3070 had to derive them from
+  per-line timestamps), or scale the budget from corpus size rather than pinning a
+  constant. OE-DAILY alone is 824s, 48 percent of the run, so it is where the headroom
+  will go first.
 
 status: captured
 workflow_type: build
@@ -22,8 +35,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-24T18:13:40Z
-last_update: 2026-08-24T18:13:40Z
-date_finished: null
+last_update: '2026-08-24T18:15:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +47,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-24T18:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-24T18:15:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3127: no check asserts the full-audit timeout budget still fits the corpus it must scan

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3070: Full fw audit cannot complete: single process-wide lock contends with cron section runs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-24T18:18:16Z
+# ============================================================================
+
+task_id: T-3070
+task_name: "Full fw audit cannot complete: single process-wide lock contends with cron section runs"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-17T13:20:32Z
+completed: 2026-08-24T18:14:04Z
+duration_days: 7
+updates_count: 0
+first_commit: 2026-08-24T19:22:55+02:00
+last_commit: 2026-08-24T20:14:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  'audit schedule install' delegates to the cron registry. refresh vendored copies after adopting the delegation fix. the audit completes — the contention diagnosis was wrong
+
+# Key outcomes
+outcomes:
+  - 'Ground truth established: actual wall-clock time for an uncontended,'
+  - 'Root cause disentangled: confirm/refute whether `AUDIT_TIMEOUT=600s` alone'
+  - 'Fix implemented for at least one of: (a) cron schedule collision at'
+  - '`fw audit` (full run, no `--section`) completes and reaches'
+  - 'Regression coverage for the fix; `fw doctor` clean re: cron registry sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'refresh vendored copies after adopting the delegation fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.tasks/active/T-3070-full-fw-audit-cannot-complete-single-pro.md'
+  - '.tasks/active/T-3127-no-check-asserts-the-full-audit-timeout-.md'
+  - 'tests/lint/audit-lock-cron-schedule-collision.bats'
+  - 'tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-24T19:22:55'
+    action: 'T-3070: ''audit schedule install'' delegates to the cron registry'
+  - time: '2026-08-24T19:23:11'
+    action: 'T-3070: refresh vendored copies after adopting the delegation fix'
+  - time: '2026-08-24T20:14:00'
+    action: 'T-3070: the audit completes — the contention diagnosis was wrong'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 10373 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, lock-contention, cron, verification-gate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10373
+  commits: 3
+  files_changed: 9
+  lines_added: 527
+  lines_removed: 231
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3070-full-fw-audit-cannot-complete-single-pro.md
+generated_by: context-agent-hybrid
